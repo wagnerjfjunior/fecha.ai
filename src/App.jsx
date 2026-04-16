@@ -253,7 +253,7 @@ function UploadTab({ sb, token }) {
     try {
       const lr = await sb.insert("listas", { nome_fornecedor: forn, nome_arquivo: file.name }, token); const lid = lr[0].id;
       const leads = preview.rows.map(r => csvToLead(r, colMap, forn)); const B = 100; let tot = { validos: 0, invalidos: 0, duplicados: 0 };
-      for (let i = 0; i < leads.length; i += B) { const r = await sb.rpc("importar_leads_batch", { p_lista_id: lid, p_leads: leads.slice(i, i + B) }, token); tot.validos += (r.validos || 0); tot.invalidos += (r.invalidos || 0); tot.duplicados += (r.duplicados || 0); }
+      for (let i = 0; i < leads.length; i += B) { const batch = JSON.stringify(leads.slice(i, i + B)); const r = await sb.rpc("importar_leads_batch", { p_lista_id: lid, p_leads: batch }, token); tot.validos += (r.validos || 0); tot.invalidos += (r.invalidos || 0); tot.duplicados += (r.duplicados || 0); }
       setResult(tot); setPreview(null); setFile(null); setForn("");
     } catch (e) { setResult({ error: e.message }); } setImporting(false);
   };
