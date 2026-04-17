@@ -1,6 +1,8 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from "recharts";
 import Papa from "papaparse";
+import CriarUsuario from "./components/CriarUsuario";
+import HomeActions from "./components/HomeActions";
 
 const SUPABASE_URL = "https://uobxxgzshrmbtjfdolxd.supabase.co";
 const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVvYnh4Z3pzaHJtYnRqZmRvbHhkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYyNjcyOTUsImV4cCI6MjA5MTg0MzI5NX0.0RiMkrtJlGbprp8AqVPXC9Y5LxP6QiELfP7NoYEXJ9w";
@@ -89,9 +91,27 @@ function csvToLead(row, cm, forn) {
 function KPI({ label, value, color = "text-gray-900", sub }) {
   return (<div className="bg-white rounded-xl p-3 shadow-sm border border-gray-100"><div className="text-xs text-gray-500 uppercase tracking-wide">{label}</div><div className={`text-2xl font-bold mt-1 ${color}`}>{value}</div>{sub && <div className="text-xs text-gray-400 mt-1">{sub}</div>}</div>);
 }
-function Header({ nome, isGestor, onLogout }) {
-  return (<div className="bg-white border-b border-gray-200 px-4 py-3 flex items-center justify-between sticky top-0 z-10"><div><span className="font-bold text-gray-900 text-sm">{nome}</span><span className="ml-2 text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full">{isGestor ? "Gestor" : "Corretor"}</span></div><button className="text-xs text-gray-400 hover:text-red-500" onClick={onLogout}>Sair</button></div>);
+
+// Header atualizado: aceita onHome para botão de voltar à tela inicial
+function Header({ nome, isGestor, onLogout, onHome }) {
+  return (
+    <div className="bg-white border-b border-gray-200 px-4 py-3 flex items-center justify-between sticky top-0 z-10">
+      <div>
+        <span className="font-bold text-gray-900 text-sm">{nome}</span>
+        <span className="ml-2 text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full">{isGestor ? "Gestor" : "Corretor"}</span>
+      </div>
+      <div className="flex items-center gap-3">
+        {onHome && (
+          <button className="text-xs text-gray-400 hover:text-blue-500 transition-colors" onClick={onHome}>
+            ⌂ Início
+          </button>
+        )}
+        <button className="text-xs text-gray-400 hover:text-red-500 transition-colors" onClick={onLogout}>Sair</button>
+      </div>
+    </div>
+  );
 }
+
 function TabBar({ tabs, active, onChange }) {
   return (<div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 flex z-20">{tabs.map(t => (<button key={t.id} className={`flex-1 py-3 text-center ${active === t.id ? "text-blue-600 font-medium" : "text-gray-400"}`} onClick={() => onChange(t.id)}><div className="text-lg">{t.icon}</div><div className="text-xs mt-0.5">{t.label}</div></button>))}</div>);
 }
@@ -253,7 +273,16 @@ function UploadTab({ sb, token }) {
     try {
       const lr = await sb.insert("listas", { nome_fornecedor: forn, nome_arquivo: file.name }, token); const lid = lr[0].id;
       const leads = preview.rows.map(r => csvToLead(r, colMap, forn)); const B = 100; let tot = { validos: 0, invalidos: 0, duplicados: 0 };
-      for (let i = 0; i < leads.length; i += B) { const batch = JSON.stringify(leads.slice(i, i + B)); const r = await sb.rpc("importar_leads_batch", { p_lista_id: lid, p_leads: batch }, token); tot.validos += (r.validos || 0); tot.invalidos += (r.invalidos || 0); tot.duplicados += (r.duplicados || 0); }
+      // Gera UUID único por sessão de importação — garante 1 log por importação, não por batch
+      const sessaoId = crypto.randomUUID();
+      for (let i = 0; i < leads.length; i += B) {
+        const r = await sb.rpc("importar_leads_batch", {
+          p_lista_id: lid,
+          p_leads: leads.slice(i, i + B),
+          p_sessao_id: sessaoId,
+        }, token);
+        tot.validos += (r.validos || 0); tot.invalidos += (r.invalidos || 0); tot.duplicados += (r.duplicados || 0);
+      }
       setResult(tot); setPreview(null); setFile(null); setForn("");
     } catch (e) { setResult({ error: e.message }); } setImporting(false);
   };
@@ -349,42 +378,81 @@ function ListasTab({ sb, token }) {
   );
 }
 
-function EquipeTab({ sb, token }) {
+// EquipeTab: agora recebe onCriarUsuario para navegar para o formulário de criação
+function EquipeTab({ sb, token, onCriarUsuario }) {
   const [cs, setCs] = useState([]);
   const load = async () => { try { setCs(await sb.query("corretores", "order=nome.asc", token)); } catch (e) {} };
   useEffect(() => { load(); }, []);
-  return (<div className="p-4 space-y-4"><h2 className="text-lg font-bold text-gray-900">Equipe</h2>
-    <div className="space-y-2">{cs.map(c => (<div key={c.id} className="bg-white rounded-xl p-3 border shadow-sm flex justify-between items-center"><div><p className="font-medium text-sm">{c.nome} {c.is_gestor && <span className="text-xs bg-blue-100 text-blue-700 px-1.5 py-0.5 rounded-full ml-1">Gestor</span>}</p><p className="text-xs text-gray-500">{c.email}</p></div><span className={`text-xs px-2 py-1 rounded-full ${c.ativo ? "bg-emerald-100 text-emerald-700" : "bg-red-100 text-red-700"}`}>{c.ativo ? "Ativo" : "Inativo"}</span></div>))}</div>
-    <p className="text-xs text-gray-400 text-center">Para adicionar novos corretores, cadastre no Supabase Auth e insira na tabela corretores.</p>
-  </div>);
+  return (
+    <div className="p-4 space-y-4">
+      <div className="flex items-center justify-between">
+        <h2 className="text-lg font-bold text-gray-900">Equipe</h2>
+        <button
+          onClick={onCriarUsuario}
+          className="bg-blue-600 text-white text-xs font-semibold px-3 py-2 rounded-xl hover:bg-blue-700 active:scale-95 transition-all"
+        >
+          + Novo usuário
+        </button>
+      </div>
+      <div className="space-y-2">{cs.map(c => (<div key={c.id} className="bg-white rounded-xl p-3 border shadow-sm flex justify-between items-center"><div><p className="font-medium text-sm">{c.nome} {c.is_gestor && <span className="text-xs bg-blue-100 text-blue-700 px-1.5 py-0.5 rounded-full ml-1">Gestor</span>}</p><p className="text-xs text-gray-500">{c.email}</p></div><span className={`text-xs px-2 py-1 rounded-full ${c.ativo ? "bg-emerald-100 text-emerald-700" : "bg-red-100 text-red-700"}`}>{c.ativo ? "Ativo" : "Inativo"}</span></div>))}</div>
+    </div>
+  );
 }
 
-function GestorApp({ sb, token, corretor, onLogout }) {
+// GestorApp: recebe onVoltar (volta ao home) e onCriarUsuario (abre formulário)
+function GestorApp({ sb, token, corretor, onLogout, onVoltar, onCriarUsuario }) {
   const [tab, setTab] = useState("dashboard");
-  return (<div className="min-h-screen bg-gray-50 pb-20"><Header nome={corretor.nome} isGestor onLogout={onLogout} />
-    {tab === "dashboard" && <DashboardTab sb={sb} token={token} />}
-    {tab === "upload" && <UploadTab sb={sb} token={token} />}
-    {tab === "distribuir" && <DistribuirTab sb={sb} token={token} />}
-    {tab === "listas" && <ListasTab sb={sb} token={token} />}
-    {tab === "equipe" && <EquipeTab sb={sb} token={token} />}
-    <TabBar tabs={[{ id: "dashboard", label: "Dashboard", icon: "◉" }, { id: "upload", label: "Upload", icon: "↑" }, { id: "distribuir", label: "Distribuir", icon: "→" }, { id: "listas", label: "Listas", icon: "★" }, { id: "equipe", label: "Equipe", icon: "◇" }]} active={tab} onChange={setTab} />
-  </div>);
+  return (
+    <div className="min-h-screen bg-gray-50 pb-20">
+      <Header nome={corretor.nome} isGestor onLogout={onLogout} onHome={onVoltar} />
+      {tab === "dashboard" && <DashboardTab sb={sb} token={token} />}
+      {tab === "upload" && <UploadTab sb={sb} token={token} />}
+      {tab === "distribuir" && <DistribuirTab sb={sb} token={token} />}
+      {tab === "listas" && <ListasTab sb={sb} token={token} />}
+      {tab === "equipe" && <EquipeTab sb={sb} token={token} onCriarUsuario={onCriarUsuario} />}
+      <TabBar
+        tabs={[
+          { id: "dashboard", label: "Dashboard", icon: "◉" },
+          { id: "upload", label: "Upload", icon: "↑" },
+          { id: "distribuir", label: "Distribuir", icon: "→" },
+          { id: "listas", label: "Listas", icon: "★" },
+          { id: "equipe", label: "Equipe", icon: "◇" },
+        ]}
+        active={tab}
+        onChange={setTab}
+      />
+    </div>
+  );
 }
 
-function CorretorApp({ sb, token, corretor, onLogout }) {
+// CorretorApp: recebe onVoltar (volta ao home)
+function CorretorApp({ sb, token, corretor, onLogout, onVoltar }) {
   const [tab, setTab] = useState("discador");
-  return (<div className="min-h-screen bg-gray-50 pb-20"><Header nome={corretor.nome} isGestor={false} onLogout={onLogout} />
-    {tab === "discador" && <DiscadorTab sb={sb} token={token} corretor={corretor} />}
-    {tab === "producao" && <ProducaoTab sb={sb} token={token} />}
-    {tab === "carteira" && <CarteiraTab sb={sb} token={token} />}
-    <TabBar tabs={[{ id: "discador", label: "Discador", icon: "◎" }, { id: "producao", label: "Produção", icon: "◉" }, { id: "carteira", label: "Carteira", icon: "♦" }]} active={tab} onChange={setTab} />
-  </div>);
+  return (
+    <div className="min-h-screen bg-gray-50 pb-20">
+      <Header nome={corretor.nome} isGestor={false} onLogout={onLogout} onHome={onVoltar} />
+      {tab === "discador" && <DiscadorTab sb={sb} token={token} corretor={corretor} />}
+      {tab === "producao" && <ProducaoTab sb={sb} token={token} />}
+      {tab === "carteira" && <CarteiraTab sb={sb} token={token} />}
+      <TabBar
+        tabs={[
+          { id: "discador", label: "Discador", icon: "◎" },
+          { id: "producao", label: "Produção", icon: "◉" },
+          { id: "carteira", label: "Carteira", icon: "♦" },
+        ]}
+        active={tab}
+        onChange={setTab}
+      />
+    </div>
+  );
 }
 
 export default function App() {
   const [session, setSession] = useState(null);
   const [corretor, setCorretor] = useState(null);
   const [loading, setLoading] = useState(true);
+  // tela: 'home' | 'oferta' | 'gestor' | 'criar-usuario'
+  const [tela, setTela] = useState("home");
   const [sb] = useState(() => createSB(SUPABASE_URL, SUPABASE_KEY));
 
   useEffect(() => {
@@ -392,14 +460,87 @@ export default function App() {
     setLoading(false);
   }, []);
 
-  useEffect(() => { if (!sb || !session) return; (async () => { try { const d = await sb.query("corretores", "user_id=eq." + session.user.id + "&select=*", session.access_token); if (d.length > 0) setCorretor(d[0]); else setSession(null); } catch (e) { setSession(null); } })(); }, [sb, session]);
+  useEffect(() => {
+    if (!sb || !session) return;
+    (async () => {
+      try {
+        const d = await sb.query("corretores", "user_id=eq." + session.user.id + "&select=*", session.access_token);
+        if (d.length > 0) setCorretor(d[0]);
+        else setSession(null);
+      } catch (e) { setSession(null); }
+    })();
+  }, [sb, session]);
 
-  const login = (d) => { setSession(d); try { localStorage.setItem("fechai_session", JSON.stringify(d)); } catch (e) {} };
-  const logout = () => { setSession(null); setCorretor(null); try { localStorage.removeItem("fechai_session"); } catch (e) {} };
+  const login = (d) => {
+    setSession(d);
+    setTela("home");
+    try { localStorage.setItem("fechai_session", JSON.stringify(d)); } catch (e) {}
+  };
+  const logout = () => {
+    setSession(null); setCorretor(null); setTela("home");
+    try { localStorage.removeItem("fechai_session"); } catch (e) {}
+  };
 
   if (loading) return <div className="min-h-screen bg-gray-50 flex items-center justify-center text-gray-400">Carregando...</div>;
   if (!session) return <LoginScreen sb={sb} onLogin={login} />;
-  if (!corretor) return <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4"><div className="bg-white rounded-2xl shadow-lg p-6 text-center max-w-sm"><p className="text-gray-700 mb-2">Carregando perfil...</p><button className="mt-4 text-blue-600 text-sm font-medium" onClick={logout}>Voltar</button></div></div>;
-  if (corretor.is_gestor) return <GestorApp sb={sb} token={session.access_token} corretor={corretor} onLogout={logout} />;
-  return <CorretorApp sb={sb} token={session.access_token} corretor={corretor} onLogout={logout} />;
+  if (!corretor) return (
+    <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
+      <div className="bg-white rounded-2xl shadow-lg p-6 text-center max-w-sm">
+        <p className="text-gray-700 mb-2">Carregando perfil...</p>
+        <button className="mt-4 text-blue-600 text-sm font-medium" onClick={logout}>Voltar</button>
+      </div>
+    </div>
+  );
+
+  // Tela inicial — aparece para todos após o login
+  if (tela === "home") return (
+    <HomeActions
+      nome={corretor.nome}
+      isGestor={corretor.is_gestor}
+      onOfertaAtiva={() => setTela("oferta")}
+      onPainelGestor={() => setTela("gestor")}
+    />
+  );
+
+  // Formulário de criar usuário — só gestores chegam aqui
+  if (tela === "criar-usuario") return (
+    <CriarUsuario
+      session={session}
+      onUsuarioCriado={() => setTela("gestor")}
+      onCancelar={() => setTela("gestor")}
+    />
+  );
+
+  // Oferta ativa — discador de leads (disponível para todos)
+  if (tela === "oferta") return (
+    <CorretorApp
+      sb={sb}
+      token={session.access_token}
+      corretor={corretor}
+      onLogout={logout}
+      onVoltar={() => setTela("home")}
+    />
+  );
+
+  // Painel gestor — só gestores chegam aqui via HomeActions
+  if (tela === "gestor" && corretor.is_gestor) return (
+    <GestorApp
+      sb={sb}
+      token={session.access_token}
+      corretor={corretor}
+      onLogout={logout}
+      onVoltar={() => setTela("home")}
+      onCriarUsuario={() => setTela("criar-usuario")}
+    />
+  );
+
+  // Fallback: se corretor tentar acessar rota de gestor, volta ao home
+  return (
+    <HomeActions
+      nome={corretor.nome}
+      isGestor={corretor.is_gestor}
+      onOfertaAtiva={() => setTela("oferta")}
+      onPainelGestor={() => setTela("gestor")}
+    />
+  );
 }
