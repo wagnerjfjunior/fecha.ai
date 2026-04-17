@@ -203,9 +203,24 @@ function TrocarSenhaObrigatoria({ sb, token, corretorId, onConcluido }) {
 
 // ─── Modal de edição de lead ──────────────────────────────────────────────────
 function LeadModal({ lead, sb, token, onSalvo, onFechar }) {
-  const [fb,setFb]=useState(lead.feedback||"");
-  const [obs,setObs]=useState(lead.observacao||"");
-  const [ld,setLd]=useState(false); const [erro,setErro]=useState("");
+  const [fb,setFb]          = useState(lead.feedback||"");
+  const [obs,setObs]        = useState(lead.observacao||"");
+  const [ld,setLd]          = useState(false);
+  const [erro,setErro]      = useState("");
+  const [aba,setAba]        = useState("feedback"); // 'feedback' | 'funil'
+  const [estagios,setEstagios] = useState([]);
+  const [estSel,setEstSel]  = useState(lead.estagio_id||"");
+  const [obsFunil,setObsFunil] = useState("");
+  const [ldFunil,setLdFunil] = useState(false);
+
+  // Carrega estágios quando usuário abre aba funil
+  useEffect(() => {
+    if (aba !== "funil" || estagios.length > 0) return;
+    sb.query("funil_estagios","order=ordem.asc",token)
+      .then(r => { setEstagios(r); if (!estSel && r.length > 0) setEstSel(r[0].id); })
+      .catch(() => {});
+  }, [aba]);
+
   const salvar = async () => {
     if (!fb) { setErro("Selecione um feedback."); return; }
     setLd(true); setErro("");
@@ -216,37 +231,104 @@ function LeadModal({ lead, sb, token, onSalvo, onFechar }) {
     } catch(e) { setErro(e.message); }
     setLd(false);
   };
+
+  const moverFunil = async () => {
+    if (!estSel) return;
+    setLdFunil(true); setErro("");
+    try {
+      const r = await sb.rpc("mover_funil",{p_lead_id:lead.id,p_estagio_id:estSel,p_observacao:obsFunil},token);
+      if (r.error) throw new Error(r.error);
+      onSalvo({...lead, estagio_id: estSel});
+    } catch(e) { setErro(e.message); }
+    setLdFunil(false);
+  };
+
   const e164=lead.telefone_e164||"";
   const wppLink=e164?buildWhatsAppLink({...lead,telefone_e164:e164}):null;
   const mailLink=buildEmailLink(lead);
+  const estNomeAtual = estagios.find(e=>e.id===estSel)?.nome || "";
+
   return (
     <div className="fixed inset-0 bg-black/40 z-50 flex items-end" onClick={onFechar}>
-      <div className="bg-white rounded-t-2xl w-full max-h-[90vh] overflow-y-auto p-5 pb-8" onClick={e=>e.stopPropagation()}>
-        <div className="flex items-start justify-between mb-4">
-          <div><h3 className="font-bold text-gray-900 text-xl">{lead.nome||"Sem nome"}</h3>{lead.email&&<p className="text-sm text-gray-500 mt-0.5">{lead.email}</p>}</div>
-          <button onClick={onFechar} className="text-gray-400 text-2xl leading-none">✕</button>
-        </div>
-        <div className="bg-gray-50 rounded-xl p-3 mb-4">
-          <p className="font-mono font-bold text-gray-900 text-lg">{lead.telefone||lead.telefone_escolhido||"—"}</p>
-          <div className="flex gap-2 mt-2 flex-wrap">
-            {(lead.telefone||lead.ligar)&&<a href={"tel:"+(lead.ligar||lead.telefone)} className="flex-1 bg-blue-600 text-white rounded-xl py-3 text-center text-base font-medium no-underline">📞 Ligar</a>}
-            {wppLink&&<a href={wppLink} target="_blank" rel="noopener noreferrer" className="flex-1 bg-emerald-600 text-white rounded-xl py-3 text-center text-base font-medium no-underline">WhatsApp</a>}
-            {mailLink&&<a href={mailLink} className="flex-1 bg-indigo-600 text-white rounded-xl py-3 text-center text-base font-medium no-underline">✉ Email</a>}
+      <div className="bg-white rounded-t-2xl w-full max-h-[90vh] overflow-y-auto" onClick={e=>e.stopPropagation()}>
+        {/* Handle */}
+        <div className="flex justify-center pt-3 pb-1"><div className="w-10 h-1 bg-gray-300 rounded-full"/></div>
+
+        {/* Header */}
+        <div className="px-5 pt-2 pb-3 border-b border-gray-100">
+          <div className="flex items-start justify-between mb-3">
+            <div><h3 className="font-bold text-gray-900 text-xl">{lead.nome||"Sem nome"}</h3>{lead.email&&<p className="text-sm text-gray-500 mt-0.5">{lead.email}</p>}</div>
+            <button onClick={onFechar} className="text-gray-400 text-2xl leading-none">✕</button>
+          </div>
+          <div className="bg-gray-50 rounded-xl p-3">
+            <p className="font-mono font-bold text-gray-900 text-lg">{lead.telefone||lead.telefone_escolhido||"—"}</p>
+            <div className="flex gap-2 mt-2 flex-wrap">
+              {(lead.telefone||lead.ligar)&&<a href={"tel:"+(lead.ligar||lead.telefone)} className="flex-1 bg-blue-600 text-white rounded-xl py-3 text-center text-base font-medium no-underline">📞 Ligar</a>}
+              {wppLink&&<a href={wppLink} target="_blank" rel="noopener noreferrer" className="flex-1 bg-emerald-600 text-white rounded-xl py-3 text-center text-base font-medium no-underline">WhatsApp</a>}
+              {mailLink&&<a href={mailLink} className="flex-1 bg-indigo-600 text-white rounded-xl py-3 text-center text-base font-medium no-underline">✉</a>}
+            </div>
           </div>
         </div>
-        <p className="text-sm text-gray-500 uppercase tracking-wide mb-2">Atualizar feedback</p>
-        <div className="grid grid-cols-2 gap-2 mb-4">
-          {FEEDBACKS.map(f=>(
-            <button key={f.id} onClick={()=>setFb(f.id)} className={`rounded-xl py-3 px-3 text-base font-medium text-left transition-all border-2 ${fb===f.id?f.color+" text-white border-transparent":"bg-gray-50 text-gray-700 border-transparent"}`}>
-              <span className="mr-1">{f.icon}</span>{f.label}
+
+        {/* Abas */}
+        <div className="flex border-b border-gray-100">
+          {[["feedback","Feedback"],["funil","▽ Funil CRM"]].map(([id,label])=>(
+            <button key={id} onClick={()=>setAba(id)}
+              className={`flex-1 py-3 text-base font-medium transition-colors ${aba===id?"text-blue-600 border-b-2 border-blue-600":"text-gray-400"}`}>
+              {label}
             </button>
           ))}
         </div>
-        <textarea rows={3} placeholder="Observação..." value={obs} onChange={e=>setObs(e.target.value)} className="w-full border border-gray-300 rounded-xl px-3 py-3 text-base resize-none focus:outline-none focus:ring-2 focus:ring-blue-500 mb-4"/>
-        {erro&&<div className="bg-red-50 text-red-700 rounded-xl p-3 mb-3 text-base">{erro}</div>}
-        <div className="flex gap-3">
-          <button onClick={onFechar} className="flex-1 bg-gray-100 text-gray-700 rounded-xl py-3 text-base font-medium">Cancelar</button>
-          <button onClick={salvar} disabled={ld} className="flex-1 bg-blue-600 text-white rounded-xl py-3 text-base font-semibold disabled:opacity-50">{ld?"Salvando...":"Salvar"}</button>
+
+        <div className="p-5 pb-8">
+          {aba==="feedback" && (<>
+            <p className="text-sm text-gray-500 uppercase tracking-wide mb-2">Atualizar feedback</p>
+            <div className="grid grid-cols-2 gap-2 mb-4">
+              {FEEDBACKS.map(f=>(
+                <button key={f.id} onClick={()=>setFb(f.id)} className={`rounded-xl py-3 px-3 text-base font-medium text-left transition-all border-2 ${fb===f.id?f.color+" text-white border-transparent":"bg-gray-50 text-gray-700 border-transparent"}`}>
+                  <span className="mr-1">{f.icon}</span>{f.label}
+                </button>
+              ))}
+            </div>
+            <textarea rows={3} placeholder="Observação..." value={obs} onChange={e=>setObs(e.target.value)} className="w-full border border-gray-300 rounded-xl px-3 py-3 text-base resize-none focus:outline-none focus:ring-2 focus:ring-blue-500 mb-4"/>
+            {erro&&<div className="bg-red-50 text-red-700 rounded-xl p-3 mb-3 text-base">{erro}</div>}
+            <div className="flex gap-3">
+              <button onClick={onFechar} className="flex-1 bg-gray-100 text-gray-700 rounded-xl py-3 text-base font-medium">Cancelar</button>
+              <button onClick={salvar} disabled={ld} className="flex-1 bg-blue-600 text-white rounded-xl py-3 text-base font-semibold disabled:opacity-50">{ld?"Salvando...":"Salvar"}</button>
+            </div>
+          </>)}
+
+          {aba==="funil" && (<>
+            <p className="text-sm text-gray-500 uppercase tracking-wide mb-3">Posicionar no funil de vendas</p>
+            {estagios.length === 0 && <p className="text-gray-400 text-center py-4">Carregando estágios...</p>}
+            <div className="space-y-2 mb-4">
+              {estagios.map(e=>(
+                <button key={e.id} onClick={()=>setEstSel(e.id)}
+                  className={`w-full flex items-center gap-3 rounded-xl px-4 py-3 text-left transition-all border-2 ${estSel===e.id?"border-blue-500 bg-blue-50":"border-transparent bg-gray-50"}`}>
+                  <span className="text-xl">{e.icone}</span>
+                  <div className="flex-1"><p className="font-medium text-base text-gray-900">{e.nome}</p></div>
+                  <div className="w-3 h-3 rounded-full flex-shrink-0" style={{background:e.cor}}/>
+                  {estSel===e.id&&<span className="text-blue-500 text-lg">✓</span>}
+                </button>
+              ))}
+            </div>
+            {/* Preview email do estágio */}
+            {estNomeAtual && lead.email && (
+              <a href={buildEmailFunilLink(lead, estNomeAtual)||"#"}
+                className="block bg-indigo-50 rounded-xl p-3 mb-4 border border-indigo-100 no-underline">
+                <p className="text-xs text-indigo-700 font-medium">✉ Email template para "{estNomeAtual}"</p>
+                <p className="text-xs text-indigo-500 mt-0.5">Toque para abrir no seu app de email</p>
+              </a>
+            )}
+            <textarea rows={2} placeholder="Observação sobre este estágio (opcional)..." value={obsFunil} onChange={e=>setObsFunil(e.target.value)} className="w-full border border-gray-300 rounded-xl px-3 py-3 text-base resize-none focus:outline-none focus:ring-2 focus:ring-blue-500 mb-4"/>
+            {erro&&<div className="bg-red-50 text-red-700 rounded-xl p-3 mb-3 text-base">{erro}</div>}
+            <div className="flex gap-3">
+              <button onClick={onFechar} className="flex-1 bg-gray-100 text-gray-700 rounded-xl py-3 text-base font-medium">Cancelar</button>
+              <button onClick={moverFunil} disabled={ldFunil||!estSel} className="flex-1 bg-blue-600 text-white rounded-xl py-3 text-base font-semibold disabled:opacity-50">
+                {ldFunil?"Movendo...":"Confirmar"}
+              </button>
+            </div>
+          </>)}
         </div>
       </div>
     </div>
