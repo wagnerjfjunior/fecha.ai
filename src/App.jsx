@@ -1,44 +1,61 @@
+/**
+ * FECH.AI — App principal
+ * Versão: 1.3.0
+ * Data: 2026-04-17
+ * Mudanças:
+ *   - Troca de senha obrigatória no primeiro login
+ *   - Leads da carteira e produção clicáveis (editar feedback/observação)
+ *   - Aba Histórico: navegação em todos os leads já atendidos
+ *   - Auto-refresh de token (5 min antes de expirar)
+ *   - Versionamento visível no header do gestor
+ * Rollback: Vercel Dashboard → Deployments → selecionar build anterior → Redeploy
+ */
+
 import { useState, useEffect, useCallback, useRef } from "react";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from "recharts";
 import Papa from "papaparse";
 import CriarUsuario from "./components/CriarUsuario";
 import HomeActions from "./components/HomeActions";
 
+// ─── Versão do app ────────────────────────────────────────────────────────────
+const APP_VERSION = "1.3.0";
+const APP_BUILD   = "2026-04-17";
+
+// ─── Constantes Supabase ──────────────────────────────────────────────────────
 const SUPABASE_URL = "https://uobxxgzshrmbtjfdolxd.supabase.co";
 const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVvYnh4Z3pzaHJtYnRqZmRvbHhkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYyNjcyOTUsImV4cCI6MjA5MTg0MzI5NX0.0RiMkrtJlGbprp8AqVPXC9Y5LxP6QiELfP7NoYEXJ9w";
 
 const FEEDBACKS = [
-  { id: "agendado_visita", label: "Agendou visita", color: "bg-emerald-600", icon: "✓" },
-  { id: "enviado_informacoes", label: "Enviou info", color: "bg-blue-600", icon: "ℹ" },
-  { id: "retornar_depois", label: "Retornar depois", color: "bg-amber-500", icon: "↻" },
-  { id: "nao_responde", label: "Não responde", color: "bg-gray-500", icon: "—" },
-  { id: "sem_interesse", label: "Sem interesse", color: "bg-purple-600", icon: "✕" },
-  { id: "numero_errado", label: "Número errado", color: "bg-red-600", icon: "!" },
-  { id: "caixa_postal", label: "Caixa postal", color: "bg-orange-500", icon: "▶" },
-  { id: "nao_toca", label: "Não toca", color: "bg-gray-400", icon: "✗" },
-  { id: "lead_ja_atendido", label: "Já atendido", color: "bg-red-400", icon: "⊘" },
+  { id: "agendado_visita",    label: "Agendou visita",   color: "bg-emerald-600", icon: "✓" },
+  { id: "enviado_informacoes",label: "Enviou info",      color: "bg-blue-600",    icon: "ℹ" },
+  { id: "retornar_depois",    label: "Retornar depois",  color: "bg-amber-500",   icon: "↻" },
+  { id: "nao_responde",       label: "Não responde",     color: "bg-gray-500",    icon: "—" },
+  { id: "sem_interesse",      label: "Sem interesse",    color: "bg-purple-600",  icon: "✕" },
+  { id: "numero_errado",      label: "Número errado",    color: "bg-red-600",     icon: "!" },
+  { id: "caixa_postal",       label: "Caixa postal",     color: "bg-orange-500",  icon: "▶" },
+  { id: "nao_toca",           label: "Não toca",         color: "bg-gray-400",    icon: "✗" },
+  { id: "lead_ja_atendido",   label: "Já atendido",      color: "bg-red-400",     icon: "⊘" },
 ];
 
 const COL_ALIASES = {
-  nome: ["nome","name","cliente","nome_cliente","nome completo","full_name"],
-  email: ["email","e-mail","e_mail","email_address"],
-  celular: ["celular","cel","mobile","whatsapp","whats","cell"],
+  nome:       ["nome","name","cliente","nome_cliente","nome completo","full_name"],
+  email:      ["email","e-mail","e_mail","email_address"],
+  celular:    ["celular","cel","mobile","whatsapp","whats","cell"],
   telefone_1: ["telefone","tel","phone","telefone_1","tel1","fone"],
   telefone_2: ["telefone_2","tel2","telefone 2"],
-  fixo: ["fixo","landline","telefone_fixo","residencial","comercial"],
-  endereco: ["endereco","endereço","address","end","logradouro"],
+  fixo:       ["fixo","landline","telefone_fixo","residencial","comercial"],
+  endereco:   ["endereco","endereço","address","end","logradouro"],
 };
 
+// ─── Helpers ──────────────────────────────────────────────────────────────────
 function getSaudacao() { const h = new Date().getHours(); return h < 12 ? "Bom dia" : h < 18 ? "Boa tarde" : "Boa noite"; }
 function getPrimeiroNome(n) { return (n || "").split(" ")[0] || ""; }
 function buildWhatsAppLink(lead) {
   if (!lead.telefone_e164) return null;
   const num = lead.telefone_e164.replace("+", "");
-  const nome = getPrimeiroNome(lead.nome);
-  const msg = encodeURIComponent(`${getSaudacao()}, ${nome}! Tudo bem?\n\nSou corretor(a) e estou entrando em contato sobre seu interesse em imóveis.\nPosso te ajudar com mais informações?`);
+  const msg = encodeURIComponent(`${getSaudacao()}, ${getPrimeiroNome(lead.nome)}! Tudo bem?\n\nSou corretor(a) e estou entrando em contato sobre seu interesse em imóveis.\nPosso te ajudar com mais informações?`);
   return `https://wa.me/${num}?text=${msg}`;
 }
-
 function onlyDigits(s) { return (s || "").replace(/\D/g, ""); }
 function parsePhone(raw) {
   if (!raw) return { e164: "", nacional: "", tipo: "", pais: "", ligar: "", whatsapp: "" };
@@ -50,10 +67,10 @@ function parsePhone(raw) {
   return { e164: "", nacional: d, tipo: "desconhecido", pais: "", ligar: "", whatsapp: "" };
 }
 function classifyBR(d) {
-  if (d.length === 8) return { e164: "+5511" + d, nacional: "(11) " + d.substring(0, 4) + "-" + d.substring(4), tipo: "br_fixo", pais: "BR", ligar: "011" + d, whatsapp: "" };
-  if (d.length === 9 && d[0] === "9") return { e164: "+5511" + d, nacional: "(11) " + d.substring(0, 5) + "-" + d.substring(5), tipo: "br_celular", pais: "BR", ligar: "011" + d, whatsapp: "https://wa.me/5511" + d };
-  if (d.length === 10) { const dd = d.substring(0, 2), n = d.substring(2); return { e164: "+55" + d, nacional: `(${dd}) ${n.substring(0, 4)}-${n.substring(4)}`, tipo: "br_fixo", pais: "BR", ligar: "0" + d, whatsapp: "" }; }
-  if (d.length === 11) { const dd = d.substring(0, 2), n = d.substring(2), cel = n[0] === "9"; return { e164: "+55" + d, nacional: `(${dd}) ${cel ? n.substring(0, 5) + "-" + n.substring(5) : n.substring(0, 4) + "-" + n.substring(4)}`, tipo: cel ? "br_celular" : "br_fixo", pais: "BR", ligar: "0" + d, whatsapp: cel ? "https://wa.me/55" + d : "" }; }
+  if (d.length === 8) return { e164: "+5511"+d, nacional: "(11) "+d.slice(0,4)+"-"+d.slice(4), tipo: "br_fixo", pais: "BR", ligar: "011"+d, whatsapp: "" };
+  if (d.length === 9 && d[0]==="9") return { e164: "+5511"+d, nacional: "(11) "+d.slice(0,5)+"-"+d.slice(5), tipo: "br_celular", pais: "BR", ligar: "011"+d, whatsapp: "https://wa.me/5511"+d };
+  if (d.length === 10) { const dd=d.slice(0,2),n=d.slice(2); return { e164:"+55"+d, nacional:`(${dd}) ${n.slice(0,4)}-${n.slice(4)}`, tipo:"br_fixo", pais:"BR", ligar:"0"+d, whatsapp:"" }; }
+  if (d.length === 11) { const dd=d.slice(0,2),n=d.slice(2),cel=n[0]==="9"; return { e164:"+55"+d, nacional:`(${dd}) ${cel?n.slice(0,5)+"-"+n.slice(5):n.slice(0,4)+"-"+n.slice(4)}`, tipo:cel?"br_celular":"br_fixo", pais:"BR", ligar:"0"+d, whatsapp:cel?"https://wa.me/55"+d:"" }; }
   return { e164: "", nacional: d, tipo: "desconhecido", pais: "", ligar: "", whatsapp: "" };
 }
 function pickBestPhone(r) {
@@ -66,313 +83,699 @@ function pickBestPhone(r) {
   return best || { e164: "", nacional: "", tipo: "", pais: "", ligar: "", whatsapp: "" };
 }
 
+// ─── Cliente Supabase (fetch puro, sem SDK) ───────────────────────────────────
 function createSB(url, key) {
   const hd = (t) => ({ apikey: key, Authorization: "Bearer " + (t || key), "Content-Type": "application/json" });
   return {
-    async signIn(e, p) { const r = await fetch(url + "/auth/v1/token?grant_type=password", { method: "POST", headers: { apikey: key, "Content-Type": "application/json" }, body: JSON.stringify({ email: e, password: p }) }); if (!r.ok) { const x = await r.json(); throw new Error(x.error_description || x.msg || "Erro login"); } return r.json(); },
-    async signUp(e, p) { const r = await fetch(url + "/auth/v1/signup", { method: "POST", headers: { apikey: key, "Content-Type": "application/json" }, body: JSON.stringify({ email: e, password: p }) }); if (!r.ok) { const x = await r.json(); throw new Error(x.error_description || x.msg || "Erro cadastro"); } return r.json(); },
-    // Renova o access_token usando o refresh_token (não expira automaticamente)
-    async refreshToken(refreshTk) { const r = await fetch(url + "/auth/v1/token?grant_type=refresh_token", { method: "POST", headers: { apikey: key, "Content-Type": "application/json" }, body: JSON.stringify({ refresh_token: refreshTk }) }); if (!r.ok) throw new Error("Sessão expirada"); return r.json(); },
-    async query(t, p, tk) { const r = await fetch(url + "/rest/v1/" + t + "?" + (p || ""), { headers: hd(tk) }); if (!r.ok) throw new Error("Erro " + t); return r.json(); },
-    async insert(t, d, tk) { const r = await fetch(url + "/rest/v1/" + t, { method: "POST", headers: { ...hd(tk), Prefer: "return=representation" }, body: JSON.stringify(d) }); if (!r.ok) { const x = await r.json(); throw new Error(x.message || "Erro insert"); } return r.json(); },
-    async rpc(f, a, tk) { const r = await fetch(url + "/rest/v1/rpc/" + f, { method: "POST", headers: hd(tk), body: JSON.stringify(a || {}) }); if (!r.ok) { const x = await r.json(); throw new Error(x.message || "Erro " + f); } return r.json(); },
+    async signIn(e, p)       { const r = await fetch(url+"/auth/v1/token?grant_type=password", { method:"POST", headers:{apikey:key,"Content-Type":"application/json"}, body:JSON.stringify({email:e,password:p}) }); if (!r.ok) { const x=await r.json(); throw new Error(x.error_description||x.msg||"Erro login"); } return r.json(); },
+    async refreshToken(rt)   { const r = await fetch(url+"/auth/v1/token?grant_type=refresh_token", { method:"POST", headers:{apikey:key,"Content-Type":"application/json"}, body:JSON.stringify({refresh_token:rt}) }); if (!r.ok) throw new Error("Sessão expirada"); return r.json(); },
+    async changePassword(tk, nova) { const r = await fetch(url+"/auth/v1/user", { method:"PUT", headers:hd(tk), body:JSON.stringify({password:nova}) }); if (!r.ok) { const x=await r.json(); throw new Error(x.message||"Erro ao trocar senha"); } return r.json(); },
+    async query(t, p, tk)    { const r = await fetch(url+"/rest/v1/"+t+"?"+(p||""), { headers:hd(tk) }); if (!r.ok) throw new Error("Erro "+t); return r.json(); },
+    async patch(t, q, d, tk) { const r = await fetch(url+"/rest/v1/"+t+"?"+q, { method:"PATCH", headers:{...hd(tk),Prefer:"return=representation"}, body:JSON.stringify(d) }); if (!r.ok) { const x=await r.json(); throw new Error(x.message||"Erro patch"); } return r.json(); },
+    async insert(t, d, tk)   { const r = await fetch(url+"/rest/v1/"+t, { method:"POST", headers:{...hd(tk),Prefer:"return=representation"}, body:JSON.stringify(d) }); if (!r.ok) { const x=await r.json(); throw new Error(x.message||"Erro insert"); } return r.json(); },
+    async rpc(f, a, tk)      { const r = await fetch(url+"/rest/v1/rpc/"+f, { method:"POST", headers:hd(tk), body:JSON.stringify(a||{}) }); if (!r.ok) { const x=await r.json(); throw new Error(x.message||"Erro "+f); } return r.json(); },
   };
 }
 
+// ─── CSV helpers ──────────────────────────────────────────────────────────────
 function detectColumns(h) {
-  const m = {}, nr = h.map(x => String(x || "").toLowerCase().trim().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/\s+/g, "_"));
-  for (const [f, al] of Object.entries(COL_ALIASES)) { const i = nr.findIndex(x => al.some(a => x === a || x.includes(a))); if (i >= 0) m[f] = i; }
+  const m={}, nr=h.map(x=>String(x||"").toLowerCase().trim().normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/\s+/g,"_"));
+  for (const [f,al] of Object.entries(COL_ALIASES)) { const i=nr.findIndex(x=>al.some(a=>x===a||x.includes(a))); if (i>=0) m[f]=i; }
   return m;
 }
 function csvToLead(row, cm, forn) {
-  const g = (f) => cm[f] !== undefined ? String(row[cm[f]] || "").trim() : "";
-  const ph = pickBestPhone({ celular: g("celular"), telefone_1: g("telefone_1"), telefone_2: g("telefone_2"), fixo: g("fixo") });
-  return { nome: g("nome"), email: g("email"), endereco: g("endereco"), telefone_origem_1: g("telefone_1") || g("celular") || "", telefone_origem_2: g("telefone_2") || g("fixo") || "", telefone_escolhido: ph.nacional, telefone_e164: ph.e164, tipo_telefone: ph.tipo, pais_telefone: ph.pais, ligar: ph.ligar, whatsapp: ph.whatsapp, fornecedor: forn };
+  const g=(f)=>cm[f]!==undefined?String(row[cm[f]]||"").trim():"";
+  const ph=pickBestPhone({celular:g("celular"),telefone_1:g("telefone_1"),telefone_2:g("telefone_2"),fixo:g("fixo")});
+  return {nome:g("nome"),email:g("email"),endereco:g("endereco"),telefone_origem_1:g("telefone_1")||g("celular")||"",telefone_origem_2:g("telefone_2")||g("fixo")||"",telefone_escolhido:ph.nacional,telefone_e164:ph.e164,tipo_telefone:ph.tipo,pais_telefone:ph.pais,ligar:ph.ligar,whatsapp:ph.whatsapp,fornecedor:forn};
 }
 
+// ─── Componentes base ─────────────────────────────────────────────────────────
 function KPI({ label, value, color = "text-gray-900", sub }) {
   return (<div className="bg-white rounded-xl p-3 shadow-sm border border-gray-100"><div className="text-xs text-gray-500 uppercase tracking-wide">{label}</div><div className={`text-2xl font-bold mt-1 ${color}`}>{value}</div>{sub && <div className="text-xs text-gray-400 mt-1">{sub}</div>}</div>);
 }
-
-// Header atualizado: aceita onHome para botão de voltar à tela inicial
-function Header({ nome, isGestor, onLogout, onHome }) {
+function Stars({ value, onChange }) {
+  return (<div className="flex gap-1 justify-center">{[1,2,3,4,5].map(n=>(<button key={n} className={`text-3xl ${n<=value?"text-amber-400":"text-gray-300"}`} onClick={()=>onChange?.(n)}>{n<=value?"★":"☆"}</button>))}</div>);
+}
+function Header({ nome, isGestor, onLogout, onHome, showVersion }) {
   return (
     <div className="bg-white border-b border-gray-200 px-4 py-3 flex items-center justify-between sticky top-0 z-10">
       <div>
         <span className="font-bold text-gray-900 text-sm">{nome}</span>
         <span className="ml-2 text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full">{isGestor ? "Gestor" : "Corretor"}</span>
+        {showVersion && <span className="ml-2 text-xs text-gray-300">v{APP_VERSION}</span>}
       </div>
       <div className="flex items-center gap-3">
-        {onHome && (
-          <button className="text-xs text-gray-400 hover:text-blue-500 transition-colors" onClick={onHome}>
-            ⌂ Início
-          </button>
-        )}
+        {onHome && <button className="text-xs text-gray-400 hover:text-blue-500 transition-colors" onClick={onHome}>⌂ Início</button>}
         <button className="text-xs text-gray-400 hover:text-red-500 transition-colors" onClick={onLogout}>Sair</button>
       </div>
     </div>
   );
 }
-
 function TabBar({ tabs, active, onChange }) {
-  return (<div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 flex z-20">{tabs.map(t => (<button key={t.id} className={`flex-1 py-3 text-center ${active === t.id ? "text-blue-600 font-medium" : "text-gray-400"}`} onClick={() => onChange(t.id)}><div className="text-lg">{t.icon}</div><div className="text-xs mt-0.5">{t.label}</div></button>))}</div>);
-}
-function Stars({ value, onChange }) {
-  return (<div className="flex gap-1 justify-center">{[1, 2, 3, 4, 5].map(n => (<button key={n} className={`text-3xl ${n <= value ? "text-amber-400" : "text-gray-300"}`} onClick={() => onChange?.(n)}>{n <= value ? "★" : "☆"}</button>))}</div>);
+  return (<div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 flex z-20">{tabs.map(t=>(<button key={t.id} className={`flex-1 py-3 text-center ${active===t.id?"text-blue-600 font-medium":"text-gray-400"}`} onClick={()=>onChange(t.id)}><div className="text-lg">{t.icon}</div><div className="text-xs mt-0.5">{t.label}</div></button>))}</div>);
 }
 
-function LoginScreen({ sb, onLogin }) {
-  const [email, setEmail] = useState(""); const [pass, setPass] = useState(""); const [ld, setLd] = useState(false); const [err, setErr] = useState("");
-  const go = async () => { setLd(true); setErr(""); try { onLogin(await sb.signIn(email, pass)); } catch (e) { setErr(e.message); } setLd(false); };
-  return (<div className="min-h-screen bg-gray-50 flex items-center justify-center p-4"><div className="bg-white rounded-2xl shadow-lg p-6 w-full max-w-sm"><div className="text-center mb-6"><div className="w-16 h-16 bg-blue-600 rounded-2xl flex items-center justify-center mx-auto mb-3"><span className="text-white text-3xl font-bold">F</span></div><h1 className="text-xl font-bold text-gray-900">FECH.AI</h1><p className="text-xs text-gray-400 mt-1">Sistema de Vendas</p></div>{err && <div className="bg-red-50 text-red-700 text-sm rounded-lg p-3 mb-4">{err}</div>}<input className="w-full border border-gray-300 rounded-lg px-3 py-3 mb-3 text-sm" placeholder="Email" type="email" value={email} onChange={e => setEmail(e.target.value)} /><input className="w-full border border-gray-300 rounded-lg px-3 py-3 mb-4 text-sm" placeholder="Senha" type="password" value={pass} onChange={e => setPass(e.target.value)} onKeyDown={e => e.key === "Enter" && go()} /><button className="w-full bg-blue-600 text-white rounded-lg py-3 font-medium disabled:opacity-50" disabled={ld || !email || !pass} onClick={go}>{ld ? "Entrando..." : "Entrar"}</button></div></div>);
-}
+// ─── Tela de troca de senha obrigatória ───────────────────────────────────────
+function TrocarSenhaObrigatoria({ sb, token, corretorId, onConcluido }) {
+  const [nova, setNova]       = useState("");
+  const [conf, setConf]       = useState("");
+  const [ld, setLd]           = useState(false);
+  const [erro, setErro]       = useState("");
 
-function DiscadorTab({ sb, token }) {
-  const [lead, setLead] = useState(null); const [prog, setProg] = useState(null); const [msg, setMsg] = useState("");
-  const [ld, setLd] = useState(true); const [fld, setFld] = useState(false); const [showObs, setShowObs] = useState(false);
-  const [obs, setObs] = useState(""); const [selFb, setSelFb] = useState(null); const [loteDone, setLoteDone] = useState(false);
-  const [showRate, setShowRate] = useState(false); const [rateNote, setRateNote] = useState(0); const [lastListaId, setLastListaId] = useState(null);
-
-  const loadNext = useCallback(async () => {
-    setLd(true); setLoteDone(false);
-    try { const r = await sb.rpc("proximo_lead", {}, token); const l = r.lead ? (typeof r.lead === "string" ? JSON.parse(r.lead) : r.lead) : null; setLead(l); setProg(r.progresso || null); setMsg(r.message || ""); if (l) setLastListaId(l.lista_id); } catch (e) { setMsg(e.message); }
-    setLd(false);
-  }, [sb, token]);
-  useEffect(() => { loadNext(); }, [loadNext]);
-
-  const handleFb = (id) => { setSelFb(id); setShowObs(true); };
-  const submitFb = async () => {
-    setFld(true);
+  const salvar = async () => {
+    setErro("");
+    if (nova.length < 8)        { setErro("Senha deve ter no mínimo 8 caracteres."); return; }
+    if (nova !== conf)           { setErro("As senhas não coincidem."); return; }
+    setLd(true);
     try {
-      const r = await sb.rpc("registrar_feedback", { p_lead_id: lead.id, p_feedback: selFb, p_observacao: obs || "" }, token);
-      if (r.error) throw new Error(r.error);
-      setObs(""); setShowObs(false); setSelFb(null);
-      if (r.lote_fechado) { setLoteDone(true); setShowRate(true); } else { loadNext(); }
-    } catch (e) { setMsg(e.message); setShowObs(false); }
-    setFld(false);
+      // 1. Troca a senha no Supabase Auth
+      await sb.changePassword(token, nova);
+      // 2. Marca must_change_password = false no perfil
+      await sb.patch("corretores", "id=eq."+corretorId, { must_change_password: false }, token);
+      onConcluido();
+    } catch (e) { setErro(e.message); }
+    setLd(false);
   };
-  const submitRate = async () => {
-    if (rateNote > 0 && lastListaId) { try { await sb.rpc("avaliar_lista", { p_lista_id: lastListaId, p_nota: rateNote }, token); } catch (e) { console.error(e); } }
-    setShowRate(false); setRateNote(0); loadNext();
-  };
-
-  if (ld) return <div className="flex items-center justify-center h-64 text-gray-400">Carregando...</div>;
-
-  if (showRate) return (
-    <div className="p-4"><div className="bg-white rounded-2xl shadow-md p-6 border text-center">
-      <div className="text-5xl mb-3">🎉</div><p className="font-bold text-emerald-800 text-lg mb-1">Lote completo!</p>
-      <p className="text-sm text-gray-600 mb-5">Como você avalia a qualidade dessa lista?</p>
-      <div className="mb-5"><Stars value={rateNote} onChange={setRateNote} /></div>
-      <button className="w-full bg-blue-600 text-white rounded-xl py-3 font-medium" onClick={submitRate}>{rateNote > 0 ? "Enviar avaliação" : "Pular"}</button>
-    </div></div>
-  );
-
-  if (!lead && !loteDone) return (
-    <div className="flex flex-col items-center justify-center h-64 px-4"><div className="text-5xl text-gray-300 mb-4">◎</div><p className="text-gray-500 text-center">{msg || "Sem leads no momento."}</p><button className="mt-4 text-blue-600 text-sm font-medium" onClick={loadNext}>Verificar novamente</button></div>
-  );
-
-  if (showObs) return (
-    <div className="p-4"><div className="bg-white rounded-2xl shadow-md p-5 border">
-      <h3 className="font-bold text-gray-900 mb-1">{FEEDBACKS.find(f => f.id === selFb)?.label}</h3>
-      <p className="text-sm text-gray-500 mb-4">{lead?.nome}</p>
-      <textarea className="w-full border border-gray-300 rounded-lg px-3 py-3 text-sm resize-none" rows={3} placeholder="Observação (opcional)" value={obs} onChange={e => setObs(e.target.value)} />
-      <div className="flex gap-3 mt-4"><button className="flex-1 bg-gray-200 text-gray-700 rounded-xl py-3 font-medium" onClick={() => { setShowObs(false); setSelFb(null); setObs(""); }}>Voltar</button><button className="flex-1 bg-blue-600 text-white rounded-xl py-3 font-medium disabled:opacity-50" disabled={fld} onClick={submitFb}>{fld ? "Salvando..." : "Confirmar"}</button></div>
-    </div></div>
-  );
 
   return (
-    <div className="p-4 space-y-4">
-      {prog && (<div><div className="flex justify-between text-xs text-gray-500 mb-1"><span>Lote</span><span className="font-medium">{prog.feitos}/{prog.total}</span></div><div className="w-full bg-gray-200 rounded-full h-3"><div className="bg-blue-600 h-3 rounded-full transition-all" style={{ width: (prog.feitos / prog.total * 100) + "%" }} /></div></div>)}
-      {lead && (<div className="bg-white rounded-2xl shadow-md p-5 border border-gray-100">
-        <h2 className="text-xl font-bold text-gray-900">{lead.nome || "Sem nome"}</h2>
-        {lead.email && <p className="text-sm text-gray-500 mt-1">{lead.email}</p>}
-        {lead.endereco && <p className="text-sm text-gray-400 mt-1">{lead.endereco}</p>}
-        <div className="mt-4 bg-gray-50 rounded-xl p-3"><p className="text-lg font-mono font-bold text-gray-900">{lead.telefone_escolhido || lead.telefone_e164 || "—"}</p><p className="text-xs text-gray-500 mt-1">{lead.tipo_telefone} · {lead.pais_telefone}</p></div>
-        <div className="flex gap-3 mt-4">
-          {lead.ligar && <a href={"tel:" + lead.ligar} className="flex-1 bg-blue-600 text-white rounded-xl py-4 text-center font-bold text-lg no-underline">Ligar</a>}
-          {lead.telefone_e164 && lead.tipo_telefone === "br_celular" && <a href={buildWhatsAppLink(lead)} target="_blank" rel="noopener noreferrer" className="flex-1 bg-emerald-600 text-white rounded-xl py-4 text-center font-bold text-lg no-underline">WhatsApp</a>}
+    <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
+      <div className="bg-white rounded-2xl shadow-lg p-6 w-full max-w-sm">
+        <div className="text-center mb-6">
+          <div className="w-14 h-14 bg-amber-100 rounded-2xl flex items-center justify-center mx-auto mb-3">
+            <span className="text-2xl">🔑</span>
+          </div>
+          <h2 className="text-lg font-bold text-gray-900">Crie sua senha</h2>
+          <p className="text-sm text-gray-500 mt-1">Por segurança, defina uma senha pessoal antes de continuar.</p>
         </div>
-      </div>)}
-      <div><p className="text-xs text-gray-500 uppercase tracking-wide mb-2">Feedback</p><div className="grid grid-cols-2 gap-2">{FEEDBACKS.map(f => (<button key={f.id} className={`${f.color} text-white rounded-xl py-3.5 px-3 text-sm font-medium text-left`} onClick={() => handleFb(f.id)}><span className="mr-1">{f.icon}</span> {f.label}</button>))}</div></div>
+        {erro && <div className="bg-red-50 text-red-700 text-sm rounded-xl p-3 mb-4">{erro}</div>}
+        <input
+          type="password" placeholder="Nova senha (mín. 8 caracteres)"
+          value={nova} onChange={e=>setNova(e.target.value)}
+          className="w-full border border-gray-300 rounded-xl px-4 py-3 mb-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+        />
+        <input
+          type="password" placeholder="Confirmar senha"
+          value={conf} onChange={e=>setConf(e.target.value)}
+          onKeyDown={e=>e.key==="Enter"&&salvar()}
+          className="w-full border border-gray-300 rounded-xl px-4 py-3 mb-5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+        />
+        <button
+          onClick={salvar} disabled={ld||!nova||!conf}
+          className="w-full bg-blue-600 text-white rounded-xl py-3 font-semibold disabled:opacity-50"
+        >
+          {ld ? "Salvando..." : "Definir senha e entrar"}
+        </button>
+      </div>
     </div>
   );
 }
 
+// ─── Modal de edição de lead (carteira / histórico) ───────────────────────────
+function LeadModal({ lead, sb, token, onSalvo, onFechar }) {
+  const [fb, setFb]   = useState(lead.feedback || "");
+  const [obs, setObs] = useState(lead.observacao || "");
+  const [ld, setLd]   = useState(false);
+  const [erro, setErro] = useState("");
+
+  const salvar = async () => {
+    if (!fb) { setErro("Selecione um feedback."); return; }
+    setLd(true); setErro("");
+    try {
+      const r = await sb.rpc("atualizar_feedback", { p_lead_id: lead.id, p_feedback: fb, p_observacao: obs }, token);
+      if (r.error) throw new Error(r.error);
+      onSalvo({ ...lead, feedback: fb, observacao: obs });
+    } catch (e) { setErro(e.message); }
+    setLd(false);
+  };
+
+  const e164 = lead.telefone_e164 || "";
+  const wppLink = e164 ? buildWhatsAppLink({ ...lead, telefone_e164: e164 }) : null;
+
+  return (
+    <div className="fixed inset-0 bg-black/40 z-50 flex items-end" onClick={onFechar}>
+      <div className="bg-white rounded-t-2xl w-full max-h-[90vh] overflow-y-auto p-5 pb-8"
+           onClick={e=>e.stopPropagation()}>
+
+        {/* Header do modal */}
+        <div className="flex items-start justify-between mb-4">
+          <div>
+            <h3 className="font-bold text-gray-900 text-lg">{lead.nome || "Sem nome"}</h3>
+            {lead.email && <p className="text-xs text-gray-500 mt-0.5">{lead.email}</p>}
+          </div>
+          <button onClick={onFechar} className="text-gray-400 text-xl leading-none">✕</button>
+        </div>
+
+        {/* Telefone + ações */}
+        <div className="bg-gray-50 rounded-xl p-3 mb-4">
+          <p className="font-mono font-bold text-gray-900">{lead.telefone || lead.telefone_escolhido || "—"}</p>
+          <div className="flex gap-2 mt-2">
+            {(lead.telefone||lead.ligar) && (
+              <a href={"tel:"+(lead.ligar||lead.telefone)} className="flex-1 bg-blue-600 text-white rounded-xl py-2.5 text-center text-sm font-medium no-underline">Ligar</a>
+            )}
+            {wppLink && (
+              <a href={wppLink} target="_blank" rel="noopener noreferrer" className="flex-1 bg-emerald-600 text-white rounded-xl py-2.5 text-center text-sm font-medium no-underline">WhatsApp</a>
+            )}
+          </div>
+        </div>
+
+        {/* Seleção de feedback */}
+        <p className="text-xs text-gray-500 uppercase tracking-wide mb-2">Atualizar feedback</p>
+        <div className="grid grid-cols-2 gap-2 mb-4">
+          {FEEDBACKS.map(f => (
+            <button key={f.id}
+              onClick={() => setFb(f.id)}
+              className={`rounded-xl py-3 px-3 text-sm font-medium text-left transition-all border-2 ${
+                fb === f.id
+                  ? f.color + " text-white border-transparent"
+                  : "bg-gray-50 text-gray-700 border-transparent"
+              }`}
+            >
+              <span className="mr-1">{f.icon}</span> {f.label}
+            </button>
+          ))}
+        </div>
+
+        {/* Observação */}
+        <p className="text-xs text-gray-500 uppercase tracking-wide mb-2">Observação</p>
+        <textarea
+          rows={3} placeholder="Anotação sobre este contato..."
+          value={obs} onChange={e=>setObs(e.target.value)}
+          className="w-full border border-gray-300 rounded-xl px-3 py-3 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-blue-500 mb-4"
+        />
+
+        {erro && <div className="bg-red-50 text-red-700 text-sm rounded-xl p-3 mb-3">{erro}</div>}
+
+        <div className="flex gap-3">
+          <button onClick={onFechar} className="flex-1 bg-gray-100 text-gray-700 rounded-xl py-3 font-medium">Cancelar</button>
+          <button onClick={salvar} disabled={ld} className="flex-1 bg-blue-600 text-white rounded-xl py-3 font-semibold disabled:opacity-50">
+            {ld ? "Salvando..." : "Salvar"}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── Discador ─────────────────────────────────────────────────────────────────
+function DiscadorTab({ sb, token }) {
+  const [lead, setLead]         = useState(null);
+  const [prog, setProg]         = useState(null);
+  const [msg, setMsg]           = useState("");
+  const [ld, setLd]             = useState(true);
+  const [fld, setFld]           = useState(false);
+  const [showObs, setShowObs]   = useState(false);
+  const [obs, setObs]           = useState("");
+  const [selFb, setSelFb]       = useState(null);
+  const [loteDone, setLoteDone] = useState(false);
+  const [showRate, setShowRate] = useState(false);
+  const [rateNote, setRateNote] = useState(0);
+  const [lastListaId, setLastListaId] = useState(null);
+
+  const loadNext = useCallback(async () => {
+    setLd(true); setLoteDone(false);
+    try {
+      const r = await sb.rpc("proximo_lead", {}, token);
+      const l = r.lead ? (typeof r.lead==="string" ? JSON.parse(r.lead) : r.lead) : null;
+      setLead(l); setProg(r.progresso||null); setMsg(r.message||"");
+      if (l) setLastListaId(l.lista_id);
+    } catch(e) { setMsg(e.message); }
+    setLd(false);
+  }, [sb, token]);
+
+  useEffect(() => { loadNext(); }, [loadNext]);
+
+  const handleFb  = (id) => { setSelFb(id); setShowObs(true); };
+  const submitFb  = async () => {
+    setFld(true);
+    try {
+      const r = await sb.rpc("registrar_feedback", { p_lead_id: lead.id, p_feedback: selFb, p_observacao: obs||"" }, token);
+      if (r.error) throw new Error(r.error);
+      setObs(""); setShowObs(false); setSelFb(null);
+      if (r.lote_fechado) { setLoteDone(true); setShowRate(true); } else { loadNext(); }
+    } catch(e) { setMsg(e.message); setShowObs(false); }
+    setFld(false);
+  };
+  const submitRate = async () => {
+    if (rateNote>0 && lastListaId) { try { await sb.rpc("avaliar_lista",{p_lista_id:lastListaId,p_nota:rateNote},token); } catch(e){} }
+    setShowRate(false); setRateNote(0); loadNext();
+  };
+
+  if (ld) return <div className="flex items-center justify-center h-64 text-gray-400">Carregando...</div>;
+  if (showRate) return (
+    <div className="p-4"><div className="bg-white rounded-2xl shadow-md p-6 border text-center">
+      <div className="text-5xl mb-3">🎉</div>
+      <p className="font-bold text-emerald-800 text-lg mb-1">Lote completo!</p>
+      <p className="text-sm text-gray-600 mb-5">Como você avalia a qualidade dessa lista?</p>
+      <div className="mb-5"><Stars value={rateNote} onChange={setRateNote} /></div>
+      <button className="w-full bg-blue-600 text-white rounded-xl py-3 font-medium" onClick={submitRate}>{rateNote>0?"Enviar avaliação":"Pular"}</button>
+    </div></div>
+  );
+  if (!lead && !loteDone) return (
+    <div className="flex flex-col items-center justify-center h-64 px-4">
+      <div className="text-5xl text-gray-300 mb-4">◎</div>
+      <p className="text-gray-500 text-center">{msg||"Sem leads no momento."}</p>
+      <button className="mt-4 text-blue-600 text-sm font-medium" onClick={loadNext}>Verificar novamente</button>
+    </div>
+  );
+  if (showObs) return (
+    <div className="p-4"><div className="bg-white rounded-2xl shadow-md p-5 border">
+      <h3 className="font-bold text-gray-900 mb-1">{FEEDBACKS.find(f=>f.id===selFb)?.label}</h3>
+      <p className="text-sm text-gray-500 mb-4">{lead?.nome}</p>
+      <textarea className="w-full border border-gray-300 rounded-lg px-3 py-3 text-sm resize-none" rows={3} placeholder="Observação (opcional)" value={obs} onChange={e=>setObs(e.target.value)} />
+      <div className="flex gap-3 mt-4">
+        <button className="flex-1 bg-gray-200 text-gray-700 rounded-xl py-3 font-medium" onClick={()=>{setShowObs(false);setSelFb(null);setObs("");}}>Voltar</button>
+        <button className="flex-1 bg-blue-600 text-white rounded-xl py-3 font-medium disabled:opacity-50" disabled={fld} onClick={submitFb}>{fld?"Salvando...":"Confirmar"}</button>
+      </div>
+    </div></div>
+  );
+  return (
+    <div className="p-4 space-y-4">
+      {prog && (<div>
+        <div className="flex justify-between text-xs text-gray-500 mb-1"><span>Lote</span><span className="font-medium">{prog.feitos}/{prog.total}</span></div>
+        <div className="w-full bg-gray-200 rounded-full h-3"><div className="bg-blue-600 h-3 rounded-full transition-all" style={{width:(prog.feitos/prog.total*100)+"%"}}/></div>
+      </div>)}
+      {lead && (<div className="bg-white rounded-2xl shadow-md p-5 border border-gray-100">
+        <h2 className="text-xl font-bold text-gray-900">{lead.nome||"Sem nome"}</h2>
+        {lead.email && <p className="text-sm text-gray-500 mt-1">{lead.email}</p>}
+        {lead.endereco && <p className="text-sm text-gray-400 mt-1">{lead.endereco}</p>}
+        <div className="mt-4 bg-gray-50 rounded-xl p-3">
+          <p className="text-lg font-mono font-bold text-gray-900">{lead.telefone_escolhido||lead.telefone_e164||"—"}</p>
+          <p className="text-xs text-gray-500 mt-1">{lead.tipo_telefone} · {lead.pais_telefone}</p>
+        </div>
+        <div className="flex gap-3 mt-4">
+          {lead.ligar && <a href={"tel:"+lead.ligar} className="flex-1 bg-blue-600 text-white rounded-xl py-4 text-center font-bold text-lg no-underline">Ligar</a>}
+          {lead.telefone_e164 && lead.tipo_telefone==="br_celular" && <a href={buildWhatsAppLink(lead)} target="_blank" rel="noopener noreferrer" className="flex-1 bg-emerald-600 text-white rounded-xl py-4 text-center font-bold text-lg no-underline">WhatsApp</a>}
+        </div>
+      </div>)}
+      <div>
+        <p className="text-xs text-gray-500 uppercase tracking-wide mb-2">Feedback</p>
+        <div className="grid grid-cols-2 gap-2">
+          {FEEDBACKS.map(f=>(<button key={f.id} className={`${f.color} text-white rounded-xl py-3.5 px-3 text-sm font-medium text-left`} onClick={()=>handleFb(f.id)}><span className="mr-1">{f.icon}</span>{f.label}</button>))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── Produção ─────────────────────────────────────────────────────────────────
 function ProducaoTab({ sb, token }) {
-  const [data, setData] = useState(null); const [ld, setLd] = useState(true);
-  useEffect(() => { (async () => { try { setData(await sb.rpc("minha_producao", {}, token)); } catch (e) { console.error(e); } setLd(false); })(); }, []);
+  const [data, setData]     = useState(null);
+  const [ld, setLd]         = useState(true);
+  const [leadEdit, setLeadEdit] = useState(null); // lead aberto no modal
+
+  const load = async () => {
+    setLd(true);
+    try { setData(await sb.rpc("minha_producao", {}, token)); } catch(e) {}
+    setLd(false);
+  };
+  useEffect(() => { load(); }, []);
+
   if (ld) return <div className="p-4 text-center text-gray-400">Carregando...</div>;
-  if (!data || data.error) return <div className="p-4 text-center text-red-500">Erro ao carregar</div>;
-  const hoje = data.hoje || {}; const semana = data.semana || []; const totais = data.totais || {};
-  const chartData = semana.map(d => ({ dia: new Date(d.dia).toLocaleDateString("pt-BR", { weekday: "short" }), total: d.total, visitas: d.visitas }));
+  if (!data||data.error) return <div className="p-4 text-center text-red-500">Erro ao carregar</div>;
+
+  const hoje=data.hoje||{}, semana=data.semana||[], totais=data.totais||{};
+  const chartData=semana.map(d=>({dia:new Date(d.dia).toLocaleDateString("pt-BR",{weekday:"short"}),total:d.total,visitas:d.visitas}));
+
   return (
     <div className="p-4 space-y-4">
       <h2 className="text-lg font-bold text-gray-900">Minha produção</h2>
       <div className="grid grid-cols-3 gap-2">
-        <KPI label="Hoje" value={hoje.total || 0} />
-        <KPI label="Visitas" value={hoje.visitas || 0} color="text-emerald-600" />
-        <KPI label="Errados" value={hoje.errados || 0} color="text-red-500" />
+        <KPI label="Hoje"      value={hoje.total||0} />
+        <KPI label="Visitas"   value={hoje.visitas||0} color="text-emerald-600" />
+        <KPI label="Errados"   value={hoje.errados||0} color="text-red-500" />
       </div>
       <div className="grid grid-cols-3 gap-2">
-        <KPI label="Recebidos" value={totais.total_recebidos || 0} />
-        <KPI label="Com feedback" value={totais.com_feedback || 0} />
-        <KPI label="Carteira" value={totais.em_carteira || 0} color="text-blue-600" />
+        <KPI label="Recebidos"     value={totais.total_recebidos||0} />
+        <KPI label="Com feedback"  value={totais.com_feedback||0} />
+        <KPI label="Carteira"      value={totais.em_carteira||0} color="text-blue-600" />
       </div>
       {chartData.length > 0 && (
         <div className="bg-white rounded-xl p-4 border border-gray-100 shadow-sm">
           <p className="text-xs text-gray-500 uppercase mb-2">Últimos 7 dias</p>
           <ResponsiveContainer width="100%" height={160}>
-            <BarChart data={chartData}><XAxis dataKey="dia" tick={{ fontSize: 11 }} /><YAxis tick={{ fontSize: 11 }} width={28} /><Tooltip /><Bar dataKey="total" fill="#3b82f6" radius={[4, 4, 0, 0]} /><Bar dataKey="visitas" fill="#10b981" radius={[4, 4, 0, 0]} /></BarChart>
+            <BarChart data={chartData}><XAxis dataKey="dia" tick={{fontSize:11}}/><YAxis tick={{fontSize:11}} width={28}/><Tooltip/><Bar dataKey="total" fill="#3b82f6" radius={[4,4,0,0]}/><Bar dataKey="visitas" fill="#10b981" radius={[4,4,0,0]}/></BarChart>
           </ResponsiveContainer>
         </div>
       )}
       {data.com_observacao?.length > 0 && (
-        <div><p className="text-sm font-bold text-gray-700 mb-2">Com observação</p><div className="space-y-2">{data.com_observacao.slice(0, 10).map((l, i) => (
-          <div key={i} className="bg-white rounded-xl p-3 border border-gray-100 shadow-sm">
-            <div className="flex justify-between"><span className="font-medium text-sm text-gray-900">{l.nome}</span><span className="text-xs text-gray-400">{l.feedback}</span></div>
-            <p className="text-xs text-gray-600 mt-1">{l.observacao}</p>
+        <div>
+          <p className="text-sm font-bold text-gray-700 mb-2">Com observação <span className="text-xs font-normal text-gray-400">(toque para editar)</span></p>
+          <div className="space-y-2">
+            {data.com_observacao.slice(0,10).map((l,i) => (
+              <div key={i}
+                className="bg-white rounded-xl p-3 border border-gray-100 shadow-sm cursor-pointer active:scale-98 hover:border-blue-200 transition-all"
+                onClick={() => setLeadEdit(l)}
+              >
+                <div className="flex justify-between items-start">
+                  <span className="font-medium text-sm text-gray-900">{l.nome}</span>
+                  <span className="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full">{FEEDBACKS.find(f=>f.id===l.feedback)?.label||l.feedback}</span>
+                </div>
+                <p className="text-xs text-gray-600 mt-1">{l.observacao}</p>
+                <p className="text-xs text-gray-400 mt-1">Toque para atualizar ›</p>
+              </div>
+            ))}
           </div>
-        ))}</div></div>
+        </div>
+      )}
+
+      {/* Modal de edição */}
+      {leadEdit && (
+        <LeadModal
+          lead={leadEdit}
+          sb={sb} token={token}
+          onSalvo={() => { setLeadEdit(null); load(); }}
+          onFechar={() => setLeadEdit(null)}
+        />
       )}
     </div>
   );
 }
 
+// ─── Carteira ─────────────────────────────────────────────────────────────────
 function CarteiraTab({ sb, token }) {
-  const [data, setData] = useState(null); const [ld, setLd] = useState(true);
-  useEffect(() => { (async () => { try { setData(await sb.rpc("minha_producao", {}, token)); } catch (e) { console.error(e); } setLd(false); })(); }, []);
+  const [data, setData]         = useState(null);
+  const [ld, setLd]             = useState(true);
+  const [leadEdit, setLeadEdit] = useState(null);
+
+  const load = async () => {
+    setLd(true);
+    try { setData(await sb.rpc("minha_producao", {}, token)); } catch(e) {}
+    setLd(false);
+  };
+  useEffect(() => { load(); }, []);
+
   if (ld) return <div className="p-4 text-center text-gray-400">Carregando...</div>;
   const cart = data?.carteira || [];
+
   return (
     <div className="p-4 space-y-4">
-      <h2 className="text-lg font-bold text-gray-900">Minha carteira <span className="text-sm font-normal text-gray-500">({cart.length})</span></h2>
-      {cart.length === 0 && <p className="text-sm text-gray-500">Nenhum lead em carteira ainda. Leads com feedback "agendou visita", "enviou info" ou "retornar depois" entram aqui automaticamente.</p>}
-      <div className="space-y-2">{cart.map((l, i) => {
-        const leadForWpp = { ...l, telefone_e164: (l.telefone || "").replace(/\D/g, "").length === 11 ? "+55" + (l.telefone || "").replace(/\D/g, "") : "" };
-        return (
-          <div key={i} className="bg-white rounded-xl p-3 border border-gray-100 shadow-sm">
-            <div className="flex justify-between items-start"><div><p className="font-medium text-sm text-gray-900">{l.nome}</p><p className="text-xs text-gray-500 mt-0.5">{l.telefone} · {l.feedback}</p></div>
-              <div className="flex gap-1">
-                {l.telefone && <a href={"tel:" + l.telefone} className="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded-lg no-underline">Ligar</a>}
-                {l.whatsapp && <a href={buildWhatsAppLink(leadForWpp)} target="_blank" rel="noopener noreferrer" className="text-xs bg-emerald-100 text-emerald-700 px-2 py-1 rounded-lg no-underline">Zap</a>}
+      <h2 className="text-lg font-bold text-gray-900">
+        Minha carteira <span className="text-sm font-normal text-gray-500">({cart.length})</span>
+      </h2>
+      {cart.length === 0 && (
+        <p className="text-sm text-gray-500">Nenhum lead em carteira ainda. Leads com "agendou visita", "enviou info" ou "retornar depois" entram aqui automaticamente.</p>
+      )}
+      <p className="text-xs text-gray-400">Toque em um lead para ligar, enviar WhatsApp ou atualizar o feedback.</p>
+      <div className="space-y-2">
+        {cart.map((l, i) => {
+          const e164 = (l.telefone||"").replace(/\D/g,"").length===11 ? "+55"+(l.telefone||"").replace(/\D/g,"") : (l.telefone_e164||"");
+          const leadWpp = { ...l, telefone_e164: e164 };
+          const fbInfo  = FEEDBACKS.find(f => f.id === l.feedback);
+          return (
+            <div key={i}
+              className="bg-white rounded-xl p-3 border border-gray-100 shadow-sm cursor-pointer hover:border-blue-200 transition-all"
+              onClick={() => setLeadEdit({ ...l, telefone_e164: e164 })}
+            >
+              <div className="flex justify-between items-start">
+                <div>
+                  <p className="font-medium text-sm text-gray-900">{l.nome}</p>
+                  <p className="text-xs text-gray-500 mt-0.5">{l.telefone}</p>
+                </div>
+                <div className="flex items-center gap-2">
+                  {fbInfo && <span className={`text-xs text-white px-2 py-0.5 rounded-full ${fbInfo.color}`}>{fbInfo.label}</span>}
+                  {/* Ações rápidas — stopPropagation para não abrir o modal */}
+                  <div className="flex gap-1" onClick={e=>e.stopPropagation()}>
+                    {l.telefone && <a href={"tel:"+l.telefone} className="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded-lg no-underline">Ligar</a>}
+                    {e164 && <a href={buildWhatsAppLink(leadWpp)} target="_blank" rel="noopener noreferrer" className="text-xs bg-emerald-100 text-emerald-700 px-2 py-1 rounded-lg no-underline">Zap</a>}
+                  </div>
+                </div>
               </div>
+              {l.observacao && <p className="text-xs text-gray-600 mt-2 bg-gray-50 rounded p-2">{l.observacao}</p>}
             </div>
-            {l.observacao && <p className="text-xs text-gray-600 mt-2 bg-gray-50 rounded p-2">{l.observacao}</p>}
-          </div>
-        );
-      })}</div>
+          );
+        })}
+      </div>
+
+      {leadEdit && (
+        <LeadModal
+          lead={leadEdit}
+          sb={sb} token={token}
+          onSalvo={() => { setLeadEdit(null); load(); }}
+          onFechar={() => setLeadEdit(null)}
+        />
+      )}
     </div>
   );
 }
 
-function UploadTab({ sb, token }) {
-  const [file, setFile] = useState(null); const [forn, setForn] = useState(""); const [preview, setPreview] = useState(null);
-  const [colMap, setColMap] = useState(null); const [importing, setImporting] = useState(false); const [result, setResult] = useState(null);
-  const fileRef = useRef();
-  const handleFile = (f) => { if (!f) return; setFile(f); setResult(null); Papa.parse(f, { header: false, skipEmptyLines: true, complete: (res) => { if (res.data.length < 2) return; if (res.data.length > 5001) { setResult({ error: "Arquivo muito grande (máx 5000 leads)" }); return; } const det = detectColumns(res.data[0]); setColMap(det); setPreview({ headers: res.data[0], rows: res.data.slice(1), detected: det }); } }); };
-  const handleImport = async () => {
-    if (!preview || !forn || !colMap) return; setImporting(true); setResult(null);
+// ─── Histórico (navegação em leads já atendidos) ───────────────────────────────
+function HistoricoTab({ sb, token }) {
+  const [leads, setLeads]       = useState([]);
+  const [total, setTotal]       = useState(0);
+  const [ld, setLd]             = useState(true);
+  const [pagina, setPagina]     = useState(0);
+  const [leadEdit, setLeadEdit] = useState(null);
+  const [busca, setBusca]       = useState("");
+  const POR_PAG = 20;
+
+  const load = async (p = 0) => {
+    setLd(true);
     try {
-      const lr = await sb.insert("listas", { nome_fornecedor: forn, nome_arquivo: file.name }, token); const lid = lr[0].id;
-      const leads = preview.rows.map(r => csvToLead(r, colMap, forn)); const B = 100; let tot = { validos: 0, invalidos: 0, duplicados: 0 };
-      // Gera UUID único por sessão de importação — garante 1 log por importação, não por batch
+      const r = await sb.rpc("meu_historico", { p_limit: POR_PAG, p_offset: p * POR_PAG }, token);
+      setLeads(r.leads || []);
+      setTotal(r.total || 0);
+      setPagina(p);
+    } catch(e) {}
+    setLd(false);
+  };
+  useEffect(() => { load(0); }, []);
+
+  const filtrados = busca.trim()
+    ? leads.filter(l => [l.nome, l.email, l.telefone].join(" ").toLowerCase().includes(busca.toLowerCase()))
+    : leads;
+
+  return (
+    <div className="p-4 space-y-4">
+      <div className="flex items-center justify-between">
+        <h2 className="text-lg font-bold text-gray-900">Histórico</h2>
+        <span className="text-xs text-gray-400">{total} leads atendidos</span>
+      </div>
+
+      {/* Busca */}
+      <input
+        type="text" placeholder="Buscar por nome, email ou telefone..."
+        value={busca} onChange={e=>setBusca(e.target.value)}
+        className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+      />
+
+      {ld ? (
+        <div className="text-center text-gray-400 py-8">Carregando...</div>
+      ) : filtrados.length === 0 ? (
+        <div className="text-center text-gray-400 py-8">
+          {busca ? "Nenhum resultado para esta busca." : "Nenhum lead atendido ainda."}
+        </div>
+      ) : (
+        <div className="space-y-2">
+          {filtrados.map((l, i) => {
+            const fbInfo = FEEDBACKS.find(f => f.id === l.feedback);
+            return (
+              <div key={i}
+                className="bg-white rounded-xl p-3 border border-gray-100 shadow-sm cursor-pointer hover:border-blue-200 transition-all"
+                onClick={() => setLeadEdit(l)}
+              >
+                <div className="flex justify-between items-start">
+                  <div>
+                    <p className="font-medium text-sm text-gray-900">{l.nome||"—"}</p>
+                    <p className="text-xs text-gray-500 mt-0.5">{l.telefone||"—"}</p>
+                  </div>
+                  <div className="text-right">
+                    {fbInfo && <span className={`text-xs text-white px-2 py-0.5 rounded-full ${fbInfo.color}`}>{fbInfo.label}</span>}
+                    {l.data_feedback && <p className="text-xs text-gray-400 mt-1">{new Date(l.data_feedback).toLocaleDateString("pt-BR")}</p>}
+                  </div>
+                </div>
+                {l.observacao && <p className="text-xs text-gray-600 mt-1.5 bg-gray-50 rounded p-2 line-clamp-2">{l.observacao}</p>}
+              </div>
+            );
+          })}
+        </div>
+      )}
+
+      {/* Paginação */}
+      {!busca && total > POR_PAG && (
+        <div className="flex justify-between items-center pt-2">
+          <button disabled={pagina===0} onClick={()=>load(pagina-1)} className="text-sm text-blue-600 disabled:text-gray-300">← Anterior</button>
+          <span className="text-xs text-gray-400">{pagina*POR_PAG+1}–{Math.min((pagina+1)*POR_PAG,total)} de {total}</span>
+          <button disabled={(pagina+1)*POR_PAG>=total} onClick={()=>load(pagina+1)} className="text-sm text-blue-600 disabled:text-gray-300">Próximo →</button>
+        </div>
+      )}
+
+      {leadEdit && (
+        <LeadModal
+          lead={leadEdit}
+          sb={sb} token={token}
+          onSalvo={(atualizado) => { setLeadEdit(null); setLeads(prev => prev.map(l => l.id===atualizado.id ? {...l,...atualizado} : l)); }}
+          onFechar={() => setLeadEdit(null)}
+        />
+      )}
+    </div>
+  );
+}
+
+// ─── Upload ───────────────────────────────────────────────────────────────────
+function UploadTab({ sb, token }) {
+  const [file, setFile]         = useState(null);
+  const [forn, setForn]         = useState("");
+  const [preview, setPreview]   = useState(null);
+  const [colMap, setColMap]     = useState(null);
+  const [importing, setImporting] = useState(false);
+  const [result, setResult]     = useState(null);
+  const fileRef = useRef();
+
+  const handleFile = (f) => {
+    if (!f) return;
+    setFile(f); setResult(null);
+    Papa.parse(f, { header:false, skipEmptyLines:true, complete:(res) => {
+      if (res.data.length < 2) return;
+      if (res.data.length > 5001) { setResult({ error:"Arquivo muito grande (máx 5000 leads)" }); return; }
+      const det = detectColumns(res.data[0]);
+      setColMap(det);
+      setPreview({ headers:res.data[0], rows:res.data.slice(1), detected:det });
+    }});
+  };
+
+  const handleImport = async () => {
+    if (!preview||!forn||!colMap) return;
+    setImporting(true); setResult(null);
+    try {
+      const lr  = await sb.insert("listas", { nome_fornecedor:forn, nome_arquivo:file.name }, token);
+      const lid = lr[0].id;
+      const leads = preview.rows.map(r => csvToLead(r, colMap, forn));
+      const B = 100;
+      let tot = { validos:0, invalidos:0, duplicados:0 };
       const sessaoId = crypto.randomUUID();
-      for (let i = 0; i < leads.length; i += B) {
-        const r = await sb.rpc("importar_leads_batch", {
-          p_lista_id: lid,
-          p_leads: leads.slice(i, i + B),
-          p_sessao_id: sessaoId,
-        }, token);
-        tot.validos += (r.validos || 0); tot.invalidos += (r.invalidos || 0); tot.duplicados += (r.duplicados || 0);
+      for (let i=0; i<leads.length; i+=B) {
+        const r = await sb.rpc("importar_leads_batch", { p_lista_id:lid, p_leads:leads.slice(i,i+B), p_sessao_id:sessaoId }, token);
+        tot.validos += r.validos||0; tot.invalidos += r.invalidos||0; tot.duplicados += r.duplicados||0;
       }
       setResult(tot); setPreview(null); setFile(null); setForn("");
-    } catch (e) { setResult({ error: e.message }); } setImporting(false);
+    } catch(e) { setResult({ error:e.message }); }
+    setImporting(false);
   };
-  const det = colMap ? Object.entries(colMap).map(([k, v]) => `${k}:col${v + 1}`).join(" · ") : "";
+
+  const det = colMap ? Object.entries(colMap).map(([k,v])=>`${k}:col${v+1}`).join(" · ") : "";
   return (
     <div className="p-4 space-y-4">
       <h2 className="text-lg font-bold text-gray-900">Upload de lista</h2>
-      {!preview ? (<div><input className="w-full border border-gray-300 rounded-lg px-3 py-3 mb-3 text-sm" placeholder="Nome do fornecedor (ex: Meta Ads)" value={forn} onChange={e => setForn(e.target.value)} />
-        <div className="border-2 border-dashed border-gray-300 rounded-xl p-8 text-center cursor-pointer hover:border-blue-400" onClick={() => fileRef.current?.click()}><div className="text-4xl text-gray-300 mb-2">↑</div><p className="text-sm text-gray-500">Toque para selecionar CSV</p><p className="text-xs text-gray-400 mt-1">Máx 5.000 leads</p></div>
-        <input ref={fileRef} type="file" accept=".csv,.txt,.tsv" className="hidden" onChange={e => handleFile(e.target.files[0])} /></div>
-      ) : (<div>
-        <div className="bg-blue-50 rounded-lg p-3 mb-3"><p className="text-sm font-medium text-blue-900">{file?.name} · {preview.rows.length} leads</p>{det && <p className="text-xs text-blue-600 mt-1">{det}</p>}</div>
-        <div className="bg-gray-50 rounded-lg p-3 mb-3">{preview.rows.slice(0, 3).map((r, i) => { const l = csvToLead(r, colMap, forn); return <div key={i} className="bg-white rounded p-2 mb-1 text-xs border">{l.nome || "—"} | {l.telefone_escolhido || "sem tel"} | {l.tipo_telefone}{l.whatsapp ? " | WA✓" : ""}</div>; })}</div>
-        {!forn && <input className="w-full border rounded-lg px-3 py-3 mb-3 text-sm" placeholder="Nome do fornecedor" value={forn} onChange={e => setForn(e.target.value)} />}
-        <div className="flex gap-2"><button className="flex-1 bg-gray-200 text-gray-700 rounded-lg py-3 font-medium" onClick={() => { setPreview(null); setFile(null); }}>Cancelar</button><button className="flex-1 bg-blue-600 text-white rounded-lg py-3 font-medium disabled:opacity-50" disabled={importing || !forn} onClick={handleImport}>{importing ? "Importando..." : "Importar"}</button></div>
-      </div>)}
+      {!preview ? (
+        <div>
+          <input className="w-full border border-gray-300 rounded-lg px-3 py-3 mb-3 text-sm" placeholder="Nome do fornecedor (ex: Meta Ads)" value={forn} onChange={e=>setForn(e.target.value)} />
+          <div className="border-2 border-dashed border-gray-300 rounded-xl p-8 text-center cursor-pointer hover:border-blue-400" onClick={()=>fileRef.current?.click()}>
+            <div className="text-4xl text-gray-300 mb-2">↑</div>
+            <p className="text-sm text-gray-500">Toque para selecionar CSV</p>
+            <p className="text-xs text-gray-400 mt-1">Máx 5.000 leads</p>
+          </div>
+          <input ref={fileRef} type="file" accept=".csv,.txt,.tsv" className="hidden" onChange={e=>handleFile(e.target.files[0])} />
+        </div>
+      ) : (
+        <div>
+          <div className="bg-blue-50 rounded-lg p-3 mb-3"><p className="text-sm font-medium text-blue-900">{file?.name} · {preview.rows.length} leads</p>{det && <p className="text-xs text-blue-600 mt-1">{det}</p>}</div>
+          <div className="bg-gray-50 rounded-lg p-3 mb-3">
+            {preview.rows.slice(0,3).map((r,i)=>{ const l=csvToLead(r,colMap,forn); return <div key={i} className="bg-white rounded p-2 mb-1 text-xs border">{l.nome||"—"} | {l.telefone_escolhido||"sem tel"} | {l.tipo_telefone}{l.whatsapp?" | WA✓":""}</div>; })}
+          </div>
+          {!forn && <input className="w-full border rounded-lg px-3 py-3 mb-3 text-sm" placeholder="Nome do fornecedor" value={forn} onChange={e=>setForn(e.target.value)} />}
+          <div className="flex gap-2">
+            <button className="flex-1 bg-gray-200 text-gray-700 rounded-lg py-3 font-medium" onClick={()=>{setPreview(null);setFile(null);}}>Cancelar</button>
+            <button className="flex-1 bg-blue-600 text-white rounded-lg py-3 font-medium disabled:opacity-50" disabled={importing||!forn} onClick={handleImport}>{importing?"Importando...":"Importar"}</button>
+          </div>
+        </div>
+      )}
       {result && !result.error && <div className="bg-emerald-50 rounded-xl p-4 border border-emerald-200"><p className="font-bold text-emerald-800">Concluído</p><p className="text-sm text-emerald-700 mt-1">{result.validos} válidos · {result.invalidos} inválidos · {result.duplicados} duplicados</p></div>}
       {result?.error && <div className="bg-red-50 rounded-xl p-4 text-red-700 text-sm">{result.error}</div>}
     </div>
   );
 }
 
+// ─── Distribuir ───────────────────────────────────────────────────────────────
 function DistribuirTab({ sb, token }) {
-  const [ld, setLd] = useState(false); const [result, setResult] = useState(null); const [st, setSt] = useState(null);
-  const load = async () => { try { const d = await sb.query("leads", "status=eq.disponivel&select=id", token); const a = await sb.query("lotes", "status=eq.aberto&select=id", token); const c = await sb.query("corretores", "ativo=eq.true&select=id", token); setSt({ d: d.length, a: a.length, c: c.length }); } catch (e) {} };
-  useEffect(() => { load(); }, []);
-  const go = async () => { setLd(true); setResult(null); try { setResult(await sb.rpc("distribuir_lotes", {}, token)); load(); } catch (e) { setResult({ error: e.message }); } setLd(false); };
-  return (<div className="p-4 space-y-4"><h2 className="text-lg font-bold text-gray-900">Distribuir lotes</h2>{st && <div className="grid grid-cols-3 gap-3"><KPI label="Disponíveis" value={st.d} color="text-blue-600" /><KPI label="Lotes abertos" value={st.a} color="text-amber-600" /><KPI label="Corretores" value={st.c} color="text-emerald-600" /></div>}<div className="bg-gray-50 rounded-xl p-4 text-sm text-gray-600"><p>Cria lotes de <strong>25 leads</strong> para cada corretor ativo sem lote aberto.</p></div><button className="w-full bg-blue-600 text-white rounded-xl py-4 font-bold text-lg disabled:opacity-50" disabled={ld} onClick={go}>{ld ? "Distribuindo..." : "Distribuir agora"}</button>{result && !result.error && <div className="bg-emerald-50 rounded-xl p-4 border border-emerald-200"><p className="font-bold text-emerald-800">{result.lotes_criados} lote(s) criado(s)</p></div>}{result?.error && <div className="bg-red-50 rounded-xl p-4 text-red-700 text-sm">{result.error}</div>}</div>);
+  const [ld, setLd]         = useState(false);
+  const [result, setResult] = useState(null);
+  const [st, setSt]         = useState(null);
+  const load = async () => {
+    try {
+      const d=await sb.query("leads","status=eq.disponivel&select=id",token);
+      const a=await sb.query("lotes","status=eq.aberto&select=id",token);
+      const c=await sb.query("corretores","ativo=eq.true&select=id",token);
+      setSt({d:d.length,a:a.length,c:c.length});
+    } catch(e) {}
+  };
+  useEffect(()=>{ load(); },[]);
+  const go = async () => { setLd(true); setResult(null); try { setResult(await sb.rpc("distribuir_lotes",{},token)); load(); } catch(e) { setResult({error:e.message}); } setLd(false); };
+  return (
+    <div className="p-4 space-y-4">
+      <h2 className="text-lg font-bold text-gray-900">Distribuir lotes</h2>
+      {st && <div className="grid grid-cols-3 gap-3"><KPI label="Disponíveis" value={st.d} color="text-blue-600"/><KPI label="Lotes abertos" value={st.a} color="text-amber-600"/><KPI label="Corretores" value={st.c} color="text-emerald-600"/></div>}
+      <div className="bg-gray-50 rounded-xl p-4 text-sm text-gray-600"><p>Cria lotes de <strong>25 leads</strong> para cada corretor ativo sem lote aberto.</p></div>
+      <button className="w-full bg-blue-600 text-white rounded-xl py-4 font-bold text-lg disabled:opacity-50" disabled={ld} onClick={go}>{ld?"Distribuindo...":"Distribuir agora"}</button>
+      {result && !result.error && <div className="bg-emerald-50 rounded-xl p-4 border border-emerald-200"><p className="font-bold text-emerald-800">{result.lotes_criados} lote(s) criado(s)</p></div>}
+      {result?.error && <div className="bg-red-50 rounded-xl p-4 text-red-700 text-sm">{result.error}</div>}
+    </div>
+  );
 }
 
+// ─── Dashboard ────────────────────────────────────────────────────────────────
 function DashboardTab({ sb, token }) {
   const [s, setS] = useState(null); const [ld, setLd] = useState(true);
-  const load = async () => { setLd(true); try { setS(await sb.rpc("get_dashboard_stats", {}, token)); } catch (e) {} setLd(false); };
-  useEffect(() => { load(); }, []);
+  const load = async () => { setLd(true); try { setS(await sb.rpc("get_dashboard_stats",{},token)); } catch(e){} setLd(false); };
+  useEffect(()=>{ load(); },[]);
   if (ld) return <div className="p-4 text-center text-gray-400">Carregando...</div>;
-  if (!s) return <div className="p-4 text-center text-red-500">Erro</div>;
-  const fb = s.feedbacks || {}; const pc = s.por_corretor || []; const pf = s.por_fornecedor || [];
-  const totFb = Object.values(fb).reduce((a, b) => a + b, 0);
-  const txVis = totFb > 0 ? ((fb.agendado_visita || 0) / totFb * 100).toFixed(1) : "0";
+  if (!s)  return <div className="p-4 text-center text-red-500">Erro</div>;
+  const fb=s.feedbacks||{}, pc=s.por_corretor||[], pf=s.por_fornecedor||[];
+  const totFb=Object.values(fb).reduce((a,b)=>a+b,0);
+  const txVis=totFb>0?((fb.agendado_visita||0)/totFb*100).toFixed(1):"0";
   return (
     <div className="p-4 space-y-4">
       <div className="flex items-center justify-between"><h2 className="text-lg font-bold text-gray-900">Dashboard</h2><button className="text-xs text-blue-600" onClick={load}>Atualizar</button></div>
-      <div className="grid grid-cols-2 gap-3"><KPI label="Total leads" value={s.total_leads} /><KPI label="Disponíveis" value={s.disponiveis} color="text-blue-600" /><KPI label="Em atendimento" value={s.distribuidos} color="text-amber-600" /><KPI label="Finalizados" value={s.finalizados} color="text-emerald-600" /><KPI label="Em carteira" value={s.em_carteira || 0} color="text-purple-600" /><KPI label="Taxa visita" value={txVis + "%"} color="text-emerald-600" /></div>
-      {pc.length > 0 && (<div><h3 className="text-sm font-bold text-gray-700 mb-2">Por corretor</h3><div className="space-y-2">{pc.map((c, i) => (<div key={i} className="bg-white rounded-xl p-3 border border-gray-100 shadow-sm"><div className="flex justify-between items-center"><span className="font-medium text-sm">{c.nome}</span><span className="text-xs text-emerald-600 font-bold">{c.taxa_visita || 0}%</span></div><div className="flex gap-3 mt-1 text-xs text-gray-500"><span>{c.total_leads} leads</span><span className="text-emerald-600">{c.visitas} vis</span><span className="text-red-500">{c.numero_errado} err</span><span className="text-purple-600">{c.em_carteira || 0} cart</span></div>{c.total_leads > 0 && <div className="w-full bg-gray-100 rounded-full h-2 mt-2"><div className="bg-emerald-500 h-2 rounded-full" style={{ width: Math.min(100, (c.com_feedback / c.total_leads) * 100) + "%" }} /></div>}</div>))}</div></div>)}
-      {pf.length > 0 && (<div><h3 className="text-sm font-bold text-gray-700 mb-2">Qualidade por fornecedor</h3><div className="space-y-2">{pf.map((f, i) => (<div key={i} className="bg-white rounded-xl p-3 border border-gray-100 shadow-sm"><div className="flex justify-between items-center"><div><span className="font-medium text-sm">{f.fornecedor}</span>{f.nota_media > 0 && <span className="ml-2 text-xs text-amber-500">★ {f.nota_media}</span>}<span className={`ml-2 text-xs px-1.5 py-0.5 rounded-full ${f.status_lista === "ativa" ? "bg-emerald-100 text-emerald-700" : f.status_lista === "pausada" ? "bg-amber-100 text-amber-700" : "bg-red-100 text-red-700"}`}>{f.status_lista}</span></div><span className="text-xs text-red-500 font-medium">{f.taxa_erro || 0}% erro</span></div><div className="flex gap-3 mt-1 text-xs text-gray-500"><span>{f.total} leads</span><span className="text-emerald-600">{f.visitas} vis ({f.taxa_visita || 0}%)</span><span className="text-red-500">{f.errados} err</span></div></div>))}</div></div>)}
+      <div className="grid grid-cols-2 gap-3">
+        <KPI label="Total leads"    value={s.total_leads}/>
+        <KPI label="Disponíveis"    value={s.disponiveis}    color="text-blue-600"/>
+        <KPI label="Em atendimento" value={s.distribuidos}   color="text-amber-600"/>
+        <KPI label="Finalizados"    value={s.finalizados}    color="text-emerald-600"/>
+        <KPI label="Em carteira"    value={s.em_carteira||0} color="text-purple-600"/>
+        <KPI label="Taxa visita"    value={txVis+"%"}        color="text-emerald-600"/>
+      </div>
+      {pc.length>0 && (<div><h3 className="text-sm font-bold text-gray-700 mb-2">Por corretor</h3><div className="space-y-2">{pc.map((c,i)=>(<div key={i} className="bg-white rounded-xl p-3 border border-gray-100 shadow-sm"><div className="flex justify-between items-center"><span className="font-medium text-sm">{c.nome}</span><span className="text-xs text-emerald-600 font-bold">{c.taxa_visita||0}%</span></div><div className="flex gap-3 mt-1 text-xs text-gray-500"><span>{c.total_leads} leads</span><span className="text-emerald-600">{c.visitas} vis</span><span className="text-red-500">{c.numero_errado} err</span><span className="text-purple-600">{c.em_carteira||0} cart</span></div>{c.total_leads>0&&<div className="w-full bg-gray-100 rounded-full h-2 mt-2"><div className="bg-emerald-500 h-2 rounded-full" style={{width:Math.min(100,(c.com_feedback/c.total_leads)*100)+"%"}}/></div>}</div>))}</div></div>)}
+      {pf.length>0 && (<div><h3 className="text-sm font-bold text-gray-700 mb-2">Qualidade por fornecedor</h3><div className="space-y-2">{pf.map((f,i)=>(<div key={i} className="bg-white rounded-xl p-3 border border-gray-100 shadow-sm"><div className="flex justify-between items-center"><div><span className="font-medium text-sm">{f.fornecedor}</span>{f.nota_media>0&&<span className="ml-2 text-xs text-amber-500">★ {f.nota_media}</span>}<span className={`ml-2 text-xs px-1.5 py-0.5 rounded-full ${f.status_lista==="ativa"?"bg-emerald-100 text-emerald-700":f.status_lista==="pausada"?"bg-amber-100 text-amber-700":"bg-red-100 text-red-700"}`}>{f.status_lista}</span></div><span className="text-xs text-red-500 font-medium">{f.taxa_erro||0}% erro</span></div><div className="flex gap-3 mt-1 text-xs text-gray-500"><span>{f.total} leads</span><span className="text-emerald-600">{f.visitas} vis ({f.taxa_visita||0}%)</span><span className="text-red-500">{f.errados} err</span></div></div>))}</div></div>)}
     </div>
   );
 }
 
+// ─── Listas ───────────────────────────────────────────────────────────────────
 function ListasTab({ sb, token }) {
   const [listas, setListas] = useState([]); const [report, setReport] = useState(null);
-  const load = async () => { try { setListas(await sb.query("listas", "order=created_at.desc", token)); } catch (e) {} };
-  useEffect(() => { load(); }, []);
-  const acao = async (id, a, m) => { try { await sb.rpc("gerenciar_lista", { p_lista_id: id, p_acao: a, p_motivo: m || "" }, token); load(); } catch (e) { alert(e.message); } };
-  const verRelatorio = async (id) => { try { setReport(await sb.rpc("relatorio_fornecedor", { p_lista_id: id }, token)); } catch (e) { alert(e.message); } };
-
+  const load = async () => { try { setListas(await sb.query("listas","order=created_at.desc",token)); } catch(e){} };
+  useEffect(()=>{ load(); },[]);
+  const acao = async (id,a,m) => { try { await sb.rpc("gerenciar_lista",{p_lista_id:id,p_acao:a,p_motivo:m||""},token); load(); } catch(e){ alert(e.message); } };
+  const verRelatorio = async (id) => { try { setReport(await sb.rpc("relatorio_fornecedor",{p_lista_id:id},token)); } catch(e){ alert(e.message); } };
   if (report) return (
     <div className="p-4 space-y-4">
-      <div className="flex justify-between items-center"><h2 className="text-lg font-bold text-gray-900">Relatório</h2><button className="text-xs text-blue-600" onClick={() => setReport(null)}>Voltar</button></div>
+      <div className="flex justify-between items-center"><h2 className="text-lg font-bold text-gray-900">Relatório</h2><button className="text-xs text-blue-600" onClick={()=>setReport(null)}>Voltar</button></div>
       <div className="bg-white rounded-xl p-4 border shadow-sm">
-        <p className="font-bold text-gray-900">{report.lista?.fornecedor}</p><p className="text-xs text-gray-500">{report.lista?.arquivo} · {report.lista?.status} · ★ {report.lista?.nota_media || "—"}</p>
+        <p className="font-bold text-gray-900">{report.lista?.fornecedor}</p><p className="text-xs text-gray-500">{report.lista?.arquivo} · {report.lista?.status} · ★ {report.lista?.nota_media||"—"}</p>
         <div className="grid grid-cols-2 gap-2 mt-3">
           <div className="text-xs"><span className="text-gray-500">Total:</span> <span className="font-medium">{report.numeros?.total}</span></div>
           <div className="text-xs"><span className="text-gray-500">Válidos:</span> <span className="font-medium">{report.numeros?.validos}</span></div>
-          <div className="text-xs"><span className="text-gray-500">Taxa contato:</span> <span className="font-medium text-emerald-600">{report.numeros?.taxa_contato_pct || 0}%</span></div>
-          <div className="text-xs"><span className="text-gray-500">Taxa erro:</span> <span className="font-medium text-red-500">{report.numeros?.taxa_erro_pct || 0}%</span></div>
-          <div className="text-xs"><span className="text-gray-500">Visitas:</span> <span className="font-medium text-emerald-600">{report.numeros?.agendado_visita} ({report.numeros?.taxa_visita_pct || 0}%)</span></div>
-          <div className="text-xs"><span className="text-gray-500">Nº errado:</span> <span className="font-medium text-red-500">{report.numeros?.numero_errado}</span></div>
+          <div className="text-xs"><span className="text-gray-500">Taxa contato:</span> <span className="font-medium text-emerald-600">{report.numeros?.taxa_contato_pct||0}%</span></div>
+          <div className="text-xs"><span className="text-gray-500">Taxa erro:</span> <span className="font-medium text-red-500">{report.numeros?.taxa_erro_pct||0}%</span></div>
         </div>
       </div>
-      {report.avaliacoes?.length > 0 && (<div><p className="text-sm font-bold text-gray-700 mb-2">Avaliações</p>{report.avaliacoes.map((a, i) => (<div key={i} className="bg-white rounded-lg p-3 border mb-2"><div className="flex justify-between"><span className="text-sm font-medium">{a.corretor}</span><div className="flex gap-0.5">{[1,2,3,4,5].map(n => <span key={n} className={n <= a.nota ? "text-amber-400" : "text-gray-300"}>★</span>)}</div></div>{a.comentario && <p className="text-xs text-gray-500 mt-1">{a.comentario}</p>}</div>))}</div>)}
+      {report.avaliacoes?.length>0&&(<div><p className="text-sm font-bold text-gray-700 mb-2">Avaliações</p>{report.avaliacoes.map((a,i)=>(<div key={i} className="bg-white rounded-lg p-3 border mb-2"><div className="flex justify-between"><span className="text-sm font-medium">{a.corretor}</span><div className="flex gap-0.5">{[1,2,3,4,5].map(n=><span key={n} className={n<=a.nota?"text-amber-400":"text-gray-300"}>★</span>)}</div></div>{a.comentario&&<p className="text-xs text-gray-500 mt-1">{a.comentario}</p>}</div>))}</div>)}
     </div>
   );
-
   return (
     <div className="p-4 space-y-4">
       <h2 className="text-lg font-bold text-gray-900">Listas de leads</h2>
-      {listas.length === 0 && <p className="text-sm text-gray-500">Nenhuma lista importada ainda.</p>}
-      {listas.map(l => (
+      {listas.length===0&&<p className="text-sm text-gray-500">Nenhuma lista importada ainda.</p>}
+      {listas.map(l=>(
         <div key={l.id} className="bg-white rounded-xl p-4 border border-gray-100 shadow-sm">
-          <div className="flex justify-between items-start"><div><p className="font-medium text-sm text-gray-900">{l.nome_fornecedor}</p><p className="text-xs text-gray-500">{l.nome_arquivo} · {new Date(l.created_at).toLocaleDateString("pt-BR")}</p><p className="text-xs text-gray-500 mt-0.5">{l.total_leads} leads ({l.leads_validos} válidos) {l.nota_media > 0 ? `· ★ ${l.nota_media}` : ""}</p></div>
-            <span className={`text-xs px-2 py-1 rounded-full font-medium ${l.status === "ativa" ? "bg-emerald-100 text-emerald-700" : l.status === "pausada" ? "bg-amber-100 text-amber-700" : "bg-red-100 text-red-700"}`}>{l.status}</span>
+          <div className="flex justify-between items-start">
+            <div><p className="font-medium text-sm text-gray-900">{l.nome_fornecedor}</p><p className="text-xs text-gray-500">{l.nome_arquivo} · {new Date(l.created_at).toLocaleDateString("pt-BR")}</p><p className="text-xs text-gray-500 mt-0.5">{l.total_leads} leads ({l.leads_validos} válidos) {l.nota_media>0?`· ★ ${l.nota_media}`:""}</p></div>
+            <span className={`text-xs px-2 py-1 rounded-full font-medium ${l.status==="ativa"?"bg-emerald-100 text-emerald-700":l.status==="pausada"?"bg-amber-100 text-amber-700":"bg-red-100 text-red-700"}`}>{l.status}</span>
           </div>
           <div className="flex gap-2 mt-3 flex-wrap">
-            <button className="text-xs bg-gray-100 text-gray-700 px-3 py-1.5 rounded-lg" onClick={() => verRelatorio(l.id)}>Relatório</button>
-            {l.status === "ativa" && <button className="text-xs bg-amber-100 text-amber-700 px-3 py-1.5 rounded-lg" onClick={() => acao(l.id, "pausar")}>Pausar</button>}
-            {l.status === "pausada" && <button className="text-xs bg-emerald-100 text-emerald-700 px-3 py-1.5 rounded-lg" onClick={() => acao(l.id, "reativar")}>Reativar</button>}
-            {l.status !== "encerrada" && <button className="text-xs bg-red-100 text-red-700 px-3 py-1.5 rounded-lg" onClick={() => { if (confirm("Encerrar lista? Leads disponíveis serão invalidados.")) acao(l.id, "encerrar", "Baixa qualidade"); }}>Encerrar</button>}
+            <button className="text-xs bg-gray-100 text-gray-700 px-3 py-1.5 rounded-lg" onClick={()=>verRelatorio(l.id)}>Relatório</button>
+            {l.status==="ativa"&&<button className="text-xs bg-amber-100 text-amber-700 px-3 py-1.5 rounded-lg" onClick={()=>acao(l.id,"pausar")}>Pausar</button>}
+            {l.status==="pausada"&&<button className="text-xs bg-emerald-100 text-emerald-700 px-3 py-1.5 rounded-lg" onClick={()=>acao(l.id,"reativar")}>Reativar</button>}
+            {l.status!=="encerrada"&&<button className="text-xs bg-red-100 text-red-700 px-3 py-1.5 rounded-lg" onClick={()=>{ if(confirm("Encerrar lista? Leads disponíveis serão invalidados.")) acao(l.id,"encerrar","Baixa qualidade"); }}>Encerrar</button>}
           </div>
         </div>
       ))}
@@ -380,195 +783,191 @@ function ListasTab({ sb, token }) {
   );
 }
 
-// EquipeTab: agora recebe onCriarUsuario para navegar para o formulário de criação
+// ─── Equipe ───────────────────────────────────────────────────────────────────
 function EquipeTab({ sb, token, onCriarUsuario }) {
   const [cs, setCs] = useState([]);
-  const load = async () => { try { setCs(await sb.query("corretores", "order=nome.asc", token)); } catch (e) {} };
-  useEffect(() => { load(); }, []);
+  const load = async () => { try { setCs(await sb.query("corretores","order=nome.asc",token)); } catch(e){} };
+  useEffect(()=>{ load(); },[]);
   return (
     <div className="p-4 space-y-4">
       <div className="flex items-center justify-between">
         <h2 className="text-lg font-bold text-gray-900">Equipe</h2>
-        <button
-          onClick={onCriarUsuario}
-          className="bg-blue-600 text-white text-xs font-semibold px-3 py-2 rounded-xl hover:bg-blue-700 active:scale-95 transition-all"
-        >
-          + Novo usuário
-        </button>
+        <button onClick={onCriarUsuario} className="bg-blue-600 text-white text-xs font-semibold px-3 py-2 rounded-xl">+ Novo usuário</button>
       </div>
-      <div className="space-y-2">{cs.map(c => (<div key={c.id} className="bg-white rounded-xl p-3 border shadow-sm flex justify-between items-center"><div><p className="font-medium text-sm">{c.nome} {c.is_gestor && <span className="text-xs bg-blue-100 text-blue-700 px-1.5 py-0.5 rounded-full ml-1">Gestor</span>}</p><p className="text-xs text-gray-500">{c.email}</p></div><span className={`text-xs px-2 py-1 rounded-full ${c.ativo ? "bg-emerald-100 text-emerald-700" : "bg-red-100 text-red-700"}`}>{c.ativo ? "Ativo" : "Inativo"}</span></div>))}</div>
+      <div className="space-y-2">
+        {cs.map(c=>(
+          <div key={c.id} className="bg-white rounded-xl p-3 border shadow-sm flex justify-between items-center">
+            <div>
+              <p className="font-medium text-sm">{c.nome} {c.is_gestor&&<span className="text-xs bg-blue-100 text-blue-700 px-1.5 py-0.5 rounded-full ml-1">Gestor</span>}</p>
+              <p className="text-xs text-gray-500">{c.email}</p>
+            </div>
+            <div className="flex items-center gap-2">
+              {c.must_change_password && <span className="text-xs bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full">Senha provisória</span>}
+              <span className={`text-xs px-2 py-1 rounded-full ${c.ativo?"bg-emerald-100 text-emerald-700":"bg-red-100 text-red-700"}`}>{c.ativo?"Ativo":"Inativo"}</span>
+            </div>
+          </div>
+        ))}
+      </div>
     </div>
   );
 }
 
-// GestorApp: recebe onVoltar (volta ao home) e onCriarUsuario (abre formulário)
+// ─── Apps compostos ───────────────────────────────────────────────────────────
 function GestorApp({ sb, token, corretor, onLogout, onVoltar, onCriarUsuario }) {
   const [tab, setTab] = useState("dashboard");
   return (
     <div className="min-h-screen bg-gray-50 pb-20">
-      <Header nome={corretor.nome} isGestor onLogout={onLogout} onHome={onVoltar} />
-      {tab === "dashboard" && <DashboardTab sb={sb} token={token} />}
-      {tab === "upload" && <UploadTab sb={sb} token={token} />}
-      {tab === "distribuir" && <DistribuirTab sb={sb} token={token} />}
-      {tab === "listas" && <ListasTab sb={sb} token={token} />}
-      {tab === "equipe" && <EquipeTab sb={sb} token={token} onCriarUsuario={onCriarUsuario} />}
+      <Header nome={corretor.nome} isGestor onLogout={onLogout} onHome={onVoltar} showVersion />
+      {tab==="dashboard"  && <DashboardTab  sb={sb} token={token}/>}
+      {tab==="upload"     && <UploadTab     sb={sb} token={token}/>}
+      {tab==="distribuir" && <DistribuirTab sb={sb} token={token}/>}
+      {tab==="listas"     && <ListasTab     sb={sb} token={token}/>}
+      {tab==="equipe"     && <EquipeTab     sb={sb} token={token} onCriarUsuario={onCriarUsuario}/>}
       <TabBar
         tabs={[
-          { id: "dashboard", label: "Dashboard", icon: "◉" },
-          { id: "upload", label: "Upload", icon: "↑" },
-          { id: "distribuir", label: "Distribuir", icon: "→" },
-          { id: "listas", label: "Listas", icon: "★" },
-          { id: "equipe", label: "Equipe", icon: "◇" },
+          {id:"dashboard", label:"Dashboard", icon:"◉"},
+          {id:"upload",    label:"Upload",    icon:"↑"},
+          {id:"distribuir",label:"Distribuir",icon:"→"},
+          {id:"listas",    label:"Listas",    icon:"★"},
+          {id:"equipe",    label:"Equipe",    icon:"◇"},
         ]}
-        active={tab}
-        onChange={setTab}
+        active={tab} onChange={setTab}
       />
     </div>
   );
 }
 
-// CorretorApp: recebe onVoltar (volta ao home)
 function CorretorApp({ sb, token, corretor, onLogout, onVoltar }) {
   const [tab, setTab] = useState("discador");
   return (
     <div className="min-h-screen bg-gray-50 pb-20">
-      <Header nome={corretor.nome} isGestor={false} onLogout={onLogout} onHome={onVoltar} />
-      {tab === "discador" && <DiscadorTab sb={sb} token={token} corretor={corretor} />}
-      {tab === "producao" && <ProducaoTab sb={sb} token={token} />}
-      {tab === "carteira" && <CarteiraTab sb={sb} token={token} />}
+      <Header nome={corretor.nome} isGestor={false} onLogout={onLogout} onHome={onVoltar}/>
+      {tab==="discador"  && <DiscadorTab  sb={sb} token={token} corretor={corretor}/>}
+      {tab==="producao"  && <ProducaoTab  sb={sb} token={token}/>}
+      {tab==="carteira"  && <CarteiraTab  sb={sb} token={token}/>}
+      {tab==="historico" && <HistoricoTab sb={sb} token={token}/>}
       <TabBar
         tabs={[
-          { id: "discador", label: "Discador", icon: "◎" },
-          { id: "producao", label: "Produção", icon: "◉" },
-          { id: "carteira", label: "Carteira", icon: "♦" },
+          {id:"discador", label:"Discador",  icon:"◎"},
+          {id:"producao", label:"Produção",  icon:"◉"},
+          {id:"carteira", label:"Carteira",  icon:"♦"},
+          {id:"historico",label:"Histórico", icon:"↺"},
         ]}
-        active={tab}
-        onChange={setTab}
+        active={tab} onChange={setTab}
       />
     </div>
   );
 }
 
+// ─── Login ────────────────────────────────────────────────────────────────────
+function LoginScreen({ sb, onLogin }) {
+  const [email, setEmail] = useState(""); const [pass, setPass] = useState(""); const [ld, setLd] = useState(false); const [err, setErr] = useState("");
+  const go = async () => { setLd(true); setErr(""); try { onLogin(await sb.signIn(email,pass)); } catch(e) { setErr(e.message); } setLd(false); };
+  return (
+    <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
+      <div className="bg-white rounded-2xl shadow-lg p-6 w-full max-w-sm">
+        <div className="text-center mb-6">
+          <div className="w-16 h-16 bg-blue-600 rounded-2xl flex items-center justify-center mx-auto mb-3"><span className="text-white text-3xl font-bold">F</span></div>
+          <h1 className="text-xl font-bold text-gray-900">FECH.AI</h1>
+          <p className="text-xs text-gray-400 mt-1">Sistema de Vendas · v{APP_VERSION}</p>
+        </div>
+        {err && <div className="bg-red-50 text-red-700 text-sm rounded-lg p-3 mb-4">{err}</div>}
+        <input className="w-full border border-gray-300 rounded-lg px-3 py-3 mb-3 text-sm" placeholder="Email" type="email" value={email} onChange={e=>setEmail(e.target.value)}/>
+        <input className="w-full border border-gray-300 rounded-lg px-3 py-3 mb-4 text-sm" placeholder="Senha" type="password" value={pass} onChange={e=>setPass(e.target.value)} onKeyDown={e=>e.key==="Enter"&&go()}/>
+        <button className="w-full bg-blue-600 text-white rounded-lg py-3 font-medium disabled:opacity-50" disabled={ld||!email||!pass} onClick={go}>{ld?"Entrando...":"Entrar"}</button>
+      </div>
+    </div>
+  );
+}
+
+// ─── App raiz ─────────────────────────────────────────────────────────────────
 export default function App() {
-  const [session, setSession] = useState(null);
+  const [session, setSession]   = useState(null);
   const [corretor, setCorretor] = useState(null);
-  const [loading, setLoading] = useState(true);
-  // tela: 'home' | 'oferta' | 'gestor' | 'criar-usuario'
-  const [tela, setTela] = useState("home");
-  const [sb] = useState(() => createSB(SUPABASE_URL, SUPABASE_KEY));
+  const [loading, setLoading]   = useState(true);
+  const [tela, setTela]         = useState("home"); // 'home'|'oferta'|'gestor'|'criar-usuario'
+  const [sb]                    = useState(() => createSB(SUPABASE_URL, SUPABASE_KEY));
 
-  // Persiste sessão no localStorage
-  const saveSession = (s) => {
-    try { localStorage.setItem("fechai_session", JSON.stringify(s)); } catch (e) {}
-  };
+  const saveSession = (s) => { try { localStorage.setItem("fechai_session", JSON.stringify(s)); } catch(e){} };
 
-  // Restaura sessão salva ao abrir o app
+  // Restaura sessão ao abrir
   useEffect(() => {
-    try { const s = localStorage.getItem("fechai_session"); if (s) setSession(JSON.parse(s)); } catch (e) {}
+    try { const s=localStorage.getItem("fechai_session"); if (s) setSession(JSON.parse(s)); } catch(e){}
     setLoading(false);
   }, []);
 
-  // Auto-refresh: renova o token 5 minutos antes de expirar
+  // Auto-refresh de token — renova 5 min antes de expirar
   useEffect(() => {
     if (!session?.refresh_token || !session?.expires_at) return;
-    const expiresAt = session.expires_at * 1000; // expires_at vem em segundos
-    const agora = Date.now();
-    const msParaExpirar = expiresAt - agora - 5 * 60 * 1000; // 5 min antes
-    if (msParaExpirar <= 0) {
-      // Token já expirou ou vai expirar em breve — renova agora
-      sb.refreshToken(session.refresh_token)
-        .then(novaSession => { setSession(novaSession); saveSession(novaSession); })
-        .catch(() => logout());
-      return;
-    }
-    const timer = setTimeout(() => {
-      sb.refreshToken(session.refresh_token)
-        .then(novaSession => { setSession(novaSession); saveSession(novaSession); })
-        .catch(() => logout());
-    }, msParaExpirar);
-    return () => clearTimeout(timer);
+    const ms = session.expires_at * 1000 - Date.now() - 5 * 60 * 1000;
+    const doRefresh = () => sb.refreshToken(session.refresh_token)
+      .then(ns => { setSession(ns); saveSession(ns); })
+      .catch(() => logout());
+    if (ms <= 0) { doRefresh(); return; }
+    const t = setTimeout(doRefresh, ms);
+    return () => clearTimeout(t);
   }, [session?.expires_at]);
 
-  // Carrega perfil do corretor quando a sessão muda
+  // Carrega perfil
   useEffect(() => {
     if (!sb || !session) return;
     (async () => {
       try {
-        const d = await sb.query("corretores", "user_id=eq." + session.user.id + "&select=*", session.access_token);
+        const d = await sb.query("corretores", "user_id=eq."+session.user.id+"&select=*", session.access_token);
         if (d.length > 0) setCorretor(d[0]);
         else logout();
-      } catch (e) { logout(); }
+      } catch(e) { logout(); }
     })();
   }, [sb, session?.access_token]);
 
-  const login = (d) => {
-    setSession(d);
-    setTela("home");
-    saveSession(d);
-  };
-  const logout = () => {
-    setSession(null); setCorretor(null); setTela("home");
-    try { localStorage.removeItem("fechai_session"); } catch (e) {}
-  };
+  const login  = (d) => { setSession(d); setTela("home"); saveSession(d); };
+  const logout = ()  => { setSession(null); setCorretor(null); setTela("home"); try { localStorage.removeItem("fechai_session"); } catch(e){} };
 
   if (loading) return <div className="min-h-screen bg-gray-50 flex items-center justify-center text-gray-400">Carregando...</div>;
-  if (!session) return <LoginScreen sb={sb} onLogin={login} />;
+  if (!session) return <LoginScreen sb={sb} onLogin={login}/>;
   if (!corretor) return (
     <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
       <div className="bg-white rounded-2xl shadow-lg p-6 text-center max-w-sm">
-        <p className="text-gray-700 mb-2">Carregando perfil...</p>
-        <button className="mt-4 text-blue-600 text-sm font-medium" onClick={logout}>Voltar</button>
+        <p className="text-gray-700">Carregando perfil...</p>
+        <button className="mt-4 text-blue-600 text-sm" onClick={logout}>Voltar</button>
       </div>
     </div>
   );
 
-  // Tela inicial — aparece para todos após o login
+  // ── Troca de senha obrigatória ──
+  if (corretor.must_change_password) return (
+    <TrocarSenhaObrigatoria
+      sb={sb} token={session.access_token} corretorId={corretor.id}
+      onConcluido={() => setCorretor(c => ({ ...c, must_change_password: false }))}
+    />
+  );
+
+  // ── Roteamento ──
   if (tela === "home") return (
-    <HomeActions
-      nome={corretor.nome}
-      isGestor={corretor.is_gestor}
+    <HomeActions nome={corretor.nome} isGestor={corretor.is_gestor}
       onOfertaAtiva={() => setTela("oferta")}
       onPainelGestor={() => setTela("gestor")}
     />
   );
-
-  // Formulário de criar usuário — só gestores chegam aqui
   if (tela === "criar-usuario") return (
-    <CriarUsuario
-      session={session}
+    <CriarUsuario session={session}
       onUsuarioCriado={() => setTela("gestor")}
       onCancelar={() => setTela("gestor")}
     />
   );
-
-  // Oferta ativa — discador de leads (disponível para todos)
   if (tela === "oferta") return (
-    <CorretorApp
-      sb={sb}
-      token={session.access_token}
-      corretor={corretor}
-      onLogout={logout}
-      onVoltar={() => setTela("home")}
+    <CorretorApp sb={sb} token={session.access_token} corretor={corretor}
+      onLogout={logout} onVoltar={() => setTela("home")}
     />
   );
-
-  // Painel gestor — só gestores chegam aqui via HomeActions
   if (tela === "gestor" && corretor.is_gestor) return (
-    <GestorApp
-      sb={sb}
-      token={session.access_token}
-      corretor={corretor}
-      onLogout={logout}
-      onVoltar={() => setTela("home")}
+    <GestorApp sb={sb} token={session.access_token} corretor={corretor}
+      onLogout={logout} onVoltar={() => setTela("home")}
       onCriarUsuario={() => setTela("criar-usuario")}
     />
   );
-
-  // Fallback: se corretor tentar acessar rota de gestor, volta ao home
   return (
-    <HomeActions
-      nome={corretor.nome}
-      isGestor={corretor.is_gestor}
+    <HomeActions nome={corretor.nome} isGestor={corretor.is_gestor}
       onOfertaAtiva={() => setTela("oferta")}
       onPainelGestor={() => setTela("gestor")}
     />
