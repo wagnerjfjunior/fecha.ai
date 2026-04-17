@@ -1,6 +1,6 @@
 /**
  * FECH.AI — App principal
- * Versão: 1.5.0
+ * Versão: 1.6.0
  * Data: 2026-04-17
  * Mudanças:
  *   - Funil CRM kanban mobile-first (9 estágios imobiliários)
@@ -13,16 +13,15 @@
 
 import { useState, useEffect, useCallback, useRef } from "react";
 import {
-  PieChart, Pie, Cell, Tooltip as RTooltip, ResponsiveContainer,
+  Tooltip as RTooltip, ResponsiveContainer,
   AreaChart, Area, XAxis, YAxis, CartesianGrid,
-  RadialBarChart, RadialBar,
   BarChart, Bar,
 } from "recharts";
 import Papa from "papaparse";
 import CriarUsuario from "./components/CriarUsuario";
 import HomeActions from "./components/HomeActions";
 
-const APP_VERSION = "1.5.0";
+const APP_VERSION = "1.6.0";
 const APP_BUILD   = "2026-04-17";
 
 const SUPABASE_URL = "https://uobxxgzshrmbtjfdolxd.supabase.co";
@@ -586,31 +585,76 @@ function DKpi({ label, value, sub, color="#38bdf8" }) {
   );
 }
 
-function GaugeChart({ valor, label, cor="#10b981" }) {
-  const data=[{name:label,value:valor,fill:cor},{name:"",value:100-valor,fill:"#1e293b"}];
+// ─── Gauge semicírculo SVG — preenche o arco de 0→100% ──────────────────────
+function ArcGauge({ valor, label, cor="#10b981" }) {
+  const v   = Math.min(99.9, Math.max(0, valor||0));
+  const pct = v / 100;
+  const r = 38, cx = 60, cy = 58;
+  const sx = cx - r, sy = cy;
+  const theta = Math.PI * (1 - pct);
+  const ex = cx + r * Math.cos(theta);
+  const ey = cy - r * Math.sin(theta);
+  const large = pct > 0.5 ? 1 : 0;
   return (
     <div style={{textAlign:"center"}}>
-      <ResponsiveContainer width="100%" height={120}>
-        <RadialBarChart cx="50%" cy="80%" innerRadius="60%" outerRadius="100%" startAngle={180} endAngle={0} data={data}>
-          <RadialBar dataKey="value" cornerRadius={6} background={{fill:"#1e293b"}}/>
-        </RadialBarChart>
-      </ResponsiveContainer>
-      <p style={{color:cor,fontSize:22,fontWeight:700,marginTop:-20}}>{valor}%</p>
-      <p style={{color:DARK.muted,fontSize:12}}>{label}</p>
+      <svg viewBox="0 0 120 78" width="100%" style={{overflow:"visible"}}>
+        <path d={`M${sx},${sy} A${r},${r} 0 0,0 ${cx+r},${sy}`}
+          fill="none" stroke="#334155" strokeWidth="9" strokeLinecap="round"/>
+        {pct>0&&<path d={`M${sx},${sy} A${r},${r} 0 ${large},0 ${ex},${ey}`}
+          fill="none" stroke={cor} strokeWidth="9" strokeLinecap="round"/>}
+        <text x={cx} y={cy-2} textAnchor="middle" fill={cor} fontSize="17" fontWeight="700">{v}%</text>
+        <text x={cx} y={cy+16} textAnchor="middle" fill="#94a3b8" fontSize="10">{label}</text>
+      </svg>
     </div>
   );
 }
 
+// ─── Funil visual SVG — barras centralizadas por estágio ─────────────────────
+function FunilViz({ dados }) {
+  if (!dados?.length) return null;
+  const maxVal = Math.max(...dados.map(d=>d.total), 1);
+  const total  = dados.reduce((s,d)=>s+d.total,0);
+  const H = 30, GAP = 4;
+  const height = dados.length * (H + GAP);
+  return (
+    <svg viewBox={`0 0 300 ${height+4}`} width="100%" style={{display:"block"}}>
+      {dados.map((d,i)=>{
+        const pct    = d.total / maxVal;
+        const w      = Math.max(30, Math.round(280 * pct));
+        const x      = (300 - w) / 2;
+        const y      = i * (H + GAP);
+        const pctTot = total > 0 ? ((d.total/total)*100).toFixed(0) : 0;
+        return (
+          <g key={i}>
+            <rect x={x} y={y} width={w} height={H} rx="5"
+              fill={d.cor||"#334155"} opacity={d.total>0?1:0.2}/>
+            <text x="6" y={y+H/2} dominantBaseline="central"
+              fill="#f1f5f9" fontSize="10" fontWeight="500">
+              {d.icone} {d.nome}
+            </text>
+            <text x="294" y={y+H/2} dominantBaseline="central"
+              textAnchor="end" fill="#94a3b8" fontSize="10">
+              {d.total>0?`${d.total} (${pctTot}%)`:"—"}
+            </text>
+          </g>
+        );
+      })}
+    </svg>
+  );
+}
+
 function DashboardTab({ sb, token }) {
-  const [s,setS]=useState(null); const [hr,setHr]=useState(null); const [ld,setLd]=useState(true);
+  const [s,setS]=useState(null); const [hr,setHr]=useState(null);
+  const [funil,setFunil]=useState(null); const [ld,setLd]=useState(true);
   const load=async()=>{
     setLd(true);
     try {
-      const [stats,horario]=await Promise.all([
+      const [stats,horario,funilStats]=await Promise.all([
         sb.rpc("get_dashboard_stats",{},token),
         sb.rpc("get_stats_horario",{},token),
+        sb.rpc("get_funil_stats",{},token),
       ]);
-      setS(stats); setHr(horario);
+      setS(stats); setHr(horario); setFunil(funilStats);
     } catch(e){}
     setLd(false);
   };
@@ -621,118 +665,126 @@ function DashboardTab({ sb, token }) {
 
   const fb=s.feedbacks||{}, pc=s.por_corretor||[], pf=s.por_fornecedor||[];
   const totFb=Object.values(fb).reduce((a,b)=>a+b,0);
-  const txVis=totFb>0?+((fb.agendado_visita||0)/totFb*100).toFixed(1):0;
-  const txErro=totFb>0?+(((fb.numero_errado||0)+(fb.nao_toca||0)+(fb.caixa_postal||0))/totFb*100).toFixed(1):0;
-  const txContato=totFb>0?+((((fb.agendado_visita||0)+(fb.enviado_informacoes||0)+(fb.retornar_depois||0))/totFb)*100).toFixed(1):0;
+  const txVis    = totFb>0?+((fb.agendado_visita||0)/totFb*100).toFixed(1):0;
+  const txErro   = totFb>0?+(((fb.numero_errado||0)+(fb.nao_toca||0)+(fb.caixa_postal||0))/totFb*100).toFixed(1):0;
+  const txContato= totFb>0?+((((fb.agendado_visita||0)+(fb.enviado_informacoes||0)+(fb.retornar_depois||0))/totFb)*100).toFixed(1):0;
 
-  const pieData=[
-    {name:"Disponíveis",value:s.disponiveis||0},
-    {name:"Em atendimento",value:s.distribuidos||0},
-    {name:"Finalizados",value:s.finalizados||0},
-    {name:"Inválidos",value:s.invalidos||0},
-  ].filter(d=>d.value>0);
+  // Distribuição — barras horizontais (substitui pizza)
+  const barData=[
+    {name:"Disponíveis",  value:s.disponiveis||0,  cor:"#38bdf8"},
+    {name:"Atendimento",  value:s.distribuidos||0,  cor:"#f59e0b"},
+    {name:"Finalizados",  value:s.finalizados||0,   cor:"#10b981"},
+    {name:"Inválidos",    value:s.invalidos||0,     cor:"#ef4444"},
+  ];
+  const barMax=Math.max(...barData.map(d=>d.value),1);
 
-  // Linha por hora (0-23, preenche zeros)
+  // Horário: inclui contatos produtivos
   const horaData=Array.from({length:24},(_,h)=>{
     const found=(hr?.por_hora||[]).find(x=>x.hora===h);
-    return {hora:`${String(h).padStart(2,"0")}h`,total:found?.total||0};
+    return {hora:`${String(h).padStart(2,"0")}h`, total:found?.total||0, contatos:found?.contatos||0};
   });
-
-  // Linha por dia
   const diaData=(hr?.por_dia||[]).map(d=>({dia:d.dia,total:d.total,visitas:d.visitas}));
 
-  // Qualidade de lista — barra colorida
   function qualidadeCor(txErr) { if(txErr<=10) return "#10b981"; if(txErr<=25) return "#f59e0b"; return "#ef4444"; }
   function qualidadeLabel(txErr) { if(txErr<=10) return "Boa"; if(txErr<=25) return "Regular"; return "Ruim"; }
 
   return (
-    <div style={{background:DARK.bg,minHeight:"100vh",paddingBottom:80,paddingTop:0}}>
-
-      {/* Header dark */}
+    <div style={{background:DARK.bg,paddingBottom:80}}>
+      {/* Header */}
       <div style={{background:DARK.card,borderBottom:`1px solid ${DARK.border}`,padding:"12px 16px",display:"flex",alignItems:"center",justifyContent:"space-between",position:"sticky",top:0,zIndex:10}}>
-        <div>
-          <span style={{color:DARK.text,fontWeight:700,fontSize:16}}>Dashboard</span>
-          <span style={{color:DARK.muted,fontSize:12,marginLeft:8}}>v{APP_VERSION} · {APP_BUILD}</span>
-        </div>
+        <div><span style={{color:DARK.text,fontWeight:700,fontSize:16}}>Dashboard</span><span style={{color:DARK.muted,fontSize:12,marginLeft:8}}>v{APP_VERSION}</span></div>
         <button onClick={load} style={{color:DARK.accent,fontSize:13,background:"none",border:"none",cursor:"pointer"}}>↺ Atualizar</button>
       </div>
 
       <div style={{padding:16,display:"flex",flexDirection:"column",gap:16}}>
 
-        {/* KPIs principais */}
+        {/* KPIs */}
         <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8}}>
-          <DKpi label="Total leads"    value={s.total_leads}         color={DARK.text}/>
-          <DKpi label="Disponíveis"    value={s.disponiveis}         color="#38bdf8"/>
-          <DKpi label="Em atendimento" value={s.distribuidos}        color="#f59e0b"/>
-          <DKpi label="Finalizados"    value={s.finalizados}         color="#10b981"/>
-          <DKpi label="Em carteira"    value={s.em_carteira||0}      color="#a78bfa"/>
-          <DKpi label="Lotes abertos"  value={s.lotes_abertos||0}    color="#fb923c"/>
+          <DKpi label="Total leads"    value={s.total_leads}      color={DARK.text}/>
+          <DKpi label="Disponíveis"    value={s.disponiveis}      color="#38bdf8"/>
+          <DKpi label="Em atendimento" value={s.distribuidos}     color="#f59e0b"/>
+          <DKpi label="Finalizados"    value={s.finalizados}      color="#10b981"/>
+          <DKpi label="Em carteira"    value={s.em_carteira||0}   color="#a78bfa"/>
+          <DKpi label="Lotes abertos"  value={s.lotes_abertos||0} color="#fb923c"/>
         </div>
 
-        {/* Gauges de conversão */}
+        {/* Gauges semicírculo */}
         <div style={{background:DARK.card,borderRadius:16,padding:16,border:`1px solid ${DARK.border}`}}>
-          <p style={{color:DARK.text,fontWeight:600,fontSize:14,margin:"0 0 12px"}}>Taxas de conversão</p>
+          <p style={{color:DARK.text,fontWeight:600,fontSize:14,margin:"0 0 8px"}}>Taxas de conversão</p>
           <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:8}}>
-            <GaugeChart valor={txVis}     label="Visitas %"  cor="#10b981"/>
-            <GaugeChart valor={txContato} label="Contato %"  cor="#38bdf8"/>
-            <GaugeChart valor={txErro}    label="Erro %"     cor="#ef4444"/>
+            <ArcGauge valor={txVis}     label="Visitas %"  cor="#10b981"/>
+            <ArcGauge valor={txContato} label="Contato %"  cor="#38bdf8"/>
+            <ArcGauge valor={txErro}    label="Erro %"     cor="#ef4444"/>
           </div>
         </div>
 
-        {/* Pizza — distribuição de leads */}
-        {pieData.length>0&&(
-          <div style={{background:DARK.card,borderRadius:16,padding:16,border:`1px solid ${DARK.border}`}}>
-            <p style={{color:DARK.text,fontWeight:600,fontSize:14,margin:"0 0 4px"}}>Distribuição dos leads</p>
-            <ResponsiveContainer width="100%" height={200}>
-              <PieChart>
-                <Pie data={pieData} cx="50%" cy="50%" outerRadius={80} dataKey="value" label={({name,percent})=>`${name} ${(percent*100).toFixed(0)}%`} labelLine={false} style={{fontSize:11,fill:DARK.muted}}>
-                  {pieData.map((_,i)=><Cell key={i} fill={PIE_COLORS[i%PIE_COLORS.length]}/>)}
-                </Pie>
-                <RTooltip contentStyle={{background:DARK.card,border:`1px solid ${DARK.border}`,borderRadius:8,color:DARK.text}}/>
-              </PieChart>
-            </ResponsiveContainer>
-            <div style={{display:"flex",flexWrap:"wrap",gap:8,marginTop:4}}>
-              {pieData.map((d,i)=>(
-                <div key={i} style={{display:"flex",alignItems:"center",gap:4}}>
-                  <div style={{width:10,height:10,borderRadius:"50%",background:PIE_COLORS[i%PIE_COLORS.length]}}/>
-                  <span style={{color:DARK.muted,fontSize:12}}>{d.name}: {d.value}</span>
-                </div>
-              ))}
+        {/* Distribuição de leads — barras horizontais */}
+        <div style={{background:DARK.card,borderRadius:16,padding:16,border:`1px solid ${DARK.border}`}}>
+          <p style={{color:DARK.text,fontWeight:600,fontSize:14,margin:"0 0 12px"}}>Distribuição dos leads</p>
+          {barData.filter(d=>d.value>0).map((d,i)=>(
+            <div key={i} style={{marginBottom:10}}>
+              <div style={{display:"flex",justifyContent:"space-between",marginBottom:4}}>
+                <span style={{color:DARK.muted,fontSize:12}}>{d.name}</span>
+                <span style={{color:d.cor,fontSize:12,fontWeight:600}}>{d.value}</span>
+              </div>
+              <div style={{height:10,background:DARK.border,borderRadius:6,overflow:"hidden"}}>
+                <div style={{height:"100%",width:(d.value/barMax*100)+"%",background:d.cor,borderRadius:6,transition:"width 0.6s"}}/>
+              </div>
             </div>
+          ))}
+        </div>
+
+        {/* Funil de vendas SVG */}
+        {funil?.estagios?.some(e=>e.total>0)&&(
+          <div style={{background:DARK.card,borderRadius:16,padding:16,border:`1px solid ${DARK.border}`}}>
+            <p style={{color:DARK.text,fontWeight:600,fontSize:14,margin:"0 0 12px"}}>Funil de vendas</p>
+            <FunilViz dados={funil.estagios}/>
           </div>
         )}
 
-        {/* Gráfico de área — ligações por hora */}
+        {/* Ligações por hora + contatos produtivos */}
         <div style={{background:DARK.card,borderRadius:16,padding:16,border:`1px solid ${DARK.border}`}}>
-          <p style={{color:DARK.text,fontWeight:600,fontSize:14,margin:"0 0 12px"}}>Ligações por hora do dia (últimos 7 dias)</p>
-          <ResponsiveContainer width="100%" height={160}>
+          <p style={{color:DARK.text,fontWeight:600,fontSize:14,margin:"0 0 6px"}}>Ligações por hora — últimos 7 dias</p>
+          <div style={{display:"flex",gap:16,marginBottom:8}}>
+            <div style={{display:"flex",alignItems:"center",gap:4}}><div style={{width:12,height:3,background:"#38bdf8",borderRadius:2}}/><span style={{color:DARK.muted,fontSize:11}}>Ligações</span></div>
+            <div style={{display:"flex",alignItems:"center",gap:4}}><div style={{width:12,height:3,background:"#10b981",borderRadius:2}}/><span style={{color:DARK.muted,fontSize:11}}>Contatos produtivos</span></div>
+          </div>
+          <ResponsiveContainer width="100%" height={155}>
             <AreaChart data={horaData}>
-              <defs><linearGradient id="gradHora" x1="0" y1="0" x2="0" y2="1"><stop offset="5%" stopColor="#38bdf8" stopOpacity={0.4}/><stop offset="95%" stopColor="#38bdf8" stopOpacity={0}/></linearGradient></defs>
+              <defs>
+                <linearGradient id="gH" x1="0" y1="0" x2="0" y2="1"><stop offset="5%" stopColor="#38bdf8" stopOpacity={0.3}/><stop offset="95%" stopColor="#38bdf8" stopOpacity={0}/></linearGradient>
+                <linearGradient id="gC" x1="0" y1="0" x2="0" y2="1"><stop offset="5%" stopColor="#10b981" stopOpacity={0.3}/><stop offset="95%" stopColor="#10b981" stopOpacity={0}/></linearGradient>
+              </defs>
               <CartesianGrid strokeDasharray="3 3" stroke={DARK.border}/>
-              <XAxis dataKey="hora" tick={{fontSize:10,fill:DARK.muted}} interval={2}/>
-              <YAxis tick={{fontSize:10,fill:DARK.muted}} width={24}/>
-              <RTooltip contentStyle={{background:DARK.card,border:`1px solid ${DARK.border}`,borderRadius:8,color:DARK.text}}/>
-              <Area type="monotone" dataKey="total" stroke="#38bdf8" fill="url(#gradHora)" strokeWidth={2}/>
+              <XAxis dataKey="hora" tick={{fontSize:9,fill:DARK.muted}} interval={3}/>
+              <YAxis tick={{fontSize:9,fill:DARK.muted}} width={22}/>
+              <RTooltip contentStyle={{background:DARK.card,border:`1px solid ${DARK.border}`,borderRadius:8,color:DARK.text}}
+                formatter={(v,n)=>[v,n==="total"?"Ligações":"Contatos produtivos"]}/>
+              <Area type="monotone" dataKey="total"    stroke="#38bdf8" fill="url(#gH)" strokeWidth={2} name="total"/>
+              <Area type="monotone" dataKey="contatos" stroke="#10b981" fill="url(#gC)" strokeWidth={2} name="contatos"/>
             </AreaChart>
           </ResponsiveContainer>
+          <p style={{color:DARK.muted,fontSize:10,marginTop:4,textAlign:"center"}}>
+            Pico de ligações à tarde + pico de contatos de manhã = mudar horário da equipe
+          </p>
         </div>
 
-        {/* Gráfico de linha — por dia */}
+        {/* Linha por dia */}
         {diaData.length>0&&(
           <div style={{background:DARK.card,borderRadius:16,padding:16,border:`1px solid ${DARK.border}`}}>
             <p style={{color:DARK.text,fontWeight:600,fontSize:14,margin:"0 0 12px"}}>Últimos 14 dias</p>
-            <ResponsiveContainer width="100%" height={150}>
+            <ResponsiveContainer width="100%" height={140}>
               <AreaChart data={diaData}>
                 <defs>
-                  <linearGradient id="gradDia" x1="0" y1="0" x2="0" y2="1"><stop offset="5%" stopColor="#10b981" stopOpacity={0.4}/><stop offset="95%" stopColor="#10b981" stopOpacity={0}/></linearGradient>
-                  <linearGradient id="gradVis" x1="0" y1="0" x2="0" y2="1"><stop offset="5%" stopColor="#f59e0b" stopOpacity={0.4}/><stop offset="95%" stopColor="#f59e0b" stopOpacity={0}/></linearGradient>
+                  <linearGradient id="gD" x1="0" y1="0" x2="0" y2="1"><stop offset="5%" stopColor="#10b981" stopOpacity={0.35}/><stop offset="95%" stopColor="#10b981" stopOpacity={0}/></linearGradient>
+                  <linearGradient id="gV" x1="0" y1="0" x2="0" y2="1"><stop offset="5%" stopColor="#f59e0b" stopOpacity={0.35}/><stop offset="95%" stopColor="#f59e0b" stopOpacity={0}/></linearGradient>
                 </defs>
                 <CartesianGrid strokeDasharray="3 3" stroke={DARK.border}/>
-                <XAxis dataKey="dia" tick={{fontSize:10,fill:DARK.muted}}/>
-                <YAxis tick={{fontSize:10,fill:DARK.muted}} width={24}/>
+                <XAxis dataKey="dia" tick={{fontSize:9,fill:DARK.muted}}/>
+                <YAxis tick={{fontSize:9,fill:DARK.muted}} width={22}/>
                 <RTooltip contentStyle={{background:DARK.card,border:`1px solid ${DARK.border}`,borderRadius:8,color:DARK.text}}/>
-                <Area type="monotone" dataKey="total"   stroke="#10b981" fill="url(#gradDia)" strokeWidth={2} name="Ligações"/>
-                <Area type="monotone" dataKey="visitas" stroke="#f59e0b" fill="url(#gradVis)" strokeWidth={2} name="Visitas"/>
+                <Area type="monotone" dataKey="total"   stroke="#10b981" fill="url(#gD)" strokeWidth={2} name="Ligações"/>
+                <Area type="monotone" dataKey="visitas" stroke="#f59e0b" fill="url(#gV)" strokeWidth={2} name="Visitas"/>
               </AreaChart>
             </ResponsiveContainer>
           </div>
@@ -754,11 +806,7 @@ function DashboardTab({ sb, token }) {
                   <span style={{color:"#ef4444",fontSize:12}}>{c.numero_errado} erros</span>
                   <span style={{color:"#a78bfa",fontSize:12}}>{c.em_carteira||0} carteira</span>
                 </div>
-                {c.total_leads>0&&(
-                  <div style={{marginTop:6,height:6,background:DARK.border,borderRadius:4,overflow:"hidden"}}>
-                    <div style={{height:"100%",background:"#10b981",borderRadius:4,width:Math.min(100,(c.com_feedback/c.total_leads)*100)+"%",transition:"width 0.5s"}}/>
-                  </div>
-                )}
+                {c.total_leads>0&&<div style={{marginTop:6,height:6,background:DARK.border,borderRadius:4,overflow:"hidden"}}><div style={{height:"100%",background:"#10b981",borderRadius:4,width:Math.min(100,(c.com_feedback/c.total_leads)*100)+"%",transition:"width 0.5s"}}/></div>}
               </div>
             ))}
           </div>
@@ -769,28 +817,20 @@ function DashboardTab({ sb, token }) {
           <div style={{background:DARK.card,borderRadius:16,padding:16,border:`1px solid ${DARK.border}`}}>
             <p style={{color:DARK.text,fontWeight:600,fontSize:14,margin:"0 0 12px"}}>Qualidade das listas</p>
             {pf.map((f,i)=>{
-              const txErr=f.taxa_erro||0;
-              const cor=qualidadeCor(txErr);
-              const ql=qualidadeLabel(txErr);
+              const txErr=f.taxa_erro||0; const cor=qualidadeCor(txErr); const ql=qualidadeLabel(txErr);
               return (
                 <div key={i} style={{borderBottom:i<pf.length-1?`1px solid ${DARK.border}`:"none",paddingBottom:i<pf.length-1?12:0,marginBottom:i<pf.length-1?12:0}}>
                   <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
-                    <div>
-                      <span style={{color:DARK.text,fontSize:15,fontWeight:500}}>{f.fornecedor}</span>
-                      {f.nota_media>0&&<span style={{color:"#f59e0b",marginLeft:8,fontSize:13}}>★ {f.nota_media}</span>}
-                    </div>
+                    <div><span style={{color:DARK.text,fontSize:15,fontWeight:500}}>{f.fornecedor}</span>{f.nota_media>0&&<span style={{color:"#f59e0b",marginLeft:8,fontSize:13}}>★ {f.nota_media}</span>}</div>
                     <span style={{color:cor,fontSize:13,fontWeight:600,background:cor+"22",padding:"2px 8px",borderRadius:12}}>{ql}</span>
                   </div>
-                  {/* Barra de qualidade visual */}
-                  <div style={{display:"flex",gap:4,marginTop:8}}>
-                    <div style={{flex:1,height:8,background:DARK.border,borderRadius:4,overflow:"hidden"}}>
-                      <div style={{height:"100%",background:"#10b981",borderRadius:4,width:(f.taxa_visita||0)+"%"}}/>
-                    </div>
+                  <div style={{marginTop:8,height:8,background:DARK.border,borderRadius:4,overflow:"hidden"}}>
+                    <div style={{height:"100%",background:"#10b981",borderRadius:4,width:(f.taxa_visita||0)+"%"}}/>
                   </div>
                   <div style={{display:"flex",justifyContent:"space-between",marginTop:4}}>
                     <span style={{color:"#10b981",fontSize:11}}>{f.taxa_visita||0}% visitas</span>
                     <span style={{color:"#ef4444",fontSize:11}}>{txErr}% erro</span>
-                    <span style={{color:DARK.muted,fontSize:11}}>{f.total} leads · {f.status_lista}</span>
+                    <span style={{color:DARK.muted,fontSize:11}}>{f.total} leads</span>
                   </div>
                 </div>
               );
@@ -802,6 +842,9 @@ function DashboardTab({ sb, token }) {
     </div>
   );
 }
+
+
+  useEffect(()=>{load();},[]);
 
 // ─── Abas do gestor ───────────────────────────────────────────────────────────
 // ─── Modal do card no funil ───────────────────────────────────────────────────
@@ -977,12 +1020,237 @@ function FunilCardModal({ lead, estagios, sb, token, onMovido, onFechar }) {
 
 // ─── Funil CRM — Kanban ───────────────────────────────────────────────────────
 function FunilTab({ sb, token }) {
-  const [data, setData]           = useState(null);
-  const [ld, setLd]               = useState(true);
+  const [data, setData]             = useState(null);
+  const [ld, setLd]                 = useState(true);
   const [estagioAtivo, setEstagioAtivo] = useState(null);
-  const [leadSel, setLeadSel]     = useState(null);
-  const [busca, setBusca]         = useState("");
-  const scrollRef                 = useRef(null);
+  const [leadSel, setLeadSel]       = useState(null);
+  const [busca, setBusca]           = useState("");
+  const [modoSel, setModoSel]       = useState(false);
+  const [selecionados, setSel]      = useState(new Set());
+  const [showBatch, setShowBatch]   = useState(false);
+  const [estDest, setEstDest]       = useState("");
+  const [ldBatch, setLdBatch]       = useState(false);
+  const [errBatch, setErrBatch]     = useState("");
+
+  const load = async () => {
+    setLd(true);
+    try {
+      const r = await sb.rpc("meu_funil", {}, token);
+      if (r.error) throw new Error(r.error);
+      setData(r);
+      if (!estagioAtivo && r.estagios?.length > 0) setEstagioAtivo(r.estagios[0].id);
+    } catch(e) {}
+    setLd(false);
+  };
+  useEffect(() => { load(); }, []);
+
+  const toggleSel = (id) => setSel(prev => { const n=new Set(prev); n.has(id)?n.delete(id):n.add(id); return n; });
+  const selTodos  = (ids) => { if(selecionados.size===ids.length) setSel(new Set()); else setSel(new Set(ids)); };
+
+  const moverBatch = async () => {
+    if (!estDest || selecionados.size === 0) return;
+    setLdBatch(true); setErrBatch("");
+    try {
+      const r = await sb.rpc("mover_funil_lote", { p_lead_ids: Array.from(selecionados), p_estagio_id: estDest }, token);
+      if (r.error) throw new Error(r.error);
+      setData(prev => ({...prev, leads: prev.leads.map(l => selecionados.has(l.id)?{...l,estagio_id:estDest}:l)}));
+      setSel(new Set()); setModoSel(false); setShowBatch(false); setEstDest("");
+    } catch(e) { setErrBatch(e.message); }
+    setLdBatch(false);
+  };
+
+  if (ld) return <div className="p-5 text-center text-gray-400 text-lg py-16">Carregando funil...</div>;
+  if (!data?.estagios?.length) return (
+    <div className="p-5 text-center py-16">
+      <p className="text-4xl mb-4">🏠</p>
+      <p className="text-gray-500 text-lg mb-2">Nenhum lead no funil ainda.</p>
+      <p className="text-gray-400 text-base">Abra um lead na Carteira → aba "▽ Funil CRM" para adicionar.</p>
+    </div>
+  );
+
+  const { estagios, leads } = data;
+  const cntEst = {};
+  (leads||[]).forEach(l => { if(l.estagio_id) cntEst[l.estagio_id]=(cntEst[l.estagio_id]||0)+1; });
+
+  const filtrados = (leads||[]).filter(l => {
+    if (l.estagio_id !== estagioAtivo) return false;
+    if (!busca.trim()) return true;
+    return [l.nome,l.email,l.telefone].join(" ").toLowerCase().includes(busca.toLowerCase());
+  });
+  const idsVisiveis = filtrados.map(l=>l.id);
+  const estAtivo    = estagios.find(e=>e.id===estagioAtivo);
+
+  return (
+    <div className="pb-24" style={{WebkitOverflowScrolling:"touch"}}>
+
+      {/* Header */}
+      <div className="px-5 pt-5 pb-3">
+        <div className="flex items-center justify-between mb-3">
+          <h2 className="text-2xl font-bold text-gray-900">Funil CRM</h2>
+          <div className="flex items-center gap-2">
+            <span className="text-sm text-gray-400">{(leads||[]).length}</span>
+            <button onClick={()=>{setModoSel(!modoSel);setSel(new Set());setShowBatch(false);}}
+              className={`rounded-xl px-3 py-1.5 text-sm font-medium border transition-all ${
+                modoSel?"bg-blue-600 text-white border-blue-600":"bg-gray-100 text-gray-700 border-gray-200"
+              }`}>
+              {modoSel ? `✓ ${selecionados.size} sel.` : "Selecionar"}
+            </button>
+          </div>
+        </div>
+        <input type="text" placeholder="Buscar lead..."
+          value={busca} onChange={e=>setBusca(e.target.value)}
+          className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-base focus:outline-none focus:ring-2 focus:ring-blue-500"/>
+      </div>
+
+      {/* Chips de estágios — scroll horizontal */}
+      <div className="flex gap-2 px-5 pb-3 overflow-x-auto" style={{scrollSnapType:"x mandatory",WebkitOverflowScrolling:"touch"}}>
+        {estagios.map(e=>{
+          const cnt=cntEst[e.id]||0; const ativo=e.id===estagioAtivo;
+          return (
+            <button key={e.id} onClick={()=>{setEstagioAtivo(e.id);setSel(new Set());}}
+              style={{scrollSnapAlign:"start",flexShrink:0,
+                      border:ativo?`2px solid ${e.cor}`:"2px solid transparent",
+                      background:ativo?e.cor+"22":"#f9fafb"}}
+              className="flex items-center gap-1.5 rounded-xl px-3 py-2 transition-all">
+              <span className="text-base">{e.icone}</span>
+              <span className={`text-sm font-medium whitespace-nowrap ${ativo?"text-gray-900":"text-gray-500"}`}>{e.nome}</span>
+              {cnt>0&&<span className="text-xs text-white px-1.5 py-0.5 rounded-full" style={{background:e.cor}}>{cnt}</span>}
+            </button>
+          );
+        })}
+      </div>
+
+      {/* Barra de seleção em massa */}
+      {modoSel&&(
+        <div className="px-5 py-2 bg-blue-50 border-y border-blue-100 flex items-center gap-3">
+          <button onClick={()=>selTodos(idsVisiveis)} className="text-sm text-blue-600 font-medium">
+            {selecionados.size===idsVisiveis.length&&idsVisiveis.length>0?"Desmarcar tudo":"Selecionar tudo"}
+          </button>
+          {selecionados.size>0&&(
+            <button onClick={()=>setShowBatch(true)}
+              className="ml-auto bg-blue-600 text-white text-sm font-semibold px-4 py-1.5 rounded-xl">
+              Mover {selecionados.size} →
+            </button>
+          )}
+        </div>
+      )}
+
+      {/* Cards */}
+      <div className="px-5 pt-3 space-y-3">
+        {estAtivo&&(
+          <div className="flex items-center gap-2 mb-1">
+            <div className="w-3 h-3 rounded-full" style={{background:estAtivo.cor}}/>
+            <span className="font-bold text-base text-gray-900">{estAtivo.nome}</span>
+            <span className="text-sm text-gray-400">({filtrados.length})</span>
+          </div>
+        )}
+
+        {filtrados.length===0&&(
+          <div className="text-center py-12">
+            <p className="text-4xl mb-3">{estAtivo?.icone||"○"}</p>
+            <p className="text-gray-400 text-base">{busca?"Nenhum resultado.":"Nenhum lead neste estágio."}</p>
+          </div>
+        )}
+
+        {filtrados.map((l,i)=>{
+          const fbInfo=FEEDBACKS.find(f=>f.id===l.feedback);
+          const sel=selecionados.has(l.id);
+          const dias=l.data_feedback?Math.floor((Date.now()-new Date(l.data_feedback))/86400000):null;
+          return (
+            <div key={i}
+              onClick={()=>modoSel?toggleSel(l.id):setLeadSel(l)}
+              className="bg-white rounded-2xl p-4 border cursor-pointer transition-all"
+              style={{border:sel?"2px solid #3b82f6":"1px solid #e5e7eb",
+                      boxShadow:sel?"0 0 0 3px #bfdbfe":"0 1px 3px rgba(0,0,0,0.06)",
+                      background:sel?"#eff6ff":"white"}}>
+              <div className="flex items-start gap-3">
+                {/* Checkbox modo seleção */}
+                {modoSel&&(
+                  <div className="w-6 h-6 rounded-lg flex-shrink-0 mt-0.5 flex items-center justify-center"
+                    style={{background:sel?"#3b82f6":"white",border:sel?"none":"2px solid #d1d5db"}}>
+                    {sel&&<span className="text-white text-sm font-bold">✓</span>}
+                  </div>
+                )}
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-start justify-between">
+                    <div className="flex-1 min-w-0">
+                      <p className="font-bold text-gray-900 text-lg truncate">{l.nome||"Sem nome"}</p>
+                      <p className="text-sm text-gray-500">{l.telefone||"—"}</p>
+                    </div>
+                    {l.score>0&&(
+                      <div className="w-9 h-9 rounded-full flex-shrink-0 ml-2 flex items-center justify-center text-white text-sm font-bold"
+                        style={{background:l.score>=8?"#10b981":l.score>=5?"#f59e0b":"#9ca3af"}}>
+                        {l.score}
+                      </div>
+                    )}
+                  </div>
+                  <div className="flex items-center gap-2 flex-wrap mt-2">
+                    {fbInfo&&<span className={`text-xs text-white px-2 py-0.5 rounded-full ${fbInfo.color}`}>{fbInfo.icon} {fbInfo.label}</span>}
+                    {dias!==null&&(
+                      <span className={`text-xs px-2 py-0.5 rounded-full ${dias>7?"bg-red-100 text-red-700":dias>3?"bg-amber-100 text-amber-700":"bg-green-100 text-green-700"}`}>
+                        {dias===0?"hoje":`${dias}d`}
+                      </span>
+                    )}
+                  </div>
+                  {l.observacao&&<p className="text-sm text-gray-500 mt-1.5 line-clamp-1 italic">"{l.observacao}"</p>}
+                  {!modoSel&&(
+                    <div className="flex gap-2 mt-3" onClick={e=>e.stopPropagation()}>
+                      {(l.ligar||l.telefone)&&<a href={"tel:"+(l.ligar||l.telefone)} className="text-sm bg-blue-100 text-blue-700 px-3 py-1.5 rounded-lg no-underline font-medium">📞</a>}
+                      {l.telefone_e164&&<a href={buildWhatsAppLink({...l})} target="_blank" rel="noopener noreferrer" className="text-sm bg-emerald-100 text-emerald-700 px-3 py-1.5 rounded-lg no-underline font-medium">Zap</a>}
+                      {l.email&&<a href={buildEmailFunilLink(l,estAtivo?.nome||"Novo contato")} className="text-sm bg-indigo-100 text-indigo-700 px-3 py-1.5 rounded-lg no-underline font-medium">✉</a>}
+                      <span className="ml-auto text-xs text-gray-300 self-center">mover →</span>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+
+      {/* Bottom sheet — mover em massa */}
+      {showBatch&&(
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-end" onClick={()=>setShowBatch(false)}>
+          <div className="bg-white rounded-t-2xl w-full max-h-[85vh] overflow-y-auto p-5 pb-8" onClick={e=>e.stopPropagation()}>
+            <div className="flex justify-center mb-4"><div className="w-10 h-1 bg-gray-300 rounded-full"/></div>
+            <p className="text-xl font-bold text-gray-900 mb-1">Mover {selecionados.size} lead{selecionados.size>1?"s":""}</p>
+            <p className="text-sm text-gray-500 mb-4">Selecione o estágio de destino</p>
+            <div className="space-y-2 mb-4">
+              {estagios.map(e=>(
+                <button key={e.id} onClick={()=>setEstDest(e.id)}
+                  className="w-full flex items-center gap-3 rounded-xl px-4 py-3 text-left transition-all"
+                  style={{border:estDest===e.id?"2px solid #3b82f6":"2px solid transparent",
+                          background:estDest===e.id?"#eff6ff":"#f9fafb"}}>
+                  <span className="text-xl">{e.icone}</span>
+                  <span className="flex-1 text-base font-medium text-gray-900">{e.nome}</span>
+                  <div className="w-3 h-3 rounded-full" style={{background:e.cor}}/>
+                  {estDest===e.id&&<span className="text-blue-500 text-lg">✓</span>}
+                </button>
+              ))}
+            </div>
+            {errBatch&&<div className="bg-red-50 text-red-700 rounded-xl p-3 mb-3 text-base">{errBatch}</div>}
+            <div className="flex gap-3">
+              <button onClick={()=>setShowBatch(false)} className="flex-1 bg-gray-100 text-gray-700 rounded-xl py-3 text-base font-medium">Cancelar</button>
+              <button onClick={moverBatch} disabled={ldBatch||!estDest}
+                className="flex-1 bg-blue-600 text-white rounded-xl py-3 text-base font-bold disabled:opacity-50">
+                {ldBatch?"Movendo...":"Confirmar"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal individual */}
+      {leadSel&&(
+        <FunilCardModal lead={leadSel} estagios={estagios} sb={sb} token={token}
+          onMovido={a=>{setData(prev=>({...prev,leads:prev.leads.map(l=>l.id===a.id?{...l,...a}:l)}));setLeadSel(null);}}
+          onFechar={()=>setLeadSel(null)}/>
+      )}
+    </div>
+  );
+}
+
+
 
   const load = async () => {
     setLd(true);
