@@ -1,13 +1,13 @@
 /**
  * FECH.AI — App principal
- * Versão: 1.4.0
+ * Versão: 1.5.0
  * Data: 2026-04-17
  * Mudanças:
- *   - Corretor pode solicitar novo lote sem depender do gestor
- *   - Template de email pré-preenchido (igual ao WhatsApp)
- *   - Dashboard do gestor dark com pizza, gauge, gráfico de linha por hora
- *   - Fontes maiores no app do corretor (acessibilidade)
- *   - Qualidade da lista com barra visual e indicadores coloridos
+ *   - Funil CRM kanban mobile-first (9 estágios imobiliários)
+ *   - FunilTab: colunas por estágio, cards clicáveis, navegação horizontal
+ *   - FunilCardModal: mover lead no funil + ligar/WhatsApp/email por estágio
+ *   - Template de email automático conforme estágio do funil
+ *   - Fix: solicitar_lote corrigido no banco (CTE + FOR UPDATE SKIP LOCKED)
  * Rollback: Vercel Dashboard → Deployments → selecionar build anterior → Redeploy
  */
 
@@ -22,7 +22,7 @@ import Papa from "papaparse";
 import CriarUsuario from "./components/CriarUsuario";
 import HomeActions from "./components/HomeActions";
 
-const APP_VERSION = "1.4.0";
+const APP_VERSION = "1.5.0";
 const APP_BUILD   = "2026-04-17";
 
 const SUPABASE_URL = "https://uobxxgzshrmbtjfdolxd.supabase.co";
@@ -69,6 +69,26 @@ function buildEmailLink(lead) {
     `${getSaudacao()}, ${nome}!\n\nSou corretor(a) de imóveis e estou entrando em contato sobre seu interesse em adquirir um imóvel.\n\nTenho algumas opções exclusivas que podem ser do seu perfil e gostaria de apresentá-las.\n\nQuando podemos conversar? Estou à disposição!\n\nAtenciosamente,`
   );
   return `mailto:${lead.email}?subject=${subject}&body=${body}`;
+}
+
+// Templates de email por estágio do funil
+const FUNIL_EMAIL_TEMPLATES = {
+  "Novo contato":      (nome) => ({ subject: `${getSaudacao()}, ${nome}! Sobre seu interesse em imóveis`, body: `${getSaudacao()}, ${nome}!\n\nEntramos em contato pois identificamos seu interesse em adquirir um imóvel.\n\nGostaria de apresentar opções que se encaixam no seu perfil. Podemos conversar?\n\nAtenciosamente,` }),
+  "Primeiro contato":  (nome) => ({ subject: `${nome}, tentei seu contato sobre imóveis`, body: `${getSaudacao()}, ${nome}!\n\nTentei entrar em contato por telefone para falar sobre imóveis que podem ser do seu interesse.\n\nQuando podemos conversar? Fico à disposição!\n\nAtenciosamente,` }),
+  "Em conversa":       (nome) => ({ subject: `${nome}, seguem as informações que conversamos`, body: `${getSaudacao()}, ${nome}!\n\nConforme nossa conversa, segue em anexo as informações sobre os imóveis que discutimos.\n\nQualquer dúvida, estou à disposição!\n\nAtenciosamente,` }),
+  "Visita agendada":   (nome) => ({ subject: `${nome}, confirmação da sua visita`, body: `${getSaudacao()}, ${nome}!\n\nEste é um lembrete da visita que agendamos. Estou ansioso(a) para apresentar o empreendimento pessoalmente.\n\nNos encontramos conforme combinado. Qualquer imprevisto, me avise!\n\nAtenciosamente,` }),
+  "Visita realizada":  (nome) => ({ subject: `${nome}, o que achou da visita?`, body: `${getSaudacao()}, ${nome}!\n\nFoi um prazer te receber! Espero que tenha gostado do empreendimento.\n\nGostaria de saber sua impressão e tirar qualquer dúvida que ficou.\n\nPosso preparar uma simulação financeira personalizada para você?\n\nAtenciosamente,` }),
+  "Proposta enviada":  (nome) => ({ subject: `${nome}, proposta comercial — imóvel exclusivo`, body: `${getSaudacao()}, ${nome}!\n\nSegue em anexo a proposta comercial com a simulação financeira personalizada que preparei.\n\nEstou à disposição para explicar cada detalhe e ajustar conforme sua necessidade.\n\nAguardo seu retorno!\n\nAtenciosamente,` }),
+  "Em negociação":     (nome) => ({ subject: `${nome}, atualização sobre nossa negociação`, body: `${getSaudacao()}, ${nome}!\n\nGostaria de dar continuidade à nossa negociação. Tenho algumas condições especiais que podem facilitar o fechamento.\n\nPodemos conversar esta semana?\n\nAtenciosamente,` }),
+  "Fechado":           (nome) => ({ subject: `${nome}, parabéns pelo seu novo imóvel! 🎉`, body: `${getSaudacao()}, ${nome}!\n\nParabéns pela aquisição do seu imóvel! Foi um prazer enorme fazer parte desta conquista.\n\nEstarei sempre à disposição. Qualquer dúvida sobre documentação ou próximos passos, pode me acionar!\n\nGrande abraço,` }),
+  "Perdido":           (nome) => ({ subject: `${nome}, fico à disposição quando precisar`, body: `${getSaudacao()}, ${nome}!\n\nEntendo que o momento não era ideal, mas fico à disposição quando você desejar retomar a busca pelo seu imóvel.\n\nManterei você informado(a) sobre novidades!\n\nAtenciosamente,` }),
+};
+
+function buildEmailFunilLink(lead, nomeEstagio) {
+  if (!lead.email) return null;
+  const nome = getPrimeiroNome(lead.nome);
+  const tmpl = FUNIL_EMAIL_TEMPLATES[nomeEstagio]?.(nome) || FUNIL_EMAIL_TEMPLATES["Novo contato"](nome);
+  return `mailto:${lead.email}?subject=${encodeURIComponent(tmpl.subject)}&body=${encodeURIComponent(tmpl.body)}`;
 }
 
 function onlyDigits(s) { return (s||"").replace(/\D/g,""); }
@@ -702,6 +722,384 @@ function DashboardTab({ sb, token }) {
 }
 
 // ─── Abas do gestor ───────────────────────────────────────────────────────────
+// ─── Modal do card no funil ───────────────────────────────────────────────────
+function FunilCardModal({ lead, estagios, sb, token, onMovido, onFechar }) {
+  const [novoEstagio, setNovoEstagio] = useState(lead.estagio_id || "");
+  const [obs, setObs]                 = useState("");
+  const [ld, setLd]                   = useState(false);
+  const [erro, setErro]               = useState("");
+  const [abaSel, setAbaSel]           = useState("mover"); // 'mover' | 'contato'
+
+  const estAtual = estagios.find(e => e.id === lead.estagio_id);
+  const estNovo  = estagios.find(e => e.id === novoEstagio);
+
+  const mover = async () => {
+    if (!novoEstagio || novoEstagio === lead.estagio_id) { onFechar(); return; }
+    setLd(true); setErro("");
+    try {
+      const r = await sb.rpc("mover_funil", { p_lead_id: lead.id, p_estagio_id: novoEstagio, p_observacao: obs }, token);
+      if (r.error) throw new Error(r.error);
+      onMovido({ ...lead, estagio_id: novoEstagio });
+    } catch(e) { setErro(e.message); }
+    setLd(false);
+  };
+
+  const e164     = lead.telefone_e164 || "";
+  const wppLink  = e164 ? buildWhatsAppLink({ ...lead, telefone_e164: e164 }) : null;
+  const mailLink = buildEmailFunilLink(lead, estNovo?.nome || estAtual?.nome || "Novo contato");
+
+  return (
+    <div className="fixed inset-0 bg-black/50 z-50 flex items-end" onClick={onFechar}>
+      <div className="bg-white rounded-t-2xl w-full max-h-[88vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
+
+        {/* Handle */}
+        <div className="flex justify-center pt-3 pb-1"><div className="w-10 h-1 bg-gray-300 rounded-full"/></div>
+
+        {/* Header do card */}
+        <div className="px-5 pt-2 pb-4 border-b border-gray-100">
+          <div className="flex items-start justify-between">
+            <div>
+              <h3 className="font-bold text-gray-900 text-xl">{lead.nome || "Sem nome"}</h3>
+              <p className="text-sm text-gray-500 mt-0.5">{lead.telefone || "—"}</p>
+              {lead.email && <p className="text-xs text-gray-400">{lead.email}</p>}
+            </div>
+            <div className="flex flex-col items-end gap-1">
+              {estAtual && (
+                <span className="text-xs text-white px-2 py-1 rounded-full font-medium"
+                  style={{ background: estAtual.cor }}>
+                  {estAtual.icone} {estAtual.nome}
+                </span>
+              )}
+              {lead.score > 0 && (
+                <span className="text-xs bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full">
+                  Score {lead.score}/10
+                </span>
+              )}
+            </div>
+          </div>
+
+          {/* Ações rápidas */}
+          <div className="flex gap-2 mt-3">
+            {(lead.ligar || lead.telefone) && (
+              <a href={"tel:" + (lead.ligar || lead.telefone)}
+                className="flex-1 bg-blue-600 text-white rounded-xl py-3 text-center text-base font-medium no-underline">
+                📞 Ligar
+              </a>
+            )}
+            {wppLink && (
+              <a href={wppLink} target="_blank" rel="noopener noreferrer"
+                className="flex-1 bg-emerald-600 text-white rounded-xl py-3 text-center text-base font-medium no-underline">
+                WhatsApp
+              </a>
+            )}
+            {mailLink && (
+              <a href={mailLink}
+                className="flex-1 bg-indigo-600 text-white rounded-xl py-3 text-center text-base font-medium no-underline">
+                ✉ Email
+              </a>
+            )}
+          </div>
+        </div>
+
+        {/* Abas */}
+        <div className="flex border-b border-gray-100">
+          {[["mover","Mover no funil"],["contato","Histórico"]].map(([id,label]) => (
+            <button key={id} onClick={() => setAbaSel(id)}
+              className={`flex-1 py-3 text-base font-medium transition-colors ${abaSel===id ? "text-blue-600 border-b-2 border-blue-600" : "text-gray-400"}`}>
+              {label}
+            </button>
+          ))}
+        </div>
+
+        <div className="p-5 pb-8">
+          {abaSel === "mover" && (
+            <>
+              <p className="text-sm text-gray-500 uppercase tracking-wide mb-3">Selecione o novo estágio</p>
+              <div className="space-y-2 mb-4">
+                {estagios.map(e => (
+                  <button key={e.id} onClick={() => setNovoEstagio(e.id)}
+                    className={`w-full flex items-center gap-3 rounded-xl px-4 py-3 text-left transition-all border-2 ${
+                      novoEstagio === e.id ? "border-blue-500 bg-blue-50" : "border-transparent bg-gray-50"
+                    }`}>
+                    <span className="text-xl">{e.icone}</span>
+                    <div className="flex-1">
+                      <p className="font-medium text-base text-gray-900">{e.nome}</p>
+                    </div>
+                    <div className="w-3 h-3 rounded-full" style={{ background: e.cor }}/>
+                    {novoEstagio === e.id && <span className="text-blue-500 text-lg">✓</span>}
+                  </button>
+                ))}
+              </div>
+
+              {/* Preview do email que será enviado */}
+              {novoEstagio && novoEstagio !== lead.estagio_id && estNovo && lead.email && (
+                <div className="bg-indigo-50 rounded-xl p-3 mb-4 border border-indigo-100">
+                  <p className="text-xs text-indigo-700 font-medium mb-1">✉ Email disponível para este estágio</p>
+                  <p className="text-xs text-indigo-600 line-clamp-2">{FUNIL_EMAIL_TEMPLATES[estNovo.nome]?.(getPrimeiroNome(lead.nome))?.subject || "Template padrão"}</p>
+                  <a href={buildEmailFunilLink(lead, estNovo.nome) || "#"}
+                    className="mt-2 inline-block text-xs text-indigo-700 font-medium underline">
+                    Abrir no email →
+                  </a>
+                </div>
+              )}
+
+              <textarea rows={2} placeholder="Observação (opcional)..."
+                value={obs} onChange={e => setObs(e.target.value)}
+                className="w-full border border-gray-200 rounded-xl px-3 py-3 text-base resize-none focus:outline-none focus:ring-2 focus:ring-blue-500 mb-4"/>
+
+              {erro && <div className="bg-red-50 text-red-700 rounded-xl p-3 mb-3 text-base">{erro}</div>}
+
+              <div className="flex gap-3">
+                <button onClick={onFechar} className="flex-1 bg-gray-100 text-gray-700 rounded-xl py-3 text-base font-medium">
+                  Fechar
+                </button>
+                <button onClick={mover} disabled={ld || !novoEstagio || novoEstagio === lead.estagio_id}
+                  className="flex-1 bg-blue-600 text-white rounded-xl py-3 text-base font-semibold disabled:opacity-50">
+                  {ld ? "Movendo..." : "Mover"}
+                </button>
+              </div>
+            </>
+          )}
+
+          {abaSel === "contato" && (
+            <div className="space-y-2">
+              {lead.feedback && (
+                <div className="bg-gray-50 rounded-xl p-3">
+                  <p className="text-xs text-gray-500 uppercase mb-1">Último feedback</p>
+                  <p className="text-base text-gray-900 font-medium">
+                    {FEEDBACKS.find(f => f.id === lead.feedback)?.label || lead.feedback}
+                  </p>
+                </div>
+              )}
+              {lead.observacao && (
+                <div className="bg-gray-50 rounded-xl p-3">
+                  <p className="text-xs text-gray-500 uppercase mb-1">Observação</p>
+                  <p className="text-base text-gray-700">{lead.observacao}</p>
+                </div>
+              )}
+              {lead.data_feedback && (
+                <p className="text-sm text-gray-400 text-center">
+                  Último contato: {new Date(lead.data_feedback).toLocaleDateString("pt-BR")}
+                </p>
+              )}
+              {!lead.feedback && !lead.observacao && (
+                <p className="text-gray-400 text-center py-4 text-base">Nenhum histórico ainda.</p>
+              )}
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── Funil CRM — Kanban ───────────────────────────────────────────────────────
+function FunilTab({ sb, token }) {
+  const [data, setData]           = useState(null);
+  const [ld, setLd]               = useState(true);
+  const [estagioAtivo, setEstagioAtivo] = useState(null);
+  const [leadSel, setLeadSel]     = useState(null);
+  const [busca, setBusca]         = useState("");
+  const scrollRef                 = useRef(null);
+
+  const load = async () => {
+    setLd(true);
+    try {
+      const r = await sb.rpc("meu_funil", {}, token);
+      if (r.error) throw new Error(r.error);
+      setData(r);
+      if (!estagioAtivo && r.estagios?.length > 0) setEstagioAtivo(r.estagios[0].id);
+    } catch(e) { console.error(e); }
+    setLd(false);
+  };
+
+  useEffect(() => { load(); }, []);
+
+  if (ld) return <div className="p-5 text-center text-gray-400 text-lg py-16">Carregando funil...</div>;
+
+  if (!data || !data.estagios?.length) return (
+    <div className="p-5 text-center py-16">
+      <p className="text-4xl mb-4">🏠</p>
+      <p className="text-gray-500 text-lg mb-2">Nenhum lead no funil ainda.</p>
+      <p className="text-gray-400 text-base">Abra um lead na Carteira ou no Histórico e mova-o para um estágio do funil.</p>
+    </div>
+  );
+
+  const { estagios, leads } = data;
+
+  // Contagem por estágio
+  const countPorEstagio = {};
+  (leads || []).forEach(l => {
+    if (l.estagio_id) countPorEstagio[l.estagio_id] = (countPorEstagio[l.estagio_id] || 0) + 1;
+  });
+
+  // Leads do estágio ativo filtrados por busca
+  const leadsFiltrados = (leads || []).filter(l => {
+    const noEstagio = l.estagio_id === estagioAtivo;
+    if (!noEstagio) return false;
+    if (!busca.trim()) return true;
+    return [l.nome, l.email, l.telefone].join(" ").toLowerCase().includes(busca.toLowerCase());
+  });
+
+  const estAtivo = estagios.find(e => e.id === estagioAtivo);
+
+  return (
+    <div className="flex flex-col h-full">
+
+      {/* Header funil */}
+      <div className="px-5 pt-5 pb-3">
+        <div className="flex items-center justify-between mb-3">
+          <h2 className="text-2xl font-bold text-gray-900">Funil CRM</h2>
+          <span className="text-sm text-gray-400">{(leads||[]).length} leads ativos</span>
+        </div>
+        <input type="text" placeholder="Buscar lead..."
+          value={busca} onChange={e => setBusca(e.target.value)}
+          className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-base focus:outline-none focus:ring-2 focus:ring-blue-500"/>
+      </div>
+
+      {/* Scroll horizontal de estágios */}
+      <div ref={scrollRef} className="overflow-x-auto flex gap-2 px-5 pb-3 scrollbar-hide" style={{scrollSnapType:"x mandatory"}}>
+        {estagios.map(e => {
+          const cnt = countPorEstagio[e.id] || 0;
+          const ativo = e.id === estagioAtivo;
+          return (
+            <button key={e.id} onClick={() => setEstagioAtivo(e.id)}
+              style={{ scrollSnapAlign:"start", flexShrink:0, borderColor: ativo ? e.cor : "transparent",
+                       background: ativo ? e.cor+"22" : "#f9fafb" }}
+              className={`flex items-center gap-1.5 rounded-xl px-3 py-2 border-2 transition-all`}>
+              <span className="text-lg">{e.icone}</span>
+              <span className={`text-sm font-medium whitespace-nowrap ${ativo ? "text-gray-900" : "text-gray-500"}`}>
+                {e.nome}
+              </span>
+              {cnt > 0 && (
+                <span className="text-xs text-white px-1.5 py-0.5 rounded-full min-w-5 text-center"
+                  style={{ background: e.cor }}>
+                  {cnt}
+                </span>
+              )}
+            </button>
+          );
+        })}
+      </div>
+
+      {/* Cards do estágio ativo */}
+      <div className="flex-1 overflow-y-auto px-5 pb-24 space-y-3 pt-2">
+        {estAtivo && (
+          <div className="flex items-center gap-2 mb-1">
+            <div className="w-3 h-3 rounded-full" style={{ background: estAtivo.cor }}/>
+            <span className="text-base font-bold text-gray-900">{estAtivo.nome}</span>
+            <span className="text-sm text-gray-400">({leadsFiltrados.length})</span>
+          </div>
+        )}
+
+        {leadsFiltrados.length === 0 && (
+          <div className="text-center py-12">
+            <p className="text-4xl mb-3">{estAtivo?.icone || "○"}</p>
+            <p className="text-gray-400 text-base">
+              {busca ? "Nenhum resultado para esta busca." : "Nenhum lead neste estágio."}
+            </p>
+            <p className="text-gray-300 text-sm mt-1">Mova leads da Carteira ou Histórico para cá.</p>
+          </div>
+        )}
+
+        {leadsFiltrados.map((l, i) => {
+          const fbInfo = FEEDBACKS.find(f => f.id === l.feedback);
+          const diasSemContato = l.data_feedback
+            ? Math.floor((Date.now() - new Date(l.data_feedback)) / 86400000)
+            : null;
+          return (
+            <div key={i}
+              className="bg-white rounded-2xl p-4 border border-gray-100 shadow-sm cursor-pointer hover:border-blue-200 hover:shadow-md transition-all active:scale-98"
+              onClick={() => setLeadSel(l)}>
+
+              {/* Linha 1: nome + score */}
+              <div className="flex items-start justify-between mb-2">
+                <div className="flex-1 min-w-0">
+                  <p className="font-bold text-gray-900 text-lg truncate">{l.nome || "Sem nome"}</p>
+                  <p className="text-sm text-gray-500">{l.telefone || "—"}</p>
+                </div>
+                {l.score > 0 && (
+                  <div className="flex flex-col items-center ml-2">
+                    <div className="w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold text-white"
+                      style={{ background: l.score >= 8 ? "#10b981" : l.score >= 5 ? "#f59e0b" : "#6b7280" }}>
+                      {l.score}
+                    </div>
+                    <p className="text-xs text-gray-400 mt-0.5">score</p>
+                  </div>
+                )}
+              </div>
+
+              {/* Linha 2: feedback + dias */}
+              <div className="flex items-center gap-2 flex-wrap">
+                {fbInfo && (
+                  <span className={`text-xs text-white px-2 py-0.5 rounded-full ${fbInfo.color}`}>
+                    {fbInfo.icon} {fbInfo.label}
+                  </span>
+                )}
+                {diasSemContato !== null && (
+                  <span className={`text-xs px-2 py-0.5 rounded-full ${
+                    diasSemContato > 7 ? "bg-red-100 text-red-700" :
+                    diasSemContato > 3 ? "bg-amber-100 text-amber-700" :
+                    "bg-green-100 text-green-700"
+                  }`}>
+                    {diasSemContato === 0 ? "hoje" : `${diasSemContato}d atrás`}
+                  </span>
+                )}
+              </div>
+
+              {/* Linha 3: observação prévia */}
+              {l.observacao && (
+                <p className="text-sm text-gray-500 mt-2 line-clamp-1 italic">"{l.observacao}"</p>
+              )}
+
+              {/* Linha 4: ações rápidas sem abrir modal */}
+              <div className="flex gap-2 mt-3" onClick={e => e.stopPropagation()}>
+                {(l.ligar || l.telefone) && (
+                  <a href={"tel:" + (l.ligar || l.telefone)}
+                    className="text-sm bg-blue-100 text-blue-700 px-3 py-1.5 rounded-lg no-underline font-medium">
+                    📞 Ligar
+                  </a>
+                )}
+                {l.telefone_e164 && (
+                  <a href={buildWhatsAppLink({ ...l, telefone_e164: l.telefone_e164 })}
+                    target="_blank" rel="noopener noreferrer"
+                    className="text-sm bg-emerald-100 text-emerald-700 px-3 py-1.5 rounded-lg no-underline font-medium">
+                    Zap
+                  </a>
+                )}
+                {l.email && (
+                  <a href={buildEmailFunilLink(l, estAtivo?.nome || "Novo contato")}
+                    className="text-sm bg-indigo-100 text-indigo-700 px-3 py-1.5 rounded-lg no-underline font-medium">
+                    ✉
+                  </a>
+                )}
+                <span className="ml-auto text-xs text-gray-300 self-center">toque para mover →</span>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+
+      {/* Modal de movimentação */}
+      {leadSel && (
+        <FunilCardModal
+          lead={leadSel}
+          estagios={estagios}
+          sb={sb} token={token}
+          onMovido={(atualizado) => {
+            setData(prev => ({
+              ...prev,
+              leads: prev.leads.map(l => l.id === atualizado.id ? { ...l, ...atualizado } : l)
+            }));
+            setLeadSel(null);
+          }}
+          onFechar={() => setLeadSel(null)}
+        />
+      )}
+    </div>
+  );
+}
+
 function UploadTab({ sb, token }) {
   const [file,setFile]=useState(null); const [forn,setForn]=useState(""); const [preview,setPreview]=useState(null);
   const [colMap,setColMap]=useState(null); const [importing,setImporting]=useState(false); const [result,setResult]=useState(null);
@@ -894,11 +1292,18 @@ function CorretorApp({ sb, token, corretor, onLogout, onVoltar }) {
     <div className="min-h-screen bg-gray-50 pb-20">
       <Header nome={corretor.nome} isGestor={false} onLogout={onLogout} onHome={onVoltar}/>
       {tab==="discador"  &&<DiscadorTab  sb={sb} token={token} corretor={corretor}/>}
+      {tab==="funil"     &&<FunilTab     sb={sb} token={token}/>}
       {tab==="producao"  &&<ProducaoTab  sb={sb} token={token}/>}
       {tab==="carteira"  &&<CarteiraTab  sb={sb} token={token}/>}
       {tab==="historico" &&<HistoricoTab sb={sb} token={token}/>}
       <TabBar
-        tabs={[{id:"discador",label:"Discador",icon:"◎"},{id:"producao",label:"Produção",icon:"◉"},{id:"carteira",label:"Carteira",icon:"♦"},{id:"historico",label:"Histórico",icon:"↺"}]}
+        tabs={[
+          {id:"discador", label:"Discador",  icon:"◎"},
+          {id:"funil",    label:"Funil",     icon:"▽"},
+          {id:"producao", label:"Produção",  icon:"◉"},
+          {id:"carteira", label:"Carteira",  icon:"♦"},
+          {id:"historico",label:"Histórico", icon:"↺"},
+        ]}
         active={tab} onChange={setTab}
       />
     </div>
