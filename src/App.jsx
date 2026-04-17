@@ -71,6 +71,8 @@ function createSB(url, key) {
   return {
     async signIn(e, p) { const r = await fetch(url + "/auth/v1/token?grant_type=password", { method: "POST", headers: { apikey: key, "Content-Type": "application/json" }, body: JSON.stringify({ email: e, password: p }) }); if (!r.ok) { const x = await r.json(); throw new Error(x.error_description || x.msg || "Erro login"); } return r.json(); },
     async signUp(e, p) { const r = await fetch(url + "/auth/v1/signup", { method: "POST", headers: { apikey: key, "Content-Type": "application/json" }, body: JSON.stringify({ email: e, password: p }) }); if (!r.ok) { const x = await r.json(); throw new Error(x.error_description || x.msg || "Erro cadastro"); } return r.json(); },
+    // Renova o access_token usando o refresh_token (não expira automaticamente)
+    async refreshToken(refreshTk) { const r = await fetch(url + "/auth/v1/token?grant_type=refresh_token", { method: "POST", headers: { apikey: key, "Content-Type": "application/json" }, body: JSON.stringify({ refresh_token: refreshTk }) }); if (!r.ok) throw new Error("Sessão expirada"); return r.json(); },
     async query(t, p, tk) { const r = await fetch(url + "/rest/v1/" + t + "?" + (p || ""), { headers: hd(tk) }); if (!r.ok) throw new Error("Erro " + t); return r.json(); },
     async insert(t, d, tk) { const r = await fetch(url + "/rest/v1/" + t, { method: "POST", headers: { ...hd(tk), Prefer: "return=representation" }, body: JSON.stringify(d) }); if (!r.ok) { const x = await r.json(); throw new Error(x.message || "Erro insert"); } return r.json(); },
     async rpc(f, a, tk) { const r = await fetch(url + "/rest/v1/rpc/" + f, { method: "POST", headers: hd(tk), body: JSON.stringify(a || {}) }); if (!r.ok) { const x = await r.json(); throw new Error(x.message || "Erro " + f); } return r.json(); },
@@ -455,26 +457,54 @@ export default function App() {
   const [tela, setTela] = useState("home");
   const [sb] = useState(() => createSB(SUPABASE_URL, SUPABASE_KEY));
 
+  // Persiste sessão no localStorage
+  const saveSession = (s) => {
+    try { localStorage.setItem("fechai_session", JSON.stringify(s)); } catch (e) {}
+  };
+
+  // Restaura sessão salva ao abrir o app
   useEffect(() => {
     try { const s = localStorage.getItem("fechai_session"); if (s) setSession(JSON.parse(s)); } catch (e) {}
     setLoading(false);
   }, []);
 
+  // Auto-refresh: renova o token 5 minutos antes de expirar
+  useEffect(() => {
+    if (!session?.refresh_token || !session?.expires_at) return;
+    const expiresAt = session.expires_at * 1000; // expires_at vem em segundos
+    const agora = Date.now();
+    const msParaExpirar = expiresAt - agora - 5 * 60 * 1000; // 5 min antes
+    if (msParaExpirar <= 0) {
+      // Token já expirou ou vai expirar em breve — renova agora
+      sb.refreshToken(session.refresh_token)
+        .then(novaSession => { setSession(novaSession); saveSession(novaSession); })
+        .catch(() => logout());
+      return;
+    }
+    const timer = setTimeout(() => {
+      sb.refreshToken(session.refresh_token)
+        .then(novaSession => { setSession(novaSession); saveSession(novaSession); })
+        .catch(() => logout());
+    }, msParaExpirar);
+    return () => clearTimeout(timer);
+  }, [session?.expires_at]);
+
+  // Carrega perfil do corretor quando a sessão muda
   useEffect(() => {
     if (!sb || !session) return;
     (async () => {
       try {
         const d = await sb.query("corretores", "user_id=eq." + session.user.id + "&select=*", session.access_token);
         if (d.length > 0) setCorretor(d[0]);
-        else setSession(null);
-      } catch (e) { setSession(null); }
+        else logout();
+      } catch (e) { logout(); }
     })();
-  }, [sb, session]);
+  }, [sb, session?.access_token]);
 
   const login = (d) => {
     setSession(d);
     setTela("home");
-    try { localStorage.setItem("fechai_session", JSON.stringify(d)); } catch (e) {}
+    saveSession(d);
   };
   const logout = () => {
     setSession(null); setCorretor(null); setTela("home");
