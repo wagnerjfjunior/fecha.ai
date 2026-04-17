@@ -371,7 +371,7 @@ function ProducaoTab({ sb, token }) {
           <div key={l} className="bg-white rounded-xl p-3 shadow-sm border border-gray-100 text-center"><p className="text-xs text-gray-500 uppercase">{l}</p><p className={`text-3xl font-bold mt-1 ${c}`}>{v}</p></div>
         ))}
       </div>
-      {chartData.length>0&&(<div className="bg-white rounded-xl p-4 border border-gray-100 shadow-sm"><p className="text-sm text-gray-500 uppercase mb-2">Últimos 7 dias</p><ResponsiveContainer width="100%" height={160}><BarChart data={chartData}><XAxis dataKey="dia" tick={{fontSize:13}}/><YAxis tick={{fontSize:13}} width={28}/><Tooltip/><Bar dataKey="total" fill="#3b82f6" radius={[4,4,0,0]}/><Bar dataKey="visitas" fill="#10b981" radius={[4,4,0,0]}/></BarChart></ResponsiveContainer></div>)}
+      {chartData.length>0&&(<div className="bg-white rounded-xl p-4 border border-gray-100 shadow-sm"><p className="text-sm text-gray-500 uppercase mb-2">Últimos 7 dias</p><ResponsiveContainer width="100%" height={160}><BarChart data={chartData}><XAxis dataKey="dia" tick={{fontSize:13}}/><YAxis tick={{fontSize:13}} width={28}/><RTooltip/><Bar dataKey="total" fill="#3b82f6" radius={[4,4,0,0]}/><Bar dataKey="visitas" fill="#10b981" radius={[4,4,0,0]}/></BarChart></ResponsiveContainer></div>)}
       {data.com_observacao?.length>0&&(<div>
         <p className="text-base font-bold text-gray-700 mb-2">Com observação <span className="text-sm font-normal text-gray-400">(toque para editar)</span></p>
         <div className="space-y-2">{data.com_observacao.slice(0,10).map((l,i)=>(
@@ -493,7 +493,7 @@ function GaugeChart({ valor, label, cor="#10b981" }) {
           <RadialBar dataKey="value" cornerRadius={6} background={{fill:"#1e293b"}}/>
         </RadialBarChart>
       </ResponsiveContainer>
-      <p style={{color,fontSize:22,fontWeight:700,marginTop:-20}}>{valor}%</p>
+      <p style={{color:cor,fontSize:22,fontWeight:700,marginTop:-20}}>{valor}%</p>
       <p style={{color:DARK.muted,fontSize:12}}>{label}</p>
     </div>
   );
