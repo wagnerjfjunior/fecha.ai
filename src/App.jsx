@@ -584,41 +584,106 @@ function DKpi({ label, value, sub, color="#38bdf8" }) {
   );
 }
 
-// ─── Gauge semicírculo SVG ────────────────────────────────────────────────────
-function ArcGauge({ valor, label, cor="#10b981" }) {
-  const v=Math.min(99.9,Math.max(0,valor||0)), pct=v/100;
-  const r=38, cx=60, cy=58, sx=cx-r, sy=cy;
-  const theta=Math.PI*(1-pct);
-  const ex=cx+r*Math.cos(theta), ey=cy-r*Math.sin(theta);
-  const large=pct>0.5?1:0;
+// ─── ArcGauge — estilo Grafana ───────────────────────────────────────────────
+function ArcGauge({ valor, label }) {
+  const v   = Math.min(99.9, Math.max(0.2, valor||0.2));
+  const p   = v / 100;
+  const r   = 40, cx = 60, cy = 64;
+
+  function ptArc(t) {
+    const a = Math.PI * (1 - t);
+    return [+(cx + r * Math.cos(a)).toFixed(2), +(cy - r * Math.sin(a)).toFixed(2)];
+  }
+  function arcD(t0, t1) {
+    const [x0,y0]=ptArc(t0), [x1,y1]=ptArc(t1);
+    return `M${x0},${y0} A${r},${r} 0 ${(t1-t0)>0.5?1:0},0 ${x1},${y1}`;
+  }
+
+  const numCor = p<=0.33 ? "#22c55e" : p<=0.66 ? "#f59e0b" : "#ef4444";
+
+  // Ponta arredondada no final do preenchimento
+  const tipPt  = ptArc(Math.min(p, 0.999));
+  const tipCol = numCor;
+
   return (
     <div style={{textAlign:"center"}}>
-      <svg viewBox="0 0 120 78" width="100%" style={{overflow:"visible"}}>
-        <path d={`M${sx},${sy} A${r},${r} 0 0,0 ${cx+r},${sy}`} fill="none" stroke="#334155" strokeWidth="9" strokeLinecap="round"/>
-        {pct>0&&<path d={`M${sx},${sy} A${r},${r} 0 ${large},0 ${ex},${ey}`} fill="none" stroke={cor} strokeWidth="9" strokeLinecap="round"/>}
-        <text x={cx} y={cy-2} textAnchor="middle" fill={cor} fontSize="17" fontWeight="700">{v}%</text>
-        <text x={cx} y={cy+16} textAnchor="middle" fill="#94a3b8" fontSize="10">{label}</text>
+      <svg viewBox="0 0 120 82" width="100%" style={{overflow:"visible"}}>
+        {/* Trilha escura de fundo (arco completo) */}
+        <path d={arcD(0,0.999)} fill="none" stroke="#1e3a5f" strokeWidth="11" strokeLinecap="round"/>
+        {/* Zonas de cor sempre visíveis (opacidade reduzida = referência) */}
+        <path d={arcD(0,0.333)}    fill="none" stroke="#22c55e" strokeWidth="11" strokeLinecap="round"  opacity="0.2"/>
+        <path d={arcD(0.333,0.666)} fill="none" stroke="#f59e0b" strokeWidth="11" strokeLinecap="butt"   opacity="0.2"/>
+        <path d={arcD(0.666,0.999)} fill="none" stroke="#ef4444" strokeWidth="11" strokeLinecap="round"  opacity="0.2"/>
+        {/* Preenchimento sólido até o valor — verde */}
+        {p > 0.001 && <path d={arcD(0, Math.min(p,0.333))} fill="none" stroke="#22c55e" strokeWidth="11" strokeLinecap="round"/>}
+        {/* Preenchimento — âmbar */}
+        {p > 0.333 && <path d={arcD(0.333, Math.min(p,0.666))} fill="none" stroke="#f59e0b" strokeWidth="11" strokeLinecap="butt"/>}
+        {/* Preenchimento — vermelho */}
+        {p > 0.666 && <path d={arcD(0.666, Math.min(p,0.999))} fill="none" stroke="#ef4444" strokeWidth="11" strokeLinecap="butt"/>}
+        {/* Ponta circular arredondada no fim do preenchimento */}
+        {p > 0.01 && <circle cx={tipPt[0]} cy={tipPt[1]} r="5.5" fill={tipCol}/>}
+        {/* Número e label */}
+        <text x={cx} y={cy-6} textAnchor="middle" dominantBaseline="central"
+          fill={numCor} fontSize="20" fontWeight="700">{v}%</text>
+        <text x={cx} y={cy+14} textAnchor="middle" fill="#64748b" fontSize="10">{label}</text>
       </svg>
     </div>
   );
 }
 
-// ─── Funil visual SVG ─────────────────────────────────────────────────────────
+// ─── FunilViz — funil trapezoidal com bandas coloridas ──────────────────────
+// Referência: triângulo invertido, cada estágio é um trapézio colorido,
+// label dentro da banda, contagem à direita, largura proporcional ao volume.
 function FunilViz({ dados }) {
   if (!dados?.length) return null;
-  const maxVal=Math.max(...dados.map(d=>d.total),1);
-  const total=dados.reduce((s,d)=>s+d.total,0);
-  const H=30, GAP=4, height=dados.length*(H+GAP);
+
+  const W    = 300;   // largura total do SVG
+  const CX   = 150;   // centro horizontal
+  const MAXW = 260;   // largura máxima (estágio com mais leads)
+  const MINW = 24;    // largura mínima (evita bandas invisíveis)
+  const H    = 30;    // altura de cada banda
+  const GAP  = 2;     // espaço entre bandas
+
+  const maxVal = Math.max(...dados.map(d => d.total), 1);
+  const total  = dados.reduce((s, d) => s + d.total, 0);
+
+  // Calcular largura de cada banda proporcional ao count
+  const widths = dados.map(d => Math.max(MINW, Math.round((d.total / maxVal) * MAXW)));
+  const svgH   = dados.length * (H + GAP) + 4;
+
   return (
-    <svg viewBox={`0 0 300 ${height+4}`} width="100%" style={{display:"block"}}>
-      {dados.map((d,i)=>{
-        const pct=d.total/maxVal, w=Math.max(30,Math.round(280*pct)), x=(300-w)/2, y=i*(H+GAP);
-        const pctTot=total>0?((d.total/total)*100).toFixed(0):0;
+    <svg viewBox={`0 0 ${W} ${svgH}`} width="100%" style={{display:"block"}}>
+      {dados.map((d, i) => {
+        const topW = widths[i];
+        // A base do trapézio é a largura do próximo estágio (ou um pouco menor se for o último)
+        const botW = i < dados.length - 1 ? widths[i + 1] : Math.max(MINW, widths[i] - 20);
+        const y    = i * (H + GAP);
+
+        // Pontos do trapézio centrado
+        const tx1  = CX - topW / 2, tx2 = CX + topW / 2;
+        const bx1  = CX - botW / 2, bx2 = CX + botW / 2;
+        const pts  = `${tx1.toFixed(1)},${y} ${tx2.toFixed(1)},${y} ${bx2.toFixed(1)},${y+H} ${bx1.toFixed(1)},${y+H}`;
+
+        const pctTot = total > 0 ? ((d.total / total) * 100).toFixed(0) : 0;
+        const vazio  = d.total === 0;
+
         return (
           <g key={i}>
-            <rect x={x} y={y} width={w} height={H} rx="5" fill={d.cor||"#334155"} opacity={d.total>0?1:0.2}/>
-            <text x="6" y={y+H/2} dominantBaseline="central" fill="#f1f5f9" fontSize="10" fontWeight="500">{d.icone} {d.nome}</text>
-            <text x="294" y={y+H/2} dominantBaseline="central" textAnchor="end" fill="#94a3b8" fontSize="10">{d.total>0?`${d.total} (${pctTot}%)`:"—"}</text>
+            <polygon points={pts} fill={d.cor || "#334155"} opacity={vazio ? 0.18 : 1}/>
+            {/* Linha separadora entre bandas */}
+            {i > 0 && <line x1={tx1} y1={y} x2={tx2} y2={y} stroke="#0f172a" strokeWidth="1.5"/>}
+            {/* Label dentro da banda (só se tiver espaço suficiente) */}
+            {topW > 60 && (
+              <text x={CX} y={y + H / 2} textAnchor="middle" dominantBaseline="central"
+                fill="#fff" fontSize="10" fontWeight={vazio?"400":"500"}>
+                {d.icone} {d.nome}
+              </text>
+            )}
+            {/* Contagem à direita da banda */}
+            <text x={tx2 + 6} y={y + H / 2} dominantBaseline="central"
+              fill={vazio ? "#334155" : "#94a3b8"} fontSize="10">
+              {d.total > 0 ? `${d.total} (${pctTot}%)` : "—"}
+            </text>
           </g>
         );
       })}
