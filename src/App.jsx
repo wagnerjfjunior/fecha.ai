@@ -21,7 +21,7 @@ import Papa from "papaparse";
 import CriarUsuario from "./components/CriarUsuario";
 import HomeActions from "./components/HomeActions";
 
-const APP_VERSION = "1.8.0";
+const APP_VERSION = "1.9.0";
 const APP_BUILD   = "2026-04-17";
 
 const SUPABASE_URL = "https://uobxxgzshrmbtjfdolxd.supabase.co";
@@ -201,7 +201,7 @@ function TrocarSenhaObrigatoria({ sb, token, corretorId, onConcluido }) {
 }
 
 // ─── Modal de edição de lead ──────────────────────────────────────────────────
-function LeadModal({ lead, sb, token, onSalvo, onFechar }) {
+function LeadModal({ lead, sb, token, onSalvo, onFechar, perfilCorretor }) {
   const [fb,setFb]          = useState(lead.feedback||"");
   const [obs,setObs]        = useState(lead.observacao||"");
   const [ld,setLd]          = useState(false);
@@ -263,8 +263,7 @@ function LeadModal({ lead, sb, token, onSalvo, onFechar }) {
             <p className="font-mono font-bold text-gray-900 text-lg">{lead.telefone||lead.telefone_escolhido||"—"}</p>
             <div className="flex gap-2 mt-2 flex-wrap">
               {(lead.telefone||lead.ligar)&&<a href={"tel:"+(lead.ligar||lead.telefone)} className="flex-1 bg-blue-600 text-white rounded-xl py-3 text-center text-base font-medium no-underline">📞 Ligar</a>}
-              {wppLink&&<a href={wppLink} target="_blank" rel="noopener noreferrer" className="flex-1 bg-emerald-600 text-white rounded-xl py-3 text-center text-base font-medium no-underline">WhatsApp</a>}
-              {mailLink&&<a href={mailLink} className="flex-1 bg-indigo-600 text-white rounded-xl py-3 text-center text-base font-medium no-underline">✉</a>}
+              <BotaoMensagens lead={{...lead,telefone_e164:e164,seq_whatsapp:lead.seq_whatsapp||0,seq_email:lead.seq_email||0}} corretor={perfilCorretor} sb={sb} token={token} className="flex-1 py-3 text-base" style={{flex:1,padding:"12px 0",fontSize:15,borderRadius:12}}/>
             </div>
           </div>
         </div>
@@ -461,117 +460,206 @@ ${asCurtaEmail(c)}`,
 const SEQ_LABELS = ["Dia 1","Dia 2","Dia 3","Dia 4","Dia 5","Final"];
 
 // ─── Central de Mensagens — Modal ────────────────────────────────────────────
+// ─── BotaoMensagens — botão reutilizável que abre a Central ──────────────────
+function BotaoMensagens({ lead, corretor, sb, token, className="", style={} }) {
+  const [open, setOpen] = useState(false);
+  const [lead2, setLead2] = useState(lead);
+  const total = (lead2.seq_whatsapp||0) + (lead2.seq_email||0);
+  return (
+    <>
+      <button onClick={() => setOpen(true)}
+        className={`relative bg-purple-600 text-white rounded-xl font-bold no-underline ${className}`}
+        style={style}>
+        ✉ Mensagens
+        {total > 0 && (
+          <span className="absolute -top-1 -right-1 bg-white text-purple-600 text-xs w-4 h-4 rounded-full flex items-center justify-center font-bold" style={{fontSize:9}}>
+            {total}
+          </span>
+        )}
+      </button>
+      {open && (
+        <CentralMensagens lead={lead2} corretor={corretor} sb={sb} token={token}
+          onFechar={() => setOpen(false)}
+          onSeqAtualizado={(canal, seq) => {
+            setLead2(prev => ({...prev, [canal==="email"?"seq_email":"seq_whatsapp"]: seq}));
+          }}
+        />
+      )}
+    </>
+  );
+}
+
+// ─── Central de Mensagens UNIVERSAL — qualquer estágio, mensagem livre ────────
 function CentralMensagens({ lead, corretor, sb, token, onFechar, onSeqAtualizado }) {
   const [canal, setCanal]       = useState("whatsapp");
   const [seqWpp, setSeqWpp]     = useState(lead.seq_whatsapp||0);
   const [seqEmail, setSeqEmail] = useState(lead.seq_email||0);
+  const [idxSel, setIdxSel]     = useState(null);  // null = não selecionado
+  const [livreWpp, setLivreWpp] = useState("");
+  const [livreEmail, setLivreEmail] = useState("");
+  const [modoLivre, setModoLivre]   = useState(false);
   const [salvando, setSalvando] = useState(false);
 
   const seqAtual = canal==="whatsapp" ? seqWpp : seqEmail;
   const setSeq   = canal==="whatsapp" ? setSeqWpp : setSeqEmail;
-  const idx      = Math.min(seqAtual, MSG_WHATSAPP.length-1);
   const nome     = (lead.nome||"").split(" ")[0] || "você";
   const c        = corretor || {};
+  // Índice efetivo: selecionado manualmente OU próximo da sequência
+  const idxEfetivo = idxSel !== null ? idxSel : Math.min(seqAtual, MSG_WHATSAPP.length-1);
 
   const wppLink = () => {
     if (!lead.telefone_e164) return null;
-    return `https://wa.me/${lead.telefone_e164.replace("+","")}?text=${encodeURIComponent(MSG_WHATSAPP[idx](nome,c))}`;
+    const txt = modoLivre ? livreWpp : MSG_WHATSAPP[idxEfetivo](nome, c);
+    if (!txt.trim()) return null;
+    return `https://wa.me/${lead.telefone_e164.replace("+","")}?text=${encodeURIComponent(txt)}`;
   };
   const emailLink = () => {
     if (!lead.email) return null;
-    const t = MSG_EMAIL[idx];
+    if (modoLivre) {
+      if (!livreEmail.trim()) return null;
+      return `mailto:${lead.email}?body=${encodeURIComponent(livreEmail)}`;
+    }
+    const t = MSG_EMAIL[idxEfetivo];
     return `mailto:${lead.email}?subject=${encodeURIComponent(t.sub(nome))}&body=${encodeURIComponent(t.body(nome,c))}`;
   };
 
   const marcarEnviado = async () => {
     setSalvando(true);
     try {
-      const novaSeq = idx + 1;
+      const novaSeq = idxEfetivo + 1;
       await sb.rpc("registrar_mensagem",{p_lead_id:lead.id,p_canal:canal,p_seq:novaSeq},token);
       setSeq(novaSeq);
       onSeqAtualizado?.(canal, novaSeq);
+      setIdxSel(null);
     } catch(e) {}
     setSalvando(false);
   };
 
-  const todosEnviados = seqAtual >= MSG_WHATSAPP.length;
-
   return (
     <div className="fixed inset-0 bg-black/50 z-50 flex items-end" onClick={onFechar}>
-      <div className="bg-white rounded-t-2xl w-full max-h-[90vh] overflow-y-auto" onClick={e=>e.stopPropagation()}>
+      <div className="bg-white rounded-t-2xl w-full max-h-[92vh] overflow-y-auto" onClick={e=>e.stopPropagation()}>
         <div className="flex justify-center pt-3 pb-1"><div className="w-10 h-1 bg-gray-300 rounded-full"/></div>
-        <div className="px-5 pt-2 pb-4 border-b border-gray-100">
-          <div className="flex items-center justify-between">
+
+        {/* Header */}
+        <div className="px-5 pt-2 pb-3 border-b border-gray-100">
+          <div className="flex items-start justify-between mb-2">
             <div>
-              <h3 className="font-bold text-gray-900 text-xl">Central de Mensagens</h3>
-              <p className="text-sm text-gray-500 mt-0.5">{lead.nome}</p>
+              <h3 className="font-bold text-gray-900 text-lg">Central de Mensagens</h3>
+              <p className="text-sm text-gray-400">{lead.nome} {lead.telefone ? "· "+lead.telefone : ""}</p>
             </div>
-            <button onClick={onFechar} className="text-gray-400 text-2xl">✕</button>
+            <button onClick={onFechar} className="text-gray-400 text-2xl leading-none mt-1">✕</button>
           </div>
-          <div className="flex gap-3 mt-3">
-            <div className="flex items-center gap-1.5 bg-emerald-50 rounded-xl px-3 py-1.5">
-              <span className="text-base">💬</span>
-              <span className="text-sm font-medium text-emerald-700">WhatsApp: {seqWpp}/{MSG_WHATSAPP.length}</span>
-            </div>
-            <div className="flex items-center gap-1.5 bg-indigo-50 rounded-xl px-3 py-1.5">
-              <span className="text-base">📧</span>
-              <span className="text-sm font-medium text-indigo-700">E-mail: {seqEmail}/{MSG_EMAIL.length}</span>
-            </div>
+          {/* Badges de progresso */}
+          <div className="flex gap-2">
+            <span className="text-xs bg-emerald-50 text-emerald-700 px-2.5 py-1 rounded-full font-medium">💬 {seqWpp}/{MSG_WHATSAPP.length}</span>
+            <span className="text-xs bg-indigo-50 text-indigo-700 px-2.5 py-1 rounded-full font-medium">📧 {seqEmail}/{MSG_EMAIL.length}</span>
           </div>
         </div>
+
+        {/* Abas canal */}
         <div className="flex border-b border-gray-100">
           {[["whatsapp","💬 WhatsApp"],["email","📧 E-mail"]].map(([id,label])=>(
-            <button key={id} onClick={()=>setCanal(id)}
-              className={`flex-1 py-3 text-base font-medium transition-colors ${canal===id?"text-blue-600 border-b-2 border-blue-600":"text-gray-400"}`}>
+            <button key={id} onClick={()=>{setCanal(id);setIdxSel(null);setModoLivre(false);}}
+              className={`flex-1 py-2.5 text-sm font-medium transition-colors ${canal===id?"text-blue-600 border-b-2 border-blue-600":"text-gray-400"}`}>
               {label}
             </button>
           ))}
         </div>
-        <div className="p-5 pb-8">
-          <div className="flex gap-1.5 mb-5 flex-wrap">
-            {SEQ_LABELS.map((l,i)=>(
-              <div key={i} className={`text-xs px-2.5 py-1 rounded-full font-medium transition-all ${i<seqAtual?"bg-green-100 text-green-700":i===seqAtual?"bg-blue-600 text-white":"bg-gray-100 text-gray-400"}`}>
-                {i<seqAtual?"✓ ":""}{l}
-              </div>
-            ))}
+
+        <div className="p-4 pb-8">
+          {/* Toggle livre/template */}
+          <div className="flex items-center justify-between mb-3">
+            <p className="text-xs text-gray-400 uppercase tracking-wide font-medium">
+              {modoLivre ? "Mensagem livre" : "Escolha um template"}
+            </p>
+            <button onClick={()=>{setModoLivre(!modoLivre);setIdxSel(null);}}
+              className={`text-xs px-3 py-1 rounded-full border font-medium transition-all ${modoLivre?"bg-purple-600 text-white border-purple-600":"bg-gray-100 text-gray-600 border-gray-200"}`}>
+              {modoLivre ? "← Templates" : "✎ Livre"}
+            </button>
           </div>
-          {todosEnviados ? (
-            <div className="text-center py-8">
-              <p className="text-4xl mb-3">🎯</p>
-              <p className="text-gray-700 font-bold text-lg">Sequência concluída</p>
-              <p className="text-gray-500 text-base mt-1">Todas as mensagens foram enviadas para {nome}.</p>
-            </div>
-          ) : (
-            <>
-              <p className="text-xs text-gray-400 uppercase tracking-wide mb-2 font-medium">{SEQ_LABELS[idx]} — prévia</p>
-              <div className={`rounded-2xl p-4 mb-5 ${canal==="whatsapp"?"bg-emerald-50 border border-emerald-100":"bg-indigo-50 border border-indigo-100"}`}>
-                {canal==="whatsapp" ? (
-                  <p className="text-sm text-gray-700 whitespace-pre-line leading-relaxed">{MSG_WHATSAPP[idx](nome,c)}</p>
-                ) : (
-                  <>
-                    <p className="text-xs text-indigo-500 font-medium mb-1">Assunto:</p>
-                    <p className="text-sm font-semibold text-gray-800 mb-3">{MSG_EMAIL[idx].sub(nome)}</p>
-                    <p className="text-xs text-indigo-500 font-medium mb-1">Mensagem:</p>
-                    <p className="text-sm text-gray-700 whitespace-pre-line leading-relaxed">{MSG_EMAIL[idx].body(nome,c)}</p>
-                  </>
-                )}
-              </div>
-              {canal==="whatsapp"&&lead.telefone_e164&&(
+
+          {modoLivre ? (
+            /* Modo livre */
+            <div>
+              <textarea
+                rows={canal==="whatsapp"?6:10}
+                placeholder={canal==="whatsapp"?"Escreva sua mensagem do WhatsApp...":"Escreva o corpo do e-mail..."}
+                value={canal==="whatsapp"?livreWpp:livreEmail}
+                onChange={e=>canal==="whatsapp"?setLivreWpp(e.target.value):setLivreEmail(e.target.value)}
+                className="w-full border border-gray-200 rounded-xl px-3 py-3 text-base resize-none focus:outline-none focus:ring-2 focus:ring-blue-500 mb-3"/>
+              {canal==="whatsapp" && lead.telefone_e164 && (livreWpp.trim()) && (
                 <a href={wppLink()} target="_blank" rel="noopener noreferrer"
-                  className="block w-full bg-emerald-600 text-white rounded-2xl py-4 text-center text-base font-bold no-underline mb-3">
+                  className="block w-full bg-emerald-600 text-white rounded-2xl py-3.5 text-center text-base font-bold no-underline mb-2">
                   Abrir no WhatsApp →
                 </a>
               )}
-              {canal==="email"&&lead.email&&(
-                <a href={emailLink()} className="block w-full bg-indigo-600 text-white rounded-2xl py-4 text-center text-base font-bold no-underline mb-3">
+              {canal==="email" && lead.email && livreEmail.trim() && (
+                <a href={emailLink()} className="block w-full bg-indigo-600 text-white rounded-2xl py-3.5 text-center text-base font-bold no-underline mb-2">
                   Abrir no E-mail →
                 </a>
               )}
+            </div>
+          ) : (
+            /* Modo template: lista de opções */
+            <>
+              <div className="space-y-2 mb-4">
+                {SEQ_LABELS.map((label,i)=>{
+                  const enviado = i < seqAtual;
+                  const proximo = i === seqAtual;
+                  const sel     = idxSel === i || (idxSel === null && proximo);
+                  return (
+                    <button key={i} onClick={()=>setIdxSel(i)}
+                      className={`w-full text-left rounded-xl px-3 py-2.5 border-2 transition-all ${sel?"border-blue-500 bg-blue-50":enviado?"border-transparent bg-green-50":"border-transparent bg-gray-50"}`}>
+                      <div className="flex items-center gap-2">
+                        <span className={`text-xs w-5 h-5 rounded-full flex items-center justify-center font-bold flex-shrink-0 ${enviado?"bg-green-500 text-white":proximo?"bg-blue-600 text-white":"bg-gray-300 text-gray-600"}`}>
+                          {enviado?"✓":i+1}
+                        </span>
+                        <span className={`text-sm font-medium ${sel?"text-blue-800":enviado?"text-green-800":"text-gray-700"}`}>
+                          {canal==="whatsapp"?label:MSG_EMAIL[i]?.label||label}
+                        </span>
+                        {enviado&&<span className="ml-auto text-xs text-green-600">enviado</span>}
+                        {proximo&&!enviado&&<span className="ml-auto text-xs text-blue-500 font-medium">próximo</span>}
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+
+              {/* Preview da mensagem selecionada */}
+              {idxEfetivo < MSG_WHATSAPP.length && (
+                <div className={`rounded-xl p-3 mb-3 text-sm border ${canal==="whatsapp"?"bg-emerald-50 border-emerald-100":"bg-indigo-50 border-indigo-100"}`}>
+                  {canal==="whatsapp" ? (
+                    <p className="text-gray-700 whitespace-pre-line leading-relaxed text-xs">
+                      {MSG_WHATSAPP[idxEfetivo](nome,c)}
+                    </p>
+                  ) : (
+                    <>
+                      <p className="text-xs text-indigo-500 font-medium mb-0.5">Assunto:</p>
+                      <p className="text-xs font-semibold text-gray-800 mb-2">{MSG_EMAIL[idxEfetivo].sub(nome)}</p>
+                      <p className="text-xs text-gray-600 whitespace-pre-line leading-relaxed line-clamp-4">{MSG_EMAIL[idxEfetivo].body(nome,c)}</p>
+                    </>
+                  )}
+                </div>
+              )}
+
+              {/* Botão de envio */}
+              {canal==="whatsapp" && lead.telefone_e164 && (
+                <a href={wppLink()||"#"} target="_blank" rel="noopener noreferrer"
+                  className={`block w-full rounded-2xl py-3.5 text-center text-base font-bold no-underline mb-2 ${wppLink()?"bg-emerald-600 text-white":"bg-gray-200 text-gray-400 pointer-events-none"}`}>
+                  Abrir no WhatsApp →
+                </a>
+              )}
+              {canal==="email" && lead.email && (
+                <a href={emailLink()||"#"}
+                  className={`block w-full rounded-2xl py-3.5 text-center text-base font-bold no-underline mb-2 ${emailLink()?"bg-indigo-600 text-white":"bg-gray-200 text-gray-400 pointer-events-none"}`}>
+                  Abrir no E-mail →
+                </a>
+              )}
+
               <button onClick={marcarEnviado} disabled={salvando}
-                className="w-full bg-gray-100 text-gray-700 rounded-2xl py-3.5 text-base font-medium disabled:opacity-50 border border-gray-200">
+                className="w-full bg-gray-100 text-gray-700 rounded-2xl py-3 text-base font-medium disabled:opacity-50 border border-gray-200">
                 {salvando?"Registrando...":"✓ Marcar como enviado"}
               </button>
-              <p className="text-xs text-gray-400 text-center mt-2">Clique após enviar para avançar a sequência</p>
             </>
           )}
         </div>
@@ -729,7 +817,7 @@ function DiscadorTab({ sb, token }) {
 }
 
 // ─── Produção ─────────────────────────────────────────────────────────────────
-function ProducaoTab({ sb, token }) {
+function ProducaoTab({ sb, token, perfilCorretor }) {
   const [data,setData]=useState(null); const [ld,setLd]=useState(true); const [leadEdit,setLeadEdit]=useState(null);
   const load=async()=>{ setLd(true); try{setData(await sb.rpc("minha_producao",{},token));}catch(e){} setLd(false); };
   useEffect(()=>{load();},[]);
@@ -763,13 +851,13 @@ function ProducaoTab({ sb, token }) {
           </div>
         ))}</div>
       </div>)}
-      {leadEdit&&<LeadModal lead={leadEdit} sb={sb} token={token} onSalvo={()=>{setLeadEdit(null);load();}} onFechar={()=>setLeadEdit(null)}/>}
+      {leadEdit&&<LeadModal lead={leadEdit} sb={sb} token={token} perfilCorretor={perfilCorretor} onSalvo={()=>{setLeadEdit(null);load();}} onFechar={()=>setLeadEdit(null)}/>}
     </div>
   );
 }
 
 // ─── Carteira ─────────────────────────────────────────────────────────────────
-function CarteiraTab({ sb, token }) {
+function CarteiraTab({ sb, token, perfilCorretor }) {
   const [data,setData]=useState(null); const [ld,setLd]=useState(true); const [leadEdit,setLeadEdit]=useState(null);
   const load=async()=>{ setLd(true); try{setData(await sb.rpc("minha_producao",{},token));}catch(e){} setLd(false); };
   useEffect(()=>{load();},[]);
@@ -792,8 +880,7 @@ function CarteiraTab({ sb, token }) {
                   {fbInfo&&<span className={`text-xs text-white px-2 py-0.5 rounded-full ${fbInfo.color}`}>{fbInfo.label}</span>}
                   <div className="flex gap-1" onClick={e=>e.stopPropagation()}>
                     {l.telefone&&<a href={"tel:"+l.telefone} className="text-sm bg-blue-100 text-blue-700 px-3 py-1.5 rounded-lg no-underline font-medium">📞</a>}
-                    {e164&&<a href={buildWhatsAppLink({...l,telefone_e164:e164})} target="_blank" rel="noopener noreferrer" className="text-sm bg-emerald-100 text-emerald-700 px-3 py-1.5 rounded-lg no-underline font-medium">Zap</a>}
-                    {l.email&&<a href={buildEmailLink(l)} className="text-sm bg-indigo-100 text-indigo-700 px-3 py-1.5 rounded-lg no-underline font-medium">✉</a>}
+                    <BotaoMensagens lead={{...l,telefone_e164:e164,seq_whatsapp:l.seq_whatsapp||0,seq_email:l.seq_email||0}} corretor={perfilCorretor} sb={sb} token={token} className="text-sm px-3 py-1.5 text-sm font-medium" style={{fontSize:13,padding:"6px 12px",borderRadius:10}}/>
                   </div>
                 </div>
               </div>
@@ -802,13 +889,13 @@ function CarteiraTab({ sb, token }) {
           );
         })}
       </div>
-      {leadEdit&&<LeadModal lead={leadEdit} sb={sb} token={token} onSalvo={()=>{setLeadEdit(null);load();}} onFechar={()=>setLeadEdit(null)}/>}
+      {leadEdit&&<LeadModal lead={leadEdit} sb={sb} token={token} perfilCorretor={perfilCorretor} onSalvo={()=>{setLeadEdit(null);load();}} onFechar={()=>setLeadEdit(null)}/>}
     </div>
   );
 }
 
 // ─── Histórico ────────────────────────────────────────────────────────────────
-function HistoricoTab({ sb, token }) {
+function HistoricoTab({ sb, token, perfilCorretor }) {
   const [leads,setLeads]=useState([]); const [total,setTotal]=useState(0);
   const [ld,setLd]=useState(true); const [pagina,setPagina]=useState(0);
   const [leadEdit,setLeadEdit]=useState(null); const [busca,setBusca]=useState("");
@@ -844,7 +931,7 @@ function HistoricoTab({ sb, token }) {
         <span className="text-sm text-gray-400">{pagina*POR_PAG+1}–{Math.min((pagina+1)*POR_PAG,total)} de {total}</span>
         <button disabled={(pagina+1)*POR_PAG>=total} onClick={()=>load(pagina+1)} className="text-base text-blue-600 disabled:text-gray-300">Próximo →</button>
       </div>)}
-      {leadEdit&&<LeadModal lead={leadEdit} sb={sb} token={token} onSalvo={(a)=>{setLeadEdit(null);setLeads(prev=>prev.map(l=>l.id===a.id?{...l,...a}:l));}} onFechar={()=>setLeadEdit(null)}/>}
+      {leadEdit&&<LeadModal lead={leadEdit} sb={sb} token={token} perfilCorretor={perfilCorretor} onSalvo={(a)=>{setLeadEdit(null);setLeads(prev=>prev.map(l=>l.id===a.id?{...l,...a}:l));}} onFechar={()=>setLeadEdit(null)}/>}
     </div>
   );
 }
@@ -977,15 +1064,20 @@ function FunilViz({ dados }) {
 function DashboardTab({ sb, token }) {
   const [s,setS]=useState(null); const [hr,setHr]=useState(null);
   const [funil,setFunil]=useState(null); const [ld,setLd]=useState(true);
-  const load=async()=>{
+  const [listas,setListas]=useState([]); const [listaFiltro,setListaFiltro]=useState("");
+  const load=async(lid)=>{
     setLd(true);
     try {
-      const [stats,horario,funilStats]=await Promise.all([
-        sb.rpc("get_dashboard_stats",{},token),
+      const lf = lid !== undefined ? lid : listaFiltro;
+      const args = lf ? {p_lista_id: lf} : {};
+      const [stats,horario,funilStats,lstResp]=await Promise.all([
+        sb.rpc("get_dashboard_stats",args,token),
         sb.rpc("get_stats_horario",{},token),
         sb.rpc("get_funil_stats",{},token),
+        sb.rpc("get_listas_ativas",{},token),
       ]);
       setS(stats); setHr(horario); setFunil(funilStats);
+      if(lstResp?.listas) setListas(lstResp.listas);
     } catch(e){}
     setLd(false);
   };
@@ -1025,7 +1117,17 @@ function DashboardTab({ sb, token }) {
     <div style={{background:DARK.bg,paddingBottom:80}}>
       <div style={{background:DARK.card,borderBottom:`1px solid ${DARK.border}`,padding:"12px 16px",display:"flex",alignItems:"center",justifyContent:"space-between",position:"sticky",top:0,zIndex:10}}>
         <div><span style={{color:DARK.text,fontWeight:700,fontSize:16}}>Dashboard</span><span style={{color:DARK.muted,fontSize:12,marginLeft:8}}>v{APP_VERSION}</span></div>
-        <button onClick={load} style={{color:DARK.accent,fontSize:13,background:"none",border:"none",cursor:"pointer"}}>↺ Atualizar</button>
+        <div style={{display:"flex",alignItems:"center",gap:8}}>
+          {listas.length>0&&(
+            <select value={listaFiltro}
+              onChange={e=>{setListaFiltro(e.target.value);load(e.target.value);}}
+              style={{background:DARK.card,color:DARK.muted,border:`1px solid ${DARK.border}`,borderRadius:8,padding:"4px 8px",fontSize:11,cursor:"pointer"}}>
+              <option value="">Todas as listas</option>
+              {listas.map(l=><option key={l.id} value={l.id}>{l.nome} ({l.leads_validos||0})</option>)}
+            </select>
+          )}
+          <button onClick={()=>load()} style={{color:DARK.accent,fontSize:13,background:"none",border:"none",cursor:"pointer"}}>↺</button>
+        </div>
       </div>
       <div style={{padding:16,display:"flex",flexDirection:"column",gap:16}}>
 
@@ -1040,7 +1142,7 @@ function DashboardTab({ sb, token }) {
 
         <div style={{background:DARK.card,borderRadius:16,padding:16,border:`1px solid ${DARK.border}`}}>
           <p style={{color:DARK.text,fontWeight:600,fontSize:14,margin:"0 0 8px"}}>Taxas de conversão</p>
-          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:8}}>
+          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:8,maxWidth:480,margin:"0 auto"}}>
             <CircleKpi absValue={absVis}     pct={txVis}     label="Visitas"     cor="#10b981"/>
             <CircleKpi absValue={absContato} pct={txContato} label="Contatos"    cor="#38bdf8"/>
             <CircleKpi absValue={absErro}    pct={txErro}    label="Sem resposta" cor="#ef4444"/>
@@ -1065,7 +1167,9 @@ function DashboardTab({ sb, token }) {
         {funil?.estagios?.some(e=>e.total>0)&&(
           <div style={{background:DARK.card,borderRadius:16,padding:16,border:`1px solid ${DARK.border}`}}>
             <p style={{color:DARK.text,fontWeight:600,fontSize:14,margin:"0 0 12px"}}>Funil de vendas</p>
-            <FunilViz dados={funil.estagios}/>
+            <div style={{maxWidth:560,margin:"0 auto"}}>
+              <FunilViz dados={funil.estagios}/>
+            </div>
           </div>
         )}
 
@@ -1359,7 +1463,7 @@ function FunilCardModal({ lead, estagios, corretor, sb, token, onMovido, onFecha
 }
 
 // ─── Funil CRM — Kanban ───────────────────────────────────────────────────────
-function FunilTab({ sb, token }) {
+function FunilTab({ sb, token, perfilCorretor }) {
   const [data, setData]         = useState(null);
   const [ld, setLd]             = useState(true);
   const [estagioAtivo, setEst]  = useState(null);
@@ -1533,8 +1637,7 @@ function FunilTab({ sb, token }) {
                   {!modoSel && (
                     <div className="flex gap-2 mt-3" onClick={e => e.stopPropagation()}>
                       {(l.ligar||l.telefone) && <a href={"tel:"+(l.ligar||l.telefone)} className="text-sm bg-blue-100 text-blue-700 px-3 py-1.5 rounded-lg no-underline font-medium">📞</a>}
-                      {l.telefone_e164 && <a href={buildWhatsAppLink({...l})} target="_blank" rel="noopener noreferrer" className="text-sm bg-emerald-100 text-emerald-700 px-3 py-1.5 rounded-lg no-underline font-medium">Zap</a>}
-                      {l.email && <a href={buildEmailFunilLink(l, estAtivo?.nome||"Novo contato")} className="text-sm bg-indigo-100 text-indigo-700 px-3 py-1.5 rounded-lg no-underline font-medium">✉</a>}
+                      <BotaoMensagens lead={{...l,seq_whatsapp:l.seq_whatsapp||0,seq_email:l.seq_email||0}} corretor={corretorFunil||perfilCorretor} sb={sb} token={token} className="text-sm font-medium" style={{fontSize:13,padding:"6px 12px",borderRadius:10}}/>
                       <span className="ml-auto text-xs text-gray-300 self-center">mover →</span>
                     </div>
                   )}
@@ -1578,7 +1681,7 @@ function FunilTab({ sb, token }) {
 
       {/* Modal individual */}
       {leadSel && (
-        <FunilCardModal lead={leadSel} estagios={estagios} corretor={corretorFunil} sb={sb} token={token}
+        <FunilCardModal lead={leadSel} estagios={estagios} corretor={corretorFunil||perfilCorretor} sb={sb} token={token}
           onMovido={a => { setData(prev => ({...prev, leads: prev.leads.map(l => l.id===a.id ? {...l,...a} : l)})); setLeadSel(null); }}
           onFechar={() => setLeadSel(null)}/>
       )}
@@ -1711,17 +1814,23 @@ function EditarCorretorModal({ corretor, sb, token, onSalvo, onFechar }) {
   const [empresa,   setEmpresa]  = useState(corretor.empresa||"Tegra Incorporadora");
   const [ativo,     setAtivo]    = useState(corretor.ativo);
   const [apto,      setApto]     = useState(corretor.apto_para_receber);
+  const [listaId,   setListaId]  = useState(corretor.lista_preferencial_id||"");
+  const [listas,    setListas]   = useState([]);
   const [ld,        setLd]       = useState(false);
   const [erro,      setErro]     = useState("");
+  useEffect(()=>{
+    sb.rpc("get_listas_ativas",{},token).then(r=>{ if(r?.listas) setListas(r.listas); }).catch(()=>{});
+  },[]);
 
   const salvar = async () => {
     setLd(true); setErro("");
     try {
       const r = await sb.rpc("atualizar_perfil_corretor",{
-        p_corretor_id: corretor.id,
-        p_apelido:  apelido  || null,
-        p_telefone: telefone || null,
-        p_empresa:  empresa  || null,
+        p_corretor_id:        corretor.id,
+        p_apelido:            apelido  || null,
+        p_telefone:           telefone || null,
+        p_empresa:            empresa  || null,
+        p_lista_preferencial: listaId  || null,
       }, token);
       if (r.error) throw new Error(r.error);
       // Atualizar ativo/apto se gestor
@@ -1775,6 +1884,19 @@ function EditarCorretorModal({ corretor, sb, token, onSalvo, onFechar }) {
           {campo("Telefone profissional", telefone, setTelefone, "Ex: (11) 9 9999-9999", false, "tel")}
           {campo("Empresa", empresa, setEmpresa, "Ex: Tegra Incorporadora")}
 
+          {/* Selector de lista preferencial */}
+          <div className="mb-4">
+            <label className="block text-sm text-gray-500 mb-1.5">Lista preferencial de leads</label>
+            <select value={listaId} onChange={e=>setListaId(e.target.value)}
+              className="w-full border border-gray-300 rounded-xl px-4 py-3 text-base focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white">
+              <option value="">Padrão (pool geral)</option>
+              {listas.map(l=>(
+                <option key={l.id} value={l.id}>
+                  {l.nome} ({l.leads_validos||0} leads · {l.corretores||0} corretor{(l.corretores||0)!==1?"es":""})
+                </option>
+              ))}
+            </select>
+          </div>
           <p className="text-xs text-gray-400 uppercase tracking-wide mb-1 mt-2 font-medium">Status operacional</p>
           {toggle("Ativo no sistema",       ativo, setAtivo)}
           {toggle("Apto para receber lotes",apto,  setApto,  "bg-blue-100 text-blue-700")}
@@ -1913,14 +2035,27 @@ function GestorApp({ sb, token, corretor, onLogout, onVoltar, onCriarUsuario }) 
 
 function CorretorApp({ sb, token, corretor, onLogout, onVoltar }) {
   const [tab,setTab]=useState("discador");
+  const [perfil,setPerfil]=useState(null);
+  useEffect(()=>{
+    // Carregar perfil com apelido/telefone/empresa para assinar mensagens
+    sb.query("corretores","user_id=eq."+corretor.user_id+"&select=apelido,telefone_prof,empresa",token)
+      .then(r=>{
+        if(r.length>0) setPerfil({
+          nome: r[0].apelido||corretor.nome.split(" ")[0],
+          telefone: r[0].telefone_prof||"",
+          empresa: r[0].empresa||"Tegra Incorporadora",
+        });
+      }).catch(()=>{});
+  },[]);
+  const perfilFinal = perfil || {nome:corretor.nome.split(" ")[0],telefone:"",empresa:"Tegra Incorporadora"};
   return (
     <div className="min-h-screen bg-gray-50 pb-20">
       <Header nome={corretor.nome} isGestor={false} onLogout={onLogout} onHome={onVoltar}/>
       {tab==="discador"  &&<DiscadorTab  sb={sb} token={token} corretor={corretor}/>}
-      {tab==="funil"     &&<FunilTab     sb={sb} token={token}/>}
-      {tab==="producao"  &&<ProducaoTab  sb={sb} token={token}/>}
-      {tab==="carteira"  &&<CarteiraTab  sb={sb} token={token}/>}
-      {tab==="historico" &&<HistoricoTab sb={sb} token={token}/>}
+      {tab==="funil"     &&<FunilTab     sb={sb} token={token} perfilCorretor={perfilFinal}/>}
+      {tab==="producao"  &&<ProducaoTab  sb={sb} token={token} perfilCorretor={perfilFinal}/>}
+      {tab==="carteira"  &&<CarteiraTab  sb={sb} token={token} perfilCorretor={perfilFinal}/>}
+      {tab==="historico" &&<HistoricoTab sb={sb} token={token} perfilCorretor={perfilFinal}/>}
       <TabBar
         tabs={[
           {id:"discador", label:"Discador",  icon:"◎"},
