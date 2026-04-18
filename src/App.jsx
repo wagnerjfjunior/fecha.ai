@@ -1186,10 +1186,9 @@ function FunilCardModal({ lead, estagios, corretor, sb, token, onMovido, onFecha
   };
 
   const e164     = lead.telefone_e164 || "";
-  const wppLink  = (() => {
+  function buildWppFunil() {
     if (!e164) return null;
     const nome = (lead.nome||"").split(" ")[0]||"você";
-    // Template do WhatsApp baseado no estágio atual + assinatura do corretor
     const textoFunil = {
       "Novo contato":     `Olá, ${nome}! 👋\n\nMeu nome é ${corretor?.nome||"Consultor"} da ${corretor?.empresa||"Tegra Incorporadora"}.\n\nEntrei em contato porque temos uma oportunidade especial no *${PRODUTO}* que pode ser exatamente o que você procura.\n\nPosso te contar mais? 😊`,
       "Em conversa":      `Oi, ${nome}! 🏙️\n\nSou ${corretor?.nome||"Consultor"} novamente. Gostaria de dar continuidade à nossa conversa sobre o *${PRODUTO}*.\n\nQuando podemos falar? Estou à disposição!`,
@@ -1201,16 +1200,18 @@ function FunilCardModal({ lead, estagios, corretor, sb, token, onMovido, onFecha
     const nomeEst = estAtual?.nome||"Novo contato";
     const txt = textoFunil[nomeEst] || textoFunil["Novo contato"];
     return `https://wa.me/${e164.replace("+","")}?text=${encodeURIComponent(txt)}`;
-  })();
-  const mailLink = (() => {
+  }
+  const wppLink = buildWppFunil();
+  function buildMailFunil() {
     if (!lead.email) return null;
     const nEst = estNovo?.nome || estAtual?.nome || "Novo contato";
-    const nome = (lead.nome||"").split(" ")[0]||"você";
-    const idx  = ["Novo contato","Em conversa","Visita agendada","Visita realizada","Em negociação","Proposta enviada","Em negociação"].indexOf(nEst);
-    const safeIdx = Math.max(0, Math.min(idx, MSG_EMAIL.length-1));
+    const nomeLead = (lead.nome||"").split(" ")[0]||"você";
+    const mapIdx = {"Novo contato":0,"Em conversa":1,"Visita agendada":2,"Visita realizada":3,"Em negociação":4};
+    const safeIdx = Math.max(0, Math.min(mapIdx[nEst]||0, MSG_EMAIL.length-1));
     const t = MSG_EMAIL[safeIdx];
-    return `mailto:${lead.email}?subject=${encodeURIComponent(t.sub(nome))}&body=${encodeURIComponent(t.body(nome, corretor||{}))}`;
-  })();
+    return `mailto:${lead.email}?subject=${encodeURIComponent(t.sub(nomeLead))}&body=${encodeURIComponent(t.body(nomeLead, corretor||{}))}`;
+  }
+  const mailLink = buildMailFunil();
 
   return (
     <div className="fixed inset-0 bg-black/50 z-50 flex items-end" onClick={onFechar}>
