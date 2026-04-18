@@ -573,7 +573,6 @@ function HistoricoTab({ sb, token }) {
 
 // ─── Dashboard Gestor (DARK) ──────────────────────────────────────────────────
 const DARK = { bg:"#0f172a", card:"#1e293b", border:"#334155", text:"#f1f5f9", muted:"#94a3b8", accent:"#38bdf8" };
-const PIE_COLORS = ["#3b82f6","#f59e0b","#10b981","#ef4444","#8b5cf6"];
 
 function DKpi({ label, value, sub, color="#38bdf8" }) {
   return (
@@ -585,23 +584,18 @@ function DKpi({ label, value, sub, color="#38bdf8" }) {
   );
 }
 
-// ─── Gauge semicírculo SVG — preenche o arco de 0→100% ──────────────────────
+// ─── Gauge semicírculo SVG ────────────────────────────────────────────────────
 function ArcGauge({ valor, label, cor="#10b981" }) {
-  const v   = Math.min(99.9, Math.max(0, valor||0));
-  const pct = v / 100;
-  const r = 38, cx = 60, cy = 58;
-  const sx = cx - r, sy = cy;
-  const theta = Math.PI * (1 - pct);
-  const ex = cx + r * Math.cos(theta);
-  const ey = cy - r * Math.sin(theta);
-  const large = pct > 0.5 ? 1 : 0;
+  const v=Math.min(99.9,Math.max(0,valor||0)), pct=v/100;
+  const r=38, cx=60, cy=58, sx=cx-r, sy=cy;
+  const theta=Math.PI*(1-pct);
+  const ex=cx+r*Math.cos(theta), ey=cy-r*Math.sin(theta);
+  const large=pct>0.5?1:0;
   return (
     <div style={{textAlign:"center"}}>
       <svg viewBox="0 0 120 78" width="100%" style={{overflow:"visible"}}>
-        <path d={`M${sx},${sy} A${r},${r} 0 0,0 ${cx+r},${sy}`}
-          fill="none" stroke="#334155" strokeWidth="9" strokeLinecap="round"/>
-        {pct>0&&<path d={`M${sx},${sy} A${r},${r} 0 ${large},0 ${ex},${ey}`}
-          fill="none" stroke={cor} strokeWidth="9" strokeLinecap="round"/>}
+        <path d={`M${sx},${sy} A${r},${r} 0 0,0 ${cx+r},${sy}`} fill="none" stroke="#334155" strokeWidth="9" strokeLinecap="round"/>
+        {pct>0&&<path d={`M${sx},${sy} A${r},${r} 0 ${large},0 ${ex},${ey}`} fill="none" stroke={cor} strokeWidth="9" strokeLinecap="round"/>}
         <text x={cx} y={cy-2} textAnchor="middle" fill={cor} fontSize="17" fontWeight="700">{v}%</text>
         <text x={cx} y={cy+16} textAnchor="middle" fill="#94a3b8" fontSize="10">{label}</text>
       </svg>
@@ -609,39 +603,29 @@ function ArcGauge({ valor, label, cor="#10b981" }) {
   );
 }
 
-// ─── Funil visual SVG — barras centralizadas por estágio ─────────────────────
+// ─── Funil visual SVG ─────────────────────────────────────────────────────────
 function FunilViz({ dados }) {
   if (!dados?.length) return null;
-  const maxVal = Math.max(...dados.map(d=>d.total), 1);
-  const total  = dados.reduce((s,d)=>s+d.total,0);
-  const H = 30, GAP = 4;
-  const height = dados.length * (H + GAP);
+  const maxVal=Math.max(...dados.map(d=>d.total),1);
+  const total=dados.reduce((s,d)=>s+d.total,0);
+  const H=30, GAP=4, height=dados.length*(H+GAP);
   return (
     <svg viewBox={`0 0 300 ${height+4}`} width="100%" style={{display:"block"}}>
       {dados.map((d,i)=>{
-        const pct    = d.total / maxVal;
-        const w      = Math.max(30, Math.round(280 * pct));
-        const x      = (300 - w) / 2;
-        const y      = i * (H + GAP);
-        const pctTot = total > 0 ? ((d.total/total)*100).toFixed(0) : 0;
+        const pct=d.total/maxVal, w=Math.max(30,Math.round(280*pct)), x=(300-w)/2, y=i*(H+GAP);
+        const pctTot=total>0?((d.total/total)*100).toFixed(0):0;
         return (
           <g key={i}>
-            <rect x={x} y={y} width={w} height={H} rx="5"
-              fill={d.cor||"#334155"} opacity={d.total>0?1:0.2}/>
-            <text x="6" y={y+H/2} dominantBaseline="central"
-              fill="#f1f5f9" fontSize="10" fontWeight="500">
-              {d.icone} {d.nome}
-            </text>
-            <text x="294" y={y+H/2} dominantBaseline="central"
-              textAnchor="end" fill="#94a3b8" fontSize="10">
-              {d.total>0?`${d.total} (${pctTot}%)`:"—"}
-            </text>
+            <rect x={x} y={y} width={w} height={H} rx="5" fill={d.cor||"#334155"} opacity={d.total>0?1:0.2}/>
+            <text x="6" y={y+H/2} dominantBaseline="central" fill="#f1f5f9" fontSize="10" fontWeight="500">{d.icone} {d.nome}</text>
+            <text x="294" y={y+H/2} dominantBaseline="central" textAnchor="end" fill="#94a3b8" fontSize="10">{d.total>0?`${d.total} (${pctTot}%)`:"—"}</text>
           </g>
         );
       })}
     </svg>
   );
 }
+
 
 function DashboardTab({ sb, token }) {
   const [s,setS]=useState(null); const [hr,setHr]=useState(null);
@@ -665,40 +649,35 @@ function DashboardTab({ sb, token }) {
 
   const fb=s.feedbacks||{}, pc=s.por_corretor||[], pf=s.por_fornecedor||[];
   const totFb=Object.values(fb).reduce((a,b)=>a+b,0);
-  const txVis    = totFb>0?+((fb.agendado_visita||0)/totFb*100).toFixed(1):0;
-  const txErro   = totFb>0?+(((fb.numero_errado||0)+(fb.nao_toca||0)+(fb.caixa_postal||0))/totFb*100).toFixed(1):0;
-  const txContato= totFb>0?+((((fb.agendado_visita||0)+(fb.enviado_informacoes||0)+(fb.retornar_depois||0))/totFb)*100).toFixed(1):0;
+  const txVis    =totFb>0?+((fb.agendado_visita||0)/totFb*100).toFixed(1):0;
+  const txErro   =totFb>0?+(((fb.numero_errado||0)+(fb.nao_toca||0)+(fb.caixa_postal||0))/totFb*100).toFixed(1):0;
+  const txContato=totFb>0?+((((fb.agendado_visita||0)+(fb.enviado_informacoes||0)+(fb.retornar_depois||0))/totFb)*100).toFixed(1):0;
 
-  // Distribuição — barras horizontais (substitui pizza)
   const barData=[
-    {name:"Disponíveis",  value:s.disponiveis||0,  cor:"#38bdf8"},
-    {name:"Atendimento",  value:s.distribuidos||0,  cor:"#f59e0b"},
-    {name:"Finalizados",  value:s.finalizados||0,   cor:"#10b981"},
-    {name:"Inválidos",    value:s.invalidos||0,     cor:"#ef4444"},
+    {name:"Disponíveis", value:s.disponiveis||0,  cor:"#38bdf8"},
+    {name:"Atendimento", value:s.distribuidos||0,  cor:"#f59e0b"},
+    {name:"Finalizados", value:s.finalizados||0,   cor:"#10b981"},
+    {name:"Inválidos",   value:s.invalidos||0,     cor:"#ef4444"},
   ];
   const barMax=Math.max(...barData.map(d=>d.value),1);
 
-  // Horário: inclui contatos produtivos
   const horaData=Array.from({length:24},(_,h)=>{
-    const found=(hr?.por_hora||[]).find(x=>x.hora===h);
-    return {hora:`${String(h).padStart(2,"0")}h`, total:found?.total||0, contatos:found?.contatos||0};
+    const f=(hr?.por_hora||[]).find(x=>x.hora===h);
+    return {hora:`${String(h).padStart(2,"0")}h`, total:f?.total||0, contatos:f?.contatos||0};
   });
   const diaData=(hr?.por_dia||[]).map(d=>({dia:d.dia,total:d.total,visitas:d.visitas}));
 
-  function qualidadeCor(txErr) { if(txErr<=10) return "#10b981"; if(txErr<=25) return "#f59e0b"; return "#ef4444"; }
-  function qualidadeLabel(txErr) { if(txErr<=10) return "Boa"; if(txErr<=25) return "Regular"; return "Ruim"; }
+  function qualidadeCor(e) { return e<=10?"#10b981":e<=25?"#f59e0b":"#ef4444"; }
+  function qualidadeLabel(e) { return e<=10?"Boa":e<=25?"Regular":"Ruim"; }
 
   return (
     <div style={{background:DARK.bg,paddingBottom:80}}>
-      {/* Header */}
       <div style={{background:DARK.card,borderBottom:`1px solid ${DARK.border}`,padding:"12px 16px",display:"flex",alignItems:"center",justifyContent:"space-between",position:"sticky",top:0,zIndex:10}}>
         <div><span style={{color:DARK.text,fontWeight:700,fontSize:16}}>Dashboard</span><span style={{color:DARK.muted,fontSize:12,marginLeft:8}}>v{APP_VERSION}</span></div>
         <button onClick={load} style={{color:DARK.accent,fontSize:13,background:"none",border:"none",cursor:"pointer"}}>↺ Atualizar</button>
       </div>
-
       <div style={{padding:16,display:"flex",flexDirection:"column",gap:16}}>
 
-        {/* KPIs */}
         <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8}}>
           <DKpi label="Total leads"    value={s.total_leads}      color={DARK.text}/>
           <DKpi label="Disponíveis"    value={s.disponiveis}      color="#38bdf8"/>
@@ -708,7 +687,6 @@ function DashboardTab({ sb, token }) {
           <DKpi label="Lotes abertos"  value={s.lotes_abertos||0} color="#fb923c"/>
         </div>
 
-        {/* Gauges semicírculo */}
         <div style={{background:DARK.card,borderRadius:16,padding:16,border:`1px solid ${DARK.border}`}}>
           <p style={{color:DARK.text,fontWeight:600,fontSize:14,margin:"0 0 8px"}}>Taxas de conversão</p>
           <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:8}}>
@@ -718,7 +696,6 @@ function DashboardTab({ sb, token }) {
           </div>
         </div>
 
-        {/* Distribuição de leads — barras horizontais */}
         <div style={{background:DARK.card,borderRadius:16,padding:16,border:`1px solid ${DARK.border}`}}>
           <p style={{color:DARK.text,fontWeight:600,fontSize:14,margin:"0 0 12px"}}>Distribuição dos leads</p>
           {barData.filter(d=>d.value>0).map((d,i)=>(
@@ -734,7 +711,6 @@ function DashboardTab({ sb, token }) {
           ))}
         </div>
 
-        {/* Funil de vendas SVG */}
         {funil?.estagios?.some(e=>e.total>0)&&(
           <div style={{background:DARK.card,borderRadius:16,padding:16,border:`1px solid ${DARK.border}`}}>
             <p style={{color:DARK.text,fontWeight:600,fontSize:14,margin:"0 0 12px"}}>Funil de vendas</p>
@@ -742,7 +718,6 @@ function DashboardTab({ sb, token }) {
           </div>
         )}
 
-        {/* Ligações por hora + contatos produtivos */}
         <div style={{background:DARK.card,borderRadius:16,padding:16,border:`1px solid ${DARK.border}`}}>
           <p style={{color:DARK.text,fontWeight:600,fontSize:14,margin:"0 0 6px"}}>Ligações por hora — últimos 7 dias</p>
           <div style={{display:"flex",gap:16,marginBottom:8}}>
@@ -758,18 +733,14 @@ function DashboardTab({ sb, token }) {
               <CartesianGrid strokeDasharray="3 3" stroke={DARK.border}/>
               <XAxis dataKey="hora" tick={{fontSize:9,fill:DARK.muted}} interval={3}/>
               <YAxis tick={{fontSize:9,fill:DARK.muted}} width={22}/>
-              <RTooltip contentStyle={{background:DARK.card,border:`1px solid ${DARK.border}`,borderRadius:8,color:DARK.text}}
-                formatter={(v,n)=>[v,n==="total"?"Ligações":"Contatos produtivos"]}/>
+              <RTooltip contentStyle={{background:DARK.card,border:`1px solid ${DARK.border}`,borderRadius:8,color:DARK.text}} formatter={(v,n)=>[v,n==="total"?"Ligações":"Contatos produtivos"]}/>
               <Area type="monotone" dataKey="total"    stroke="#38bdf8" fill="url(#gH)" strokeWidth={2} name="total"/>
               <Area type="monotone" dataKey="contatos" stroke="#10b981" fill="url(#gC)" strokeWidth={2} name="contatos"/>
             </AreaChart>
           </ResponsiveContainer>
-          <p style={{color:DARK.muted,fontSize:10,marginTop:4,textAlign:"center"}}>
-            Pico de ligações à tarde + pico de contatos de manhã = mudar horário da equipe
-          </p>
+          <p style={{color:DARK.muted,fontSize:10,marginTop:4,textAlign:"center"}}>Pico de ligações à tarde + pico de contatos de manhã = mudar horário da equipe</p>
         </div>
 
-        {/* Linha por dia */}
         {diaData.length>0&&(
           <div style={{background:DARK.card,borderRadius:16,padding:16,border:`1px solid ${DARK.border}`}}>
             <p style={{color:DARK.text,fontWeight:600,fontSize:14,margin:"0 0 12px"}}>Últimos 14 dias</p>
@@ -790,7 +761,6 @@ function DashboardTab({ sb, token }) {
           </div>
         )}
 
-        {/* Por corretor */}
         {pc.length>0&&(
           <div style={{background:DARK.card,borderRadius:16,padding:16,border:`1px solid ${DARK.border}`}}>
             <p style={{color:DARK.text,fontWeight:600,fontSize:14,margin:"0 0 12px"}}>Performance por corretor</p>
@@ -812,21 +782,18 @@ function DashboardTab({ sb, token }) {
           </div>
         )}
 
-        {/* Qualidade por fornecedor */}
         {pf.length>0&&(
           <div style={{background:DARK.card,borderRadius:16,padding:16,border:`1px solid ${DARK.border}`}}>
             <p style={{color:DARK.text,fontWeight:600,fontSize:14,margin:"0 0 12px"}}>Qualidade das listas</p>
             {pf.map((f,i)=>{
-              const txErr=f.taxa_erro||0; const cor=qualidadeCor(txErr); const ql=qualidadeLabel(txErr);
+              const txErr=f.taxa_erro||0, cor=qualidadeCor(txErr), ql=qualidadeLabel(txErr);
               return (
                 <div key={i} style={{borderBottom:i<pf.length-1?`1px solid ${DARK.border}`:"none",paddingBottom:i<pf.length-1?12:0,marginBottom:i<pf.length-1?12:0}}>
                   <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
                     <div><span style={{color:DARK.text,fontSize:15,fontWeight:500}}>{f.fornecedor}</span>{f.nota_media>0&&<span style={{color:"#f59e0b",marginLeft:8,fontSize:13}}>★ {f.nota_media}</span>}</div>
                     <span style={{color:cor,fontSize:13,fontWeight:600,background:cor+"22",padding:"2px 8px",borderRadius:12}}>{ql}</span>
                   </div>
-                  <div style={{marginTop:8,height:8,background:DARK.border,borderRadius:4,overflow:"hidden"}}>
-                    <div style={{height:"100%",background:"#10b981",borderRadius:4,width:(f.taxa_visita||0)+"%"}}/>
-                  </div>
+                  <div style={{marginTop:8,height:8,background:DARK.border,borderRadius:4,overflow:"hidden"}}><div style={{height:"100%",background:"#10b981",borderRadius:4,width:(f.taxa_visita||0)+"%"}}/></div>
                   <div style={{display:"flex",justifyContent:"space-between",marginTop:4}}>
                     <span style={{color:"#10b981",fontSize:11}}>{f.taxa_visita||0}% visitas</span>
                     <span style={{color:"#ef4444",fontSize:11}}>{txErr}% erro</span>
@@ -843,8 +810,6 @@ function DashboardTab({ sb, token }) {
   );
 }
 
-
-  useEffect(()=>{load();},[]);
 
 // ─── Abas do gestor ───────────────────────────────────────────────────────────
 // ─── Modal do card no funil ───────────────────────────────────────────────────
@@ -1020,17 +985,17 @@ function FunilCardModal({ lead, estagios, sb, token, onMovido, onFechar }) {
 
 // ─── Funil CRM — Kanban ───────────────────────────────────────────────────────
 function FunilTab({ sb, token }) {
-  const [data, setData]             = useState(null);
-  const [ld, setLd]                 = useState(true);
-  const [estagioAtivo, setEstagioAtivo] = useState(null);
-  const [leadSel, setLeadSel]       = useState(null);
-  const [busca, setBusca]           = useState("");
-  const [modoSel, setModoSel]       = useState(false);
-  const [selecionados, setSel]      = useState(new Set());
-  const [showBatch, setShowBatch]   = useState(false);
-  const [estDest, setEstDest]       = useState("");
-  const [ldBatch, setLdBatch]       = useState(false);
-  const [errBatch, setErrBatch]     = useState("");
+  const [data, setData]         = useState(null);
+  const [ld, setLd]             = useState(true);
+  const [estagioAtivo, setEst]  = useState(null);
+  const [leadSel, setLeadSel]   = useState(null);
+  const [busca, setBusca]       = useState("");
+  const [modoSel, setModoSel]   = useState(false);
+  const [selecionados, setSel]  = useState(new Set());
+  const [showBatch, setShowBatch] = useState(false);
+  const [estDest, setEstDest]   = useState("");
+  const [ldBatch, setLdBatch]   = useState(false);
+  const [errBatch, setErrBatch] = useState("");
 
   const load = async () => {
     setLd(true);
@@ -1038,7 +1003,7 @@ function FunilTab({ sb, token }) {
       const r = await sb.rpc("meu_funil", {}, token);
       if (r.error) throw new Error(r.error);
       setData(r);
-      if (!estagioAtivo && r.estagios?.length > 0) setEstagioAtivo(r.estagios[0].id);
+      if (!estagioAtivo && r.estagios?.length > 0) setEst(r.estagios[0].id);
     } catch(e) {}
     setLd(false);
   };
@@ -1053,7 +1018,7 @@ function FunilTab({ sb, token }) {
     try {
       const r = await sb.rpc("mover_funil_lote", { p_lead_ids: Array.from(selecionados), p_estagio_id: estDest }, token);
       if (r.error) throw new Error(r.error);
-      setData(prev => ({...prev, leads: prev.leads.map(l => selecionados.has(l.id)?{...l,estagio_id:estDest}:l)}));
+      setData(prev => ({...prev, leads: prev.leads.map(l => selecionados.has(l.id) ? {...l, estagio_id: estDest} : l)}));
       setSel(new Set()); setModoSel(false); setShowBatch(false); setEstDest("");
     } catch(e) { setErrBatch(e.message); }
     setLdBatch(false);
@@ -1064,24 +1029,24 @@ function FunilTab({ sb, token }) {
     <div className="p-5 text-center py-16">
       <p className="text-4xl mb-4">🏠</p>
       <p className="text-gray-500 text-lg mb-2">Nenhum lead no funil ainda.</p>
-      <p className="text-gray-400 text-base">Abra um lead na Carteira → aba "▽ Funil CRM" para adicionar.</p>
+      <p className="text-gray-400 text-base">Abra um lead → aba "▽ Funil CRM" para adicionar.</p>
     </div>
   );
 
   const { estagios, leads } = data;
   const cntEst = {};
-  (leads||[]).forEach(l => { if(l.estagio_id) cntEst[l.estagio_id]=(cntEst[l.estagio_id]||0)+1; });
+  (leads||[]).forEach(l => { if(l.estagio_id) cntEst[l.estagio_id] = (cntEst[l.estagio_id]||0)+1; });
 
   const filtrados = (leads||[]).filter(l => {
     if (l.estagio_id !== estagioAtivo) return false;
     if (!busca.trim()) return true;
     return [l.nome,l.email,l.telefone].join(" ").toLowerCase().includes(busca.toLowerCase());
   });
-  const idsVisiveis = filtrados.map(l=>l.id);
-  const estAtivo    = estagios.find(e=>e.id===estagioAtivo);
+  const idsVisiveis = filtrados.map(l => l.id);
+  const estAtivo    = estagios.find(e => e.id === estagioAtivo);
 
   return (
-    <div className="pb-24" style={{WebkitOverflowScrolling:"touch"}}>
+    <div className="pb-24">
 
       {/* Header */}
       <div className="px-5 pt-5 pb-3">
@@ -1089,45 +1054,41 @@ function FunilTab({ sb, token }) {
           <h2 className="text-2xl font-bold text-gray-900">Funil CRM</h2>
           <div className="flex items-center gap-2">
             <span className="text-sm text-gray-400">{(leads||[]).length}</span>
-            <button onClick={()=>{setModoSel(!modoSel);setSel(new Set());setShowBatch(false);}}
-              className={`rounded-xl px-3 py-1.5 text-sm font-medium border transition-all ${
-                modoSel?"bg-blue-600 text-white border-blue-600":"bg-gray-100 text-gray-700 border-gray-200"
-              }`}>
+            <button onClick={() => { setModoSel(!modoSel); setSel(new Set()); setShowBatch(false); }}
+              className={`rounded-xl px-3 py-1.5 text-sm font-medium border transition-all ${modoSel ? "bg-blue-600 text-white border-blue-600" : "bg-gray-100 text-gray-700 border-gray-200"}`}>
               {modoSel ? `✓ ${selecionados.size} sel.` : "Selecionar"}
             </button>
           </div>
         </div>
         <input type="text" placeholder="Buscar lead..."
-          value={busca} onChange={e=>setBusca(e.target.value)}
+          value={busca} onChange={e => setBusca(e.target.value)}
           className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-base focus:outline-none focus:ring-2 focus:ring-blue-500"/>
       </div>
 
-      {/* Chips de estágios — scroll horizontal */}
-      <div className="flex gap-2 px-5 pb-3 overflow-x-auto" style={{scrollSnapType:"x mandatory",WebkitOverflowScrolling:"touch"}}>
-        {estagios.map(e=>{
-          const cnt=cntEst[e.id]||0; const ativo=e.id===estagioAtivo;
+      {/* Chips de estágios */}
+      <div className="flex gap-2 px-5 pb-3 overflow-x-auto" style={{WebkitOverflowScrolling:"touch"}}>
+        {estagios.map(e => {
+          const cnt = cntEst[e.id]||0; const ativo = e.id === estagioAtivo;
           return (
-            <button key={e.id} onClick={()=>{setEstagioAtivo(e.id);setSel(new Set());}}
-              style={{scrollSnapAlign:"start",flexShrink:0,
-                      border:ativo?`2px solid ${e.cor}`:"2px solid transparent",
-                      background:ativo?e.cor+"22":"#f9fafb"}}
+            <button key={e.id} onClick={() => { setEst(e.id); setSel(new Set()); }}
+              style={{flexShrink:0, border: ativo ? `2px solid ${e.cor}` : "2px solid transparent", background: ativo ? e.cor+"22" : "#f9fafb"}}
               className="flex items-center gap-1.5 rounded-xl px-3 py-2 transition-all">
               <span className="text-base">{e.icone}</span>
-              <span className={`text-sm font-medium whitespace-nowrap ${ativo?"text-gray-900":"text-gray-500"}`}>{e.nome}</span>
-              {cnt>0&&<span className="text-xs text-white px-1.5 py-0.5 rounded-full" style={{background:e.cor}}>{cnt}</span>}
+              <span className={`text-sm font-medium whitespace-nowrap ${ativo ? "text-gray-900" : "text-gray-500"}`}>{e.nome}</span>
+              {cnt > 0 && <span className="text-xs text-white px-1.5 py-0.5 rounded-full" style={{background:e.cor}}>{cnt}</span>}
             </button>
           );
         })}
       </div>
 
-      {/* Barra de seleção em massa */}
-      {modoSel&&(
+      {/* Barra seleção em massa */}
+      {modoSel && (
         <div className="px-5 py-2 bg-blue-50 border-y border-blue-100 flex items-center gap-3">
-          <button onClick={()=>selTodos(idsVisiveis)} className="text-sm text-blue-600 font-medium">
-            {selecionados.size===idsVisiveis.length&&idsVisiveis.length>0?"Desmarcar tudo":"Selecionar tudo"}
+          <button onClick={() => selTodos(idsVisiveis)} className="text-sm text-blue-600 font-medium">
+            {selecionados.size === idsVisiveis.length && idsVisiveis.length > 0 ? "Desmarcar tudo" : "Selecionar tudo"}
           </button>
-          {selecionados.size>0&&(
-            <button onClick={()=>setShowBatch(true)}
+          {selecionados.size > 0 && (
+            <button onClick={() => setShowBatch(true)}
               className="ml-auto bg-blue-600 text-white text-sm font-semibold px-4 py-1.5 rounded-xl">
               Mover {selecionados.size} →
             </button>
@@ -1137,7 +1098,7 @@ function FunilTab({ sb, token }) {
 
       {/* Cards */}
       <div className="px-5 pt-3 space-y-3">
-        {estAtivo&&(
+        {estAtivo && (
           <div className="flex items-center gap-2 mb-1">
             <div className="w-3 h-3 rounded-full" style={{background:estAtivo.cor}}/>
             <span className="font-bold text-base text-gray-900">{estAtivo.nome}</span>
@@ -1145,30 +1106,29 @@ function FunilTab({ sb, token }) {
           </div>
         )}
 
-        {filtrados.length===0&&(
+        {filtrados.length === 0 && (
           <div className="text-center py-12">
             <p className="text-4xl mb-3">{estAtivo?.icone||"○"}</p>
-            <p className="text-gray-400 text-base">{busca?"Nenhum resultado.":"Nenhum lead neste estágio."}</p>
+            <p className="text-gray-400 text-base">{busca ? "Nenhum resultado." : "Nenhum lead neste estágio."}</p>
           </div>
         )}
 
-        {filtrados.map((l,i)=>{
-          const fbInfo=FEEDBACKS.find(f=>f.id===l.feedback);
-          const sel=selecionados.has(l.id);
-          const dias=l.data_feedback?Math.floor((Date.now()-new Date(l.data_feedback))/86400000):null;
+        {filtrados.map((l, i) => {
+          const fbInfo = FEEDBACKS.find(f => f.id === l.feedback);
+          const sel    = selecionados.has(l.id);
+          const dias   = l.data_feedback ? Math.floor((Date.now()-new Date(l.data_feedback))/86400000) : null;
           return (
             <div key={i}
-              onClick={()=>modoSel?toggleSel(l.id):setLeadSel(l)}
+              onClick={() => modoSel ? toggleSel(l.id) : setLeadSel(l)}
               className="bg-white rounded-2xl p-4 border cursor-pointer transition-all"
-              style={{border:sel?"2px solid #3b82f6":"1px solid #e5e7eb",
-                      boxShadow:sel?"0 0 0 3px #bfdbfe":"0 1px 3px rgba(0,0,0,0.06)",
-                      background:sel?"#eff6ff":"white"}}>
+              style={{border: sel ? "2px solid #3b82f6" : "1px solid #e5e7eb",
+                      boxShadow: sel ? "0 0 0 3px #bfdbfe" : "0 1px 3px rgba(0,0,0,0.06)",
+                      background: sel ? "#eff6ff" : "white"}}>
               <div className="flex items-start gap-3">
-                {/* Checkbox modo seleção */}
-                {modoSel&&(
+                {modoSel && (
                   <div className="w-6 h-6 rounded-lg flex-shrink-0 mt-0.5 flex items-center justify-center"
-                    style={{background:sel?"#3b82f6":"white",border:sel?"none":"2px solid #d1d5db"}}>
-                    {sel&&<span className="text-white text-sm font-bold">✓</span>}
+                    style={{background: sel?"#3b82f6":"white", border: sel?"none":"2px solid #d1d5db"}}>
+                    {sel && <span className="text-white text-sm font-bold">✓</span>}
                   </div>
                 )}
                 <div className="flex-1 min-w-0">
@@ -1177,27 +1137,27 @@ function FunilTab({ sb, token }) {
                       <p className="font-bold text-gray-900 text-lg truncate">{l.nome||"Sem nome"}</p>
                       <p className="text-sm text-gray-500">{l.telefone||"—"}</p>
                     </div>
-                    {l.score>0&&(
+                    {l.score > 0 && (
                       <div className="w-9 h-9 rounded-full flex-shrink-0 ml-2 flex items-center justify-center text-white text-sm font-bold"
-                        style={{background:l.score>=8?"#10b981":l.score>=5?"#f59e0b":"#9ca3af"}}>
+                        style={{background: l.score>=8?"#10b981":l.score>=5?"#f59e0b":"#9ca3af"}}>
                         {l.score}
                       </div>
                     )}
                   </div>
                   <div className="flex items-center gap-2 flex-wrap mt-2">
-                    {fbInfo&&<span className={`text-xs text-white px-2 py-0.5 rounded-full ${fbInfo.color}`}>{fbInfo.icon} {fbInfo.label}</span>}
-                    {dias!==null&&(
+                    {fbInfo && <span className={`text-xs text-white px-2 py-0.5 rounded-full ${fbInfo.color}`}>{fbInfo.icon} {fbInfo.label}</span>}
+                    {dias !== null && (
                       <span className={`text-xs px-2 py-0.5 rounded-full ${dias>7?"bg-red-100 text-red-700":dias>3?"bg-amber-100 text-amber-700":"bg-green-100 text-green-700"}`}>
-                        {dias===0?"hoje":`${dias}d`}
+                        {dias === 0 ? "hoje" : `${dias}d`}
                       </span>
                     )}
                   </div>
-                  {l.observacao&&<p className="text-sm text-gray-500 mt-1.5 line-clamp-1 italic">"{l.observacao}"</p>}
-                  {!modoSel&&(
-                    <div className="flex gap-2 mt-3" onClick={e=>e.stopPropagation()}>
-                      {(l.ligar||l.telefone)&&<a href={"tel:"+(l.ligar||l.telefone)} className="text-sm bg-blue-100 text-blue-700 px-3 py-1.5 rounded-lg no-underline font-medium">📞</a>}
-                      {l.telefone_e164&&<a href={buildWhatsAppLink({...l})} target="_blank" rel="noopener noreferrer" className="text-sm bg-emerald-100 text-emerald-700 px-3 py-1.5 rounded-lg no-underline font-medium">Zap</a>}
-                      {l.email&&<a href={buildEmailFunilLink(l,estAtivo?.nome||"Novo contato")} className="text-sm bg-indigo-100 text-indigo-700 px-3 py-1.5 rounded-lg no-underline font-medium">✉</a>}
+                  {l.observacao && <p className="text-sm text-gray-500 mt-1.5 line-clamp-1 italic">"{l.observacao}"</p>}
+                  {!modoSel && (
+                    <div className="flex gap-2 mt-3" onClick={e => e.stopPropagation()}>
+                      {(l.ligar||l.telefone) && <a href={"tel:"+(l.ligar||l.telefone)} className="text-sm bg-blue-100 text-blue-700 px-3 py-1.5 rounded-lg no-underline font-medium">📞</a>}
+                      {l.telefone_e164 && <a href={buildWhatsAppLink({...l})} target="_blank" rel="noopener noreferrer" className="text-sm bg-emerald-100 text-emerald-700 px-3 py-1.5 rounded-lg no-underline font-medium">Zap</a>}
+                      {l.email && <a href={buildEmailFunilLink(l, estAtivo?.nome||"Novo contato")} className="text-sm bg-indigo-100 text-indigo-700 px-3 py-1.5 rounded-lg no-underline font-medium">✉</a>}
                       <span className="ml-auto text-xs text-gray-300 self-center">mover →</span>
                     </div>
                   )}
@@ -1209,31 +1169,30 @@ function FunilTab({ sb, token }) {
       </div>
 
       {/* Bottom sheet — mover em massa */}
-      {showBatch&&(
-        <div className="fixed inset-0 bg-black/50 z-50 flex items-end" onClick={()=>setShowBatch(false)}>
-          <div className="bg-white rounded-t-2xl w-full max-h-[85vh] overflow-y-auto p-5 pb-8" onClick={e=>e.stopPropagation()}>
+      {showBatch && (
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-end" onClick={() => setShowBatch(false)}>
+          <div className="bg-white rounded-t-2xl w-full max-h-[85vh] overflow-y-auto p-5 pb-8" onClick={e => e.stopPropagation()}>
             <div className="flex justify-center mb-4"><div className="w-10 h-1 bg-gray-300 rounded-full"/></div>
             <p className="text-xl font-bold text-gray-900 mb-1">Mover {selecionados.size} lead{selecionados.size>1?"s":""}</p>
             <p className="text-sm text-gray-500 mb-4">Selecione o estágio de destino</p>
             <div className="space-y-2 mb-4">
-              {estagios.map(e=>(
-                <button key={e.id} onClick={()=>setEstDest(e.id)}
+              {estagios.map(e => (
+                <button key={e.id} onClick={() => setEstDest(e.id)}
                   className="w-full flex items-center gap-3 rounded-xl px-4 py-3 text-left transition-all"
-                  style={{border:estDest===e.id?"2px solid #3b82f6":"2px solid transparent",
-                          background:estDest===e.id?"#eff6ff":"#f9fafb"}}>
+                  style={{border: estDest===e.id?"2px solid #3b82f6":"2px solid transparent", background: estDest===e.id?"#eff6ff":"#f9fafb"}}>
                   <span className="text-xl">{e.icone}</span>
                   <span className="flex-1 text-base font-medium text-gray-900">{e.nome}</span>
                   <div className="w-3 h-3 rounded-full" style={{background:e.cor}}/>
-                  {estDest===e.id&&<span className="text-blue-500 text-lg">✓</span>}
+                  {estDest===e.id && <span className="text-blue-500 text-lg">✓</span>}
                 </button>
               ))}
             </div>
-            {errBatch&&<div className="bg-red-50 text-red-700 rounded-xl p-3 mb-3 text-base">{errBatch}</div>}
+            {errBatch && <div className="bg-red-50 text-red-700 rounded-xl p-3 mb-3 text-base">{errBatch}</div>}
             <div className="flex gap-3">
-              <button onClick={()=>setShowBatch(false)} className="flex-1 bg-gray-100 text-gray-700 rounded-xl py-3 text-base font-medium">Cancelar</button>
+              <button onClick={() => setShowBatch(false)} className="flex-1 bg-gray-100 text-gray-700 rounded-xl py-3 text-base font-medium">Cancelar</button>
               <button onClick={moverBatch} disabled={ldBatch||!estDest}
                 className="flex-1 bg-blue-600 text-white rounded-xl py-3 text-base font-bold disabled:opacity-50">
-                {ldBatch?"Movendo...":"Confirmar"}
+                {ldBatch ? "Movendo..." : "Confirmar"}
               </button>
             </div>
           </div>
@@ -1241,214 +1200,15 @@ function FunilTab({ sb, token }) {
       )}
 
       {/* Modal individual */}
-      {leadSel&&(
-        <FunilCardModal lead={leadSel} estagios={estagios} sb={sb} token={token}
-          onMovido={a=>{setData(prev=>({...prev,leads:prev.leads.map(l=>l.id===a.id?{...l,...a}:l)}));setLeadSel(null);}}
-          onFechar={()=>setLeadSel(null)}/>
-      )}
-    </div>
-  );
-}
-
-
-
-  const load = async () => {
-    setLd(true);
-    try {
-      const r = await sb.rpc("meu_funil", {}, token);
-      if (r.error) throw new Error(r.error);
-      setData(r);
-      if (!estagioAtivo && r.estagios?.length > 0) setEstagioAtivo(r.estagios[0].id);
-    } catch(e) { console.error(e); }
-    setLd(false);
-  };
-
-  useEffect(() => { load(); }, []);
-
-  if (ld) return <div className="p-5 text-center text-gray-400 text-lg py-16">Carregando funil...</div>;
-
-  if (!data || !data.estagios?.length) return (
-    <div className="p-5 text-center py-16">
-      <p className="text-4xl mb-4">🏠</p>
-      <p className="text-gray-500 text-lg mb-2">Nenhum lead no funil ainda.</p>
-      <p className="text-gray-400 text-base">Abra um lead na Carteira ou no Histórico e mova-o para um estágio do funil.</p>
-    </div>
-  );
-
-  const { estagios, leads } = data;
-
-  // Contagem por estágio
-  const countPorEstagio = {};
-  (leads || []).forEach(l => {
-    if (l.estagio_id) countPorEstagio[l.estagio_id] = (countPorEstagio[l.estagio_id] || 0) + 1;
-  });
-
-  // Leads do estágio ativo filtrados por busca
-  const leadsFiltrados = (leads || []).filter(l => {
-    const noEstagio = l.estagio_id === estagioAtivo;
-    if (!noEstagio) return false;
-    if (!busca.trim()) return true;
-    return [l.nome, l.email, l.telefone].join(" ").toLowerCase().includes(busca.toLowerCase());
-  });
-
-  const estAtivo = estagios.find(e => e.id === estagioAtivo);
-
-  return (
-    <div className="flex flex-col h-full">
-
-      {/* Header funil */}
-      <div className="px-5 pt-5 pb-3">
-        <div className="flex items-center justify-between mb-3">
-          <h2 className="text-2xl font-bold text-gray-900">Funil CRM</h2>
-          <span className="text-sm text-gray-400">{(leads||[]).length} leads ativos</span>
-        </div>
-        <input type="text" placeholder="Buscar lead..."
-          value={busca} onChange={e => setBusca(e.target.value)}
-          className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-base focus:outline-none focus:ring-2 focus:ring-blue-500"/>
-      </div>
-
-      {/* Scroll horizontal de estágios */}
-      <div ref={scrollRef} className="overflow-x-auto flex gap-2 px-5 pb-3 scrollbar-hide" style={{scrollSnapType:"x mandatory"}}>
-        {estagios.map(e => {
-          const cnt = countPorEstagio[e.id] || 0;
-          const ativo = e.id === estagioAtivo;
-          return (
-            <button key={e.id} onClick={() => setEstagioAtivo(e.id)}
-              style={{ scrollSnapAlign:"start", flexShrink:0, borderColor: ativo ? e.cor : "transparent",
-                       background: ativo ? e.cor+"22" : "#f9fafb" }}
-              className={`flex items-center gap-1.5 rounded-xl px-3 py-2 border-2 transition-all`}>
-              <span className="text-lg">{e.icone}</span>
-              <span className={`text-sm font-medium whitespace-nowrap ${ativo ? "text-gray-900" : "text-gray-500"}`}>
-                {e.nome}
-              </span>
-              {cnt > 0 && (
-                <span className="text-xs text-white px-1.5 py-0.5 rounded-full min-w-5 text-center"
-                  style={{ background: e.cor }}>
-                  {cnt}
-                </span>
-              )}
-            </button>
-          );
-        })}
-      </div>
-
-      {/* Cards do estágio ativo */}
-      <div className="flex-1 overflow-y-auto px-5 pb-24 space-y-3 pt-2">
-        {estAtivo && (
-          <div className="flex items-center gap-2 mb-1">
-            <div className="w-3 h-3 rounded-full" style={{ background: estAtivo.cor }}/>
-            <span className="text-base font-bold text-gray-900">{estAtivo.nome}</span>
-            <span className="text-sm text-gray-400">({leadsFiltrados.length})</span>
-          </div>
-        )}
-
-        {leadsFiltrados.length === 0 && (
-          <div className="text-center py-12">
-            <p className="text-4xl mb-3">{estAtivo?.icone || "○"}</p>
-            <p className="text-gray-400 text-base">
-              {busca ? "Nenhum resultado para esta busca." : "Nenhum lead neste estágio."}
-            </p>
-            <p className="text-gray-300 text-sm mt-1">Mova leads da Carteira ou Histórico para cá.</p>
-          </div>
-        )}
-
-        {leadsFiltrados.map((l, i) => {
-          const fbInfo = FEEDBACKS.find(f => f.id === l.feedback);
-          const diasSemContato = l.data_feedback
-            ? Math.floor((Date.now() - new Date(l.data_feedback)) / 86400000)
-            : null;
-          return (
-            <div key={i}
-              className="bg-white rounded-2xl p-4 border border-gray-100 shadow-sm cursor-pointer hover:border-blue-200 hover:shadow-md transition-all active:scale-98"
-              onClick={() => setLeadSel(l)}>
-
-              {/* Linha 1: nome + score */}
-              <div className="flex items-start justify-between mb-2">
-                <div className="flex-1 min-w-0">
-                  <p className="font-bold text-gray-900 text-lg truncate">{l.nome || "Sem nome"}</p>
-                  <p className="text-sm text-gray-500">{l.telefone || "—"}</p>
-                </div>
-                {l.score > 0 && (
-                  <div className="flex flex-col items-center ml-2">
-                    <div className="w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold text-white"
-                      style={{ background: l.score >= 8 ? "#10b981" : l.score >= 5 ? "#f59e0b" : "#6b7280" }}>
-                      {l.score}
-                    </div>
-                    <p className="text-xs text-gray-400 mt-0.5">score</p>
-                  </div>
-                )}
-              </div>
-
-              {/* Linha 2: feedback + dias */}
-              <div className="flex items-center gap-2 flex-wrap">
-                {fbInfo && (
-                  <span className={`text-xs text-white px-2 py-0.5 rounded-full ${fbInfo.color}`}>
-                    {fbInfo.icon} {fbInfo.label}
-                  </span>
-                )}
-                {diasSemContato !== null && (
-                  <span className={`text-xs px-2 py-0.5 rounded-full ${
-                    diasSemContato > 7 ? "bg-red-100 text-red-700" :
-                    diasSemContato > 3 ? "bg-amber-100 text-amber-700" :
-                    "bg-green-100 text-green-700"
-                  }`}>
-                    {diasSemContato === 0 ? "hoje" : `${diasSemContato}d atrás`}
-                  </span>
-                )}
-              </div>
-
-              {/* Linha 3: observação prévia */}
-              {l.observacao && (
-                <p className="text-sm text-gray-500 mt-2 line-clamp-1 italic">"{l.observacao}"</p>
-              )}
-
-              {/* Linha 4: ações rápidas sem abrir modal */}
-              <div className="flex gap-2 mt-3" onClick={e => e.stopPropagation()}>
-                {(l.ligar || l.telefone) && (
-                  <a href={"tel:" + (l.ligar || l.telefone)}
-                    className="text-sm bg-blue-100 text-blue-700 px-3 py-1.5 rounded-lg no-underline font-medium">
-                    📞 Ligar
-                  </a>
-                )}
-                {l.telefone_e164 && (
-                  <a href={buildWhatsAppLink({ ...l, telefone_e164: l.telefone_e164 })}
-                    target="_blank" rel="noopener noreferrer"
-                    className="text-sm bg-emerald-100 text-emerald-700 px-3 py-1.5 rounded-lg no-underline font-medium">
-                    Zap
-                  </a>
-                )}
-                {l.email && (
-                  <a href={buildEmailFunilLink(l, estAtivo?.nome || "Novo contato")}
-                    className="text-sm bg-indigo-100 text-indigo-700 px-3 py-1.5 rounded-lg no-underline font-medium">
-                    ✉
-                  </a>
-                )}
-                <span className="ml-auto text-xs text-gray-300 self-center">toque para mover →</span>
-              </div>
-            </div>
-          );
-        })}
-      </div>
-
-      {/* Modal de movimentação */}
       {leadSel && (
-        <FunilCardModal
-          lead={leadSel}
-          estagios={estagios}
-          sb={sb} token={token}
-          onMovido={(atualizado) => {
-            setData(prev => ({
-              ...prev,
-              leads: prev.leads.map(l => l.id === atualizado.id ? { ...l, ...atualizado } : l)
-            }));
-            setLeadSel(null);
-          }}
-          onFechar={() => setLeadSel(null)}
-        />
+        <FunilCardModal lead={leadSel} estagios={estagios} sb={sb} token={token}
+          onMovido={a => { setData(prev => ({...prev, leads: prev.leads.map(l => l.id===a.id ? {...l,...a} : l)})); setLeadSel(null); }}
+          onFechar={() => setLeadSel(null)}/>
       )}
     </div>
   );
 }
+
 
 function UploadTab({ sb, token }) {
   const [file,setFile]=useState(null); const [forn,setForn]=useState(""); const [preview,setPreview]=useState(null);
