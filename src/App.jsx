@@ -1,6 +1,6 @@
 /**
  * FECH.AI — App principal
- * Versão: 1.7.0
+ * Versão: 1.8.0
  * Data: 2026-04-17
  * Mudanças:
  *   - Funil CRM kanban mobile-first (9 estágios imobiliários)
@@ -21,7 +21,7 @@ import Papa from "papaparse";
 import CriarUsuario from "./components/CriarUsuario";
 import HomeActions from "./components/HomeActions";
 
-const APP_VERSION = "1.7.0";
+const APP_VERSION = "1.8.0";
 const APP_BUILD   = "2026-04-17";
 
 const SUPABASE_URL = "https://uobxxgzshrmbtjfdolxd.supabase.co";
@@ -337,113 +337,131 @@ function LeadModal({ lead, sb, token, onSalvo, onFechar }) {
 // ─── Discador ─────────────────────────────────────────────────────────────────
 // ─── Central de Mensagens — Templates Caminhos da Lapa ───────────────────────
 const PRODUTO = "Caminhos da Lapa";
-const REMETENTE = "Área Comercial | Tegra Incorporadora";
 
+// Assinatura dinâmica — nunca hardcoded
+function assinatura(c) {
+  if (!c) return "Área Comercial | Tegra Incorporadora";
+  const tel = c.telefone ? `\n📱 ${c.telefone}` : "";
+  return `${c.nome}${tel}\n${c.empresa||"Tegra Incorporadora"} — ${PRODUTO}`;
+}
+function asCurtaEmail(c) {
+  if (!c) return "Área Comercial\nTegra Incorporadora";
+  const tel = c.telefone ? `\nTel/WhatsApp: ${c.telefone}` : "";
+  return `${c.nome}${tel}\n${c.empresa||"Tegra Incorporadora"}`;
+}
+
+// Templates WhatsApp — 6 etapas, assinatura variável, tom consultivo
 const MSG_WHATSAPP = [
-  (n) => `Olá, ${n}! 👋\n\nAqui é a Área Comercial da *Tegra Incorporadora*. Vi que você tem interesse em conhecer o *${PRODUTO}* — um empreendimento com localização privilegiada na Lapa, design sofisticado e opções tanto na planta quanto pronto para morar.\n\nPosso te passar mais detalhes? 😊`,
-  (n) => `Oi, ${n}! Como vai? 😊\n\nPassando rapidinho para saber se você teve a chance de ver as informações sobre o *${PRODUTO}*.\n\nQualquer dúvida — planta, localização, condições — é só falar! Estou aqui. 🏙️`,
-  (n) => `${n}, bom dia! ☀️\n\nTenho informações sobre condições especiais do *${PRODUTO}* que gostaria de compartilhar com você antes que mudem.\n\nVale uma conversa rápida. Qual seria o melhor horário pra você? 🗓️`,
-  (n) => `Olá, ${n}! 😊\n\nSei que o dia a dia é corrido — mas o *${PRODUTO}* é o tipo de lugar que precisa ser visto ao vivo para fazer sentido.\n\nPosso reservar um horário exclusivo no stand pra você? Sem pressão, com calma. 🏠✨`,
-  (n) => `${n}, última tentativa por aqui 🙂\n\nSe o momento não for agora, tudo bem — o convite para conhecer o *${PRODUTO}* fica em aberto. Estarei aqui se mudar de ideia!`,
-  (n) => `${n}, vou encerrar os contatos para não ser inconveniente. 🤝\n\nFoi um prazer chegar até você! Quando quiser conhecer o *${PRODUTO}* ou outros projetos Tegra, estaremos à disposição.\n\n— ${REMETENTE}`,
+  (n,c) => `Olá, ${n}! 👋\n\nMeu nome é ${c?.nome||"um consultor"} e trabalho com a Área Comercial da *${c?.empresa||"Tegra Incorporadora"}*.\n\nEntrei em contato porque identificamos seu interesse no *${PRODUTO}* — um empreendimento com localização privilegiada na Lapa, opções na planta e pronto para morar.\n\nPosso te contar mais sobre ele? 😊`,
+  (n,c) => `Oi, ${n}! Tudo bem? 😊\n\nSou ${c?.nome||"consultor"} da *${c?.empresa||"Tegra Incorporadora"}*, passando para saber se você teve a chance de ver as informações que enviei sobre o *${PRODUTO}*.\n\nTenho disponibilidade para tirar qualquer dúvida — planta, localização, condições. É só me chamar! 🏙️`,
+  (n,c) => `${n}, bom dia! ☀️\n\nSou ${c?.nome||"consultor"} novamente. Tenho algumas condições diferenciadas do *${PRODUTO}* que gostaria de compartilhar com você antes que mudem.\n\nVale uma conversa rápida? Qual seria o melhor horário? 🗓️`,
+  (n,c) => `Olá, ${n}! 🏠\n\nSou ${c?.nome||"consultor"} da *${c?.empresa||"Tegra Incorporadora"}*. Sei que o dia a dia é corrido, mas o *${PRODUTO}* é um desses lugares que precisam ser vistos ao vivo para fazer sentido.\n\nPosso reservar um horário exclusivo no stand para você? Sem pressão, com calma. ✨`,
+  (n,c) => `${n}, última tentativa por aqui. 🙂\n\nSe o momento não for agora, tudo bem — o convite para conhecer o *${PRODUTO}* fica aberto.\n\nWhenever you are ready, me encontra aqui!\n\n— ${c?.nome||"Consultor"} | ${c?.empresa||"Tegra Incorporadora"}`,
+  (n,c) => `${n}, vou encerrar os contatos para não ser inconveniente. 🤝\n\nFoi um prazer chegar até você! Quando quiser conhecer o *${PRODUTO}* ou outros projetos, estarei à disposição.\n\n— ${assinatura(c)}`,
 ];
 
+// Templates Email — 6 etapas
 const MSG_EMAIL = [
   {
     label:"Dia 1 — Apresentação",
-    sub:(n)=>`${PRODUTO} — um empreendimento pensado para você`,
-    body:(n)=>`Olá, ${n}!
+    sub:(n)=>`${PRODUTO} — muito prazer, ${n}!`,
+    body:(n,c)=>`Olá, ${n}!
 
-Foi uma satisfação receber o seu contato. Aqui é a Área Comercial da Tegra Incorporadora.
+Meu nome é ${c?.nome||"Consultor"} e faço parte da Área Comercial da ${c?.empresa||"Tegra Incorporadora"}.
 
-O ${PRODUTO} reúne tudo o que faz sentido em uma boa escolha: localização consolidada na Lapa, arquitetura de alto padrão e opções que cabem em diferentes momentos de vida.
+Foi uma satisfação receber o seu interesse. Quero me colocar à disposição como seu contato direto — para qualquer dúvida sobre a empresa, os empreendimentos ou o ${PRODUTO} em especial.
 
-Você encontrará três produtos pensados para perfis distintos:
+O ${PRODUTO} reúne três produtos pensados para perfis distintos:
   • Garden Design — apartamentos na planta com design exclusivo e jardins privativos.
   • Nova Vivere — na planta, com flexibilidade de pagamento durante a obra.
   • Elo — pronto para morar, para quem não quer esperar para começar.
 
 Posso marcar uma visita ao stand para você conhecer pessoalmente? Tenho certeza que vai valer o seu tempo.
 
-Aguardo o seu retorno.
+Quando for ao stand, pergunte por mim na recepção — fico feliz em te receber!
 
-${REMETENTE}`,
+Até breve,
+${asCurtaEmail(c)}`,
   },
   {
     label:"Dia 2 — Follow-up",
     sub:(n)=>`Você chegou a ver? | ${PRODUTO}`,
-    body:(n)=>`Olá, ${n}!
+    body:(n,c)=>`Olá, ${n}!
 
-Passando para saber se você teve a oportunidade de ver as informações que enviamos sobre o ${PRODUTO}.
+Aqui é o ${c?.nome||"Consultor"} da ${c?.empresa||"Tegra Incorporadora"}, passando para saber se você teve a oportunidade de ver as informações que enviamos sobre o ${PRODUTO}.
 
-Entendo que o dia a dia é corrido — por isso estou à disposição para responder qualquer dúvida de forma rápida e objetiva: plantas, condições de pagamento, localização ou qualquer outro ponto.
+Entendo que o dia a dia é corrido — por isso estou à disposição para responder qualquer dúvida de forma rápida: plantas, condições de pagamento, localização ou qualquer outro ponto.
 
-Quando for mais conveniente, é só responder este e-mail.
+Quando for mais conveniente, é só responder este e-mail ou me ligar diretamente.
 
 Até breve,
-${REMETENTE}`,
+${asCurtaEmail(c)}`,
   },
   {
     label:"Dia 3 — Oportunidade",
     sub:(n)=>`${PRODUTO} — condições que valem atenção`,
-    body:(n)=>`Olá, ${n}!
+    body:(n,c)=>`Olá, ${n}!
 
-Queria compartilhar uma informação relevante: algumas unidades do ${PRODUTO} estão com condições diferenciadas para quem decide neste momento.
+Sou ${c?.nome||"Consultor"} da ${c?.empresa||"Tegra Incorporadora"} — seu contato direto para o ${PRODUTO}.
 
-Não se trata de pressão — entendo que uma decisão como essa merece tempo e clareza. Mas seria uma pena perder uma condição vantajosa simplesmente por falta de informação.
+Queria compartilhar uma informação relevante: algumas unidades estão com condições diferenciadas para quem decide neste momento.
 
-Posso te apresentar os detalhes de forma personalizada, sem compromisso? Uma conversa de 15 minutos pode clarear muito.
+Não se trata de pressão — entendo que uma decisão como esta merece tempo e clareza. Mas seria uma pena perder uma condição vantajosa por falta de informação.
 
-Estou à disposição,
-${REMETENTE}`,
+Posso apresentar os detalhes de forma personalizada, sem compromisso? Uma conversa de 15 minutos pode clarear muito.
+
+Atenciosamente,
+${asCurtaEmail(c)}`,
   },
   {
     label:"Dia 4 — Convite à visita",
     sub:(n)=>`Uma visita pode mudar tudo | ${PRODUTO}`,
-    body:(n)=>`Olá, ${n}!
+    body:(n,c)=>`Olá, ${n}!
 
-Há algo que os números não conseguem transmitir: a sensação de estar no lugar certo.
+Aqui é o ${c?.nome||"Consultor"} novamente. Há algo que os números não conseguem transmitir: a sensação de estar no lugar certo.
 
-O ${PRODUTO} é um desses empreendimentos que fazem sentido assim que você o conhece pessoalmente — a localização, os acabamentos, o projeto arquitetônico.
+O ${PRODUTO} é desses empreendimentos que fazem sentido assim que você os conhece pessoalmente — a localização, os acabamentos, o projeto arquitetônico.
 
-Gostaria de reservar um horário exclusivo para você no nosso stand. Nada de pressa, apenas a oportunidade de conhecer com calma e tirar todas as suas dúvidas.
+Gostaria de reservar um horário exclusivo para você no stand. Nada de pressa — apenas a oportunidade de conhecer com calma e tirar todas as suas dúvidas.
+
+Ao chegar, pergunte por *${c?.nome||"Consultor"}* na recepção. Estarei esperando!
 
 Quando podemos agendar?
 
-${REMETENTE}`,
+${asCurtaEmail(c)}`,
   },
   {
     label:"Dia 5 — Última tentativa",
     sub:(n)=>`Última mensagem | ${PRODUTO}`,
-    body:(n)=>`Olá, ${n}!
+    body:(n,c)=>`Olá, ${n}!
 
 Esta é a minha última tentativa de contato por ora. Respeito o seu tempo e sei que o momento ideal é algo muito pessoal.
 
-Se surgir interesse no futuro — seja no ${PRODUTO} ou em qualquer outro empreendimento Tegra — estaremos aqui.
+Se surgir interesse no futuro — no ${PRODUTO} ou em qualquer outro empreendimento — me procure. Estarei aqui.
 
-Foi uma satisfação ter chegado até você. Desejo tudo de bom!
+Foi uma satisfação ter chegado até você.
 
-${REMETENTE}`,
+${asCurtaEmail(c)}`,
   },
   {
     label:"Mensagem final",
-    sub:(n)=>`Encerrando nosso contato | Tegra Incorporadora`,
-    body:(n)=>`Olá, ${n}!
+    sub:(n)=>`Encerrando nosso contato`,
+    body:(n,c)=>`Olá, ${n}!
 
-Conforme prometido, encerro os contatos por aqui para não ser inconveniente.
+Conforme prometido, encerro os contatos para não ser inconveniente.
 
-O ${PRODUTO} e toda a linha de empreendimentos Tegra seguirão disponíveis para você quando o momento for certo.
+O ${PRODUTO} e toda a linha de empreendimentos da ${c?.empresa||"Tegra Incorporadora"} seguirão disponíveis para você quando o momento for certo.
 
 Foi um prazer genuíno. Até uma próxima!
 
-${REMETENTE}`,
+${asCurtaEmail(c)}`,
   },
 ];
 
 const SEQ_LABELS = ["Dia 1","Dia 2","Dia 3","Dia 4","Dia 5","Final"];
 
 // ─── Central de Mensagens — Modal ────────────────────────────────────────────
-function CentralMensagens({ lead, sb, token, onFechar, onSeqAtualizado }) {
+function CentralMensagens({ lead, corretor, sb, token, onFechar, onSeqAtualizado }) {
   const [canal, setCanal]       = useState("whatsapp");
   const [seqWpp, setSeqWpp]     = useState(lead.seq_whatsapp||0);
   const [seqEmail, setSeqEmail] = useState(lead.seq_email||0);
@@ -451,26 +469,25 @@ function CentralMensagens({ lead, sb, token, onFechar, onSeqAtualizado }) {
 
   const seqAtual = canal==="whatsapp" ? seqWpp : seqEmail;
   const setSeq   = canal==="whatsapp" ? setSeqWpp : setSeqEmail;
-  // próxima mensagem a enviar = seqAtual (0-based index)
   const idx      = Math.min(seqAtual, MSG_WHATSAPP.length-1);
   const nome     = (lead.nome||"").split(" ")[0] || "você";
+  const c        = corretor || {};
 
   const wppLink = () => {
     if (!lead.telefone_e164) return null;
-    const num = lead.telefone_e164.replace("+","");
-    return `https://wa.me/${num}?text=${encodeURIComponent(MSG_WHATSAPP[idx](nome))}`;
+    return `https://wa.me/${lead.telefone_e164.replace("+","")}?text=${encodeURIComponent(MSG_WHATSAPP[idx](nome,c))}`;
   };
   const emailLink = () => {
     if (!lead.email) return null;
     const t = MSG_EMAIL[idx];
-    return `mailto:${lead.email}?subject=${encodeURIComponent(t.sub(nome))}&body=${encodeURIComponent(t.body(nome))}`;
+    return `mailto:${lead.email}?subject=${encodeURIComponent(t.sub(nome))}&body=${encodeURIComponent(t.body(nome,c))}`;
   };
 
   const marcarEnviado = async () => {
     setSalvando(true);
     try {
       const novaSeq = idx + 1;
-      await sb.rpc("registrar_mensagem", { p_lead_id: lead.id, p_canal: canal, p_seq: novaSeq }, token);
+      await sb.rpc("registrar_mensagem",{p_lead_id:lead.id,p_canal:canal,p_seq:novaSeq},token);
       setSeq(novaSeq);
       onSeqAtualizado?.(canal, novaSeq);
     } catch(e) {}
@@ -483,8 +500,6 @@ function CentralMensagens({ lead, sb, token, onFechar, onSeqAtualizado }) {
     <div className="fixed inset-0 bg-black/50 z-50 flex items-end" onClick={onFechar}>
       <div className="bg-white rounded-t-2xl w-full max-h-[90vh] overflow-y-auto" onClick={e=>e.stopPropagation()}>
         <div className="flex justify-center pt-3 pb-1"><div className="w-10 h-1 bg-gray-300 rounded-full"/></div>
-
-        {/* Header */}
         <div className="px-5 pt-2 pb-4 border-b border-gray-100">
           <div className="flex items-center justify-between">
             <div>
@@ -493,7 +508,6 @@ function CentralMensagens({ lead, sb, token, onFechar, onSeqAtualizado }) {
             </div>
             <button onClick={onFechar} className="text-gray-400 text-2xl">✕</button>
           </div>
-          {/* Badges de sequência */}
           <div className="flex gap-3 mt-3">
             <div className="flex items-center gap-1.5 bg-emerald-50 rounded-xl px-3 py-1.5">
               <span className="text-base">💬</span>
@@ -505,8 +519,6 @@ function CentralMensagens({ lead, sb, token, onFechar, onSeqAtualizado }) {
             </div>
           </div>
         </div>
-
-        {/* Abas de canal */}
         <div className="flex border-b border-gray-100">
           {[["whatsapp","💬 WhatsApp"],["email","📧 E-mail"]].map(([id,label])=>(
             <button key={id} onClick={()=>setCanal(id)}
@@ -515,20 +527,14 @@ function CentralMensagens({ lead, sb, token, onFechar, onSeqAtualizado }) {
             </button>
           ))}
         </div>
-
         <div className="p-5 pb-8">
-          {/* Sequência visual */}
           <div className="flex gap-1.5 mb-5 flex-wrap">
             {SEQ_LABELS.map((l,i)=>(
-              <div key={i} className={`text-xs px-2.5 py-1 rounded-full font-medium transition-all ${
-                i<seqAtual?"bg-green-100 text-green-700":
-                i===seqAtual?"bg-blue-600 text-white":
-                "bg-gray-100 text-gray-400"}`}>
+              <div key={i} className={`text-xs px-2.5 py-1 rounded-full font-medium transition-all ${i<seqAtual?"bg-green-100 text-green-700":i===seqAtual?"bg-blue-600 text-white":"bg-gray-100 text-gray-400"}`}>
                 {i<seqAtual?"✓ ":""}{l}
               </div>
             ))}
           </div>
-
           {todosEnviados ? (
             <div className="text-center py-8">
               <p className="text-4xl mb-3">🎯</p>
@@ -537,50 +543,35 @@ function CentralMensagens({ lead, sb, token, onFechar, onSeqAtualizado }) {
             </div>
           ) : (
             <>
-              <p className="text-xs text-gray-400 uppercase tracking-wide mb-2 font-medium">{SEQ_LABELS[idx]} — prévia da mensagem</p>
-
-              {/* Preview */}
+              <p className="text-xs text-gray-400 uppercase tracking-wide mb-2 font-medium">{SEQ_LABELS[idx]} — prévia</p>
               <div className={`rounded-2xl p-4 mb-5 ${canal==="whatsapp"?"bg-emerald-50 border border-emerald-100":"bg-indigo-50 border border-indigo-100"}`}>
                 {canal==="whatsapp" ? (
-                  <p className="text-sm text-gray-700 whitespace-pre-line leading-relaxed">
-                    {MSG_WHATSAPP[idx](nome)}
-                  </p>
+                  <p className="text-sm text-gray-700 whitespace-pre-line leading-relaxed">{MSG_WHATSAPP[idx](nome,c)}</p>
                 ) : (
                   <>
                     <p className="text-xs text-indigo-500 font-medium mb-1">Assunto:</p>
                     <p className="text-sm font-semibold text-gray-800 mb-3">{MSG_EMAIL[idx].sub(nome)}</p>
                     <p className="text-xs text-indigo-500 font-medium mb-1">Mensagem:</p>
-                    <p className="text-sm text-gray-700 whitespace-pre-line leading-relaxed">{MSG_EMAIL[idx].body(nome)}</p>
+                    <p className="text-sm text-gray-700 whitespace-pre-line leading-relaxed">{MSG_EMAIL[idx].body(nome,c)}</p>
                   </>
                 )}
               </div>
-
-              {/* Botões de ação */}
-              {canal==="whatsapp" && lead.telefone_e164 && (
+              {canal==="whatsapp"&&lead.telefone_e164&&(
                 <a href={wppLink()} target="_blank" rel="noopener noreferrer"
                   className="block w-full bg-emerald-600 text-white rounded-2xl py-4 text-center text-base font-bold no-underline mb-3">
                   Abrir no WhatsApp →
                 </a>
               )}
-              {canal==="email" && lead.email && (
-                <a href={emailLink()}
-                  className="block w-full bg-indigo-600 text-white rounded-2xl py-4 text-center text-base font-bold no-underline mb-3">
+              {canal==="email"&&lead.email&&(
+                <a href={emailLink()} className="block w-full bg-indigo-600 text-white rounded-2xl py-4 text-center text-base font-bold no-underline mb-3">
                   Abrir no E-mail →
                 </a>
               )}
-              {(!canal==="whatsapp" && !lead.telefone_e164 || canal==="email" && !lead.email) && (
-                <p className="text-sm text-red-400 text-center mb-3">
-                  {canal==="whatsapp"?"Sem número válido para WhatsApp.":"Sem e-mail cadastrado."}
-                </p>
-              )}
-
               <button onClick={marcarEnviado} disabled={salvando}
                 className="w-full bg-gray-100 text-gray-700 rounded-2xl py-3.5 text-base font-medium disabled:opacity-50 border border-gray-200">
                 {salvando?"Registrando...":"✓ Marcar como enviado"}
               </button>
-              <p className="text-xs text-gray-400 text-center mt-2">
-                Clique após enviar para avançar a sequência
-              </p>
+              <p className="text-xs text-gray-400 text-center mt-2">Clique após enviar para avançar a sequência</p>
             </>
           )}
         </div>
@@ -598,6 +589,7 @@ function DiscadorTab({ sb, token }) {
   const [rateNote,setRateNote]=useState(0); const [lastListaId,setLastListaId]=useState(null);
   const [solicitando,setSolicitando]=useState(false); const [solErr,setSolErr]=useState("");
   const [showMensagens,setShowMensagens]=useState(false);
+  const [corretorPerfil,setCorretorPerfil]=useState(null);
 
   const loadNext=useCallback(async()=>{
     setLd(true); setLoteDone(false); setSolErr("");
@@ -605,6 +597,7 @@ function DiscadorTab({ sb, token }) {
       const r=await sb.rpc("proximo_lead",{},token);
       const l=r.lead?(typeof r.lead==="string"?JSON.parse(r.lead):r.lead):null;
       setLead(l); setProg(r.progresso||null); setMsg(r.message||"");
+      if(r.corretor) setCorretorPerfil(r.corretor);
       if(l) setLastListaId(l.lista_id);
     } catch(e) { setMsg(e.message); }
     setLd(false);
@@ -724,7 +717,7 @@ function DiscadorTab({ sb, token }) {
       {/* Modal mensagens */}
       {showMensagens&&lead&&(
         <CentralMensagens
-          lead={lead} sb={sb} token={token}
+          lead={lead} corretor={corretorPerfil} sb={sb} token={token}
           onFechar={()=>setShowMensagens(false)}
           onSeqAtualizado={(canal,seq)=>{
             setLead(prev=>prev?({...prev,[canal==="email"?"seq_email":"seq_whatsapp"]:seq}):prev);
@@ -869,46 +862,39 @@ function DKpi({ label, value, sub, color="#38bdf8" }) {
   );
 }
 
-// ─── ArcGauge — Grafana-style, thin arc, absolute value ─────────────────────
-function ArcGauge({ valor, absValue, label }) {
-  const v   = Math.min(99.9, Math.max(0.2, valor||0.2));
-  const p   = v / 100;
-  const r   = 34, cx = 50, cy = 52;
-  function ptA(t) {
-    const a = Math.PI*(1-t);
-    return [+(cx+r*Math.cos(a)).toFixed(2), +(cy-r*Math.sin(a)).toFixed(2)];
+// ─── CircleKpi — círculo estático elegante, valor absoluto + % menor ─────────
+function CircleKpi({ absValue, pct, label, cor="#10b981" }) {
+  const r = 30, cx = 42, cy = 42;
+  // Arco único de 270° (não gira, é estático e decorativo)
+  // De 225° (bottom-left) até 315° (bottom-right) no sentido horário — 270°
+  const toRad = d => d * Math.PI / 180;
+  function pt(deg) {
+    return [+(cx + r * Math.cos(toRad(deg))).toFixed(2), +(cy + r * Math.sin(toRad(deg))).toFixed(2)];
   }
-  function arcD(t0,t1) {
-    const [x0,y0]=ptA(t0),[x1,y1]=ptA(t1);
-    return `M${x0},${y0} A${r},${r} 0 ${(t1-t0)>0.5?1:0},0 ${x1},${y1}`;
-  }
-  const clr = p<=0.33?"#22c55e":p<=0.66?"#f59e0b":"#ef4444";
-  const tip = ptA(Math.min(p,0.999));
+  const [sx, sy] = pt(135);   // início: 135° (top-left)
+  const [ex, ey] = pt(45);    // fim: 45° (top-right) — arco de 270°
+  const arcPath = `M${sx},${sy} A${r},${r} 0 1,1 ${ex},${ey}`;
   return (
     <div style={{textAlign:"center"}}>
-      <svg viewBox="0 0 100 72" width="100%">
-        {/* Track */}
-        <path d={arcD(0,0.999)} fill="none" stroke="#1e3a5f" strokeWidth="4" strokeLinecap="round"/>
-        {/* Zone reference (faint) */}
-        <path d={arcD(0,0.333)}     fill="none" stroke="#22c55e" strokeWidth="4" strokeLinecap="round" opacity="0.18"/>
-        <path d={arcD(0.333,0.666)} fill="none" stroke="#f59e0b" strokeWidth="4" strokeLinecap="butt"  opacity="0.18"/>
-        <path d={arcD(0.666,0.999)} fill="none" stroke="#ef4444" strokeWidth="4" strokeLinecap="round" opacity="0.18"/>
-        {/* Progress */}
-        {p>0.001&&<path d={arcD(0,Math.min(p,0.333))}     fill="none" stroke="#22c55e" strokeWidth="4" strokeLinecap="round"/>}
-        {p>0.333&&<path d={arcD(0.333,Math.min(p,0.666))} fill="none" stroke="#f59e0b" strokeWidth="4" strokeLinecap="butt"/>}
-        {p>0.666&&<path d={arcD(0.666,Math.min(p,0.999))} fill="none" stroke="#ef4444" strokeWidth="4" strokeLinecap="butt"/>}
-        {/* Tip dot */}
-        {p>0.01&&<circle cx={tip[0]} cy={tip[1]} r="3" fill={clr}/>}
-        {/* Absolute value — large */}
-        <text x={cx} y={cy-11} textAnchor="middle" dominantBaseline="central" fill={clr} fontSize="20" fontWeight="700">{absValue}</text>
-        {/* Percentage — small */}
-        <text x={cx} y={cy+5}  textAnchor="middle" dominantBaseline="central" fill="#475569" fontSize="10">{v}%</text>
+      <svg viewBox="0 0 84 84" width="100%">
+        {/* Círculo de fundo */}
+        <path d={arcPath} fill="none" stroke="#1e3a5f" strokeWidth="4" strokeLinecap="round"/>
+        {/* Círculo colorido (estático — mesma curva, apenas outra cor) */}
+        <path d={arcPath} fill="none" stroke={cor} strokeWidth="4" strokeLinecap="round" opacity="0.85"/>
+        {/* Valor absoluto — grande */}
+        <text x={cx} y={cy-4} textAnchor="middle" dominantBaseline="central"
+          fill={cor} fontSize="18" fontWeight="800">{absValue}</text>
+        {/* Percentual — pequeno */}
+        <text x={cx} y={cy+14} textAnchor="middle" dominantBaseline="central"
+          fill="#475569" fontSize="9">{pct}%</text>
         {/* Label */}
-        <text x={cx} y={cy+20} textAnchor="middle" fill="#64748b" fontSize="9">{label}</text>
+        <text x={cx} y={cy+26} textAnchor="middle"
+          fill="#64748b" fontSize="8.5">{label}</text>
       </svg>
     </div>
   );
 }
+
 
 // ─── FunilViz — triângulo invertido ESTÁTICO, valores dinâmicos ──────────────
 // Forma geométrica fixa; só os números mudam com os dados.
@@ -1055,9 +1041,9 @@ function DashboardTab({ sb, token }) {
         <div style={{background:DARK.card,borderRadius:16,padding:16,border:`1px solid ${DARK.border}`}}>
           <p style={{color:DARK.text,fontWeight:600,fontSize:14,margin:"0 0 8px"}}>Taxas de conversão</p>
           <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:8}}>
-            <ArcGauge valor={txVis}     absValue={absVis}     label="Visitas"/>
-            <ArcGauge valor={txContato} absValue={absContato} label="Contatos"/>
-            <ArcGauge valor={txErro}    absValue={absErro}    label="Sem resposta"/>
+            <CircleKpi absValue={absVis}     pct={txVis}     label="Visitas"     cor="#10b981"/>
+            <CircleKpi absValue={absContato} pct={txContato} label="Contatos"    cor="#38bdf8"/>
+            <CircleKpi absValue={absErro}    pct={txErro}    label="Sem resposta" cor="#ef4444"/>
           </div>
         </div>
 
@@ -1178,7 +1164,7 @@ function DashboardTab({ sb, token }) {
 
 // ─── Abas do gestor ───────────────────────────────────────────────────────────
 // ─── Modal do card no funil ───────────────────────────────────────────────────
-function FunilCardModal({ lead, estagios, sb, token, onMovido, onFechar }) {
+function FunilCardModal({ lead, estagios, corretor, sb, token, onMovido, onFechar }) {
   const [novoEstagio, setNovoEstagio] = useState(lead.estagio_id || "");
   const [obs, setObs]                 = useState("");
   const [ld, setLd]                   = useState(false);
@@ -1200,8 +1186,31 @@ function FunilCardModal({ lead, estagios, sb, token, onMovido, onFechar }) {
   };
 
   const e164     = lead.telefone_e164 || "";
-  const wppLink  = e164 ? buildWhatsAppLink({ ...lead, telefone_e164: e164 }) : null;
-  const mailLink = buildEmailFunilLink(lead, estNovo?.nome || estAtual?.nome || "Novo contato");
+  const wppLink  = (() => {
+    if (!e164) return null;
+    const nome = (lead.nome||"").split(" ")[0]||"você";
+    // Template do WhatsApp baseado no estágio atual + assinatura do corretor
+    const textoFunil = {
+      "Novo contato":     `Olá, ${nome}! 👋\n\nMeu nome é ${corretor?.nome||"Consultor"} da ${corretor?.empresa||"Tegra Incorporadora"}.\n\nEntrei em contato porque temos uma oportunidade especial no *${PRODUTO}* que pode ser exatamente o que você procura.\n\nPosso te contar mais? 😊`,
+      "Em conversa":      `Oi, ${nome}! 🏙️\n\nSou ${corretor?.nome||"Consultor"} novamente. Gostaria de dar continuidade à nossa conversa sobre o *${PRODUTO}*.\n\nQuando podemos falar? Estou à disposição!`,
+      "Visita agendada":  `${nome}, olá! 📅\n\nSou ${corretor?.nome||"Consultor"} da ${corretor?.empresa||"Tegra Incorporadora"}, confirmando a visita ao *${PRODUTO}* que agendamos.\n\nEstou ansioso(a) para te receber! Qualquer imprevisto, me avise. 😊`,
+      "Visita realizada": `Olá, ${nome}! 🏠\n\nSou ${corretor?.nome||"Consultor"}. Foi um prazer te receber no stand do *${PRODUTO}*!\n\nEspero que tenha gostado. Tenho uma proposta personalizada preparada para você — podemos conversar?`,
+      "Em negociação":    `${nome}, bom dia! 🤝\n\nSou ${corretor?.nome||"Consultor"} da ${corretor?.empresa||"Tegra Incorporadora"}.\n\nGostaria de dar continuidade à nossa negociação sobre o *${PRODUTO}*. Tenho algumas possibilidades que podem funcionar muito bem para você!`,
+      "Proposta enviada": `Olá, ${nome}! 📄\n\nSou ${corretor?.nome||"Consultor"}, enviando a proposta que preparei sobre o *${PRODUTO}*.\n\nQualquer dúvida, estou aqui! É só responder esta mensagem. 😊`,
+    };
+    const nomeEst = estAtual?.nome||"Novo contato";
+    const txt = textoFunil[nomeEst] || textoFunil["Novo contato"];
+    return `https://wa.me/${e164.replace("+","")}?text=${encodeURIComponent(txt)}`;
+  })();
+  const mailLink = (() => {
+    if (!lead.email) return null;
+    const nEst = estNovo?.nome || estAtual?.nome || "Novo contato";
+    const nome = (lead.nome||"").split(" ")[0]||"você";
+    const idx  = ["Novo contato","Em conversa","Visita agendada","Visita realizada","Em negociação","Proposta enviada","Em negociação"].indexOf(nEst);
+    const safeIdx = Math.max(0, Math.min(idx, MSG_EMAIL.length-1));
+    const t = MSG_EMAIL[safeIdx];
+    return `mailto:${lead.email}?subject=${encodeURIComponent(t.sub(nome))}&body=${encodeURIComponent(t.body(nome, corretor||{}))}`;
+  })();
 
   return (
     <div className="fixed inset-0 bg-black/50 z-50 flex items-end" onClick={onFechar}>
@@ -1353,6 +1362,7 @@ function FunilTab({ sb, token }) {
   const [data, setData]         = useState(null);
   const [ld, setLd]             = useState(true);
   const [estagioAtivo, setEst]  = useState(null);
+  const [corretorFunil, setCorretorFunil] = useState(null);
   const [leadSel, setLeadSel]   = useState(null);
   const [busca, setBusca]       = useState("");
   const [modoSel, setModoSel]   = useState(false);
@@ -1368,6 +1378,7 @@ function FunilTab({ sb, token }) {
       const r = await sb.rpc("meu_funil", {}, token);
       if (r.error) throw new Error(r.error);
       setData(r);
+      if (r.corretor) setCorretorFunil(r.corretor);
       if (!estagioAtivo && r.estagios?.length > 0) setEst(r.estagios[0].id);
     } catch(e) {}
     setLd(false);
@@ -1566,7 +1577,7 @@ function FunilTab({ sb, token }) {
 
       {/* Modal individual */}
       {leadSel && (
-        <FunilCardModal lead={leadSel} estagios={estagios} sb={sb} token={token}
+        <FunilCardModal lead={leadSel} estagios={estagios} corretor={corretorFunil} sb={sb} token={token}
           onMovido={a => { setData(prev => ({...prev, leads: prev.leads.map(l => l.id===a.id ? {...l,...a} : l)})); setLeadSel(null); }}
           onFechar={() => setLeadSel(null)}/>
       )}
@@ -1692,25 +1703,165 @@ function ListasTab({ sb, token }) {
   );
 }
 
-function EquipeTab({ sb, token, onCriarUsuario }) {
-  const [cs,setCs]=useState([]);
-  const load=async()=>{ try{setCs(await sb.query("corretores","order=nome.asc",token));}catch(e){} };
-  useEffect(()=>{load();},[]);
+// ─── Modal edição de perfil do corretor ──────────────────────────────────────
+function EditarCorretorModal({ corretor, sb, token, onSalvo, onFechar }) {
+  const [apelido,   setApelido]  = useState(corretor.apelido||"");
+  const [telefone,  setTelefone] = useState(corretor.telefone_prof||"");
+  const [empresa,   setEmpresa]  = useState(corretor.empresa||"Tegra Incorporadora");
+  const [ativo,     setAtivo]    = useState(corretor.ativo);
+  const [apto,      setApto]     = useState(corretor.apto_para_receber);
+  const [ld,        setLd]       = useState(false);
+  const [erro,      setErro]     = useState("");
+
+  const salvar = async () => {
+    setLd(true); setErro("");
+    try {
+      const r = await sb.rpc("atualizar_perfil_corretor",{
+        p_corretor_id: corretor.id,
+        p_apelido:  apelido  || null,
+        p_telefone: telefone || null,
+        p_empresa:  empresa  || null,
+      }, token);
+      if (r.error) throw new Error(r.error);
+      // Atualizar ativo/apto se gestor
+      await sb.patch("corretores","id=eq."+corretor.id,{ativo,apto_para_receber:apto},token);
+      onSalvo({...corretor, apelido, telefone_prof:telefone, empresa, ativo, apto_para_receber:apto});
+    } catch(e) { setErro(e.message); }
+    setLd(false);
+  };
+
+  const campo = (label, value, onChange, placeholder, disabled=false, type="text") => (
+    <div className="mb-4">
+      <label className="block text-sm text-gray-500 mb-1.5">{label}</label>
+      <input type={type} value={value} onChange={e=>onChange(e.target.value)}
+        placeholder={placeholder} disabled={disabled}
+        className={`w-full border rounded-xl px-4 py-3 text-base focus:outline-none focus:ring-2 focus:ring-blue-500 ${disabled?"bg-gray-50 text-gray-400 cursor-not-allowed":"border-gray-300 bg-white"}`}/>
+    </div>
+  );
+
+  const toggle = (label, value, onChange, cor="bg-emerald-100 text-emerald-700") => (
+    <div className="flex items-center justify-between py-3 border-b border-gray-100">
+      <span className="text-base text-gray-700">{label}</span>
+      <button onClick={()=>onChange(!value)}
+        className={`px-4 py-1.5 rounded-full text-sm font-semibold transition-all ${value?cor:"bg-gray-100 text-gray-500"}`}>
+        {value?"Sim":"Não"}
+      </button>
+    </div>
+  );
+
   return (
-    <div className="p-4 space-y-4">
-      <div className="flex items-center justify-between"><h2 className="text-lg font-bold text-gray-900">Equipe</h2><button onClick={onCriarUsuario} className="bg-blue-600 text-white text-xs font-semibold px-3 py-2 rounded-xl">+ Novo usuário</button></div>
-      <div className="space-y-2">{cs.map(c=>(
-        <div key={c.id} className="bg-white rounded-xl p-3 border shadow-sm flex justify-between items-center">
-          <div><p className="font-medium text-sm">{c.nome}{c.is_gestor&&<span className="text-xs bg-blue-100 text-blue-700 px-1.5 py-0.5 rounded-full ml-1">Gestor</span>}</p><p className="text-xs text-gray-500">{c.email}</p></div>
+    <div className="fixed inset-0 bg-black/40 z-50 flex items-end" onClick={onFechar}>
+      <div className="bg-white rounded-t-2xl w-full max-h-[92vh] overflow-y-auto" onClick={e=>e.stopPropagation()}>
+        <div className="flex justify-center pt-3 pb-1"><div className="w-10 h-1 bg-gray-300 rounded-full"/></div>
+        <div className="px-5 pt-3 pb-4 border-b border-gray-100 flex items-center justify-between">
+          <div>
+            <h3 className="font-bold text-gray-900 text-xl">{corretor.nome}</h3>
+            <p className="text-sm text-gray-400">{corretor.email}</p>
+          </div>
           <div className="flex items-center gap-2">
-            {c.must_change_password&&<span className="text-xs bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full">Senha provisória</span>}
-            <span className={`text-xs px-2 py-1 rounded-full ${c.ativo?"bg-emerald-100 text-emerald-700":"bg-red-100 text-red-700"}`}>{c.ativo?"Ativo":"Inativo"}</span>
+            {corretor.is_gestor&&<span className="text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full">Gestor</span>}
+            <button onClick={onFechar} className="text-gray-400 text-2xl">✕</button>
           </div>
         </div>
-      ))}</div>
+        <div className="p-5 pb-8">
+          {/* Campos bloqueados */}
+          {campo("Nome completo", corretor.nome, ()=>{}, "", true)}
+          {campo("Email", corretor.email, ()=>{}, "", true)}
+
+          {/* Campos editáveis */}
+          <p className="text-xs text-gray-400 uppercase tracking-wide mb-3 font-medium mt-1">Perfil de corretagem</p>
+          {campo("Apelido / Nome de corretagem", apelido, setApelido, "Ex: Wagner, Sabrina...")}
+          {campo("Telefone profissional", telefone, setTelefone, "Ex: (11) 9 9999-9999", false, "tel")}
+          {campo("Empresa", empresa, setEmpresa, "Ex: Tegra Incorporadora")}
+
+          <p className="text-xs text-gray-400 uppercase tracking-wide mb-1 mt-2 font-medium">Status operacional</p>
+          {toggle("Ativo no sistema",       ativo, setAtivo)}
+          {toggle("Apto para receber lotes",apto,  setApto,  "bg-blue-100 text-blue-700")}
+
+          {/* Prévia da assinatura */}
+          {(apelido||telefone||empresa) && (
+            <div className="mt-4 bg-gray-50 rounded-xl p-4 border border-gray-200">
+              <p className="text-xs text-gray-400 uppercase mb-2 font-medium">Prévia da assinatura nas mensagens</p>
+              <p className="text-sm text-gray-700 whitespace-pre-line">
+                {apelido||corretor.nome.split(" ")[0]}{telefone?`
+📱 ${telefone}`:""}{"
+"}{empresa||"Tegra Incorporadora"} — {PRODUTO}
+              </p>
+            </div>
+          )}
+
+          {erro&&<div className="bg-red-50 text-red-700 rounded-xl p-3 mt-4 text-base">{erro}</div>}
+          <div className="flex gap-3 mt-5">
+            <button onClick={onFechar} className="flex-1 bg-gray-100 text-gray-700 rounded-xl py-3 text-base font-medium">Cancelar</button>
+            <button onClick={salvar} disabled={ld} className="flex-1 bg-blue-600 text-white rounded-xl py-3 text-base font-semibold disabled:opacity-50">
+              {ld?"Salvando...":"Salvar"}
+            </button>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }
+
+function EquipeTab({ sb, token, onCriarUsuario }) {
+  const [cs, setCs]     = useState([]);
+  const [editando, setEditando] = useState(null);
+  const load = async () => {
+    try { setCs(await sb.query("corretores","order=nome.asc",token)); } catch(e) {}
+  };
+  useEffect(()=>{load();},[]);
+
+  return (
+    <div className="p-4 space-y-4">
+      <div className="flex items-center justify-between">
+        <h2 className="text-lg font-bold text-gray-900">Equipe</h2>
+        <button onClick={onCriarUsuario} className="bg-blue-600 text-white text-xs font-semibold px-3 py-2 rounded-xl">+ Novo usuário</button>
+      </div>
+      <div className="space-y-2">
+        {cs.map(c=>(
+          <div key={c.id}
+            className="bg-white rounded-xl p-4 border shadow-sm cursor-pointer hover:border-blue-200 transition-all active:scale-98"
+            onClick={()=>setEditando(c)}>
+            <div className="flex items-start justify-between">
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2 flex-wrap">
+                  <p className="font-semibold text-base text-gray-900">{c.nome}</p>
+                  {c.is_gestor&&<span className="text-xs bg-blue-100 text-blue-700 px-1.5 py-0.5 rounded-full">Gestor</span>}
+                  {c.must_change_password&&<span className="text-xs bg-amber-100 text-amber-700 px-1.5 py-0.5 rounded-full">Senha provisória</span>}
+                </div>
+                <p className="text-xs text-gray-400 mt-0.5">{c.email}</p>
+                {/* Apelido e empresa */}
+                <div className="flex items-center gap-3 mt-1.5 flex-wrap">
+                  {c.apelido&&<span className="text-xs text-gray-600 font-medium">"{c.apelido}"</span>}
+                  {c.empresa&&<span className="text-xs text-gray-400">{c.empresa}</span>}
+                  {c.telefone_prof&&<span className="text-xs text-gray-500">{c.telefone_prof}</span>}
+                </div>
+              </div>
+              <div className="flex flex-col items-end gap-1.5 ml-3 flex-shrink-0">
+                <span className={`text-xs px-2 py-0.5 rounded-full ${c.ativo?"bg-emerald-100 text-emerald-700":"bg-red-100 text-red-700"}`}>
+                  {c.ativo?"Ativo":"Inativo"}
+                </span>
+                <span className={`text-xs px-2 py-0.5 rounded-full ${c.apto_para_receber?"bg-blue-100 text-blue-700":"bg-gray-100 text-gray-400"}`}>
+                  {c.apto_para_receber?"Apto":"Pausado"}
+                </span>
+              </div>
+            </div>
+            <p className="text-xs text-blue-400 mt-2">Toque para editar →</p>
+          </div>
+        ))}
+      </div>
+      {editando&&(
+        <EditarCorretorModal corretor={editando} sb={sb} token={token}
+          onSalvo={atualizado=>{
+            setCs(prev=>prev.map(c=>c.id===atualizado.id?atualizado:c));
+            setEditando(null);
+          }}
+          onFechar={()=>setEditando(null)}/>
+      )}
+    </div>
+  );
+}
+
 
 // ─── Login ────────────────────────────────────────────────────────────────────
 function LoginScreen({ sb, onLogin }) {
