@@ -1,6 +1,6 @@
 /**
  * FECH.AI — App principal
- * Versão: 1.6.0
+ * Versão: 1.7.0
  * Data: 2026-04-17
  * Mudanças:
  *   - Funil CRM kanban mobile-first (9 estágios imobiliários)
@@ -21,7 +21,7 @@ import Papa from "papaparse";
 import CriarUsuario from "./components/CriarUsuario";
 import HomeActions from "./components/HomeActions";
 
-const APP_VERSION = "1.6.0";
+const APP_VERSION = "1.7.0";
 const APP_BUILD   = "2026-04-17";
 
 const SUPABASE_URL = "https://uobxxgzshrmbtjfdolxd.supabase.co";
@@ -335,6 +335,261 @@ function LeadModal({ lead, sb, token, onSalvo, onFechar }) {
 }
 
 // ─── Discador ─────────────────────────────────────────────────────────────────
+// ─── Central de Mensagens — Templates Caminhos da Lapa ───────────────────────
+const PRODUTO = "Caminhos da Lapa";
+const REMETENTE = "Área Comercial | Tegra Incorporadora";
+
+const MSG_WHATSAPP = [
+  (n) => `Olá, ${n}! 👋\n\nAqui é a Área Comercial da *Tegra Incorporadora*. Vi que você tem interesse em conhecer o *${PRODUTO}* — um empreendimento com localização privilegiada na Lapa, design sofisticado e opções tanto na planta quanto pronto para morar.\n\nPosso te passar mais detalhes? 😊`,
+  (n) => `Oi, ${n}! Como vai? 😊\n\nPassando rapidinho para saber se você teve a chance de ver as informações sobre o *${PRODUTO}*.\n\nQualquer dúvida — planta, localização, condições — é só falar! Estou aqui. 🏙️`,
+  (n) => `${n}, bom dia! ☀️\n\nTenho informações sobre condições especiais do *${PRODUTO}* que gostaria de compartilhar com você antes que mudem.\n\nVale uma conversa rápida. Qual seria o melhor horário pra você? 🗓️`,
+  (n) => `Olá, ${n}! 😊\n\nSei que o dia a dia é corrido — mas o *${PRODUTO}* é o tipo de lugar que precisa ser visto ao vivo para fazer sentido.\n\nPosso reservar um horário exclusivo no stand pra você? Sem pressão, com calma. 🏠✨`,
+  (n) => `${n}, última tentativa por aqui 🙂\n\nSe o momento não for agora, tudo bem — o convite para conhecer o *${PRODUTO}* fica em aberto. Estarei aqui se mudar de ideia!`,
+  (n) => `${n}, vou encerrar os contatos para não ser inconveniente. 🤝\n\nFoi um prazer chegar até você! Quando quiser conhecer o *${PRODUTO}* ou outros projetos Tegra, estaremos à disposição.\n\n— ${REMETENTE}`,
+];
+
+const MSG_EMAIL = [
+  {
+    label:"Dia 1 — Apresentação",
+    sub:(n)=>`${PRODUTO} — um empreendimento pensado para você`,
+    body:(n)=>`Olá, ${n}!
+
+Foi uma satisfação receber o seu contato. Aqui é a Área Comercial da Tegra Incorporadora.
+
+O ${PRODUTO} reúne tudo o que faz sentido em uma boa escolha: localização consolidada na Lapa, arquitetura de alto padrão e opções que cabem em diferentes momentos de vida.
+
+Você encontrará três produtos pensados para perfis distintos:
+  • Garden Design — apartamentos na planta com design exclusivo e jardins privativos.
+  • Nova Vivere — na planta, com flexibilidade de pagamento durante a obra.
+  • Elo — pronto para morar, para quem não quer esperar para começar.
+
+Posso marcar uma visita ao stand para você conhecer pessoalmente? Tenho certeza que vai valer o seu tempo.
+
+Aguardo o seu retorno.
+
+${REMETENTE}`,
+  },
+  {
+    label:"Dia 2 — Follow-up",
+    sub:(n)=>`Você chegou a ver? | ${PRODUTO}`,
+    body:(n)=>`Olá, ${n}!
+
+Passando para saber se você teve a oportunidade de ver as informações que enviamos sobre o ${PRODUTO}.
+
+Entendo que o dia a dia é corrido — por isso estou à disposição para responder qualquer dúvida de forma rápida e objetiva: plantas, condições de pagamento, localização ou qualquer outro ponto.
+
+Quando for mais conveniente, é só responder este e-mail.
+
+Até breve,
+${REMETENTE}`,
+  },
+  {
+    label:"Dia 3 — Oportunidade",
+    sub:(n)=>`${PRODUTO} — condições que valem atenção`,
+    body:(n)=>`Olá, ${n}!
+
+Queria compartilhar uma informação relevante: algumas unidades do ${PRODUTO} estão com condições diferenciadas para quem decide neste momento.
+
+Não se trata de pressão — entendo que uma decisão como essa merece tempo e clareza. Mas seria uma pena perder uma condição vantajosa simplesmente por falta de informação.
+
+Posso te apresentar os detalhes de forma personalizada, sem compromisso? Uma conversa de 15 minutos pode clarear muito.
+
+Estou à disposição,
+${REMETENTE}`,
+  },
+  {
+    label:"Dia 4 — Convite à visita",
+    sub:(n)=>`Uma visita pode mudar tudo | ${PRODUTO}`,
+    body:(n)=>`Olá, ${n}!
+
+Há algo que os números não conseguem transmitir: a sensação de estar no lugar certo.
+
+O ${PRODUTO} é um desses empreendimentos que fazem sentido assim que você o conhece pessoalmente — a localização, os acabamentos, o projeto arquitetônico.
+
+Gostaria de reservar um horário exclusivo para você no nosso stand. Nada de pressa, apenas a oportunidade de conhecer com calma e tirar todas as suas dúvidas.
+
+Quando podemos agendar?
+
+${REMETENTE}`,
+  },
+  {
+    label:"Dia 5 — Última tentativa",
+    sub:(n)=>`Última mensagem | ${PRODUTO}`,
+    body:(n)=>`Olá, ${n}!
+
+Esta é a minha última tentativa de contato por ora. Respeito o seu tempo e sei que o momento ideal é algo muito pessoal.
+
+Se surgir interesse no futuro — seja no ${PRODUTO} ou em qualquer outro empreendimento Tegra — estaremos aqui.
+
+Foi uma satisfação ter chegado até você. Desejo tudo de bom!
+
+${REMETENTE}`,
+  },
+  {
+    label:"Mensagem final",
+    sub:(n)=>`Encerrando nosso contato | Tegra Incorporadora`,
+    body:(n)=>`Olá, ${n}!
+
+Conforme prometido, encerro os contatos por aqui para não ser inconveniente.
+
+O ${PRODUTO} e toda a linha de empreendimentos Tegra seguirão disponíveis para você quando o momento for certo.
+
+Foi um prazer genuíno. Até uma próxima!
+
+${REMETENTE}`,
+  },
+];
+
+const SEQ_LABELS = ["Dia 1","Dia 2","Dia 3","Dia 4","Dia 5","Final"];
+
+// ─── Central de Mensagens — Modal ────────────────────────────────────────────
+function CentralMensagens({ lead, sb, token, onFechar, onSeqAtualizado }) {
+  const [canal, setCanal]       = useState("whatsapp");
+  const [seqWpp, setSeqWpp]     = useState(lead.seq_whatsapp||0);
+  const [seqEmail, setSeqEmail] = useState(lead.seq_email||0);
+  const [salvando, setSalvando] = useState(false);
+
+  const seqAtual = canal==="whatsapp" ? seqWpp : seqEmail;
+  const setSeq   = canal==="whatsapp" ? setSeqWpp : setSeqEmail;
+  // próxima mensagem a enviar = seqAtual (0-based index)
+  const idx      = Math.min(seqAtual, MSG_WHATSAPP.length-1);
+  const nome     = (lead.nome||"").split(" ")[0] || "você";
+
+  const wppLink = () => {
+    if (!lead.telefone_e164) return null;
+    const num = lead.telefone_e164.replace("+","");
+    return `https://wa.me/${num}?text=${encodeURIComponent(MSG_WHATSAPP[idx](nome))}`;
+  };
+  const emailLink = () => {
+    if (!lead.email) return null;
+    const t = MSG_EMAIL[idx];
+    return `mailto:${lead.email}?subject=${encodeURIComponent(t.sub(nome))}&body=${encodeURIComponent(t.body(nome))}`;
+  };
+
+  const marcarEnviado = async () => {
+    setSalvando(true);
+    try {
+      const novaSeq = idx + 1;
+      await sb.rpc("registrar_mensagem", { p_lead_id: lead.id, p_canal: canal, p_seq: novaSeq }, token);
+      setSeq(novaSeq);
+      onSeqAtualizado?.(canal, novaSeq);
+    } catch(e) {}
+    setSalvando(false);
+  };
+
+  const todosEnviados = seqAtual >= MSG_WHATSAPP.length;
+
+  return (
+    <div className="fixed inset-0 bg-black/50 z-50 flex items-end" onClick={onFechar}>
+      <div className="bg-white rounded-t-2xl w-full max-h-[90vh] overflow-y-auto" onClick={e=>e.stopPropagation()}>
+        <div className="flex justify-center pt-3 pb-1"><div className="w-10 h-1 bg-gray-300 rounded-full"/></div>
+
+        {/* Header */}
+        <div className="px-5 pt-2 pb-4 border-b border-gray-100">
+          <div className="flex items-center justify-between">
+            <div>
+              <h3 className="font-bold text-gray-900 text-xl">Central de Mensagens</h3>
+              <p className="text-sm text-gray-500 mt-0.5">{lead.nome}</p>
+            </div>
+            <button onClick={onFechar} className="text-gray-400 text-2xl">✕</button>
+          </div>
+          {/* Badges de sequência */}
+          <div className="flex gap-3 mt-3">
+            <div className="flex items-center gap-1.5 bg-emerald-50 rounded-xl px-3 py-1.5">
+              <span className="text-base">💬</span>
+              <span className="text-sm font-medium text-emerald-700">WhatsApp: {seqWpp}/{MSG_WHATSAPP.length}</span>
+            </div>
+            <div className="flex items-center gap-1.5 bg-indigo-50 rounded-xl px-3 py-1.5">
+              <span className="text-base">📧</span>
+              <span className="text-sm font-medium text-indigo-700">E-mail: {seqEmail}/{MSG_EMAIL.length}</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Abas de canal */}
+        <div className="flex border-b border-gray-100">
+          {[["whatsapp","💬 WhatsApp"],["email","📧 E-mail"]].map(([id,label])=>(
+            <button key={id} onClick={()=>setCanal(id)}
+              className={`flex-1 py-3 text-base font-medium transition-colors ${canal===id?"text-blue-600 border-b-2 border-blue-600":"text-gray-400"}`}>
+              {label}
+            </button>
+          ))}
+        </div>
+
+        <div className="p-5 pb-8">
+          {/* Sequência visual */}
+          <div className="flex gap-1.5 mb-5 flex-wrap">
+            {SEQ_LABELS.map((l,i)=>(
+              <div key={i} className={`text-xs px-2.5 py-1 rounded-full font-medium transition-all ${
+                i<seqAtual?"bg-green-100 text-green-700":
+                i===seqAtual?"bg-blue-600 text-white":
+                "bg-gray-100 text-gray-400"}`}>
+                {i<seqAtual?"✓ ":""}{l}
+              </div>
+            ))}
+          </div>
+
+          {todosEnviados ? (
+            <div className="text-center py-8">
+              <p className="text-4xl mb-3">🎯</p>
+              <p className="text-gray-700 font-bold text-lg">Sequência concluída</p>
+              <p className="text-gray-500 text-base mt-1">Todas as mensagens foram enviadas para {nome}.</p>
+            </div>
+          ) : (
+            <>
+              <p className="text-xs text-gray-400 uppercase tracking-wide mb-2 font-medium">{SEQ_LABELS[idx]} — prévia da mensagem</p>
+
+              {/* Preview */}
+              <div className={`rounded-2xl p-4 mb-5 ${canal==="whatsapp"?"bg-emerald-50 border border-emerald-100":"bg-indigo-50 border border-indigo-100"}`}>
+                {canal==="whatsapp" ? (
+                  <p className="text-sm text-gray-700 whitespace-pre-line leading-relaxed">
+                    {MSG_WHATSAPP[idx](nome)}
+                  </p>
+                ) : (
+                  <>
+                    <p className="text-xs text-indigo-500 font-medium mb-1">Assunto:</p>
+                    <p className="text-sm font-semibold text-gray-800 mb-3">{MSG_EMAIL[idx].sub(nome)}</p>
+                    <p className="text-xs text-indigo-500 font-medium mb-1">Mensagem:</p>
+                    <p className="text-sm text-gray-700 whitespace-pre-line leading-relaxed">{MSG_EMAIL[idx].body(nome)}</p>
+                  </>
+                )}
+              </div>
+
+              {/* Botões de ação */}
+              {canal==="whatsapp" && lead.telefone_e164 && (
+                <a href={wppLink()} target="_blank" rel="noopener noreferrer"
+                  className="block w-full bg-emerald-600 text-white rounded-2xl py-4 text-center text-base font-bold no-underline mb-3">
+                  Abrir no WhatsApp →
+                </a>
+              )}
+              {canal==="email" && lead.email && (
+                <a href={emailLink()}
+                  className="block w-full bg-indigo-600 text-white rounded-2xl py-4 text-center text-base font-bold no-underline mb-3">
+                  Abrir no E-mail →
+                </a>
+              )}
+              {(!canal==="whatsapp" && !lead.telefone_e164 || canal==="email" && !lead.email) && (
+                <p className="text-sm text-red-400 text-center mb-3">
+                  {canal==="whatsapp"?"Sem número válido para WhatsApp.":"Sem e-mail cadastrado."}
+                </p>
+              )}
+
+              <button onClick={marcarEnviado} disabled={salvando}
+                className="w-full bg-gray-100 text-gray-700 rounded-2xl py-3.5 text-base font-medium disabled:opacity-50 border border-gray-200">
+                {salvando?"Registrando...":"✓ Marcar como enviado"}
+              </button>
+              <p className="text-xs text-gray-400 text-center mt-2">
+                Clique após enviar para avançar a sequência
+              </p>
+            </>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+
 function DiscadorTab({ sb, token }) {
   const [lead,setLead]=useState(null); const [prog,setProg]=useState(null); const [msg,setMsg]=useState("");
   const [ld,setLd]=useState(true); const [fld,setFld]=useState(false);
@@ -342,6 +597,7 @@ function DiscadorTab({ sb, token }) {
   const [loteDone,setLoteDone]=useState(false); const [showRate,setShowRate]=useState(false);
   const [rateNote,setRateNote]=useState(0); const [lastListaId,setLastListaId]=useState(null);
   const [solicitando,setSolicitando]=useState(false); const [solErr,setSolErr]=useState("");
+  const [showMensagens,setShowMensagens]=useState(false);
 
   const loadNext=useCallback(async()=>{
     setLd(true); setLoteDone(false); setSolErr("");
@@ -426,17 +682,36 @@ function DiscadorTab({ sb, token }) {
       </div>)}
       {lead&&(
         <div className="bg-white rounded-2xl shadow-md p-5 border border-gray-100">
-          <h2 className="text-2xl font-bold text-gray-900">{lead.nome||"Sem nome"}</h2>
-          {lead.email&&<p className="text-base text-gray-500 mt-1">{lead.email}</p>}
-          {lead.endereco&&<p className="text-base text-gray-400 mt-1">{lead.endereco}</p>}
+          <div className="flex items-start justify-between mb-1">
+            <h2 className="text-2xl font-bold text-gray-900 flex-1">{lead.nome||"Sem nome"}</h2>
+            {/* Badges de sequência de mensagens */}
+            <div className="flex gap-1.5 ml-2 flex-shrink-0">
+              {(lead.seq_whatsapp||0)>0&&(
+                <span className="text-xs bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded-full font-medium">💬 {lead.seq_whatsapp}</span>
+              )}
+              {(lead.seq_email||0)>0&&(
+                <span className="text-xs bg-indigo-100 text-indigo-700 px-2 py-0.5 rounded-full font-medium">📧 {lead.seq_email}</span>
+              )}
+            </div>
+          </div>
+          {lead.email&&<p className="text-base text-gray-500 mt-0.5">{lead.email}</p>}
+          {lead.score>0&&<span className="inline-block mt-1 text-xs bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full">Score {lead.score}/10</span>}
           <div className="mt-4 bg-gray-50 rounded-xl p-4">
             <p className="text-2xl font-mono font-bold text-gray-900">{lead.telefone_escolhido||lead.telefone_e164||"—"}</p>
             <p className="text-base text-gray-500 mt-1">{lead.tipo_telefone} · {lead.pais_telefone}</p>
           </div>
-          <div className="flex gap-2 mt-4 flex-wrap">
+          {/* Botões de contato */}
+          <div className="flex gap-2 mt-4">
             {lead.ligar&&<a href={"tel:"+lead.ligar} className="flex-1 bg-blue-600 text-white rounded-xl py-4 text-center font-bold text-xl no-underline">📞 Ligar</a>}
-            {lead.telefone_e164&&lead.tipo_telefone==="br_celular"&&<a href={buildWhatsAppLink(lead)} target="_blank" rel="noopener noreferrer" className="flex-1 bg-emerald-600 text-white rounded-xl py-4 text-center font-bold text-xl no-underline">WhatsApp</a>}
-            {lead.email&&<a href={buildEmailLink(lead)} className="flex-1 bg-indigo-600 text-white rounded-xl py-4 text-center font-bold text-xl no-underline">✉ Email</a>}
+            <button onClick={()=>setShowMensagens(true)}
+              className="flex-1 bg-purple-600 text-white rounded-xl py-4 text-center font-bold text-xl relative">
+              ✉ Mensagens
+              {((lead.seq_whatsapp||0)+(lead.seq_email||0))>0&&(
+                <span className="absolute top-2 right-2 bg-white/25 text-white text-xs px-1.5 py-0.5 rounded-full">
+                  {(lead.seq_whatsapp||0)+(lead.seq_email||0)}
+                </span>
+              )}
+            </button>
           </div>
         </div>
       )}
@@ -446,6 +721,16 @@ function DiscadorTab({ sb, token }) {
           {FEEDBACKS.map(f=>(<button key={f.id} className={`${f.color} text-white rounded-xl py-4 px-3 text-base font-medium text-left`} onClick={()=>handleFb(f.id)}><span className="mr-1 text-lg">{f.icon}</span>{f.label}</button>))}
         </div>
       </div>
+      {/* Modal mensagens */}
+      {showMensagens&&lead&&(
+        <CentralMensagens
+          lead={lead} sb={sb} token={token}
+          onFechar={()=>setShowMensagens(false)}
+          onSeqAtualizado={(canal,seq)=>{
+            setLead(prev=>prev?({...prev,[canal==="email"?"seq_email":"seq_whatsapp"]:seq}):prev);
+          }}
+        />
+      )}
     </div>
   );
 }
@@ -584,109 +869,120 @@ function DKpi({ label, value, sub, color="#38bdf8" }) {
   );
 }
 
-// ─── ArcGauge — estilo Grafana ───────────────────────────────────────────────
-function ArcGauge({ valor, label }) {
+// ─── ArcGauge — Grafana-style, thin arc, absolute value ─────────────────────
+function ArcGauge({ valor, absValue, label }) {
   const v   = Math.min(99.9, Math.max(0.2, valor||0.2));
   const p   = v / 100;
-  const r   = 40, cx = 60, cy = 64;
-
-  function ptArc(t) {
-    const a = Math.PI * (1 - t);
-    return [+(cx + r * Math.cos(a)).toFixed(2), +(cy - r * Math.sin(a)).toFixed(2)];
+  const r   = 34, cx = 50, cy = 52;
+  function ptA(t) {
+    const a = Math.PI*(1-t);
+    return [+(cx+r*Math.cos(a)).toFixed(2), +(cy-r*Math.sin(a)).toFixed(2)];
   }
-  function arcD(t0, t1) {
-    const [x0,y0]=ptArc(t0), [x1,y1]=ptArc(t1);
+  function arcD(t0,t1) {
+    const [x0,y0]=ptA(t0),[x1,y1]=ptA(t1);
     return `M${x0},${y0} A${r},${r} 0 ${(t1-t0)>0.5?1:0},0 ${x1},${y1}`;
   }
-
-  const numCor = p<=0.33 ? "#22c55e" : p<=0.66 ? "#f59e0b" : "#ef4444";
-
-  // Ponta arredondada no final do preenchimento
-  const tipPt  = ptArc(Math.min(p, 0.999));
-  const tipCol = numCor;
-
+  const clr = p<=0.33?"#22c55e":p<=0.66?"#f59e0b":"#ef4444";
+  const tip = ptA(Math.min(p,0.999));
   return (
     <div style={{textAlign:"center"}}>
-      <svg viewBox="0 0 120 82" width="100%" style={{overflow:"visible"}}>
-        {/* Trilha escura de fundo (arco completo) */}
-        <path d={arcD(0,0.999)} fill="none" stroke="#1e3a5f" strokeWidth="11" strokeLinecap="round"/>
-        {/* Zonas de cor sempre visíveis (opacidade reduzida = referência) */}
-        <path d={arcD(0,0.333)}    fill="none" stroke="#22c55e" strokeWidth="11" strokeLinecap="round"  opacity="0.2"/>
-        <path d={arcD(0.333,0.666)} fill="none" stroke="#f59e0b" strokeWidth="11" strokeLinecap="butt"   opacity="0.2"/>
-        <path d={arcD(0.666,0.999)} fill="none" stroke="#ef4444" strokeWidth="11" strokeLinecap="round"  opacity="0.2"/>
-        {/* Preenchimento sólido até o valor — verde */}
-        {p > 0.001 && <path d={arcD(0, Math.min(p,0.333))} fill="none" stroke="#22c55e" strokeWidth="11" strokeLinecap="round"/>}
-        {/* Preenchimento — âmbar */}
-        {p > 0.333 && <path d={arcD(0.333, Math.min(p,0.666))} fill="none" stroke="#f59e0b" strokeWidth="11" strokeLinecap="butt"/>}
-        {/* Preenchimento — vermelho */}
-        {p > 0.666 && <path d={arcD(0.666, Math.min(p,0.999))} fill="none" stroke="#ef4444" strokeWidth="11" strokeLinecap="butt"/>}
-        {/* Ponta circular arredondada no fim do preenchimento */}
-        {p > 0.01 && <circle cx={tipPt[0]} cy={tipPt[1]} r="5.5" fill={tipCol}/>}
-        {/* Número e label */}
-        <text x={cx} y={cy-6} textAnchor="middle" dominantBaseline="central"
-          fill={numCor} fontSize="20" fontWeight="700">{v}%</text>
-        <text x={cx} y={cy+14} textAnchor="middle" fill="#64748b" fontSize="10">{label}</text>
+      <svg viewBox="0 0 100 72" width="100%">
+        {/* Track */}
+        <path d={arcD(0,0.999)} fill="none" stroke="#1e3a5f" strokeWidth="4" strokeLinecap="round"/>
+        {/* Zone reference (faint) */}
+        <path d={arcD(0,0.333)}     fill="none" stroke="#22c55e" strokeWidth="4" strokeLinecap="round" opacity="0.18"/>
+        <path d={arcD(0.333,0.666)} fill="none" stroke="#f59e0b" strokeWidth="4" strokeLinecap="butt"  opacity="0.18"/>
+        <path d={arcD(0.666,0.999)} fill="none" stroke="#ef4444" strokeWidth="4" strokeLinecap="round" opacity="0.18"/>
+        {/* Progress */}
+        {p>0.001&&<path d={arcD(0,Math.min(p,0.333))}     fill="none" stroke="#22c55e" strokeWidth="4" strokeLinecap="round"/>}
+        {p>0.333&&<path d={arcD(0.333,Math.min(p,0.666))} fill="none" stroke="#f59e0b" strokeWidth="4" strokeLinecap="butt"/>}
+        {p>0.666&&<path d={arcD(0.666,Math.min(p,0.999))} fill="none" stroke="#ef4444" strokeWidth="4" strokeLinecap="butt"/>}
+        {/* Tip dot */}
+        {p>0.01&&<circle cx={tip[0]} cy={tip[1]} r="3" fill={clr}/>}
+        {/* Absolute value — large */}
+        <text x={cx} y={cy-11} textAnchor="middle" dominantBaseline="central" fill={clr} fontSize="20" fontWeight="700">{absValue}</text>
+        {/* Percentage — small */}
+        <text x={cx} y={cy+5}  textAnchor="middle" dominantBaseline="central" fill="#475569" fontSize="10">{v}%</text>
+        {/* Label */}
+        <text x={cx} y={cy+20} textAnchor="middle" fill="#64748b" fontSize="9">{label}</text>
       </svg>
     </div>
   );
 }
 
-// ─── FunilViz — funil trapezoidal com bandas coloridas ──────────────────────
-// Referência: triângulo invertido, cada estágio é um trapézio colorido,
-// label dentro da banda, contagem à direita, largura proporcional ao volume.
+// ─── FunilViz — triângulo invertido ESTÁTICO, valores dinâmicos ──────────────
+// Forma geométrica fixa; só os números mudam com os dados.
+// Pipeline: Novo contato → Em conversa → Visita agendada → Visita realizada → Em negociação
+// Fechado: badge abaixo da ponta (fora do funil)
+const FUNIL_NOMES = ["Novo contato","Em conversa","Visita agendada","Visita realizada","Em negociação"];
+const FUNIL_CORES = ["#4f46e5","#0891b2","#059669","#d97706","#dc2626"];
+
 function FunilViz({ dados }) {
-  if (!dados?.length) return null;
+  const byNome = {};
+  (dados||[]).forEach(d => { byNome[d.nome] = d; });
 
-  const W    = 300;   // largura total do SVG
-  const CX   = 150;   // centro horizontal
-  const MAXW = 260;   // largura máxima (estágio com mais leads)
-  const MINW = 24;    // largura mínima (evita bandas invisíveis)
-  const H    = 30;    // altura de cada banda
-  const GAP  = 2;     // espaço entre bandas
+  const stages = FUNIL_NOMES.map((nome,i) => ({
+    nome, cor: FUNIL_CORES[i],
+    total: byNome[nome]?.total||0,
+  }));
+  const fechadoTotal = byNome["Fechado"]?.total||0;
+  const funil_total  = stages.reduce((s,d)=>s+d.total,0);
 
-  const maxVal = Math.max(...dados.map(d => d.total), 1);
-  const total  = dados.reduce((s, d) => s + d.total, 0);
+  // Geometria ESTÁTICA — largura decresce uniformemente, nunca depende dos dados
+  const CX=132, BH=42, MW=210, ST=38;
+  // Largura do topo da banda i: MW - i*ST
+  // Largura da base da banda i: MW - (i+1)*ST  (mínimo 12 para não colapsar)
+  const tW = i => MW - i*ST;
+  const bW = i => Math.max(12, MW-(i+1)*ST);
 
-  // Calcular largura de cada banda proporcional ao count
-  const widths = dados.map(d => Math.max(MINW, Math.round((d.total / maxVal) * MAXW)));
-  const svgH   = dados.length * (H + GAP) + 4;
+  // Posição Y do início da ponta final
+  const tipTopW  = bW(stages.length-1);
+  const tipY     = stages.length * BH;
+  const svgH     = tipY + 22 + 40; // bands + tip + Fechado badge
 
   return (
-    <svg viewBox={`0 0 ${W} ${svgH}`} width="100%" style={{display:"block"}}>
-      {dados.map((d, i) => {
-        const topW = widths[i];
-        // A base do trapézio é a largura do próximo estágio (ou um pouco menor se for o último)
-        const botW = i < dados.length - 1 ? widths[i + 1] : Math.max(MINW, widths[i] - 20);
-        const y    = i * (H + GAP);
-
-        // Pontos do trapézio centrado
-        const tx1  = CX - topW / 2, tx2 = CX + topW / 2;
-        const bx1  = CX - botW / 2, bx2 = CX + botW / 2;
-        const pts  = `${tx1.toFixed(1)},${y} ${tx2.toFixed(1)},${y} ${bx2.toFixed(1)},${y+H} ${bx1.toFixed(1)},${y+H}`;
-
-        const pctTot = total > 0 ? ((d.total / total) * 100).toFixed(0) : 0;
-        const vazio  = d.total === 0;
-
+    <svg viewBox={`0 0 340 ${svgH}`} width="100%" style={{display:"block"}}>
+      {stages.map((stage,i)=>{
+        const topW=tW(i), botW=bW(i), y=i*BH, midY=y+BH/2;
+        const tx1=(CX-topW/2).toFixed(1), tx2=(CX+topW/2).toFixed(1);
+        const bx1=(CX-botW/2).toFixed(1), bx2=(CX+botW/2).toFixed(1);
+        const pts=`${tx1},${y} ${tx2},${y} ${bx2},${y+BH} ${bx1},${y+BH}`;
+        const pct=funil_total>0?((stage.total/funil_total)*100).toFixed(0):0;
         return (
           <g key={i}>
-            <polygon points={pts} fill={d.cor || "#334155"} opacity={vazio ? 0.18 : 1}/>
-            {/* Linha separadora entre bandas */}
-            {i > 0 && <line x1={tx1} y1={y} x2={tx2} y2={y} stroke="#0f172a" strokeWidth="1.5"/>}
-            {/* Label dentro da banda (só se tiver espaço suficiente) */}
-            {topW > 60 && (
-              <text x={CX} y={y + H / 2} textAnchor="middle" dominantBaseline="central"
-                fill="#fff" fontSize="10" fontWeight={vazio?"400":"500"}>
-                {d.icone} {d.nome}
+            <polygon points={pts} fill={stage.cor}/>
+            {/* Separador entre bandas */}
+            {i>0&&<line x1={tx1} y1={y} x2={tx2} y2={y} stroke="rgba(0,0,0,0.25)" strokeWidth="1.5"/>}
+            {/* Número absoluto — destaque alto contraste */}
+            <text x={CX} y={midY-7} textAnchor="middle" dominantBaseline="central"
+              fill="#fff" fontSize="14" fontWeight="800">
+              {stage.total>0?stage.total:"0"}
+            </text>
+            {/* Percentual */}
+            {stage.total>0&&(
+              <text x={CX} y={midY+8} textAnchor="middle" dominantBaseline="central"
+                fill="rgba(255,255,255,0.8)" fontSize="10">
+                {pct}%
               </text>
             )}
-            {/* Contagem à direita da banda */}
-            <text x={tx2 + 6} y={y + H / 2} dominantBaseline="central"
-              fill={vazio ? "#334155" : "#94a3b8"} fontSize="10">
-              {d.total > 0 ? `${d.total} (${pctTot}%)` : "—"}
+            {/* Nome do estágio — FORA do triângulo, à direita */}
+            <text x={+tx2+10} y={midY} dominantBaseline="central"
+              fill="#94a3b8" fontSize="9.5" fontWeight="500">
+              {stage.nome}
             </text>
           </g>
         );
       })}
+      {/* Ponta do triângulo */}
+      <polygon
+        points={`${(CX-tipTopW/2).toFixed(1)},${tipY} ${(CX+tipTopW/2).toFixed(1)},${tipY} ${CX},${tipY+18}`}
+        fill={FUNIL_CORES[stages.length-1]}/>
+      {/* Fechado — fora do funil */}
+      <rect x={CX-52} y={tipY+24} width={104} height={26} rx="7" fill="#059669"/>
+      <text x={CX} y={tipY+37} textAnchor="middle" dominantBaseline="central"
+        fill="#fff" fontSize="11" fontWeight="700">
+        ✅ {fechadoTotal} Fechados
+      </text>
     </svg>
   );
 }
@@ -717,6 +1013,10 @@ function DashboardTab({ sb, token }) {
   const txVis    =totFb>0?+((fb.agendado_visita||0)/totFb*100).toFixed(1):0;
   const txErro   =totFb>0?+(((fb.numero_errado||0)+(fb.nao_toca||0)+(fb.caixa_postal||0))/totFb*100).toFixed(1):0;
   const txContato=totFb>0?+((((fb.agendado_visita||0)+(fb.enviado_informacoes||0)+(fb.retornar_depois||0))/totFb)*100).toFixed(1):0;
+  // Valores absolutos para os gauges
+  const absVis     = fb.agendado_visita||0;
+  const absContato = (fb.agendado_visita||0)+(fb.enviado_informacoes||0)+(fb.retornar_depois||0);
+  const absErro    = (fb.numero_errado||0)+(fb.nao_toca||0)+(fb.caixa_postal||0);
 
   const barData=[
     {name:"Disponíveis", value:s.disponiveis||0,  cor:"#38bdf8"},
@@ -755,9 +1055,9 @@ function DashboardTab({ sb, token }) {
         <div style={{background:DARK.card,borderRadius:16,padding:16,border:`1px solid ${DARK.border}`}}>
           <p style={{color:DARK.text,fontWeight:600,fontSize:14,margin:"0 0 8px"}}>Taxas de conversão</p>
           <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:8}}>
-            <ArcGauge valor={txVis}     label="Visitas %"  cor="#10b981"/>
-            <ArcGauge valor={txContato} label="Contato %"  cor="#38bdf8"/>
-            <ArcGauge valor={txErro}    label="Erro %"     cor="#ef4444"/>
+            <ArcGauge valor={txVis}     absValue={absVis}     label="Visitas"/>
+            <ArcGauge valor={txContato} absValue={absContato} label="Contatos"/>
+            <ArcGauge valor={txErro}    absValue={absErro}    label="Sem resposta"/>
           </div>
         </div>
 
