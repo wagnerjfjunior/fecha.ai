@@ -21,7 +21,7 @@ import Papa from "papaparse";
 import CriarUsuario from "./components/CriarUsuario";
 import HomeActions from "./components/HomeActions";
 
-const APP_VERSION = "1.9.0";
+const APP_VERSION = "1.9.1";
 const APP_BUILD   = "2026-04-17";
 
 const SUPABASE_URL = "https://uobxxgzshrmbtjfdolxd.supabase.co";
@@ -1069,16 +1069,26 @@ function DashboardTab({ sb, token }) {
     setLd(true);
     try {
       const lf = lid !== undefined ? lid : listaFiltro;
-      const args = lf ? {p_lista_id: lf} : {};
-      const [stats,horario,funilStats,lstResp]=await Promise.all([
+      // Sempre passar p_lista_id explicitamente para evitar overload ambíguo
+      const args = {p_lista_id: lf || null};
+      // allSettled: uma falha não derruba as demais
+      const [r0,r1,r2,r3] = await Promise.allSettled([
         sb.rpc("get_dashboard_stats",args,token),
         sb.rpc("get_stats_horario",{},token),
         sb.rpc("get_funil_stats",{},token),
         sb.rpc("get_listas_ativas",{},token),
       ]);
-      setS(stats); setHr(horario); setFunil(funilStats);
+      const stats    = r0.status==="fulfilled" ? r0.value : null;
+      const horario  = r1.status==="fulfilled" ? r1.value : null;
+      const funilSt  = r2.status==="fulfilled" ? r2.value : null;
+      const lstResp  = r3.status==="fulfilled" ? r3.value : null;
+      if(stats && !stats.error) setS(stats);
+      if(horario)  setHr(horario);
+      if(funilSt)  setFunil(funilSt);
       if(lstResp?.listas) setListas(lstResp.listas);
-    } catch(e){}
+      // Log de erros para debug
+      [r0,r1,r2,r3].forEach((r,i)=>{ if(r.status==="rejected") console.warn("Dashboard RPC",i,"falhou:",r.reason); });
+    } catch(e){ console.error("Dashboard load:", e); }
     setLd(false);
   };
   useEffect(()=>{load();},[]);
@@ -1822,6 +1832,10 @@ function EditarCorretorModal({ corretor, sb, token, onSalvo, onFechar }) {
     sb.rpc("get_listas_ativas",{},token).then(r=>{ if(r?.listas) setListas(r.listas); }).catch(()=>{});
   },[]);
 
+  const [novaSenha,  setNovaSenha]   = useState("");
+  const [ldSenha,   setLdSenha]     = useState(false);
+  const [msgSenha,  setMsgSenha]    = useState("");
+
   const salvar = async () => {
     setLd(true); setErro("");
     try {
@@ -1833,11 +1847,30 @@ function EditarCorretorModal({ corretor, sb, token, onSalvo, onFechar }) {
         p_lista_preferencial: listaId  || null,
       }, token);
       if (r.error) throw new Error(r.error);
-      // Atualizar ativo/apto se gestor
       await sb.patch("corretores","id=eq."+corretor.id,{ativo,apto_para_receber:apto},token);
       onSalvo({...corretor, apelido, telefone_prof:telefone, empresa, ativo, apto_para_receber:apto});
     } catch(e) { setErro(e.message); }
     setLd(false);
+  };
+
+  const redefinirSenha = async () => {
+    if (novaSenha.length < 8) { setMsgSenha("Mínimo 8 caracteres."); return; }
+    setLdSenha(true); setMsgSenha("");
+    try {
+      // Usa a mesma Edge Function de criação que tem service_role
+      const r = await fetch("https://uobxxgzshrmbtjfdolxd.supabase.co/functions/v1/criar-usuario", {
+        method: "POST",
+        headers: { "Content-Type":"application/json", "Authorization":"Bearer "+token },
+        body: JSON.stringify({ action:"reset_password", user_id: corretor.user_id, password: novaSenha }),
+      });
+      const data = await r.json();
+      if (data.error) throw new Error(data.error);
+      // Marcar must_change_password = false pois o gestor está definindo
+      await sb.patch("corretores","id=eq."+corretor.id,{must_change_password:false},token);
+      setMsgSenha("✅ Senha redefinida com sucesso!");
+      setNovaSenha("");
+    } catch(e) { setMsgSenha("Erro: " + e.message); }
+    setLdSenha(false);
   };
 
   const campo = (label, value, onChange, placeholder, disabled=false, type="text") => (
@@ -1883,6 +1916,21 @@ function EditarCorretorModal({ corretor, sb, token, onSalvo, onFechar }) {
           {campo("Apelido / Nome de corretagem", apelido, setApelido, "Ex: Wagner, Sabrina...")}
           {campo("Telefone profissional", telefone, setTelefone, "Ex: (11) 9 9999-9999", false, "tel")}
           {campo("Empresa", empresa, setEmpresa, "Ex: Tegra Incorporadora")}
+
+          {/* Redefinir senha */}
+          <div className="mb-4 p-4 bg-amber-50 rounded-xl border border-amber-100">
+            <p className="text-sm font-medium text-amber-800 mb-2">🔑 Redefinir senha</p>
+            <div className="flex gap-2">
+              <input type="password" placeholder="Nova senha (mín. 8 caracteres)"
+                value={novaSenha} onChange={e=>setNovaSenha(e.target.value)}
+                className="flex-1 border border-gray-300 rounded-xl px-3 py-2.5 text-base focus:outline-none focus:ring-2 focus:ring-amber-400"/>
+              <button onClick={redefinirSenha} disabled={ldSenha||novaSenha.length<8}
+                className="bg-amber-500 text-white px-4 py-2.5 rounded-xl text-sm font-semibold disabled:opacity-50 whitespace-nowrap">
+                {ldSenha?"...":"Salvar senha"}
+              </button>
+            </div>
+            {msgSenha&&<p className={`text-sm mt-2 ${msgSenha.startsWith("✅")?"text-emerald-700":"text-red-600"}`}>{msgSenha}</p>}
+          </div>
 
           {/* Selector de lista preferencial */}
           <div className="mb-4">
