@@ -1784,9 +1784,7 @@ function EditarCorretorModal({ corretor, sb, token, onSalvo, onFechar }) {
             <div className="mt-4 bg-gray-50 rounded-xl p-4 border border-gray-200">
               <p className="text-xs text-gray-400 uppercase mb-2 font-medium">Prévia da assinatura nas mensagens</p>
               <p className="text-sm text-gray-700 whitespace-pre-line">
-                {apelido||corretor.nome.split(" ")[0]}{telefone?`
-📱 ${telefone}`:""}{"
-"}{empresa||"Tegra Incorporadora"} — {PRODUTO}
+                {[apelido||corretor.nome.split(" ")[0], telefone?"📱 "+telefone:"", (empresa||"Tegra Incorporadora")+" — "+PRODUTO].filter(Boolean).join("\n")}
               </p>
             </div>
           )}
