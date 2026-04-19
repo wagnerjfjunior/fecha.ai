@@ -21,23 +21,28 @@ import Papa from "papaparse";
 import CriarUsuario from "./components/CriarUsuario";
 import HomeActions from "./components/HomeActions";
 
-const APP_VERSION = "1.9.1";
+const APP_VERSION = "2.0.0";
 const APP_BUILD   = "2026-04-17";
 
 const SUPABASE_URL = "https://uobxxgzshrmbtjfdolxd.supabase.co";
 const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVvYnh4Z3pzaHJtYnRqZmRvbHhkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYyNjcyOTUsImV4cCI6MjA5MTg0MzI5NX0.0RiMkrtJlGbprp8AqVPXC9Y5LxP6QiELfP7NoYEXJ9w";
 
-const FEEDBACKS = [
-  { id:"agendado_visita",    label:"Agendou visita",  color:"bg-emerald-600", hex:"#059669", icon:"✓" },
-  { id:"enviado_informacoes",label:"Enviou info",     color:"bg-blue-600",    hex:"#2563eb", icon:"ℹ" },
-  { id:"retornar_depois",    label:"Retornar depois", color:"bg-amber-500",   hex:"#f59e0b", icon:"↻" },
-  { id:"nao_responde",       label:"Não responde",    color:"bg-gray-500",    hex:"#6b7280", icon:"—" },
-  { id:"sem_interesse",      label:"Sem interesse",   color:"bg-purple-600",  hex:"#7c3aed", icon:"✕" },
-  { id:"numero_errado",      label:"Número errado",   color:"bg-red-600",     hex:"#dc2626", icon:"!" },
-  { id:"caixa_postal",       label:"Caixa postal",    color:"bg-orange-500",  hex:"#f97316", icon:"▶" },
-  { id:"nao_toca",           label:"Não toca",        color:"bg-gray-400",    hex:"#9ca3af", icon:"✗" },
-  { id:"lead_ja_atendido",   label:"Já atendido",     color:"bg-red-400",     hex:"#f87171", icon:"⊘" },
+// Feedbacks: esquerdo = positivos, direito = negativos
+const FEEDBACKS_ESQ = [
+  { id:"agendado_visita",    label:"Agendou Visita",     color:"bg-emerald-600", hex:"#059669", icon:"✓" },
+  { id:"enviado_informacoes",label:"Em conversa - info",  color:"bg-blue-600",    hex:"#2563eb", icon:"ℹ" },
+  { id:"nao_toca",           label:"Respondeu e-mail",   color:"bg-teal-500",    hex:"#14b8a6", icon:"📧" },
+  { id:"retornar_depois",    label:"Retornar depois",    color:"bg-amber-500",   hex:"#f59e0b", icon:"↻" },
 ];
+const FEEDBACKS_DIR = [
+  { id:"caixa_postal",       label:"Caixa Postal",       color:"bg-orange-500",  hex:"#f97316", icon:"▶" },
+  { id:"lead_ja_atendido",   label:"Já comprou",         color:"bg-red-400",     hex:"#f87171", icon:"⊘" },
+  { id:"sem_interesse",      label:"Sem interesse",      color:"bg-purple-600",  hex:"#7c3aed", icon:"✕" },
+  { id:"nao_responde",       label:"Não Atende",         color:"bg-gray-500",    hex:"#6b7280", icon:"—" },
+  { id:"nao_responde_email", label:"Não responde e-mail",color:"bg-gray-600",    hex:"#4b5563", icon:"✉✗" },
+  { id:"numero_errado",      label:"Número errado",      color:"bg-red-600",     hex:"#dc2626", icon:"!" },
+];
+const FEEDBACKS = [...FEEDBACKS_ESQ, ...FEEDBACKS_DIR];
 
 const COL_ALIASES = {
   nome:       ["nome","name","cliente","nome_cliente","nome completo","full_name"],
@@ -799,7 +804,23 @@ function DiscadorTab({ sb, token }) {
       <div>
         <p className="text-base text-gray-500 uppercase tracking-wide mb-3 font-medium">Feedback</p>
         <div className="grid grid-cols-2 gap-2">
-          {FEEDBACKS.map(f=>(<button key={f.id} className={`${f.color} text-white rounded-xl py-4 px-3 text-base font-medium text-left`} onClick={()=>handleFb(f.id)}><span className="mr-1 text-lg">{f.icon}</span>{f.label}</button>))}
+          {/* Coluna esquerda: positivos | Coluna direita: negativos */}
+          <div className="space-y-2">
+            <p className="text-xs text-emerald-600 font-semibold uppercase tracking-wide text-center">✓ Positivo</p>
+            {FEEDBACKS_ESQ.map(f=>(
+              <button key={f.id} className={`w-full ${f.color} text-white rounded-xl py-3.5 px-3 text-base font-medium text-left`} onClick={()=>handleFb(f.id)}>
+                <span className="mr-1">{f.icon}</span>{f.label}
+              </button>
+            ))}
+          </div>
+          <div className="space-y-2">
+            <p className="text-xs text-red-500 font-semibold uppercase tracking-wide text-center">✗ Negativo</p>
+            {FEEDBACKS_DIR.map(f=>(
+              <button key={f.id} className={`w-full ${f.color} text-white rounded-xl py-3.5 px-3 text-base font-medium text-left`} onClick={()=>handleFb(f.id)}>
+                <span className="mr-1">{f.icon}</span>{f.label}
+              </button>
+            ))}
+          </div>
         </div>
       </div>
       {/* Modal mensagens */}
@@ -818,83 +839,141 @@ function DiscadorTab({ sb, token }) {
 
 // ─── Produção ─────────────────────────────────────────────────────────────────
 function ProducaoTab({ sb, token, perfilCorretor }) {
-  const [data,setData]=useState(null); const [ld,setLd]=useState(true); const [leadEdit,setLeadEdit]=useState(null);
-  const load=async()=>{ setLd(true); try{setData(await sb.rpc("minha_producao",{},token));}catch(e){} setLd(false); };
+  const [data,setData]       = useState(null);
+  const [ld,setLd]           = useState(true);
+  const [leadEdit,setLeadEdit] = useState(null);
+  const load = async () => { setLd(true); try{setData(await sb.rpc("minha_producao",{},token));}catch(e){} setLd(false); };
   useEffect(()=>{load();},[]);
-  if(ld) return <div className="p-5 text-center text-gray-400 text-lg">Carregando...</div>;
+  if(ld) return <div className="p-5 text-center text-gray-400 text-lg py-16">Carregando...</div>;
   if(!data||data.error) return <div className="p-5 text-center text-red-500 text-lg">Erro ao carregar</div>;
-  const hoje=data.hoje||{},semana=data.semana||[],totais=data.totais||{};
+  const hoje=data.hoje||{}, semana=data.semana||[], totais=data.totais||{};
+  const producao=data.producao||[];
   const chartData=semana.map(d=>({dia:new Date(d.dia).toLocaleDateString("pt-BR",{weekday:"short"}),total:d.total,visitas:d.visitas}));
   return (
-    <div className="p-5 space-y-5">
-      <h2 className="text-2xl font-bold text-gray-900">Minha produção</h2>
+    <div className="p-5 space-y-5 pb-24">
+      <h2 className="text-2xl font-bold text-gray-900">Produção</h2>
+      {/* KPIs do dia */}
       <div className="grid grid-cols-3 gap-3">
         {[["Hoje",hoje.total||0,"text-gray-900"],["Visitas",hoje.visitas||0,"text-emerald-600"],["Errados",hoje.errados||0,"text-red-500"]].map(([l,v,c])=>(
           <div key={l} className="bg-white rounded-xl p-3 shadow-sm border border-gray-100 text-center"><p className="text-xs text-gray-500 uppercase">{l}</p><p className={`text-3xl font-bold mt-1 ${c}`}>{v}</p></div>
         ))}
       </div>
-      <div className="grid grid-cols-3 gap-3">
-        {[["Recebidos",totais.total_recebidos||0,"text-gray-900"],["c/ feedback",totais.com_feedback||0,"text-gray-900"],["Carteira",totais.em_carteira||0,"text-blue-600"]].map(([l,v,c])=>(
-          <div key={l} className="bg-white rounded-xl p-3 shadow-sm border border-gray-100 text-center"><p className="text-xs text-gray-500 uppercase">{l}</p><p className={`text-3xl font-bold mt-1 ${c}`}>{v}</p></div>
-        ))}
+      {/* Gráfico semana */}
+      {chartData.length>0&&(
+        <div className="bg-white rounded-xl p-4 border border-gray-100 shadow-sm">
+          <p className="text-sm text-gray-500 uppercase mb-2">Últimos 7 dias</p>
+          <ResponsiveContainer width="100%" height={140}>
+            <BarChart data={chartData}>
+              <XAxis dataKey="dia" tick={{fontSize:12}}/><YAxis tick={{fontSize:12}} width={24}/>
+              <RTooltip/>
+              <Bar dataKey="total" fill="#3b82f6" radius={[4,4,0,0]} name="Ligações"/>
+              <Bar dataKey="visitas" fill="#10b981" radius={[4,4,0,0]} name="Visitas"/>
+            </BarChart>
+          </ResponsiveContainer>
+        </div>
+      )}
+      {/* Leads em produção — 4 estágios do Kanban */}
+      <div>
+        <p className="text-base font-bold text-gray-900 mb-3">
+          Em andamento <span className="text-sm font-normal text-gray-400">({producao.length})</span>
+        </p>
+        {producao.length===0&&(
+          <p className="text-gray-400 text-base text-center py-8">Nenhum lead em produção no momento.</p>
+        )}
+        <div className="space-y-3">
+          {producao.map((l,i)=>{
+            const fbInfo=FEEDBACKS.find(f=>f.id===l.feedback);
+            return (
+              <div key={i} className="bg-white rounded-2xl p-4 border border-gray-100 shadow-sm cursor-pointer hover:border-blue-200 transition-all"
+                onClick={()=>setLeadEdit({...l,telefone_e164:l.telefone_e164||""})}>
+                <div className="flex items-start justify-between mb-2">
+                  <div className="flex-1 min-w-0">
+                    <p className="font-bold text-gray-900 text-lg truncate">{l.nome}</p>
+                    <p className="text-sm text-gray-500">{l.telefone||"—"}</p>
+                  </div>
+                  <div className="flex flex-col items-end gap-1 ml-2 flex-shrink-0">
+                    <span className="text-xs text-white px-2 py-0.5 rounded-full font-medium"
+                      style={{background:l.estagio_cor||"#6b7280"}}>
+                      {l.estagio_icone} {l.estagio}
+                    </span>
+                    {fbInfo&&<span className={`text-xs text-white px-2 py-0.5 rounded-full ${fbInfo.color}`}>{fbInfo.label}</span>}
+                  </div>
+                </div>
+                <div className="flex gap-2 mt-2" onClick={e=>e.stopPropagation()}>
+                  {l.ligar&&<a href={"tel:"+l.ligar} className="text-sm bg-blue-100 text-blue-700 px-3 py-1.5 rounded-lg no-underline font-medium">📞</a>}
+                  <BotaoMensagens lead={l} corretor={perfilCorretor} sb={sb} token={token}
+                    className="text-sm font-medium" style={{fontSize:13,padding:"6px 12px",borderRadius:10}}/>
+                </div>
+              </div>
+            );
+          })}
+        </div>
       </div>
-      {chartData.length>0&&(<div className="bg-white rounded-xl p-4 border border-gray-100 shadow-sm"><p className="text-sm text-gray-500 uppercase mb-2">Últimos 7 dias</p><ResponsiveContainer width="100%" height={160}><BarChart data={chartData}><XAxis dataKey="dia" tick={{fontSize:13}}/><YAxis tick={{fontSize:13}} width={28}/><RTooltip/><Bar dataKey="total" fill="#3b82f6" radius={[4,4,0,0]}/><Bar dataKey="visitas" fill="#10b981" radius={[4,4,0,0]}/></BarChart></ResponsiveContainer></div>)}
-      {data.com_observacao?.length>0&&(<div>
-        <p className="text-base font-bold text-gray-700 mb-2">Com observação <span className="text-sm font-normal text-gray-400">(toque para editar)</span></p>
-        <div className="space-y-2">{data.com_observacao.slice(0,10).map((l,i)=>(
-          <div key={i} className="bg-white rounded-xl p-4 border border-gray-100 shadow-sm cursor-pointer hover:border-blue-200 transition-all" onClick={()=>setLeadEdit(l)}>
-            <div className="flex justify-between items-start">
-              <span className="font-medium text-base text-gray-900">{l.nome}</span>
-              <span className="text-sm bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full">{FEEDBACKS.find(f=>f.id===l.feedback)?.label||l.feedback}</span>
-            </div>
-            <p className="text-sm text-gray-600 mt-1">{l.observacao}</p>
-          </div>
-        ))}</div>
-      </div>)}
-      {leadEdit&&<LeadModal lead={leadEdit} sb={sb} token={token} perfilCorretor={perfilCorretor} onSalvo={()=>{setLeadEdit(null);load();}} onFechar={()=>setLeadEdit(null)}/>}
+      {leadEdit&&<LeadModal lead={leadEdit} sb={sb} token={token} perfilCorretor={perfilCorretor}
+        onSalvo={()=>{setLeadEdit(null);load();}} onFechar={()=>setLeadEdit(null)}/>}
     </div>
   );
 }
 
-// ─── Carteira ─────────────────────────────────────────────────────────────────
 function CarteiraTab({ sb, token, perfilCorretor }) {
-  const [data,setData]=useState(null); const [ld,setLd]=useState(true); const [leadEdit,setLeadEdit]=useState(null);
-  const load=async()=>{ setLd(true); try{setData(await sb.rpc("minha_producao",{},token));}catch(e){} setLd(false); };
+  const [leads,setLeads]     = useState([]);
+  const [ld,setLd]           = useState(true);
+  const [leadEdit,setLeadEdit] = useState(null);
+  const load = async () => {
+    setLd(true);
+    try {
+      const r = await sb.rpc("minha_carteira",{},token);
+      setLeads(r.leads||[]);
+    } catch(e) {}
+    setLd(false);
+  };
   useEffect(()=>{load();},[]);
-  if(ld) return <div className="p-5 text-center text-gray-400 text-lg">Carregando...</div>;
-  const cart=data?.carteira||[];
+  if(ld) return <div className="p-5 text-center text-gray-400 text-lg py-16">Carregando...</div>;
   return (
-    <div className="p-5 space-y-4">
-      <h2 className="text-2xl font-bold text-gray-900">Carteira <span className="text-lg font-normal text-gray-500">({cart.length})</span></h2>
-      {cart.length===0&&<p className="text-base text-gray-500">Nenhum lead em carteira. Leads com "agendou visita", "enviou info" ou "retornar depois" aparecem aqui.</p>}
-      <p className="text-sm text-gray-400">Toque em um card para ligar, enviar mensagem ou atualizar feedback.</p>
-      <div className="space-y-2">
-        {cart.map((l,i)=>{
-          const e164=(l.telefone||"").replace(/\D/g,"").length===11?"+55"+(l.telefone||"").replace(/\D/g,""):(l.telefone_e164||"");
+    <div className="p-5 pb-24 space-y-4">
+      <h2 className="text-2xl font-bold text-gray-900">
+        Carteira <span className="text-lg font-normal text-gray-400">({leads.length} fechados)</span>
+      </h2>
+      {leads.length===0&&(
+        <div className="text-center py-12">
+          <p className="text-4xl mb-3">🏠</p>
+          <p className="text-gray-500 text-base">Nenhum negócio fechado ainda.</p>
+          <p className="text-gray-400 text-sm mt-1">Leads com estágio "Fechado" aparecem aqui.</p>
+        </div>
+      )}
+      <div className="space-y-3">
+        {leads.map((l,i)=>{
           const fbInfo=FEEDBACKS.find(f=>f.id===l.feedback);
           return (
-            <div key={i} className="bg-white rounded-xl p-4 border border-gray-100 shadow-sm cursor-pointer hover:border-blue-200 transition-all" onClick={()=>setLeadEdit({...l,telefone_e164:e164})}>
-              <div className="flex justify-between items-start">
-                <div><p className="font-medium text-base text-gray-900">{l.nome}</p><p className="text-sm text-gray-500 mt-0.5">{l.telefone}</p></div>
-                <div className="flex items-center gap-2 flex-wrap justify-end">
-                  {fbInfo&&<span className={`text-xs text-white px-2 py-0.5 rounded-full ${fbInfo.color}`}>{fbInfo.label}</span>}
-                  <div className="flex gap-1" onClick={e=>e.stopPropagation()}>
-                    {l.telefone&&<a href={"tel:"+l.telefone} className="text-sm bg-blue-100 text-blue-700 px-3 py-1.5 rounded-lg no-underline font-medium">📞</a>}
-                    <BotaoMensagens lead={{...l,telefone_e164:e164,seq_whatsapp:l.seq_whatsapp||0,seq_email:l.seq_email||0}} corretor={perfilCorretor} sb={sb} token={token} className="text-sm px-3 py-1.5 text-sm font-medium" style={{fontSize:13,padding:"6px 12px",borderRadius:10}}/>
-                  </div>
+            <div key={i} className="bg-white rounded-2xl p-4 border border-green-100 shadow-sm cursor-pointer hover:border-green-300 transition-all"
+              onClick={()=>setLeadEdit({...l,telefone_e164:l.telefone_e164||""})}>
+              <div className="flex items-start justify-between">
+                <div className="flex-1 min-w-0">
+                  <p className="font-bold text-gray-900 text-lg truncate">{l.nome}</p>
+                  <p className="text-sm text-gray-500">{l.telefone||"—"}</p>
+                  {l.email&&<p className="text-xs text-gray-400">{l.email}</p>}
+                </div>
+                <div className="flex flex-col items-end gap-1 ml-2">
+                  <span className="text-xs bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded-full font-semibold">✅ Fechado</span>
+                  {l.data_feedback&&<span className="text-xs text-gray-400">{new Date(l.data_feedback).toLocaleDateString("pt-BR")}</span>}
                 </div>
               </div>
-              {l.observacao&&<p className="text-sm text-gray-600 mt-2 bg-gray-50 rounded-lg p-2">{l.observacao}</p>}
+              {l.observacao&&<p className="text-sm text-gray-600 mt-2 bg-gray-50 rounded-lg p-2 italic">"{l.observacao}"</p>}
+              <div className="flex gap-2 mt-3" onClick={e=>e.stopPropagation()}>
+                {l.ligar&&<a href={"tel:"+l.ligar} className="text-sm bg-blue-100 text-blue-700 px-3 py-1.5 rounded-lg no-underline font-medium">📞</a>}
+                <BotaoMensagens lead={l} corretor={perfilCorretor} sb={sb} token={token}
+                  className="text-sm font-medium" style={{fontSize:13,padding:"6px 12px",borderRadius:10}}/>
+              </div>
             </div>
           );
         })}
       </div>
-      {leadEdit&&<LeadModal lead={leadEdit} sb={sb} token={token} perfilCorretor={perfilCorretor} onSalvo={()=>{setLeadEdit(null);load();}} onFechar={()=>setLeadEdit(null)}/>}
+      {leadEdit&&<LeadModal lead={leadEdit} sb={sb} token={token} perfilCorretor={perfilCorretor}
+        onSalvo={()=>{setLeadEdit(null);load();}} onFechar={()=>setLeadEdit(null)}/>}
     </div>
   );
 }
 
-// ─── Histórico ────────────────────────────────────────────────────────────────
 function HistoricoTab({ sb, token, perfilCorretor }) {
   const [leads,setLeads]=useState([]); const [total,setTotal]=useState(0);
   const [ld,setLd]=useState(true); const [pagina,setPagina]=useState(0);
@@ -1011,7 +1090,7 @@ function FunilViz({ dados }) {
   // Posição Y do início da ponta final
   const tipTopW  = bW(stages.length-1);
   const tipY     = stages.length * BH;
-  const svgH     = tipY + 22 + 40; // bands + tip + Fechado badge
+  const svgH     = tipY + 22 + 40 + 30; // bands + tip + Fechado badge
 
   return (
     <svg viewBox={`0 0 340 ${svgH}`} width="100%" style={{display:"block"}}>
@@ -1051,11 +1130,26 @@ function FunilViz({ dados }) {
         points={`${(CX-tipTopW/2).toFixed(1)},${tipY} ${(CX+tipTopW/2).toFixed(1)},${tipY} ${CX},${tipY+18}`}
         fill={FUNIL_CORES[stages.length-1]}/>
       {/* Fechado — fora do funil */}
-      <rect x={CX-52} y={tipY+24} width={104} height={26} rx="7" fill="#059669"/>
-      <text x={CX} y={tipY+37} textAnchor="middle" dominantBaseline="central"
-        fill="#fff" fontSize="11" fontWeight="700">
+      <rect x={CX-52} y={tipY+24} width={104} height={24} rx="7" fill="#059669"/>
+      <text x={CX} y={tipY+36} textAnchor="middle" dominantBaseline="central"
+        fill="#fff" fontSize="10" fontWeight="700">
         ✅ {fechadoTotal} Fechados
       </text>
+      {/* Perdido sem contato */}
+      {(() => {
+        const psc = byNome["Perdido sem contato"]?.total||0;
+        const pcc = byNome["Perdido com contato"]?.total||0;
+        return (<>
+          <rect x={CX-70} y={tipY+54} width={66} height={22} rx="6" fill="#f97316" opacity={psc>0?1:0.3}/>
+          <text x={CX-37} y={tipY+65} textAnchor="middle" dominantBaseline="central" fill="#fff" fontSize="9" fontWeight="600">
+            📵 {psc} sem contato
+          </text>
+          <rect x={CX+4} y={tipY+54} width={66} height={22} rx="6" fill="#6b7280" opacity={pcc>0?1:0.3}/>
+          <text x={CX+37} y={tipY+65} textAnchor="middle" dominantBaseline="central" fill="#fff" fontSize="9" fontWeight="600">
+            🚫 {pcc} c/ contato
+          </text>
+        </>);
+      })()}
     </svg>
   );
 }
@@ -1277,6 +1371,105 @@ function DashboardTab({ sb, token }) {
 
 
 // ─── Abas do gestor ───────────────────────────────────────────────────────────
+// ─── Aba E-mail — leads Perdido sem contato ──────────────────────────────────
+function EmailTab({ sb, token, perfilCorretor }) {
+  const [leads,setLeads]     = useState([]);
+  const [ld,setLd]           = useState(true);
+  const [leadEdit,setLeadEdit] = useState(null);
+  const [busca,setBusca]     = useState("");
+
+  const load = async () => {
+    setLd(true);
+    try {
+      const r = await sb.rpc("meus_leads_email",{},token);
+      setLeads(r.leads||[]);
+    } catch(e) {}
+    setLd(false);
+  };
+  useEffect(()=>{load();},[]);
+
+  const filtrados = busca.trim()
+    ? leads.filter(l=>[l.nome,l.email,l.telefone].join(" ").toLowerCase().includes(busca.toLowerCase()))
+    : leads;
+
+  if(ld) return <div className="p-5 text-center text-gray-400 text-lg py-16">Carregando...</div>;
+
+  return (
+    <div className="pb-24">
+      <div className="px-5 pt-5 pb-3">
+        <div className="flex items-center justify-between mb-3">
+          <h2 className="text-2xl font-bold text-gray-900">
+            E-mail <span className="text-lg font-normal text-gray-400">({leads.length})</span>
+          </h2>
+          <button onClick={load} className="text-blue-500 text-sm font-medium">↺ Atualizar</button>
+        </div>
+        <p className="text-sm text-gray-400 mb-3">
+          Leads sem contato por telefone — tente recuperá-los por e-mail.
+        </p>
+        <input type="text" placeholder="Buscar lead..."
+          value={busca} onChange={e=>setBusca(e.target.value)}
+          className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-base focus:outline-none focus:ring-2 focus:ring-blue-500"/>
+      </div>
+
+      {leads.length===0&&(
+        <div className="text-center py-12 px-5">
+          <p className="text-4xl mb-3">📭</p>
+          <p className="text-gray-500 text-base">Nenhum lead para trabalhar por e-mail.</p>
+          <p className="text-gray-400 text-sm mt-1">Leads com "Número errado", "Não Atende" e "Caixa Postal" aparecem aqui.</p>
+        </div>
+      )}
+
+      <div className="px-5 space-y-3 pt-2">
+        {filtrados.map((l,i)=>{
+          const fbInfo=FEEDBACKS.find(f=>f.id===l.feedback);
+          const seqE=l.seq_email||0;
+          const dias=l.data_feedback?Math.floor((Date.now()-new Date(l.data_feedback))/86400000):null;
+          return (
+            <div key={i}
+              className="bg-white rounded-2xl p-4 border border-orange-100 shadow-sm cursor-pointer hover:border-orange-300 transition-all"
+              onClick={()=>setLeadEdit({...l,telefone_e164:l.telefone_e164||""})}>
+              <div className="flex items-start justify-between mb-2">
+                <div className="flex-1 min-w-0">
+                  <p className="font-bold text-gray-900 text-lg truncate">{l.nome}</p>
+                  {l.email
+                    ? <p className="text-sm text-blue-600">{l.email}</p>
+                    : <p className="text-sm text-red-400 italic">Sem e-mail cadastrado</p>
+                  }
+                  <p className="text-xs text-gray-400">{l.telefone||"—"}</p>
+                </div>
+                <div className="flex flex-col items-end gap-1 ml-2 flex-shrink-0">
+                  {fbInfo&&<span className={`text-xs text-white px-2 py-0.5 rounded-full ${fbInfo.color}`}>{fbInfo.label}</span>}
+                  <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${
+                    seqE===0?"bg-orange-100 text-orange-700":
+                    seqE>=5?"bg-red-100 text-red-700":"bg-blue-100 text-blue-700"}`}>
+                    📧 {seqE}/6 enviados
+                  </span>
+                  {dias!==null&&<span className="text-xs text-gray-400">{dias===0?"hoje":`${dias}d`}</span>}
+                </div>
+              </div>
+              {l.email&&(
+                <div className="flex gap-2 mt-2" onClick={e=>e.stopPropagation()}>
+                  <BotaoMensagens lead={l} corretor={perfilCorretor} sb={sb} token={token}
+                    className="flex-1 text-base font-bold py-3 text-center"
+                    style={{borderRadius:12,padding:"10px 0",fontSize:15}}/>
+                </div>
+              )}
+              {!l.email&&(
+                <p className="text-xs text-red-400 mt-2 text-center">
+                  ⚠️ Sem e-mail — não é possível contactar por esta aba
+                </p>
+              )}
+            </div>
+          );
+        })}
+      </div>
+
+      {leadEdit&&<LeadModal lead={leadEdit} sb={sb} token={token} perfilCorretor={perfilCorretor}
+        onSalvo={()=>{setLeadEdit(null);load();}} onFechar={()=>setLeadEdit(null)}/>}
+    </div>
+  );
+}
+
 // ─── Modal do card no funil ───────────────────────────────────────────────────
 function FunilCardModal({ lead, estagios, corretor, sb, token, onMovido, onFechar }) {
   const [novoEstagio, setNovoEstagio] = useState(lead.estagio_id || "");
@@ -2100,6 +2293,7 @@ function CorretorApp({ sb, token, corretor, onLogout, onVoltar }) {
     <div className="min-h-screen bg-gray-50 pb-20">
       <Header nome={corretor.nome} isGestor={false} onLogout={onLogout} onHome={onVoltar}/>
       {tab==="discador"  &&<DiscadorTab  sb={sb} token={token} corretor={corretor}/>}
+      {tab==="email"     &&<EmailTab     sb={sb} token={token} perfilCorretor={perfilFinal}/>}
       {tab==="funil"     &&<FunilTab     sb={sb} token={token} perfilCorretor={perfilFinal}/>}
       {tab==="producao"  &&<ProducaoTab  sb={sb} token={token} perfilCorretor={perfilFinal}/>}
       {tab==="carteira"  &&<CarteiraTab  sb={sb} token={token} perfilCorretor={perfilFinal}/>}
@@ -2107,6 +2301,7 @@ function CorretorApp({ sb, token, corretor, onLogout, onVoltar }) {
       <TabBar
         tabs={[
           {id:"discador", label:"Discador",  icon:"◎"},
+          {id:"email",    label:"E-mail",    icon:"📧"},
           {id:"funil",    label:"Funil",     icon:"▽"},
           {id:"producao", label:"Produção",  icon:"◉"},
           {id:"carteira", label:"Carteira",  icon:"♦"},
