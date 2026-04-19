@@ -2349,13 +2349,20 @@ function CorretorApp({ sb, token, corretor, onLogout, onVoltar }) {
           {id:"historico",label:"Histórico",      key:"historico",icon:"↺"},
         ].map(t=>(
           <button key={t.id} onClick={()=>handleTab(t.id)}
-            style={{background:dark?"#0f172a":"#ffffff"}} className="flex-1 py-2 text-center border-none cursor-pointer"
-            style={{color:tab===t.id?"#2563eb":"#9ca3af",fontWeight:tab===t.id?500:400}}>
-            <div style={{fontSize:18}}>{t.icon}</div>
-            <div style={{fontSize:9,marginTop:1}}>
+            style={{
+              background: dark?"#0f172a":"#ffffff",
+              color: tab===t.id?"#2563eb": dark?"#ffffff":"#111827",
+              fontWeight: tab===t.id?700:500,
+              flex:1, padding:"6px 0", border:"none", cursor:"pointer", textAlign:"center"
+            }}>
+            <div style={{fontSize:20}}>{t.icon}</div>
+            <div style={{fontSize:10,marginTop:2,lineHeight:1.3}}>
               {t.label}
               {t.key&&cnts[t.key]>0&&(
-                <span style={{marginLeft:2,fontSize:8,opacity:0.8}}>({cnts[t.key]})</span>
+                <span style={{display:"block",fontSize:10,fontWeight:700,
+                  color:tab===t.id?"#2563eb":dark?"#93c5fd":"#374151"}}>
+                  ({cnts[t.key]})
+                </span>
               )}
             </div>
           </button>
