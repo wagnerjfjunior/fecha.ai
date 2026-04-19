@@ -653,11 +653,18 @@ function DiscadorTab({ sb, token }) {
     setLd(true); setLoteDone(false); setSolErr("");
     try {
       const r=await sb.rpc("proximo_lead",{},token);
-      const l=r.lead?(typeof r.lead==="string"?JSON.parse(r.lead):r.lead):null;
-      setLead(l); setProg(r.progresso||null); setMsg(r.message||"");
-      if(r.corretor) setCorretorPerfil(r.corretor);
-      if(l) setLastListaId(l.lista_id);
-    } catch(e) { setMsg(e.message); }
+      // proximo_lead retorna o objeto do lead diretamente (não dentro de r.lead)
+      if(r.error) {
+        setLead(null);
+        setMsg(r.error);
+      } else {
+        setLead(r);
+        setProg(r.progresso||null);
+        setMsg("");
+        if(r.corretor_nome) setCorretorPerfil({nome:r.corretor_nome,telefone:r.corretor_tel,empresa:r.corretor_emp});
+        if(r.lista_id) setLastListaId(r.lista_id);
+      }
+    } catch(e) { setMsg(e.message); setLead(null); }
     setLd(false);
   },[sb,token]);
 
