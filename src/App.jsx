@@ -21,7 +21,7 @@ import Papa from "papaparse";
 import CriarUsuario from "./components/CriarUsuario";
 import HomeActions from "./components/HomeActions";
 
-const APP_VERSION = "2.0.0";
+const APP_VERSION = "2.0.1";
 const APP_BUILD   = "2026-04-17";
 
 const SUPABASE_URL = "https://uobxxgzshrmbtjfdolxd.supabase.co";
@@ -31,7 +31,6 @@ const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZ
 const FEEDBACKS_ESQ = [
   { id:"agendado_visita",    label:"Agendou Visita",     color:"bg-emerald-600", hex:"#059669", icon:"✓" },
   { id:"enviado_informacoes",label:"Em conversa - info",  color:"bg-blue-600",    hex:"#2563eb", icon:"ℹ" },
-  { id:"nao_toca",           label:"Respondeu e-mail",   color:"bg-teal-500",    hex:"#14b8a6", icon:"📧" },
   { id:"retornar_depois",    label:"Retornar depois",    color:"bg-amber-500",   hex:"#f59e0b", icon:"↻" },
 ];
 const FEEDBACKS_DIR = [
@@ -39,8 +38,12 @@ const FEEDBACKS_DIR = [
   { id:"lead_ja_atendido",   label:"Já comprou",         color:"bg-red-400",     hex:"#f87171", icon:"⊘" },
   { id:"sem_interesse",      label:"Sem interesse",      color:"bg-purple-600",  hex:"#7c3aed", icon:"✕" },
   { id:"nao_responde",       label:"Não Atende",         color:"bg-gray-500",    hex:"#6b7280", icon:"—" },
-  { id:"nao_responde_email", label:"Não responde e-mail",color:"bg-gray-600",    hex:"#4b5563", icon:"✉✗" },
   { id:"numero_errado",      label:"Número errado",      color:"bg-red-600",     hex:"#dc2626", icon:"!" },
+];
+// Feedbacks exclusivos da aba E-mail/WhatsApp (não aparecem no discador)
+const FEEDBACKS_EMAIL = [
+  { id:"nao_toca",           label:"Respondeu e-mail",   color:"bg-teal-500",    hex:"#14b8a6", icon:"📧" },
+  { id:"nao_responde_email", label:"Não responde e-mail",color:"bg-gray-600",    hex:"#4b5563", icon:"✉✗" },
 ];
 const FEEDBACKS = [...FEEDBACKS_ESQ, ...FEEDBACKS_DIR];
 
@@ -842,7 +845,19 @@ function ProducaoTab({ sb, token, perfilCorretor }) {
   const [data,setData]       = useState(null);
   const [ld,setLd]           = useState(true);
   const [leadEdit,setLeadEdit] = useState(null);
-  const load = async () => { setLd(true); try{setData(await sb.rpc("minha_producao",{},token));}catch(e){} setLd(false); };
+  const [funilCorretor, setFunilCorretor] = useState(null);
+  const load = async () => {
+    setLd(true);
+    try {
+      const [prod, funil] = await Promise.allSettled([
+        sb.rpc("minha_producao",{},token),
+        sb.rpc("get_funil_stats_corretor",{},token),
+      ]);
+      if(prod.status==="fulfilled")  setData(prod.value);
+      if(funil.status==="fulfilled") setFunilCorretor(funil.value);
+    } catch(e){}
+    setLd(false);
+  };
   useEffect(()=>{load();},[]);
   if(ld) return <div className="p-5 text-center text-gray-400 text-lg py-16">Carregando...</div>;
   if(!data||data.error) return <div className="p-5 text-center text-red-500 text-lg">Erro ao carregar</div>;
@@ -872,6 +887,14 @@ function ProducaoTab({ sb, token, perfilCorretor }) {
           </ResponsiveContainer>
         </div>
       )}
+      {/* Funil do corretor */}
+      {funilCorretor?.estagios?.some(e=>e.total>0)&&(
+        <div className="bg-white rounded-2xl p-4 border border-gray-100 shadow-sm">
+          <p className="text-sm font-bold text-gray-700 mb-2">Meu funil</p>
+          <FunilViz dados={funilCorretor.estagios}/>
+        </div>
+      )}
+
       {/* Leads em produção — 4 estágios do Kanban */}
       <div>
         <p className="text-base font-bold text-gray-900 mb-3">
@@ -1448,10 +1471,22 @@ function EmailTab({ sb, token, perfilCorretor }) {
                 </div>
               </div>
               {l.email&&(
-                <div className="flex gap-2 mt-2" onClick={e=>e.stopPropagation()}>
+                <div className="flex gap-2 mt-2 flex-wrap" onClick={e=>e.stopPropagation()}>
                   <BotaoMensagens lead={l} corretor={perfilCorretor} sb={sb} token={token}
                     className="flex-1 text-base font-bold py-3 text-center"
-                    style={{borderRadius:12,padding:"10px 0",fontSize:15}}/>
+                    style={{borderRadius:12,padding:"10px 0",fontSize:15,minWidth:120}}/>
+                </div>
+                <div className="flex gap-2 mt-2" onClick={e=>e.stopPropagation()}>
+                  {FEEDBACKS_EMAIL.map(f=>(
+                    <button key={f.id}
+                      className={`flex-1 ${f.color} text-white rounded-xl py-2.5 text-sm font-medium`}
+                      onClick={async(e)=>{
+                        e.stopPropagation();
+                        try{ await sb.rpc("registrar_feedback",{p_lead_id:l.id,p_feedback:f.id,p_observacao:""},token); load(); }catch(err){}
+                      }}>
+                      {f.icon} {f.label}
+                    </button>
+                  ))}
                 </div>
               )}
               {!l.email&&(
@@ -2275,10 +2310,18 @@ function GestorApp({ sb, token, corretor, onLogout, onVoltar, onCriarUsuario }) 
 }
 
 function CorretorApp({ sb, token, corretor, onLogout, onVoltar }) {
-  const [tab,setTab]=useState("discador");
-  const [perfil,setPerfil]=useState(null);
+  const [tab,setTab]     = useState("discador");
+  const [perfil,setPerfil] = useState(null);
+  const [cnts,setCnts]   = useState({});
+
+  const loadContagens = async () => {
+    try {
+      const r = await sb.rpc("get_contagens_corretor",{},token);
+      if (!r.error) setCnts(r);
+    } catch(e) {}
+  };
+
   useEffect(()=>{
-    // Carregar perfil com apelido/telefone/empresa para assinar mensagens
     sb.query("corretores","user_id=eq."+corretor.user_id+"&select=apelido,telefone_prof,empresa",token)
       .then(r=>{
         if(r.length>0) setPerfil({
@@ -2287,28 +2330,58 @@ function CorretorApp({ sb, token, corretor, onLogout, onVoltar }) {
           empresa: r[0].empresa||"Tegra Incorporadora",
         });
       }).catch(()=>{});
+    loadContagens();
   },[]);
+
+  // Recarregar contagens quando muda de aba
+  const handleTab = (t) => { setTab(t); loadContagens(); };
+
   const perfilFinal = perfil || {nome:corretor.nome.split(" ")[0],telefone:"",empresa:"Tegra Incorporadora"};
+
+  // Helper: label da aba com contagem
+  const lbl = (label, key, icon) => {
+    const n = cnts[key];
+    return (
+      <div style={{textAlign:"center"}}>
+        <div style={{fontSize:20}}>{icon}</div>
+        <div style={{fontSize:10,marginTop:1}}>
+          {label}{n>0?<span style={{fontSize:9,opacity:0.7}}> ({n})</span>:null}
+        </div>
+      </div>
+    );
+  };
+
   return (
     <div className="min-h-screen bg-gray-50 pb-20">
       <Header nome={corretor.nome} isGestor={false} onLogout={onLogout} onHome={onVoltar}/>
-      {tab==="discador"  &&<DiscadorTab  sb={sb} token={token} corretor={corretor}/>}
+      {tab==="discador"  &&<DiscadorTab  sb={sb} token={token} corretor={corretor} onFeedback={loadContagens}/>}
       {tab==="email"     &&<EmailTab     sb={sb} token={token} perfilCorretor={perfilFinal}/>}
-      {tab==="funil"     &&<FunilTab     sb={sb} token={token} perfilCorretor={perfilFinal}/>}
       {tab==="producao"  &&<ProducaoTab  sb={sb} token={token} perfilCorretor={perfilFinal}/>}
       {tab==="carteira"  &&<CarteiraTab  sb={sb} token={token} perfilCorretor={perfilFinal}/>}
+      {tab==="funil"     &&<FunilTab     sb={sb} token={token} perfilCorretor={perfilFinal}/>}
       {tab==="historico" &&<HistoricoTab sb={sb} token={token} perfilCorretor={perfilFinal}/>}
-      <TabBar
-        tabs={[
-          {id:"discador", label:"Discador",  icon:"◎"},
-          {id:"email",    label:"E-mail",    icon:"📧"},
-          {id:"funil",    label:"Funil",     icon:"▽"},
-          {id:"producao", label:"Produção",  icon:"◉"},
-          {id:"carteira", label:"Carteira",  icon:"♦"},
-          {id:"historico",label:"Histórico", icon:"↺"},
-        ]}
-        active={tab} onChange={setTab}
-      />
+      <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 flex z-20">
+        {[
+          {id:"discador", label:"Discador",      key:null,       icon:"◎"},
+          {id:"email",    label:"E-mail/WhatsApp",key:"email",    icon:"📧"},
+          {id:"producao", label:"Produção",       key:"producao", icon:"◉"},
+          {id:"carteira", label:"Carteira",       key:"carteira", icon:"♦"},
+          {id:"funil",    label:"Funil",          key:"funil",    icon:"▽"},
+          {id:"historico",label:"Histórico",      key:"historico",icon:"↺"},
+        ].map(t=>(
+          <button key={t.id} onClick={()=>handleTab(t.id)}
+            className="flex-1 py-2 text-center bg-white border-none cursor-pointer"
+            style={{color:tab===t.id?"#2563eb":"#9ca3af",fontWeight:tab===t.id?500:400}}>
+            <div style={{fontSize:18}}>{t.icon}</div>
+            <div style={{fontSize:9,marginTop:1}}>
+              {t.label}
+              {t.key&&cnts[t.key]>0&&(
+                <span style={{marginLeft:2,fontSize:8,opacity:0.8}}>({cnts[t.key]})</span>
+              )}
+            </div>
+          </button>
+        ))}
+      </div>
     </div>
   );
 }
