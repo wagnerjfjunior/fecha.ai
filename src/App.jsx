@@ -1471,22 +1471,24 @@ function EmailTab({ sb, token, perfilCorretor }) {
                 </div>
               </div>
               {l.email&&(
-                <div className="flex gap-2 mt-2 flex-wrap" onClick={e=>e.stopPropagation()}>
-                  <BotaoMensagens lead={l} corretor={perfilCorretor} sb={sb} token={token}
-                    className="flex-1 text-base font-bold py-3 text-center"
-                    style={{borderRadius:12,padding:"10px 0",fontSize:15,minWidth:120}}/>
-                </div>
-                <div className="flex gap-2 mt-2" onClick={e=>e.stopPropagation()}>
-                  {FEEDBACKS_EMAIL.map(f=>(
-                    <button key={f.id}
-                      className={`flex-1 ${f.color} text-white rounded-xl py-2.5 text-sm font-medium`}
-                      onClick={async(e)=>{
-                        e.stopPropagation();
-                        try{ await sb.rpc("registrar_feedback",{p_lead_id:l.id,p_feedback:f.id,p_observacao:""},token); load(); }catch(err){}
-                      }}>
-                      {f.icon} {f.label}
-                    </button>
-                  ))}
+                <div onClick={e=>e.stopPropagation()}>
+                  <div className="flex gap-2 mt-2 flex-wrap">
+                    <BotaoMensagens lead={l} corretor={perfilCorretor} sb={sb} token={token}
+                      className="flex-1 text-base font-bold py-3 text-center"
+                      style={{borderRadius:12,padding:"10px 0",fontSize:15,minWidth:120}}/>
+                  </div>
+                  <div className="flex gap-2 mt-2">
+                    {FEEDBACKS_EMAIL.map(f=>(
+                      <button key={f.id}
+                        className={`flex-1 ${f.color} text-white rounded-xl py-2.5 text-sm font-medium`}
+                        onClick={async(e)=>{
+                          e.stopPropagation();
+                          try{ await sb.rpc("registrar_feedback",{p_lead_id:l.id,p_feedback:f.id,p_observacao:""},token); load(); }catch(err){}
+                        }}>
+                        {f.icon} {f.label}
+                      </button>
+                    ))}
+                  </div>
                 </div>
               )}
               {!l.email&&(
