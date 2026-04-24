@@ -1,6 +1,6 @@
 /**
  * FECH.AI — App principal
- * Versão: 1.9.0
+ * Versão: 2.0.0
  * Data: 2026-04-17
  * Mudanças:
  *   - Funil CRM kanban mobile-first (9 estágios imobiliários)
@@ -29,18 +29,18 @@ const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZ
 
 // Feedbacks: esquerdo = positivos, direito = negativos
 const FEEDBACKS_ESQ = [
-  { id:"agendado_visita",    label:"Agendou Visita",     color:"bg-emerald-600", hex:"#059669", icon:"✓" },
-  { id:"enviado_informacoes",label:"Em conversa - info",  color:"bg-blue-600",    hex:"#2563eb", icon:"ℹ" },
-  { id:"retornar_depois",    label:"Retornar depois",    color:"bg-amber-500",   hex:"#f59e0b", icon:"↻" },
+  { id:"agendado_visita",    label:"Agendou visita",            color:"bg-emerald-600", hex:"#059669", icon:"✓" },
+  { id:"enviado_informacoes",label:"Em conversa - info",         color:"bg-blue-600",    hex:"#2563eb", icon:"ℹ" },
+  { id:"retornar_depois",    label:"Retornar depois",            color:"bg-amber-500",   hex:"#f59e0b", icon:"🕒" },
+  { id:"lead_ja_atendido",   label:"Já comprou / atendido", color:"bg-orange-500",  hex:"#f97316", icon:"⊘" },
+  { id:"sem_interesse",      label:"Sem interesse",             color:"bg-orange-500",  hex:"#f97316", icon:"✕" },
 ];
 const FEEDBACKS_DIR = [
-  { id:"caixa_postal",      label:"Caixa postal",               color:"bg-red-600",    hex:"#dc2626", icon:"▶" },
-  { id:"lead_ja_atendido",  label:"Já comprou / atendido",  color:"bg-orange-500", hex:"#f97316", icon:"⊘" },
-  { id:"sem_interesse",     label:"Sem interesse",              color:"bg-orange-500", hex:"#f97316", icon:"✕" },
-  { id:"nao_responde",      label:"Não responde",           color:"bg-red-600",    hex:"#dc2626", icon:"📵" },
-  { id:"numero_errado",     label:"Número errado",          color:"bg-red-600",    hex:"#dc2626", icon:"!" },
-  { id:"chamada_caiu",      label:"Chamada caiu",                color:"bg-slate-500",  hex:"#64748b", icon:"📞" },
-  { id:"whatsapp_invalido", label:"WhatsApp inválido",      color:"bg-slate-500",  hex:"#64748b", icon:"💬" },
+  { id:"caixa_postal",      label:"Caixa postal",      color:"bg-red-600",    hex:"#dc2626", icon:"▶" },
+  { id:"nao_responde",      label:"Não responde", color:"bg-red-600",    hex:"#dc2626", icon:"📵" },
+  { id:"numero_errado",     label:"Número errado",color:"bg-red-600",    hex:"#dc2626", icon:"!" },
+  { id:"chamada_caiu",      label:"Chamada caiu",      color:"bg-slate-500",  hex:"#64748b", icon:"📞" },
+  { id:"whatsapp_invalido", label:"WhatsApp inválido", color:"bg-slate-500", hex:"#64748b", icon:"💬" },
 ];
 // Feedbacks exclusivos da aba E-mail/WhatsApp (não aparecem no discador)
 const FEEDBACKS_EMAIL = [
@@ -1456,7 +1456,7 @@ function EmailTab({ sb, token, perfilCorretor }) {
                         className={`flex-1 ${f.color} text-white rounded-xl py-2.5 text-sm font-medium`}
                         onClick={async(e)=>{
                           e.stopPropagation();
-                          try{ await sb.rpc("registrar_feedback",{p_lead_id:l.id,p_feedback:f.id,p_observacao:""},token); load(); }catch(err){}
+                          try{ await sb.rpc("registrar_feedback",{p_lead_id:l.id,p_feedback:f.id,p_observacao:""},token); load(); }catch(err){ console.error('Erro registrar_feedback:', err); }
                         }}>
                         {f.icon} {f.label}
                       </button>
