@@ -1,6 +1,6 @@
 /**
  * FECH.AI — App principal
- * Versão: 1.8.0
+ * Versão: 1.9.0
  * Data: 2026-04-17
  * Mudanças:
  *   - Funil CRM kanban mobile-first (9 estágios imobiliários)
@@ -34,11 +34,13 @@ const FEEDBACKS_ESQ = [
   { id:"retornar_depois",    label:"Retornar depois",    color:"bg-amber-500",   hex:"#f59e0b", icon:"↻" },
 ];
 const FEEDBACKS_DIR = [
-  { id:"caixa_postal",       label:"Caixa Postal",       color:"bg-orange-500",  hex:"#f97316", icon:"▶" },
-  { id:"lead_ja_atendido",   label:"Já comprou",         color:"bg-red-400",     hex:"#f87171", icon:"⊘" },
-  { id:"sem_interesse",      label:"Sem interesse",      color:"bg-purple-600",  hex:"#7c3aed", icon:"✕" },
-  { id:"nao_responde",       label:"Não Atende",         color:"bg-gray-500",    hex:"#6b7280", icon:"—" },
-  { id:"numero_errado",      label:"Número errado",      color:"bg-red-600",     hex:"#dc2626", icon:"!" },
+  { id:"caixa_postal",      label:"Caixa postal",               color:"bg-red-600",    hex:"#dc2626", icon:"▶" },
+  { id:"lead_ja_atendido",  label:"Já comprou / atendido",  color:"bg-orange-500", hex:"#f97316", icon:"⊘" },
+  { id:"sem_interesse",     label:"Sem interesse",              color:"bg-orange-500", hex:"#f97316", icon:"✕" },
+  { id:"nao_responde",      label:"Não responde",           color:"bg-red-600",    hex:"#dc2626", icon:"📵" },
+  { id:"numero_errado",     label:"Número errado",          color:"bg-red-600",    hex:"#dc2626", icon:"!" },
+  { id:"chamada_caiu",      label:"Chamada caiu",                color:"bg-slate-500",  hex:"#64748b", icon:"📞" },
+  { id:"whatsapp_invalido", label:"WhatsApp inválido",      color:"bg-slate-500",  hex:"#64748b", icon:"💬" },
 ];
 // Feedbacks exclusivos da aba E-mail/WhatsApp (não aparecem no discador)
 const FEEDBACKS_EMAIL = [
@@ -1409,7 +1411,7 @@ function EmailTab({ sb, token, perfilCorretor }) {
         <div className="text-center py-12 px-5">
           <p className="text-4xl mb-3">📭</p>
           <p className="text-gray-500 text-base">Nenhum lead para trabalhar por e-mail.</p>
-          <p className="text-gray-400 text-sm mt-1">Leads com "Número errado", "Não Atende" e "Caixa Postal" aparecem aqui.</p>
+          <p className="text-gray-400 text-sm mt-1">Leads com "Número errado", "Não responde" e "Caixa Postal" aparecem aqui.</p>
         </div>
       )}
 
