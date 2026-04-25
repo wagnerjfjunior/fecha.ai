@@ -261,7 +261,7 @@ function LeadModal({ lead, sb, token, onSalvo, onFechar, perfilCorretor }) {
     setLdTrilha(true);
     sb.rpc("trilha_lead", { p_lead_id: lead.id }, token)
       .then(r => setTrilha(r?.trilha || []))
-      .catch(() => setTrilha([]))
+      .catch(e => { console.error("trilha_lead erro:", e); setTrilha([]); })
       .finally(() => setLdTrilha(false));
   }, [aba]);
 
