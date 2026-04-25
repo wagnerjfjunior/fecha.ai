@@ -978,29 +978,36 @@ function ProducaoTab({ sb, token, perfilCorretor }) {
                 </div>
               </div>
 
+
           {/* ── Fase 3: Técnicos pendentes ──────────────────── */}
           {dados?.tecnicos && dados.tecnicos.length > 0 && (
             <div className="mt-6">
-              <p className="text-xs font-semibold uppercase tracking-wide text-slate-500 mb-2">⚙️ Técnicos pendentes ({dados.tecnicos.length})</p>
+              <p className="text-xs font-semibold uppercase tracking-wide text-slate-500 mb-2">
+                ⚙️ Técnicos pendentes ({dados.tecnicos.length})
+              </p>
               <div className="space-y-2">
-                {dados.tecnicos.map(l => (
-                  <div key={l.id} className="bg-slate-50 border border-slate-200 rounded-xl p-3 flex items-center justify-between gap-3">
+                {dados.tecnicos.map((lt,ti) => (
+                  <div key={ti} className="bg-slate-50 border border-slate-200 rounded-xl p-3 flex items-center justify-between gap-3">
                     <div className="flex-1 min-w-0">
-                      <p className="font-semibold text-sm text-gray-900 truncate">{l.nome}</p>
-                      <p className="text-xs text-gray-500">{l.telefone}</p>
-                      <div className="flex items-center gap-1.5 mt-1">
-                        <span className="text-xs px-2 py-0.5 rounded-full font-medium" style={{background: l.ultima_falha_tecnica==='chamada_caiu' ? '#e0f2fe' : '#fef9c3', color: l.ultima_falha_tecnica==='chamada_caiu' ? '#0369a1' : '#92400e'}}>
-                          {l.ultima_falha_tecnica==='chamada_caiu' ? '⚙️ Chamada caiu ('+( l.tentativas_caiu||1)+'/3)' : '⚠️ WhatsApp inválido'}
+                      <p className="font-semibold text-sm text-gray-900 truncate">{lt.nome}</p>
+                      <p className="text-xs text-gray-500">{lt.telefone}</p>
+                      <div className="flex items-center gap-1.5 mt-1 flex-wrap">
+                        <span className="text-xs px-2 py-0.5 rounded-full font-medium whitespace-nowrap bg-blue-100 text-blue-800">
+                          {lt.ultima_falha_tecnica==='chamada_caiu' ? ('⚙️ Chamada caiu ('+( lt.tentativas_caiu||1)+'/3)') : '⚠️ WhatsApp inválido'}
                         </span>
-                        {l.ultima_falha_em && <span className="text-xs text-gray-400">{new Date(l.ultima_falha_em).toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'})}</span>}
+                        {lt.ultima_falha_em && (
+                          <span className="text-xs text-gray-400">
+                            {new Date(lt.ultima_falha_em).toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'})}
+                          </span>
+                        )}
                       </div>
                     </div>
-                    <div className="flex flex-col gap-1.5">
-                      {l.acao_sugerida==='ligar' && l.telefone_e164 && (
-                        <a href={"tel:"+l.telefone_e164} className="text-xs bg-blue-600 text-white px-3 py-1.5 rounded-lg font-medium text-center">📞 Ligar</a>
+                    <div className="flex flex-col gap-1.5 shrink-0">
+                      {lt.acao_sugerida==='ligar' && lt.telefone_e164 && (
+                        <a href={"tel:"+lt.telefone_e164} className="text-xs bg-blue-600 text-white px-3 py-1.5 rounded-lg font-medium text-center">📞 Ligar</a>
                       )}
-                      {l.acao_sugerida==='email' && l.email && (
-                        <a href={"mailto:"+l.email} className="text-xs bg-indigo-600 text-white px-3 py-1.5 rounded-lg font-medium text-center">✉️ Email</a>
+                      {lt.acao_sugerida==='email' && lt.email && (
+                        <a href={"mailto:"+lt.email} className="text-xs bg-indigo-600 text-white px-3 py-1.5 rounded-lg font-medium text-center">✉️ Email</a>
                       )}
                     </div>
                   </div>
