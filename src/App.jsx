@@ -967,7 +967,7 @@ function ProducaoTab({ sb, token, perfilCorretor }) {
                       style={{background:l.estagio_cor||"#6b7280"}}>
                       {l.estagio_icone} {l.estagio}
                     </span>
-                    {fbInfo&&<span className={`text-xs text-white px-2 py-0.5 rounded-full ${fbInfo.color}`}>{fbInfo.label}</span>}
+                    {fbInfo&&<span className={`text-xs text-white px-2 py-0.5 rounded-full whitespace-nowrap ${fbInfo?.color || ""}`}>{fbInfo.label}</span>}
                   </div>
                 </div>
                 <div className="flex gap-2 mt-2" onClick={e=>e.stopPropagation()}>
@@ -1105,7 +1105,7 @@ function HistoricoTab({ sb, token, perfilCorretor }) {
                 <div className="flex justify-between items-start">
                   <div><p className="font-medium text-base text-gray-900">{l.nome||"—"}</p><p className="text-sm text-gray-500 mt-0.5">{l.telefone||"—"}</p></div>
                   <div className="text-right">
-                    {fbInfo&&<span className={`text-xs text-white px-2 py-0.5 rounded-full ${fbInfo.color}`}>{fbInfo.label}</span>}
+                    {fbInfo&&<span className={`text-xs text-white px-2 py-0.5 rounded-full whitespace-nowrap ${fbInfo?.color || ""}`}>{fbInfo.label}</span>}
                     {l.data_feedback&&<p className="text-xs text-gray-400 mt-1">{new Date(l.data_feedback).toLocaleDateString("pt-BR")}</p>}
                   </div>
                 </div>
@@ -1548,7 +1548,7 @@ function EmailTab({ sb, token, perfilCorretor }) {
                   <p className="text-xs text-gray-400">{l.telefone||"—"}</p>
                 </div>
                 <div className="flex flex-col items-end gap-1 ml-2 flex-shrink-0">
-                  {fbInfo&&<span className={`text-xs text-white px-2 py-0.5 rounded-full ${fbInfo.color}`}>{fbInfo.label}</span>}
+                  {fbInfo&&<span className={`text-xs text-white px-2 py-0.5 rounded-full whitespace-nowrap ${fbInfo?.color || ""}`}>{fbInfo.label}</span>}
                   <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${
                     seqE===0?"bg-orange-100 text-orange-700":
                     seqE>=5?"bg-red-100 text-red-700":"bg-blue-100 text-blue-700"}`}>
@@ -1953,7 +1953,7 @@ function FunilTab({ sb, token, perfilCorretor }) {
                     )}
                   </div>
                   <div className="flex items-center gap-2 flex-wrap mt-2">
-                    {fbInfo && <span className={`text-xs text-white px-2 py-0.5 rounded-full ${fbInfo.color}`}>{fbInfo.icon} {fbInfo.label}</span>}
+                    {fbInfo && <span className={`text-xs text-white px-2 py-0.5 rounded-full whitespace-nowrap ${fbInfo?.color || ""}`}>{fbInfo.icon} {fbInfo.label}</span>}
                     {dias !== null && (
                       <span className={`text-xs px-2 py-0.5 rounded-full ${dias>7?"bg-red-100 text-red-700":dias>3?"bg-amber-100 text-amber-700":"bg-green-100 text-green-700"}`}>
                         {dias === 0 ? "hoje" : `${dias}d`}
