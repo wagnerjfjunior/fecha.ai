@@ -235,35 +235,31 @@ function TrocarSenhaObrigatoria({ sb, token, corretorId, onConcluido }) {
 
 // ─── Modal de edição de lead ──────────────────────────────────────────────────
 function LeadModal({ lead, sb, token, onSalvo, onFechar, perfilCorretor }) {
-  const [fb,setFb]          = useState(lead.feedback||"");
-  const [obs,setObs]        = useState(lead.observacao||"");
-  const [ld,setLd]          = useState(false);
-  const [erro,setErro]      = useState("");
-  const [aba,setAba]        = useState("feedback"); // 'feedback' | 'funil'
-  const [estagios,setEstagios] = useState([]);
-  const [estSel,setEstSel]  = useState(lead.estagio_id||"");
+  const [fb,setFb]           = useState(lead.feedback||"");
+  const [obs,setObs]         = useState(lead.observacao||"");
+  const [ld,setLd]           = useState(false);
+  const [erro,setErro]       = useState("");
+  const [aba,setAba]         = useState("feedback"); // feedback | funil | trilha
+  const [estSel,setEstSel]   = useState(lead.estagio_id||"");
   const [obsFunil,setObsFunil] = useState("");
   const [ldFunil,setLdFunil] = useState(false);
+  const [estagios,setEstagios] = useState([]);
+  const [trilha, setTrilha]  = useState(null);
+  const [ldTrilha, setLdTrilha] = useState(false);
 
   // Carrega estágios quando usuário abre aba funil
   useEffect(() => {
     if (aba !== "funil" || estagios.length > 0) return;
-    sb.query("funil_estagios","order=ordem.asc",token)
-      .then(r => { setEstagios(r); if (!estSel && r.length > 0) setEstSel(r[0].id); })
-      .catch(() => {});
+    sb.rpc("listar_funil_estagios", {}, token).then(r => setEstagios(r||[])).catch(()=>{});
   }, [aba]);
 
-  const [trilha, setTrilha]   = useState(null);
-  const [ldTrilha, setLdTrilha] = useState(false);
-
+  // Carrega trilha lazy quando usuário abre aba trilha
   useEffect(() => {
-    console.log("[Trilha] aba:", aba, "trilha:", trilha);
     if (aba !== "trilha" || trilha !== null) return;
-    console.log("[Trilha] buscando lead.id =", lead.id);
     setLdTrilha(true);
     sb.rpc("trilha_lead", { p_lead_id: lead.id }, token)
-      .then(r => { console.log("[Trilha] retornou:", r); setTrilha(r?.trilha || []); })
-      .catch(e => { console.error("[Trilha] erro:", e); setTrilha([]); })
+      .then(r => setTrilha(r?.trilha || []))
+      .catch(() => setTrilha([]))
       .finally(() => setLdTrilha(false));
   }, [aba]);
 
@@ -271,109 +267,136 @@ function LeadModal({ lead, sb, token, onSalvo, onFechar, perfilCorretor }) {
     if (!fb) { setErro("Selecione um feedback."); return; }
     setLd(true); setErro("");
     try {
-      const r=await sb.rpc("atualizar_feedback",{p_lead_id:lead.id,p_feedback:fb,p_observacao:obs},token);
+      const r = await sb.rpc("atualizar_feedback", {p_lead_id:lead.id, p_feedback:fb, p_observacao:obs}, token);
       if (r.error) throw new Error(r.error);
-      onSalvo({...lead,feedback:fb,observacao:obs});
+      onSalvo({...lead, feedback:fb, observacao:obs});
     } catch(e) { setErro(e.message); }
     setLd(false);
   };
 
   const moverFunil = async () => {
-    if (!estSel) return;
-    setLdFunil(true); setErro("");
+    if (!estSel || estSel === lead.estagio_id) return;
+    setLdFunil(true);
     try {
-      const r = await sb.rpc("mover_funil",{p_lead_id:lead.id,p_estagio_id:estSel,p_observacao:obsFunil},token);
+      const r = await sb.rpc("mover_funil", {p_lead_id:lead.id, p_estagio_id:estSel, p_observacao:obsFunil}, token);
       if (r.error) throw new Error(r.error);
-      onSalvo({...lead, estagio_id: estSel});
+      onSalvo({...lead, estagio_id:estSel});
     } catch(e) { setErro(e.message); }
     setLdFunil(false);
   };
 
-  const e164=lead.telefone_e164||"";
-  const wppLink=e164?buildWhatsAppLink({...lead,telefone_e164:e164}):null;
-  const mailLink=buildEmailLink(lead);
-  const estNomeAtual = estagios.find(e=>e.id===estSel)?.nome || "";
+  const estNomeAtual = estagios.find(e=>e.id===lead.estagio_id)?.nome||"";
+
+  const buildEmailFunilLink = (l, nome) => {
+    if (!l.email) return "#";
+    const sub = encodeURIComponent("Contato - " + (nome||""));
+    const body = encodeURIComponent("Olá " + (l.nome||"") + ",\n\n");
+    return "mailto:" + l.email + "?subject=" + sub + "&body=" + body;
+  };
 
   return (
-    <div className="fixed inset-0 bg-black/40 z-50 flex items-end" onClick={onFechar}>
-      <div className="bg-white rounded-t-2xl w-full max-h-[90vh] overflow-y-auto" onClick={e=>e.stopPropagation()}>
-        {/* Handle */}
-        <div className="flex justify-center pt-3 pb-1"><div className="w-10 h-1 bg-gray-300 rounded-full"/></div>
-
-        {/* Header */}
-        <div className="px-5 pt-2 pb-3 border-b border-gray-100">
-          <div className="flex items-start justify-between mb-3">
-            <div><h3 className="font-bold text-gray-900 text-xl">{lead.nome||"Sem nome"}</h3>{lead.email&&<p className="text-sm text-gray-500 mt-0.5">{lead.email}</p>}</div>
-            <button onClick={onFechar} className="text-gray-400 text-2xl leading-none">✕</button>
+    <div className="fixed inset-0 z-50 flex items-end justify-center" onClick={e=>e.target===e.currentTarget&&onFechar()}>
+      <div className="bg-white w-full max-w-lg rounded-t-2xl shadow-2xl max-h-[85vh] flex flex-col">
+        <div className="flex items-start justify-between p-4 pb-2">
+          <div className="flex-1 min-w-0">
+            <h2 className="font-bold text-lg text-gray-900 truncate">{lead.nome}</h2>
+            {lead.email && <p className="text-xs text-gray-400 truncate">{lead.email}</p>}
+            <p className="text-2xl font-bold tracking-wide mt-1">
+              {lead.telefone_escolhido ? lead.telefone_escolhido.replace(/^\+55/,"").replace(/(\d{2})(\d{5})(\d{4})/,"($1) $2-$3") : ""}
+            </p>
           </div>
-          <div className="bg-gray-50 rounded-xl p-3">
-            <p className="font-mono font-bold text-gray-900 text-lg">{lead.telefone||lead.telefone_escolhido||"—"}</p>
-            <div className="flex gap-2 mt-2 flex-wrap">
-              {(lead.telefone||lead.ligar)&&<a href={"tel:"+(lead.ligar||lead.telefone)} className="flex-1 bg-blue-600 text-white rounded-xl py-3 text-center text-base font-medium no-underline">📞 Ligar</a>}
-              <BotaoMensagens lead={{...lead,telefone_e164:e164,seq_whatsapp:lead.seq_whatsapp||0,seq_email:lead.seq_email||0}} corretor={perfilCorretor} sb={sb} token={token} className="flex-1 py-3 text-base" style={{flex:1,padding:"12px 0",fontSize:15,borderRadius:12}}/>
-            </div>
-          </div>
+          <button onClick={onFechar} className="ml-2 text-gray-400 text-2xl leading-none">×</button>
         </div>
 
-        {/* Abas */}
-        <div className="flex border-b border-gray-100">
+        <div className="px-4 pb-2 flex gap-2">
+          <a href={"tel:" + lead.telefone_e164} className="flex-1 bg-blue-600 text-white rounded-xl py-3 text-center text-base font-semibold">📞 Ligar</a>
+          <a href={"https://wa.me/" + (lead.telefone_e164||"").replace(/\+/,"")}
+             target="_blank" rel="noreferrer"
+             className="flex-1 bg-emerald-500 text-white rounded-xl py-3 text-center text-base font-semibold">WhatsApp</a>
+          <a href={buildEmailFunilLink(lead, perfilCorretor?.nome)}
+             className="flex-1 bg-indigo-500 text-white rounded-xl py-3 text-center text-base font-semibold">✉️ Email</a>
+        </div>
+
+        <div className="flex border-b border-gray-100 px-2">
           {[["feedback","Feedback"],["funil","▽ Funil CRM"],["trilha","📋 Trilha"]].map(([id,label])=>(
             <button key={id} onClick={()=>setAba(id)}
-              className={`flex-1 py-3 text-base font-medium transition-colors ${aba===id?"text-blue-600 border-b-2 border-blue-600":"text-gray-400"}`}>
+              className={"flex-1 py-2 text-sm font-medium border-b-2 transition-colors " + (aba===id ? "border-blue-600 text-blue-600" : "border-transparent text-gray-400")}>
               {label}
             </button>
           ))}
         </div>
 
-        <div className="p-5 pb-8">
+        <div className="flex-1 overflow-y-auto p-4">
+
           {aba==="feedback" && (<>
-            <p className="text-sm text-gray-500 uppercase tracking-wide mb-2">Atualizar feedback</p>
-            <div className="grid grid-cols-2 gap-2 mb-4">
-              {FEEDBACKS.map(f=>(
-                <button key={f.id} onClick={()=>setFb(f.id)} className={`rounded-xl py-3 px-3 text-base font-medium text-left transition-all border-2 ${fb===f.id?f.color+" text-white border-transparent":"bg-gray-50 text-gray-700 border-transparent"}`}>
-                  <span className="mr-1">{f.icon}</span>{f.label}
-                </button>
-              ))}
-            </div>
-            <textarea rows={3} placeholder="Observação..." value={obs} onChange={e=>setObs(e.target.value)} className="w-full border border-gray-300 rounded-xl px-3 py-3 text-base resize-none focus:outline-none focus:ring-2 focus:ring-blue-500 mb-4"/>
-            {erro&&<div className="bg-red-50 text-red-700 rounded-xl p-3 mb-3 text-base">{erro}</div>}
+            {FEEDBACKS_ESQ.concat(FEEDBACKS_DIR).map(f=>(
+              <button key={f.id} onClick={()=>setFb(f.id)}
+                className={"w-full mb-2 rounded-xl py-3 px-4 text-left text-base font-medium border-2 transition-all " + (fb===f.id ? f.cor+" text-white border-transparent" : "bg-gray-50 text-gray-700 border-transparent")}>
+                {f.label}
+              </button>
+            ))}
+            <textarea value={obs} onChange={e=>setObs(e.target.value)} placeholder="Observação (opcional)..."
+              className="w-full border border-gray-200 rounded-xl p-3 text-base resize-none mt-2 mb-3" rows={2}/>
+            {erro && <div className="bg-red-50 text-red-700 rounded-xl p-3 mb-3 text-base">{erro}</div>}
             <div className="flex gap-3">
-              <button onClick={onFechar} className="flex-1 bg-gray-100 text-gray-700 rounded-xl py-3 text-base font-medium">Cancelar</button>
-              <button onClick={salvar} disabled={ld} className="flex-1 bg-blue-600 text-white rounded-xl py-3 text-base font-semibold disabled:opacity-50">{ld?"Salvando...":"Salvar"}</button>
+              <button onClick={onFechar} className="flex-1 bg-gray-100 text-gray-700 rounded-xl py-3 text-base font-medium">Fechar</button>
+              <button onClick={salvar} disabled={ld||!fb}
+                className="flex-1 bg-blue-600 text-white rounded-xl py-3 text-base font-semibold disabled:opacity-50">
+                {ld?"Salvando...":"Salvar"}
+              </button>
             </div>
           </>)}
 
           {aba==="funil" && (<>
-            <p className="text-sm text-gray-500 uppercase tracking-wide mb-3">Posicionar no funil de vendas</p>
-            {estagios.length === 0 && <p className="text-gray-400 text-center py-4">Carregando estágios...</p>}
-            <div className="space-y-2 mb-4">
+            <p className="text-xs text-gray-400 uppercase tracking-wide mb-3">Estágio atual: <strong>{estNomeAtual||"—"}</strong></p>
+            <div className="space-y-2 mb-3">
               {estagios.map(e=>(
                 <button key={e.id} onClick={()=>setEstSel(e.id)}
-                  className={`w-full flex items-center gap-3 rounded-xl px-4 py-3 text-left transition-all border-2 ${estSel===e.id?"border-blue-500 bg-blue-50":"border-transparent bg-gray-50"}`}>
-                  <span className="text-xl">{e.icone}</span>
-                  <div className="flex-1"><p className="font-medium text-base text-gray-900">{e.nome}</p></div>
-                  <div className="w-3 h-3 rounded-full flex-shrink-0" style={{background:e.cor}}/>
-                  {estSel===e.id&&<span className="text-blue-500 text-lg">✓</span>}
+                  className={"w-full rounded-xl py-3 px-4 text-left text-base font-medium border-2 transition-all flex items-center gap-2 " + (estSel===e.id ? "border-blue-600 bg-blue-50 text-blue-700" : "border-gray-100 bg-gray-50 text-gray-700")}>
+                  <span>{e.icone}</span><span>{e.nome}</span>
                 </button>
               ))}
             </div>
-            {/* Preview email do estágio */}
-            {estNomeAtual && lead.email && (
-              <a href={buildEmailFunilLink(lead, estNomeAtual)||"#"}
-                className="block bg-indigo-50 rounded-xl p-3 mb-4 border border-indigo-100 no-underline">
-                <p className="text-xs text-indigo-700 font-medium">✉ Email template para "{estNomeAtual}"</p>
-                <p className="text-xs text-indigo-500 mt-0.5">Toque para abrir no seu app de email</p>
-              </a>
-            )}
-            <textarea rows={2} placeholder="Observação sobre este estágio (opcional)..." value={obsFunil} onChange={e=>setObsFunil(e.target.value)} className="w-full border border-gray-300 rounded-xl px-3 py-3 text-base resize-none focus:outline-none focus:ring-2 focus:ring-blue-500 mb-4"/>
-            {erro&&<div className="bg-red-50 text-red-700 rounded-xl p-3 mb-3 text-base">{erro}</div>}
+            <textarea value={obsFunil} onChange={e=>setObsFunil(e.target.value)} placeholder="Observação (opcional)..."
+              className="w-full border border-gray-200 rounded-xl p-3 text-base resize-none mb-3" rows={2}/>
+            {erro && <div className="bg-red-50 text-red-700 rounded-xl p-3 mb-3 text-base">{erro}</div>}
             <div className="flex gap-3">
-              <button onClick={onFechar} className="flex-1 bg-gray-100 text-gray-700 rounded-xl py-3 text-base font-medium">Cancelar</button>
-              <button onClick={moverFunil} disabled={ldFunil||!estSel} className="flex-1 bg-blue-600 text-white rounded-xl py-3 text-base font-semibold disabled:opacity-50">
+              <button onClick={onFechar} className="flex-1 bg-gray-100 text-gray-700 rounded-xl py-3 text-base font-medium">Fechar</button>
+              <button onClick={moverFunil} disabled={ldFunil||!estSel||estSel===lead.estagio_id}
+                className="flex-1 bg-blue-600 text-white rounded-xl py-3 text-base font-semibold disabled:opacity-50">
                 {ldFunil?"Movendo...":"Confirmar"}
               </button>
             </div>
           </>)}
+
+          {aba==="trilha" && (
+            <div>
+              {ldTrilha && <p className="text-gray-400 text-center py-8">Carregando...</p>}
+              {!ldTrilha && trilha && trilha.length===0 && (
+                <p className="text-gray-400 text-center py-8 text-sm">Nenhum movimento registrado.</p>
+              )}
+              {!ldTrilha && trilha && trilha.map((m,idx)=>(
+                <div key={idx} className="flex items-start gap-3 py-2 border-b border-gray-50 last:border-0">
+                  <div className="flex flex-col items-center" style={{minWidth:28}}>
+                    <span className="text-xl">{m.estagio_icone}</span>
+                    {idx < trilha.length-1 && <div className="w-px flex-1 bg-gray-200 mt-1" style={{minHeight:16}}/>}
+                  </div>
+                  <div className="flex-1 pb-1">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span className="font-semibold text-sm text-gray-900">{m.estagio}</span>
+                      {m.estagio_ant && <span className="text-xs text-gray-400">← {m.estagio_ant}</span>}
+                    </div>
+                    <p className="text-xs text-gray-400 mt-0.5">
+                      {new Date(m.data_hora).toLocaleString("pt-BR",{day:"2-digit",month:"2-digit",hour:"2-digit",minute:"2-digit"})}
+                      {m.corretor ? " · " + m.corretor : ""}
+                    </p>
+                    {m.observacao && <p className="text-xs text-gray-500 mt-0.5 italic">"{m.observacao}"</p>}
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+
         </div>
       </div>
     </div>
