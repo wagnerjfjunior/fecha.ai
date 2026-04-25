@@ -977,12 +977,6 @@ function ProducaoTab({ sb, token, perfilCorretor }) {
                 </div>
               </div>
             );
-          })}
-        </div>
-      </div>
-      {leadEdit&&<LeadModal lead={leadEdit} sb={sb} token={token} perfilCorretor={perfilCorretor}
-        onSalvo={()=>{setLeadEdit(null);load();}} onFechar={()=>setLeadEdit(null)}/>}
-    </div>
 
           {/* Fase 3 — Técnicos pendentes */}
           {dados && dados.tecnicos && dados.tecnicos.length > 0 && (
@@ -1022,6 +1016,12 @@ function ProducaoTab({ sb, token, perfilCorretor }) {
               </div>
             </div>
           )}
+          })}
+        </div>
+      </div>
+      {leadEdit&&<LeadModal lead={leadEdit} sb={sb} token={token} perfilCorretor={perfilCorretor}
+        onSalvo={()=>{setLeadEdit(null);load();}} onFechar={()=>setLeadEdit(null)}/>}
+    </div>
   );
 }
 
