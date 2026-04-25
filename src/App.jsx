@@ -257,11 +257,16 @@ function LeadModal({ lead, sb, token, onSalvo, onFechar, perfilCorretor }) {
 
   // Carrega trilha do funil quando usuário abre aba trilha
   useEffect(() => {
+    console.log("[Trilha] useEffect disparou — aba:", aba, "trilha:", trilha);
     if (aba !== "trilha" || trilha !== null) return;
+    console.log("[Trilha] Buscando RPC trilha_lead para lead.id =", lead.id);
     setLdTrilha(true);
     sb.rpc("trilha_lead", { p_lead_id: lead.id }, token)
-      .then(r => setTrilha(r?.trilha || []))
-      .catch(e => { console.error("trilha_lead erro:", e); setTrilha([]); })
+      .then(r => {
+        console.log("[Trilha] RPC retornou:", r);
+        setTrilha(r?.trilha || []);
+      })
+      .catch(e => { console.error("[Trilha] RPC erro:", e); setTrilha([]); })
       .finally(() => setLdTrilha(false));
   }, [aba]);
 
