@@ -244,6 +244,8 @@ function LeadModal({ lead, sb, token, onSalvo, onFechar, perfilCorretor }) {
   const [estSel,setEstSel]  = useState(lead.estagio_id||"");
   const [obsFunil,setObsFunil] = useState("");
   const [ldFunil,setLdFunil] = useState(false);
+  const [trilha, setTrilha] = useState(null);
+  const [ldTrilha, setLdTrilha] = useState(false);
 
   // Carrega estágios quando usuário abre aba funil
   useEffect(() => {
@@ -251,6 +253,16 @@ function LeadModal({ lead, sb, token, onSalvo, onFechar, perfilCorretor }) {
     sb.query("funil_estagios","order=ordem.asc",token)
       .then(r => { setEstagios(r); if (!estSel && r.length > 0) setEstSel(r[0].id); })
       .catch(() => {});
+  }, [aba]);
+
+  // Carrega trilha do funil quando usuário abre aba trilha
+  useEffect(() => {
+    if (aba !== "trilha" || trilha !== null) return;
+    setLdTrilha(true);
+    sb.rpc("trilha_lead", { p_lead_id: lead.id }, token)
+      .then(r => setTrilha(r?.trilha || []))
+      .catch(() => setTrilha([]))
+      .finally(() => setLdTrilha(false));
   }, [aba]);
 
   const salvar = async () => {
@@ -303,7 +315,7 @@ function LeadModal({ lead, sb, token, onSalvo, onFechar, perfilCorretor }) {
 
         {/* Abas */}
         <div className="flex border-b border-gray-100">
-          {[["feedback","Feedback"],["funil","▽ Funil CRM"]].map(([id,label])=>(
+        {[["feedback","Feedback"],["funil","▽ Funil CRM"],["trilha","📋 Trilha"]].map(([id,label])=>(
             <button key={id} onClick={()=>setAba(id)}
               className={`flex-1 py-3 text-base font-medium transition-colors ${aba===id?"text-blue-600 border-b-2 border-blue-600":"text-gray-400"}`}>
               {label}
@@ -359,6 +371,33 @@ function LeadModal({ lead, sb, token, onSalvo, onFechar, perfilCorretor }) {
                 {ldFunil?"Movendo...":"Confirmar"}
               </button>
             </div>
+      {aba==="trilha" && (
+        <div className="space-y-1">
+          {ldTrilha && <p className="text-gray-400 text-center py-4">Carregando trilha...</p>}
+          {!ldTrilha && trilha && trilha.length === 0 && (
+            <p className="text-gray-400 text-center py-4 text-base">Nenhum movimento registrado.</p>
+          )}
+          {!ldTrilha && trilha && trilha.map((m, i) => (
+            <div key={i} className="flex items-start gap-3 py-2">
+              <div className="flex flex-col items-center">
+                <span className="text-xl">{m.estagio_icone}</span>
+                {i < trilha.length - 1 && <div className="w-0.5 bg-gray-200 flex-1 mt-1" style={{minHeight:16}}/>}
+              </div>
+              <div className="flex-1 min-w-0 pb-2">
+                <div className="flex items-center gap-2 flex-wrap">
+                  <span className="font-medium text-sm text-gray-900">{m.estagio}</span>
+                  {m.estagio_ant && <span className="text-xs text-gray-400">← {m.estagio_ant}</span>}
+                </div>
+                <p className="text-xs text-gray-400 mt-0.5">
+                  {new Date(m.data_hora).toLocaleString("pt-BR",{day:"2-digit",month:"2-digit",hour:"2-digit",minute:"2-digit"})}
+                  {m.corretor ? " · " + m.corretor : ""}
+                </p>
+                {m.observacao && <p className="text-xs text-gray-500 mt-0.5 italic">"{m.observacao}"</p>}
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
           </>)}
         </div>
       </div>
