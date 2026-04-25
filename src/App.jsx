@@ -368,33 +368,6 @@ function LeadModal({ lead, sb, token, onSalvo, onFechar, perfilCorretor }) {
               </button>
             </div>
           </>)}
-      {aba==="trilha" && (
-        <div className="space-y-1 py-1">
-          {ldTrilha && <p className="text-gray-400 text-center py-6 text-sm">Carregando...</p>}
-          {!ldTrilha && trilha && trilha.length === 0 && (
-            <p className="text-gray-400 text-center py-6 text-sm">Nenhum movimento registrado.</p>
-          )}
-          {!ldTrilha && trilha && trilha.map((m, idx) => (
-            <div key={idx} className="flex items-start gap-3 py-2">
-              <div className="flex flex-col items-center" style={{minWidth:28}}>
-                <span className="text-xl leading-none">{m.estagio_icone}</span>
-                {idx < trilha.length - 1 && <div className="w-px bg-gray-200 flex-1 mt-1" style={{minHeight:16}}/>}
-              </div>
-              <div className="flex-1 min-w-0 pb-2">
-                <div className="flex items-center gap-2 flex-wrap">
-                  <span className="font-medium text-sm text-gray-800">{m.estagio}</span>
-                  {m.estagio_ant && <span className="text-xs text-gray-400">← {m.estagio_ant}</span>}
-                </div>
-                <p className="text-xs text-gray-400 mt-0.5">
-                  {new Date(m.data_hora).toLocaleString("pt-BR",{day:"2-digit",month:"2-digit",hour:"2-digit",minute:"2-digit"})}
-                  {m.corretor ? " · " + m.corretor : ""}
-                </p>
-                {m.observacao && <p className="text-xs text-gray-500 mt-0.5 italic">"{m.observacao}"</p>}
-              </div>
-            </div>
-          ))}
-        </div>
-      )}
 
           {aba==="trilha" && (
             <div>
@@ -438,6 +411,33 @@ const ORIGEM_LABEL = { lista:"🧊 Lista Fria", meta:"📱 Meta", google:"🔍 G
 
 function tplWpp(nome, c) {
   const nc  = c?.nome     || "Consultor";
+      {aba==="trilha" && (
+        <div className="space-y-1 py-1">
+          {ldTrilha && <p className="text-gray-400 text-center py-6 text-sm">Carregando...</p>}
+          {!ldTrilha && trilha && trilha.length === 0 && (
+            <p className="text-gray-400 text-center py-6 text-sm">Nenhum movimento registrado.</p>
+          )}
+          {!ldTrilha && trilha && trilha.map((m, idx) => (
+            <div key={idx} className="flex items-start gap-3 py-2">
+              <div className="flex flex-col items-center" style={{minWidth:28}}>
+                <span className="text-xl leading-none">{m.estagio_icone}</span>
+                {idx < trilha.length - 1 && <div className="w-px bg-gray-200 flex-1 mt-1" style={{minHeight:16}}/>}
+              </div>
+              <div className="flex-1 min-w-0 pb-2">
+                <div className="flex items-center gap-2 flex-wrap">
+                  <span className="font-medium text-sm text-gray-800">{m.estagio}</span>
+                  {m.estagio_ant && <span className="text-xs text-gray-400">← {m.estagio_ant}</span>}
+                </div>
+                <p className="text-xs text-gray-400 mt-0.5">
+                  {new Date(m.data_hora).toLocaleString("pt-BR",{day:"2-digit",month:"2-digit",hour:"2-digit",minute:"2-digit"})}
+                  {m.corretor ? " · " + m.corretor : ""}
+                </p>
+                {m.observacao && <p className="text-xs text-gray-500 mt-0.5 italic">"{m.observacao}"</p>}
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
   const emp = c?.empresa  || "Tegra Incorporadora";
   const tel = c?.telefone || "";
   const n   = (nome||"").split(" ")[0] || "você";
@@ -820,18 +820,6 @@ function DiscadorTab({ sb, token }) {
           </div>
           {lead.email&&<p className="text-base text-gray-500 mt-0.5">{lead.email}</p>}
           {lead.score>0&&<span className="inline-block mt-1 text-xs bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full">Score {lead.score}/10</span>}
-          {/* ── Fase 3: Chip técnico ─────────────────────────── */}
-          {lead.tecnico_pendente && (
-            <div className="mt-3 px-3 py-2 rounded-xl text-sm font-medium flex items-center gap-2 " style={{background: lead.ultima_falha_tecnica==='chamada_caiu' ? '#e0f2fe' : '#fef9c3', color: lead.ultima_falha_tecnica==='chamada_caiu' ? '#0369a1' : '#92400e'}}>
-              <span>{lead.ultima_falha_tecnica==='chamada_caiu' ? '⚙️' : '⚠️'}</span>
-              <span>
-                {lead.ultima_falha_tecnica==='chamada_caiu'
-                  ? 'Tentativa ' + (lead.tentativas_caiu||1) + '/3 — última: chamada caiu' + (lead.ultima_falha_em ? ' às ' + new Date(lead.ultima_falha_em).toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'}) : '')
-                  : 'WhatsApp inválido — ação sugerida: ligar'
-                }
-              </span>
-            </div>
-          )}
           <div className="mt-4 bg-gray-50 rounded-xl p-4">
             <p className="text-2xl font-mono font-bold text-gray-900">{lead.telefone_escolhido||lead.telefone_e164||"—"}</p>
             <p className="text-base text-gray-500 mt-1">{lead.tipo_telefone} · {lead.pais_telefone}</p>
@@ -871,6 +859,17 @@ function DiscadorTab({ sb, token }) {
               </button>
             ))}
           </div>
+          {/* Fase 3 — chip técnico */}
+          {lead && lead.tecnico_pendente && (
+            <div className="mx-4 mt-2 px-3 py-2 rounded-xl text-sm font-medium flex items-center gap-2 bg-blue-50 text-blue-800">
+              <span>{lead.ultima_falha_tecnica === 'chamada_caiu' ? '⚙️' : '⚠️'}</span>
+              <span>
+                {lead.ultima_falha_tecnica === 'chamada_caiu'
+                  ? ('Tentativa ' + (lead.tentativas_caiu || 1) + '/3 — última: chamada caiu' + (lead.ultima_falha_em ? ' às ' + new Date(lead.ultima_falha_em).toLocaleTimeString('pt-BR', {hour: '2-digit', minute: '2-digit'}) : ''))
+                  : 'WhatsApp inválido — ação sugerida: ligar'}
+              </span>
+            </div>
+          )}
         </div>
       </div>
       {/* Modal mensagens */}
@@ -964,7 +963,7 @@ function ProducaoTab({ sb, token, perfilCorretor }) {
                     <p className="text-sm text-gray-500">{l.telefone||"—"}</p>
                   </div>
                   <div className="flex flex-col items-end gap-1 ml-2 flex-shrink-0">
-                    <span className="text-xs text-white px-2 py-0.5 rounded-full font-medium"
+                    <span className="text-xs px-2 py-0.5 rounded-full whitespace-nowrap font-medium font-medium"
                       style={{background:l.estagio_cor||"#6b7280"}}>
                       {l.estagio_icone} {l.estagio}
                     </span>
@@ -977,44 +976,6 @@ function ProducaoTab({ sb, token, perfilCorretor }) {
                     className="text-sm font-medium" style={{fontSize:13,padding:"6px 12px",borderRadius:10}}/>
                 </div>
               </div>
-
-
-          {/* ── Fase 3: Técnicos pendentes ──────────────────── */}
-          {dados?.tecnicos && dados.tecnicos.length > 0 && (
-            <div className="mt-6">
-              <p className="text-xs font-semibold uppercase tracking-wide text-slate-500 mb-2">
-                ⚙️ Técnicos pendentes ({dados.tecnicos.length})
-              </p>
-              <div className="space-y-2">
-                {dados.tecnicos.map((lt,ti) => (
-                  <div key={ti} className="bg-slate-50 border border-slate-200 rounded-xl p-3 flex items-center justify-between gap-3">
-                    <div className="flex-1 min-w-0">
-                      <p className="font-semibold text-sm text-gray-900 truncate">{lt.nome}</p>
-                      <p className="text-xs text-gray-500">{lt.telefone}</p>
-                      <div className="flex items-center gap-1.5 mt-1 flex-wrap">
-                        <span className="text-xs px-2 py-0.5 rounded-full font-medium whitespace-nowrap bg-blue-100 text-blue-800">
-                          {lt.ultima_falha_tecnica==='chamada_caiu' ? ('⚙️ Chamada caiu ('+( lt.tentativas_caiu||1)+'/3)') : '⚠️ WhatsApp inválido'}
-                        </span>
-                        {lt.ultima_falha_em && (
-                          <span className="text-xs text-gray-400">
-                            {new Date(lt.ultima_falha_em).toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'})}
-                          </span>
-                        )}
-                      </div>
-                    </div>
-                    <div className="flex flex-col gap-1.5 shrink-0">
-                      {lt.acao_sugerida==='ligar' && lt.telefone_e164 && (
-                        <a href={"tel:"+lt.telefone_e164} className="text-xs bg-blue-600 text-white px-3 py-1.5 rounded-lg font-medium text-center">📞 Ligar</a>
-                      )}
-                      {lt.acao_sugerida==='email' && lt.email && (
-                        <a href={"mailto:"+lt.email} className="text-xs bg-indigo-600 text-white px-3 py-1.5 rounded-lg font-medium text-center">✉️ Email</a>
-                      )}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
             );
           })}
         </div>
@@ -1022,6 +983,45 @@ function ProducaoTab({ sb, token, perfilCorretor }) {
       {leadEdit&&<LeadModal lead={leadEdit} sb={sb} token={token} perfilCorretor={perfilCorretor}
         onSalvo={()=>{setLeadEdit(null);load();}} onFechar={()=>setLeadEdit(null)}/>}
     </div>
+
+          {/* Fase 3 — Técnicos pendentes */}
+          {dados && dados.tecnicos && dados.tecnicos.length > 0 && (
+            <div className="mt-6">
+              <p className="text-xs font-semibold uppercase tracking-wide text-slate-500 mb-2">
+                ⚙️ Técnicos pendentes ({dados.tecnicos.length})
+              </p>
+              <div className="space-y-2">
+                {dados.tecnicos.map((lt, ti) => (
+                  <div key={ti} className="bg-slate-50 border border-slate-200 rounded-xl p-3 flex items-center justify-between gap-3">
+                    <div className="flex-1 min-w-0">
+                      <p className="font-semibold text-sm text-gray-900 truncate">{lt.nome}</p>
+                      <p className="text-xs text-gray-500 truncate">{lt.telefone}</p>
+                      <div className="flex items-center gap-1.5 mt-1 flex-wrap">
+                        <span className="text-xs px-2 py-0.5 rounded-full font-medium whitespace-nowrap bg-blue-100 text-blue-800">
+                          {lt.ultima_falha_tecnica === 'chamada_caiu'
+                            ? ('⚙️ Chamada caiu (' + (lt.tentativas_caiu || 1) + '/3)')
+                            : '⚠️ WhatsApp inválido'}
+                        </span>
+                        {lt.ultima_falha_em && (
+                          <span className="text-xs text-gray-400">
+                            {new Date(lt.ultima_falha_em).toLocaleTimeString('pt-BR', {hour: '2-digit', minute: '2-digit'})}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                    <div className="flex flex-col gap-1.5 shrink-0">
+                      {lt.acao_sugerida === 'ligar' && lt.telefone_e164 && (
+                        <a href={"tel:" + lt.telefone_e164} className="text-xs bg-blue-600 text-white px-3 py-1.5 rounded-lg font-medium text-center">📞 Ligar</a>
+                      )}
+                      {lt.acao_sugerida === 'email' && lt.email && (
+                        <a href={"mailto:" + lt.email} className="text-xs bg-indigo-600 text-white px-3 py-1.5 rounded-lg font-medium text-center">✉️ Email</a>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
   );
 }
 
@@ -1105,7 +1105,7 @@ function HistoricoTab({ sb, token, perfilCorretor }) {
                 <div className="flex justify-between items-start">
                   <div><p className="font-medium text-base text-gray-900">{l.nome||"—"}</p><p className="text-sm text-gray-500 mt-0.5">{l.telefone||"—"}</p></div>
                   <div className="text-right">
-                    {fbInfo&&<span className={`text-xs px-2 py-0.5 rounded-full whitespace-nowrap font-medium ${fbInfo.color}`}>{fbInfo.label}</span>}
+                    {fbInfo&&<span className={`text-xs text-white px-2 py-0.5 rounded-full ${fbInfo.color}`}>{fbInfo.label}</span>}
                     {l.data_feedback&&<p className="text-xs text-gray-400 mt-1">{new Date(l.data_feedback).toLocaleDateString("pt-BR")}</p>}
                   </div>
                 </div>
