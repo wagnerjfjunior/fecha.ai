@@ -368,6 +368,33 @@ function LeadModal({ lead, sb, token, onSalvo, onFechar, perfilCorretor }) {
               </button>
             </div>
           </>)}
+      {aba==="trilha" && (
+        <div className="space-y-1 py-1">
+          {ldTrilha && <p className="text-gray-400 text-center py-6 text-sm">Carregando...</p>}
+          {!ldTrilha && trilha && trilha.length === 0 && (
+            <p className="text-gray-400 text-center py-6 text-sm">Nenhum movimento registrado.</p>
+          )}
+          {!ldTrilha && trilha && trilha.map((m, idx) => (
+            <div key={idx} className="flex items-start gap-3 py-2">
+              <div className="flex flex-col items-center" style={{minWidth:28}}>
+                <span className="text-xl leading-none">{m.estagio_icone}</span>
+                {idx < trilha.length - 1 && <div className="w-px bg-gray-200 flex-1 mt-1" style={{minHeight:16}}/>}
+              </div>
+              <div className="flex-1 min-w-0 pb-2">
+                <div className="flex items-center gap-2 flex-wrap">
+                  <span className="font-medium text-sm text-gray-800">{m.estagio}</span>
+                  {m.estagio_ant && <span className="text-xs text-gray-400">← {m.estagio_ant}</span>}
+                </div>
+                <p className="text-xs text-gray-400 mt-0.5">
+                  {new Date(m.data_hora).toLocaleString("pt-BR",{day:"2-digit",month:"2-digit",hour:"2-digit",minute:"2-digit"})}
+                  {m.corretor ? " · " + m.corretor : ""}
+                </p>
+                {m.observacao && <p className="text-xs text-gray-500 mt-0.5 italic">"{m.observacao}"</p>}
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
 
           {aba==="trilha" && (
             <div>
@@ -411,33 +438,6 @@ const ORIGEM_LABEL = { lista:"🧊 Lista Fria", meta:"📱 Meta", google:"🔍 G
 
 function tplWpp(nome, c) {
   const nc  = c?.nome     || "Consultor";
-      {aba==="trilha" && (
-        <div className="space-y-1 py-1">
-          {ldTrilha && <p className="text-gray-400 text-center py-6 text-sm">Carregando...</p>}
-          {!ldTrilha && trilha && trilha.length === 0 && (
-            <p className="text-gray-400 text-center py-6 text-sm">Nenhum movimento registrado.</p>
-          )}
-          {!ldTrilha && trilha && trilha.map((m, idx) => (
-            <div key={idx} className="flex items-start gap-3 py-2">
-              <div className="flex flex-col items-center" style={{minWidth:28}}>
-                <span className="text-xl leading-none">{m.estagio_icone}</span>
-                {idx < trilha.length - 1 && <div className="w-px bg-gray-200 flex-1 mt-1" style={{minHeight:16}}/>}
-              </div>
-              <div className="flex-1 min-w-0 pb-2">
-                <div className="flex items-center gap-2 flex-wrap">
-                  <span className="font-medium text-sm text-gray-800">{m.estagio}</span>
-                  {m.estagio_ant && <span className="text-xs text-gray-400">← {m.estagio_ant}</span>}
-                </div>
-                <p className="text-xs text-gray-400 mt-0.5">
-                  {new Date(m.data_hora).toLocaleString("pt-BR",{day:"2-digit",month:"2-digit",hour:"2-digit",minute:"2-digit"})}
-                  {m.corretor ? " · " + m.corretor : ""}
-                </p>
-                {m.observacao && <p className="text-xs text-gray-500 mt-0.5 italic">"{m.observacao}"</p>}
-              </div>
-            </div>
-          ))}
-        </div>
-      )}
   const emp = c?.empresa  || "Tegra Incorporadora";
   const tel = c?.telefone || "";
   const n   = (nome||"").split(" ")[0] || "você";
@@ -1098,7 +1098,7 @@ function HistoricoTab({ sb, token, perfilCorretor }) {
                 <div className="flex justify-between items-start">
                   <div><p className="font-medium text-base text-gray-900">{l.nome||"—"}</p><p className="text-sm text-gray-500 mt-0.5">{l.telefone||"—"}</p></div>
                   <div className="text-right">
-                    {fbInfo&&<span className={`text-xs text-white px-2 py-0.5 rounded-full ${fbInfo.color}`}>{fbInfo.label}</span>}
+                    {fbInfo&&<span className={`text-xs px-2 py-0.5 rounded-full whitespace-nowrap font-medium ${fbInfo.color}`}>{fbInfo.label}</span>}
                     {l.data_feedback&&<p className="text-xs text-gray-400 mt-1">{new Date(l.data_feedback).toLocaleDateString("pt-BR")}</p>}
                   </div>
                 </div>
