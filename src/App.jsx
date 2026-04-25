@@ -244,8 +244,6 @@ function LeadModal({ lead, sb, token, onSalvo, onFechar, perfilCorretor }) {
   const [estSel,setEstSel]  = useState(lead.estagio_id||"");
   const [obsFunil,setObsFunil] = useState("");
   const [ldFunil,setLdFunil] = useState(false);
-  const [trilha, setTrilha] = useState(null);
-  const [ldTrilha, setLdTrilha] = useState(false);
 
   // Carrega estágios quando usuário abre aba funil
   useEffect(() => {
@@ -255,18 +253,17 @@ function LeadModal({ lead, sb, token, onSalvo, onFechar, perfilCorretor }) {
       .catch(() => {});
   }, [aba]);
 
-  // Carrega trilha do funil quando usuário abre aba trilha
+  const [trilha, setTrilha]   = useState(null);
+  const [ldTrilha, setLdTrilha] = useState(false);
+
   useEffect(() => {
-    console.log("[Trilha] useEffect disparou — aba:", aba, "trilha:", trilha);
+    console.log("[Trilha] aba:", aba, "trilha:", trilha);
     if (aba !== "trilha" || trilha !== null) return;
-    console.log("[Trilha] Buscando RPC trilha_lead para lead.id =", lead.id);
+    console.log("[Trilha] buscando lead.id =", lead.id);
     setLdTrilha(true);
     sb.rpc("trilha_lead", { p_lead_id: lead.id }, token)
-      .then(r => {
-        console.log("[Trilha] RPC retornou:", r);
-        setTrilha(r?.trilha || []);
-      })
-      .catch(e => { console.error("[Trilha] RPC erro:", e); setTrilha([]); })
+      .then(r => { console.log("[Trilha] retornou:", r); setTrilha(r?.trilha || []); })
+      .catch(e => { console.error("[Trilha] erro:", e); setTrilha([]); })
       .finally(() => setLdTrilha(false));
   }, [aba]);
 
@@ -320,7 +317,7 @@ function LeadModal({ lead, sb, token, onSalvo, onFechar, perfilCorretor }) {
 
         {/* Abas */}
         <div className="flex border-b border-gray-100">
-        {[["feedback","Feedback"],["funil","▽ Funil CRM"],["trilha","📋 Trilha"]].map(([id,label])=>(
+          {[["feedback","Feedback"],["funil","▽ Funil CRM"],["trilha","📋 Trilha"]].map(([id,label])=>(
             <button key={id} onClick={()=>setAba(id)}
               className={`flex-1 py-3 text-base font-medium transition-colors ${aba===id?"text-blue-600 border-b-2 border-blue-600":"text-gray-400"}`}>
               {label}
@@ -376,33 +373,6 @@ function LeadModal({ lead, sb, token, onSalvo, onFechar, perfilCorretor }) {
                 {ldFunil?"Movendo...":"Confirmar"}
               </button>
             </div>
-      {aba==="trilha" && (
-        <div className="space-y-1">
-          {ldTrilha && <p className="text-gray-400 text-center py-4">Carregando trilha...</p>}
-          {!ldTrilha && trilha && trilha.length === 0 && (
-            <p className="text-gray-400 text-center py-4 text-base">Nenhum movimento registrado.</p>
-          )}
-          {!ldTrilha && trilha && trilha.map((m, i) => (
-            <div key={i} className="flex items-start gap-3 py-2">
-              <div className="flex flex-col items-center">
-                <span className="text-xl">{m.estagio_icone}</span>
-                {i < trilha.length - 1 && <div className="w-0.5 bg-gray-200 flex-1 mt-1" style={{minHeight:16}}/>}
-              </div>
-              <div className="flex-1 min-w-0 pb-2">
-                <div className="flex items-center gap-2 flex-wrap">
-                  <span className="font-medium text-sm text-gray-900">{m.estagio}</span>
-                  {m.estagio_ant && <span className="text-xs text-gray-400">← {m.estagio_ant}</span>}
-                </div>
-                <p className="text-xs text-gray-400 mt-0.5">
-                  {new Date(m.data_hora).toLocaleString("pt-BR",{day:"2-digit",month:"2-digit",hour:"2-digit",minute:"2-digit"})}
-                  {m.corretor ? " · " + m.corretor : ""}
-                </p>
-                {m.observacao && <p className="text-xs text-gray-500 mt-0.5 italic">"{m.observacao}"</p>}
-              </div>
-            </div>
-          ))}
-        </div>
-      )}
           </>)}
         </div>
       </div>
@@ -418,6 +388,33 @@ const ORIGEM_LABEL = { lista:"🧊 Lista Fria", meta:"📱 Meta", google:"🔍 G
 
 function tplWpp(nome, c) {
   const nc  = c?.nome     || "Consultor";
+      {aba==="trilha" && (
+        <div className="space-y-1 py-1">
+          {ldTrilha && <p className="text-gray-400 text-center py-6 text-sm">Carregando...</p>}
+          {!ldTrilha && trilha && trilha.length === 0 && (
+            <p className="text-gray-400 text-center py-6 text-sm">Nenhum movimento registrado.</p>
+          )}
+          {!ldTrilha && trilha && trilha.map((m, idx) => (
+            <div key={idx} className="flex items-start gap-3 py-2">
+              <div className="flex flex-col items-center" style={{minWidth:28}}>
+                <span className="text-xl leading-none">{m.estagio_icone}</span>
+                {idx < trilha.length - 1 && <div className="w-px bg-gray-200 flex-1 mt-1" style={{minHeight:16}}/>}
+              </div>
+              <div className="flex-1 min-w-0 pb-2">
+                <div className="flex items-center gap-2 flex-wrap">
+                  <span className="font-medium text-sm text-gray-800">{m.estagio}</span>
+                  {m.estagio_ant && <span className="text-xs text-gray-400">← {m.estagio_ant}</span>}
+                </div>
+                <p className="text-xs text-gray-400 mt-0.5">
+                  {new Date(m.data_hora).toLocaleString("pt-BR",{day:"2-digit",month:"2-digit",hour:"2-digit",minute:"2-digit"})}
+                  {m.corretor ? " · " + m.corretor : ""}
+                </p>
+                {m.observacao && <p className="text-xs text-gray-500 mt-0.5 italic">"{m.observacao}"</p>}
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
   const emp = c?.empresa  || "Tegra Incorporadora";
   const tel = c?.telefone || "";
   const n   = (nome||"").split(" ")[0] || "você";
@@ -1531,62 +1528,20 @@ function FunilCardModal({ lead, estagios, corretor, sb, token, onMovido, onFecha
   const [ld, setLd]                   = useState(false);
   const [erro, setErro]               = useState("");
   const [abaSel, setAbaSel]           = useState("mover"); // 'mover' | 'contato'
-  const [etapa, setEtapa] = useState("estagio"); // 'estagio' | 'feedback'
-  const [fbSel, setFbSel] = useState("");
 
   const estAtual = estagios.find(e => e.id === lead.estagio_id);
   const estNovo  = estagios.find(e => e.id === novoEstagio);
 
-  // Mapa de feedbacks sugeridos por estágio destino
-  const FB_POR_ESTAGIO = {
-    "Em conversa":       [{ id:"em_conversa",     label:"Em conversa",            color:"bg-blue-600"    }],
-    "Visita agendada":   [{ id:"agendado_visita",  label:"Agendou visita",         color:"bg-emerald-600" }],
-    "Visita realizada":  [{ id:"em_conversa",      label:"Em conversa",            color:"bg-blue-600"    }],
-    "Proposta enviada":  [{ id:"em_conversa",      label:"Em conversa",            color:"bg-blue-600"    }],
-    "Em negociação":     [{ id:"em_conversa",      label:"Em conversa",            color:"bg-blue-600"    }],
-    "Perdido com contato": [
-      { id:"sem_interesse",    label:"Sem interesse",         color:"bg-orange-500" },
-      { id:"lead_ja_atendido", label:"Já comprou / atendido", color:"bg-orange-500" },
-    ],
-    "Perdido sem contato": [
-      { id:"nao_responde",  label:"Não responde",  color:"bg-red-600" },
-      { id:"numero_errado", label:"Número errado", color:"bg-red-600" },
-      { id:"caixa_postal",  label:"Caixa postal",  color:"bg-red-600" },
-    ],
-  };
-
-  const fbSugeridos = estNovo ? (FB_POR_ESTAGIO[estNovo.nome] || []) : [];
-  const precisaFeedback = fbSugeridos.length > 0;
-
-  const irParaFeedback = () => {
+  const mover = async () => {
     if (!novoEstagio || novoEstagio === lead.estagio_id) { onFechar(); return; }
-    if (precisaFeedback) {
-      setFbSel(fbSugeridos.length === 1 ? fbSugeridos[0].id : "");
-      setEtapa("feedback");
-    } else {
-      moverConfirmado("");
-    }
-  };
-
-  const moverConfirmado = async (feedbackEscolhido) => {
     setLd(true); setErro("");
     try {
-      if (feedbackEscolhido) {
-        const rf = await sb.rpc("atualizar_feedback", {
-          p_lead_id: lead.id, p_feedback: feedbackEscolhido, p_observacao: obs
-        }, token);
-        if (rf.error) throw new Error(rf.error);
-      }
-      const r = await sb.rpc("mover_funil", {
-        p_lead_id: lead.id, p_estagio_id: novoEstagio, p_observacao: obs
-      }, token);
+      const r = await sb.rpc("mover_funil", { p_lead_id: lead.id, p_estagio_id: novoEstagio, p_observacao: obs }, token);
       if (r.error) throw new Error(r.error);
-      onMovido({ ...lead, estagio_id: novoEstagio, ...(feedbackEscolhido ? { feedback: feedbackEscolhido } : {}) });
-    } catch(e) { setErro(e.message); setEtapa("estagio"); }
+      onMovido({ ...lead, estagio_id: novoEstagio });
+    } catch(e) { setErro(e.message); }
     setLd(false);
   };
-
-  const mover = irParaFeedback;
 
   const e164     = lead.telefone_e164 || "";
   function buildWppFunil() {
@@ -1717,50 +1672,17 @@ function FunilCardModal({ lead, estagios, corretor, sb, token, onMovido, onFecha
 
               {erro && <div className="bg-red-50 text-red-700 rounded-xl p-3 mb-3 text-base">{erro}</div>}
 
-        {erro && <div className="bg-red-50 text-red-700 rounded-xl p-3 mb-3 text-base">{erro}</div>}
-
-        <div className="flex gap-3">
-          <button onClick={onFechar} className="flex-1 bg-gray-100 text-gray-700 rounded-xl py-3 text-base font-medium">
-            Fechar
-          </button>
-          <button onClick={irParaFeedback} disabled={ld || !novoEstagio || novoEstagio === lead.estagio_id}
-            className="flex-1 bg-blue-600 text-white rounded-xl py-3 text-base font-semibold disabled:opacity-50">
-            {ld ? "Movendo..." : precisaFeedback ? "Próximo →" : "Mover"}
-          </button>
-        </div>
-      </>
-    )}
-
-    {abaSel === "mover" && etapa === "feedback" && (
-      <>
-        <div className="flex items-center gap-2 mb-4">
-          <button onClick={() => setEtapa("estagio")} className="text-blue-600 text-sm font-medium">← Voltar</button>
-          {estNovo && <span className="text-sm text-gray-500">Movendo para: <strong>{estNovo.icone} {estNovo.nome}</strong></span>}
-        </div>
-        <p className="text-sm text-gray-500 uppercase tracking-wide mb-3">Registrar resultado desta ação?</p>
-        <div className="space-y-2 mb-4">
-          {fbSugeridos.map(f => (
-            <button key={f.id} onClick={() => setFbSel(fbSel === f.id ? "" : f.id)}
-              className={`w-full rounded-xl py-3 px-4 text-left text-base font-medium border-2 transition-all ${
-                fbSel === f.id ? f.color + " text-white border-transparent" : "bg-gray-50 text-gray-700 border-transparent"
-              }`}>
-              {f.label}
-            </button>
-          ))}
-        </div>
-        {erro && <div className="bg-red-50 text-red-700 rounded-xl p-3 mb-3 text-base">{erro}</div>}
-        <div className="flex gap-3">
-          <button onClick={() => moverConfirmado("")} disabled={ld}
-            className="flex-1 bg-gray-100 text-gray-700 rounded-xl py-3 text-base font-medium disabled:opacity-50">
-            {ld ? "Movendo..." : "Pular"}
-          </button>
-          <button onClick={() => moverConfirmado(fbSel)} disabled={ld || !fbSel}
-            className="flex-1 bg-blue-600 text-white rounded-xl py-3 text-base font-semibold disabled:opacity-50">
-            {ld ? "Salvando..." : "Confirmar"}
-          </button>
-        </div>
-      </>
-    )}
+              <div className="flex gap-3">
+                <button onClick={onFechar} className="flex-1 bg-gray-100 text-gray-700 rounded-xl py-3 text-base font-medium">
+                  Fechar
+                </button>
+                <button onClick={mover} disabled={ld || !novoEstagio || novoEstagio === lead.estagio_id}
+                  className="flex-1 bg-blue-600 text-white rounded-xl py-3 text-base font-semibold disabled:opacity-50">
+                  {ld ? "Movendo..." : "Mover"}
+                </button>
+              </div>
+            </>
+          )}
 
           {abaSel === "contato" && (
             <div className="space-y-2">
