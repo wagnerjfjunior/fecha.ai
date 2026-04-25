@@ -820,6 +820,18 @@ function DiscadorTab({ sb, token }) {
           </div>
           {lead.email&&<p className="text-base text-gray-500 mt-0.5">{lead.email}</p>}
           {lead.score>0&&<span className="inline-block mt-1 text-xs bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full">Score {lead.score}/10</span>}
+          {/* ── Fase 3: Chip técnico ─────────────────────────── */}
+          {lead.tecnico_pendente && (
+            <div className="mt-3 px-3 py-2 rounded-xl text-sm font-medium flex items-center gap-2 " style={{background: lead.ultima_falha_tecnica==='chamada_caiu' ? '#e0f2fe' : '#fef9c3', color: lead.ultima_falha_tecnica==='chamada_caiu' ? '#0369a1' : '#92400e'}}>
+              <span>{lead.ultima_falha_tecnica==='chamada_caiu' ? '⚙️' : '⚠️'}</span>
+              <span>
+                {lead.ultima_falha_tecnica==='chamada_caiu'
+                  ? 'Tentativa ' + (lead.tentativas_caiu||1) + '/3 — última: chamada caiu' + (lead.ultima_falha_em ? ' às ' + new Date(lead.ultima_falha_em).toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'}) : '')
+                  : 'WhatsApp inválido — ação sugerida: ligar'
+                }
+              </span>
+            </div>
+          )}
           <div className="mt-4 bg-gray-50 rounded-xl p-4">
             <p className="text-2xl font-mono font-bold text-gray-900">{lead.telefone_escolhido||lead.telefone_e164||"—"}</p>
             <p className="text-base text-gray-500 mt-1">{lead.tipo_telefone} · {lead.pais_telefone}</p>
@@ -841,7 +853,7 @@ function DiscadorTab({ sb, token }) {
       )}
       <div>
         <p className="text-base text-gray-500 uppercase tracking-wide mb-3 font-medium">Feedback</p>
-        <div className="grid grid-cols-2 gap-2">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
           {/* Coluna esquerda: positivos | Coluna direita: negativos */}
           <div className="space-y-2">
             <p className="text-xs text-emerald-600 font-semibold uppercase tracking-wide text-center">✓ Positivo</p>
@@ -965,6 +977,37 @@ function ProducaoTab({ sb, token, perfilCorretor }) {
                     className="text-sm font-medium" style={{fontSize:13,padding:"6px 12px",borderRadius:10}}/>
                 </div>
               </div>
+
+          {/* ── Fase 3: Técnicos pendentes ──────────────────── */}
+          {dados?.tecnicos && dados.tecnicos.length > 0 && (
+            <div className="mt-6">
+              <p className="text-xs font-semibold uppercase tracking-wide text-slate-500 mb-2">⚙️ Técnicos pendentes ({dados.tecnicos.length})</p>
+              <div className="space-y-2">
+                {dados.tecnicos.map(l => (
+                  <div key={l.id} className="bg-slate-50 border border-slate-200 rounded-xl p-3 flex items-center justify-between gap-3">
+                    <div className="flex-1 min-w-0">
+                      <p className="font-semibold text-sm text-gray-900 truncate">{l.nome}</p>
+                      <p className="text-xs text-gray-500">{l.telefone}</p>
+                      <div className="flex items-center gap-1.5 mt-1">
+                        <span className="text-xs px-2 py-0.5 rounded-full font-medium" style={{background: l.ultima_falha_tecnica==='chamada_caiu' ? '#e0f2fe' : '#fef9c3', color: l.ultima_falha_tecnica==='chamada_caiu' ? '#0369a1' : '#92400e'}}>
+                          {l.ultima_falha_tecnica==='chamada_caiu' ? '⚙️ Chamada caiu ('+( l.tentativas_caiu||1)+'/3)' : '⚠️ WhatsApp inválido'}
+                        </span>
+                        {l.ultima_falha_em && <span className="text-xs text-gray-400">{new Date(l.ultima_falha_em).toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'})}</span>}
+                      </div>
+                    </div>
+                    <div className="flex flex-col gap-1.5">
+                      {l.acao_sugerida==='ligar' && l.telefone_e164 && (
+                        <a href={"tel:"+l.telefone_e164} className="text-xs bg-blue-600 text-white px-3 py-1.5 rounded-lg font-medium text-center">📞 Ligar</a>
+                      )}
+                      {l.acao_sugerida==='email' && l.email && (
+                        <a href={"mailto:"+l.email} className="text-xs bg-indigo-600 text-white px-3 py-1.5 rounded-lg font-medium text-center">✉️ Email</a>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
             );
           })}
         </div>
