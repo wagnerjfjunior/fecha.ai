@@ -2161,6 +2161,7 @@ function CorretorApp({ sb, token, corretor, onLogout, onVoltar }) {
       {tab==="carteira"  &&<CarteiraTab  sb={sb} token={token} perfilCorretor={perfilFinal}/>}
       {tab==="funil"     &&<FunilTab     sb={sb} token={token} perfilCorretor={perfilFinal}/>}
       {tab==="historico" &&<HistoricoTab sb={sb} token={token} perfilCorretor={perfilFinal} isGestor={isGestor}/>}
+      {tab==="gestor" && isGestor && <GestorTab sb={sb} token={token}/>}
       <div className="fixed bottom-0 left-0 right-0 flex z-20" style={{background:dark?"#0f172a":"#ffffff",borderTop:dark?"1px solid #1e293b":"1px solid #e5e7eb"}}>
         {[
           {id:"discador", label:"Discador",      key:null,       icon:"◎"},
