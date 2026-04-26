@@ -1496,6 +1496,668 @@ function GestorTab({ sb, token }) {
 
 
 
+function DKpi({ label, value, sub, color="#38bdf8" }) {
+  return (
+    <div style={{background:DARK.card,border:`1px solid ${DARK.border}`,borderRadius:16,padding:"14px 12px"}}>
+      <p style={{color:DARK.muted,fontSize:11,textTransform:"uppercase",letterSpacing:1,margin:0}}>{label}</p>
+      <p style={{color,fontSize:28,fontWeight:700,margin:"4px 0 0"}}>{value}</p>
+      {sub&&<p style={{color:DARK.muted,fontSize:12,margin:"2px 0 0"}}>{sub}</p>}
+    </div>
+  );
+}
+
+// ─── CircleKpi — círculo estático elegante, valor absoluto + % menor ─────────
+function CircleKpi({ absValue, pct, label, cor="#10b981" }) {
+  const r = 30, cx = 42, cy = 42;
+  // Arco único de 270° (não gira, é estático e decorativo)
+  // De 225° (bottom-left) até 315° (bottom-right) no sentido horário — 270°
+  const toRad = d => d * Math.PI / 180;
+  function pt(deg) {
+    return [+(cx + r * Math.cos(toRad(deg))).toFixed(2), +(cy + r * Math.sin(toRad(deg))).toFixed(2)];
+  }
+  const [sx, sy] = pt(135);   // início: 135° (top-left)
+  const [ex, ey] = pt(45);    // fim: 45° (top-right) — arco de 270°
+  const arcPath = `M${sx},${sy} A${r},${r} 0 1,1 ${ex},${ey}`;
+  return (
+    <div style={{textAlign:"center"}}>
+      <svg viewBox="0 0 84 84" width="100%">
+        {/* Círculo de fundo */}
+        <path d={arcPath} fill="none" stroke="#1e3a5f" strokeWidth="4" strokeLinecap="round"/>
+        {/* Círculo colorido (estático — mesma curva, apenas outra cor) */}
+        <path d={arcPath} fill="none" stroke={cor} strokeWidth="4" strokeLinecap="round" opacity="0.85"/>
+        {/* Valor absoluto — grande */}
+        <text x={cx} y={cy-4} textAnchor="middle" dominantBaseline="central"
+          fill={cor} fontSize="18" fontWeight="800">{absValue}</text>
+        {/* Percentual — pequeno */}
+        <text x={cx} y={cy+14} textAnchor="middle" dominantBaseline="central"
+          fill="#475569" fontSize="9">{pct}%</text>
+        {/* Label */}
+        <text x={cx} y={cy+26} textAnchor="middle"
+          fill="#64748b" fontSize="8.5">{label}</text>
+      </svg>
+    </div>
+  );
+}
+
+
+// ─── FunilViz — triângulo invertido ESTÁTICO, valores dinâmicos ──────────────
+// Forma geométrica fixa; só os números mudam com os dados.
+// Pipeline: Novo contato → Em conversa → Visita agendada → Visita realizada → Em negociação
+// Fechado: badge abaixo da ponta (fora do funil)
+const FUNIL_NOMES = ["Novo contato","Em conversa","Visita agendada","Visita realizada","Em negociação"];
+const FUNIL_CORES = ["#4f46e5","#0891b2","#059669","#d97706","#dc2626"];
+
+function FunilViz({ dados }) {
+  const byNome = {};
+  (dados||[]).forEach(d => { byNome[d.nome] = d; });
+
+  const stages = FUNIL_NOMES.map((nome,i) => ({
+    nome, cor: FUNIL_CORES[i],
+    total: byNome[nome]?.total||0,
+  }));
+  const fechadoTotal = byNome["Fechado"]?.total||0;
+  const funil_total  = stages.reduce((s,d)=>s+d.total,0);
+
+  // Geometria ESTÁTICA — largura decresce uniformemente, nunca depende dos dados
+  const CX=132, BH=42, MW=210, ST=38;
+  // Largura do topo da banda i: MW - i*ST
+  // Largura da base da banda i: MW - (i+1)*ST  (mínimo 12 para não colapsar)
+  const tW = i => MW - i*ST;
+  const bW = i => Math.max(12, MW-(i+1)*ST);
+
+  // Posição Y do início da ponta final
+  const tipTopW  = bW(stages.length-1);
+  const tipY     = stages.length * BH;
+  const svgH     = tipY + 22 + 40 + 30; // bands + tip + Fechado badge
+
+  return (
+    <svg viewBox={`0 0 340 ${svgH}`} width="100%" style={{display:"block"}}>
+      {stages.map((stage,i)=>{
+        const topW=tW(i), botW=bW(i), y=i*BH, midY=y+BH/2;
+        const tx1=(CX-topW/2).toFixed(1), tx2=(CX+topW/2).toFixed(1);
+        const bx1=(CX-botW/2).toFixed(1), bx2=(CX+botW/2).toFixed(1);
+        const pts=`${tx1},${y} ${tx2},${y} ${bx2},${y+BH} ${bx1},${y+BH}`;
+        const pct=funil_total>0?((stage.total/funil_total)*100).toFixed(0):0;
+        return (
+          <g key={i}>
+            <polygon points={pts} fill={stage.cor}/>
+            {/* Separador entre bandas */}
+            {i>0&&<line x1={tx1} y1={y} x2={tx2} y2={y} stroke="rgba(0,0,0,0.25)" strokeWidth="1.5"/>}
+            {/* Número absoluto — destaque alto contraste */}
+            <text x={CX} y={midY-7} textAnchor="middle" dominantBaseline="central"
+              fill="#fff" fontSize="14" fontWeight="800">
+              {stage.total>0?stage.total:"0"}
+            </text>
+            {/* Percentual */}
+            {stage.total>0&&(
+              <text x={CX} y={midY+8} textAnchor="middle" dominantBaseline="central"
+                fill="rgba(255,255,255,0.8)" fontSize="10">
+                {pct}%
+              </text>
+            )}
+            {/* Nome do estágio — FORA do triângulo, à direita */}
+            <text x={+tx2+10} y={midY} dominantBaseline="central"
+              fill="#94a3b8" fontSize="9.5" fontWeight="500">
+              {stage.nome}
+            </text>
+          </g>
+        );
+      })}
+      {/* Ponta do triângulo */}
+      <polygon
+        points={`${(CX-tipTopW/2).toFixed(1)},${tipY} ${(CX+tipTopW/2).toFixed(1)},${tipY} ${CX},${tipY+18}`}
+        fill={FUNIL_CORES[stages.length-1]}/>
+      {/* Fechado — fora do funil */}
+      <rect x={CX-52} y={tipY+24} width={104} height={24} rx="7" fill="#059669"/>
+      <text x={CX} y={tipY+36} textAnchor="middle" dominantBaseline="central"
+        fill="#fff" fontSize="10" fontWeight="700">
+        ✅ {fechadoTotal} Fechados
+      </text>
+      {/* Perdido sem contato */}
+      {(() => {
+        const psc = byNome["Perdido sem contato"]?.total||0;
+        const pcc = byNome["Perdido com contato"]?.total||0;
+        return (<>
+          <rect x={CX-70} y={tipY+54} width={66} height={22} rx="6" fill="#f97316" opacity={psc>0?1:0.3}/>
+          <text x={CX-37} y={tipY+65} textAnchor="middle" dominantBaseline="central" fill="#fff" fontSize="9" fontWeight="600">
+            📵 {psc} sem contato
+          </text>
+          <rect x={CX+4} y={tipY+54} width={66} height={22} rx="6" fill="#6b7280" opacity={pcc>0?1:0.3}/>
+          <text x={CX+37} y={tipY+65} textAnchor="middle" dominantBaseline="central" fill="#fff" fontSize="9" fontWeight="600">
+            🚫 {pcc} c/ contato
+          </text>
+        </>);
+      })()}
+    </svg>
+  );
+}
+
+
+function DashboardTab({ sb, token }) {
+  const [s,setS]=useState(null); const [hr,setHr]=useState(null);
+  const [funil,setFunil]=useState(null); const [ld,setLd]=useState(true);
+  const [listas,setListas]=useState([]); const [listaFiltro,setListaFiltro]=useState("");
+  const load=async(lid)=>{
+    setLd(true);
+    try {
+      const lf = lid !== undefined ? lid : listaFiltro;
+      // Sempre passar p_lista_id explicitamente para evitar overload ambíguo
+      const args = {p_lista_id: lf || null};
+      // allSettled: uma falha não derruba as demais
+      const [r0,r1,r2,r3] = await Promise.allSettled([
+        sb.rpc("get_dashboard_stats",args,token),
+        sb.rpc("get_stats_horario",{},token),
+        sb.rpc("get_funil_stats",{},token),
+        sb.rpc("get_listas_ativas",{},token),
+      ]);
+      const stats    = r0.status==="fulfilled" ? r0.value : null;
+      const horario  = r1.status==="fulfilled" ? r1.value : null;
+      const funilSt  = r2.status==="fulfilled" ? r2.value : null;
+      const lstResp  = r3.status==="fulfilled" ? r3.value : null;
+      if(stats && !stats.error) setS(stats);
+      if(horario)  setHr(horario);
+      if(funilSt)  setFunil(funilSt);
+      if(lstResp?.listas) setListas(lstResp.listas);
+      // Log de erros para debug
+      [r0,r1,r2,r3].forEach((r,i)=>{ if(r.status==="rejected") console.warn("Dashboard RPC",i,"falhou:",r.reason); });
+    } catch(e){ console.error("Dashboard load:", e); }
+    setLd(false);
+  };
+  useEffect(()=>{load();},[]);
+
+  if(ld) return <div style={{background:DARK.bg,minHeight:"100vh",display:"flex",alignItems:"center",justifyContent:"center",color:DARK.muted,fontSize:18}}>Carregando dashboard...</div>;
+  if(!s)  return <div style={{background:DARK.bg,minHeight:"100vh",padding:20,color:"#ef4444",fontSize:18}}>Erro ao carregar.</div>;
+
+  const fb=s.feedbacks||{}, pc=s.por_corretor||[], pf=s.por_fornecedor||[];
+  const totFb=Object.values(fb).reduce((a,b)=>a+b,0);
+  const txVis    =totFb>0?+((fb.agendado_visita||0)/totFb*100).toFixed(1):0;
+  const txErro   =totFb>0?+(((fb.numero_errado||0)+(fb.nao_toca||0)+(fb.caixa_postal||0))/totFb*100).toFixed(1):0;
+  const txContato=totFb>0?+((((fb.agendado_visita||0)+(fb.enviado_informacoes||0)+(fb.retornar_depois||0))/totFb)*100).toFixed(1):0;
+  // Valores absolutos para os gauges
+  const absVis     = fb.agendado_visita||0;
+  const absContato = (fb.agendado_visita||0)+(fb.enviado_informacoes||0)+(fb.retornar_depois||0);
+  const absErro    = (fb.numero_errado||0)+(fb.nao_toca||0)+(fb.caixa_postal||0);
+
+  const barData=[
+    {name:"Disponíveis", value:s.disponiveis||0,  cor:"#38bdf8"},
+    {name:"Atendimento", value:s.distribuidos||0,  cor:"#f59e0b"},
+    {name:"Finalizados", value:s.finalizados||0,   cor:"#10b981"},
+    {name:"Inválidos",   value:s.invalidos||0,     cor:"#ef4444"},
+  ];
+  const barMax=Math.max(...barData.map(d=>d.value),1);
+
+  const horaData=Array.from({length:24},(_,h)=>{
+    const f=(hr?.por_hora||[]).find(x=>x.hora===h);
+    return {hora:`${String(h).padStart(2,"0")}h`, total:f?.total||0, contatos:f?.contatos||0};
+  });
+  const diaData=(hr?.por_dia||[]).map(d=>({dia:d.dia,total:d.total,visitas:d.visitas}));
+
+  function qualidadeCor(e) { return e<=10?"#10b981":e<=25?"#f59e0b":"#ef4444"; }
+  function qualidadeLabel(e) { return e<=10?"Boa":e<=25?"Regular":"Ruim"; }
+
+  return (
+    <div style={{background:DARK.bg,paddingBottom:80}}>
+      <div style={{background:DARK.card,borderBottom:`1px solid ${DARK.border}`,padding:"12px 16px",display:"flex",alignItems:"center",justifyContent:"space-between",position:"sticky",top:0,zIndex:10}}>
+        <div><span style={{color:DARK.text,fontWeight:700,fontSize:16}}>Dashboard</span><span style={{color:DARK.muted,fontSize:12,marginLeft:8}}>v{APP_VERSION}</span></div>
+        <div style={{display:"flex",alignItems:"center",gap:8}}>
+          {listas.length>0&&(
+            <select value={listaFiltro}
+              onChange={e=>{setListaFiltro(e.target.value);load(e.target.value);}}
+              style={{background:DARK.card,color:DARK.muted,border:`1px solid ${DARK.border}`,borderRadius:8,padding:"4px 8px",fontSize:11,cursor:"pointer"}}>
+              <option value="">Todas as listas</option>
+              {listas.map(l=><option key={l.id} value={l.id}>{l.nome} ({l.leads_validos||0})</option>)}
+            </select>
+          )}
+          <button onClick={()=>load()} style={{color:DARK.accent,fontSize:13,background:"none",border:"none",cursor:"pointer"}}>↺</button>
+        </div>
+      </div>
+      <div style={{padding:16,display:"flex",flexDirection:"column",gap:16}}>
+
+        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8}}>
+          <DKpi label="Total leads"    value={s.total_leads}      color={DARK.text}/>
+          <DKpi label="Disponíveis"    value={s.disponiveis}      color="#38bdf8"/>
+          <DKpi label="Em atendimento" value={s.distribuidos}     color="#f59e0b"/>
+          <DKpi label="Finalizados"    value={s.finalizados}      color="#10b981"/>
+          <DKpi label="Em carteira"    value={s.em_carteira||0}   color="#a78bfa"/>
+          <DKpi label="Lotes abertos"  value={s.lotes_abertos||0} color="#fb923c"/>
+        </div>
+
+        <div style={{background:DARK.card,borderRadius:16,padding:16,border:`1px solid ${DARK.border}`}}>
+          <p style={{color:DARK.text,fontWeight:600,fontSize:14,margin:"0 0 8px"}}>Taxas de conversão</p>
+          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:8,maxWidth:480,margin:"0 auto"}}>
+            <CircleKpi absValue={absVis}     pct={txVis}     label="Visitas"     cor="#10b981"/>
+            <CircleKpi absValue={absContato} pct={txContato} label="Contatos"    cor="#38bdf8"/>
+            <CircleKpi absValue={absErro}    pct={txErro}    label="Sem resposta" cor="#ef4444"/>
+          </div>
+        </div>
+
+        <div style={{background:DARK.card,borderRadius:16,padding:16,border:`1px solid ${DARK.border}`}}>
+          <p style={{color:DARK.text,fontWeight:600,fontSize:14,margin:"0 0 12px"}}>Distribuição dos leads</p>
+          {barData.filter(d=>d.value>0).map((d,i)=>(
+            <div key={i} style={{marginBottom:10}}>
+              <div style={{display:"flex",justifyContent:"space-between",marginBottom:4}}>
+                <span style={{color:DARK.muted,fontSize:12}}>{d.name}</span>
+                <span style={{color:d.cor,fontSize:12,fontWeight:600}}>{d.value}</span>
+              </div>
+              <div style={{height:10,background:DARK.border,borderRadius:6,overflow:"hidden"}}>
+                <div style={{height:"100%",width:(d.value/barMax*100)+"%",background:d.cor,borderRadius:6,transition:"width 0.6s"}}/>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {funil?.estagios?.some(e=>e.total>0)&&(
+          <div style={{background:DARK.card,borderRadius:16,padding:16,border:`1px solid ${DARK.border}`}}>
+            <p style={{color:DARK.text,fontWeight:600,fontSize:14,margin:"0 0 12px"}}>Funil de vendas</p>
+            <div style={{maxWidth:560,margin:"0 auto"}}>
+              <FunilViz dados={funil.estagios}/>
+            </div>
+          </div>
+        )}
+
+        <div style={{background:DARK.card,borderRadius:16,padding:16,border:`1px solid ${DARK.border}`}}>
+          <p style={{color:DARK.text,fontWeight:600,fontSize:14,margin:"0 0 6px"}}>Ligações por hora — últimos 7 dias</p>
+          <div style={{display:"flex",gap:16,marginBottom:8}}>
+            <div style={{display:"flex",alignItems:"center",gap:4}}><div style={{width:12,height:3,background:"#38bdf8",borderRadius:2}}/><span style={{color:DARK.muted,fontSize:11}}>Ligações</span></div>
+            <div style={{display:"flex",alignItems:"center",gap:4}}><div style={{width:12,height:3,background:"#10b981",borderRadius:2}}/><span style={{color:DARK.muted,fontSize:11}}>Contatos produtivos</span></div>
+          </div>
+          <ResponsiveContainer width="100%" height={155}>
+            <AreaChart data={horaData}>
+              <defs>
+                <linearGradient id="gH" x1="0" y1="0" x2="0" y2="1"><stop offset="5%" stopColor="#38bdf8" stopOpacity={0.3}/><stop offset="95%" stopColor="#38bdf8" stopOpacity={0}/></linearGradient>
+                <linearGradient id="gC" x1="0" y1="0" x2="0" y2="1"><stop offset="5%" stopColor="#10b981" stopOpacity={0.3}/><stop offset="95%" stopColor="#10b981" stopOpacity={0}/></linearGradient>
+              </defs>
+              <CartesianGrid strokeDasharray="3 3" stroke={DARK.border}/>
+              <XAxis dataKey="hora" tick={{fontSize:9,fill:DARK.muted}} interval={3}/>
+              <YAxis tick={{fontSize:9,fill:DARK.muted}} width={22}/>
+              <RTooltip contentStyle={{background:DARK.card,border:`1px solid ${DARK.border}`,borderRadius:8,color:DARK.text}} formatter={(v,n)=>[v,n==="total"?"Ligações":"Contatos produtivos"]}/>
+              <Area type="monotone" dataKey="total"    stroke="#38bdf8" fill="url(#gH)" strokeWidth={2} name="total"/>
+              <Area type="monotone" dataKey="contatos" stroke="#10b981" fill="url(#gC)" strokeWidth={2} name="contatos"/>
+            </AreaChart>
+          </ResponsiveContainer>
+          <p style={{color:DARK.muted,fontSize:10,marginTop:4,textAlign:"center"}}>Pico de ligações à tarde + pico de contatos de manhã = mudar horário da equipe</p>
+        </div>
+
+        {diaData.length>0&&(
+          <div style={{background:DARK.card,borderRadius:16,padding:16,border:`1px solid ${DARK.border}`}}>
+            <p style={{color:DARK.text,fontWeight:600,fontSize:14,margin:"0 0 12px"}}>Últimos 14 dias</p>
+            <ResponsiveContainer width="100%" height={140}>
+              <AreaChart data={diaData}>
+                <defs>
+                  <linearGradient id="gD" x1="0" y1="0" x2="0" y2="1"><stop offset="5%" stopColor="#10b981" stopOpacity={0.35}/><stop offset="95%" stopColor="#10b981" stopOpacity={0}/></linearGradient>
+                  <linearGradient id="gV" x1="0" y1="0" x2="0" y2="1"><stop offset="5%" stopColor="#f59e0b" stopOpacity={0.35}/><stop offset="95%" stopColor="#f59e0b" stopOpacity={0}/></linearGradient>
+                </defs>
+                <CartesianGrid strokeDasharray="3 3" stroke={DARK.border}/>
+                <XAxis dataKey="dia" tick={{fontSize:9,fill:DARK.muted}}/>
+                <YAxis tick={{fontSize:9,fill:DARK.muted}} width={22}/>
+                <RTooltip contentStyle={{background:DARK.card,border:`1px solid ${DARK.border}`,borderRadius:8,color:DARK.text}}/>
+                <Area type="monotone" dataKey="total"   stroke="#10b981" fill="url(#gD)" strokeWidth={2} name="Ligações"/>
+                <Area type="monotone" dataKey="visitas" stroke="#f59e0b" fill="url(#gV)" strokeWidth={2} name="Visitas"/>
+              </AreaChart>
+            </ResponsiveContainer>
+          </div>
+        )}
+
+        {pc.length>0&&(
+          <div style={{background:DARK.card,borderRadius:16,padding:16,border:`1px solid ${DARK.border}`}}>
+            <p style={{color:DARK.text,fontWeight:600,fontSize:14,margin:"0 0 12px"}}>Performance por corretor</p>
+            {pc.map((c,i)=>(
+              <div key={i} style={{borderBottom:i<pc.length-1?`1px solid ${DARK.border}`:"none",paddingBottom:i<pc.length-1?12:0,marginBottom:i<pc.length-1?12:0}}>
+                <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+                  <span style={{color:DARK.text,fontSize:15,fontWeight:500}}>{c.nome}</span>
+                  <span style={{color:"#10b981",fontSize:14,fontWeight:700}}>{c.taxa_visita||0}% vis</span>
+                </div>
+                <div style={{display:"flex",gap:16,marginTop:4}}>
+                  <span style={{color:DARK.muted,fontSize:12}}>{c.total_leads} leads</span>
+                  <span style={{color:"#10b981",fontSize:12}}>{c.visitas} visitas</span>
+                  <span style={{color:"#ef4444",fontSize:12}}>{c.numero_errado} erros</span>
+                  <span style={{color:"#a78bfa",fontSize:12}}>{c.em_carteira||0} carteira</span>
+                </div>
+                {c.total_leads>0&&<div style={{marginTop:6,height:6,background:DARK.border,borderRadius:4,overflow:"hidden"}}><div style={{height:"100%",background:"#10b981",borderRadius:4,width:Math.min(100,(c.com_feedback/c.total_leads)*100)+"%",transition:"width 0.5s"}}/></div>}
+              </div>
+            ))}
+          </div>
+        )}
+
+        {pf.length>0&&(
+          <div style={{background:DARK.card,borderRadius:16,padding:16,border:`1px solid ${DARK.border}`}}>
+            <p style={{color:DARK.text,fontWeight:600,fontSize:14,margin:"0 0 12px"}}>Qualidade das listas</p>
+            {pf.map((f,i)=>{
+              const txErr=f.taxa_erro||0, cor=qualidadeCor(txErr), ql=qualidadeLabel(txErr);
+              return (
+                <div key={i} style={{borderBottom:i<pf.length-1?`1px solid ${DARK.border}`:"none",paddingBottom:i<pf.length-1?12:0,marginBottom:i<pf.length-1?12:0}}>
+                  <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+                    <div><span style={{color:DARK.text,fontSize:15,fontWeight:500}}>{f.fornecedor}</span>{f.nota_media>0&&<span style={{color:"#f59e0b",marginLeft:8,fontSize:13}}>★ {f.nota_media}</span>}</div>
+                    <span style={{color:cor,fontSize:13,fontWeight:600,background:cor+"22",padding:"2px 8px",borderRadius:12}}>{ql}</span>
+                  </div>
+                  <div style={{marginTop:8,height:8,background:DARK.border,borderRadius:4,overflow:"hidden"}}><div style={{height:"100%",background:"#10b981",borderRadius:4,width:(f.taxa_visita||0)+"%"}}/></div>
+                  <div style={{display:"flex",justifyContent:"space-between",marginTop:4}}>
+                    <span style={{color:"#10b981",fontSize:11}}>{f.taxa_visita||0}% visitas</span>
+                    <span style={{color:"#ef4444",fontSize:11}}>{txErr}% erro</span>
+                    <span style={{color:DARK.muted,fontSize:11}}>{f.total} leads</span>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
+
+      </div>
+    </div>
+  );
+}
+
+
+// ─── Abas do gestor ───────────────────────────────────────────────────────────
+// ─── Aba E-mail — leads Perdido sem contato ──────────────────────────────────
+function EmailTab({ sb, token, perfilCorretor }) {
+  const [leads,setLeads]     = useState([]);
+  const [ld,setLd]           = useState(true);
+  const [leadEdit,setLeadEdit] = useState(null);
+  const [busca,setBusca]     = useState("");
+
+  const load = async () => {
+    setLd(true);
+    try {
+      const r = await sb.rpc("meus_leads_email",{},token);
+      setLeads(r.leads||[]);
+    } catch(e) {}
+    setLd(false);
+  };
+  useEffect(()=>{load();},[]);
+
+  const filtrados = busca.trim()
+    ? leads.filter(l=>[l.nome,l.email,l.telefone].join(" ").toLowerCase().includes(busca.toLowerCase()))
+    : leads;
+
+  if(ld) return <div className="p-5 text-center text-gray-400 text-lg py-16">Carregando...</div>;
+
+  return (
+    <div className="pb-24">
+      <div className="px-5 pt-5 pb-3">
+        <div className="flex items-center justify-between mb-3">
+          <h2 className="text-2xl font-bold text-gray-900">
+            E-mail <span className="text-lg font-normal text-gray-400">({leads.length})</span>
+          </h2>
+          <button onClick={load} className="text-blue-500 text-sm font-medium">↺ Atualizar</button>
+        </div>
+        <p className="text-sm text-gray-400 mb-3">
+          Leads sem contato por telefone — tente recuperá-los por e-mail.
+        </p>
+        <input type="text" placeholder="Buscar lead..."
+          value={busca} onChange={e=>setBusca(e.target.value)}
+          className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-base focus:outline-none focus:ring-2 focus:ring-blue-500"/>
+      </div>
+
+      {leads.length===0&&(
+        <div className="text-center py-12 px-5">
+          <p className="text-4xl mb-3">📭</p>
+          <p className="text-gray-500 text-base">Nenhum lead para trabalhar por e-mail.</p>
+          <p className="text-gray-400 text-sm mt-1">Leads com "Número errado", "Não responde" e "Caixa Postal" aparecem aqui.</p>
+        </div>
+      )}
+
+      <div className="px-5 space-y-3 pt-2">
+        {filtrados.map((l,i)=>{
+          const fbInfo=FEEDBACKS.find(f=>f.id===l.feedback);
+          const seqE=l.seq_email||0;
+          const dias=l.data_feedback?Math.floor((Date.now()-new Date(l.data_feedback))/86400000):null;
+          return (
+            <div key={i}
+              className="bg-white rounded-2xl p-4 border border-orange-100 shadow-sm cursor-pointer hover:border-orange-300 transition-all"
+              onClick={()=>setLeadEdit({...l,telefone_e164:l.telefone_e164||""})}>
+              <div className="flex items-start justify-between mb-2">
+                <div className="flex-1 min-w-0">
+                  <p className="font-bold text-gray-900 text-lg truncate">{l.nome}</p>
+                  {l.email
+                    ? <p className="text-sm text-blue-600">{l.email}</p>
+                    : <p className="text-sm text-red-400 italic">Sem e-mail cadastrado</p>
+                  }
+                  <p className="text-xs text-gray-400">{l.telefone||"—"}</p>
+                </div>
+                <div className="flex flex-col items-end gap-1 ml-2 flex-shrink-0">
+                  {fbInfo&&<span className={`text-xs text-white px-2 py-0.5 rounded-full whitespace-nowrap ${fbInfo?.color || ""}`}>{fbInfo.label}</span>}
+                  <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${
+                    seqE===0?"bg-orange-100 text-orange-700":
+                    seqE>=5?"bg-red-100 text-red-700":"bg-blue-100 text-blue-700"}`}>
+                    📧 {seqE}/6 enviados
+                  </span>
+                  {dias!==null&&<span className="text-xs text-gray-400">{dias===0?"hoje":`${dias}d`}</span>}
+                </div>
+              </div>
+              {l.email&&(
+                <div onClick={e=>e.stopPropagation()}>
+                  <div className="flex gap-2 mt-2 flex-wrap">
+                    <BotaoMensagens lead={l} corretor={perfilCorretor} sb={sb} token={token}
+                      className="flex-1 text-base font-bold py-3 text-center"
+                      style={{borderRadius:12,padding:"10px 0",fontSize:15,minWidth:120}}/>
+                  </div>
+                  <div className="flex gap-2 mt-2">
+                    {FEEDBACKS_EMAIL.map(f=>(
+                      <button key={f.id}
+                        className={`flex-1 ${f.color} text-white rounded-xl py-2.5 text-sm font-medium`}
+                        onClick={async(e)=>{
+                          e.stopPropagation();
+                          try{ await sb.rpc("registrar_feedback",{p_lead_id:l.id,p_feedback:f.id,p_observacao:""},token); load(); }catch(err){ console.error('Erro registrar_feedback:', err); }
+                        }}>
+                        {f.icon} {f.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+              {!l.email&&(
+                <p className="text-xs text-red-400 mt-2 text-center">
+                  ⚠️ Sem e-mail — não é possível contactar por esta aba
+                </p>
+              )}
+            </div>
+          );
+        })}
+      </div>
+
+      {leadEdit&&<LeadModal lead={leadEdit} sb={sb} token={token} perfilCorretor={perfilCorretor}
+        onSalvo={()=>{setLeadEdit(null);load();}} onFechar={()=>setLeadEdit(null)}/>}
+    </div>
+  );
+}
+
+// ─── Modal do card no funil ───────────────────────────────────────────────────
+function FunilCardModal({ lead, estagios, corretor, sb, token, onMovido, onFechar }) {
+  const [novoEstagio, setNovoEstagio] = useState(lead.estagio_id || "");
+  const [obs, setObs]                 = useState("");
+  const [ld, setLd]                   = useState(false);
+  const [erro, setErro]               = useState("");
+  const [abaSel, setAbaSel]           = useState("mover"); // 'mover' | 'contato'
+
+  const estAtual = estagios.find(e => e.id === lead.estagio_id);
+  const estNovo  = estagios.find(e => e.id === novoEstagio);
+
+  const mover = async () => {
+    if (!novoEstagio || novoEstagio === lead.estagio_id) { onFechar(); return; }
+    setLd(true); setErro("");
+    try {
+      const r = await sb.rpc("mover_funil", { p_lead_id: lead.id, p_estagio_id: novoEstagio, p_observacao: obs }, token);
+      if (r.error) throw new Error(r.error);
+      onMovido({ ...lead, estagio_id: novoEstagio });
+    } catch(e) { setErro(e.message); }
+    setLd(false);
+  };
+
+  const e164     = lead.telefone_e164 || "";
+  function buildWppFunil() {
+    if (!e164) return null;
+    const nome = (lead.nome||"").split(" ")[0]||"você";
+    const textoFunil = {
+      "Novo contato":     `Olá, ${nome}! 👋\n\nMeu nome é ${corretor?.nome||"Consultor"} da ${corretor?.empresa||"Tegra Incorporadora"}.\n\nEntrei em contato porque temos uma oportunidade especial no *${PRODUTO}* que pode ser exatamente o que você procura.\n\nPosso te contar mais? 😊`,
+      "Em conversa":      `Oi, ${nome}! 🏙️\n\nSou ${corretor?.nome||"Consultor"} novamente. Gostaria de dar continuidade à nossa conversa sobre o *${PRODUTO}*.\n\nQuando podemos falar? Estou à disposição!`,
+      "Visita agendada":  `${nome}, olá! 📅\n\nSou ${corretor?.nome||"Consultor"} da ${corretor?.empresa||"Tegra Incorporadora"}, confirmando a visita ao *${PRODUTO}* que agendamos.\n\nEstou ansioso(a) para te receber! Qualquer imprevisto, me avise. 😊`,
+      "Visita realizada": `Olá, ${nome}! 🏠\n\nSou ${corretor?.nome||"Consultor"}. Foi um prazer te receber no stand do *${PRODUTO}*!\n\nEspero que tenha gostado. Tenho uma proposta personalizada preparada para você — podemos conversar?`,
+      "Em negociação":    `${nome}, bom dia! 🤝\n\nSou ${corretor?.nome||"Consultor"} da ${corretor?.empresa||"Tegra Incorporadora"}.\n\nGostaria de dar continuidade à nossa negociação sobre o *${PRODUTO}*. Tenho algumas possibilidades que podem funcionar muito bem para você!`,
+      "Proposta enviada": `Olá, ${nome}! 📄\n\nSou ${corretor?.nome||"Consultor"}, enviando a proposta que preparei sobre o *${PRODUTO}*.\n\nQualquer dúvida, estou aqui! É só responder esta mensagem. 😊`,
+    };
+    const nomeEst = estAtual?.nome||"Novo contato";
+    const txt = textoFunil[nomeEst] || textoFunil["Novo contato"];
+    return `https://wa.me/${e164.replace("+","")}?text=${encodeURIComponent(txt)}`;
+  }
+  const wppLink = buildWppFunil();
+  function buildMailFunil() {
+    if (!lead.email) return null;
+    const nEst = estNovo?.nome || estAtual?.nome || "Novo contato";
+    const nomeLead = (lead.nome||"").split(" ")[0]||"você";
+    const mapIdx = {"Novo contato":0,"Em conversa":1,"Visita agendada":2,"Visita realizada":3,"Em negociação":4};
+    const safeIdx = Math.max(0, Math.min(mapIdx[nEst]||0, MSG_EMAIL.length-1));
+    const t = MSG_EMAIL[safeIdx];
+    return `mailto:${lead.email}?subject=${encodeURIComponent(t.sub(nomeLead))}&body=${encodeURIComponent(t.body(nomeLead, corretor||{}))}`;
+  }
+  const mailLink = buildMailFunil();
+
+  return (
+    <div className="fixed inset-0 bg-black/50 z-50 flex items-end" onClick={onFechar}>
+      <div className="bg-white rounded-t-2xl w-full max-h-[88vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
+
+        {/* Handle */}
+        <div className="flex justify-center pt-3 pb-1"><div className="w-10 h-1 bg-gray-300 rounded-full"/></div>
+
+        {/* Header do card */}
+        <div className="px-5 pt-2 pb-4 border-b border-gray-100">
+          <div className="flex items-start justify-between">
+            <div>
+              <h3 className="font-bold text-gray-900 text-xl">{lead.nome || "Sem nome"}</h3>
+              <p className="text-sm text-gray-500 mt-0.5">{lead.telefone || "—"}</p>
+              {lead.email && <p className="text-xs text-gray-400">{lead.email}</p>}
+            </div>
+            <div className="flex flex-col items-end gap-1">
+              {estAtual && (
+                <span className="text-xs text-white px-2 py-1 rounded-full font-medium"
+                  style={{ background: estAtual.cor }}>
+                  {estAtual.icone} {estAtual.nome}
+                </span>
+              )}
+              {lead.score > 0 && (
+                <span className="text-xs bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full">
+                  Score {lead.score}/10
+                </span>
+              )}
+            </div>
+          </div>
+
+          {/* Ações rápidas */}
+          <div className="flex gap-2 mt-3">
+            {(lead.ligar || lead.telefone) && (
+              <a href={"tel:" + (lead.ligar || lead.telefone)}
+                className="flex-1 bg-blue-600 text-white rounded-xl py-3 text-center text-base font-medium no-underline">
+                📞 Ligar
+              </a>
+            )}
+            {wppLink && (
+              <a href={wppLink} target="_blank" rel="noopener noreferrer"
+                className="flex-1 bg-emerald-600 text-white rounded-xl py-3 text-center text-base font-medium no-underline">
+                WhatsApp
+              </a>
+            )}
+            {mailLink && (
+              <a href={mailLink}
+                className="flex-1 bg-indigo-600 text-white rounded-xl py-3 text-center text-base font-medium no-underline">
+                ✉ Email
+              </a>
+            )}
+          </div>
+        </div>
+
+        {/* Abas */}
+        <div className="flex border-b border-gray-100">
+          {[["mover","Mover no funil"],["contato","Histórico"]].map(([id,label]) => (
+            <button key={id} onClick={() => setAbaSel(id)}
+              className={`flex-1 py-3 text-base font-medium transition-colors ${abaSel===id ? "text-blue-600 border-b-2 border-blue-600" : "text-gray-400"}`}>
+              {label}
+            </button>
+          ))}
+        </div>
+
+        <div className="p-5 pb-8">
+          {abaSel === "mover" && (
+            <>
+              <p className="text-sm text-gray-500 uppercase tracking-wide mb-3">Selecione o novo estágio</p>
+              <div className="space-y-2 mb-4">
+                {estagios.map(e => (
+                  <button key={e.id} onClick={() => setNovoEstagio(e.id)}
+                    className={`w-full flex items-center gap-3 rounded-xl px-4 py-3 text-left transition-all border-2 ${
+                      novoEstagio === e.id ? "border-blue-500 bg-blue-50" : "border-transparent bg-gray-50"
+                    }`}>
+                    <span className="text-xl">{e.icone}</span>
+                    <div className="flex-1">
+                      <p className="font-medium text-base text-gray-900">{e.nome}</p>
+                    </div>
+                    <div className="w-3 h-3 rounded-full" style={{ background: e.cor }}/>
+                    {novoEstagio === e.id && <span className="text-blue-500 text-lg">✓</span>}
+                  </button>
+                ))}
+              </div>
+
+              {/* Preview do email que será enviado */}
+              {novoEstagio && novoEstagio !== lead.estagio_id && estNovo && lead.email && (
+                <div className="bg-indigo-50 rounded-xl p-3 mb-4 border border-indigo-100">
+                  <p className="text-xs text-indigo-700 font-medium mb-1">✉ Email disponível para este estágio</p>
+                  <p className="text-xs text-indigo-600 line-clamp-2">{FUNIL_EMAIL_TEMPLATES[estNovo.nome]?.(getPrimeiroNome(lead.nome))?.subject || "Template padrão"}</p>
+                  <a href={buildEmailFunilLink(lead, estNovo.nome) || "#"}
+                    className="mt-2 inline-block text-xs text-indigo-700 font-medium underline">
+                    Abrir no email →
+                  </a>
+                </div>
+              )}
+
+              <textarea rows={2} placeholder="Observação (opcional)..."
+                value={obs} onChange={e => setObs(e.target.value)}
+                className="w-full border border-gray-200 rounded-xl px-3 py-3 text-base resize-none focus:outline-none focus:ring-2 focus:ring-blue-500 mb-4"/>
+
+              {erro && <div className="bg-red-50 text-red-700 rounded-xl p-3 mb-3 text-base">{erro}</div>}
+
+              <div className="flex gap-3">
+                <button onClick={onFechar} className="flex-1 bg-gray-100 text-gray-700 rounded-xl py-3 text-base font-medium">
+                  Fechar
+                </button>
+                <button onClick={mover} disabled={ld || !novoEstagio || novoEstagio === lead.estagio_id}
+                  className="flex-1 bg-blue-600 text-white rounded-xl py-3 text-base font-semibold disabled:opacity-50">
+                  {ld ? "Movendo..." : "Mover"}
+                </button>
+              </div>
+            </>
+          )}
+
+          {abaSel === "contato" && (
+            <div className="space-y-2">
+              {lead.feedback && (
+                <div className="bg-gray-50 rounded-xl p-3">
+                  <p className="text-xs text-gray-500 uppercase mb-1">Último feedback</p>
+                  <p className="text-base text-gray-900 font-medium">
+                    {FEEDBACKS.find(f => f.id === lead.feedback)?.label || lead.feedback}
+                  </p>
+                </div>
+              )}
+              {lead.observacao && (
+                <div className="bg-gray-50 rounded-xl p-3">
+                  <p className="text-xs text-gray-500 uppercase mb-1">Observação</p>
+                  <p className="text-base text-gray-700">{lead.observacao}</p>
+                </div>
+              )}
+              {lead.data_feedback && (
+                <p className="text-sm text-gray-400 text-center">
+                  Último contato: {new Date(lead.data_feedback).toLocaleDateString("pt-BR")}
+                </p>
+              )}
+              {!lead.feedback && !lead.observacao && (
+                <p className="text-gray-400 text-center py-4 text-base">Nenhum histórico ainda.</p>
+              )}
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── Funil CRM — Kanban ───────────────────────────────────────────────────────
 function FunilTab({ sb, token, perfilCorretor }) {
   const [data, setData]         = useState(null);
   const [ld, setLd]             = useState(true);
