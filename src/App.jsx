@@ -1234,7 +1234,7 @@ function HistoricoTab({ sb, token, perfilCorretor, isGestor }) {
             return (
               <span key={fb} onClick={() => setFiltroFb(filtroFb===fb ? '' : fb)}
                 style={{cursor:'pointer',fontSize:'11px',padding:'2px 8px',borderRadius:'999px',fontWeight:600,
-                  background: info ? (info.hex||'#6b7280') : '#6b7280', color:'white', border: '2px solid rgba(0,0,0,0.15)',
+                 background: info ? (info.hex || '#6b7280') : '#6b7280', color:'white', border: '2px solid rgba(0,0,0,0.15)',
                   outline: filtroFb===fb ? '2px solid #1d4ed8' : 'none'}}>
                 {info ? info.label : fb} {cnt}
               </span>
@@ -1321,12 +1321,10 @@ function HistoricoTab({ sb, token, perfilCorretor, isGestor }) {
                   Ligar
                 </a>
               )}
-              {leadSel.whatsapp && (
-                <a href={'https://wa.me/'+leadSel.whatsapp.replace(/\D/g,'')}
-                  style={{flex:1,background:'#059669',color:'white',textAlign:'center',padding:'10px',borderRadius:'8px',fontWeight:600,fontSize:'14px',textDecoration:'none'}}>
-                  WhatsApp
-                </a>
-              )}
+              <BotaoMensagens lead={{...leadSel, telefone_e164: leadSel.whatsapp ? ('+55' + leadSel.whatsapp.replace(/\D/g,'')) : null}} 
+                corretor={perfilCorretor} sb={sb} token={token} 
+                className="flex-1 py-2.5 text-center text-sm" 
+                style={{borderRadius:8}} />
             </div>
           </div>
         </div>
@@ -2052,18 +2050,7 @@ function FunilCardModal({ lead, estagios, corretor, sb, token, onMovido, onFecha
                 📞 Ligar
               </a>
             )}
-            {wppLink && (
-              <a href={wppLink} target="_blank" rel="noopener noreferrer"
-                className="flex-1 bg-emerald-600 text-white rounded-xl py-3 text-center text-base font-medium no-underline">
-                WhatsApp
-              </a>
-            )}
-            {mailLink && (
-              <a href={mailLink}
-                className="flex-1 bg-indigo-600 text-white rounded-xl py-3 text-center text-base font-medium no-underline">
-                ✉ Email
-              </a>
-            )}
+            <BotaoMensagens lead={lead} corretor={corretor} sb={sb} token={token} className="flex-1 py-3 text-center text-base" />
           </div>
         </div>
 
