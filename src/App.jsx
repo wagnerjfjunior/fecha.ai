@@ -1415,7 +1415,7 @@ function GestorTab({ sb, token }) {
           <button key={p.label} onClick={() => setPeriodo(p)}
             style={{fontSize:'12px',padding:'4px 10px',borderRadius:'999px',border:'none',cursor:'pointer',fontWeight:600,
               background: periodo.label===p.label ? '#2563eb' : '#e5e7eb',
-              color:      periodo.label===p.label ? 'white'   : '#374151'}}>
+              color:      periodo.label===p.label ? 'white'   : '#1f2937'}}>
             {p.label}
           </button>
         ))}
@@ -2718,78 +2718,6 @@ function EquipeTab({ sb, token, onCriarUsuario }) {
 
 
 // ─── Login ────────────────────────────────────────────────────────────────────
-
-function CriarUsuario({ session, onUsuarioCriado, onCancelar }) {
-  const [email, setEmail]       = useState('');
-  const [nome, setNome]         = useState('');
-  const [senha, setSenha]       = useState('');
-  const [isGes, setIsGes]       = useState(false);
-  const [loading, setLoading]   = useState(false);
-  const [erro, setErro]         = useState('');
-  const [ok, setOk]             = useState(false);
-
-  const criar = async () => {
-    if(!email||!nome||!senha) { setErro('Preencha todos os campos'); return; }
-    setLoading(true); setErro('');
-    try {
-      const res = await fetch('https://uobxxgzshrmbtjfdolxd.supabase.co/functions/v1/criar-usuario', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': 'Bearer ' + session.access_token,
-        },
-        body: JSON.stringify({ email, nome, senha, is_gestor: isGes }),
-      });
-      if(!res.ok) {
-        const d = await res.json();
-        throw new Error(d.error || 'Erro ao criar usuário');
-      }
-      setOk(true);
-      setTimeout(() => onUsuarioCriado(), 1500);
-    } catch(e) {
-      setErro(e.message);
-    }
-    setLoading(false);
-  };
-
-  return (
-    <div style={{minHeight:'100vh',background:'#f9fafb',display:'flex',alignItems:'center',justifyContent:'center',padding:'20px'}}>
-      <div style={{background:'white',borderRadius:'16px',padding:'28px',width:'100%',maxWidth:'400px',boxShadow:'0 4px 24px rgba(0,0,0,0.08)'}}>
-        <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:'20px'}}>
-          <h2 style={{fontSize:'20px',fontWeight:700,color:'#111827'}}>Criar Usuário</h2>
-          <button onClick={onCancelar} style={{background:'none',border:'none',fontSize:'20px',cursor:'pointer',color:'#6b7280'}}>✕</button>
-        </div>
-        {ok ? (
-          <div style={{textAlign:'center',padding:'20px',color:'#059669',fontWeight:600}}>✅ Usuário criado com sucesso!</div>
-        ) : (
-          <>
-            {erro && <p style={{color:'#dc2626',fontSize:'13px',marginBottom:'12px',background:'#fef2f2',padding:'8px',borderRadius:'8px'}}>{erro}</p>}
-            {[
-              {label:'Nome',      val:nome,  set:setNome,  type:'text',        ph:'Nome completo'},
-              {label:'Email',     val:email, set:setEmail, type:'email',       ph:'email@exemplo.com'},
-              {label:'Senha',     val:senha, set:setSenha, type:'password',    ph:'Mínimo 6 caracteres'},
-            ].map(f => (
-              <div key={f.label} style={{marginBottom:'14px'}}>
-                <label style={{fontSize:'13px',fontWeight:600,color:'#374151',display:'block',marginBottom:'4px'}}>{f.label}</label>
-                <input type={f.type} value={f.val} onChange={e=>f.set(e.target.value)} placeholder={f.ph}
-                  style={{width:'100%',border:'1px solid #d1d5db',borderRadius:'8px',padding:'10px 12px',fontSize:'14px',boxSizing:'border-box'}}/>
-              </div>
-            ))}
-            <div style={{display:'flex',alignItems:'center',gap:'8px',marginBottom:'20px'}}>
-              <input type="checkbox" id="isGes" checked={isGes} onChange={e=>setIsGes(e.target.checked)}/>
-              <label htmlFor="isGes" style={{fontSize:'13px',color:'#374151',cursor:'pointer'}}>Este usuário é gestor</label>
-            </div>
-            <button onClick={criar} disabled={loading}
-              style={{width:'100%',background:loading?'#9ca3af':'#2563eb',color:'white',border:'none',borderRadius:'10px',padding:'12px',fontSize:'15px',fontWeight:700,cursor:loading?'not-allowed':'pointer'}}>
-              {loading ? 'Criando...' : 'Criar Usuário'}
-            </button>
-          </>
-        )}
-      </div>
-    </div>
-  );
-}
-
 
 function LoginScreen({ sb, onLogin }) {
   const [email,setEmail]=useState(""); const [pass,setPass]=useState(""); const [ld,setLd]=useState(false); const [err,setErr]=useState("");
