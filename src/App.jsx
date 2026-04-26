@@ -690,6 +690,13 @@ function DiscadorTab({ sb, token }) {
 const [powerDial,setPowerDial]=useState(()=>localStorage.getItem('powerDial')==='true');
 const powerDialRef=useRef(powerDial);
 useEffect(()=>{powerDialRef.current=powerDial;},[powerDial]);
+  const [turnCount,setTurnCount]=useState(0);
+  const [noAnswerStreak,setNoAnswerStreak]=useState(0);
+  const [pauseDialer,setPauseDialer]=useState(false);
+  const pauseDialerRef=useRef(false);
+  useEffect(()=>{pauseDialerRef.current=pauseDialer;},[pauseDialer]);
+  const NO_ANSWER_FBS=['nao_responde','caixa_postal','nao_toca','chamada_caiu'];
+  const PAUSE_AFTER=3;
 
   const loadNext=useCallback(async()=>{
     setLd(true); setLoteDone(false); setSolErr("");
@@ -701,7 +708,8 @@ useEffect(()=>{powerDialRef.current=powerDial;},[powerDial]);
         setMsg(r.error);
       } else {
         setLead(r);
-if(powerDialRef.current&&r.ligar){setTimeout(()=>{window.location.href='tel:'+r.ligar;},800);}
+setTurnCount(c=>c+1);
+        if(powerDialRef.current&&r.ligar&&!pauseDialerRef.current){setTimeout(()=>{const a=document.createElement('a');a.href='tel:'+r.ligar;a.style.display='none';document.body.appendChild(a);a.click();document.body.removeChild(a);},800);}
         setProg(r.progresso||null);
         setMsg("");
         if(r.corretor_nome) setCorretorPerfil({nome:r.corretor_nome,telefone:r.corretor_tel,empresa:r.corretor_emp});
@@ -720,6 +728,7 @@ if(powerDialRef.current&&r.ligar){setTimeout(()=>{window.location.href='tel:'+r.
       const r=await sb.rpc("registrar_feedback",{p_lead_id:lead.id,p_feedback:selFb,p_observacao:obs||""},token);
       if(r.error) throw new Error(r.error);
       setObs(""); setShowObs(false); setSelFb(null);
+      const isNA=NO_ANSWER_FBS.includes(selFb);const newStreak=isNA?noAnswerStreak+1:0;setNoAnswerStreak(newStreak);if(isNA&&newStreak>=PAUSE_AFTER&&powerDial){setPauseDialer(true);pauseDialerRef.current=true;}else if(!isNA){setPauseDialer(false);pauseDialerRef.current=false;}
       if(r.lote_fechado){setLoteDone(true);setShowRate(true);}else{if(powerDial){setTimeout(loadNext,1500);}else{loadNext();}}
     } catch(e){setMsg(e.message);setShowObs(false);}
     setFld(false);
@@ -777,12 +786,21 @@ if(powerDialRef.current&&r.ligar){setTimeout(()=>{window.location.href='tel:'+r.
 
   return (
     <div className="p-5 space-y-5">
-      <div style={{display:'flex',justifyContent:'flex-end',marginBottom:'4px'}}>
+      <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:'4px'}}>
+        {powerDial&&turnCount>0
+          ?<span style={{fontSize:'12px',color:'#6b7280',fontWeight:500}}>⚡ {turnCount} no turno</span>
+          :<span/>}
         <button
-          onClick={()=>{const n=!powerDial;setPowerDial(n);localStorage.setItem('powerDial',String(n));}}
+          onClick={()=>{const n=!powerDial;setPowerDial(n);localStorage.setItem('powerDial',String(n));if(!n){setPauseDialer(false);pauseDialerRef.current=false;setNoAnswerStreak(0);setTurnCount(0);}}}
           style={{display:'flex',alignItems:'center',gap:'6px',padding:'5px 14px',borderRadius:'999px',border:'none',cursor:'pointer',fontSize:'13px',fontWeight:600,transition:'all 0.2s',background:powerDial?'#facc15':'#e5e7eb',color:powerDial?'#713f12':'#6b7280',boxShadow:powerDial?'0 2px 8px rgba(250,204,21,0.5)':'none'}}
         >⚡ Power Dial — {powerDial?'ON':'OFF'}</button>
       </div>
+      {pauseDialer&&powerDial&&(
+        <div style={{background:'#fef3c7',border:'1px solid #f59e0b',borderRadius:'12px',padding:'10px 14px',display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:'4px'}}>
+          <span style={{fontSize:'13px',color:'#92400e',fontWeight:500}}>⏸ Pausado — {noAnswerStreak} sem resposta</span>
+          <button onClick={()=>{setPauseDialer(false);pauseDialerRef.current=false;setNoAnswerStreak(0);loadNext();}} style={{fontSize:'12px',fontWeight:600,color:'#1d4ed8',background:'none',border:'none',cursor:'pointer',padding:'2px 8px'}}>Retomar ▶</button>
+        </div>
+      )}
       {prog&&(<div>
         <div className="flex justify-between text-base text-gray-500 mb-2"><span>Lote</span><span className="font-bold text-gray-900">{prog.feitos}/{prog.total}</span></div>
         <div className="w-full bg-gray-200 rounded-full h-4"><div className="bg-blue-600 h-4 rounded-full transition-all" style={{width:(prog.feitos/prog.total*100)+"%"}}/></div>
