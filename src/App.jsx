@@ -687,6 +687,7 @@ function DiscadorTab({ sb, token }) {
   const [solicitando,setSolicitando]=useState(false); const [solErr,setSolErr]=useState("");
   const [showMensagens,setShowMensagens]=useState(false);
   const [corretorPerfil,setCorretorPerfil]=useState(null);
+const [powerDial,setPowerDial]=useState(()=>localStorage.getItem('powerDial')==='true');
 
   const loadNext=useCallback(async()=>{
     setLd(true); setLoteDone(false); setSolErr("");
@@ -716,7 +717,7 @@ function DiscadorTab({ sb, token }) {
       const r=await sb.rpc("registrar_feedback",{p_lead_id:lead.id,p_feedback:selFb,p_observacao:obs||""},token);
       if(r.error) throw new Error(r.error);
       setObs(""); setShowObs(false); setSelFb(null);
-      if(r.lote_fechado){setLoteDone(true);setShowRate(true);}else{loadNext();}
+      if(r.lote_fechado){setLoteDone(true);setShowRate(true);}else{if(powerDial){setTimeout(loadNext,1500);}else{loadNext();}}
     } catch(e){setMsg(e.message);setShowObs(false);}
     setFld(false);
   };
@@ -773,6 +774,12 @@ function DiscadorTab({ sb, token }) {
 
   return (
     <div className="p-5 space-y-5">
+      <div style={{display:'flex',justifyContent:'flex-end',marginBottom:'4px'}}>
+        <button
+          onClick={()=>{const n=!powerDial;setPowerDial(n);localStorage.setItem('powerDial',String(n));}}
+          style={{display:'flex',alignItems:'center',gap:'6px',padding:'5px 14px',borderRadius:'999px',border:'none',cursor:'pointer',fontSize:'13px',fontWeight:600,transition:'all 0.2s',background:powerDial?'#facc15':'#e5e7eb',color:powerDial?'#713f12':'#6b7280',boxShadow:powerDial?'0 2px 8px rgba(250,204,21,0.5)':'none'}}
+        >⚡ Power Dial — {powerDial?'ON':'OFF'}</button>
+      </div>
       {prog&&(<div>
         <div className="flex justify-between text-base text-gray-500 mb-2"><span>Lote</span><span className="font-bold text-gray-900">{prog.feitos}/{prog.total}</span></div>
         <div className="w-full bg-gray-200 rounded-full h-4"><div className="bg-blue-600 h-4 rounded-full transition-all" style={{width:(prog.feitos/prog.total*100)+"%"}}/></div>
