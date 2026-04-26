@@ -1633,8 +1633,8 @@ function FunilViz({ dados }) {
 }
 
 
-function DashboardTab({
-  const DARK={bg:'#111827',card:'#1f2937',border:'#374151',text:'#f9fafb',muted:'#9ca3af',accent:'#38bdf8'}; sb, token }) {
+function DashboardTab({ sb, token }) {
+  const DARK={bg:'#111827',card:'#1f2937',border:'#374151',text:'#f9fafb',muted:'#9ca3af',accent:'#38bdf8'};
   const [s,setS]=useState(null); const [hr,setHr]=useState(null);
   const [funil,setFunil]=useState(null); const [ld,setLd]=useState(true);
   const [listas,setListas]=useState([]); const [listaFiltro,setListaFiltro]=useState("");
