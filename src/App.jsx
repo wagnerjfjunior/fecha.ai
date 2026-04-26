@@ -688,6 +688,8 @@ function DiscadorTab({ sb, token }) {
   const [showMensagens,setShowMensagens]=useState(false);
   const [corretorPerfil,setCorretorPerfil]=useState(null);
 const [powerDial,setPowerDial]=useState(()=>localStorage.getItem('powerDial')==='true');
+const powerDialRef=useRef(powerDial);
+useEffect(()=>{powerDialRef.current=powerDial;},[powerDial]);
 
   const loadNext=useCallback(async()=>{
     setLd(true); setLoteDone(false); setSolErr("");
@@ -699,6 +701,7 @@ const [powerDial,setPowerDial]=useState(()=>localStorage.getItem('powerDial')===
         setMsg(r.error);
       } else {
         setLead(r);
+if(powerDialRef.current&&r.ligar){setTimeout(()=>{window.location.href='tel:'+r.ligar;},800);}
         setProg(r.progresso||null);
         setMsg("");
         if(r.corretor_nome) setCorretorPerfil({nome:r.corretor_nome,telefone:r.corretor_tel,empresa:r.corretor_emp});
