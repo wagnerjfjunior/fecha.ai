@@ -2160,7 +2160,7 @@ function CorretorApp({ sb, token, corretor, onLogout, onVoltar }) {
       {tab==="producao"  &&<ProducaoTab  sb={sb} token={token} perfilCorretor={perfilFinal}/>}
       {tab==="carteira"  &&<CarteiraTab  sb={sb} token={token} perfilCorretor={perfilFinal}/>}
       {tab==="funil"     &&<FunilTab     sb={sb} token={token} perfilCorretor={perfilFinal}/>}
-      {tab==="historico" &&<HistoricoTab sb={sb} token={token} perfilCorretor={perfilFinal}/>}
+      {tab==="historico" &&<HistoricoTab sb={sb} token={token} perfilCorretor={perfilFinal} isGestor={isGestor}/>}
       <div className="fixed bottom-0 left-0 right-0 flex z-20" style={{background:dark?"#0f172a":"#ffffff",borderTop:dark?"1px solid #1e293b":"1px solid #e5e7eb"}}>
         {[
           {id:"discador", label:"Discador",      key:null,       icon:"◎"},
@@ -2169,6 +2169,7 @@ function CorretorApp({ sb, token, corretor, onLogout, onVoltar }) {
           {id:"carteira", label:"Carteira",       key:"carteira", icon:"♦"},
           {id:"funil",    label:"Funil",          key:"funil",    icon:"▽"},
           {id:"historico",label:"Histórico",      key:"historico",icon:"↺"},
+          ...(isGestor ? [{id:"gestor", label:"Gestão", key:"gestor", icon:"G"}] : []),
         ].map(t=>(
           <button key={t.id} onClick={()=>handleTab(t.id)}
             style={{
