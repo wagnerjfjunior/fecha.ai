@@ -1496,6 +1496,7 @@ function GestorTab({ sb, token }) {
 
 
 
+const DARK={bg:'#111827',card:'#1f2937',border:'#374151',text:'#f9fafb',muted:'#9ca3af',accent:'#38bdf8'};
 function DKpi({ label, value, sub, color="#38bdf8" }) {
   return (
     <div style={{background:DARK.card,border:`1px solid ${DARK.border}`,borderRadius:16,padding:"14px 12px"}}>
