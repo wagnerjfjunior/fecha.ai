@@ -2422,7 +2422,7 @@ function DistribuirTab({ sb, token }) {
   );
 }
 
-function ListasTab({ sb, token }) {
+) {
   const [listas,setListas]=useState([]); const [report,setReport]=useState(null);
   const load=async()=>{ try{setListas(await sb.query("listas","order=created_at.desc",token));}catch(e){} };
   useEffect(()=>{load();},[]);
