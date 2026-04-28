@@ -2751,7 +2751,6 @@ function GestorApp({ sb, token, corretor, onLogout, onVoltar, onCriarUsuario }) 
         <TimesTab
           sb={sb}
           token={token}
-          session={session}
           corretor={corretor}
         />
       )}
