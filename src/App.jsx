@@ -21,6 +21,7 @@ import Papa from "papaparse";
 import CriarUsuario from "./components/CriarUsuario";
 import HomeActions from "./components/HomeActions";
 import TimesTab from './components/TimesTab'
+import ListasTab from './components/ListasTab'
 import CriarUsuarioForm from './components/CriarUsuarioForm'
 
 
@@ -2747,6 +2748,13 @@ function GestorApp({ sb, token, corretor, onLogout, onVoltar, onCriarUsuario }) 
       {tab==="distribuir" &&<DistribuirTab sb={sb} token={token}/>}
       {tab==="listas"     &&<ListasTab     sb={sb} token={token}/>}
       {tab==="equipe"     &&<EquipeTab     sb={sb} token={token} onCriarUsuario={onCriarUsuario}/>}
+      {tab === 'listas' && (
+        <ListasTab
+          sb={sb}
+          token={token}
+          corretor={corretor}
+        />
+      )}
       {tab === 'times' && (
         <TimesTab
           sb={sb}
@@ -2756,7 +2764,8 @@ function GestorApp({ sb, token, corretor, onLogout, onVoltar, onCriarUsuario }) 
       )}
       <div style={{position:"fixed",bottom:0,left:0,right:0,zIndex:20,display:"flex",background:tab==="dashboard"?"#1e293b":"white",borderTop:tab==="dashboard"?"1px solid #334155":"1px solid #e5e7eb"}}>
         {[{id:"dashboard",label:"Dashboard",icon:"◉"},{id:"upload",label:"Upload",icon:"↑"},{id:"distribuir",label:"Distribuir",icon:"→"},{id:"listas",label:"Listas",icon:"★"},{id:"equipe",label:"Equipe",icon:"◇"},
-          { id: 'times', label: 'Times', icon: '👥' }].map(t=>(
+          { id: 'times', label: 'Times', icon: '👥' },
+          { id: 'listas', label: 'Listas', icon: '📋' }].map(t=>(
           <button key={t.id} onClick={()=>setTab(t.id)} style={{flex:1,padding:"10px 0",textAlign:"center",background:"none",border:"none",cursor:"pointer",color:tab===t.id?(tab==="dashboard"?"#38bdf8":"#2563eb"):(tab==="dashboard"?"#64748b":"#9ca3af"),fontWeight:tab===t.id?500:400}}>
             <div style={{fontSize:18}}>{t.icon}</div>
             <div style={{fontSize:11,marginTop:2}}>{t.label}</div>
