@@ -225,7 +225,7 @@ function TimeCard({ time, corretores, onResetSenha, onMoverTime, onToggleApto, t
   )
 }
 
-export default function TimesTab({ sb, token, session, corretor }) {
+export default function TimesTab({ sb, token, corretor }) {
   const [times, setTimes] = useState([])
   const [corretores, setCorretores] = useState([])
   const [carregando, setCarregando] = useState(true)
@@ -252,7 +252,7 @@ export default function TimesTab({ sb, token, session, corretor }) {
   async function handleResetSenha(alvo, novaSenha) {
     const r = await fetch('https://uobxxgzshrmbtjfdolxd.supabase.co/functions/v1/criar-usuario', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + (session && session.access_token || token) },
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
       body: JSON.stringify({ action: 'reset_password', user_id: alvo.user_id, password: novaSenha })
     })
     return r.json()
