@@ -21,7 +21,6 @@ import Papa from "papaparse";
 import CriarUsuario from "./components/CriarUsuario";
 import HomeActions from "./components/HomeActions";
 import TimesTab from './components/TimesTab'
-import ListasTab from './components/ListasTab'
 import CriarUsuarioForm from './components/CriarUsuarioForm'
 
 
@@ -2422,6 +2421,78 @@ function DistribuirTab({ sb, token }) {
   );
 }
 
+function ListasTab({ sb, token }) {
+  const [listas,setListas]=useState([]); const [report,setReport]=useState(null);
+  const load=async()=>{ try{setListas(await sb.query("listas","order=created_at.desc",token));}catch(e){} };
+  useEffect(()=>{load();},[]);
+  const acao=async(id,a,m)=>{ try{await sb.rpc("gerenciar_lista",{p_lista_id:id,p_acao:a,p_motivo:m||""},token);load();}catch(e){alert(e.message);} };
+  const verRelatorio=async(id)=>{ try{setReport(await sb.rpc("relatorio_fornecedor",{p_lista_id:id},token));}catch(e){alert(e.message);} };
+
+  function qualBadge(txErr) {
+    if(txErr<=10) return { label:"Boa",    bg:"bg-emerald-100", text:"text-emerald-700", bar:"bg-emerald-500" };
+    if(txErr<=25) return { label:"Regular",bg:"bg-amber-100",   text:"text-amber-700",   bar:"bg-amber-500"   };
+    return             { label:"Ruim",   bg:"bg-red-100",     text:"text-red-700",     bar:"bg-red-500"     };
+  }
+
+  if(report) return (
+    <div className="p-4 space-y-4">
+      <div className="flex justify-between items-center"><h2 className="text-lg font-bold text-gray-900">Relatório</h2><button className="text-xs text-blue-600" onClick={()=>setReport(null)}>Voltar</button></div>
+      <div className="bg-white rounded-xl p-4 border shadow-sm">
+        <p className="font-bold text-gray-900">{report.lista?.fornecedor}</p><p className="text-xs text-gray-500">{report.lista?.arquivo} · {report.lista?.status} · ★ {report.lista?.nota_media||"—"}</p>
+        <div className="grid grid-cols-2 gap-2 mt-3">
+          <div className="text-xs"><span className="text-gray-500">Total:</span> <span className="font-medium">{report.numeros?.total}</span></div>
+          <div className="text-xs"><span className="text-gray-500">Válidos:</span> <span className="font-medium">{report.numeros?.validos}</span></div>
+          <div className="text-xs"><span className="text-gray-500">Taxa contato:</span> <span className="font-medium text-emerald-600">{report.numeros?.taxa_contato_pct||0}%</span></div>
+          <div className="text-xs"><span className="text-gray-500">Taxa erro:</span> <span className="font-medium text-red-500">{report.numeros?.taxa_erro_pct||0}%</span></div>
+          <div className="text-xs"><span className="text-gray-500">Visitas:</span> <span className="font-medium text-emerald-600">{report.numeros?.agendado_visita} ({report.numeros?.taxa_visita_pct||0}%)</span></div>
+        </div>
+      </div>
+      {report.avaliacoes?.length>0&&(<div><p className="text-sm font-bold text-gray-700 mb-2">Avaliações</p>{report.avaliacoes.map((a,i)=>(<div key={i} className="bg-white rounded-lg p-3 border mb-2"><div className="flex justify-between"><span className="text-sm font-medium">{a.corretor}</span><div className="flex gap-0.5">{[1,2,3,4,5].map(n=><span key={n} className={n<=a.nota?"text-amber-400":"text-gray-300"}>★</span>)}</div></div>{a.comentario&&<p className="text-xs text-gray-500 mt-1">{a.comentario}</p>}</div>))}</div>)}
+    </div>
+  );
+  return (
+    <div className="p-4 space-y-4">
+      <h2 className="text-lg font-bold text-gray-900">Listas de leads</h2>
+      {listas.length===0&&<p className="text-sm text-gray-500">Nenhuma lista importada ainda.</p>}
+      {listas.map(l=>{
+        const txErr=l.leads_validos>0?(((l.leads_invalidos||0)/l.leads_validos)*100).toFixed(0):0;
+        const qb=qualBadge(+txErr);
+        const txContato=l.total_leads>0?Math.round(((l.leads_validos||0)/l.total_leads)*100):0;
+        return (
+          <div key={l.id} className="bg-white rounded-xl p-4 border border-gray-100 shadow-sm">
+            <div className="flex justify-between items-start">
+              <div><p className="font-medium text-sm text-gray-900">{l.nome_fornecedor}</p><p className="text-xs text-gray-500">{l.nome_arquivo} · {new Date(l.created_at).toLocaleDateString("pt-BR")}</p></div>
+              <div className="flex items-center gap-2">
+                <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${qb.bg} ${qb.text}`}>{qb.label}</span>
+                <span className={`text-xs px-2 py-1 rounded-full font-medium ${l.status==="ativa"?"bg-emerald-100 text-emerald-700":l.status==="pausada"?"bg-amber-100 text-amber-700":"bg-red-100 text-red-700"}`}>{l.status}</span>
+              </div>
+            </div>
+            {/* Barra de qualidade visual */}
+            <div className="mt-3">
+              <div className="flex justify-between text-xs text-gray-500 mb-1">
+                <span>{l.total_leads} leads · {l.leads_validos} válidos</span>
+                {l.nota_media>0&&<span>★ {l.nota_media}</span>}
+              </div>
+              <div className="w-full bg-gray-100 rounded-full h-3 overflow-hidden">
+                <div className={`h-full ${qb.bar} rounded-full transition-all`} style={{width:Math.min(100,txContato)+"%"}}/>
+              </div>
+              <div className="flex justify-between text-xs mt-1">
+                <span className="text-emerald-600">{txContato}% válidos</span>
+                <span className="text-red-500">{txErr}% inválidos</span>
+              </div>
+            </div>
+            <div className="flex gap-2 mt-3 flex-wrap">
+              <button className="text-xs bg-gray-100 text-gray-700 px-3 py-1.5 rounded-lg" onClick={()=>verRelatorio(l.id)}>Relatório</button>
+              {l.status==="ativa"&&<button className="text-xs bg-amber-100 text-amber-700 px-3 py-1.5 rounded-lg" onClick={()=>acao(l.id,"pausar")}>Pausar</button>}
+              {l.status==="pausada"&&<button className="text-xs bg-emerald-100 text-emerald-700 px-3 py-1.5 rounded-lg" onClick={()=>acao(l.id,"reativar")}>Reativar</button>}
+              {l.status!=="encerrada"&&<button className="text-xs bg-red-100 text-red-700 px-3 py-1.5 rounded-lg" onClick={()=>{if(confirm("Encerrar lista?")) acao(l.id,"encerrar","Baixa qualidade");}}>Encerrar</button>}
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
 
 // ─── Modal edição de perfil do corretor ──────────────────────────────────────
 function EditarCorretorModal({ corretor, sb, token, onSalvo, onFechar }) {
@@ -2676,13 +2747,6 @@ function GestorApp({ sb, token, corretor, onLogout, onVoltar, onCriarUsuario }) 
       {tab==="distribuir" &&<DistribuirTab sb={sb} token={token}/>}
       {tab==="listas"     &&<ListasTab     sb={sb} token={token}/>}
       {tab==="equipe"     &&<EquipeTab     sb={sb} token={token} onCriarUsuario={onCriarUsuario}/>}
-      {tab === 'listas' && (
-        <ListasTab
-          sb={sb}
-          token={token}
-          corretor={corretor}
-        />
-      )}
       {tab === 'times' && (
         <TimesTab
           sb={sb}
@@ -2692,8 +2756,7 @@ function GestorApp({ sb, token, corretor, onLogout, onVoltar, onCriarUsuario }) 
       )}
       <div style={{position:"fixed",bottom:0,left:0,right:0,zIndex:20,display:"flex",background:tab==="dashboard"?"#1e293b":"white",borderTop:tab==="dashboard"?"1px solid #334155":"1px solid #e5e7eb"}}>
         {[{id:"dashboard",label:"Dashboard",icon:"◉"},{id:"upload",label:"Upload",icon:"↑"},{id:"distribuir",label:"Distribuir",icon:"→"},{id:"listas",label:"Listas",icon:"★"},{id:"equipe",label:"Equipe",icon:"◇"},
-          { id: 'times', label: 'Times', icon: '👥' },
-          { id: 'listas', label: 'Listas', icon: '📋' }].map(t=>(
+          { id: 'times', label: 'Times', icon: '👥' }].map(t=>(
           <button key={t.id} onClick={()=>setTab(t.id)} style={{flex:1,padding:"10px 0",textAlign:"center",background:"none",border:"none",cursor:"pointer",color:tab===t.id?(tab==="dashboard"?"#38bdf8":"#2563eb"):(tab==="dashboard"?"#64748b":"#9ca3af"),fontWeight:tab===t.id?500:400}}>
             <div style={{fontSize:18}}>{t.icon}</div>
             <div style={{fontSize:11,marginTop:2}}>{t.label}</div>
