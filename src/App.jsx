@@ -1690,10 +1690,45 @@ function DashboardTab({ sb, token }) {
   const barMax=Math.max(...barData.map(d=>d.value),1);
 
   const horaData=Array.from({length:24},(_,h)=>{
-    const f=(hr?.por_hora||[]).find(x=>x.hora===h);
-    return {hora:`${String(h).padStart(2,"0")}h`, total:f?.total||0, contatos:f?.contatos||0};
+    const f=(hr?.por_hora||[]).find(x=>Number(x.hora)===h);
+    const ligacoes = f?.ligacoes ?? f?.total ?? 0;
+    const contatos = f?.contatos ?? 0;
+    const visitas  = f?.visitas ?? 0;
+    return {
+      hora:`${String(h).padStart(2,"0")}h`,
+      ligacoes,
+      contatos,
+      visitas,
+      taxa_contato: f?.taxa_contato ?? (ligacoes ? +(contatos/ligacoes).toFixed(2) : 0),
+      taxa_visita:  f?.taxa_visita  ?? (ligacoes ? +(visitas/ligacoes).toFixed(2) : 0),
+    };
   });
-  const diaData=(hr?.por_dia||[]).map(d=>({dia:d.dia,total:d.total,visitas:d.visitas}));
+
+  const diaData=(hr?.por_dia||[]).map(d=>({
+    dia:d.dia,
+    ligacoes:d.ligacoes ?? d.total ?? 0,
+    contatos:d.contatos ?? 0,
+    visitas:d.visitas ?? 0,
+    taxa_contato:d.taxa_contato ?? 0,
+    taxa_visita:d.taxa_visita ?? 0,
+  }));
+
+  const DashTooltip=({active,payload,label})=>{
+    if(!active||!payload?.length) return null;
+    const row=payload[0]?.payload||{};
+    const pct=(v)=>v===null||v===undefined?"0%":`${Math.round(Number(v)*100)}%`;
+    return (
+      <div style={{background:DARK.card,border:`1px solid ${DARK.border}`,borderRadius:10,padding:10,color:DARK.text,boxShadow:"0 10px 25px rgba(0,0,0,.35)"}}>
+        <div style={{fontSize:12,fontWeight:700,marginBottom:6}}>{label}</div>
+        <div style={{fontSize:12,color:"#38bdf8"}}>📞 Ligações: <b>{row.ligacoes||0}</b></div>
+        <div style={{fontSize:12,color:"#10b981"}}>💬 Contatos: <b>{row.contatos||0}</b></div>
+        <div style={{fontSize:12,color:"#f59e0b"}}>🏠 Visitas: <b>{row.visitas||0}</b></div>
+        <div style={{height:1,background:DARK.border,margin:"7px 0"}}/>
+        <div style={{fontSize:11,color:DARK.muted}}>Taxa contato: {pct(row.taxa_contato)}</div>
+        <div style={{fontSize:11,color:DARK.muted}}>Taxa visita: {pct(row.taxa_visita)}</div>
+      </div>
+    );
+  };
 
   function qualidadeCor(e) { return e<=10?"#10b981":e<=25?"#f59e0b":"#ef4444"; }
   function qualidadeLabel(e) { return e<=10?"Boa":e<=25?"Regular":"Ruim"; }
@@ -1760,22 +1795,25 @@ function DashboardTab({ sb, token }) {
 
         <div style={{background:DARK.card,borderRadius:16,padding:16,border:`1px solid ${DARK.border}`}}>
           <p style={{color:DARK.text,fontWeight:600,fontSize:14,margin:"0 0 6px"}}>Ligações por hora — últimos 7 dias</p>
-          <div style={{display:"flex",gap:16,marginBottom:8}}>
+          <div style={{display:"flex",gap:16,marginBottom:8,flexWrap:"wrap"}}>
             <div style={{display:"flex",alignItems:"center",gap:4}}><div style={{width:12,height:3,background:"#38bdf8",borderRadius:2}}/><span style={{color:DARK.muted,fontSize:11}}>Ligações</span></div>
             <div style={{display:"flex",alignItems:"center",gap:4}}><div style={{width:12,height:3,background:"#10b981",borderRadius:2}}/><span style={{color:DARK.muted,fontSize:11}}>Contatos produtivos</span></div>
+            <div style={{display:"flex",alignItems:"center",gap:4}}><div style={{width:12,height:3,background:"#f59e0b",borderRadius:2}}/><span style={{color:DARK.muted,fontSize:11}}>Visitas</span></div>
           </div>
           <ResponsiveContainer width="100%" height={155}>
             <AreaChart data={horaData}>
               <defs>
                 <linearGradient id="gH" x1="0" y1="0" x2="0" y2="1"><stop offset="5%" stopColor="#38bdf8" stopOpacity={0.3}/><stop offset="95%" stopColor="#38bdf8" stopOpacity={0}/></linearGradient>
                 <linearGradient id="gC" x1="0" y1="0" x2="0" y2="1"><stop offset="5%" stopColor="#10b981" stopOpacity={0.3}/><stop offset="95%" stopColor="#10b981" stopOpacity={0}/></linearGradient>
+                <linearGradient id="gHV" x1="0" y1="0" x2="0" y2="1"><stop offset="5%" stopColor="#f59e0b" stopOpacity={0.28}/><stop offset="95%" stopColor="#f59e0b" stopOpacity={0}/></linearGradient>
               </defs>
               <CartesianGrid strokeDasharray="3 3" stroke={DARK.border}/>
               <XAxis dataKey="hora" tick={{fontSize:9,fill:DARK.muted}} interval={3}/>
               <YAxis tick={{fontSize:9,fill:DARK.muted}} width={22}/>
-              <RTooltip contentStyle={{background:DARK.card,border:`1px solid ${DARK.border}`,borderRadius:8,color:DARK.text}} formatter={(v,n)=>[v,n==="total"?"Ligações":"Contatos produtivos"]}/>
-              <Area type="monotone" dataKey="total"    stroke="#38bdf8" fill="url(#gH)" strokeWidth={2} name="total"/>
-              <Area type="monotone" dataKey="contatos" stroke="#10b981" fill="url(#gC)" strokeWidth={2} name="contatos"/>
+              <RTooltip content={<DashTooltip/>}/>
+              <Area type="monotone" dataKey="ligacoes" stroke="#38bdf8" fill="url(#gH)" strokeWidth={2} name="Ligações"/>
+              <Area type="monotone" dataKey="contatos" stroke="#10b981" fill="url(#gC)" strokeWidth={2} name="Contatos"/>
+              <Area type="monotone" dataKey="visitas"  stroke="#f59e0b" fill="url(#gHV)" strokeWidth={2} name="Visitas"/>
             </AreaChart>
           </ResponsiveContainer>
           <p style={{color:DARK.muted,fontSize:10,marginTop:4,textAlign:"center"}}>Pico de ligações à tarde + pico de contatos de manhã = mudar horário da equipe</p>
@@ -1783,18 +1821,27 @@ function DashboardTab({ sb, token }) {
 
         {diaData.length>0&&(
           <div style={{background:DARK.card,borderRadius:16,padding:16,border:`1px solid ${DARK.border}`}}>
-            <p style={{color:DARK.text,fontWeight:600,fontSize:14,margin:"0 0 12px"}}>Últimos 14 dias</p>
+            <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",gap:8,marginBottom:10}}>
+              <p style={{color:DARK.text,fontWeight:600,fontSize:14,margin:0}}>Últimos 14 dias</p>
+              <div style={{display:"flex",gap:10,flexWrap:"wrap"}}>
+                <span style={{color:"#38bdf8",fontSize:10}}>● Ligações</span>
+                <span style={{color:"#10b981",fontSize:10}}>● Contatos</span>
+                <span style={{color:"#f59e0b",fontSize:10}}>● Visitas</span>
+              </div>
+            </div>
             <ResponsiveContainer width="100%" height={140}>
               <AreaChart data={diaData}>
                 <defs>
-                  <linearGradient id="gD" x1="0" y1="0" x2="0" y2="1"><stop offset="5%" stopColor="#10b981" stopOpacity={0.35}/><stop offset="95%" stopColor="#10b981" stopOpacity={0}/></linearGradient>
+                  <linearGradient id="gD" x1="0" y1="0" x2="0" y2="1"><stop offset="5%" stopColor="#38bdf8" stopOpacity={0.30}/><stop offset="95%" stopColor="#38bdf8" stopOpacity={0}/></linearGradient>
+                  <linearGradient id="gDC" x1="0" y1="0" x2="0" y2="1"><stop offset="5%" stopColor="#10b981" stopOpacity={0.32}/><stop offset="95%" stopColor="#10b981" stopOpacity={0}/></linearGradient>
                   <linearGradient id="gV" x1="0" y1="0" x2="0" y2="1"><stop offset="5%" stopColor="#f59e0b" stopOpacity={0.35}/><stop offset="95%" stopColor="#f59e0b" stopOpacity={0}/></linearGradient>
                 </defs>
                 <CartesianGrid strokeDasharray="3 3" stroke={DARK.border}/>
                 <XAxis dataKey="dia" tick={{fontSize:9,fill:DARK.muted}}/>
                 <YAxis tick={{fontSize:9,fill:DARK.muted}} width={22}/>
-                <RTooltip contentStyle={{background:DARK.card,border:`1px solid ${DARK.border}`,borderRadius:8,color:DARK.text}}/>
-                <Area type="monotone" dataKey="total"   stroke="#10b981" fill="url(#gD)" strokeWidth={2} name="Ligações"/>
+                <RTooltip content={<DashTooltip/>}/>
+                <Area type="monotone" dataKey="ligacoes" stroke="#38bdf8" fill="url(#gD)" strokeWidth={2} name="Ligações"/>
+                <Area type="monotone" dataKey="contatos" stroke="#10b981" fill="url(#gDC)" strokeWidth={2} name="Contatos"/>
                 <Area type="monotone" dataKey="visitas" stroke="#f59e0b" fill="url(#gV)" strokeWidth={2} name="Visitas"/>
               </AreaChart>
             </ResponsiveContainer>
