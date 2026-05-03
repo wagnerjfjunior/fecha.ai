@@ -1950,6 +1950,61 @@ function DashboardTab({ sb, token }) {
           );
         })()}
 
+        {(()=>{
+          const horariosValidos = (horaData||[])
+            .filter(h => Number(h.ligacoes||0) >= 3)
+            .map(h => ({
+              ...h,
+              score: Number(h.taxa_contato||0) * 0.6 + Number(h.taxa_visita||0) * 0.4
+            }));
+          const melhor = [...horariosValidos].sort((a,b)=>
+            (b.score-a.score) || (b.ligacoes-a.ligacoes)
+          )[0];
+          const pior = [...horariosValidos].sort((a,b)=>
+            (a.score-b.score) || (b.ligacoes-a.ligacoes)
+          )[0];
+          const maiorVolume = [...horariosValidos].sort((a,b)=>
+            (b.ligacoes-a.ligacoes)
+          )[0];
+          const pct = (v)=>`${Math.round(Number(v||0)*100)}%`;
+          return (
+            <div style={{display:"grid",gridTemplateColumns:"1.2fr .9fr .9fr .9fr",gap:10}}>
+              <div style={{background:DARK.card,border:`1px solid ${DARK.border}`,borderRadius:16,padding:14}}>
+                <p style={{color:DARK.text,fontSize:15,fontWeight:900,margin:"0 0 4px"}}>Inteligência por horário</p>
+                <p style={{color:DARK.muted,fontSize:12,margin:"0 0 10px",lineHeight:1.45}}>
+                  Análise baseada em ligações, contatos e visitas. Considera apenas horários com volume mínimo de 3 registros.
+                </p>
+                <div style={{background:"#0f172a",border:`1px solid ${DARK.border}`,borderRadius:12,padding:10}}>
+                  <p style={{color:"#38bdf8",fontSize:12,fontWeight:800,margin:0}}>
+                    Melhor janela: {melhor?.hora||"—"} · contato {pct(melhor?.taxa_contato)} · visita {pct(melhor?.taxa_visita)}
+                  </p>
+                </div>
+              </div>
+              <div style={{background:DARK.card,border:`1px solid ${DARK.border}`,borderRadius:16,padding:14}}>
+                <p style={{color:DARK.muted,fontSize:11,margin:"0 0 6px"}}>Melhor horário</p>
+                <p style={{color:"#10b981",fontSize:28,fontWeight:900,margin:0}}>{melhor?.hora||"—"}</p>
+                <p style={{color:DARK.muted,fontSize:10,margin:"4px 0 0"}}>
+                  {melhor?`${melhor.ligacoes} ligações · ${melhor.contatos} contatos`:"sem base"}
+                </p>
+              </div>
+              <div style={{background:DARK.card,border:`1px solid ${DARK.border}`,borderRadius:16,padding:14}}>
+                <p style={{color:DARK.muted,fontSize:11,margin:"0 0 6px"}}>Maior volume</p>
+                <p style={{color:"#38bdf8",fontSize:28,fontWeight:900,margin:0}}>{maiorVolume?.hora||"—"}</p>
+                <p style={{color:DARK.muted,fontSize:10,margin:"4px 0 0"}}>
+                  {maiorVolume?`${maiorVolume.ligacoes} ligações`:"sem base"}
+                </p>
+              </div>
+              <div style={{background:DARK.card,border:`1px solid ${DARK.border}`,borderRadius:16,padding:14}}>
+                <p style={{color:DARK.muted,fontSize:11,margin:"0 0 6px"}}>Horário de alerta</p>
+                <p style={{color:"#ef4444",fontSize:28,fontWeight:900,margin:0}}>{pior?.hora||"—"}</p>
+                <p style={{color:DARK.muted,fontSize:10,margin:"4px 0 0"}}>
+                  {pior?`contato ${pct(pior.taxa_contato)} · visita ${pct(pior.taxa_visita)}`:"sem base"}
+                </p>
+              </div>
+            </div>
+          );
+        })()}
+
         <div style={{background:DARK.card,borderRadius:16,padding:16,border:`1px solid ${DARK.border}`}}>
           <p style={{color:DARK.text,fontWeight:600,fontSize:14,margin:"0 0 6px"}}>Ligações por hora — últimos 7 dias</p>
           <div style={{display:"flex",gap:16,marginBottom:8,flexWrap:"wrap"}}>
