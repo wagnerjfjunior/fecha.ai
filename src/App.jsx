@@ -1946,28 +1946,114 @@ function DashboardTab({ sb, token }) {
           );
         })()}
 
-        {pf.length>0&&(
-          <div style={{background:DARK.card,borderRadius:16,padding:16,border:`1px solid ${DARK.border}`}}>
-            <p style={{color:DARK.text,fontWeight:600,fontSize:14,margin:"0 0 12px"}}>Qualidade das listas</p>
-            {pf.map((f,i)=>{
-              const txErr=f.taxa_erro||0, cor=qualidadeCor(txErr), ql=qualidadeLabel(txErr);
-              return (
-                <div key={i} style={{borderBottom:i<pf.length-1?`1px solid ${DARK.border}`:"none",paddingBottom:i<pf.length-1?12:0,marginBottom:i<pf.length-1?12:0}}>
-                  <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
-                    <div><span style={{color:DARK.text,fontSize:15,fontWeight:500}}>{f.fornecedor}</span>{f.nota_media>0&&<span style={{color:"#f59e0b",marginLeft:8,fontSize:13}}>★ {f.nota_media}</span>}</div>
-                    <span style={{color:cor,fontSize:13,fontWeight:600,background:cor+"22",padding:"2px 8px",borderRadius:12}}>{ql}</span>
-                  </div>
-                  <div style={{marginTop:8,height:8,background:DARK.border,borderRadius:4,overflow:"hidden"}}><div style={{height:"100%",background:"#10b981",borderRadius:4,width:(f.taxa_visita||0)+"%"}}/></div>
-                  <div style={{display:"flex",justifyContent:"space-between",marginTop:4}}>
-                    <span style={{color:"#10b981",fontSize:11}}>{f.taxa_visita||0}% visitas</span>
-                    <span style={{color:"#ef4444",fontSize:11}}>{txErr}% erro</span>
-                    <span style={{color:DARK.muted,fontSize:11}}>{f.total} leads</span>
-                  </div>
+        {pf.length>0&&(()=>{
+          const listas=[...pf].map((l)=>{
+            const fornecedor=l.fornecedor||l.nome_fornecedor||l.nome_lista||l.lista||l.nome||"Lista";
+            const total=Number(l.total_leads??l.total??l.leads??0);
+            const trabalhados=Number(l.com_feedback??l.trabalhados??l.leads_trabalhados??0);
+            const contatos=Number(l.contatos??l.contato_efetivo??0);
+            const visitas=Number(l.visitas??l.agendamentos??l.visitas_agendadas??0);
+            const invalidos=Number(l.invalidos??l.leads_invalidos??l.numero_errado??0);
+            const perdidosSem=Number(l.perdido_sem_contato??l.sem_contato??0);
+            const nota=Number(l.nota??l.nota_media??l.score_automatico??0);
+            const taxaTrabalho=total>0?Math.round((trabalhados/total)*100):0;
+            const taxaContato=trabalhados>0?Math.round((contatos/trabalhados)*100):0;
+            const taxaVisita=trabalhados>0?Math.round((visitas/trabalhados)*100):0;
+            const taxaInvalido=total>0?Math.round((invalidos/total)*100):0;
+
+            let status="Fria";
+            let cor="#ef4444";
+            if(taxaVisita>=10||taxaContato>=35){status="Boa";cor="#10b981";}
+            else if(taxaVisita>=4||taxaContato>=15){status="Média";cor="#f59e0b";}
+
+            return {fornecedor,total,trabalhados,contatos,visitas,invalidos,perdidosSem,nota,taxaTrabalho,taxaContato,taxaVisita,taxaInvalido,status,cor};
+          }).sort((a,b)=>
+            (b.taxaVisita-a.taxaVisita)||
+            (b.visitas-a.visitas)||
+            (b.taxaContato-a.taxaContato)||
+            (b.trabalhados-a.trabalhados)
+          );
+
+          const top=listas.slice(0,8);
+          const melhor=listas[0];
+          const maiorVolume=[...listas].sort((a,b)=>(b.total-a.total))[0];
+          const pior=[...listas].sort((a,b)=>(b.taxaInvalido-a.taxaInvalido)||(b.perdidosSem-a.perdidosSem))[0];
+
+          return (
+            <div style={{background:DARK.card,borderRadius:16,padding:16,border:`1px solid ${DARK.border}`}}>
+              <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",gap:12,marginBottom:14}}>
+                <div>
+                  <p style={{color:DARK.text,fontWeight:700,fontSize:15,margin:"0 0 2px"}}>Qualidade das listas</p>
+                  <p style={{color:DARK.muted,fontSize:11,margin:0}}>Ranking por conversão, contato produtivo e perda operacional</p>
                 </div>
-              );
-            })}
-          </div>
-        )}
+                <span style={{color:"#a78bfa",fontSize:11,fontWeight:700,background:"#8b5cf622",padding:"4px 8px",borderRadius:999}}>
+                  {listas.length} lista{listas.length===1?"":"s"}
+                </span>
+              </div>
+
+              <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:8,marginBottom:14}}>
+                <div style={{background:"#0f172a",border:`1px solid ${DARK.border}`,borderRadius:12,padding:10}}>
+                  <p style={{color:DARK.muted,fontSize:10,margin:"0 0 4px"}}>Melhor conversão</p>
+                  <p style={{color:DARK.text,fontSize:13,fontWeight:700,margin:0,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{melhor?.fornecedor||"—"}</p>
+                  <p style={{color:"#10b981",fontSize:18,fontWeight:800,margin:"2px 0 0"}}>{melhor?.taxaVisita||0}%</p>
+                </div>
+                <div style={{background:"#0f172a",border:`1px solid ${DARK.border}`,borderRadius:12,padding:10}}>
+                  <p style={{color:DARK.muted,fontSize:10,margin:"0 0 4px"}}>Maior volume</p>
+                  <p style={{color:DARK.text,fontSize:13,fontWeight:700,margin:0,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{maiorVolume?.fornecedor||"—"}</p>
+                  <p style={{color:"#38bdf8",fontSize:18,fontWeight:800,margin:"2px 0 0"}}>{maiorVolume?.total||0}</p>
+                </div>
+                <div style={{background:"#0f172a",border:`1px solid ${DARK.border}`,borderRadius:12,padding:10}}>
+                  <p style={{color:DARK.muted,fontSize:10,margin:"0 0 4px"}}>Alerta de perda</p>
+                  <p style={{color:DARK.text,fontSize:13,fontWeight:700,margin:0,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{pior?.fornecedor||"—"}</p>
+                  <p style={{color:"#ef4444",fontSize:18,fontWeight:800,margin:"2px 0 0"}}>{pior?.taxaInvalido||0}%</p>
+                </div>
+              </div>
+
+              <div style={{display:"grid",gridTemplateColumns:"1.4fr .65fr .65fr .65fr .65fr .75fr .75fr",gap:8,alignItems:"center",padding:"8px 10px",borderBottom:`1px solid ${DARK.border}`,color:DARK.muted,fontSize:10,fontWeight:700,textTransform:"uppercase"}}>
+                <span>Lista / Fornecedor</span>
+                <span style={{textAlign:"right"}}>Leads</span>
+                <span style={{textAlign:"right"}}>Trab.</span>
+                <span style={{textAlign:"right"}}>Contato</span>
+                <span style={{textAlign:"right"}}>Visitas</span>
+                <span style={{textAlign:"right"}}>Tx.Cont.</span>
+                <span style={{textAlign:"right"}}>Status</span>
+              </div>
+
+              <div style={{display:"flex",flexDirection:"column"}}>
+                {top.map((l,i)=>{
+                  const largura=Math.min(100,Math.max(0,l.taxaContato));
+                  return (
+                    <div key={l.fornecedor+"-"+i} style={{display:"grid",gridTemplateColumns:"1.4fr .65fr .65fr .65fr .65fr .75fr .75fr",gap:8,alignItems:"center",padding:"10px",borderBottom:i<top.length-1?`1px solid ${DARK.border}`:"none"}}>
+                      <div style={{minWidth:0}}>
+                        <div style={{display:"flex",alignItems:"center",gap:6,minWidth:0}}>
+                          <span style={{width:8,height:8,borderRadius:999,background:l.cor,display:"inline-block",flexShrink:0}}/>
+                          <span style={{color:DARK.text,fontSize:13,fontWeight:700,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{l.fornecedor}</span>
+                        </div>
+                        <div style={{marginTop:5,height:5,background:DARK.border,borderRadius:999,overflow:"hidden"}}>
+                          <div style={{height:"100%",width:largura+"%",background:l.cor,borderRadius:999}}/>
+                        </div>
+                      </div>
+                      <span style={{color:DARK.muted,fontSize:12,textAlign:"right"}}>{l.total}</span>
+                      <span style={{color:"#38bdf8",fontSize:12,fontWeight:700,textAlign:"right"}}>{l.trabalhados}</span>
+                      <span style={{color:"#10b981",fontSize:12,fontWeight:700,textAlign:"right"}}>{l.contatos}</span>
+                      <span style={{color:"#f59e0b",fontSize:12,fontWeight:800,textAlign:"right"}}>{l.visitas}</span>
+                      <span style={{color:l.taxaContato>=35?"#10b981":l.taxaContato>=15?"#f59e0b":"#ef4444",fontSize:12,fontWeight:800,textAlign:"right"}}>{l.taxaContato}%</span>
+                      <span style={{textAlign:"right"}}>
+                        <span style={{fontSize:10,fontWeight:800,color:l.cor,background:l.cor+"22",padding:"4px 7px",borderRadius:999}}>{l.status}</span>
+                      </span>
+                    </div>
+                  );
+                })}
+              </div>
+
+              {listas.length>8&&(
+                <p style={{color:DARK.muted,fontSize:10,margin:"10px 0 0",textAlign:"center"}}>
+                  Exibindo top 8 de {listas.length} listas. Ordenação: taxa visita → visitas → taxa contato.
+                </p>
+              )}
+            </div>
+          );
+        })()}
 
       </div>
     </div>
