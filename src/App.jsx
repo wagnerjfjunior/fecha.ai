@@ -27,6 +27,40 @@ import CriarUsuarioForm from './components/CriarUsuarioForm'
 const APP_VERSION = "2.1.0";
 const APP_BUILD   = "2026-04-17";
 
+const FECHAI_DASHBOARD_RESPONSIVE_CSS = `
+  @media (max-width: 1180px) {
+    [style*="grid-template-columns:repeat(6,1fr)"] {
+      grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+    }
+    [style*="grid-template-columns:1.2fr repeat(3,.8fr)"],
+    [style*="grid-template-columns:1.2fr .9fr .9fr .9fr"] {
+      grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    }
+  }
+  @media (max-width: 760px) {
+    body { overflow-x: hidden; }
+    [style*="grid-template-columns:repeat(6,1fr)"],
+    [style*="grid-template-columns:repeat(4,1fr)"],
+    [style*="grid-template-columns:repeat(3,1fr)"],
+    [style*="grid-template-columns:1.2fr repeat(3,.8fr)"],
+    [style*="grid-template-columns:1.2fr .9fr .9fr .9fr"],
+    [style*="grid-template-columns:1.4fr .7fr .7fr .7fr .7fr .7fr"],
+    [style*="grid-template-columns:36px 1.4fr .7fr .7fr .7fr .7fr .7fr"],
+    [style*="grid-template-columns:1.4fr .65fr .65fr .65fr .65fr .75fr .75fr"] {
+      grid-template-columns: 1fr !important;
+    }
+    [style*="min-width:260px"] { min-width: 0 !important; width: 100% !important; }
+    [style*="font-size:28px"]  { font-size: 24px !important; }
+    [style*="padding:16px"]    { padding: 13px !important; }
+    [style*="gap:16px"]        { gap: 10px !important; }
+  }
+  @media (max-width: 480px) {
+    [style*="grid-template-columns"] { grid-template-columns: 1fr !important; }
+    [style*="height:260px"],[style*="height:280px"],[style*="height:300px"] { height: 220px !important; }
+    button, a { touch-action: manipulation; }
+  }
+`;
+
 const SUPABASE_URL = "https://uobxxgzshrmbtjfdolxd.supabase.co";
 const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVvYnh4Z3pzaHJtYnRqZmRvbHhkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYyNjcyOTUsImV4cCI6MjA5MTg0MzI5NX0.0RiMkrtJlGbprp8AqVPXC9Y5LxP6QiELfP7NoYEXJ9w";
 
@@ -171,6 +205,17 @@ function useDarkMode() {
     return next;
   });
   return [dark, toggle];
+}
+
+function FechAIResponsiveStyle() {
+  useEffect(() => {
+    if (document.getElementById("fechai-dashboard-responsive-css")) return;
+    const style = document.createElement("style");
+    style.id = "fechai-dashboard-responsive-css";
+    style.innerHTML = FECHAI_DASHBOARD_RESPONSIVE_CSS;
+    document.head.appendChild(style);
+  }, []);
+  return null;
 }
 
 function Header({ nome, isGestor, onLogout, onHome, showVersion, dark, onToggleDark }) {
@@ -1650,7 +1695,7 @@ function DashboardTab({ sb, token }) {
       const [r0,r1,r2,r3] = await Promise.allSettled([
         sb.rpc("get_dashboard_stats",args,token),
         sb.rpc("get_stats_horario",{},token),
-        sb.rpc("get_funil_stats",{},token),
+        sb.rpc("get_funil_stats",args,token),
         sb.rpc("get_listas_ativas",{},token),
       ]);
       const stats    = r0.status==="fulfilled" ? r0.value : null;
@@ -1735,6 +1780,7 @@ function DashboardTab({ sb, token }) {
 
   return (
     <div style={{background:DARK.bg,paddingBottom:80}}>
+      <FechAIResponsiveStyle />
       <div style={{background:DARK.card,borderBottom:`1px solid ${DARK.border}`,padding:"12px 16px",display:"flex",alignItems:"center",justifyContent:"space-between",position:"sticky",top:0,zIndex:10}}>
         <div><span style={{color:DARK.text,fontWeight:700,fontSize:16}}>Dashboard</span><span style={{color:DARK.muted,fontSize:12,marginLeft:8}}>v{APP_VERSION}</span></div>
         <div style={{display:"flex",alignItems:"center",gap:8}}>
@@ -3249,6 +3295,230 @@ function GestorApp({ sb, token, corretor, onLogout, onVoltar, onCriarUsuario }) 
   );
 }
 
+// ─── Dashboard pessoal do corretor ───────────────────────────────────────────
+function MeuDashboardTab({ sb, token, corretor }) {
+  const D = {bg:'#111827',card:'#1f2937',border:'#374151',text:'#f9fafb',muted:'#9ca3af',accent:'#38bdf8'};
+  const [data,  setData]  = useState(null);
+  const [funil, setFunil] = useState(null);
+  const [ld,    setLd]    = useState(true);
+
+  const load = async () => {
+    setLd(true);
+    try {
+      const [r0,r1] = await Promise.allSettled([
+        sb.rpc("minha_producao",{},token),
+        sb.rpc("get_funil_stats_corretor",{},token),
+      ]);
+      if(r0.status==="fulfilled" && !r0.value?.error) setData(r0.value);
+      if(r1.status==="fulfilled") setFunil(r1.value);
+    } catch(e){}
+    setLd(false);
+  };
+  useEffect(()=>{ load(); },[]);
+
+  if(ld) return (
+    <div style={{background:D.bg,minHeight:"100vh",display:"flex",alignItems:"center",justifyContent:"center",color:D.muted,fontSize:16}}>
+      Carregando dashboard...
+    </div>
+  );
+  if(!data) return (
+    <div style={{background:D.bg,minHeight:"100vh",padding:20,color:"#ef4444",fontSize:16}}>
+      Erro ao carregar. <button onClick={load} style={{color:D.accent,marginLeft:8,background:"none",border:"none",cursor:"pointer"}}>Tentar novamente</button>
+    </div>
+  );
+
+  const hoje    = data.hoje    || {};
+  const totais  = data.totais  || {};
+  const semana  = data.semana  || [];
+  const sub     = data.subleitura || {};
+
+  const totalRec  = Number(totais.total_recebidos || 0);
+  const comFb     = Number(totais.com_feedback    || 0);
+  const carteira  = Number(totais.em_carteira     || 0);
+  const tecnPend  = Number(totais.tecnicos_pendentes || 0);
+  const hojeTotal = Number(hoje.total   || 0);
+  const hojeVis   = Number(hoje.visitas || 0);
+
+  const txFeedback = totalRec > 0 ? Math.round((comFb   / totalRec) * 100) : 0;
+  const txVisita   = comFb   > 0 ? Math.round((carteira / comFb)    * 100) : 0;
+
+  const contatos = Number((sub.agendado_visita||0) + (sub.nao_responde||0===0?0:0)
+    + (hoje.visitas||0));
+  // contatos reais do subleitura — feedbacks positivos de contato
+  const contatosReais = Number(
+    (sub.chamada_caiu      ||0) === 0 ? 0 : 0 // só técnicos não contam
+  );
+  // taxa contato = feedbacks que não são puramente técnicos / com_feedback
+  const naoTecnicos = comFb - Number(sub.tecnico_total||0);
+  const txContato   = comFb > 0 ? Math.round((naoTecnicos / comFb) * 100) : 0;
+
+  // Gráfico semana
+  const chartData = semana.map(d => ({
+    dia:     new Date(d.dia).toLocaleDateString("pt-BR",{weekday:"short"}),
+    total:   Number(d.total   || 0),
+    visitas: Number(d.visitas || 0),
+    tecnicos:Number(d.tecnicos|| 0),
+  }));
+
+  // Funil
+  const estagios = (funil?.estagios || []).filter(e => e.total > 0);
+
+  // Feedback breakdown do subleitura
+  const fbBreak = [
+    {label:"Caixa postal",  v: sub.caixa_postal    ||0, cor:"#ef4444"},
+    {label:"Não responde",  v: sub.nao_responde     ||0, cor:"#f97316"},
+    {label:"Nº errado",     v: sub.numero_errado    ||0, cor:"#ef4444"},
+    {label:"Chamada caiu",  v: sub.chamada_caiu     ||0, cor:"#64748b"},
+    {label:"WhatsApp inv.", v: sub.whatsapp_invalido||0, cor:"#64748b"},
+  ].filter(x => x.v > 0);
+
+  const primeiroNome = (corretor?.nome||"").split(" ")[0] || "Corretor";
+
+  return (
+    <div style={{background:D.bg, paddingBottom:80, minHeight:"100vh"}}>
+      {/* Header */}
+      <div style={{background:D.card,borderBottom:`1px solid ${D.border}`,padding:"12px 16px",display:"flex",alignItems:"center",justifyContent:"space-between",position:"sticky",top:0,zIndex:10}}>
+        <div>
+          <span style={{color:D.text,fontWeight:700,fontSize:16}}>Meu Dashboard</span>
+          <span style={{color:D.muted,fontSize:12,marginLeft:8}}>{primeiroNome}</span>
+        </div>
+        <button onClick={load} style={{color:D.accent,fontSize:16,background:"none",border:"none",cursor:"pointer"}}>↺</button>
+      </div>
+
+      <div style={{padding:16,display:"flex",flexDirection:"column",gap:14}}>
+
+        {/* KPIs principais */}
+        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8}}>
+          {[
+            {label:"Total recebidos", value:totalRec,  color:D.text},
+            {label:"Com feedback",    value:comFb,     color:"#38bdf8"},
+            {label:"Em carteira",     value:carteira,  color:"#10b981"},
+            {label:"Téc. pendentes",  value:tecnPend,  color:tecnPend>0?"#f97316":D.muted},
+          ].map(k=>(
+            <div key={k.label} style={{background:D.card,borderRadius:14,padding:"12px 14px",border:`1px solid ${D.border}`}}>
+              <p style={{color:D.muted,fontSize:11,margin:"0 0 4px"}}>{k.label}</p>
+              <p style={{color:k.color,fontSize:26,fontWeight:800,margin:0}}>{k.value}</p>
+            </div>
+          ))}
+        </div>
+
+        {/* Hoje em destaque */}
+        <div style={{background:D.card,borderRadius:14,padding:14,border:`1px solid ${D.border}`}}>
+          <p style={{color:D.muted,fontSize:11,margin:"0 0 10px",textTransform:"uppercase",letterSpacing:1}}>Hoje</p>
+          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:10}}>
+            <div style={{textAlign:"center"}}>
+              <p style={{color:D.muted,fontSize:10,margin:"0 0 4px"}}>Feedbacks</p>
+              <p style={{color:D.text,fontSize:28,fontWeight:900,margin:0}}>{hojeTotal}</p>
+            </div>
+            <div style={{textAlign:"center"}}>
+              <p style={{color:D.muted,fontSize:10,margin:"0 0 4px"}}>Visitas</p>
+              <p style={{color:"#10b981",fontSize:28,fontWeight:900,margin:0}}>{hojeVis}</p>
+            </div>
+            <div style={{textAlign:"center"}}>
+              <p style={{color:D.muted,fontSize:10,margin:"0 0 4px"}}>Errados</p>
+              <p style={{color:"#ef4444",fontSize:28,fontWeight:900,margin:0}}>{hoje.errados||0}</p>
+            </div>
+          </div>
+        </div>
+
+        {/* Taxas de performance */}
+        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:8}}>
+          {[
+            {label:"Taxa feedback",  value:txFeedback, color:txFeedback>=70?"#10b981":txFeedback>=40?"#f59e0b":"#ef4444", desc:`${comFb} de ${totalRec}`},
+            {label:"Taxa não-téc.",  value:txContato,  color:txContato>=70?"#10b981":txContato>=40?"#f59e0b":"#ef4444",  desc:`${naoTecnicos} de ${comFb}`},
+            {label:"Taxa visita",    value:txVisita,   color:txVisita>=10?"#10b981":txVisita>=4?"#f59e0b":"#ef4444",     desc:`${carteira} de ${comFb}`},
+          ].map(k=>(
+            <div key={k.label} style={{background:D.card,borderRadius:14,padding:12,border:`1px solid ${D.border}`,textAlign:"center"}}>
+              <p style={{color:D.muted,fontSize:10,margin:"0 0 6px"}}>{k.label}</p>
+              <p style={{color:k.color,fontSize:22,fontWeight:900,margin:"0 0 4px"}}>{k.value}%</p>
+              <p style={{color:D.muted,fontSize:10,margin:0}}>{k.desc}</p>
+            </div>
+          ))}
+        </div>
+
+        {/* Gráfico últimos 7 dias */}
+        {chartData.length > 0 && (
+          <div style={{background:D.card,borderRadius:14,padding:14,border:`1px solid ${D.border}`}}>
+            <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:10}}>
+              <p style={{color:D.text,fontWeight:700,fontSize:14,margin:0}}>Últimos 7 dias</p>
+              <div style={{display:"flex",gap:10}}>
+                <span style={{color:"#38bdf8",fontSize:10}}>● Feedbacks</span>
+                <span style={{color:"#10b981",fontSize:10}}>● Visitas</span>
+              </div>
+            </div>
+            <ResponsiveContainer width="100%" height={130}>
+              <BarChart data={chartData} barGap={3}>
+                <CartesianGrid strokeDasharray="3 3" stroke={D.border}/>
+                <XAxis dataKey="dia" tick={{fontSize:9,fill:D.muted}}/>
+                <YAxis tick={{fontSize:9,fill:D.muted}} width={20}/>
+                <RTooltip contentStyle={{background:D.card,border:`1px solid ${D.border}`,borderRadius:8,color:D.text}}/>
+                <Bar dataKey="total"   fill="#38bdf8" radius={[3,3,0,0]} name="Feedbacks"/>
+                <Bar dataKey="visitas" fill="#10b981" radius={[3,3,0,0]} name="Visitas"/>
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+        )}
+
+        {/* Funil pessoal */}
+        {estagios.length > 0 && (
+          <div style={{background:D.card,borderRadius:14,padding:14,border:`1px solid ${D.border}`}}>
+            <p style={{color:D.text,fontWeight:700,fontSize:14,margin:"0 0 12px"}}>Meu funil</p>
+            <div style={{display:"flex",flexDirection:"column",alignItems:"center",gap:6}}>
+              {estagios.map((e,i)=>{
+                const anterior = i===0 ? (estagios[0]?.total||1) : (estagios[i-1]?.total||0);
+                const tx = anterior>0 ? Math.round((e.total/anterior)*100) : 0;
+                const w  = Math.max(30, 100-i*10);
+                const cor = e.cor || ["#4f46e5","#0891b2","#059669","#d97706","#dc2626","#10b981"][i%6];
+                return (
+                  <div key={e.nome+i} style={{width:w+"%",minWidth:220}}>
+                    <div style={{background:`${cor}22`,border:`1px solid ${cor}66`,borderRadius:10,padding:"8px 12px",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+                      <div style={{display:"flex",alignItems:"center",gap:6}}>
+                        <span style={{fontSize:13}}>{e.icone||"●"}</span>
+                        <span style={{color:D.text,fontSize:12,fontWeight:700}}>{e.nome}</span>
+                      </div>
+                      <div style={{textAlign:"right"}}>
+                        <span style={{color:D.text,fontSize:16,fontWeight:900}}>{e.total}</span>
+                        {i>0&&<span style={{color:tx>=50?"#10b981":tx>=20?"#f59e0b":"#ef4444",fontSize:11,marginLeft:8,fontWeight:700}}>{tx}%</span>}
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
+        {/* Breakdown de feedbacks negativos */}
+        {fbBreak.length > 0 && (
+          <div style={{background:D.card,borderRadius:14,padding:14,border:`1px solid ${D.border}`}}>
+            <p style={{color:D.text,fontWeight:700,fontSize:14,margin:"0 0 10px"}}>Falhas operacionais</p>
+            {fbBreak.map(x=>(
+              <div key={x.label} style={{marginBottom:8}}>
+                <div style={{display:"flex",justifyContent:"space-between",marginBottom:3}}>
+                  <span style={{color:D.muted,fontSize:12}}>{x.label}</span>
+                  <span style={{color:x.cor,fontSize:12,fontWeight:700}}>{x.v}</span>
+                </div>
+                <div style={{height:6,background:D.border,borderRadius:4,overflow:"hidden"}}>
+                  <div style={{height:"100%",width:Math.min(100,(x.v/Math.max(comFb,1)*100))+"%",background:x.cor,borderRadius:4}}/>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* Alerta técnicos pendentes */}
+        {tecnPend > 0 && (
+          <div style={{background:"#f9730618",border:"1px solid #f9730644",borderRadius:14,padding:14}}>
+            <p style={{color:"#f97316",fontWeight:800,fontSize:14,margin:"0 0 4px"}}>⚠️ {tecnPend} lead{tecnPend>1?"s":""} com problema técnico</p>
+            <p style={{color:D.muted,fontSize:12,margin:0}}>Chamadas que caíram ou WhatsApp inválido. Tente novamente via outra ação.</p>
+          </div>
+        )}
+
+      </div>
+    </div>
+  );
+}
+
 function CorretorApp({ sb, token, corretor, onLogout, onVoltar }) {
   const [tab,setTab]       = useState("discador");
   const [perfil,setPerfil] = useState(null);
@@ -3300,6 +3570,7 @@ function CorretorApp({ sb, token, corretor, onLogout, onVoltar }) {
   return (
     <div style={{minHeight:"100vh",background:bg,color:txt}} className="pb-20">
       <Header nome={corretor.nome} isGestor={false} onLogout={onLogout} onHome={onVoltar} dark={dark} onToggleDark={toggleDark}/>
+      {tab==="meudash"  &&<MeuDashboardTab sb={sb} token={token} corretor={corretor}/>}
       {tab==="discador"  &&<DiscadorTab  sb={sb} token={token} corretor={corretor} onFeedback={loadContagens}/>}
       {tab==="email"     &&<EmailTab     sb={sb} token={token} perfilCorretor={perfilFinal}/>}
       {tab==="producao"  &&<ProducaoTab  sb={sb} token={token} perfilCorretor={perfilFinal}/>}
@@ -3309,6 +3580,7 @@ function CorretorApp({ sb, token, corretor, onLogout, onVoltar }) {
       {tab==="gestor" && corretor?.is_gestor && <GestorTab sb={sb} token={token}/>}
       <div className="fixed bottom-0 left-0 right-0 flex z-20" style={{background:dark?"#0f172a":"#ffffff",borderTop:dark?"1px solid #1e293b":"1px solid #e5e7eb"}}>
         {[
+          {id:"meudash",  label:"Dashboard",    key:null,       icon:"📊"},
           {id:"discador", label:"Discador",      key:null,       icon:"◎"},
           {id:"email",    label:"Mensagens",key:"email",    icon:"📧"},
           {id:"producao", label:"Produção",       key:"producao", icon:"◉"},
