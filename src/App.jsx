@@ -1901,6 +1901,55 @@ function DashboardTab({ sb, token }) {
           );
         })()}
 
+        {(()=>{
+          const novoContato      = Number(s.sem_feedback || s.disponiveis || 0);
+          const tentarNovamente  = Number((fb.chamada_caiu||0) + (fb.whatsapp_invalido||0));
+          const msgRepescagem    = Number(s.perdido_sem_contato || fb.perdido_sem_contato || 0);
+          const repescagemFutura = Number(s.perdido_com_contato || fb.perdido_com_contato || 0);
+          const emConversa       = Number((fb.em_conversa||0) + (fb.retornar_depois||0) + (fb.enviado_informacoes||0));
+          const visitasAcao      = absVis;
+          const tiles = [
+            {label:"Prontos para ligar",   value:novoContato,      icon:"⚡", color:"#38bdf8", desc:"sem feedback"},
+            {label:"Tentar novamente",     value:tentarNovamente,  icon:"🔁", color:"#f97316", desc:"queda / técnico"},
+            {label:"Mensagem repescagem",  value:msgRepescagem,    icon:"💬", color:"#ef4444", desc:"sem contato"},
+            {label:"Repescagem futura",    value:repescagemFutura, icon:"♻️", color:"#a78bfa", desc:"com contato"},
+            {label:"Em conversa",          value:emConversa,       icon:"🧲", color:"#10b981", desc:"nutrir agora"},
+            {label:"Visitas",              value:visitasAcao,      icon:"🏠", color:"#f59e0b", desc:"prioridade alta"},
+          ];
+          return (
+            <div style={{background:DARK.card,border:`1px solid ${DARK.border}`,borderRadius:16,padding:16}}>
+              <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",gap:12,marginBottom:14}}>
+                <div>
+                  <p style={{color:DARK.text,fontWeight:800,fontSize:15,margin:"0 0 2px"}}>Central de ação operacional</p>
+                  <p style={{color:DARK.muted,fontSize:11,margin:0}}>O que o corretor ou gestor deve atacar agora</p>
+                </div>
+                <span style={{color:"#10b981",fontSize:11,fontWeight:800,background:"#10b98122",padding:"4px 8px",borderRadius:999}}>
+                  Power Dial / Abas
+                </span>
+              </div>
+              <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:10}}>
+                {tiles.map((x)=>(
+                  <div key={x.label} style={{
+                    background:"#0f172a",
+                    border:`1px solid ${x.color}55`,
+                    borderRadius:14,
+                    padding:12,
+                    minHeight:92
+                  }}>
+                    <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:8}}>
+                      <span style={{fontSize:20}}>{x.icon}</span>
+                      <span style={{width:8,height:8,borderRadius:999,background:x.color}}/>
+                    </div>
+                    <p style={{color:x.color,fontSize:24,fontWeight:900,margin:"0 0 2px"}}>{x.value}</p>
+                    <p style={{color:DARK.text,fontSize:12,fontWeight:800,margin:"0 0 3px",lineHeight:1.2}}>{x.label}</p>
+                    <p style={{color:DARK.muted,fontSize:10,margin:0}}>{x.desc}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          );
+        })()}
+
         <div style={{background:DARK.card,borderRadius:16,padding:16,border:`1px solid ${DARK.border}`}}>
           <p style={{color:DARK.text,fontWeight:600,fontSize:14,margin:"0 0 6px"}}>Ligações por hora — últimos 7 dias</p>
           <div style={{display:"flex",gap:16,marginBottom:8,flexWrap:"wrap"}}>
