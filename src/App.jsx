@@ -1846,6 +1846,61 @@ function DashboardTab({ sb, token }) {
           );
         })()}
 
+        {(()=>{
+          const trabalhados = Number(s.com_feedback || s.leads_trabalhados || 0);
+          const visitas     = absVis;
+          const contatos    = absContato;
+          const total       = Number(s.total_leads || 0);
+          const perdidoSem  = Number(s.perdido_sem_contato || fb.perdido_sem_contato || 0);
+
+          const mediaLeadsPorVisita    = visitas > 0 ? Math.ceil(trabalhados / visitas) : null;
+          const mediaContatosPorVisita = visitas > 0 ? Math.ceil(contatos / visitas) : null;
+          const faltamParaProximaVisita = mediaLeadsPorVisita
+            ? Math.max(0, mediaLeadsPorVisita - (trabalhados % mediaLeadsPorVisita || mediaLeadsPorVisita))
+            : null;
+
+          const taxaContato         = trabalhados > 0 ? Math.round((contatos / trabalhados) * 100) : 0;
+          const taxaVisita          = trabalhados > 0 ? Math.round((visitas / trabalhados) * 100) : 0;
+          const taxaPerdaSemContato = total > 0 ? Math.round((perdidoSem / total) * 100) : 0;
+
+          const insightPrincipal = mediaLeadsPorVisita
+            ? `Em média, a operação gera 1 visita a cada ${mediaLeadsPorVisita} leads trabalhados.`
+            : "Ainda não há visitas suficientes para calcular previsão confiável.";
+
+          const alerta = taxaPerdaSemContato >= 35
+            ? "Alto volume de perda sem contato. Priorizar repescagem por mensagem antes de descartar."
+            : taxaContato < 15
+              ? "Taxa de contato baixa. Verificar horário, qualidade da lista e cadência de tentativa."
+              : "Operação com base suficiente para acompanhar tendência de conversão.";
+
+          return (
+            <div style={{display:"grid",gridTemplateColumns:"1.2fr repeat(3,.8fr)",gap:10}}>
+              <div style={{background:DARK.card,border:`1px solid ${DARK.border}`,borderRadius:16,padding:14}}>
+                <p style={{color:DARK.text,fontSize:15,fontWeight:800,margin:"0 0 4px"}}>Previsão operacional</p>
+                <p style={{color:DARK.muted,fontSize:12,margin:"0 0 10px",lineHeight:1.45}}>{insightPrincipal}</p>
+                <div style={{background:"#0f172a",border:`1px solid ${DARK.border}`,borderRadius:12,padding:10}}>
+                  <p style={{color:taxaPerdaSemContato>=35?"#ef4444":"#10b981",fontSize:12,fontWeight:700,margin:0,lineHeight:1.4}}>{alerta}</p>
+                </div>
+              </div>
+              <div style={{background:DARK.card,border:`1px solid ${DARK.border}`,borderRadius:16,padding:14}}>
+                <p style={{color:DARK.muted,fontSize:11,margin:"0 0 6px"}}>Faltam para próxima visita</p>
+                <p style={{color:"#f59e0b",fontSize:28,fontWeight:900,margin:0}}>{faltamParaProximaVisita ?? "—"}</p>
+                <p style={{color:DARK.muted,fontSize:10,margin:"4px 0 0"}}>leads trabalhados</p>
+              </div>
+              <div style={{background:DARK.card,border:`1px solid ${DARK.border}`,borderRadius:16,padding:14}}>
+                <p style={{color:DARK.muted,fontSize:11,margin:"0 0 6px"}}>Taxa contato</p>
+                <p style={{color:taxaContato>=35?"#10b981":taxaContato>=15?"#f59e0b":"#ef4444",fontSize:28,fontWeight:900,margin:0}}>{taxaContato}%</p>
+                <p style={{color:DARK.muted,fontSize:10,margin:"4px 0 0"}}>{contatos} contatos produtivos</p>
+              </div>
+              <div style={{background:DARK.card,border:`1px solid ${DARK.border}`,borderRadius:16,padding:14}}>
+                <p style={{color:DARK.muted,fontSize:11,margin:"0 0 6px"}}>Taxa visita</p>
+                <p style={{color:taxaVisita>=10?"#10b981":taxaVisita>=4?"#f59e0b":"#ef4444",fontSize:28,fontWeight:900,margin:0}}>{taxaVisita}%</p>
+                <p style={{color:DARK.muted,fontSize:10,margin:"4px 0 0"}}>{mediaContatosPorVisita ? `${mediaContatosPorVisita} contatos / visita` : "sem base"}</p>
+              </div>
+            </div>
+          );
+        })()}
+
         <div style={{background:DARK.card,borderRadius:16,padding:16,border:`1px solid ${DARK.border}`}}>
           <p style={{color:DARK.text,fontWeight:600,fontSize:14,margin:"0 0 6px"}}>Ligações por hora — últimos 7 dias</p>
           <div style={{display:"flex",gap:16,marginBottom:8,flexWrap:"wrap"}}>
