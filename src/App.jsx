@@ -1784,14 +1784,67 @@ function DashboardTab({ sb, token }) {
           ))}
         </div>
 
-        {funil?.estagios?.some(e=>e.total>0)&&(
-          <div style={{background:DARK.card,borderRadius:16,padding:16,border:`1px solid ${DARK.border}`}}>
-            <p style={{color:DARK.text,fontWeight:600,fontSize:14,margin:"0 0 12px"}}>Funil de vendas</p>
-            <div style={{maxWidth:560,margin:"0 auto"}}>
-              <FunilViz dados={funil.estagios}/>
+        {funil?.estagios?.some(e=>e.total>0)&&(()=>{
+          const etapas = funil.estagios;
+          const totalBase = etapas[0]?.total || s.total_leads || 1;
+
+          return (
+            <div style={{background:DARK.card,borderRadius:16,padding:16,border:`1px solid ${DARK.border}`}}>
+              <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",gap:12,marginBottom:14}}>
+                <div>
+                  <p style={{color:DARK.text,fontWeight:700,fontSize:15,margin:"0 0 2px"}}>Funil comercial</p>
+                  <p style={{color:DARK.muted,fontSize:11,margin:0}}>Volume por etapa + conversão contra etapa anterior</p>
+                </div>
+                <span style={{color:"#38bdf8",fontSize:11,fontWeight:700,background:"#38bdf822",padding:"4px 8px",borderRadius:999}}>
+                  {s.total_leads||0} leads
+                </span>
+              </div>
+
+              <div style={{display:"flex",flexDirection:"column",alignItems:"center",gap:7}}>
+                {etapas.map((e,i)=>{
+                  const anterior = i===0 ? totalBase : (etapas[i-1]?.total || 0);
+                  const total = e.total||0;
+                  const taxaAnterior = anterior>0 ? Math.round((total/anterior)*100) : 0;
+                  const taxaBase     = totalBase>0 ? Math.round((total/totalBase)*100) : 0;
+                  const width = Math.max(28, 100 - i*7);
+                  const cor = e.cor || [
+                    "#64748b","#3b82f6","#f59e0b","#8b5cf6","#06b6d4","#ec4899","#10b981"
+                  ][i % 7];
+
+                  return (
+                    <div key={e.nome+"-"+i} style={{width:width+"%",minWidth:260}}>
+                      <div style={{
+                        background:`linear-gradient(90deg, ${cor}33, ${cor}18)`,
+                        border:`1px solid ${cor}66`,
+                        borderRadius:12,
+                        padding:"10px 12px",
+                        display:"grid",
+                        gridTemplateColumns:"1.4fr .45fr .55fr .55fr",
+                        gap:8,
+                        alignItems:"center"
+                      }}>
+                        <div style={{minWidth:0,display:"flex",alignItems:"center",gap:7}}>
+                          <span style={{fontSize:14}}>{e.icone||"●"}</span>
+                          <span style={{color:DARK.text,fontSize:13,fontWeight:800,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>
+                            {e.nome}
+                          </span>
+                        </div>
+                        <span style={{color:DARK.text,fontSize:18,fontWeight:900,textAlign:"right"}}>{total}</span>
+                        <span style={{
+                          color:taxaAnterior>=50?"#10b981":taxaAnterior>=20?"#f59e0b":"#ef4444",
+                          fontSize:12,fontWeight:800,textAlign:"right"
+                        }}>
+                          {i===0?"base":taxaAnterior+"%"}
+                        </span>
+                        <span style={{color:DARK.muted,fontSize:11,textAlign:"right"}}>{taxaBase}% total</span>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
             </div>
-          </div>
-        )}
+          );
+        })()}
 
         <div style={{background:DARK.card,borderRadius:16,padding:16,border:`1px solid ${DARK.border}`}}>
           <p style={{color:DARK.text,fontWeight:600,fontSize:14,margin:"0 0 6px"}}>Ligações por hora — últimos 7 dias</p>
