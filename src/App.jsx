@@ -1848,26 +1848,103 @@ function DashboardTab({ sb, token }) {
           </div>
         )}
 
-        {pc.length>0&&(
-          <div style={{background:DARK.card,borderRadius:16,padding:16,border:`1px solid ${DARK.border}`}}>
-            <p style={{color:DARK.text,fontWeight:600,fontSize:14,margin:"0 0 12px"}}>Performance por corretor</p>
-            {pc.map((c,i)=>(
-              <div key={i} style={{borderBottom:i<pc.length-1?`1px solid ${DARK.border}`:"none",paddingBottom:i<pc.length-1?12:0,marginBottom:i<pc.length-1?12:0}}>
-                <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
-                  <span style={{color:DARK.text,fontSize:15,fontWeight:500}}>{c.nome}</span>
-                  <span style={{color:"#10b981",fontSize:14,fontWeight:700}}>{c.taxa_visita||0}% vis</span>
+        {pc.length>0&&(()=>{
+          const corretores=[...pc].map(c=>{
+            const nome=c.nome||c.corretor||"Corretor";
+            const leads=Number(c.total_leads ?? c.leads ?? c.leads_recebidos ?? 0);
+            const trabalhados=Number(c.com_feedback ?? c.trabalhados ?? c.leads_trabalhados ?? 0);
+            const visitas=Number(c.visitas ?? c.agendamentos ?? c.visitas_agendadas ?? 0);
+            const contatos=Number(
+              c.contatos ??
+              c.contato_efetivo ??
+              ((c.em_conversa||0)+(c.retornar_depois||0)+(c.enviado_informacoes||0)+visitas)
+            );
+            const erros=Number(c.numero_errado ?? c.perdido_sem_contato ?? 0);
+            const carteira=Number(c.em_carteira ?? 0);
+            const taxaTrabalho=leads>0?Math.round((trabalhados/leads)*100):0;
+            const taxaContato=trabalhados>0?Math.round((contatos/trabalhados)*100):Number(c.taxa_contato||0);
+            const taxaVisita=trabalhados>0?Math.round((visitas/trabalhados)*100):Number(c.taxa_visita||c.taxa_visita_pct||0);
+            return {nome,leads,trabalhados,visitas,contatos,erros,carteira,taxaTrabalho,taxaContato,taxaVisita};
+          }).sort((a,b)=>
+            (b.visitas-a.visitas) ||
+            (b.taxaContato-a.taxaContato) ||
+            (b.trabalhados-a.trabalhados) ||
+            (b.leads-a.leads)
+          );
+
+          const melhorVisita=corretores[0];
+          const melhorContato=[...corretores].sort((a,b)=>(b.taxaContato-a.taxaContato)||(b.contatos-a.contatos))[0];
+          const maiorVolume=[...corretores].sort((a,b)=>(b.trabalhados-a.trabalhados)||(b.leads-a.leads))[0];
+          const top=corretores.slice(0,10);
+
+          return (
+            <div style={{background:DARK.card,borderRadius:16,padding:16,border:`1px solid ${DARK.border}`}}>
+              <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",gap:12,marginBottom:14}}>
+                <div>
+                  <p style={{color:DARK.text,fontWeight:700,fontSize:15,margin:"0 0 2px"}}>Performance por corretor</p>
+                  <p style={{color:DARK.muted,fontSize:11,margin:0}}>Ranking por visitas, taxa de contato e volume trabalhado</p>
                 </div>
-                <div style={{display:"flex",gap:16,marginTop:4}}>
-                  <span style={{color:DARK.muted,fontSize:12}}>{c.total_leads} leads</span>
-                  <span style={{color:"#10b981",fontSize:12}}>{c.visitas} visitas</span>
-                  <span style={{color:"#ef4444",fontSize:12}}>{c.numero_errado} erros</span>
-                  <span style={{color:"#a78bfa",fontSize:12}}>{c.em_carteira||0} carteira</span>
-                </div>
-                {c.total_leads>0&&<div style={{marginTop:6,height:6,background:DARK.border,borderRadius:4,overflow:"hidden"}}><div style={{height:"100%",background:"#10b981",borderRadius:4,width:Math.min(100,(c.com_feedback/c.total_leads)*100)+"%",transition:"width 0.5s"}}/></div>}
+                <span style={{color:"#38bdf8",fontSize:11,fontWeight:700,background:"#38bdf822",padding:"4px 8px",borderRadius:999}}>Top {top.length}</span>
               </div>
-            ))}
-          </div>
-        )}
+
+              <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:8,marginBottom:14}}>
+                <div style={{background:"#0f172a",border:`1px solid ${DARK.border}`,borderRadius:12,padding:10}}>
+                  <p style={{color:DARK.muted,fontSize:10,margin:"0 0 4px"}}>Mais visitas</p>
+                  <p style={{color:DARK.text,fontSize:13,fontWeight:700,margin:0,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{melhorVisita?.nome||"—"}</p>
+                  <p style={{color:"#f59e0b",fontSize:18,fontWeight:800,margin:"2px 0 0"}}>{melhorVisita?.visitas||0}</p>
+                </div>
+                <div style={{background:"#0f172a",border:`1px solid ${DARK.border}`,borderRadius:12,padding:10}}>
+                  <p style={{color:DARK.muted,fontSize:10,margin:"0 0 4px"}}>Melhor contato</p>
+                  <p style={{color:DARK.text,fontSize:13,fontWeight:700,margin:0,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{melhorContato?.nome||"—"}</p>
+                  <p style={{color:"#10b981",fontSize:18,fontWeight:800,margin:"2px 0 0"}}>{melhorContato?.taxaContato||0}%</p>
+                </div>
+                <div style={{background:"#0f172a",border:`1px solid ${DARK.border}`,borderRadius:12,padding:10}}>
+                  <p style={{color:DARK.muted,fontSize:10,margin:"0 0 4px"}}>Maior volume</p>
+                  <p style={{color:DARK.text,fontSize:13,fontWeight:700,margin:0,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{maiorVolume?.nome||"—"}</p>
+                  <p style={{color:"#38bdf8",fontSize:18,fontWeight:800,margin:"2px 0 0"}}>{maiorVolume?.trabalhados||0}</p>
+                </div>
+              </div>
+
+              <div style={{display:"grid",gridTemplateColumns:"36px 1.4fr .7fr .7fr .7fr .7fr .7fr",gap:8,alignItems:"center",padding:"8px 10px",borderBottom:`1px solid ${DARK.border}`,color:DARK.muted,fontSize:10,fontWeight:700,textTransform:"uppercase"}}>
+                <span>#</span><span>Corretor</span>
+                <span style={{textAlign:"right"}}>Leads</span>
+                <span style={{textAlign:"right"}}>Trab.</span>
+                <span style={{textAlign:"right"}}>Contato</span>
+                <span style={{textAlign:"right"}}>Visitas</span>
+                <span style={{textAlign:"right"}}>Tx.Cont.</span>
+              </div>
+
+              <div style={{display:"flex",flexDirection:"column"}}>
+                {top.map((c,i)=>{
+                  const medalha=i===0?"🥇":i===1?"🥈":i===2?"🥉":String(i+1);
+                  const largura=Math.min(100,Math.max(0,c.taxaTrabalho));
+                  return (
+                    <div key={c.nome+"-"+i} style={{display:"grid",gridTemplateColumns:"36px 1.4fr .7fr .7fr .7fr .7fr .7fr",gap:8,alignItems:"center",padding:"10px",borderBottom:i<top.length-1?`1px solid ${DARK.border}`:"none"}}>
+                      <span style={{color:DARK.text,fontSize:13,fontWeight:800}}>{medalha}</span>
+                      <div style={{minWidth:0}}>
+                        <div style={{color:DARK.text,fontSize:13,fontWeight:700,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{c.nome}</div>
+                        <div style={{marginTop:5,height:5,background:DARK.border,borderRadius:999,overflow:"hidden"}}>
+                          <div style={{height:"100%",width:largura+"%",background:c.taxaTrabalho>=70?"#10b981":c.taxaTrabalho>=35?"#f59e0b":"#ef4444",borderRadius:999}}/>
+                        </div>
+                      </div>
+                      <span style={{color:DARK.muted,fontSize:12,textAlign:"right"}}>{c.leads}</span>
+                      <span style={{color:"#38bdf8",fontSize:12,fontWeight:700,textAlign:"right"}}>{c.trabalhados}</span>
+                      <span style={{color:"#10b981",fontSize:12,fontWeight:700,textAlign:"right"}}>{c.contatos}</span>
+                      <span style={{color:"#f59e0b",fontSize:12,fontWeight:800,textAlign:"right"}}>{c.visitas}</span>
+                      <span style={{color:c.taxaContato>=40?"#10b981":c.taxaContato>=15?"#f59e0b":"#ef4444",fontSize:12,fontWeight:800,textAlign:"right"}}>{c.taxaContato}%</span>
+                    </div>
+                  );
+                })}
+              </div>
+
+              {corretores.length>10&&(
+                <p style={{color:DARK.muted,fontSize:10,margin:"10px 0 0",textAlign:"center"}}>
+                  Exibindo top 10 de {corretores.length} corretores
+                </p>
+              )}
+            </div>
+          );
+        })()}
 
         {pf.length>0&&(
           <div style={{background:DARK.card,borderRadius:16,padding:16,border:`1px solid ${DARK.border}`}}>
