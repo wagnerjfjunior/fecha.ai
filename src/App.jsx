@@ -2005,6 +2005,66 @@ function DashboardTab({ sb, token }) {
           );
         })()}
 
+        {(()=>{
+          const total       = Number(s.total_leads || 0);
+          const trabalhados = Number(s.com_feedback || s.leads_trabalhados || 0);
+          const contatos    = absContato;
+          const visitas     = absVis;
+          const perdidoSem  = Number(s.perdido_sem_contato || fb.perdido_sem_contato || 0);
+
+          const taxaTrabalho = total>0      ? Math.round((trabalhados/total)*100)    : 0;
+          const taxaContato  = trabalhados>0 ? Math.round((contatos/trabalhados)*100) : 0;
+          const taxaVisita   = trabalhados>0 ? Math.round((visitas/trabalhados)*100)  : 0;
+          const taxaPerdaSem = total>0      ? Math.round((perdidoSem/total)*100)     : 0;
+
+          let status = "Operação saudável";
+          let cor    = "#10b981";
+          if(taxaContato < 15)       { status = "Baixo contato";           cor = "#ef4444"; }
+          else if(taxaVisita < 5)    { status = "Contato sem conversão";   cor = "#f59e0b"; }
+          else if(taxaPerdaSem >= 35){ status = "Alta perda sem contato";  cor = "#ef4444"; }
+
+          const recomendacao =
+            status === "Baixo contato"          ? "Revisar lista, horário de ligação e abordagem inicial."                           :
+            status === "Contato sem conversão"  ? "Treinar conversão de contato em visita (argumento e follow-up)."                  :
+            status === "Alta perda sem contato" ? "Ativar repescagem via WhatsApp/email antes de descartar leads."                   :
+                                                  "Manter ritmo atual e otimizar horários de maior conversão.";
+
+          return (
+            <div style={{background:DARK.card,border:`1px solid ${DARK.border}`,borderRadius:16,padding:16}}>
+              <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:12}}>
+                <p style={{color:DARK.text,fontSize:16,fontWeight:900,margin:0}}>Resumo executivo</p>
+                <span style={{color:cor,background:cor+"22",padding:"5px 10px",borderRadius:999,fontSize:11,fontWeight:800}}>
+                  {status}
+                </span>
+              </div>
+
+              <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:10,marginBottom:12}}>
+                <div>
+                  <p style={{color:DARK.muted,fontSize:10,margin:0}}>Trabalho</p>
+                  <p style={{color:"#38bdf8",fontSize:20,fontWeight:900,margin:0}}>{taxaTrabalho}%</p>
+                </div>
+                <div>
+                  <p style={{color:DARK.muted,fontSize:10,margin:0}}>Contato</p>
+                  <p style={{color:"#10b981",fontSize:20,fontWeight:900,margin:0}}>{taxaContato}%</p>
+                </div>
+                <div>
+                  <p style={{color:DARK.muted,fontSize:10,margin:0}}>Visita</p>
+                  <p style={{color:"#f59e0b",fontSize:20,fontWeight:900,margin:0}}>{taxaVisita}%</p>
+                </div>
+                <div>
+                  <p style={{color:DARK.muted,fontSize:10,margin:0}}>Perda s/ contato</p>
+                  <p style={{color:"#ef4444",fontSize:20,fontWeight:900,margin:0}}>{taxaPerdaSem}%</p>
+                </div>
+              </div>
+
+              <div style={{background:"#0f172a",border:`1px solid ${DARK.border}`,borderRadius:12,padding:12}}>
+                <p style={{color:DARK.text,fontSize:12,fontWeight:700,margin:"0 0 4px"}}>Recomendação</p>
+                <p style={{color:DARK.muted,fontSize:12,margin:0,lineHeight:1.5}}>{recomendacao}</p>
+              </div>
+            </div>
+          );
+        })()}
+
         <div style={{background:DARK.card,borderRadius:16,padding:16,border:`1px solid ${DARK.border}`}}>
           <p style={{color:DARK.text,fontWeight:600,fontSize:14,margin:"0 0 6px"}}>Ligações por hora — últimos 7 dias</p>
           <div style={{display:"flex",gap:16,marginBottom:8,flexWrap:"wrap"}}>
