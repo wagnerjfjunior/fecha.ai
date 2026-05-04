@@ -3036,8 +3036,9 @@ function UploadTab({ sb, token }) {
     if (!forn.trim()) return;
     setStep(5); setProgress(0); setErr("");
     try {
-      const lr = await sb.insert("listas",{nome_fornecedor:forn.trim(),nome_arquivo:file.name},token);
-      const lid = lr[0].id;
+      const lr = await sb.rpc("criar_lista",{p_nome_fornecedor:forn.trim(),p_nome_arquivo:file.name},token);
+      if(lr?.error) throw new Error(lr.error);
+      const lid = lr.id;
       const leads = rows.slice(1).map(r => csvToLead(r, colMap, forn.trim()));
       const B = 100;
       const total = leads.length;
