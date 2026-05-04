@@ -61,8 +61,8 @@ const FECHAI_DASHBOARD_RESPONSIVE_CSS = `
   }
 `;
 
-const SUPABASE_URL = "https://uobxxgzshrmbtjfdolxd.supabase.co";
-const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVvYnh4Z3pzaHJtYnRqZmRvbHhkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYyNjcyOTUsImV4cCI6MjA5MTg0MzI5NX0.0RiMkrtJlGbprp8AqVPXC9Y5LxP6QiELfP7NoYEXJ9w";
+const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL || "https://uobxxgzshrmbtjfdolxd.supabase.co";
+const SUPABASE_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY || "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVvYnh4Z3pzaHJtYnRqZmRvbHhkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYyNjcyOTUsImV4cCI6MjA5MTg0MzI5NX0.0RiMkrtJlGbprp8AqVPXC9Y5LxP6QiELfP7NoYEXJ9w";
 
 // Feedbacks: esquerdo = positivos, direito = negativos
 const FEEDBACKS_ESQ = [
@@ -4097,16 +4097,16 @@ function CorretorApp({ sb, token, corretor, onLogout, onVoltar }) {
   ];
 
   const TILES = [
-    {id:"instrucoes", label:"Instruções", icon:"📖", bg:"#1d4ed8", txt:"#fff"},
-    {id:"discador",   label:"Discador",   icon:"◎",  bg:"#059669", txt:"#fff"},
-    {id:"email",      label:"Mensagens",  icon:"📧", bg:"#7c3aed", txt:"#fff", badgeKey:"email"},
-    {id:"producao",   label:"Produção",   icon:"◉",  bg:"#d97706", txt:"#fff"},
-    {id:"carteira",   label:"Carteira",   icon:"♦",  bg:"#db2777", txt:"#fff"},
-    {id:"funil",      label:"Funil",      icon:"▽",  bg:"#0891b2", txt:"#fff"},
-    {id:"historico",  label:"Histórico",  icon:"↺",  bg:"#374151", txt:"#fff"},
-    {id:"meudash",    label:"Dashboard",  icon:"📊", bg:"#1e40af", txt:"#fff"},
-    {id:"soon1",      label:"Em breve",   icon:"🔒", bg:"#e5e7eb", txt:"#9ca3af", soon:true},
-    {id:"soon2",      label:"Em breve",   icon:"🔒", bg:"#e5e7eb", txt:"#9ca3af", soon:true},
+    {id:"lista",      label:"Lista",       icon:"📋", bg:"#0f766e", txt:"#fff"},
+    {id:"discador",   label:"Discador",    icon:"◎",  bg:"#059669", txt:"#fff"},
+    {id:"email",      label:"Mensagens",   icon:"📧", bg:"#7c3aed", txt:"#fff", badgeKey:"email"},
+    {id:"producao",   label:"Produção",    icon:"◉",  bg:"#d97706", txt:"#fff"},
+    {id:"carteira",   label:"Carteira",    icon:"♦",  bg:"#db2777", txt:"#fff"},
+    {id:"funil",      label:"Funil",       icon:"▽",  bg:"#0891b2", txt:"#fff"},
+    {id:"historico",  label:"Histórico",   icon:"↺",  bg:"#374151", txt:"#fff"},
+    {id:"meudash",    label:"Dashboard",   icon:"📊", bg:"#1e40af", txt:"#fff"},
+    {id:"instrucoes", label:"Instruções",  icon:"📖", bg:"#6d28d9", txt:"#fff"},
+    {id:"soon1",      label:"Em breve",    icon:"🔒", bg:"#e5e7eb", txt:"#9ca3af", soon:true},
   ];
 
   const [tab,setTab]       = useState("home");
@@ -4134,21 +4134,227 @@ function CorretorApp({ sb, token, corretor, onLogout, onVoltar }) {
   const perfilFinal  = perfil || {nome:corretor.nome.split(" ")[0],telefone:"",empresa:"Tegra Incorporadora"};
   const primeiroNome = corretor.nome.split(" ")[0];
 
-  // ── Swipe lateral (desabilitado no funil para não conflitar com kanban) ──
+  // ── Swipe APENAS na zona inferior (≥ bottom 70px = área da TabBar) ────────
   const swipeRef  = useRef({});
   const allTabIds = TABS.map(t=>t.id);
-  const onTouchStart = (e) => { swipeRef.current.x=e.touches[0].clientX; swipeRef.current.y=e.touches[0].clientY; };
-  const onTouchEnd   = (e) => {
+  const TAB_BAR_HEIGHT = 70; // altura da zona de swipe em px a partir do rodapé
+
+  const onTouchStart = (e) => {
+    const touch = e.touches[0];
+    swipeRef.current.x = touch.clientX;
+    swipeRef.current.y = touch.clientY;
+    // Marcar se o toque começou na zona inferior (TabBar)
+    swipeRef.current.naTabBar = touch.clientY >= (window.innerHeight - TAB_BAR_HEIGHT);
+  };
+  const onTouchEnd = (e) => {
     if(tab==="home") return;
-    const dx=e.changedTouches[0].clientX-swipeRef.current.x;
-    const dy=e.changedTouches[0].clientY-swipeRef.current.y;
-    if(Math.abs(dx)<50||Math.abs(dy)>Math.abs(dx)*0.8) return;
+    if(!swipeRef.current.naTabBar) return; // só processa swipe da zona inferior
+    const dx=e.changedTouches[0].clientX - swipeRef.current.x;
+    const dy=e.changedTouches[0].clientY - swipeRef.current.y;
+    if(Math.abs(dx)<40 || Math.abs(dy)>Math.abs(dx)*0.8) return;
     const idx=allTabIds.indexOf(tab);
-    if(dx<0&&idx<allTabIds.length-1) handleTab(allTabIds[idx+1]);
-    if(dx>0&&idx>0)                  handleTab(allTabIds[idx-1]);
+    if(dx<0 && idx<allTabIds.length-1) handleTab(allTabIds[idx+1]);
+    if(dx>0 && idx>0)                  handleTab(allTabIds[idx-1]);
   };
 
-  // ── HomeScreen ────────────────────────────────────────────────────────────
+  // ── Tela de seleção de lista ───────────────────────────────────────────────
+  const ListaTab = () => {
+    const [dados,  setDados]  = useState(null);
+    const [ld,     setLd]     = useState(true);
+    const [modal,  setModal]  = useState(null);  // {lista} — confirm devolução
+    const [salvando,setSalvando] = useState(false);
+    const [erro,   setErro]   = useState("");
+
+    useEffect(()=>{
+      sb.rpc("listar_listas_corretor",{},token)
+        .then(r=>{ if(!r.error) setDados(r); else setErro(r.error); })
+        .catch(e=>setErro(e.message))
+        .finally(()=>setLd(false));
+    },[]);
+
+    const escolherLista = async (lista) => {
+      const loteAberto = dados?.lote_aberto;
+      if(loteAberto && loteAberto.sem_feedback > 0) {
+        setModal(lista); // abre modal de confirmação de devolução
+      } else {
+        await solicitarLote(lista.id);
+      }
+    };
+
+    const solicitarLote = async (lista_id) => {
+      setSalvando(true); setErro("");
+      try {
+        // Se há lote aberto (sem leads pendentes), devolver primeiro
+        if(dados?.lote_aberto) {
+          const dev = await sb.rpc("devolver_lote",{p_lote_id: dados.lote_aberto.lote_id},token);
+          if(dev.error) throw new Error(dev.error);
+        }
+        const r = await sb.rpc("solicitar_lote",{p_lista_id: lista_id},token);
+        if(r.ok) {
+          setModal(null);
+          handleTab("discador");
+        } else {
+          setErro(r.error || "Erro ao solicitar lote");
+        }
+      } catch(e) { setErro(e.message); }
+      setSalvando(false);
+    };
+
+    const loteAberto = dados?.lote_aberto;
+    const listas = dados?.listas || [];
+
+    const D = {bg:dark?"#0f172a":"#f1f5f9",card:dark?"#1e293b":"#fff",
+               border:dark?"#334155":"#e5e7eb",text:dark?"#f1f5f9":"#111827",
+               muted:dark?"#94a3b8":"#6b7280"};
+
+    return (
+      <div style={{minHeight:"100vh",background:D.bg,paddingBottom:80}}>
+        {/* Modal de confirmação de devolução */}
+        {modal&&(
+          <div style={{position:"fixed",inset:0,background:"rgba(0,0,0,.6)",zIndex:999,display:"flex",alignItems:"center",justifyContent:"center",padding:20}}>
+            <div style={{background:D.card,borderRadius:20,padding:24,maxWidth:340,width:"100%"}}>
+              <div style={{fontSize:32,marginBottom:12,textAlign:"center"}}>⚠️</div>
+              <p style={{fontWeight:700,fontSize:16,color:D.text,margin:"0 0 8px",textAlign:"center"}}>
+                Trocar de lista?
+              </p>
+              <p style={{fontSize:13,color:D.muted,margin:"0 0 8px",textAlign:"center",lineHeight:1.5}}>
+                Você tem <strong style={{color:"#f59e0b"}}>{loteAberto?.sem_feedback} lead{loteAberto?.sem_feedback>1?"s":""} não trabalhados</strong> na lista <strong style={{color:D.text}}>{loteAberto?.lista_nome}</strong>.
+              </p>
+              <p style={{fontSize:12,color:D.muted,margin:"0 0 20px",textAlign:"center",lineHeight:1.5}}>
+                Eles serão devolvidos ao pool e você receberá um novo lote de <strong style={{color:D.text}}>{modal.nome_fornecedor}</strong>.
+              </p>
+              {erro&&<p style={{color:"#ef4444",fontSize:12,marginBottom:12,textAlign:"center"}}>{erro}</p>}
+              <div style={{display:"flex",gap:10}}>
+                <button onClick={()=>{setModal(null);setErro("");}}
+                  style={{flex:1,background:dark?"#334155":"#f3f4f6",color:D.text,border:"none",borderRadius:12,padding:"13px",fontSize:14,fontWeight:600,cursor:"pointer"}}>
+                  Cancelar
+                </button>
+                <button onClick={()=>solicitarLote(modal.id)} disabled={salvando}
+                  style={{flex:1.2,background:"#2563eb",color:"#fff",border:"none",borderRadius:12,padding:"13px",fontSize:14,fontWeight:600,cursor:salvando?"not-allowed":"pointer",opacity:salvando?.7:1}}>
+                  {salvando?"Trocando...":"Confirmar troca"}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Header */}
+        <div style={{background:dark?"#1e293b":"#1d4ed8",padding:"16px 16px 20px"}}>
+          <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:4}}>
+            <button onClick={()=>handleTab("home")}
+              style={{background:"rgba(255,255,255,.2)",border:"1px solid rgba(255,255,255,.3)",borderRadius:8,padding:"5px 10px",color:"#fff",fontSize:13,cursor:"pointer"}}>
+              ←
+            </button>
+            <div>
+              <p style={{color:"rgba(255,255,255,.7)",fontSize:11,margin:0}}>Escolher lista</p>
+              <p style={{color:"#fff",fontWeight:700,fontSize:16,margin:0}}>Qual lista vou trabalhar?</p>
+            </div>
+          </div>
+        </div>
+
+        <div style={{padding:14,display:"flex",flexDirection:"column",gap:12}}>
+
+          {/* Lote aberto */}
+          {loteAberto&&loteAberto.sem_feedback>0&&(
+            <div style={{background:dark?"#1c1917":"#fffbeb",border:"1px solid #f59e0b",borderRadius:16,padding:14}}>
+              <p style={{fontWeight:700,fontSize:13,color:"#92400e",margin:"0 0 4px"}}>⚠️ Lote em andamento</p>
+              <p style={{fontSize:12,color:"#92400e",margin:0,lineHeight:1.5}}>
+                Você tem <strong>{loteAberto.com_feedback}</strong> feedbacks dados e <strong>{loteAberto.sem_feedback}</strong> leads pendentes na lista <strong>{loteAberto.lista_nome}</strong>.
+                Ao escolher outra lista, os leads pendentes serão devolvidos.
+              </p>
+            </div>
+          )}
+          {loteAberto&&loteAberto.sem_feedback===0&&(
+            <div style={{background:dark?"#052e16":"#f0fdf4",border:"1px solid #22c55e",borderRadius:16,padding:14}}>
+              <p style={{fontWeight:700,fontSize:13,color:"#166534",margin:"0 0 4px"}}>✅ Lote concluído</p>
+              <p style={{fontSize:12,color:"#166534",margin:0}}>
+                Você concluiu todos os leads da lista <strong>{loteAberto.lista_nome}</strong>. Escolha a próxima lista!
+              </p>
+            </div>
+          )}
+
+          {ld&&(
+            <div style={{textAlign:"center",padding:40,color:D.muted,fontSize:14}}>Carregando listas...</div>
+          )}
+
+          {!ld&&listas.length===0&&(
+            <div style={{textAlign:"center",padding:40}}>
+              <div style={{fontSize:48,marginBottom:12}}>📭</div>
+              <p style={{color:D.muted,fontSize:14}}>Nenhuma lista disponível no momento.</p>
+              <p style={{color:D.muted,fontSize:12,marginTop:4}}>Aguarde seu gestor disponibilizar uma lista.</p>
+            </div>
+          )}
+
+          {/* Cards de listas */}
+          {listas.map((l,i)=>{
+            const nota = Number(l.nota_media||0);
+            const estrelas = nota>0 ? "★".repeat(Math.round(nota))+"☆".repeat(5-Math.round(nota)) : null;
+            const isAtiva = loteAberto?.lista_id === l.id;
+            return (
+              <div key={i}
+                style={{
+                  background:D.card,
+                  border:isAtiva?"2px solid #2563eb":`0.5px solid ${D.border}`,
+                  borderRadius:18,padding:16,
+                  boxShadow:dark?"none":"0 2px 8px rgba(0,0,0,.06)",
+                }}>
+                <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:10}}>
+                  <div style={{flex:1,minWidth:0}}>
+                    <p style={{fontWeight:700,fontSize:15,color:D.text,margin:"0 0 2px",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>
+                      {l.nome_fornecedor}
+                    </p>
+                    {l.zona&&(
+                      <p style={{fontSize:11,color:"#f97316",margin:0,fontWeight:600}}>📍 {l.zona}</p>
+                    )}
+                  </div>
+                  {isAtiva&&(
+                    <span style={{fontSize:10,fontWeight:700,background:"#dbeafe",color:"#1d4ed8",padding:"3px 8px",borderRadius:999,marginLeft:8,flexShrink:0}}>
+                      atual
+                    </span>
+                  )}
+                </div>
+
+                <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8,marginBottom:12}}>
+                  <div style={{background:dark?"#0f172a":"#f8fafc",borderRadius:10,padding:"8px 10px",textAlign:"center"}}>
+                    <p style={{color:D.muted,fontSize:10,margin:"0 0 2px"}}>Disponíveis</p>
+                    <p style={{color:"#10b981",fontSize:20,fontWeight:800,margin:0}}>{l.disponivel}</p>
+                  </div>
+                  <div style={{background:dark?"#0f172a":"#f8fafc",borderRadius:10,padding:"8px 10px",textAlign:"center"}}>
+                    <p style={{color:D.muted,fontSize:10,margin:"0 0 2px"}}>Total da lista</p>
+                    <p style={{color:D.text,fontSize:20,fontWeight:800,margin:0}}>{l.total}</p>
+                  </div>
+                </div>
+
+                {estrelas&&(
+                  <p style={{color:"#f59e0b",fontSize:14,margin:"0 0 10px"}}>{estrelas} <span style={{color:D.muted,fontSize:11}}>{nota.toFixed(1)}</span></p>
+                )}
+
+                <button
+                  onClick={()=>escolherLista(l)}
+                  disabled={salvando}
+                  style={{
+                    width:"100%",
+                    background: isAtiva?"#2563eb":"#059669",
+                    color:"#fff",border:"none",borderRadius:12,
+                    padding:"13px",fontSize:14,fontWeight:700,
+                    cursor:salvando?"not-allowed":"pointer",
+                    opacity:salvando?.7:1,
+                  }}>
+                  {isAtiva?"Continuar com esta lista":"Trabalhar esta lista"}
+                </button>
+              </div>
+            );
+          })}
+
+          {erro&&!modal&&(
+            <div style={{background:"#fef2f2",border:"1px solid #fecaca",borderRadius:12,padding:12,color:"#dc2626",fontSize:13,textAlign:"center"}}>
+              {erro}
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  };
   const HomeScreen = () => {
     const hora=new Date().getHours();
     const saudacao=hora<12?"Bom dia":hora<18?"Boa tarde":"Boa noite";
@@ -4224,6 +4430,7 @@ function CorretorApp({ sb, token, corretor, onLogout, onVoltar }) {
       )}
 
       {tab==="home"     &&<HomeScreen/>}
+      {tab==="lista"    &&<ListaTab/>}
       {tab==="meudash"  &&<MeuDashboardTab sb={sb} token={token} corretor={corretor}/>}
       {tab==="discador" &&<DiscadorTab  sb={sb} token={token} corretor={corretor} onFeedback={loadContagens}/>}
       {tab==="email"    &&<EmailTab     sb={sb} token={token} perfilCorretor={perfilFinal}/>}
