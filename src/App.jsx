@@ -2835,21 +2835,38 @@ function FunilTab({ sb, token, perfilCorretor }) {
           className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-base focus:outline-none focus:ring-2 focus:ring-blue-500"/>
       </div>
 
-      {/* Chips de estágios */}
-      <div className="flex gap-2 px-5 pb-3" style={{overflowX:"scroll",WebkitOverflowScrolling:"touch",scrollbarWidth:"thin",scrollbarColor:"#94a3b8 #e5e7eb"}}>
-        {estagios.map(e => {
-          const cnt = cntEst[e.id]||0; const ativo = e.id === estagioAtivo;
-          return (
-            <button key={e.id} onClick={() => { setEst(e.id); setSel(new Set()); }}
-              style={{flexShrink:0, border: ativo ? `2px solid ${e.cor}` : "2px solid transparent", background: ativo ? e.cor+"22" : "#f9fafb"}}
-              className="flex items-center gap-1.5 rounded-xl px-3 py-2 transition-all">
-              <span className="text-base">{e.icone}</span>
-              <span className={`text-sm font-medium whitespace-nowrap ${ativo ? "text-gray-900" : "text-gray-500"}`}>{e.nome}</span>
-              {cnt > 0 && <span className="text-xs text-white px-1.5 py-0.5 rounded-full" style={{background:e.cor}}>{cnt}</span>}
-            </button>
-          );
-        })}
+      {/* Chips de estágios — com indicação de deslize */}
+      <div style={{position:"relative"}}>
+        <div className="flex gap-2 px-5 pb-3" style={{overflowX:"scroll",WebkitOverflowScrolling:"touch",scrollbarWidth:"none",scrollSnapType:"x mandatory"}}>
+          {estagios.map((e,i) => {
+            const cnt = cntEst[e.id]||0; const ativo = e.id === estagioAtivo;
+            return (
+              <button key={e.id} onClick={() => { setEst(e.id); setSel(new Set()); }}
+                style={{flexShrink:0,scrollSnapAlign:"start", border: ativo ? `2px solid ${e.cor}` : "2px solid transparent", background: ativo ? e.cor+"22" : "#f9fafb"}}
+                className="flex items-center gap-1.5 rounded-xl px-3 py-2 transition-all">
+                <span className="text-base">{e.icone}</span>
+                <span className={`text-sm font-medium whitespace-nowrap ${ativo ? "text-gray-900" : "text-gray-500"}`}>{e.nome}</span>
+                {cnt > 0 && <span className="text-xs text-white px-1.5 py-0.5 rounded-full" style={{background:e.cor}}>{cnt}</span>}
+              </button>
+            );
+          })}
+        </div>
+        {/* Seta indicando que há mais etapas para deslizar */}
+        {estagios.length > 3 && (
+          <div style={{
+            position:"absolute",right:0,top:0,bottom:3,
+            display:"flex",alignItems:"center",
+            background:"linear-gradient(to left, rgba(249,250,251,1) 60%, rgba(249,250,251,0))",
+            paddingRight:8,paddingLeft:24,pointerEvents:"none",
+          }}>
+            <span style={{fontSize:18,animation:"pulseRight 1.5s infinite",color:"#6b7280"}}>›</span>
+          </div>
+        )}
       </div>
+      <style>{`@keyframes pulseRight{0%,100%{opacity:.4;transform:translateX(0)}50%{opacity:1;transform:translateX(3px)}}`}</style>
+      <p style={{textAlign:"center",color:"#9ca3af",fontSize:11,margin:"-6px 0 8px",letterSpacing:.2}}>
+        ← deslize para ver todas as etapas →
+      </p>
 
       {/* Barra seleção em massa */}
       {modoSel && (
@@ -3987,95 +4004,229 @@ function MeuDashboardTab({ sb, token, corretor }) {
 }
 
 function CorretorApp({ sb, token, corretor, onLogout, onVoltar }) {
-  const [tab,setTab]       = useState("discador");
+  const TABS = [
+    {id:"home",      label:"Início",      icon:"⊞",  key:null},
+    {id:"meudash",   label:"Dashboard",   icon:"📊",  key:null},
+    {id:"discador",  label:"Discador",    icon:"◎",   key:null},
+    {id:"email",     label:"Mensagens",   icon:"📧",  key:"email"},
+    {id:"producao",  label:"Produção",    icon:"◉",   key:"producao"},
+    {id:"carteira",  label:"Carteira",    icon:"♦",   key:"carteira"},
+    {id:"funil",     label:"Funil",       icon:"▽",   key:"funil"},
+    {id:"historico", label:"Histórico",   icon:"↺",   key:"historico"},
+    ...(corretor?.is_gestor ? [{id:"gestor",label:"Gestão",icon:"G",key:"gestor"}] : []),
+  ];
+
+  const [tab,setTab]       = useState("home");
   const [perfil,setPerfil] = useState(null);
   const [cnts,setCnts]     = useState({});
   const [dark,toggleDark]  = useDarkMode();
-  // Cores do tema
+
   const bg   = dark ? "#0f172a" : "#f9fafb";
   const card = dark ? "#1e293b" : "#ffffff";
   const txt  = dark ? "#f1f5f9" : "#111827";
   const sub  = dark ? "#94a3b8" : "#6b7280";
 
   const loadContagens = async () => {
-    try {
-      const r = await sb.rpc("get_contagens_corretor",{},token);
-      if (!r.error) setCnts(r);
-    } catch(e) {}
+    try { const r=await sb.rpc("get_contagens_corretor",{},token); if(!r.error) setCnts(r); } catch(e){}
   };
 
   useEffect(()=>{
     sb.query("corretores","user_id=eq."+corretor.user_id+"&select=apelido,telefone_prof,empresa",token)
-      .then(r=>{
-        if(r.length>0) setPerfil({
-          nome: r[0].apelido||corretor.nome.split(" ")[0],
-          telefone: r[0].telefone_prof||"",
-          empresa: r[0].empresa||"Tegra Incorporadora",
-        });
-      }).catch(()=>{});
+      .then(r=>{ if(r.length>0) setPerfil({nome:r[0].apelido||corretor.nome.split(" ")[0],telefone:r[0].telefone_prof||"",empresa:r[0].empresa||"Tegra Incorporadora"}); })
+      .catch(()=>{});
     loadContagens();
   },[]);
 
-  // Recarregar contagens quando muda de aba
   const handleTab = (t) => { setTab(t); loadContagens(); };
-
   const perfilFinal = perfil || {nome:corretor.nome.split(" ")[0],telefone:"",empresa:"Tegra Incorporadora"};
 
-  // Helper: label da aba com contagem
-  const lbl = (label, key, icon) => {
-    const n = cnts[key];
+  // ── Swipe entre abas ────────────────────────────────────────────────────────
+  const swipeRef  = useRef({});
+  const TABS_NAV  = TABS.filter(t=>t.id!=="home"); // home não entra no swipe circular
+  const allTabIds = TABS.map(t=>t.id);
+
+  const onTouchStart = (e) => { swipeRef.current.x = e.touches[0].clientX; swipeRef.current.y = e.touches[0].clientY; };
+  const onTouchEnd   = (e) => {
+    if(tab==="home") return; // na home, swipe não navega entre conteúdo
+    const dx = e.changedTouches[0].clientX - swipeRef.current.x;
+    const dy = e.changedTouches[0].clientY - swipeRef.current.y;
+    if(Math.abs(dx) < 50 || Math.abs(dy) > Math.abs(dx) * 0.8) return; // threshold mínimo + não confunde com scroll vertical
+    const idx = allTabIds.indexOf(tab);
+    if(dx < 0 && idx < allTabIds.length-1) handleTab(allTabIds[idx+1]); // swipe esquerda → próxima
+    if(dx > 0 && idx > 0)                 handleTab(allTabIds[idx-1]); // swipe direita → anterior
+  };
+
+  const primeiroNome = corretor.nome.split(" ")[0];
+
+  // ── TILES da Home ───────────────────────────────────────────────────────────
+  const TILES = [
+    {id:"instrucoes", label:"Instruções",         icon:"📖", color:"#1d4ed8", bg:"#dbeafe", soon:false},
+    {id:"discador",   label:"Discador",            icon:"◎",  color:"#166534", bg:"#dcfce7", soon:false},
+    {id:"email",      label:"Mensagens",           icon:"📧", color:"#7e22ce", bg:"#f3e8ff", badge: cnts.email||0, soon:false},
+    {id:"producao",   label:"Produção",            icon:"◉",  color:"#92400e", bg:"#fef3c7", soon:false},
+    {id:"carteira",   label:"Carteira",            icon:"♦",  color:"#be185d", bg:"#fce7f3", soon:false},
+    {id:"funil",      label:"Funil",               icon:"▽",  color:"#0e7490", bg:"#cffafe", soon:false},
+    {id:"historico",  label:"Histórico",           icon:"↺",  color:"#374151", bg:"#f3f4f6", soon:false},
+    {id:"meudash",    label:"Dashboard",           icon:"📊", color:"#1e40af", bg:"#eff6ff", soon:false},
+    {id:"instrucoes", label:"Em breve",            icon:"🔒", color:"#9ca3af", bg:"#f9fafb", soon:true},
+    ...(corretor?.is_gestor ? [{id:"gestor",label:"Gestão",icon:"G",color:"#7c3aed",bg:"#ede9fe",soon:false}] : [{id:"soon2",label:"Em breve",icon:"🔒",color:"#9ca3af",bg:"#f9fafb",soon:true}]),
+  ];
+
+  const HomeScreen = () => {
+    const hora = new Date().getHours();
+    const saudacao = hora < 12 ? "Bom dia" : hora < 18 ? "Boa tarde" : "Boa noite";
     return (
-      <div style={{textAlign:"center"}}>
-        <div style={{fontSize:20}}>{icon}</div>
-        <div style={{fontSize:10,marginTop:1}}>
-          {label}{n>0?<span style={{fontSize:9,opacity:0.7}}> ({n})</span>:null}
+      <div style={{minHeight:"100vh",background:bg,paddingBottom:20}}>
+        {/* Header home */}
+        <div style={{
+          background: dark?"#1e293b":"#1d4ed8",
+          padding:"20px 20px 28px",
+          position:"relative",
+        }}>
+          <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start"}}>
+            <div>
+              <p style={{color:"rgba(255,255,255,.7)",fontSize:13,margin:"0 0 4px"}}>{saudacao},</p>
+              <h1 style={{color:"#fff",fontSize:22,fontWeight:700,margin:"0 0 2px"}}>{primeiroNome} 👋</h1>
+              <p style={{color:"rgba(255,255,255,.6)",fontSize:11,margin:0}}>FECH.AI · Oferta Ativa</p>
+            </div>
+            <div style={{display:"flex",gap:10,alignItems:"center"}}>
+              <button onClick={toggleDark} style={{background:"rgba(255,255,255,.15)",border:"none",borderRadius:10,padding:"6px 10px",color:"#fff",fontSize:14,cursor:"pointer"}}>
+                {dark?"☀":"🌙"}
+              </button>
+              <button onClick={onLogout} style={{background:"rgba(255,255,255,.15)",border:"none",borderRadius:10,padding:"6px 10px",color:"#fff",fontSize:12,cursor:"pointer"}}>
+                Sair
+              </button>
+            </div>
+          </div>
+          {/* Badge de notificações se houver */}
+          {(cnts.email||0)>0&&(
+            <div style={{marginTop:14,background:"rgba(255,255,255,.15)",borderRadius:12,padding:"8px 14px",display:"inline-flex",alignItems:"center",gap:8}}>
+              <span style={{fontSize:16}}>📧</span>
+              <span style={{color:"#fff",fontSize:13,fontWeight:600}}>{cnts.email} mensagen{cnts.email>1?"s":""} aguardando</span>
+            </div>
+          )}
         </div>
+
+        {/* Grid de tiles */}
+        <div style={{padding:"0 14px",marginTop:-14}}>
+          <div style={{
+            display:"grid",
+            gridTemplateColumns:"repeat(2,1fr)",
+            gap:10,
+          }}>
+            {TILES.map((tile,i)=>(
+              <button
+                key={i}
+                onClick={()=>!tile.soon&&handleTab(tile.id)}
+                style={{
+                  background: dark?(tile.soon?"#1e293b":"#1e293b"):(tile.soon?"#f1f5f9":card),
+                  border: dark?`1px solid ${tile.soon?"#334155":"#334155"}`:`1px solid ${tile.bg}`,
+                  borderLeft: tile.soon?"none":`4px solid ${tile.color}`,
+                  borderRadius:16,
+                  padding:"18px 16px",
+                  textAlign:"left",
+                  cursor: tile.soon?"not-allowed":"pointer",
+                  position:"relative",
+                  opacity: tile.soon?0.5:1,
+                  display:"flex",
+                  flexDirection:"column",
+                  gap:8,
+                  minHeight:90,
+                  transition:"transform 0.1s",
+                }}
+                onTouchStart={e=>!tile.soon&&(e.currentTarget.style.transform="scale(0.97)")}
+                onTouchEnd={e=>!tile.soon&&(e.currentTarget.style.transform="scale(1)")}
+              >
+                {/* Badge de notificação */}
+                {tile.badge>0&&(
+                  <span style={{
+                    position:"absolute",top:10,right:10,
+                    background:"#dc2626",color:"#fff",
+                    fontSize:11,fontWeight:700,
+                    borderRadius:999,padding:"2px 7px",
+                    minWidth:20,textAlign:"center",
+                  }}>{tile.badge}</span>
+                )}
+                {tile.soon&&(
+                  <span style={{position:"absolute",top:10,right:10,fontSize:10,color:"#9ca3af",fontWeight:600}}>em breve</span>
+                )}
+                <span style={{fontSize:28,lineHeight:1}}>{tile.icon}</span>
+                <div>
+                  <p style={{
+                    color: tile.soon?(dark?"#475569":"#9ca3af"):(dark?"#f1f5f9":tile.color),
+                    fontSize:14,fontWeight:700,margin:0,
+                  }}>{tile.label}</p>
+                </div>
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Dica de navegação */}
+        <p style={{textAlign:"center",color:sub,fontSize:11,marginTop:20,padding:"0 20px"}}>
+          Deslize para os lados dentro de cada seção para navegar entre as telas
+        </p>
       </div>
     );
   };
 
   return (
-    <div style={{minHeight:"100vh",background:bg,color:txt}} className="pb-20">
-      <Header nome={corretor.nome} isGestor={false} onLogout={onLogout} onHome={onVoltar} dark={dark} onToggleDark={toggleDark}/>
+    <div
+      style={{minHeight:"100vh",background:bg,color:txt}}
+      className="pb-20"
+      onTouchStart={onTouchStart}
+      onTouchEnd={onTouchEnd}
+    >
+      {/* Cabeçalho padrão — oculto na home (tem cabeçalho próprio) */}
+      {tab!=="home"&&(
+        <Header nome={corretor.nome} isGestor={false} onLogout={onLogout} onHome={()=>handleTab("home")} dark={dark} onToggleDark={toggleDark}/>
+      )}
+
+      {/* Conteúdo das abas */}
+      {tab==="home"     &&<HomeScreen/>}
       {tab==="meudash"  &&<MeuDashboardTab sb={sb} token={token} corretor={corretor}/>}
-      {tab==="discador"  &&<DiscadorTab  sb={sb} token={token} corretor={corretor} onFeedback={loadContagens}/>}
-      {tab==="email"     &&<EmailTab     sb={sb} token={token} perfilCorretor={perfilFinal}/>}
-      {tab==="producao"  &&<ProducaoTab  sb={sb} token={token} perfilCorretor={perfilFinal}/>}
-      {tab==="carteira"  &&<CarteiraTab  sb={sb} token={token} perfilCorretor={perfilFinal}/>}
-      {tab==="funil"     &&<FunilTab     sb={sb} token={token} perfilCorretor={perfilFinal}/>}
-      {tab==="historico" &&<HistoricoTab sb={sb} token={token} perfilCorretor={perfilFinal} isGestor={corretor?.is_gestor}/>}
-      {tab==="gestor" && corretor?.is_gestor && <GestorTab sb={sb} token={token}/>}
-      <div className="fixed bottom-0 left-0 right-0 flex z-20" style={{background:dark?"#0f172a":"#ffffff",borderTop:dark?"1px solid #1e293b":"1px solid #e5e7eb"}}>
-        {[
-          {id:"meudash",  label:"Dashboard",    key:null,       icon:"📊"},
-          {id:"discador", label:"Discador",      key:null,       icon:"◎"},
-          {id:"email",    label:"Mensagens",key:"email",    icon:"📧"},
-          {id:"producao", label:"Produção",       key:"producao", icon:"◉"},
-          {id:"carteira", label:"Carteira",       key:"carteira", icon:"♦"},
-          {id:"funil",    label:"Funil",          key:"funil",    icon:"▽"},
-          {id:"historico",label:"Histórico",      key:"historico",icon:"↺"},
-          ...(corretor?.is_gestor ? [{id:"gestor", label:"Gestão", key:"gestor", icon:"G"}] : []),
-        ].map(t=>(
-          <button key={t.id} onClick={()=>handleTab(t.id)}
-            style={{
-              background: dark?"#0f172a":"#ffffff",
-              color: tab===t.id?"#2563eb": dark?"#ffffff":"#111827",
-              fontWeight: tab===t.id?700:500,
-              flex:1, padding:"6px 0", border:"none", cursor:"pointer", textAlign:"center"
-            }}>
-            <div style={{fontSize:20}}>{t.icon}</div>
-            <div style={{fontSize:10,marginTop:2,lineHeight:1.3}}>
-              {t.label}
-              {t.key&&cnts[t.key]>0&&(
-                <span style={{display:"block",fontSize:10,fontWeight:700,
-                  color:tab===t.id?"#2563eb":dark?"#93c5fd":"#374151"}}>
-                  ({cnts[t.key]})
-                </span>
-              )}
-            </div>
-          </button>
-        ))}
-      </div>
+      {tab==="discador" &&<DiscadorTab  sb={sb} token={token} corretor={corretor} onFeedback={loadContagens}/>}
+      {tab==="email"    &&<EmailTab     sb={sb} token={token} perfilCorretor={perfilFinal}/>}
+      {tab==="producao" &&<ProducaoTab  sb={sb} token={token} perfilCorretor={perfilFinal}/>}
+      {tab==="carteira" &&<CarteiraTab  sb={sb} token={token} perfilCorretor={perfilFinal}/>}
+      {tab==="funil"    &&<FunilTab     sb={sb} token={token} perfilCorretor={perfilFinal}/>}
+      {tab==="historico"&&<HistoricoTab sb={sb} token={token} perfilCorretor={perfilFinal} isGestor={corretor?.is_gestor}/>}
+      {tab==="gestor"&&corretor?.is_gestor&&<GestorTab sb={sb} token={token}/>}
+
+      {/* TabBar — oculta na home */}
+      {tab!=="home"&&(
+        <div className="fixed bottom-0 left-0 right-0 flex z-20" style={{
+          background:dark?"#0f172a":"#ffffff",
+          borderTop:dark?"1px solid #1e293b":"1px solid #e5e7eb",
+          overflowX:"auto",
+          WebkitOverflowScrolling:"touch",
+          scrollbarWidth:"none",
+        }}>
+          {TABS.filter(t=>t.id!=="home").map(t=>(
+            <button key={t.id} onClick={()=>handleTab(t.id)}
+              style={{
+                background:dark?"#0f172a":"#ffffff",
+                color:tab===t.id?"#2563eb":dark?"#ffffff":"#111827",
+                fontWeight:tab===t.id?700:500,
+                flex:"0 0 auto",
+                minWidth:60,
+                padding:"6px 10px",
+                border:"none",cursor:"pointer",textAlign:"center",
+                borderTop:tab===t.id?"2px solid #2563eb":"2px solid transparent",
+              }}>
+              <div style={{fontSize:18}}>{t.icon}</div>
+              <div style={{fontSize:9,marginTop:2,lineHeight:1.3,whiteSpace:"nowrap"}}>
+                {t.label}
+                {t.key&&cnts[t.key]>0&&(
+                  <span style={{display:"block",fontSize:9,fontWeight:700,color:tab===t.id?"#2563eb":dark?"#93c5fd":"#374151"}}>
+                    ({cnts[t.key]})
+                  </span>
+                )}
+              </div>
+            </button>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
