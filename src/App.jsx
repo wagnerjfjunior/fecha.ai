@@ -306,13 +306,25 @@ function Header({ nome, isGestor, onLogout, onHome, showVersion, dark, onToggleD
         {showVersion && <span className="ml-2 text-xs" style={{color:sub}}>v{APP_VERSION}</span>}
       </div>
       <div className="flex items-center gap-3">
-        {onHome && <button style={{color:sub}} className="text-sm" onClick={onHome}>⌂ Início</button>}
+        {onHome && (
+          <button
+            onClick={onHome}
+            style={{
+              background:"#2563eb",color:"#fff",
+              border:"none",borderRadius:8,
+              padding:"5px 12px",fontSize:13,fontWeight:600,
+              cursor:"pointer",display:"flex",alignItems:"center",gap:4,
+            }}>
+            ⌂ Início
+          </button>
+        )}
         {onToggleDark !== undefined && (
           <button onClick={onToggleDark} className="text-lg leading-none" title={dark?"Modo claro":"Modo escuro"}>
             {dark ? "☀️" : "🌙"}
           </button>
         )}
-        <button style={{color:sub}} className="text-sm" onClick={onLogout}>Sair</button>
+        {/* Sair só aparece se não há onHome — na home o usuário usa onVoltar do App raiz */}
+        {!onHome && <button style={{color:sub}} className="text-sm" onClick={onLogout}>Sair</button>}
       </div>
     </div>
   );
@@ -2836,13 +2848,20 @@ function FunilTab({ sb, token, perfilCorretor }) {
       </div>
 
       {/* Chips de estágios — com indicação de deslize */}
-      <div style={{position:"relative"}}>
-        <div className="flex gap-2 px-5 pb-3" style={{overflowX:"scroll",WebkitOverflowScrolling:"touch",scrollbarWidth:"none",scrollSnapType:"x mandatory"}}>
+      <div style={{position:"relative",borderTop:"2px solid #e5e7eb",borderBottom:"2px solid #e5e7eb",background:"#f8fafc"}}>
+        <div className="flex gap-2 px-5 py-2" style={{
+          overflowX:"scroll",
+          WebkitOverflowScrolling:"touch",
+          scrollSnapType:"x mandatory",
+          scrollbarWidth:"thin",
+          scrollbarColor:"#93c5fd #e5e7eb",
+          paddingBottom:6,
+        }}>
           {estagios.map((e,i) => {
             const cnt = cntEst[e.id]||0; const ativo = e.id === estagioAtivo;
             return (
               <button key={e.id} onClick={() => { setEst(e.id); setSel(new Set()); }}
-                style={{flexShrink:0,scrollSnapAlign:"start", border: ativo ? `2px solid ${e.cor}` : "2px solid transparent", background: ativo ? e.cor+"22" : "#f9fafb"}}
+                style={{flexShrink:0,scrollSnapAlign:"start", border: ativo ? `2px solid ${e.cor}` : "2px solid transparent", background: ativo ? e.cor+"22" : "#fff"}}
                 className="flex items-center gap-1.5 rounded-xl px-3 py-2 transition-all">
                 <span className="text-base">{e.icone}</span>
                 <span className={`text-sm font-medium whitespace-nowrap ${ativo ? "text-gray-900" : "text-gray-500"}`}>{e.nome}</span>
@@ -2850,22 +2869,24 @@ function FunilTab({ sb, token, perfilCorretor }) {
               </button>
             );
           })}
+          {/* Espaço extra no fim para a seta não cobrir o último item */}
+          <div style={{flexShrink:0,width:32}}/>
         </div>
-        {/* Seta indicando que há mais etapas para deslizar */}
+        {/* Seta animada indicando que há mais para deslizar */}
         {estagios.length > 3 && (
           <div style={{
-            position:"absolute",right:0,top:0,bottom:3,
+            position:"absolute",right:0,top:0,bottom:0,
             display:"flex",alignItems:"center",
-            background:"linear-gradient(to left, rgba(249,250,251,1) 60%, rgba(249,250,251,0))",
-            paddingRight:8,paddingLeft:24,pointerEvents:"none",
+            background:"linear-gradient(to left,rgba(248,250,252,1) 55%,rgba(248,250,252,0))",
+            paddingRight:6,paddingLeft:20,pointerEvents:"none",
           }}>
-            <span style={{fontSize:18,animation:"pulseRight 1.5s infinite",color:"#6b7280"}}>›</span>
+            <span style={{fontSize:20,animation:"pulseRight 1.4s infinite",color:"#3b82f6",fontWeight:700}}>›</span>
           </div>
         )}
       </div>
-      <style>{`@keyframes pulseRight{0%,100%{opacity:.4;transform:translateX(0)}50%{opacity:1;transform:translateX(3px)}}`}</style>
-      <p style={{textAlign:"center",color:"#9ca3af",fontSize:11,margin:"-6px 0 8px",letterSpacing:.2}}>
-        ← deslize para ver todas as etapas →
+      <style>{`@keyframes pulseRight{0%,100%{opacity:.35;transform:translateX(0)}50%{opacity:1;transform:translateX(4px)}}`}</style>
+      <p style={{textAlign:"center",color:"#94a3b8",fontSize:10,padding:"4px 0 2px",background:"#f8fafc",borderBottom:"1px solid #e5e7eb",letterSpacing:.2}}>
+        ←  deslize para ver todas as etapas  →
       </p>
 
       {/* Barra seleção em massa */}
@@ -4013,10 +4034,186 @@ function CorretorApp({ sb, token, corretor, onLogout, onVoltar }) {
     {id:"carteira",  label:"Carteira",    icon:"♦",   key:"carteira"},
     {id:"funil",     label:"Funil",       icon:"▽",   key:"funil"},
     {id:"historico", label:"Histórico",   icon:"↺",   key:"historico"},
-    ...(corretor?.is_gestor ? [{id:"gestor",label:"Gestão",icon:"G",key:"gestor"}] : []),
   ];
 
-  const [tab,setTab]       = useState("home");
+  // Cores fixas por tile — independentes do tema, garantem contraste
+  const TILES = [
+    {id:"instrucoes", label:"Instruções",  icon:"📖", bg:"#1d4ed8", txt:"#fff"},
+    {id:"discador",   label:"Discador",    icon:"◎",  bg:"#059669", txt:"#fff"},
+    {id:"email",      label:"Mensagens",   icon:"📧", bg:"#7c3aed", txt:"#fff", badge: cnts.email||0},
+    {id:"producao",   label:"Produção",    icon:"◉",  bg:"#d97706", txt:"#fff"},
+    {id:"carteira",   label:"Carteira",    icon:"♦",  bg:"#db2777", txt:"#fff"},
+    {id:"funil",      label:"Funil",       icon:"▽",  bg:"#0891b2", txt:"#fff"},
+    {id:"historico",  label:"Histórico",   icon:"↺",  bg:"#374151", txt:"#fff"},
+    {id:"meudash",    label:"Dashboard",   icon:"📊", bg:"#1e40af", txt:"#fff"},
+    {id:"soon1",      label:"Em breve",    icon:"🔒", bg:"#e5e7eb", txt:"#9ca3af", soon:true},
+    {id:"soon2",      label:"Em breve",    icon:"🔒", bg:"#e5e7eb", txt:"#9ca3af", soon:true},
+  ];
+
+  const HomeScreen = () => {
+    const hora = new Date().getHours();
+    const saudacao = hora < 12 ? "Bom dia" : hora < 18 ? "Boa tarde" : "Boa noite";
+    return (
+      <div style={{minHeight:"100vh",background:dark?"#0f172a":"#f1f5f9",paddingBottom:20}}>
+        {/* Header home */}
+        <div style={{background:dark?"#1e293b":"#1d4ed8",padding:"20px 20px 32px"}}>
+          <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start"}}>
+            <div>
+              <p style={{color:"rgba(255,255,255,.75)",fontSize:13,margin:"0 0 4px"}}>{saudacao},</p>
+              <h1 style={{color:"#fff",fontSize:24,fontWeight:700,margin:"0 0 2px"}}>{primeiroNome} 👋</h1>
+              <p style={{color:"rgba(255,255,255,.6)",fontSize:11,margin:0}}>FECH.AI · Oferta Ativa</p>
+            </div>
+            <div style={{display:"flex",gap:8,alignItems:"center"}}>
+              <button onClick={toggleDark}
+                style={{background:"rgba(255,255,255,.2)",border:"1px solid rgba(255,255,255,.3)",borderRadius:10,padding:"6px 10px",color:"#fff",fontSize:14,cursor:"pointer"}}>
+                {dark?"☀":"🌙"}
+              </button>
+              {/* Sair volta para HomeActions (seleção de produto), NÃO desloga */}
+              <button onClick={onVoltar}
+                style={{background:"rgba(255,255,255,.2)",border:"1px solid rgba(255,255,255,.3)",borderRadius:10,padding:"6px 12px",color:"#fff",fontSize:12,fontWeight:600,cursor:"pointer"}}>
+                ← Início
+              </button>
+            </div>
+          </div>
+          {(cnts.email||0)>0&&(
+            <div style={{marginTop:14,background:"rgba(255,255,255,.18)",border:"1px solid rgba(255,255,255,.25)",borderRadius:12,padding:"8px 14px",display:"inline-flex",alignItems:"center",gap:8}}>
+              <span style={{fontSize:16}}>📧</span>
+              <span style={{color:"#fff",fontSize:13,fontWeight:600}}>{cnts.email} mensagen{cnts.email>1?"s":""} aguardando</span>
+            </div>
+          )}
+        </div>
+
+        {/* Grid de tiles — flutua sobre o header */}
+        <div style={{padding:"0 12px",marginTop:-16}}>
+          <div style={{display:"grid",gridTemplateColumns:"repeat(2,1fr)",gap:10}}>
+            {TILES.map((tile,i)=>(
+              <button key={i}
+                onClick={()=>!tile.soon&&handleTab(tile.id)}
+                style={{
+                  background: tile.soon?(dark?"#1e293b":"#e5e7eb"):tile.bg,
+                  border:"none",
+                  borderRadius:18,
+                  padding:"20px 16px",
+                  textAlign:"left",
+                  cursor:tile.soon?"default":"pointer",
+                  position:"relative",
+                  display:"flex",
+                  flexDirection:"column",
+                  gap:10,
+                  minHeight:100,
+                  boxShadow: tile.soon?"none":"0 4px 12px rgba(0,0,0,.18)",
+                  transition:"transform 0.12s",
+                }}
+                onTouchStart={e=>{if(!tile.soon)e.currentTarget.style.transform="scale(0.95)";}}
+                onTouchEnd={e=>{if(!tile.soon)e.currentTarget.style.transform="scale(1)";}}
+              >
+                {tile.badge>0&&(
+                  <span style={{position:"absolute",top:12,right:12,background:"#ef4444",color:"#fff",fontSize:11,fontWeight:700,borderRadius:999,padding:"2px 8px",minWidth:22,textAlign:"center"}}>
+                    {tile.badge}
+                  </span>
+                )}
+                {tile.soon&&(
+                  <span style={{position:"absolute",top:12,right:12,fontSize:10,color:"#9ca3af",fontWeight:600}}>em breve</span>
+                )}
+                <span style={{fontSize:32,lineHeight:1}}>{tile.icon}</span>
+                <p style={{color:tile.txt,fontSize:15,fontWeight:700,margin:0,letterSpacing:-.2}}>{tile.label}</p>
+              </button>
+            ))}
+          </div>
+        </div>
+        <p style={{textAlign:"center",color:dark?"#475569":"#9ca3af",fontSize:11,marginTop:18,padding:"0 20px"}}>
+          Dentro de cada seção, deslize para os lados para trocar de aba
+        </p>
+      </div>
+    );
+  };
+
+  return (
+    <div
+      style={{minHeight:"100vh",background:bg,color:txt}}
+      className="pb-20"
+      // Fix 6: swipe desabilitado no funil para não conflitar com kanban
+      onTouchStart={tab==="funil"?undefined:onTouchStart}
+      onTouchEnd={tab==="funil"?undefined:onTouchEnd}
+    >
+      {tab!=="home"&&(
+        <Header nome={corretor.nome} isGestor={false} onLogout={onLogout} onHome={()=>handleTab("home")} dark={dark} onToggleDark={toggleDark}/>
+      )}
+
+      {tab==="home"     &&<HomeScreen/>}
+      {tab==="meudash"  &&<MeuDashboardTab sb={sb} token={token} corretor={corretor}/>}
+      {tab==="discador" &&<DiscadorTab  sb={sb} token={token} corretor={corretor} onFeedback={loadContagens}/>}
+      {tab==="email"    &&<EmailTab     sb={sb} token={token} perfilCorretor={perfilFinal}/>}
+      {tab==="producao" &&<ProducaoTab  sb={sb} token={token} perfilCorretor={perfilFinal}/>}
+      {tab==="carteira" &&<CarteiraTab  sb={sb} token={token} perfilCorretor={perfilFinal}/>}
+      {tab==="funil"    &&<FunilTab     sb={sb} token={token} perfilCorretor={perfilFinal}/>}
+      {tab==="historico"&&<HistoricoTab sb={sb} token={token} perfilCorretor={perfilFinal} isGestor={corretor?.is_gestor}/>}
+
+      {/* TabBar — oculta na home | aba gestor removida */}
+      {tab!=="home"&&(
+        <div className="fixed bottom-0 left-0 right-0 z-20" style={{
+          background:dark?"#0f172a":"#fff",
+          borderTop:dark?"1px solid #1e293b":"1px solid #e5e7eb",
+          display:"flex",
+          overflowX:"auto",
+          WebkitOverflowScrolling:"touch",
+          scrollbarWidth:"none",
+        }}>
+          {TABS.filter(t=>t.id!=="home").map(t=>{
+            const ativa = tab===t.id;
+            return (
+              <button key={t.id} onClick={()=>handleTab(t.id)}
+                style={{
+                  flex:"0 0 auto",
+                  minWidth:64,
+                  padding:"4px 8px 6px",
+                  border:"none",
+                  cursor:"pointer",
+                  textAlign:"center",
+                  background:"transparent",
+                  position:"relative",
+                  display:"flex",
+                  flexDirection:"column",
+                  alignItems:"center",
+                  gap:2,
+                }}>
+                {/* Quadrado indicador de aba ativa */}
+                <span style={{
+                  display:"block",
+                  width:36,height:4,
+                  borderRadius:3,
+                  background: ativa?"#2563eb":"transparent",
+                  marginBottom:4,
+                  transition:"background 0.2s",
+                }}/>
+                <div style={{
+                  width:38,height:38,
+                  borderRadius:12,
+                  background: ativa?(dark?"#1e3a8a":"#dbeafe"):"transparent",
+                  display:"flex",alignItems:"center",justifyContent:"center",
+                  transition:"background 0.2s",
+                }}>
+                  <span style={{fontSize:18}}>{t.icon}</span>
+                </div>
+                <div style={{
+                  fontSize:9,lineHeight:1.3,whiteSpace:"nowrap",
+                  color: ativa?"#2563eb":dark?"#94a3b8":"#6b7280",
+                  fontWeight: ativa?700:400,
+                }}>
+                  {t.label}
+                  {t.key&&cnts[t.key]>0&&(
+                    <span style={{display:"block",fontSize:9,fontWeight:700,color:"#dc2626"}}>
+                      ({cnts[t.key]})
+                    </span>
+                  )}
+                </div>
+              </button>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
   const [perfil,setPerfil] = useState(null);
   const [cnts,setCnts]     = useState({});
   const [dark,toggleDark]  = useDarkMode();
@@ -4058,178 +4255,7 @@ function CorretorApp({ sb, token, corretor, onLogout, onVoltar }) {
 
   const primeiroNome = corretor.nome.split(" ")[0];
 
-  // ── TILES da Home ───────────────────────────────────────────────────────────
-  const TILES = [
-    {id:"instrucoes", label:"Instruções",         icon:"📖", color:"#1d4ed8", bg:"#dbeafe", soon:false},
-    {id:"discador",   label:"Discador",            icon:"◎",  color:"#166534", bg:"#dcfce7", soon:false},
-    {id:"email",      label:"Mensagens",           icon:"📧", color:"#7e22ce", bg:"#f3e8ff", badge: cnts.email||0, soon:false},
-    {id:"producao",   label:"Produção",            icon:"◉",  color:"#92400e", bg:"#fef3c7", soon:false},
-    {id:"carteira",   label:"Carteira",            icon:"♦",  color:"#be185d", bg:"#fce7f3", soon:false},
-    {id:"funil",      label:"Funil",               icon:"▽",  color:"#0e7490", bg:"#cffafe", soon:false},
-    {id:"historico",  label:"Histórico",           icon:"↺",  color:"#374151", bg:"#f3f4f6", soon:false},
-    {id:"meudash",    label:"Dashboard",           icon:"📊", color:"#1e40af", bg:"#eff6ff", soon:false},
-    {id:"instrucoes", label:"Em breve",            icon:"🔒", color:"#9ca3af", bg:"#f9fafb", soon:true},
-    ...(corretor?.is_gestor ? [{id:"gestor",label:"Gestão",icon:"G",color:"#7c3aed",bg:"#ede9fe",soon:false}] : [{id:"soon2",label:"Em breve",icon:"🔒",color:"#9ca3af",bg:"#f9fafb",soon:true}]),
-  ];
-
-  const HomeScreen = () => {
-    const hora = new Date().getHours();
-    const saudacao = hora < 12 ? "Bom dia" : hora < 18 ? "Boa tarde" : "Boa noite";
-    return (
-      <div style={{minHeight:"100vh",background:bg,paddingBottom:20}}>
-        {/* Header home */}
-        <div style={{
-          background: dark?"#1e293b":"#1d4ed8",
-          padding:"20px 20px 28px",
-          position:"relative",
-        }}>
-          <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start"}}>
-            <div>
-              <p style={{color:"rgba(255,255,255,.7)",fontSize:13,margin:"0 0 4px"}}>{saudacao},</p>
-              <h1 style={{color:"#fff",fontSize:22,fontWeight:700,margin:"0 0 2px"}}>{primeiroNome} 👋</h1>
-              <p style={{color:"rgba(255,255,255,.6)",fontSize:11,margin:0}}>FECH.AI · Oferta Ativa</p>
-            </div>
-            <div style={{display:"flex",gap:10,alignItems:"center"}}>
-              <button onClick={toggleDark} style={{background:"rgba(255,255,255,.15)",border:"none",borderRadius:10,padding:"6px 10px",color:"#fff",fontSize:14,cursor:"pointer"}}>
-                {dark?"☀":"🌙"}
-              </button>
-              <button onClick={onLogout} style={{background:"rgba(255,255,255,.15)",border:"none",borderRadius:10,padding:"6px 10px",color:"#fff",fontSize:12,cursor:"pointer"}}>
-                Sair
-              </button>
-            </div>
-          </div>
-          {/* Badge de notificações se houver */}
-          {(cnts.email||0)>0&&(
-            <div style={{marginTop:14,background:"rgba(255,255,255,.15)",borderRadius:12,padding:"8px 14px",display:"inline-flex",alignItems:"center",gap:8}}>
-              <span style={{fontSize:16}}>📧</span>
-              <span style={{color:"#fff",fontSize:13,fontWeight:600}}>{cnts.email} mensagen{cnts.email>1?"s":""} aguardando</span>
-            </div>
-          )}
-        </div>
-
-        {/* Grid de tiles */}
-        <div style={{padding:"0 14px",marginTop:-14}}>
-          <div style={{
-            display:"grid",
-            gridTemplateColumns:"repeat(2,1fr)",
-            gap:10,
-          }}>
-            {TILES.map((tile,i)=>(
-              <button
-                key={i}
-                onClick={()=>!tile.soon&&handleTab(tile.id)}
-                style={{
-                  background: dark?(tile.soon?"#1e293b":"#1e293b"):(tile.soon?"#f1f5f9":card),
-                  border: dark?`1px solid ${tile.soon?"#334155":"#334155"}`:`1px solid ${tile.bg}`,
-                  borderLeft: tile.soon?"none":`4px solid ${tile.color}`,
-                  borderRadius:16,
-                  padding:"18px 16px",
-                  textAlign:"left",
-                  cursor: tile.soon?"not-allowed":"pointer",
-                  position:"relative",
-                  opacity: tile.soon?0.5:1,
-                  display:"flex",
-                  flexDirection:"column",
-                  gap:8,
-                  minHeight:90,
-                  transition:"transform 0.1s",
-                }}
-                onTouchStart={e=>!tile.soon&&(e.currentTarget.style.transform="scale(0.97)")}
-                onTouchEnd={e=>!tile.soon&&(e.currentTarget.style.transform="scale(1)")}
-              >
-                {/* Badge de notificação */}
-                {tile.badge>0&&(
-                  <span style={{
-                    position:"absolute",top:10,right:10,
-                    background:"#dc2626",color:"#fff",
-                    fontSize:11,fontWeight:700,
-                    borderRadius:999,padding:"2px 7px",
-                    minWidth:20,textAlign:"center",
-                  }}>{tile.badge}</span>
-                )}
-                {tile.soon&&(
-                  <span style={{position:"absolute",top:10,right:10,fontSize:10,color:"#9ca3af",fontWeight:600}}>em breve</span>
-                )}
-                <span style={{fontSize:28,lineHeight:1}}>{tile.icon}</span>
-                <div>
-                  <p style={{
-                    color: tile.soon?(dark?"#475569":"#9ca3af"):(dark?"#f1f5f9":tile.color),
-                    fontSize:14,fontWeight:700,margin:0,
-                  }}>{tile.label}</p>
-                </div>
-              </button>
-            ))}
-          </div>
-        </div>
-
-        {/* Dica de navegação */}
-        <p style={{textAlign:"center",color:sub,fontSize:11,marginTop:20,padding:"0 20px"}}>
-          Deslize para os lados dentro de cada seção para navegar entre as telas
-        </p>
-      </div>
-    );
-  };
-
-  return (
-    <div
-      style={{minHeight:"100vh",background:bg,color:txt}}
-      className="pb-20"
-      onTouchStart={onTouchStart}
-      onTouchEnd={onTouchEnd}
-    >
-      {/* Cabeçalho padrão — oculto na home (tem cabeçalho próprio) */}
-      {tab!=="home"&&(
-        <Header nome={corretor.nome} isGestor={false} onLogout={onLogout} onHome={()=>handleTab("home")} dark={dark} onToggleDark={toggleDark}/>
-      )}
-
-      {/* Conteúdo das abas */}
-      {tab==="home"     &&<HomeScreen/>}
-      {tab==="meudash"  &&<MeuDashboardTab sb={sb} token={token} corretor={corretor}/>}
-      {tab==="discador" &&<DiscadorTab  sb={sb} token={token} corretor={corretor} onFeedback={loadContagens}/>}
-      {tab==="email"    &&<EmailTab     sb={sb} token={token} perfilCorretor={perfilFinal}/>}
-      {tab==="producao" &&<ProducaoTab  sb={sb} token={token} perfilCorretor={perfilFinal}/>}
-      {tab==="carteira" &&<CarteiraTab  sb={sb} token={token} perfilCorretor={perfilFinal}/>}
-      {tab==="funil"    &&<FunilTab     sb={sb} token={token} perfilCorretor={perfilFinal}/>}
-      {tab==="historico"&&<HistoricoTab sb={sb} token={token} perfilCorretor={perfilFinal} isGestor={corretor?.is_gestor}/>}
-      {tab==="gestor"&&corretor?.is_gestor&&<GestorTab sb={sb} token={token}/>}
-
-      {/* TabBar — oculta na home */}
-      {tab!=="home"&&(
-        <div className="fixed bottom-0 left-0 right-0 flex z-20" style={{
-          background:dark?"#0f172a":"#ffffff",
-          borderTop:dark?"1px solid #1e293b":"1px solid #e5e7eb",
-          overflowX:"auto",
-          WebkitOverflowScrolling:"touch",
-          scrollbarWidth:"none",
-        }}>
-          {TABS.filter(t=>t.id!=="home").map(t=>(
-            <button key={t.id} onClick={()=>handleTab(t.id)}
-              style={{
-                background:dark?"#0f172a":"#ffffff",
-                color:tab===t.id?"#2563eb":dark?"#ffffff":"#111827",
-                fontWeight:tab===t.id?700:500,
-                flex:"0 0 auto",
-                minWidth:60,
-                padding:"6px 10px",
-                border:"none",cursor:"pointer",textAlign:"center",
-                borderTop:tab===t.id?"2px solid #2563eb":"2px solid transparent",
-              }}>
-              <div style={{fontSize:18}}>{t.icon}</div>
-              <div style={{fontSize:9,marginTop:2,lineHeight:1.3,whiteSpace:"nowrap"}}>
-                {t.label}
-                {t.key&&cnts[t.key]>0&&(
-                  <span style={{display:"block",fontSize:9,fontWeight:700,color:tab===t.id?"#2563eb":dark?"#93c5fd":"#374151"}}>
-                    ({cnts[t.key]})
-                  </span>
-                )}
-              </div>
-            </button>
-          ))}
-        </div>
-      )}
-    </div>
-  );
-}
+  // ── TILES da Home (definidos acima, junto com TABS) ──────────────────────
 
 // ─── App raiz ─────────────────────────────────────────────────────────────────
 export default function App() {
