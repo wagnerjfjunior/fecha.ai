@@ -87,17 +87,95 @@ const FEEDBACKS_EMAIL = [
 const FEEDBACKS = [...FEEDBACKS_ESQ, ...FEEDBACKS_DIR];
 
 const COL_ALIASES = {
-  nome:       ["nome","name","cliente","nome_cliente","nome completo","full_name"],
-  email:      ["email","e-mail","e_mail","email_address"],
-  celular:    ["celular","cel","mobile","whatsapp","whats","cell"],
-  telefone_1: ["telefone","tel","phone","telefone_1","tel1","fone"],
-  telefone_2: ["telefone_2","tel2","telefone 2"],
-  fixo:       ["fixo","landline","telefone_fixo","residencial","comercial"],
-  endereco:   ["endereco","endereço","address","end","logradouro"],
+  nome:       ["nome","name","cliente","nome_cliente","nome_completo","full_name","razao_social","nome cliente"],
+  email:      ["email","e-mail","e_mail","email_address","email_cliente","e_mail_cliente"],
+  celular:    ["celular","cel","mobile","whatsapp","whats","cell","tel_celular","tel celular"],
+  telefone_1: ["telefone","tel","phone","telefone_1","tel1","fone","fone1","tel_residencial","tel residencial","telefone_residencial","tel.residencial","tel._residencial"],
+  telefone_2: ["telefone_2","tel2","telefone 2","tel_outro","tel outro","telefone_outro","tel.outro","tel._outro"],
+  fixo:       ["fixo","landline","telefone_fixo","residencial","comercial","tel_fixo"],
+  ddd:        ["ddd","cod_area","codigo_area","area_code","ddd1"],
+  ddd_cel:    ["ddd_cel","ddd_celular","dddcel","ddd2"],
+  ddd_fix:    ["ddd_fix","ddd_fixo","dddfix","ddd_residencial"],
+  endereco:   ["endereco","endereço","address","end","logradouro","rua"],
+  bairro:     ["bairro","neighborhood","district"],
+  cidade:     ["cidade","city","municipio","munic"],
+  uf:         ["uf","estado","state","sg_uf"],
+  cep:        ["cep","zip","zipcode","postal_code"],
+  zona:       ["zona","regiao","região","zone","area_geografica"],
 };
 
-// ─── Helpers ──────────────────────────────────────────────────────────────────
-function getSaudacao() { const h=new Date().getHours(); return h<12?"Bom dia":h<18?"Boa tarde":"Boa noite"; }
+function combinarDDD(ddd, numero) {
+  if (!ddd || !numero) return numero || "";
+  const d = String(ddd).replace(/\D/g,"").slice(-2);
+  const n = String(numero).replace(/\D/g,"");
+  if (n.length >= 10) return numero; // DDD já embutido, ignora coluna DDD
+  if (n.length >= 7) return d + n;
+  return numero;
+}
+
+function detectColumns(h) {
+  const m={};
+  const nr=h.map(x=>String(x||"").toLowerCase().trim()
+    .normalize("NFD").replace(/[\u0300-\u036f]/g,"")
+    .replace(/\s+/g,"_").replace(/\./g,""));
+  for (const [f,al] of Object.entries(COL_ALIASES)) {
+    const i=nr.findIndex(x=>al.some(a=>x===a.replace(/\s+/g,"_").replace(/\./g,"")||x.includes(a.replace(/\s+/g,"_").replace(/\./g,""))));
+    if(i>=0) m[f]=i;
+  }
+  return m;
+}
+
+function csvToLead(row, cm, forn) {
+  const g=(f)=>cm[f]!==undefined?String(row[cm[f]]||"").trim():"";
+  const dddGeral=g("ddd"), dddCel=g("ddd_cel")||dddGeral, dddFix=g("ddd_fix")||dddGeral;
+  const rawCel=combinarDDD(dddCel,g("celular"));
+  const rawTel1=combinarDDD(dddFix,g("telefone_1"));
+  const rawTel2=combinarDDD(dddFix,g("telefone_2"));
+  const rawFixo=combinarDDD(dddFix,g("fixo"));
+  const ph=pickBestPhone({celular:rawCel,telefone_1:rawTel1,telefone_2:rawTel2,fixo:rawFixo});
+  const endParts=[g("endereco"),g("bairro"),g("cidade"),g("uf")].filter(Boolean);
+  return {
+    nome:g("nome"),email:g("email"),
+    endereco:endParts.join(", "),
+    zona:g("zona"),
+    telefone_origem_1:rawTel1||rawCel||"",
+    telefone_origem_2:rawTel2||rawFixo||"",
+    telefone_escolhido:ph.nacional,telefone_e164:ph.e164,
+    tipo_telefone:ph.tipo,pais_telefone:ph.pais,
+    ligar:ph.ligar,whatsapp:ph.whatsapp,fornecedor:forn,
+  };
+}
+
+async function lerXlsx(file) {
+  return new Promise((resolve,reject)=>{
+    const reader=new FileReader();
+    reader.onload=(e)=>{
+      try {
+        const XLSX=window.XLSX;
+        if(!XLSX){reject(new Error("Biblioteca Excel não disponível"));return;}
+        const wb=XLSX.read(e.target.result,{type:"array",cellText:true,cellNF:false});
+        const ws=wb.Sheets[wb.SheetNames[0]];
+        const data=XLSX.utils.sheet_to_json(ws,{header:1,defval:"",raw:false});
+        resolve(data.filter(r=>r.some(c=>String(c||"").trim()!=="")));
+      } catch(err){reject(err);}
+    };
+    reader.onerror=reject;
+    reader.readAsArrayBuffer(file);
+  });
+}
+
+const FIELD_LABELS={
+  nome:"Nome",celular:"Celular",telefone_1:"Tel.1",telefone_2:"Tel.2",
+  fixo:"Fixo",ddd:"DDD",ddd_cel:"DDD Cel",ddd_fix:"DDD Fix",
+  email:"E-mail",endereco:"Endereço",bairro:"Bairro",
+  cidade:"Cidade",uf:"UF",cep:"CEP",zona:"Zona",
+};
+const FIELD_COLORS={
+  nome:"#3b82f6",celular:"#10b981",telefone_1:"#06b6d4",telefone_2:"#0891b2",
+  fixo:"#64748b",ddd:"#f59e0b",ddd_cel:"#f59e0b",ddd_fix:"#f59e0b",
+  email:"#8b5cf6",endereco:"#ec4899",bairro:"#ec4899",
+  cidade:"#ec4899",uf:"#ec4899",cep:"#ec4899",zona:"#f97316",
+};
 function getPrimeiroNome(n) { return (n||"").split(" ")[0]||""; }
 
 function buildWhatsAppLink(lead) {
@@ -178,17 +256,6 @@ function createSB(url, key) {
 }
 
 // ─── CSV helpers ──────────────────────────────────────────────────────────────
-function detectColumns(h) {
-  const m={},nr=h.map(x=>String(x||"").toLowerCase().trim().normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/\s+/g,"_"));
-  for (const [f,al] of Object.entries(COL_ALIASES)) { const i=nr.findIndex(x=>al.some(a=>x===a||x.includes(a))); if(i>=0) m[f]=i; }
-  return m;
-}
-function csvToLead(row,cm,forn) {
-  const g=(f)=>cm[f]!==undefined?String(row[cm[f]]||"").trim():"";
-  const ph=pickBestPhone({celular:g("celular"),telefone_1:g("telefone_1"),telefone_2:g("telefone_2"),fixo:g("fixo")});
-  return {nome:g("nome"),email:g("email"),endereco:g("endereco"),telefone_origem_1:g("telefone_1")||g("celular")||"",telefone_origem_2:g("telefone_2")||g("fixo")||"",telefone_escolhido:ph.nacional,telefone_e164:ph.e164,tipo_telefone:ph.tipo,pais_telefone:ph.pais,ligar:ph.ligar,whatsapp:ph.whatsapp,fornecedor:forn};
-}
-
 // ─── Componentes base ─────────────────────────────────────────────────────────
 function Stars({ value, onChange }) {
   return (<div className="flex gap-1 justify-center">{[1,2,3,4,5].map(n=>(<button key={n} className={`text-3xl ${n<=value?"text-amber-400":"text-gray-300"}`} onClick={()=>onChange?.(n)}>{n<=value?"★":"☆"}</button>))}</div>);
@@ -214,6 +281,13 @@ function FechAIResponsiveStyle() {
     style.id = "fechai-dashboard-responsive-css";
     style.innerHTML = FECHAI_DASHBOARD_RESPONSIVE_CSS;
     document.head.appendChild(style);
+    // Carregar SheetJS para suporte a .xlsx
+    if (!window.XLSX && !document.getElementById("fechai-xlsx-script")) {
+      const s = document.createElement("script");
+      s.id  = "fechai-xlsx-script";
+      s.src = "https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js";
+      document.head.appendChild(s);
+    }
   }, []);
   return null;
 }
@@ -2906,28 +2980,420 @@ function FunilTab({ sb, token, perfilCorretor }) {
 
 
 function UploadTab({ sb, token }) {
-  const [file,setFile]=useState(null); const [forn,setForn]=useState(""); const [preview,setPreview]=useState(null);
-  const [colMap,setColMap]=useState(null); const [importing,setImporting]=useState(false); const [result,setResult]=useState(null);
-  const fileRef=useRef();
-  const handleFile=(f)=>{ if(!f) return; setFile(f); setResult(null); Papa.parse(f,{header:false,skipEmptyLines:true,complete:(res)=>{ if(res.data.length<2) return; if(res.data.length>5001){setResult({error:"Arquivo muito grande (máx 5000 leads)"});return;} const det=detectColumns(res.data[0]); setColMap(det); setPreview({headers:res.data[0],rows:res.data.slice(1),detected:det}); }}); };
-  const handleImport=async()=>{
-    if(!preview||!forn||!colMap) return; setImporting(true); setResult(null);
+  const [step,     setStep]     = useState(1);   // 1=arquivo 2=fornecedor 3=colunas 4=preview 5=importando 6=resultado
+  const [file,     setFile]     = useState(null);
+  const [rows,     setRows]     = useState([]);   // array bruto do arquivo
+  const [forn,     setForn]     = useState("");
+  const [colMap,   setColMap]   = useState({});
+  const [colEdit,  setColEdit]  = useState(false);
+  const [progress, setProgress] = useState(0);
+  const [result,   setResult]   = useState(null);
+  const [err,      setErr]      = useState("");
+  const fileRef = useRef();
+
+  // ── Dicas de cada passo ────────────────────────────────────────────────────
+  const DICAS = [
+    null,
+    "Selecione o arquivo da sua lista de leads. Pode ser Excel (.xlsx), CSV (.csv) ou texto (.txt). Se não sabe o que é, peça para quem enviou a lista.",
+    "Digite o nome de quem te enviou esta lista. Exemplo: Tegra, Cyrela, João da imobiliária. Isso serve para você saber de onde vieram os leads depois.",
+    "O sistema identificou automaticamente as colunas do arquivo. Verifique se os campos estão corretos. Itens em verde estão identificados — os cinzas não foram encontrados (ok, nem todos são obrigatórios).",
+    "Confira abaixo como ficarão os primeiros leads antes de importar tudo. Se o nome e o telefone estiverem certos, pode importar!",
+    null,
+    null,
+  ];
+
+  // ── Lê o arquivo (csv, txt, xlsx) ─────────────────────────────────────────
+  const processarArquivo = async (f) => {
+    if (!f) return;
+    setErr(""); setFile(f);
     try {
-      const lr=await sb.insert("listas",{nome_fornecedor:forn,nome_arquivo:file.name},token); const lid=lr[0].id;
-      const leads=preview.rows.map(r=>csvToLead(r,colMap,forn)); const B=100; let tot={validos:0,invalidos:0,duplicados:0};
-      const sessaoId=crypto.randomUUID();
-      for(let i=0;i<leads.length;i+=B){const r=await sb.rpc("importar_leads_batch",{p_lista_id:lid,p_leads:leads.slice(i,i+B),p_sessao_id:sessaoId},token);tot.validos+=r.validos||0;tot.invalidos+=r.invalidos||0;tot.duplicados+=r.duplicados||0;}
-      setResult(tot); setPreview(null); setFile(null); setForn("");
-    } catch(e){setResult({error:e.message});} setImporting(false);
+      let data;
+      const ext = f.name.split(".").pop().toLowerCase();
+      if (ext === "xlsx" || ext === "xls") {
+        data = await lerXlsx(f);
+      } else {
+        data = await new Promise((res,rej) => {
+          Papa.parse(f, {
+            header:false, skipEmptyLines:true,
+            complete: r => res(r.data),
+            error: e => rej(e),
+          });
+        });
+      }
+      if (!data || data.length < 2) { setErr("Arquivo vazio ou sem dados suficientes."); return; }
+      if (data.length > 20001) { setErr("Arquivo muito grande. Máximo: 20.000 leads por vez."); return; }
+      const detected = detectColumns(data[0]);
+      setRows(data);
+      setColMap(detected);
+      setStep(2);
+    } catch(e) {
+      setErr("Erro ao ler o arquivo: " + e.message);
+    }
   };
-  const det=colMap?Object.entries(colMap).map(([k,v])=>`${k}:col${v+1}`).join(" · "):"";
+
+  // ── Importação por batches com progresso ───────────────────────────────────
+  const handleImport = async () => {
+    if (!forn.trim()) return;
+    setStep(5); setProgress(0); setErr("");
+    try {
+      const lr = await sb.insert("listas",{nome_fornecedor:forn.trim(),nome_arquivo:file.name},token);
+      const lid = lr[0].id;
+      const leads = rows.slice(1).map(r => csvToLead(r, colMap, forn.trim()));
+      const B = 100;
+      const total = leads.length;
+      let tot = {validos:0,invalidos:0,duplicados:0};
+      const sessaoBase = crypto.randomUUID();
+      for (let i=0;i<leads.length;i+=B) {
+        const batchIdx = Math.floor(i/B);
+        const r = await sb.rpc("importar_leads_batch",{
+          p_lista_id: lid,
+          p_leads: leads.slice(i,i+B),
+          p_sessao_id: `${sessaoBase}-${batchIdx}`,
+        },token);
+        tot.validos    += r.validos    || r.inserted || 0;
+        tot.invalidos  += r.invalidos  || 0;
+        tot.duplicados += r.duplicados || r.skipped  || 0;
+        setProgress(Math.round(((i+B)/total)*100));
+      }
+      setResult(tot);
+      setStep(6);
+    } catch(e) {
+      setErr("Erro durante importação: " + e.message);
+      setStep(4);
+    }
+  };
+
+  const resetar = () => {
+    setStep(1); setFile(null); setRows([]); setForn(""); setColMap({});
+    setProgress(0); setResult(null); setErr(""); setColEdit(false);
+  };
+
+  const camposDetectados = Object.keys(colMap);
+  const temTelefone = camposDetectados.some(f=>["celular","telefone_1","fixo"].includes(f));
+  const totalLeads  = rows.length > 1 ? rows.length - 1 : 0;
+
+  // ── Renderização dos passos ────────────────────────────────────────────────
   return (
-    <div className="p-4 space-y-4">
-      <h2 className="text-lg font-bold text-gray-900">Upload de lista</h2>
-      {!preview?(<div><input className="w-full border border-gray-300 rounded-lg px-3 py-3 mb-3 text-sm" placeholder="Nome do fornecedor" value={forn} onChange={e=>setForn(e.target.value)}/><div className="border-2 border-dashed border-gray-300 rounded-xl p-8 text-center cursor-pointer hover:border-blue-400" onClick={()=>fileRef.current?.click()}><div className="text-4xl text-gray-300 mb-2">↑</div><p className="text-sm text-gray-500">Toque para selecionar CSV</p><p className="text-xs text-gray-400 mt-1">Máx 5.000 leads</p></div><input ref={fileRef} type="file" accept=".csv,.txt,.tsv" className="hidden" onChange={e=>handleFile(e.target.files[0])}/></div>
-      ):(<div><div className="bg-blue-50 rounded-lg p-3 mb-3"><p className="text-sm font-medium text-blue-900">{file?.name} · {preview.rows.length} leads</p>{det&&<p className="text-xs text-blue-600 mt-1">{det}</p>}</div><div className="bg-gray-50 rounded-lg p-3 mb-3">{preview.rows.slice(0,3).map((r,i)=>{const l=csvToLead(r,colMap,forn);return <div key={i} className="bg-white rounded p-2 mb-1 text-xs border">{l.nome||"—"} | {l.telefone_escolhido||"sem tel"} | {l.tipo_telefone}{l.whatsapp?" | WA✓":""}</div>;})}</div><div className="flex gap-2"><button className="flex-1 bg-gray-200 text-gray-700 rounded-lg py-3 font-medium" onClick={()=>{setPreview(null);setFile(null);}}>Cancelar</button><button className="flex-1 bg-blue-600 text-white rounded-lg py-3 font-medium disabled:opacity-50" disabled={importing||!forn} onClick={handleImport}>{importing?"Importando...":"Importar"}</button></div></div>)}
-      {result&&!result.error&&<div className="bg-emerald-50 rounded-xl p-4 border border-emerald-200"><p className="font-bold text-emerald-800">Concluído</p><p className="text-sm text-emerald-700 mt-1">{result.validos} válidos · {result.invalidos} inválidos · {result.duplicados} duplicados</p></div>}
-      {result?.error&&<div className="bg-red-50 rounded-xl p-4 text-red-700 text-sm">{result.error}</div>}
+    <div style={{background:"#f8fafc",minHeight:"100vh",paddingBottom:80}}>
+
+      {/* Barra de progresso do wizard */}
+      {step >= 1 && step <= 4 && (
+        <div style={{background:"white",borderBottom:"1px solid #e2e8f0",padding:"12px 16px"}}>
+          <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:8}}>
+            {["Arquivo","Fornecedor","Colunas","Conferência"].map((label,i)=>{
+              const n=i+1;
+              const ativo=step===n;
+              const feito=step>n;
+              return (
+                <div key={label} style={{display:"flex",alignItems:"center",gap:4,flex:1}}>
+                  <div style={{
+                    width:26,height:26,borderRadius:"50%",flexShrink:0,
+                    display:"flex",alignItems:"center",justifyContent:"center",
+                    fontSize:12,fontWeight:700,
+                    background:feito?"#10b981":ativo?"#3b82f6":"#e2e8f0",
+                    color:feito||ativo?"white":"#94a3b8",
+                  }}>{feito?"✓":n}</div>
+                  <span style={{fontSize:10,color:ativo?"#3b82f6":feito?"#10b981":"#94a3b8",fontWeight:ativo||feito?700:400,flex:1}}>{label}</span>
+                  {i<3&&<div style={{height:1,flex:1,background:feito?"#10b981":"#e2e8f0",margin:"0 4px"}}/>}
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      <div style={{padding:16}}>
+
+        {/* Balão de dica */}
+        {DICAS[step] && (
+          <div style={{background:"#eff6ff",border:"1px solid #bfdbfe",borderRadius:14,padding:14,marginBottom:16,position:"relative"}}>
+            <div style={{position:"absolute",top:-8,left:20,width:16,height:8,overflow:"hidden"}}>
+              <div style={{width:16,height:16,background:"#eff6ff",border:"1px solid #bfdbfe",transform:"rotate(45deg)",marginTop:4,marginLeft:0}}/>
+            </div>
+            <div style={{display:"flex",gap:10,alignItems:"flex-start"}}>
+              <span style={{fontSize:22,flexShrink:0}}>💡</span>
+              <p style={{color:"#1e40af",fontSize:13,margin:0,lineHeight:1.6}}>{DICAS[step]}</p>
+            </div>
+          </div>
+        )}
+
+        {/* ── PASSO 1: Selecionar arquivo ─────────────────────────────────── */}
+        {step===1&&(
+          <div>
+            <h2 style={{fontSize:18,fontWeight:800,color:"#1e293b",margin:"0 0 4px"}}>📂 Importar nova lista</h2>
+            <p style={{color:"#64748b",fontSize:13,margin:"0 0 20px"}}>Carregue o arquivo com os contatos que deseja importar.</p>
+
+            {/* Área de drop */}
+            <div
+              onClick={()=>fileRef.current?.click()}
+              onDragOver={e=>e.preventDefault()}
+              onDrop={e=>{e.preventDefault();processarArquivo(e.dataTransfer.files[0]);}}
+              style={{
+                border:"2.5px dashed #93c5fd",borderRadius:20,padding:"40px 20px",
+                textAlign:"center",cursor:"pointer",background:"white",
+                transition:"border-color 0.2s",
+              }}
+            >
+              <div style={{fontSize:56,marginBottom:12}}>📋</div>
+              <p style={{color:"#1e40af",fontSize:16,fontWeight:700,margin:"0 0 6px"}}>Toque aqui para escolher o arquivo</p>
+              <p style={{color:"#64748b",fontSize:12,margin:0}}>ou arraste e solte diretamente aqui</p>
+            </div>
+            <input ref={fileRef} type="file" accept=".csv,.txt,.tsv,.xlsx,.xls"
+              style={{display:"none"}} onChange={e=>processarArquivo(e.target.files[0])}/>
+
+            {/* Formatos aceitos */}
+            <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:8,marginTop:16}}>
+              {[
+                {icon:"📊",label:"Excel",desc:".xlsx, .xls"},
+                {icon:"📄",label:"CSV",desc:".csv"},
+                {icon:"📝",label:"Texto",desc:".txt, .tsv"},
+              ].map(f=>(
+                <div key={f.label} style={{background:"white",border:"1px solid #e2e8f0",borderRadius:12,padding:"10px 8px",textAlign:"center"}}>
+                  <div style={{fontSize:24,marginBottom:4}}>{f.icon}</div>
+                  <div style={{fontSize:12,fontWeight:700,color:"#374151"}}>{f.label}</div>
+                  <div style={{fontSize:10,color:"#94a3b8"}}>{f.desc}</div>
+                </div>
+              ))}
+            </div>
+            <p style={{color:"#94a3b8",fontSize:11,textAlign:"center",marginTop:12}}>Máximo 20.000 leads por arquivo</p>
+
+            {err&&<div style={{marginTop:12,background:"#fef2f2",border:"1px solid #fecaca",borderRadius:12,padding:12,color:"#dc2626",fontSize:13}}>{err}</div>}
+          </div>
+        )}
+
+        {/* ── PASSO 2: Nome do fornecedor ─────────────────────────────────── */}
+        {step===2&&(
+          <div>
+            <h2 style={{fontSize:18,fontWeight:800,color:"#1e293b",margin:"0 0 4px"}}>🏢 Quem forneceu esta lista?</h2>
+            <p style={{color:"#64748b",fontSize:13,margin:"0 0 20px"}}>{file?.name} · <strong>{totalLeads.toLocaleString("pt-BR")} leads</strong></p>
+
+            <div style={{background:"white",borderRadius:16,border:"1px solid #e2e8f0",padding:16,marginBottom:16}}>
+              <label style={{display:"block",fontSize:13,fontWeight:700,color:"#374151",marginBottom:8}}>Nome do fornecedor</label>
+              <input
+                autoFocus
+                value={forn}
+                onChange={e=>setForn(e.target.value)}
+                placeholder="Ex: Tegra, Cyrela, ito8, João Imobiliária..."
+                style={{width:"100%",border:"2px solid #3b82f6",borderRadius:12,padding:"14px 16px",fontSize:15,boxSizing:"border-box",outline:"none"}}
+              />
+              <p style={{color:"#94a3b8",fontSize:11,margin:"8px 0 0"}}>
+                Este nome aparecerá nos relatórios e no perfil de cada lead desta lista.
+              </p>
+            </div>
+
+            {/* Sugestões rápidas */}
+            <div style={{marginBottom:16}}>
+              <p style={{color:"#64748b",fontSize:12,margin:"0 0 8px"}}>Sugestões rápidas:</p>
+              <div style={{display:"flex",gap:8,flexWrap:"wrap"}}>
+                {["Tegra","Cyrela","Portal Imóveis","Indicação","Evento","Feira"].map(s=>(
+                  <button key={s} onClick={()=>setForn(s)}
+                    style={{background:forn===s?"#3b82f6":"#f1f5f9",color:forn===s?"white":"#374151",border:"none",borderRadius:20,padding:"6px 14px",fontSize:12,fontWeight:600,cursor:"pointer"}}>
+                    {s}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div style={{display:"flex",gap:8}}>
+              <button onClick={resetar} style={{flex:1,background:"#f1f5f9",color:"#374151",border:"none",borderRadius:12,padding:"14px",fontSize:14,fontWeight:700,cursor:"pointer"}}>
+                ← Voltar
+              </button>
+              <button onClick={()=>forn.trim()&&setStep(3)} disabled={!forn.trim()}
+                style={{flex:2,background:forn.trim()?"#3b82f6":"#e2e8f0",color:forn.trim()?"white":"#94a3b8",border:"none",borderRadius:12,padding:"14px",fontSize:14,fontWeight:700,cursor:forn.trim()?"pointer":"not-allowed"}}>
+                Continuar →
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* ── PASSO 3: Verificar colunas ──────────────────────────────────── */}
+        {step===3&&(
+          <div>
+            <h2 style={{fontSize:18,fontWeight:800,color:"#1e293b",margin:"0 0 4px"}}>🔍 Colunas identificadas</h2>
+            <p style={{color:"#64748b",fontSize:13,margin:"0 0 16px"}}>O sistema leu o cabeçalho do arquivo. Confira se está correto.</p>
+
+            {/* Status geral */}
+            <div style={{background:temTelefone?"#f0fdf4":"#fef2f2",border:`1px solid ${temTelefone?"#bbf7d0":"#fecaca"}`,borderRadius:14,padding:12,marginBottom:16,display:"flex",alignItems:"center",gap:10}}>
+              <span style={{fontSize:22}}>{temTelefone?"✅":"⚠️"}</span>
+              <div>
+                <p style={{margin:0,fontWeight:700,fontSize:13,color:temTelefone?"#15803d":"#dc2626"}}>
+                  {temTelefone?"Telefone detectado — importação possível":"Nenhum campo de telefone encontrado"}
+                </p>
+                <p style={{margin:0,fontSize:11,color:"#64748b"}}>{camposDetectados.length} campo{camposDetectados.length!==1?"s":""} identificado{camposDetectados.length!==1?"s":""}</p>
+              </div>
+            </div>
+
+            {/* Chips dos campos detectados */}
+            <div style={{background:"white",borderRadius:14,border:"1px solid #e2e8f0",padding:14,marginBottom:12}}>
+              <p style={{color:"#374151",fontSize:12,fontWeight:700,margin:"0 0 10px",textTransform:"uppercase",letterSpacing:0.5}}>Campos encontrados</p>
+              <div style={{display:"flex",flexWrap:"wrap",gap:8}}>
+                {Object.entries(FIELD_LABELS).map(([key,label])=>{
+                  const detectado=colMap[key]!==undefined;
+                  return (
+                    <span key={key} style={{
+                      display:"inline-flex",alignItems:"center",gap:4,
+                      padding:"5px 10px",borderRadius:20,fontSize:12,fontWeight:600,
+                      background:detectado?FIELD_COLORS[key]+"22":"#f1f5f9",
+                      color:detectado?FIELD_COLORS[key]:"#94a3b8",
+                      border:`1px solid ${detectado?FIELD_COLORS[key]+"66":"#e2e8f0"}`,
+                    }}>
+                      {detectado?"✓":""} {label}
+                    </span>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Colunas do arquivo para referência */}
+            <div style={{background:"#f8fafc",borderRadius:12,padding:12,marginBottom:16}}>
+              <p style={{color:"#64748b",fontSize:11,margin:"0 0 8px",fontWeight:700}}>COLUNAS NO ARQUIVO</p>
+              <div style={{display:"flex",flexWrap:"wrap",gap:6}}>
+                {rows[0]?.map((h,i)=>(
+                  <span key={i} style={{background:"white",border:"1px solid #e2e8f0",borderRadius:8,padding:"3px 8px",fontSize:11,color:"#374151"}}>
+                    {String(h||`Col ${i+1}`).slice(0,20)}
+                  </span>
+                ))}
+              </div>
+            </div>
+
+            <div style={{display:"flex",gap:8}}>
+              <button onClick={()=>setStep(2)} style={{flex:1,background:"#f1f5f9",color:"#374151",border:"none",borderRadius:12,padding:"14px",fontSize:14,fontWeight:700,cursor:"pointer"}}>
+                ← Voltar
+              </button>
+              <button onClick={()=>setStep(4)} disabled={!temTelefone}
+                style={{flex:2,background:temTelefone?"#3b82f6":"#e2e8f0",color:temTelefone?"white":"#94a3b8",border:"none",borderRadius:12,padding:"14px",fontSize:14,fontWeight:700,cursor:temTelefone?"pointer":"not-allowed"}}>
+                Ver prévia →
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* ── PASSO 4: Preview dos leads ──────────────────────────────────── */}
+        {step===4&&(
+          <div>
+            <h2 style={{fontSize:18,fontWeight:800,color:"#1e293b",margin:"0 0 4px"}}>👀 Conferência final</h2>
+            <p style={{color:"#64748b",fontSize:13,margin:"0 0 16px"}}>
+              Veja como os primeiros leads aparecerão no sistema. Tudo certo? Clique em <strong>Importar!</strong>
+            </p>
+
+            {/* Resumo */}
+            <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8,marginBottom:16}}>
+              <div style={{background:"white",borderRadius:12,border:"1px solid #e2e8f0",padding:12,textAlign:"center"}}>
+                <p style={{color:"#94a3b8",fontSize:11,margin:"0 0 4px"}}>Total de leads</p>
+                <p style={{color:"#1e293b",fontSize:22,fontWeight:800,margin:0}}>{totalLeads.toLocaleString("pt-BR")}</p>
+              </div>
+              <div style={{background:"white",borderRadius:12,border:"1px solid #e2e8f0",padding:12,textAlign:"center"}}>
+                <p style={{color:"#94a3b8",fontSize:11,margin:"0 0 4px"}}>Fornecedor</p>
+                <p style={{color:"#3b82f6",fontSize:15,fontWeight:800,margin:0,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{forn}</p>
+              </div>
+            </div>
+
+            {/* Cards de amostra */}
+            <div style={{marginBottom:16}}>
+              <p style={{color:"#374151",fontSize:12,fontWeight:700,margin:"0 0 8px",textTransform:"uppercase"}}>Primeiros 5 leads</p>
+              {rows.slice(1,6).map((r,i)=>{
+                const l=csvToLead(r,colMap,forn);
+                const ok=!!l.telefone_e164;
+                return (
+                  <div key={i} style={{
+                    background:"white",borderRadius:12,
+                    border:`1px solid ${ok?"#e2e8f0":"#fecaca"}`,
+                    padding:12,marginBottom:8,
+                  }}>
+                    <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",gap:8}}>
+                      <div style={{flex:1,minWidth:0}}>
+                        <p style={{color:"#1e293b",fontSize:14,fontWeight:700,margin:"0 0 4px",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>
+                          {l.nome||"(sem nome)"}
+                        </p>
+                        <p style={{color:"#64748b",fontSize:12,margin:"0 0 2px"}}>
+                          📞 {l.telefone_escolhido||<span style={{color:"#ef4444"}}>sem telefone válido</span>}
+                          {l.whatsapp&&<span style={{color:"#25d366",marginLeft:8}}>WhatsApp ✓</span>}
+                        </p>
+                        {l.email&&<p style={{color:"#8b5cf6",fontSize:11,margin:"0 0 2px"}}>✉ {l.email}</p>}
+                        {l.zona&&<p style={{color:"#f97316",fontSize:11,margin:0}}>📍 Zona: {l.zona}</p>}
+                        {l.endereco&&<p style={{color:"#94a3b8",fontSize:11,margin:"2px 0 0",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{l.endereco}</p>}
+                      </div>
+                      <span style={{
+                        fontSize:10,fontWeight:700,padding:"3px 8px",borderRadius:20,flexShrink:0,
+                        background:ok?"#f0fdf4":"#fef2f2",
+                        color:ok?"#15803d":"#dc2626",
+                      }}>{ok?"válido":"inválido"}</span>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+
+            {err&&<div style={{marginBottom:12,background:"#fef2f2",border:"1px solid #fecaca",borderRadius:12,padding:12,color:"#dc2626",fontSize:13}}>{err}</div>}
+
+            <div style={{display:"flex",gap:8}}>
+              <button onClick={()=>setStep(3)} style={{flex:1,background:"#f1f5f9",color:"#374151",border:"none",borderRadius:12,padding:"14px",fontSize:14,fontWeight:700,cursor:"pointer"}}>
+                ← Voltar
+              </button>
+              <button onClick={handleImport}
+                style={{flex:2,background:"#10b981",color:"white",border:"none",borderRadius:12,padding:"14px",fontSize:14,fontWeight:700,cursor:"pointer"}}>
+                🚀 Importar {totalLeads.toLocaleString("pt-BR")} leads!
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* ── PASSO 5: Importando (progresso) ────────────────────────────── */}
+        {step===5&&(
+          <div style={{textAlign:"center",paddingTop:40}}>
+            <div style={{fontSize:64,marginBottom:16}}>⏳</div>
+            <h2 style={{fontSize:20,fontWeight:800,color:"#1e293b",margin:"0 0 8px"}}>Importando seus leads...</h2>
+            <p style={{color:"#64748b",fontSize:13,margin:"0 0 32px"}}>
+              Não feche esta tela. Estamos processando {totalLeads.toLocaleString("pt-BR")} leads em grupos de 100.
+            </p>
+
+            {/* Barra de progresso */}
+            <div style={{background:"#e2e8f0",borderRadius:999,height:16,margin:"0 auto 12px",maxWidth:320,overflow:"hidden"}}>
+              <div style={{
+                height:"100%",borderRadius:999,
+                background:"linear-gradient(90deg,#3b82f6,#10b981)",
+                width:progress+"%",transition:"width 0.4s",
+              }}/>
+            </div>
+            <p style={{color:"#3b82f6",fontSize:14,fontWeight:700}}>{progress}% concluído</p>
+            <p style={{color:"#94a3b8",fontSize:11,marginTop:16}}>
+              ☕ Pode demorar alguns minutos para listas grandes. Fique à vontade!
+            </p>
+          </div>
+        )}
+
+        {/* ── PASSO 6: Resultado ─────────────────────────────────────────── */}
+        {step===6&&result&&(
+          <div style={{textAlign:"center",paddingTop:20}}>
+            <div style={{fontSize:72,marginBottom:12}}>🎉</div>
+            <h2 style={{fontSize:22,fontWeight:800,color:"#15803d",margin:"0 0 8px"}}>Lista importada!</h2>
+            <p style={{color:"#64748b",fontSize:13,margin:"0 0 32px"}}>
+              Os leads já estão disponíveis para distribuição.
+            </p>
+
+            <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:10,marginBottom:32,maxWidth:360,margin:"0 auto 32px"}}>
+              <div style={{background:"#f0fdf4",border:"1px solid #bbf7d0",borderRadius:14,padding:14}}>
+                <p style={{color:"#94a3b8",fontSize:10,margin:"0 0 4px"}}>Válidos</p>
+                <p style={{color:"#15803d",fontSize:26,fontWeight:800,margin:0}}>{result.validos}</p>
+              </div>
+              <div style={{background:"#fef2f2",border:"1px solid #fecaca",borderRadius:14,padding:14}}>
+                <p style={{color:"#94a3b8",fontSize:10,margin:"0 0 4px"}}>Inválidos</p>
+                <p style={{color:"#dc2626",fontSize:26,fontWeight:800,margin:0}}>{result.invalidos}</p>
+              </div>
+              <div style={{background:"#fffbeb",border:"1px solid #fde68a",borderRadius:14,padding:14}}>
+                <p style={{color:"#94a3b8",fontSize:10,margin:"0 0 4px"}}>Duplicados</p>
+                <p style={{color:"#d97706",fontSize:26,fontWeight:800,margin:0}}>{result.duplicados}</p>
+              </div>
+            </div>
+
+            <button onClick={resetar}
+              style={{background:"#3b82f6",color:"white",border:"none",borderRadius:14,padding:"16px 32px",fontSize:15,fontWeight:700,cursor:"pointer"}}>
+              📂 Importar outra lista
+            </button>
+          </div>
+        )}
+
+      </div>
     </div>
   );
 }
