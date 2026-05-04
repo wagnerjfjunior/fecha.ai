@@ -4026,194 +4026,30 @@ function MeuDashboardTab({ sb, token, corretor }) {
 
 function CorretorApp({ sb, token, corretor, onLogout, onVoltar }) {
   const TABS = [
-    {id:"home",      label:"Início",      icon:"⊞",  key:null},
-    {id:"meudash",   label:"Dashboard",   icon:"📊",  key:null},
-    {id:"discador",  label:"Discador",    icon:"◎",   key:null},
-    {id:"email",     label:"Mensagens",   icon:"📧",  key:"email"},
-    {id:"producao",  label:"Produção",    icon:"◉",   key:"producao"},
-    {id:"carteira",  label:"Carteira",    icon:"♦",   key:"carteira"},
-    {id:"funil",     label:"Funil",       icon:"▽",   key:"funil"},
-    {id:"historico", label:"Histórico",   icon:"↺",   key:"historico"},
+    {id:"home",      label:"Início",     icon:"⊞", key:null},
+    {id:"meudash",   label:"Dashboard",  icon:"📊", key:null},
+    {id:"discador",  label:"Discador",   icon:"◎",  key:null},
+    {id:"email",     label:"Mensagens",  icon:"📧", key:"email"},
+    {id:"producao",  label:"Produção",   icon:"◉",  key:"producao"},
+    {id:"carteira",  label:"Carteira",   icon:"♦",  key:"carteira"},
+    {id:"funil",     label:"Funil",      icon:"▽",  key:"funil"},
+    {id:"historico", label:"Histórico",  icon:"↺",  key:"historico"},
   ];
 
-  // Cores fixas por tile — independentes do tema, garantem contraste
   const TILES = [
-    {id:"instrucoes", label:"Instruções",  icon:"📖", bg:"#1d4ed8", txt:"#fff"},
-    {id:"discador",   label:"Discador",    icon:"◎",  bg:"#059669", txt:"#fff"},
-    {id:"email",      label:"Mensagens",   icon:"📧", bg:"#7c3aed", txt:"#fff", badge: cnts.email||0},
-    {id:"producao",   label:"Produção",    icon:"◉",  bg:"#d97706", txt:"#fff"},
-    {id:"carteira",   label:"Carteira",    icon:"♦",  bg:"#db2777", txt:"#fff"},
-    {id:"funil",      label:"Funil",       icon:"▽",  bg:"#0891b2", txt:"#fff"},
-    {id:"historico",  label:"Histórico",   icon:"↺",  bg:"#374151", txt:"#fff"},
-    {id:"meudash",    label:"Dashboard",   icon:"📊", bg:"#1e40af", txt:"#fff"},
-    {id:"soon1",      label:"Em breve",    icon:"🔒", bg:"#e5e7eb", txt:"#9ca3af", soon:true},
-    {id:"soon2",      label:"Em breve",    icon:"🔒", bg:"#e5e7eb", txt:"#9ca3af", soon:true},
+    {id:"instrucoes", label:"Instruções", icon:"📖", bg:"#1d4ed8", txt:"#fff"},
+    {id:"discador",   label:"Discador",   icon:"◎",  bg:"#059669", txt:"#fff"},
+    {id:"email",      label:"Mensagens",  icon:"📧", bg:"#7c3aed", txt:"#fff", badgeKey:"email"},
+    {id:"producao",   label:"Produção",   icon:"◉",  bg:"#d97706", txt:"#fff"},
+    {id:"carteira",   label:"Carteira",   icon:"♦",  bg:"#db2777", txt:"#fff"},
+    {id:"funil",      label:"Funil",      icon:"▽",  bg:"#0891b2", txt:"#fff"},
+    {id:"historico",  label:"Histórico",  icon:"↺",  bg:"#374151", txt:"#fff"},
+    {id:"meudash",    label:"Dashboard",  icon:"📊", bg:"#1e40af", txt:"#fff"},
+    {id:"soon1",      label:"Em breve",   icon:"🔒", bg:"#e5e7eb", txt:"#9ca3af", soon:true},
+    {id:"soon2",      label:"Em breve",   icon:"🔒", bg:"#e5e7eb", txt:"#9ca3af", soon:true},
   ];
 
-  const HomeScreen = () => {
-    const hora = new Date().getHours();
-    const saudacao = hora < 12 ? "Bom dia" : hora < 18 ? "Boa tarde" : "Boa noite";
-    return (
-      <div style={{minHeight:"100vh",background:dark?"#0f172a":"#f1f5f9",paddingBottom:20}}>
-        {/* Header home */}
-        <div style={{background:dark?"#1e293b":"#1d4ed8",padding:"20px 20px 32px"}}>
-          <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start"}}>
-            <div>
-              <p style={{color:"rgba(255,255,255,.75)",fontSize:13,margin:"0 0 4px"}}>{saudacao},</p>
-              <h1 style={{color:"#fff",fontSize:24,fontWeight:700,margin:"0 0 2px"}}>{primeiroNome} 👋</h1>
-              <p style={{color:"rgba(255,255,255,.6)",fontSize:11,margin:0}}>FECH.AI · Oferta Ativa</p>
-            </div>
-            <div style={{display:"flex",gap:8,alignItems:"center"}}>
-              <button onClick={toggleDark}
-                style={{background:"rgba(255,255,255,.2)",border:"1px solid rgba(255,255,255,.3)",borderRadius:10,padding:"6px 10px",color:"#fff",fontSize:14,cursor:"pointer"}}>
-                {dark?"☀":"🌙"}
-              </button>
-              {/* Sair volta para HomeActions (seleção de produto), NÃO desloga */}
-              <button onClick={onVoltar}
-                style={{background:"rgba(255,255,255,.2)",border:"1px solid rgba(255,255,255,.3)",borderRadius:10,padding:"6px 12px",color:"#fff",fontSize:12,fontWeight:600,cursor:"pointer"}}>
-                ← Início
-              </button>
-            </div>
-          </div>
-          {(cnts.email||0)>0&&(
-            <div style={{marginTop:14,background:"rgba(255,255,255,.18)",border:"1px solid rgba(255,255,255,.25)",borderRadius:12,padding:"8px 14px",display:"inline-flex",alignItems:"center",gap:8}}>
-              <span style={{fontSize:16}}>📧</span>
-              <span style={{color:"#fff",fontSize:13,fontWeight:600}}>{cnts.email} mensagen{cnts.email>1?"s":""} aguardando</span>
-            </div>
-          )}
-        </div>
-
-        {/* Grid de tiles — flutua sobre o header */}
-        <div style={{padding:"0 12px",marginTop:-16}}>
-          <div style={{display:"grid",gridTemplateColumns:"repeat(2,1fr)",gap:10}}>
-            {TILES.map((tile,i)=>(
-              <button key={i}
-                onClick={()=>!tile.soon&&handleTab(tile.id)}
-                style={{
-                  background: tile.soon?(dark?"#1e293b":"#e5e7eb"):tile.bg,
-                  border:"none",
-                  borderRadius:18,
-                  padding:"20px 16px",
-                  textAlign:"left",
-                  cursor:tile.soon?"default":"pointer",
-                  position:"relative",
-                  display:"flex",
-                  flexDirection:"column",
-                  gap:10,
-                  minHeight:100,
-                  boxShadow: tile.soon?"none":"0 4px 12px rgba(0,0,0,.18)",
-                  transition:"transform 0.12s",
-                }}
-                onTouchStart={e=>{if(!tile.soon)e.currentTarget.style.transform="scale(0.95)";}}
-                onTouchEnd={e=>{if(!tile.soon)e.currentTarget.style.transform="scale(1)";}}
-              >
-                {tile.badge>0&&(
-                  <span style={{position:"absolute",top:12,right:12,background:"#ef4444",color:"#fff",fontSize:11,fontWeight:700,borderRadius:999,padding:"2px 8px",minWidth:22,textAlign:"center"}}>
-                    {tile.badge}
-                  </span>
-                )}
-                {tile.soon&&(
-                  <span style={{position:"absolute",top:12,right:12,fontSize:10,color:"#9ca3af",fontWeight:600}}>em breve</span>
-                )}
-                <span style={{fontSize:32,lineHeight:1}}>{tile.icon}</span>
-                <p style={{color:tile.txt,fontSize:15,fontWeight:700,margin:0,letterSpacing:-.2}}>{tile.label}</p>
-              </button>
-            ))}
-          </div>
-        </div>
-        <p style={{textAlign:"center",color:dark?"#475569":"#9ca3af",fontSize:11,marginTop:18,padding:"0 20px"}}>
-          Dentro de cada seção, deslize para os lados para trocar de aba
-        </p>
-      </div>
-    );
-  };
-
-  return (
-    <div
-      style={{minHeight:"100vh",background:bg,color:txt}}
-      className="pb-20"
-      // Fix 6: swipe desabilitado no funil para não conflitar com kanban
-      onTouchStart={tab==="funil"?undefined:onTouchStart}
-      onTouchEnd={tab==="funil"?undefined:onTouchEnd}
-    >
-      {tab!=="home"&&(
-        <Header nome={corretor.nome} isGestor={false} onLogout={onLogout} onHome={()=>handleTab("home")} dark={dark} onToggleDark={toggleDark}/>
-      )}
-
-      {tab==="home"     &&<HomeScreen/>}
-      {tab==="meudash"  &&<MeuDashboardTab sb={sb} token={token} corretor={corretor}/>}
-      {tab==="discador" &&<DiscadorTab  sb={sb} token={token} corretor={corretor} onFeedback={loadContagens}/>}
-      {tab==="email"    &&<EmailTab     sb={sb} token={token} perfilCorretor={perfilFinal}/>}
-      {tab==="producao" &&<ProducaoTab  sb={sb} token={token} perfilCorretor={perfilFinal}/>}
-      {tab==="carteira" &&<CarteiraTab  sb={sb} token={token} perfilCorretor={perfilFinal}/>}
-      {tab==="funil"    &&<FunilTab     sb={sb} token={token} perfilCorretor={perfilFinal}/>}
-      {tab==="historico"&&<HistoricoTab sb={sb} token={token} perfilCorretor={perfilFinal} isGestor={corretor?.is_gestor}/>}
-
-      {/* TabBar — oculta na home | aba gestor removida */}
-      {tab!=="home"&&(
-        <div className="fixed bottom-0 left-0 right-0 z-20" style={{
-          background:dark?"#0f172a":"#fff",
-          borderTop:dark?"1px solid #1e293b":"1px solid #e5e7eb",
-          display:"flex",
-          overflowX:"auto",
-          WebkitOverflowScrolling:"touch",
-          scrollbarWidth:"none",
-        }}>
-          {TABS.filter(t=>t.id!=="home").map(t=>{
-            const ativa = tab===t.id;
-            return (
-              <button key={t.id} onClick={()=>handleTab(t.id)}
-                style={{
-                  flex:"0 0 auto",
-                  minWidth:64,
-                  padding:"4px 8px 6px",
-                  border:"none",
-                  cursor:"pointer",
-                  textAlign:"center",
-                  background:"transparent",
-                  position:"relative",
-                  display:"flex",
-                  flexDirection:"column",
-                  alignItems:"center",
-                  gap:2,
-                }}>
-                {/* Quadrado indicador de aba ativa */}
-                <span style={{
-                  display:"block",
-                  width:36,height:4,
-                  borderRadius:3,
-                  background: ativa?"#2563eb":"transparent",
-                  marginBottom:4,
-                  transition:"background 0.2s",
-                }}/>
-                <div style={{
-                  width:38,height:38,
-                  borderRadius:12,
-                  background: ativa?(dark?"#1e3a8a":"#dbeafe"):"transparent",
-                  display:"flex",alignItems:"center",justifyContent:"center",
-                  transition:"background 0.2s",
-                }}>
-                  <span style={{fontSize:18}}>{t.icon}</span>
-                </div>
-                <div style={{
-                  fontSize:9,lineHeight:1.3,whiteSpace:"nowrap",
-                  color: ativa?"#2563eb":dark?"#94a3b8":"#6b7280",
-                  fontWeight: ativa?700:400,
-                }}>
-                  {t.label}
-                  {t.key&&cnts[t.key]>0&&(
-                    <span style={{display:"block",fontSize:9,fontWeight:700,color:"#dc2626"}}>
-                      ({cnts[t.key]})
-                    </span>
-                  )}
-                </div>
-              </button>
-            );
-          })}
-        </div>
-      )}
-    </div>
-  );
+  const [tab,setTab]       = useState("home");
   const [perfil,setPerfil] = useState(null);
   const [cnts,setCnts]     = useState({});
   const [dark,toggleDark]  = useDarkMode();
@@ -4234,29 +4070,147 @@ function CorretorApp({ sb, token, corretor, onLogout, onVoltar }) {
     loadContagens();
   },[]);
 
-  const handleTab = (t) => { setTab(t); loadContagens(); };
-  const perfilFinal = perfil || {nome:corretor.nome.split(" ")[0],telefone:"",empresa:"Tegra Incorporadora"};
-
-  // ── Swipe entre abas ────────────────────────────────────────────────────────
-  const swipeRef  = useRef({});
-  const TABS_NAV  = TABS.filter(t=>t.id!=="home"); // home não entra no swipe circular
-  const allTabIds = TABS.map(t=>t.id);
-
-  const onTouchStart = (e) => { swipeRef.current.x = e.touches[0].clientX; swipeRef.current.y = e.touches[0].clientY; };
-  const onTouchEnd   = (e) => {
-    if(tab==="home") return; // na home, swipe não navega entre conteúdo
-    const dx = e.changedTouches[0].clientX - swipeRef.current.x;
-    const dy = e.changedTouches[0].clientY - swipeRef.current.y;
-    if(Math.abs(dx) < 50 || Math.abs(dy) > Math.abs(dx) * 0.8) return; // threshold mínimo + não confunde com scroll vertical
-    const idx = allTabIds.indexOf(tab);
-    if(dx < 0 && idx < allTabIds.length-1) handleTab(allTabIds[idx+1]); // swipe esquerda → próxima
-    if(dx > 0 && idx > 0)                 handleTab(allTabIds[idx-1]); // swipe direita → anterior
-  };
-
+  const handleTab    = (t) => { setTab(t); loadContagens(); };
+  const perfilFinal  = perfil || {nome:corretor.nome.split(" ")[0],telefone:"",empresa:"Tegra Incorporadora"};
   const primeiroNome = corretor.nome.split(" ")[0];
 
-  // ── TILES da Home (definidos acima, junto com TABS) ──────────────────────
+  // ── Swipe lateral (desabilitado no funil para não conflitar com kanban) ──
+  const swipeRef  = useRef({});
+  const allTabIds = TABS.map(t=>t.id);
+  const onTouchStart = (e) => { swipeRef.current.x=e.touches[0].clientX; swipeRef.current.y=e.touches[0].clientY; };
+  const onTouchEnd   = (e) => {
+    if(tab==="home") return;
+    const dx=e.changedTouches[0].clientX-swipeRef.current.x;
+    const dy=e.changedTouches[0].clientY-swipeRef.current.y;
+    if(Math.abs(dx)<50||Math.abs(dy)>Math.abs(dx)*0.8) return;
+    const idx=allTabIds.indexOf(tab);
+    if(dx<0&&idx<allTabIds.length-1) handleTab(allTabIds[idx+1]);
+    if(dx>0&&idx>0)                  handleTab(allTabIds[idx-1]);
+  };
 
+  // ── HomeScreen ────────────────────────────────────────────────────────────
+  const HomeScreen = () => {
+    const hora=new Date().getHours();
+    const saudacao=hora<12?"Bom dia":hora<18?"Boa tarde":"Boa noite";
+    return (
+      <div style={{minHeight:"100vh",background:dark?"#0f172a":"#f1f5f9",paddingBottom:20}}>
+        <div style={{background:dark?"#1e293b":"#1d4ed8",padding:"20px 20px 32px"}}>
+          <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start"}}>
+            <div>
+              <p style={{color:"rgba(255,255,255,.75)",fontSize:13,margin:"0 0 4px"}}>{saudacao},</p>
+              <h1 style={{color:"#fff",fontSize:24,fontWeight:700,margin:"0 0 2px"}}>{primeiroNome} 👋</h1>
+              <p style={{color:"rgba(255,255,255,.6)",fontSize:11,margin:0}}>FECH.AI · Oferta Ativa</p>
+            </div>
+            <div style={{display:"flex",gap:8,alignItems:"center"}}>
+              <button onClick={toggleDark}
+                style={{background:"rgba(255,255,255,.2)",border:"1px solid rgba(255,255,255,.3)",borderRadius:10,padding:"6px 10px",color:"#fff",fontSize:14,cursor:"pointer"}}>
+                {dark?"☀":"🌙"}
+              </button>
+              <button onClick={onVoltar}
+                style={{background:"rgba(255,255,255,.2)",border:"1px solid rgba(255,255,255,.3)",borderRadius:10,padding:"6px 12px",color:"#fff",fontSize:12,fontWeight:600,cursor:"pointer"}}>
+                ← Início
+              </button>
+            </div>
+          </div>
+          {(cnts.email||0)>0&&(
+            <div style={{marginTop:14,background:"rgba(255,255,255,.18)",border:"1px solid rgba(255,255,255,.25)",borderRadius:12,padding:"8px 14px",display:"inline-flex",alignItems:"center",gap:8}}>
+              <span style={{fontSize:16}}>📧</span>
+              <span style={{color:"#fff",fontSize:13,fontWeight:600}}>{cnts.email} mensagen{cnts.email>1?"s":""} aguardando</span>
+            </div>
+          )}
+        </div>
+
+        <div style={{padding:"0 12px",marginTop:-16}}>
+          <div style={{display:"grid",gridTemplateColumns:"repeat(2,1fr)",gap:10}}>
+            {TILES.map((tile,i)=>(
+              <button key={i} onClick={()=>!tile.soon&&handleTab(tile.id)}
+                style={{
+                  background:tile.bg, border:"none", borderRadius:18,
+                  padding:"20px 16px", textAlign:"left",
+                  cursor:tile.soon?"default":"pointer",
+                  position:"relative", display:"flex", flexDirection:"column", gap:10,
+                  minHeight:100,
+                  boxShadow:tile.soon?"none":"0 4px 12px rgba(0,0,0,.18)",
+                  transition:"transform 0.12s",
+                }}
+                onTouchStart={e=>{if(!tile.soon)e.currentTarget.style.transform="scale(0.95)";}}
+                onTouchEnd={e=>{if(!tile.soon)e.currentTarget.style.transform="scale(1)";}}>
+                {tile.badgeKey&&cnts[tile.badgeKey]>0&&(
+                  <span style={{position:"absolute",top:12,right:12,background:"#ef4444",color:"#fff",fontSize:11,fontWeight:700,borderRadius:999,padding:"2px 8px"}}>
+                    {cnts[tile.badgeKey]}
+                  </span>
+                )}
+                {tile.soon&&<span style={{position:"absolute",top:12,right:12,fontSize:10,color:"#9ca3af",fontWeight:600}}>em breve</span>}
+                <span style={{fontSize:32,lineHeight:1}}>{tile.icon}</span>
+                <p style={{color:tile.txt,fontSize:15,fontWeight:700,margin:0}}>{tile.label}</p>
+              </button>
+            ))}
+          </div>
+        </div>
+        <p style={{textAlign:"center",color:dark?"#475569":"#9ca3af",fontSize:11,marginTop:18,padding:"0 20px"}}>
+          Dentro de cada seção, deslize para os lados para trocar de aba
+        </p>
+      </div>
+    );
+  };
+
+  return (
+    <div style={{minHeight:"100vh",background:bg,color:txt}} className="pb-20"
+      onTouchStart={tab==="funil"?undefined:onTouchStart}
+      onTouchEnd={tab==="funil"?undefined:onTouchEnd}>
+
+      {tab!=="home"&&(
+        <Header nome={corretor.nome} isGestor={false} onLogout={onLogout} onHome={()=>handleTab("home")} dark={dark} onToggleDark={toggleDark}/>
+      )}
+
+      {tab==="home"     &&<HomeScreen/>}
+      {tab==="meudash"  &&<MeuDashboardTab sb={sb} token={token} corretor={corretor}/>}
+      {tab==="discador" &&<DiscadorTab  sb={sb} token={token} corretor={corretor} onFeedback={loadContagens}/>}
+      {tab==="email"    &&<EmailTab     sb={sb} token={token} perfilCorretor={perfilFinal}/>}
+      {tab==="producao" &&<ProducaoTab  sb={sb} token={token} perfilCorretor={perfilFinal}/>}
+      {tab==="carteira" &&<CarteiraTab  sb={sb} token={token} perfilCorretor={perfilFinal}/>}
+      {tab==="funil"    &&<FunilTab     sb={sb} token={token} perfilCorretor={perfilFinal}/>}
+      {tab==="historico"&&<HistoricoTab sb={sb} token={token} perfilCorretor={perfilFinal} isGestor={corretor?.is_gestor}/>}
+
+      {tab!=="home"&&(
+        <div className="fixed bottom-0 left-0 right-0 z-20" style={{
+          background:dark?"#0f172a":"#fff",
+          borderTop:dark?"1px solid #1e293b":"1px solid #e5e7eb",
+          display:"flex", overflowX:"auto",
+          WebkitOverflowScrolling:"touch", scrollbarWidth:"none",
+        }}>
+          {TABS.filter(t=>t.id!=="home").map(t=>{
+            const ativa=tab===t.id;
+            return (
+              <button key={t.id} onClick={()=>handleTab(t.id)}
+                style={{
+                  flex:"0 0 auto", minWidth:64, padding:"4px 8px 6px",
+                  border:"none", cursor:"pointer", textAlign:"center",
+                  background:"transparent", display:"flex", flexDirection:"column",
+                  alignItems:"center", gap:2,
+                }}>
+                <span style={{display:"block",width:36,height:4,borderRadius:3,
+                  background:ativa?"#2563eb":"transparent",marginBottom:4,transition:"background 0.2s"}}/>
+                <div style={{width:38,height:38,borderRadius:12,
+                  background:ativa?(dark?"#1e3a8a":"#dbeafe"):"transparent",
+                  display:"flex",alignItems:"center",justifyContent:"center",transition:"background 0.2s"}}>
+                  <span style={{fontSize:18}}>{t.icon}</span>
+                </div>
+                <div style={{fontSize:9,lineHeight:1.3,whiteSpace:"nowrap",
+                  color:ativa?"#2563eb":dark?"#94a3b8":"#6b7280",fontWeight:ativa?700:400}}>
+                  {t.label}
+                  {t.key&&cnts[t.key]>0&&(
+                    <span style={{display:"block",fontSize:9,fontWeight:700,color:"#dc2626"}}>({cnts[t.key]})</span>
+                  )}
+                </div>
+              </button>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+}
 // ─── App raiz ─────────────────────────────────────────────────────────────────
 export default function App() {
   const [session,setSession]=useState(null); const [corretor,setCorretor]=useState(null);
