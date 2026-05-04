@@ -3763,34 +3763,94 @@ function LoginScreen({ sb, onLogin }) {
 // ─── Apps compostos ───────────────────────────────────────────────────────────
 function GestorApp({ sb, token, corretor, onLogout, onVoltar, onCriarUsuario }) {
   const [tab,setTab]=useState("dashboard");
+  const [confirmarSair,setConfirmarSair]=useState(false);
+
+  const handleLogout = () => { setConfirmarSair(true); };
+  const confirmarLogout = () => { setConfirmarSair(false); onLogout(); };
+
   return (
     <div style={{minHeight:"100vh",paddingBottom:64}}>
-      {tab!=="dashboard"&&<Header nome={corretor.nome} isGestor onLogout={onLogout} onHome={onVoltar} showVersion/>}
-      {tab==="dashboard"&&(
-        <div style={{background:"#0f172a",padding:"12px 16px",display:"flex",alignItems:"center",justifyContent:"space-between",position:"sticky",top:0,zIndex:10,borderBottom:"1px solid #334155"}}>
-          <div><span style={{color:"#f1f5f9",fontWeight:700}}>{corretor.nome}</span><span style={{marginLeft:8,fontSize:11,background:"#1e40af",color:"#93c5fd",padding:"2px 8px",borderRadius:12}}>Gestor</span></div>
-          <div style={{display:"flex",gap:12}}>
-            <button onClick={onVoltar} style={{color:"#94a3b8",fontSize:13,background:"none",border:"none",cursor:"pointer"}}>⌂ Início</button>
-            <button onClick={onLogout} style={{color:"#94a3b8",fontSize:13,background:"none",border:"none",cursor:"pointer"}}>Sair</button>
+
+      {/* Modal de confirmação de logout */}
+      {confirmarSair&&(
+        <div style={{position:"fixed",inset:0,background:"rgba(0,0,0,.55)",zIndex:999,display:"flex",alignItems:"center",justifyContent:"center",padding:24}}>
+          <div style={{background:"#fff",borderRadius:20,padding:24,maxWidth:320,width:"100%",boxShadow:"0 20px 60px rgba(0,0,0,.2)"}}>
+            <p style={{fontWeight:700,fontSize:17,color:"#111827",margin:"0 0 8px"}}>Deslogar do FECH.AI?</p>
+            <p style={{fontSize:13,color:"#6b7280",margin:"0 0 20px",lineHeight:1.5}}>Você precisará entrar com e-mail e senha novamente.</p>
+            <div style={{display:"flex",gap:10}}>
+              <button onClick={()=>setConfirmarSair(false)}
+                style={{flex:1,background:"#f3f4f6",color:"#374151",border:"none",borderRadius:12,padding:"12px",fontSize:14,fontWeight:600,cursor:"pointer"}}>
+                Cancelar
+              </button>
+              <button onClick={confirmarLogout}
+                style={{flex:1,background:"#dc2626",color:"#fff",border:"none",borderRadius:12,padding:"12px",fontSize:14,fontWeight:600,cursor:"pointer"}}>
+                Sair
+              </button>
+            </div>
           </div>
         </div>
       )}
+
+      {/* Header do dashboard do gestor */}
+      {tab==="dashboard"&&(
+        <div style={{background:"#0f172a",padding:"12px 16px",display:"flex",alignItems:"center",justifyContent:"space-between",position:"sticky",top:0,zIndex:10,borderBottom:"1px solid #334155"}}>
+          <div>
+            <span style={{color:"#f1f5f9",fontWeight:700}}>{corretor.nome}</span>
+            <span style={{marginLeft:8,fontSize:11,background:"#1e40af",color:"#93c5fd",padding:"2px 8px",borderRadius:12}}>Gestor</span>
+          </div>
+          <div style={{display:"flex",gap:8}}>
+            <button onClick={onVoltar}
+              style={{color:"#93c5fd",fontSize:12,fontWeight:600,background:"rgba(147,197,253,.12)",border:"1px solid rgba(147,197,253,.25)",borderRadius:8,padding:"5px 12px",cursor:"pointer"}}>
+              ← Início
+            </button>
+            <button onClick={handleLogout}
+              style={{color:"#fca5a5",fontSize:12,fontWeight:600,background:"rgba(252,165,165,.1)",border:"1px solid rgba(252,165,165,.2)",borderRadius:8,padding:"5px 12px",cursor:"pointer"}}>
+              Sair
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Header das abas internas — com Início E Sair visíveis */}
+      {tab!=="dashboard"&&(
+        <div style={{background:"#fff",borderBottom:"1px solid #e5e7eb",padding:"10px 16px",display:"flex",alignItems:"center",justifyContent:"space-between",position:"sticky",top:0,zIndex:10}}>
+          <div>
+            <span style={{fontWeight:600,fontSize:15,color:"#111827"}}>{corretor.nome}</span>
+            <span style={{marginLeft:8,fontSize:11,background:"#dbeafe",color:"#1d4ed8",padding:"2px 8px",borderRadius:12}}>Gestor</span>
+          </div>
+          <div style={{display:"flex",gap:8}}>
+            <button onClick={onVoltar}
+              style={{color:"#2563eb",fontSize:12,fontWeight:600,background:"#eff6ff",border:"1px solid #bfdbfe",borderRadius:8,padding:"5px 12px",cursor:"pointer"}}>
+              ← Início
+            </button>
+            <button onClick={handleLogout}
+              style={{color:"#dc2626",fontSize:12,fontWeight:600,background:"#fef2f2",border:"1px solid #fecaca",borderRadius:8,padding:"5px 12px",cursor:"pointer"}}>
+              Sair
+            </button>
+          </div>
+        </div>
+      )}
+
       {tab==="dashboard"  &&<DashboardTab  sb={sb} token={token}/>}
       {tab==="upload"     &&<UploadTab     sb={sb} token={token}/>}
       {tab==="distribuir" &&<DistribuirTab sb={sb} token={token}/>}
       {tab==="listas"     &&<ListasTab     sb={sb} token={token}/>}
       {tab==="equipe"     &&<EquipeTab     sb={sb} token={token} onCriarUsuario={onCriarUsuario}/>}
-      {tab === 'times' && (
-        <TimesTab
-          sb={sb}
-          token={token}
-          corretor={corretor}
-        />
-      )}
+      {tab==="times"&&<TimesTab sb={sb} token={token} corretor={corretor}/>}
+
       <div style={{position:"fixed",bottom:0,left:0,right:0,zIndex:20,display:"flex",background:tab==="dashboard"?"#1e293b":"white",borderTop:tab==="dashboard"?"1px solid #334155":"1px solid #e5e7eb"}}>
-        {[{id:"dashboard",label:"Dashboard",icon:"◉"},{id:"upload",label:"Upload",icon:"↑"},{id:"distribuir",label:"Distribuir",icon:"→"},{id:"listas",label:"Listas",icon:"★"},{id:"equipe",label:"Equipe",icon:"◇"},
-          { id: 'times', label: 'Times', icon: '👥' }].map(t=>(
-          <button key={t.id} onClick={()=>setTab(t.id)} style={{flex:1,padding:"10px 0",textAlign:"center",background:"none",border:"none",cursor:"pointer",color:tab===t.id?(tab==="dashboard"?"#38bdf8":"#2563eb"):(tab==="dashboard"?"#64748b":"#9ca3af"),fontWeight:tab===t.id?500:400}}>
+        {[
+          {id:"dashboard", label:"Dashboard", icon:"◉"},
+          {id:"upload",    label:"Upload",    icon:"↑"},
+          {id:"distribuir",label:"Distribuir",icon:"→"},
+          {id:"listas",    label:"Listas",    icon:"★"},
+          {id:"equipe",    label:"Equipe",    icon:"◇"},
+          {id:"times",     label:"Times",     icon:"👥"},
+        ].map(t=>(
+          <button key={t.id} onClick={()=>setTab(t.id)}
+            style={{flex:1,padding:"10px 0",textAlign:"center",background:"none",border:"none",cursor:"pointer",
+              color:tab===t.id?(tab==="dashboard"?"#38bdf8":"#2563eb"):(tab==="dashboard"?"#64748b":"#9ca3af"),
+              fontWeight:tab===t.id?500:400}}>
             <div style={{fontSize:18}}>{t.icon}</div>
             <div style={{fontSize:11,marginTop:2}}>{t.label}</div>
           </button>
