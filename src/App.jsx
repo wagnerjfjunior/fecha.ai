@@ -3766,7 +3766,14 @@ function VisibilidadePanel({ lista, sb, token, onFechar }) {
               <p style={{fontWeight:600,fontSize:13,color:"#1e293b",margin:0}}>Selecionar específicos</p>
             </div>
 
-            {/* Lista de membros — sempre visível, interativa só no modo selecionar */}
+            {/* Aviso quando escopo é 'empresa' — acesso irrestrito */}
+            {dados?.escopo_atual==='empresa'&&!modoSelecionar&&(
+              <div style={{background:"#fffbeb",border:"1px solid #fde68a",borderRadius:10,
+                padding:"8px 12px",marginBottom:8,fontSize:12,color:"#92400e"}}>
+                ⚠️ Esta lista está com acesso <strong>aberto para toda a empresa</strong>.
+                Clique em "Selecionar específicos" para restringir.
+              </div>
+            )}
             {membros.length>0&&(
               <div style={{border:"1px solid #e2e8f0",borderRadius:12,overflow:"hidden",marginBottom:12}}>
                 <div style={{padding:"8px 12px",borderBottom:"1px solid #e2e8f0",
