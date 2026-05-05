@@ -3766,33 +3766,50 @@ function VisibilidadePanel({ lista, sb, token, onFechar }) {
               <p style={{fontWeight:600,fontSize:13,color:"#1e293b",margin:0}}>Selecionar específicos</p>
             </div>
 
-            {modoSelecionar&&membros.length>0&&(
+            {/* Lista de membros — sempre visível, interativa só no modo selecionar */}
+            {membros.length>0&&(
               <div style={{border:"1px solid #e2e8f0",borderRadius:12,overflow:"hidden",marginBottom:12}}>
-                <div style={{padding:"8px 12px",borderBottom:"1px solid #e2e8f0",display:"flex",justifyContent:"space-between"}}>
+                <div style={{padding:"8px 12px",borderBottom:"1px solid #e2e8f0",
+                  display:"flex",justifyContent:"space-between",background:"#f8fafc"}}>
                   <span style={{fontSize:11,fontWeight:700,color:"#374151"}}>
-                    {targets.length} de {membros.length} selecionados
+                    {modoSelecionar
+                      ? `${targets.length} de ${membros.length} selecionados`
+                      : `${membros.length} com acesso`}
                   </span>
-                  <div style={{display:"flex",gap:10}}>
-                    <button onClick={()=>setTargets(membros.map(m=>({target_type:m.tipo,target_id:m.id})))}
-                      style={{fontSize:11,color:"#2563eb",background:"none",border:"none",cursor:"pointer"}}>Todos</button>
-                    <button onClick={()=>setTargets([])}
-                      style={{fontSize:11,color:"#dc2626",background:"none",border:"none",cursor:"pointer"}}>Nenhum</button>
-                  </div>
+                  {modoSelecionar&&(
+                    <div style={{display:"flex",gap:10}}>
+                      <button onClick={()=>setTargets(membros.map(m=>({target_type:m.tipo,target_id:m.id})))}
+                        style={{fontSize:11,color:"#2563eb",background:"none",border:"none",cursor:"pointer",fontWeight:600}}>Todos</button>
+                      <button onClick={()=>setTargets([])}
+                        style={{fontSize:11,color:"#dc2626",background:"none",border:"none",cursor:"pointer",fontWeight:600}}>Nenhum</button>
+                    </div>
+                  )}
                 </div>
                 {membros.map((m,i)=>{
-                  const sel=targets.some(t=>t.target_id===m.id);
+                  const sel = modoSelecionar && targets.some(t=>t.target_id===m.id);
+                  const todosAcesso = !modoSelecionar;
                   return (
-                    <div key={i} onClick={()=>toggleTarget(m)}
-                      style={{display:"flex",alignItems:"center",gap:10,padding:"10px 12px",
-                        borderBottom:"0.5px solid #f1f5f9",cursor:"pointer",background:sel?"#f0f9ff":"white"}}>
-                      <div style={{width:16,height:16,borderRadius:3,border:"2px solid",borderColor:sel?"#3b82f6":"#cbd5e1",
-                        background:sel?"#3b82f6":"white",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>
-                        {sel&&<span style={{color:"white",fontSize:10,fontWeight:700}}>✓</span>}
-                      </div>
-                      <div>
-                        <p style={{fontSize:13,fontWeight:500,color:"#1e293b",margin:0}}>
+                    <div key={i}
+                      onClick={()=>modoSelecionar&&toggleTarget(m)}
+                      style={{display:"flex",alignItems:"center",gap:10,padding:"9px 12px",
+                        borderBottom:"0.5px solid #f1f5f9",
+                        cursor:modoSelecionar?"pointer":"default",
+                        background:sel?"#f0f9ff":todosAcesso?"#fafafa":"white"}}>
+                      {modoSelecionar ? (
+                        <div style={{width:16,height:16,borderRadius:3,border:"2px solid",flexShrink:0,
+                          borderColor:sel?"#3b82f6":"#cbd5e1",background:sel?"#3b82f6":"white",
+                          display:"flex",alignItems:"center",justifyContent:"center"}}>
+                          {sel&&<span style={{color:"white",fontSize:10,fontWeight:700}}>✓</span>}
+                        </div>
+                      ) : (
+                        <span style={{fontSize:14,flexShrink:0}}>✓</span>
+                      )}
+                      <div style={{flex:1,minWidth:0}}>
+                        <p style={{fontSize:13,fontWeight:500,color:todosAcesso?"#374151":"#1e293b",margin:0,
+                          overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>
                           {m.nome}
-                          {m.tipo==="time"&&<span style={{fontSize:9,background:"#dbeafe",color:"#1d4ed8",padding:"1px 5px",borderRadius:999,marginLeft:5}}>time</span>}
+                          {m.tipo==="time"&&<span style={{fontSize:9,background:"#dbeafe",color:"#1d4ed8",
+                            padding:"1px 5px",borderRadius:999,marginLeft:5}}>time</span>}
                         </p>
                         {m.extra?.email&&<p style={{fontSize:10,color:"#94a3b8",margin:0}}>{m.extra.email}</p>}
                         {m.extra?.gestor&&<p style={{fontSize:10,color:"#94a3b8",margin:0}}>Gestor: {m.extra.gestor}</p>}
