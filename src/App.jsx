@@ -3484,6 +3484,119 @@ function UploadTab({ sb, token }) {
           </div>
         )}
 
+        {/* ── PASSO 5: Visibilidade ───────────────────────────────────────── */}
+        {step===5&&(
+          <div>
+            <h2 style={{fontSize:18,fontWeight:800,color:"#1e293b",margin:"0 0 4px"}}>👥 Quem pode ver esta lista?</h2>
+            <p style={{color:"#64748b",fontSize:13,margin:"0 0 16px"}}>
+              Escolha quem terá acesso. Corretores só veem listas com acesso liberado.
+            </p>
+
+            {/* Opção: todos */}
+            <div onClick={()=>setVisTargets([])}
+              style={{
+                background:(!visTargets||visTargets.length===0)?"#eff6ff":"white",
+                border:(!visTargets||visTargets.length===0)?"2px solid #3b82f6":"1px solid #e2e8f0",
+                borderRadius:14,padding:14,marginBottom:10,cursor:"pointer",
+                display:"flex",alignItems:"center",gap:12,
+              }}>
+              <div style={{
+                width:20,height:20,borderRadius:"50%",border:"2px solid",flexShrink:0,
+                borderColor:(!visTargets||visTargets.length===0)?"#3b82f6":"#cbd5e1",
+                background:(!visTargets||visTargets.length===0)?"#3b82f6":"white",
+              }}/>
+              <div>
+                <p style={{fontWeight:700,fontSize:13,color:"#1e293b",margin:0}}>
+                  {visMembros.some(m=>m.tipo==="time")?"Todos os times da empresa":"Todo o meu time"}
+                </p>
+                <p style={{fontSize:11,color:"#64748b",margin:0}}>Padrão — qualquer membro do time vê esta lista</p>
+              </div>
+            </div>
+
+            {/* Opção: selecionados */}
+            <div onClick={()=>{ if(!visTargets||visTargets.length===0) setVisTargets(visMembros.map(m=>({target_type:m.tipo,target_id:m.id}))); }}
+              style={{
+                background:(visTargets&&visTargets.length>0)?"#eff6ff":"white",
+                border:(visTargets&&visTargets.length>0)?"2px solid #3b82f6":"1px solid #e2e8f0",
+                borderRadius:14,padding:14,marginBottom:16,cursor:"pointer",
+                display:"flex",alignItems:"center",gap:12,
+              }}>
+              <div style={{
+                width:20,height:20,borderRadius:"50%",border:"2px solid",flexShrink:0,
+                borderColor:(visTargets&&visTargets.length>0)?"#3b82f6":"#cbd5e1",
+                background:(visTargets&&visTargets.length>0)?"#3b82f6":"white",
+              }}/>
+              <div>
+                <p style={{fontWeight:700,fontSize:13,color:"#1e293b",margin:0}}>Selecionar específicos</p>
+                <p style={{fontSize:11,color:"#64748b",margin:0}}>
+                  Escolha quais {visMembros.some(m=>m.tipo==="time")?"times/corretores":"corretores"} terão acesso
+                </p>
+              </div>
+            </div>
+
+            {/* Lista de membros — aparece ao selecionar "específicos" */}
+            {visTargets&&visTargets.length>=0&&(
+              <div style={{background:"white",border:"1px solid #e2e8f0",borderRadius:14,overflow:"hidden",marginBottom:16}}>
+                <div style={{padding:"10px 14px",borderBottom:"1px solid #e2e8f0",display:"flex",justifyContent:"space-between",alignItems:"center",background:"#f8fafc"}}>
+                  <p style={{fontSize:12,fontWeight:700,color:"#374151",margin:0}}>
+                    {visLd?"Carregando...":`${visTargets.length} de ${visMembros.length} selecionados`}
+                  </p>
+                  <div style={{display:"flex",gap:10}}>
+                    <button onClick={()=>setVisTargets(visMembros.map(m=>({target_type:m.tipo,target_id:m.id})))}
+                      style={{fontSize:11,color:"#2563eb",background:"none",border:"none",cursor:"pointer",fontWeight:600}}>Todos</button>
+                    <button onClick={()=>setVisTargets([])}
+                      style={{fontSize:11,color:"#dc2626",background:"none",border:"none",cursor:"pointer",fontWeight:600}}>Nenhum</button>
+                  </div>
+                </div>
+                {visLd&&<div style={{padding:20,textAlign:"center",color:"#94a3b8",fontSize:13}}>Carregando membros...</div>}
+                {!visLd&&visMembros.map((m,i)=>{
+                  const sel=visTargets.some(t=>t.target_id===m.id);
+                  return (
+                    <div key={i}
+                      onClick={()=>{
+                        if(sel) setVisTargets(visTargets.filter(t=>t.target_id!==m.id));
+                        else setVisTargets([...visTargets,{target_type:m.tipo,target_id:m.id}]);
+                      }}
+                      style={{
+                        display:"flex",alignItems:"center",gap:12,padding:"11px 14px",
+                        borderBottom:"0.5px solid #f1f5f9",cursor:"pointer",
+                        background:sel?"#eff6ff":"white",
+                      }}>
+                      <div style={{
+                        width:18,height:18,borderRadius:4,border:"2px solid",flexShrink:0,
+                        borderColor:sel?"#3b82f6":"#cbd5e1",
+                        background:sel?"#3b82f6":"white",
+                        display:"flex",alignItems:"center",justifyContent:"center",
+                      }}>
+                        {sel&&<span style={{color:"white",fontSize:11,fontWeight:700}}>✓</span>}
+                      </div>
+                      <div style={{flex:1,minWidth:0}}>
+                        <p style={{fontSize:13,fontWeight:600,color:"#1e293b",margin:0}}>
+                          {m.nome}
+                          {m.tipo==="time"&&<span style={{fontSize:9,background:"#dbeafe",color:"#1d4ed8",padding:"1px 6px",borderRadius:999,marginLeft:6,fontWeight:600}}>time</span>}
+                        </p>
+                        {m.extra?.gestor&&<p style={{fontSize:10,color:"#94a3b8",margin:0}}>Gestor: {m.extra.gestor} · {m.extra.corretores} corretores</p>}
+                        {m.extra?.email&&<p style={{fontSize:10,color:"#94a3b8",margin:0}}>{m.extra.email}</p>}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+
+            <div style={{display:"flex",gap:8}}>
+              <button onClick={()=>setStep(4)}
+                style={{flex:1,background:"#f1f5f9",color:"#374151",border:"none",borderRadius:12,padding:"14px",fontSize:14,fontWeight:700,cursor:"pointer"}}>
+                ← Voltar
+              </button>
+              <button onClick={handleImport}
+                style={{flex:2,background:"#10b981",color:"white",border:"none",borderRadius:12,padding:"14px",fontSize:14,fontWeight:700,cursor:"pointer"}}>
+                🚀 Importar {totalLeads.toLocaleString("pt-BR")} leads!
+              </button>
+            </div>
+          </div>
+        )}
+
         {/* ── PASSO 6: Importando (progresso) ────────────────────────────── */}
         {step===6&&(
           <div style={{textAlign:"center",paddingTop:40}}>
