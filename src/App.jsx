@@ -4376,6 +4376,10 @@ function CorretorApp({ sb, token, corretor, onLogout, onVoltar }) {
                 style={{background:"rgba(255,255,255,.2)",border:"1px solid rgba(255,255,255,.3)",borderRadius:10,padding:"6px 12px",color:"#fff",fontSize:12,fontWeight:600,cursor:"pointer"}}>
                 ← Início
               </button>
+              <button onClick={onLogout}
+                style={{background:"rgba(239,68,68,.25)",border:"1px solid rgba(239,68,68,.4)",borderRadius:10,padding:"6px 12px",color:"#fca5a5",fontSize:12,fontWeight:600,cursor:"pointer"}}>
+                Sair
+              </button>
             </div>
           </div>
           {(cnts.email||0)>0&&(
