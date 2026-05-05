@@ -3709,7 +3709,8 @@ function VisibilidadePanel({ lista, sb, token, onFechar }) {
     setSalvando(false);
   };
 
-  const membros = dados?.membros||[];
+  const membros   = dados?.membros||[];
+  const timeInfo  = dados?.time_info;
 
   const toggleTarget = (m) => {
     const sel = targets.some(t=>t.target_id===m.id);
@@ -3735,12 +3736,27 @@ function VisibilidadePanel({ lista, sb, token, onFechar }) {
             {/* Opção todos */}
             <div onClick={()=>setModoSelecionar(false)}
               style={{background:!modoSelecionar?"#eff6ff":"white",border:!modoSelecionar?"2px solid #3b82f6":"1px solid #e2e8f0",
-                borderRadius:12,padding:12,marginBottom:8,cursor:"pointer",display:"flex",alignItems:"center",gap:10}}>
+                borderRadius:!modoSelecionar&&timeInfo?"12px 12px 0 0":12,padding:12,marginBottom:0,cursor:"pointer",display:"flex",alignItems:"center",gap:10}}>
               <div style={{width:18,height:18,borderRadius:"50%",border:"2px solid",borderColor:!modoSelecionar?"#3b82f6":"#cbd5e1",background:!modoSelecionar?"#3b82f6":"white",flexShrink:0}}/>
               <p style={{fontWeight:600,fontSize:13,color:"#1e293b",margin:0}}>
                 {membros.some(m=>m.tipo==="time")?"Todos os times":"Todo o time"} <span style={{fontSize:11,fontWeight:400,color:"#64748b"}}>(padrão)</span>
               </p>
             </div>
+            {/* Info do time dono — mostra quem realmente tem acesso */}
+            {!modoSelecionar&&timeInfo&&(
+              <div style={{background:"#f0f9ff",border:"1px solid #bae6fd",borderTop:"none",
+                borderRadius:"0 0 12px 12px",padding:"8px 12px",marginBottom:8,
+                display:"flex",alignItems:"center",gap:8}}>
+                <span style={{fontSize:16}}>👥</span>
+                <div>
+                  <p style={{fontSize:12,color:"#0369a1",margin:0,fontWeight:600}}>{timeInfo.nome}</p>
+                  <p style={{fontSize:11,color:"#0284c7",margin:0}}>
+                    Gestor: {timeInfo.gestor} · {timeInfo.membros_count} corretor{timeInfo.membros_count!==1?"es":""}
+                  </p>
+                </div>
+              </div>
+            )}
+            {!modoSelecionar&&!timeInfo&&<div style={{marginBottom:8}}/>}
 
             {/* Opção selecionados */}
             <div onClick={()=>setModoSelecionar(true)}
