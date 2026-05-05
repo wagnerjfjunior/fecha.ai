@@ -3539,23 +3539,71 @@ function DistribuirTab({ sb, token }) {
 }
 
 function ListasTab({ sb, token }) {
-  const [listas,setListas]=useState([]); const [report,setReport]=useState(null);
-  const load=async()=>{ try{setListas(await sb.query("listas","order=created_at.desc",token));}catch(e){} };
-  useEffect(()=>{load();},[]);
-  const acao=async(id,a,m)=>{ try{await sb.rpc("gerenciar_lista",{p_lista_id:id,p_acao:a,p_motivo:m||""},token);load();}catch(e){alert(e.message);} };
-  const verRelatorio=async(id)=>{ try{setReport(await sb.rpc("relatorio_fornecedor",{p_lista_id:id},token));}catch(e){alert(e.message);} };
+  const [listas,   setListas]   = useState([]);
+  const [report,   setReport]   = useState(null);
+  const [excluindo,setExcluindo]= useState(null); // lista a excluir
+  const [ldExcluir,setLdExcluir]= useState(false);
+  const [erroExcluir,setErroExcluir]= useState("");
+  const [preview, setPreview]   = useState(null); // {disponiveis, distribuidos}
+
+  const load = async () => {
+    try {
+      // Incluir encerradas mas não excluídas
+      const r = await sb.query("listas","order=created_at.desc&status=neq.excluida",token);
+      setListas(r);
+    } catch(e) {}
+  };
+  useEffect(()=>{ load(); },[]);
+
+  const acao = async (id, a, m) => {
+    try { await sb.rpc("gerenciar_lista",{p_lista_id:id,p_acao:a,p_motivo:m||""},token); load(); }
+    catch(e) { alert(e.message); }
+  };
+
+  const verRelatorio = async (id) => {
+    try { setReport(await sb.rpc("relatorio_fornecedor",{p_lista_id:id},token)); }
+    catch(e) { alert(e.message); }
+  };
+
+  const abrirExcluir = async (lista) => {
+    setErroExcluir(""); setPreview(null);
+    setExcluindo(lista);
+    // Buscar contagem prévia
+    try {
+      const leads = await sb.query("leads",`lista_id=eq.${lista.id}&select=status,corretor_id`,token);
+      const disp = leads.filter(l=>l.status==="disponivel"&&!l.corretor_id).length;
+      const dist = leads.filter(l=>l.status!=="disponivel"||l.corretor_id).length;
+      setPreview({disponiveis:disp, distribuidos:dist});
+    } catch(e){}
+  };
+
+  const confirmarExcluir = async () => {
+    if(!excluindo) return;
+    setLdExcluir(true); setErroExcluir("");
+    try {
+      const r = await sb.rpc("excluir_lista",{p_lista_id:excluindo.id},token);
+      if(r.error) throw new Error(r.error);
+      setExcluindo(null); setPreview(null);
+      load();
+    } catch(e) { setErroExcluir(e.message); }
+    setLdExcluir(false);
+  };
 
   function qualBadge(txErr) {
-    if(txErr<=10) return { label:"Boa",    bg:"bg-emerald-100", text:"text-emerald-700", bar:"bg-emerald-500" };
-    if(txErr<=25) return { label:"Regular",bg:"bg-amber-100",   text:"text-amber-700",   bar:"bg-amber-500"   };
-    return             { label:"Ruim",   bg:"bg-red-100",     text:"text-red-700",     bar:"bg-red-500"     };
+    if(txErr<=10) return {label:"Boa",    bg:"bg-emerald-100",text:"text-emerald-700",bar:"bg-emerald-500"};
+    if(txErr<=25) return {label:"Regular",bg:"bg-amber-100",  text:"text-amber-700",  bar:"bg-amber-500"  };
+    return             {label:"Ruim",   bg:"bg-red-100",    text:"text-red-700",    bar:"bg-red-500"    };
   }
 
   if(report) return (
     <div className="p-4 space-y-4">
-      <div className="flex justify-between items-center"><h2 className="text-lg font-bold text-gray-900">Relatório</h2><button className="text-xs text-blue-600" onClick={()=>setReport(null)}>Voltar</button></div>
+      <div className="flex justify-between items-center">
+        <h2 className="text-lg font-bold text-gray-900">Relatório</h2>
+        <button className="text-xs text-blue-600" onClick={()=>setReport(null)}>Voltar</button>
+      </div>
       <div className="bg-white rounded-xl p-4 border shadow-sm">
-        <p className="font-bold text-gray-900">{report.lista?.fornecedor}</p><p className="text-xs text-gray-500">{report.lista?.arquivo} · {report.lista?.status} · ★ {report.lista?.nota_media||"—"}</p>
+        <p className="font-bold text-gray-900">{report.lista?.fornecedor}</p>
+        <p className="text-xs text-gray-500">{report.lista?.arquivo} · {report.lista?.status} · ★ {report.lista?.nota_media||"—"}</p>
         <div className="grid grid-cols-2 gap-2 mt-3">
           <div className="text-xs"><span className="text-gray-500">Total:</span> <span className="font-medium">{report.numeros?.total}</span></div>
           <div className="text-xs"><span className="text-gray-500">Válidos:</span> <span className="font-medium">{report.numeros?.validos}</span></div>
@@ -3567,8 +3615,46 @@ function ListasTab({ sb, token }) {
       {report.avaliacoes?.length>0&&(<div><p className="text-sm font-bold text-gray-700 mb-2">Avaliações</p>{report.avaliacoes.map((a,i)=>(<div key={i} className="bg-white rounded-lg p-3 border mb-2"><div className="flex justify-between"><span className="text-sm font-medium">{a.corretor}</span><div className="flex gap-0.5">{[1,2,3,4,5].map(n=><span key={n} className={n<=a.nota?"text-amber-400":"text-gray-300"}>★</span>)}</div></div>{a.comentario&&<p className="text-xs text-gray-500 mt-1">{a.comentario}</p>}</div>))}</div>)}
     </div>
   );
+
   return (
     <div className="p-4 space-y-4">
+      {/* Modal excluir lista */}
+      {excluindo&&(
+        <div style={{position:"fixed",inset:0,background:"rgba(0,0,0,.55)",zIndex:999,display:"flex",alignItems:"center",justifyContent:"center",padding:20}}>
+          <div style={{background:"#fff",borderRadius:20,padding:24,maxWidth:340,width:"100%"}}>
+            <div style={{fontSize:32,textAlign:"center",marginBottom:12}}>🗑️</div>
+            <p style={{fontWeight:700,fontSize:16,color:"#111827",textAlign:"center",margin:"0 0 8px"}}>
+              Excluir lista?
+            </p>
+            <p style={{fontSize:13,color:"#374151",textAlign:"center",margin:"0 0 6px",fontWeight:600}}>
+              {excluindo.nome_fornecedor}
+            </p>
+            {preview&&(
+              <div style={{background:"#fef2f2",border:"1px solid #fecaca",borderRadius:12,padding:12,margin:"12px 0"}}>
+                <p style={{fontSize:12,color:"#991b1b",margin:"0 0 4px",fontWeight:600}}>
+                  ⚠️ Esta ação não pode ser desfeita
+                </p>
+                <p style={{fontSize:12,color:"#7f1d1d",margin:0,lineHeight:1.5}}>
+                  <strong>{preview.disponiveis}</strong> leads disponíveis serão removidos.<br/>
+                  <strong>{preview.distribuidos}</strong> leads já distribuídos permanecem com os corretores.
+                </p>
+              </div>
+            )}
+            {erroExcluir&&<p style={{color:"#dc2626",fontSize:12,textAlign:"center",margin:"0 0 10px"}}>{erroExcluir}</p>}
+            <div style={{display:"flex",gap:10,marginTop:8}}>
+              <button onClick={()=>{setExcluindo(null);setPreview(null);setErroExcluir("");}}
+                style={{flex:1,background:"#f3f4f6",color:"#374151",border:"none",borderRadius:12,padding:"13px",fontSize:14,fontWeight:600,cursor:"pointer"}}>
+                Cancelar
+              </button>
+              <button onClick={confirmarExcluir} disabled={ldExcluir}
+                style={{flex:1,background:"#dc2626",color:"#fff",border:"none",borderRadius:12,padding:"13px",fontSize:14,fontWeight:700,cursor:ldExcluir?"not-allowed":"pointer",opacity:ldExcluir?.7:1}}>
+                {ldExcluir?"Excluindo...":"Excluir"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       <h2 className="text-lg font-bold text-gray-900">Listas de leads</h2>
       {listas.length===0&&<p className="text-sm text-gray-500">Nenhuma lista importada ainda.</p>}
       {listas.map(l=>{
@@ -3578,13 +3664,22 @@ function ListasTab({ sb, token }) {
         return (
           <div key={l.id} className="bg-white rounded-xl p-4 border border-gray-100 shadow-sm">
             <div className="flex justify-between items-start">
-              <div><p className="font-medium text-sm text-gray-900">{l.nome_fornecedor}</p><p className="text-xs text-gray-500">{l.nome_arquivo} · {new Date(l.created_at).toLocaleDateString("pt-BR")}</p></div>
+              <div>
+                <p className="font-medium text-sm text-gray-900">{l.nome_fornecedor}</p>
+                <p className="text-xs text-gray-500">{l.nome_arquivo} · {new Date(l.created_at).toLocaleDateString("pt-BR")}</p>
+                {l.escopo_distribuicao&&(
+                  <span style={{fontSize:10,background:l.escopo_distribuicao==="empresa"?"#dbeafe":"#f3e8ff",color:l.escopo_distribuicao==="empresa"?"#1d4ed8":"#7e22ce",padding:"1px 6px",borderRadius:999,marginTop:2,display:"inline-block"}}>
+                    {l.escopo_distribuicao==="empresa"?"🏢 Empresa":l.escopo_distribuicao==="time"?"👥 Time":"🔒 Selecionados"}
+                  </span>
+                )}
+              </div>
               <div className="flex items-center gap-2">
                 <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${qb.bg} ${qb.text}`}>{qb.label}</span>
-                <span className={`text-xs px-2 py-1 rounded-full font-medium ${l.status==="ativa"?"bg-emerald-100 text-emerald-700":l.status==="pausada"?"bg-amber-100 text-amber-700":"bg-red-100 text-red-700"}`}>{l.status}</span>
+                <span className={`text-xs px-2 py-1 rounded-full font-medium ${l.status==="ativa"?"bg-emerald-100 text-emerald-700":l.status==="pausada"?"bg-amber-100 text-amber-700":"bg-red-100 text-red-700"}`}>
+                  {l.status}
+                </span>
               </div>
             </div>
-            {/* Barra de qualidade visual */}
             <div className="mt-3">
               <div className="flex justify-between text-xs text-gray-500 mb-1">
                 <span>{l.total_leads} leads · {l.leads_validos} válidos</span>
@@ -3603,6 +3698,7 @@ function ListasTab({ sb, token }) {
               {l.status==="ativa"&&<button className="text-xs bg-amber-100 text-amber-700 px-3 py-1.5 rounded-lg" onClick={()=>acao(l.id,"pausar")}>Pausar</button>}
               {l.status==="pausada"&&<button className="text-xs bg-emerald-100 text-emerald-700 px-3 py-1.5 rounded-lg" onClick={()=>acao(l.id,"reativar")}>Reativar</button>}
               {l.status!=="encerrada"&&<button className="text-xs bg-red-100 text-red-700 px-3 py-1.5 rounded-lg" onClick={()=>{if(confirm("Encerrar lista?")) acao(l.id,"encerrar","Baixa qualidade");}}>Encerrar</button>}
+              <button className="text-xs bg-red-50 text-red-600 px-3 py-1.5 rounded-lg border border-red-200" onClick={()=>abrirExcluir(l)}>🗑 Excluir</button>
             </div>
           </div>
         );
@@ -3611,8 +3707,67 @@ function ListasTab({ sb, token }) {
   );
 }
 
+// ─── Seção alterar role — usada dentro do EditarCorretorModal ────────────────
+function AlterarRoleSection({ corretor, sb, token, onAlterado }) {
+  const [novoRole, setNovoRole] = useState(corretor.role || "corretor");
+  const [ld, setLd]             = useState(false);
+  const [msg, setMsg]           = useState("");
+
+  const roleAtual = corretor.role || "corretor";
+  if(novoRole === roleAtual) {
+    // nada mudou ainda
+  }
+
+  const ROLES = [
+    {value:"corretor",    label:"Corretor",         desc:"Recebe e trabalha lotes de leads"},
+    {value:"gestor",      label:"Gestor",            desc:"Gerencia time e listas"},
+    {value:"admin_local", label:"Administrador",     desc:"Acesso total na empresa"},
+  ];
+
+  const salvarRole = async () => {
+    if(novoRole === roleAtual) return;
+    setLd(true); setMsg("");
+    try {
+      const r = await sb.rpc("alterar_role_corretor",
+        {p_corretor_id: corretor.id, p_novo_role: novoRole}, token);
+      if(r.error) throw new Error(r.error);
+      setMsg("✅ Role alterado para " + ROLES.find(r=>r.value===novoRole)?.label);
+      onAlterado(novoRole);
+    } catch(e) { setMsg("❌ " + e.message); }
+    setLd(false);
+  };
+
+  return (
+    <div className="mt-4 p-4 rounded-xl border border-purple-100 bg-purple-50">
+      <p className="text-xs font-medium text-purple-800 uppercase tracking-wide mb-3">🛡️ Função do usuário</p>
+      <div className="space-y-2 mb-3">
+        {ROLES.map(r=>(
+          <button key={r.value} onClick={()=>setNovoRole(r.value)}
+            className={`w-full text-left px-3 py-2.5 rounded-xl border transition-all ${novoRole===r.value?"border-purple-500 bg-white":"border-gray-200 bg-white"}`}>
+            <div className="flex items-center gap-2">
+              <div className={`w-4 h-4 rounded-full border-2 flex-shrink-0 ${novoRole===r.value?"border-purple-500 bg-purple-500":"border-gray-300"}`}/>
+              <div>
+                <p className={`text-sm font-semibold ${novoRole===r.value?"text-purple-700":"text-gray-700"}`}>
+                  {r.label}
+                  {r.value===roleAtual&&<span className="ml-2 text-xs font-normal text-gray-400">(atual)</span>}
+                </p>
+                <p className="text-xs text-gray-400">{r.desc}</p>
+              </div>
+            </div>
+          </button>
+        ))}
+      </div>
+      {msg&&<p className={`text-sm mb-2 ${msg.startsWith("✅")?"text-emerald-700":"text-red-600"}`}>{msg}</p>}
+      <button onClick={salvarRole} disabled={ld||novoRole===roleAtual}
+        className={`w-full py-2.5 rounded-xl text-sm font-semibold transition-all ${novoRole===roleAtual?"bg-gray-100 text-gray-400 cursor-not-allowed":"bg-purple-600 text-white"}`}>
+        {ld?"Alterando...":novoRole===roleAtual?"Nenhuma alteração":"Salvar função"}
+      </button>
+    </div>
+  );
+}
+
 // ─── Modal edição de perfil do corretor ──────────────────────────────────────
-function EditarCorretorModal({ corretor, sb, token, onSalvo, onFechar }) {
+function EditarCorretorModal({ corretor, sb, token, onSalvo, onFechar, session }) {
   const [apelido,   setApelido]  = useState(corretor.apelido||"");
   const [telefone,  setTelefone] = useState(corretor.telefone_prof||"");
   const [empresa,   setEmpresa]  = useState(corretor.empresa||"Tegra Incorporadora");
@@ -3743,6 +3898,15 @@ function EditarCorretorModal({ corretor, sb, token, onSalvo, onFechar }) {
           {toggle("Ativo no sistema",       ativo, setAtivo)}
           {toggle("Apto para receber lotes",apto,  setApto,  "bg-blue-100 text-blue-700")}
 
+          {/* Alteração de role — só admin_local vê */}
+          {session?.corretor?.role === "admin_local" && corretor.role !== "admin_local" && (
+            <AlterarRoleSection corretor={corretor} sb={sb} token={token}
+              onAlterado={novoRole=>{
+                onSalvo({...corretor, role:novoRole,
+                  is_gestor: novoRole==="gestor"||novoRole==="admin_local"});
+              }}/>
+          )}
+
           {/* Prévia da assinatura */}
           {(apelido||telefone||empresa) && (
             <div className="mt-4 bg-gray-50 rounded-xl p-4 border border-gray-200">
@@ -3814,7 +3978,7 @@ function EquipeTab({ sb, token, onCriarUsuario , session }) {
         ))}
       </div>
       {editando&&(
-        <EditarCorretorModal corretor={editando} sb={sb} token={token}
+        <EditarCorretorModal corretor={editando} sb={sb} token={token} session={session}
           onSalvo={atualizado=>{
             setCs(prev=>prev.map(c=>c.id===atualizado.id?atualizado:c));
             setEditando(null);
@@ -3919,7 +4083,7 @@ function GestorApp({ sb, token, corretor, onLogout, onVoltar, onCriarUsuario }) 
       {tab==="upload"     &&<UploadTab     sb={sb} token={token}/>}
       {tab==="distribuir" &&<DistribuirTab sb={sb} token={token}/>}
       {tab==="listas"     &&<ListasTab     sb={sb} token={token}/>}
-      {tab==="equipe"     &&<EquipeTab     sb={sb} token={token} onCriarUsuario={onCriarUsuario}/>}
+      {tab==="equipe"     &&<EquipeTab     sb={sb} token={token} onCriarUsuario={onCriarUsuario} session={{corretor}}/>}
       {tab==="times"&&<TimesTab sb={sb} token={token} corretor={corretor}/>}
 
       <div style={{position:"fixed",bottom:0,left:0,right:0,zIndex:20,display:"flex",background:tab==="dashboard"?"#1e293b":"white",borderTop:tab==="dashboard"?"1px solid #334155":"1px solid #e5e7eb"}}>
