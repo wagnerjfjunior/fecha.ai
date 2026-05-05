@@ -3158,13 +3158,14 @@ function UploadTab({ sb, token }) {
       setStep(7);
     } catch(e) {
       setErr("Erro durante importação: " + e.message);
-      setStep(5);
+      setStep(4);
     }
   };
 
   const resetar = () => {
     setStep(1); setFile(null); setRows([]); setForn(""); setColMap({});
-    setProgress(0); setResult(null); setErr(""); setColEdit(false);
+    setProgress(0); setResult(null); setErr("");
+    setVisTargets(null); setVisMembros([]);
   };
 
   const camposDetectados = Object.keys(colMap);
