@@ -3059,11 +3059,38 @@ function UploadTab({ sb, token }) {
   const [rows,         setRows]         = useState([]);
   const [forn,         setForn]         = useState("");
   const [colMap,       setColMap]       = useState({});
-  const [colsVisiveis, setColsVisiveis] = useState(["zona","bairro"]); // padrão
+  const [colsVisiveis, setColsVisiveis] = useState(["zona","bairro"]);
+  const [visTargets,   setVisTargets]   = useState(null); // null = padrão (time dono)
+  const [visMembros,   setVisMembros]   = useState([]);   // membros disponíveis para selecionar
+  const [visLd,        setVisLd]        = useState(false);
   const [progress,     setProgress]     = useState(0);
   const [result,       setResult]       = useState(null);
   const [err,          setErr]          = useState("");
   const fileRef = useRef();
+
+  // Carregar membros disponíveis para visibilidade (antes de criar a lista)
+  const carregarMembros = async () => {
+    setVisLd(true);
+    try {
+      // Usa lista_id de uma lista existente qualquer só para obter os membros disponíveis
+      // A RPC retorna membros baseado no perfil do usuário autenticado
+      const r = await sb.rpc("gerenciar_visibilidade_lista",{
+        p_lista_id: '00000000-0000-0000-0000-000000000000', // UUID dummy — RPC retorna membros antes de validar lista
+        p_targets: null
+      },token);
+      if(r && r.membros) setVisMembros(r.membros||[]);
+      else {
+        // Fallback: buscar membros diretamente
+        const cs = await sb.query("corretores","ativo=eq.true&order=nome.asc",token);
+        const ts = await sb.query("times","order=nome.asc",token);
+        const membros = [];
+        ts.forEach(t=>membros.push({id:t.id,nome:t.nome,tipo:"time",extra:{}}));
+        cs.filter(c=>!c.is_gestor&&!c.is_admin_local).forEach(c=>membros.push({id:c.id,nome:c.nome,tipo:"corretor",extra:{email:c.email}}));
+        setVisMembros(membros);
+      }
+    } catch(e){ setVisMembros([]); }
+    setVisLd(false);
+  };
 
   // ── Dicas de cada passo ────────────────────────────────────────────────────
   const DICAS = [
@@ -3108,13 +3135,21 @@ function UploadTab({ sb, token }) {
   // ── Importação por batches com progresso ───────────────────────────────────
   const handleImport = async () => {
     if (!forn.trim()) return;
-    setStep(5); setProgress(0); setErr("");
+    setStep(6); setProgress(0); setErr("");
     try {
       const lr = await sb.rpc("criar_lista",{p_nome_fornecedor:forn.trim(),p_nome_arquivo:file.name},token);
       if(lr?.error) throw new Error(lr.error);
       const lid = lr.id;
-      // Salvar preferência de colunas visíveis para esta lista
       try { localStorage.setItem(`fechai_cols_${lid}`, JSON.stringify(colsVisiveis)); } catch(e) {}
+
+      // Salvar visibilidade se houver seleção específica
+      if(visTargets && visTargets.length > 0) {
+        await sb.rpc("gerenciar_visibilidade_lista",{
+          p_lista_id: lid,
+          p_targets:  JSON.stringify(visTargets),
+        },token);
+      }
+
       const leads = rows.slice(1).map(r => csvToLead(r, colMap, forn.trim()));
       const B = 100;
       const total = leads.length;
@@ -3133,10 +3168,10 @@ function UploadTab({ sb, token }) {
         setProgress(Math.round(((i+B)/total)*100));
       }
       setResult(tot);
-      setStep(6);
+      setStep(7);
     } catch(e) {
       setErr("Erro durante importação: " + e.message);
-      setStep(4);
+      setStep(5);
     }
   };
 
@@ -3153,25 +3188,25 @@ function UploadTab({ sb, token }) {
   return (
     <div style={{background:"#f8fafc",minHeight:"100vh",paddingBottom:80}}>
 
-      {/* Barra de progresso do wizard */}
-      {step >= 1 && step <= 4 && (
+      {/* Barra de progresso do wizard — agora 5 passos */}
+      {step >= 1 && step <= 5 && (
         <div style={{background:"white",borderBottom:"1px solid #e2e8f0",padding:"12px 16px"}}>
           <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:8}}>
-            {["Arquivo","Fornecedor","Colunas","Conferência"].map((label,i)=>{
+            {["Arquivo","Fornecedor","Colunas","Conferência","Visibilidade"].map((label,i)=>{
               const n=i+1;
               const ativo=step===n;
               const feito=step>n;
               return (
-                <div key={label} style={{display:"flex",alignItems:"center",gap:4,flex:1}}>
+                <div key={label} style={{display:"flex",alignItems:"center",gap:2,flex:1}}>
                   <div style={{
-                    width:26,height:26,borderRadius:"50%",flexShrink:0,
+                    width:22,height:22,borderRadius:"50%",flexShrink:0,
                     display:"flex",alignItems:"center",justifyContent:"center",
-                    fontSize:12,fontWeight:700,
+                    fontSize:11,fontWeight:700,
                     background:feito?"#10b981":ativo?"#3b82f6":"#e2e8f0",
                     color:feito||ativo?"white":"#94a3b8",
                   }}>{feito?"✓":n}</div>
-                  <span style={{fontSize:10,color:ativo?"#3b82f6":feito?"#10b981":"#94a3b8",fontWeight:ativo||feito?700:400,flex:1}}>{label}</span>
-                  {i<3&&<div style={{height:1,flex:1,background:feito?"#10b981":"#e2e8f0",margin:"0 4px"}}/>}
+                  <span style={{fontSize:9,color:ativo?"#3b82f6":feito?"#10b981":"#94a3b8",fontWeight:ativo||feito?700:400,flex:1}}>{label}</span>
+                  {i<4&&<div style={{height:1,flex:1,background:feito?"#10b981":"#e2e8f0",margin:"0 2px"}}/>}
                 </div>
               );
             })}
@@ -3453,16 +3488,16 @@ function UploadTab({ sb, token }) {
               <button onClick={()=>setStep(3)} style={{flex:1,background:"#f1f5f9",color:"#374151",border:"none",borderRadius:12,padding:"14px",fontSize:14,fontWeight:700,cursor:"pointer"}}>
                 ← Voltar
               </button>
-              <button onClick={handleImport}
-                style={{flex:2,background:"#10b981",color:"white",border:"none",borderRadius:12,padding:"14px",fontSize:14,fontWeight:700,cursor:"pointer"}}>
-                🚀 Importar {totalLeads.toLocaleString("pt-BR")} leads!
+              <button onClick={()=>{ setStep(5); carregarMembros(); }}
+                style={{flex:2,background:"#3b82f6",color:"white",border:"none",borderRadius:12,padding:"14px",fontSize:14,fontWeight:700,cursor:"pointer"}}>
+                Próximo: Visibilidade →
               </button>
             </div>
           </div>
         )}
 
-        {/* ── PASSO 5: Importando (progresso) ────────────────────────────── */}
-        {step===5&&(
+        {/* ── PASSO 6: Importando (progresso) ────────────────────────────── */}
+        {step===6&&(
           <div style={{textAlign:"center",paddingTop:40}}>
             <div style={{fontSize:64,marginBottom:16}}>⏳</div>
             <h2 style={{fontSize:20,fontWeight:800,color:"#1e293b",margin:"0 0 8px"}}>Importando seus leads...</h2>
@@ -3485,8 +3520,8 @@ function UploadTab({ sb, token }) {
           </div>
         )}
 
-        {/* ── PASSO 6: Resultado ─────────────────────────────────────────── */}
-        {step===6&&result&&(
+        {/* ── PASSO 7: Resultado ─────────────────────────────────────────── */}
+        {step===7&&result&&(
           <div style={{textAlign:"center",paddingTop:20}}>
             <div style={{fontSize:72,marginBottom:12}}>🎉</div>
             <h2 style={{fontSize:22,fontWeight:800,color:"#15803d",margin:"0 0 8px"}}>Lista importada!</h2>
@@ -3538,13 +3573,128 @@ function DistribuirTab({ sb, token }) {
   );
 }
 
+function VisibilidadePanel({ lista, sb, token, onFechar }) {
+  const [dados,    setDados]    = useState(null);
+  const [targets,  setTargets]  = useState(null);
+  const [ld,       setLd]       = useState(true);
+  const [salvando, setSalvando] = useState(false);
+  const [msg,      setMsg]      = useState("");
+
+  useEffect(()=>{
+    sb.rpc("gerenciar_visibilidade_lista",{p_lista_id:lista.id},token)
+      .then(r=>{ if(!r.error){ setDados(r); setTargets(r.selecionados||[]); } })
+      .finally(()=>setLd(false));
+  },[]);
+
+  const salvar = async () => {
+    setSalvando(true); setMsg("");
+    try {
+      const r = await sb.rpc("gerenciar_visibilidade_lista",{
+        p_lista_id: lista.id,
+        p_targets:  JSON.stringify(targets||[]),
+      },token);
+      if(r.error) throw new Error(r.error);
+      setMsg("✅ Visibilidade salva");
+      setTimeout(onFechar, 1200);
+    } catch(e){ setMsg("❌ "+e.message); }
+    setSalvando(false);
+  };
+
+  const membros = dados?.membros||[];
+  const isTodos = !targets||targets.length===0;
+
+  return (
+    <div style={{position:"fixed",inset:0,background:"rgba(0,0,0,.55)",zIndex:999,display:"flex",alignItems:"flex-end",justifyContent:"center"}}>
+      <div style={{background:"#fff",borderRadius:"20px 20px 0 0",width:"100%",maxHeight:"85vh",overflow:"auto",padding:20}}>
+        <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:16}}>
+          <div>
+            <p style={{fontWeight:700,fontSize:16,color:"#111827",margin:0}}>Visibilidade</p>
+            <p style={{fontSize:12,color:"#6b7280",margin:0}}>{lista.nome_fornecedor}</p>
+          </div>
+          <button onClick={onFechar} style={{fontSize:22,color:"#9ca3af",background:"none",border:"none",cursor:"pointer"}}>✕</button>
+        </div>
+
+        {ld&&<p style={{textAlign:"center",color:"#94a3b8",padding:20}}>Carregando...</p>}
+
+        {!ld&&(
+          <>
+            {/* Opção todos */}
+            <div onClick={()=>setTargets([])}
+              style={{background:isTodos?"#eff6ff":"white",border:isTodos?"2px solid #3b82f6":"1px solid #e2e8f0",
+                borderRadius:12,padding:12,marginBottom:8,cursor:"pointer",display:"flex",alignItems:"center",gap:10}}>
+              <div style={{width:18,height:18,borderRadius:"50%",border:"2px solid",borderColor:isTodos?"#3b82f6":"#cbd5e1",background:isTodos?"#3b82f6":"white",flexShrink:0}}/>
+              <p style={{fontWeight:600,fontSize:13,color:"#1e293b",margin:0}}>
+                {membros.some(m=>m.tipo==="time")?"Todos os times":"Todo o time"} <span style={{fontSize:11,fontWeight:400,color:"#64748b"}}>(padrão)</span>
+              </p>
+            </div>
+
+            {/* Opção selecionados */}
+            <div onClick={()=>{ if(isTodos) setTargets(membros.map(m=>({target_type:m.tipo,target_id:m.id}))); }}
+              style={{background:!isTodos?"#eff6ff":"white",border:!isTodos?"2px solid #3b82f6":"1px solid #e2e8f0",
+                borderRadius:12,padding:12,marginBottom:12,cursor:"pointer",display:"flex",alignItems:"center",gap:10}}>
+              <div style={{width:18,height:18,borderRadius:"50%",border:"2px solid",borderColor:!isTodos?"#3b82f6":"#cbd5e1",background:!isTodos?"#3b82f6":"white",flexShrink:0}}/>
+              <p style={{fontWeight:600,fontSize:13,color:"#1e293b",margin:0}}>Selecionar específicos</p>
+            </div>
+
+            {!isTodos&&membros.length>0&&(
+              <div style={{border:"1px solid #e2e8f0",borderRadius:12,overflow:"hidden",marginBottom:12}}>
+                <div style={{padding:"8px 12px",borderBottom:"1px solid #e2e8f0",display:"flex",justifyContent:"space-between"}}>
+                  <span style={{fontSize:11,fontWeight:700,color:"#374151"}}>
+                    {targets?.length||0} selecionados
+                  </span>
+                  <div style={{display:"flex",gap:10}}>
+                    <button onClick={()=>setTargets(membros.map(m=>({target_type:m.tipo,target_id:m.id})))}
+                      style={{fontSize:11,color:"#2563eb",background:"none",border:"none",cursor:"pointer"}}>Todos</button>
+                    <button onClick={()=>setTargets([])}
+                      style={{fontSize:11,color:"#dc2626",background:"none",border:"none",cursor:"pointer"}}>Nenhum</button>
+                  </div>
+                </div>
+                {membros.map((m,i)=>{
+                  const sel=targets?.some(t=>t.target_id===m.id);
+                  return (
+                    <div key={i} onClick={()=>{
+                        const atual=targets||[];
+                        setTargets(sel?atual.filter(t=>t.target_id!==m.id):[...atual,{target_type:m.tipo,target_id:m.id}]);
+                      }}
+                      style={{display:"flex",alignItems:"center",gap:10,padding:"10px 12px",
+                        borderBottom:"0.5px solid #f1f5f9",cursor:"pointer",background:sel?"#f0f9ff":"white"}}>
+                      <div style={{width:16,height:16,borderRadius:3,border:"2px solid",borderColor:sel?"#3b82f6":"#cbd5e1",
+                        background:sel?"#3b82f6":"white",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>
+                        {sel&&<span style={{color:"white",fontSize:10,fontWeight:700}}>✓</span>}
+                      </div>
+                      <div>
+                        <p style={{fontSize:13,fontWeight:500,color:"#1e293b",margin:0}}>
+                          {m.nome}
+                          {m.tipo==="time"&&<span style={{fontSize:9,background:"#dbeafe",color:"#1d4ed8",padding:"1px 5px",borderRadius:999,marginLeft:5}}>time</span>}
+                        </p>
+                        {m.extra?.email&&<p style={{fontSize:10,color:"#94a3b8",margin:0}}>{m.extra.email}</p>}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+
+            {msg&&<p style={{fontSize:13,textAlign:"center",margin:"0 0 10px",color:msg.startsWith("✅")?"#15803d":"#dc2626"}}>{msg}</p>}
+            <button onClick={salvar} disabled={salvando}
+              style={{width:"100%",background:"#2563eb",color:"#fff",border:"none",borderRadius:12,padding:"14px",fontSize:14,fontWeight:700,cursor:salvando?"not-allowed":"pointer",opacity:salvando?.7:1}}>
+              {salvando?"Salvando...":"Salvar visibilidade"}
+            </button>
+          </>
+        )}
+      </div>
+    </div>
+  );
+}
+
 function ListasTab({ sb, token }) {
-  const [listas,   setListas]   = useState([]);
-  const [report,   setReport]   = useState(null);
-  const [excluindo,setExcluindo]= useState(null); // lista a excluir
-  const [ldExcluir,setLdExcluir]= useState(false);
-  const [erroExcluir,setErroExcluir]= useState("");
-  const [preview, setPreview]   = useState(null); // {disponiveis, distribuidos}
+  const [listas,      setListas]      = useState([]);
+  const [report,      setReport]      = useState(null);
+  const [excluindo,   setExcluindo]   = useState(null);
+  const [ldExcluir,   setLdExcluir]   = useState(false);
+  const [erroExcluir, setErroExcluir] = useState("");
+  const [preview,     setPreview]     = useState(null);
+  const [visLista,    setVisLista]    = useState(null);
 
   const load = async () => {
     try {
@@ -3655,6 +3805,8 @@ function ListasTab({ sb, token }) {
         </div>
       )}
 
+      {visLista&&<VisibilidadePanel lista={visLista} sb={sb} token={token} onFechar={()=>setVisLista(null)}/>}
+
       <h2 className="text-lg font-bold text-gray-900">Listas de leads</h2>
       {listas.length===0&&<p className="text-sm text-gray-500">Nenhuma lista importada ainda.</p>}
       {listas.map(l=>{
@@ -3699,6 +3851,7 @@ function ListasTab({ sb, token }) {
               {l.status==="pausada"&&<button className="text-xs bg-emerald-100 text-emerald-700 px-3 py-1.5 rounded-lg" onClick={()=>acao(l.id,"reativar")}>Reativar</button>}
               {l.status!=="encerrada"&&<button className="text-xs bg-red-100 text-red-700 px-3 py-1.5 rounded-lg" onClick={()=>{if(confirm("Encerrar lista?")) acao(l.id,"encerrar","Baixa qualidade");}}>Encerrar</button>}
               <button className="text-xs bg-red-50 text-red-600 px-3 py-1.5 rounded-lg border border-red-200" onClick={()=>abrirExcluir(l)}>🗑 Excluir</button>
+              <button className="text-xs bg-purple-50 text-purple-700 px-3 py-1.5 rounded-lg border border-purple-200" onClick={()=>setVisLista(l)}>👥 Visibilidade</button>
             </div>
           </div>
         );
