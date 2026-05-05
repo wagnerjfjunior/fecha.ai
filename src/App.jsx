@@ -4243,35 +4243,30 @@ function CorretorApp({ sb, token, corretor, onLogout, onVoltar }) {
 
   // ── Tela de seleção de lista ───────────────────────────────────────────────
   const ListaTab = () => {
-    const [dados,  setDados]  = useState(null);
-    const [ld,     setLd]     = useState(true);
-    const [modal,  setModal]  = useState(null);  // {lista} — confirm devolução
-    const [salvando,setSalvando] = useState(false);
-    const [erro,   setErro]   = useState("");
+    const [dados,    setDados]    = useState(null);
+    const [ld,       setLd]       = useState(true);
+    const [modal,    setModal]    = useState(null);   // lista escolhida — confirm devolução
+    const [nota,     setNota]     = useState(0);      // avaliação do lote anterior
+    const [salvando, setSalvando] = useState(false);
+    const [erro,     setErro]     = useState("");
 
-    useEffect(()=>{
+    const carregar = () => {
+      setLd(true);
       sb.rpc("listar_listas_corretor",{},token)
         .then(r=>{ if(!r.error) setDados(r); else setErro(r.error); })
         .catch(e=>setErro(e.message))
         .finally(()=>setLd(false));
-    },[]);
-
-    const escolherLista = async (lista) => {
-      const loteAberto = dados?.lote_aberto;
-      if(loteAberto && loteAberto.sem_feedback > 0) {
-        setModal(lista); // abre modal de confirmação de devolução
-      } else {
-        await solicitarLote(lista.id);
-      }
     };
+    useEffect(()=>{ carregar(); },[]);
 
-    const solicitarLote = async (lista_id) => {
+    const confirmarTroca = async (lista, notaAval) => {
       setSalvando(true); setErro("");
       try {
-        // trocar_lista faz devolver + solicitar atomicamente numa única transação
-        const r = await sb.rpc("trocar_lista", {p_lista_nova_id: lista_id}, token);
+        const params = {p_lista_nova_id: lista.id};
+        if(notaAval > 0) params.p_nota = notaAval;
+        const r = await sb.rpc("trocar_lista", params, token);
         if(r.ok) {
-          setModal(null);
+          setModal(null); setNota(0);
           handleTab("discador");
         } else {
           setErro(r.error || "Erro ao solicitar lote");
@@ -4280,51 +4275,108 @@ function CorretorApp({ sb, token, corretor, onLogout, onVoltar }) {
       setSalvando(false);
     };
 
-    const loteAberto = dados?.lote_aberto;
+    const escolherLista = (lista) => {
+      const lote = dados?.lote_aberto;
+      // Mesmo lote que já está trabalhando — continua
+      if(lote && lote.lista_id === lista.id && lote.sem_feedback > 0) {
+        handleTab("discador"); return;
+      }
+      setNota(0); setErro(""); setModal(lista);
+    };
+
+    const lote = dados?.lote_aberto;
     const listas = dados?.listas || [];
+    const temLoteAberto    = !!lote;
+    const temPendentes     = lote && lote.sem_feedback > 0;
+    const aguardaAvaliacao = lote && lote.aguardando_avaliacao;
 
     const D = {bg:dark?"#0f172a":"#f1f5f9",card:dark?"#1e293b":"#fff",
                border:dark?"#334155":"#e5e7eb",text:dark?"#f1f5f9":"#111827",
                muted:dark?"#94a3b8":"#6b7280"};
 
-    return (
-      <div style={{minHeight:"100vh",background:D.bg,paddingBottom:80}}>
-        {/* Modal de confirmação de devolução */}
-        {modal&&(
-          <div style={{position:"fixed",inset:0,background:"rgba(0,0,0,.6)",zIndex:999,display:"flex",alignItems:"center",justifyContent:"center",padding:20}}>
-            <div style={{background:D.card,borderRadius:20,padding:24,maxWidth:340,width:"100%"}}>
-              <div style={{fontSize:32,marginBottom:12,textAlign:"center"}}>⚠️</div>
-              <p style={{fontWeight:700,fontSize:16,color:D.text,margin:"0 0 8px",textAlign:"center"}}>
-                Trocar de lista?
-              </p>
-              <p style={{fontSize:13,color:D.muted,margin:"0 0 8px",textAlign:"center",lineHeight:1.5}}>
-                Você tem <strong style={{color:"#f59e0b"}}>{loteAberto?.sem_feedback} lead{loteAberto?.sem_feedback>1?"s":""} não trabalhados</strong> na lista <strong style={{color:D.text}}>{loteAberto?.lista_nome}</strong>.
-              </p>
-              <p style={{fontSize:12,color:D.muted,margin:"0 0 20px",textAlign:"center",lineHeight:1.5}}>
-                Eles serão devolvidos ao pool e você receberá um novo lote de <strong style={{color:D.text}}>{modal.nome_fornecedor}</strong>.
-              </p>
-              {erro&&<p style={{color:"#ef4444",fontSize:12,marginBottom:12,textAlign:"center"}}>{erro}</p>}
-              <div style={{display:"flex",gap:10}}>
-                <button onClick={()=>{setModal(null);setErro("");}}
-                  style={{flex:1,background:dark?"#334155":"#f3f4f6",color:D.text,border:"none",borderRadius:12,padding:"13px",fontSize:14,fontWeight:600,cursor:"pointer"}}>
-                  Cancelar
-                </button>
-                <button onClick={()=>solicitarLote(modal.id)} disabled={salvando}
-                  style={{flex:1.2,background:"#2563eb",color:"#fff",border:"none",borderRadius:12,padding:"13px",fontSize:14,fontWeight:600,cursor:salvando?"not-allowed":"pointer",opacity:salvando?.7:1}}>
-                  {salvando?"Trocando...":"Confirmar troca"}
-                </button>
-              </div>
+    // ── Modal de confirmação ──────────────────────────────────────────────
+    const ModalConfirmar = () => {
+      if(!modal) return null;
+      const mesmLista = lote?.lista_id === modal.id;
+      const precisaAval = aguardaAvaliacao && !mesmLista;
+      return (
+        <div style={{position:"fixed",inset:0,background:"rgba(0,0,0,.6)",zIndex:999,display:"flex",alignItems:"center",justifyContent:"center",padding:20}}>
+          <div style={{background:D.card,borderRadius:20,padding:24,maxWidth:340,width:"100%"}}>
+
+            {temPendentes && !mesmLista ? (
+              // Caso 1: tem leads não trabalhados — devolver
+              <>
+                <div style={{fontSize:32,marginBottom:12,textAlign:"center"}}>⚠️</div>
+                <p style={{fontWeight:700,fontSize:16,color:D.text,margin:"0 0 8px",textAlign:"center"}}>Trocar de lista?</p>
+                <p style={{fontSize:13,color:D.muted,margin:"0 0 16px",textAlign:"center",lineHeight:1.5}}>
+                  Você tem <strong style={{color:"#f59e0b"}}>{lote.sem_feedback} lead{lote.sem_feedback>1?"s":""} não trabalhados</strong> na lista <strong style={{color:D.text}}>{lote.lista_nome}</strong>. Eles serão devolvidos.
+                </p>
+              </>
+            ) : precisaAval ? (
+              // Caso 2: concluiu todos os leads — avaliar antes de trocar
+              <>
+                <div style={{fontSize:32,marginBottom:12,textAlign:"center"}}>🎉</div>
+                <p style={{fontWeight:700,fontSize:16,color:D.text,margin:"0 0 6px",textAlign:"center"}}>Você concluiu a lista!</p>
+                <p style={{fontSize:13,color:D.muted,margin:"0 0 14px",textAlign:"center",lineHeight:1.5}}>
+                  Antes de trocar, avalie a qualidade da lista <strong style={{color:D.text}}>{lote.lista_nome}</strong>:
+                </p>
+                <div style={{display:"flex",justifyContent:"center",gap:8,marginBottom:16}}>
+                  {[1,2,3,4,5].map(n=>(
+                    <button key={n} onClick={()=>setNota(n)}
+                      style={{fontSize:28,background:"none",border:"none",cursor:"pointer",opacity:n<=nota?1:.3,transition:"opacity .15s"}}>
+                      ★
+                    </button>
+                  ))}
+                </div>
+                {nota===0&&<p style={{fontSize:11,color:"#f59e0b",textAlign:"center",margin:"0 0 12px"}}>Selecione ao menos 1 estrela para continuar</p>}
+              </>
+            ) : (
+              // Caso 3: sem lote — só confirmar
+              <>
+                <div style={{fontSize:32,marginBottom:12,textAlign:"center"}}>📋</div>
+                <p style={{fontWeight:700,fontSize:16,color:D.text,margin:"0 0 8px",textAlign:"center"}}>Trabalhar esta lista?</p>
+                <p style={{fontSize:13,color:D.muted,margin:"0 0 16px",textAlign:"center",lineHeight:1.5}}>
+                  Você receberá um lote de 25 leads da lista <strong style={{color:D.text}}>{modal.nome_fornecedor}</strong>.
+                </p>
+              </>
+            )}
+
+            {erro&&<p style={{color:"#ef4444",fontSize:12,marginBottom:12,textAlign:"center"}}>{erro}</p>}
+
+            <div style={{display:"flex",gap:10}}>
+              <button onClick={()=>{setModal(null);setNota(0);setErro("");}}
+                style={{flex:1,background:dark?"#334155":"#f3f4f6",color:D.text,border:"none",borderRadius:12,padding:"13px",fontSize:14,fontWeight:600,cursor:"pointer"}}>
+                Cancelar
+              </button>
+              <button
+                onClick={()=>confirmarTroca(modal, nota)}
+                disabled={salvando||(precisaAval&&nota===0)}
+                style={{
+                  flex:1.2,background:(salvando||(precisaAval&&nota===0))?"#e2e8f0":"#2563eb",
+                  color:(salvando||(precisaAval&&nota===0))?"#94a3b8":"#fff",
+                  border:"none",borderRadius:12,padding:"13px",fontSize:14,fontWeight:700,
+                  cursor:(salvando||(precisaAval&&nota===0))?"not-allowed":"pointer"
+                }}>
+                {salvando?"Aguarde..."
+                  :precisaAval&&nota===0?"Avalie para continuar"
+                  :temPendentes&&!mesmLista?"Confirmar troca"
+                  :"Começar!"}
+              </button>
             </div>
           </div>
-        )}
+        </div>
+      );
+    };
+
+    return (
+      <div style={{minHeight:"100vh",background:D.bg,paddingBottom:80}}>
+        <ModalConfirmar/>
 
         {/* Header */}
         <div style={{background:dark?"#1e293b":"#1d4ed8",padding:"16px 16px 20px"}}>
-          <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:4}}>
+          <div style={{display:"flex",alignItems:"center",gap:10}}>
             <button onClick={()=>handleTab("home")}
-              style={{background:"rgba(255,255,255,.2)",border:"1px solid rgba(255,255,255,.3)",borderRadius:8,padding:"5px 10px",color:"#fff",fontSize:13,cursor:"pointer"}}>
-              ←
-            </button>
+              style={{background:"rgba(255,255,255,.2)",border:"1px solid rgba(255,255,255,.3)",borderRadius:8,padding:"5px 10px",color:"#fff",fontSize:13,cursor:"pointer"}}>←</button>
             <div>
               <p style={{color:"rgba(255,255,255,.7)",fontSize:11,margin:0}}>Escolher lista</p>
               <p style={{color:"#fff",fontWeight:700,fontSize:16,margin:0}}>Qual lista vou trabalhar?</p>
@@ -4334,64 +4386,53 @@ function CorretorApp({ sb, token, corretor, onLogout, onVoltar }) {
 
         <div style={{padding:14,display:"flex",flexDirection:"column",gap:12}}>
 
-          {/* Lote aberto */}
-          {loteAberto&&loteAberto.sem_feedback>0&&(
+          {/* Banner de status do lote atual */}
+          {temPendentes&&(
             <div style={{background:dark?"#1c1917":"#fffbeb",border:"1px solid #f59e0b",borderRadius:16,padding:14}}>
               <p style={{fontWeight:700,fontSize:13,color:"#92400e",margin:"0 0 4px"}}>⚠️ Lote em andamento</p>
               <p style={{fontSize:12,color:"#92400e",margin:0,lineHeight:1.5}}>
-                Você tem <strong>{loteAberto.com_feedback}</strong> feedbacks dados e <strong>{loteAberto.sem_feedback}</strong> leads pendentes na lista <strong>{loteAberto.lista_nome}</strong>.
-                Ao escolher outra lista, os leads pendentes serão devolvidos.
+                <strong>{lote.com_feedback}</strong> feedbacks dados · <strong>{lote.sem_feedback}</strong> leads pendentes na lista <strong>{lote.lista_nome}</strong>.
               </p>
             </div>
           )}
-          {loteAberto&&loteAberto.sem_feedback===0&&(
+          {aguardaAvaliacao&&(
             <div style={{background:dark?"#052e16":"#f0fdf4",border:"1px solid #22c55e",borderRadius:16,padding:14}}>
-              <p style={{fontWeight:700,fontSize:13,color:"#166534",margin:"0 0 4px"}}>✅ Lote concluído</p>
+              <p style={{fontWeight:700,fontSize:13,color:"#166534",margin:"0 0 4px"}}>🎉 Lote concluído!</p>
               <p style={{fontSize:12,color:"#166534",margin:0}}>
-                Você concluiu todos os leads da lista <strong>{loteAberto.lista_nome}</strong>. Escolha a próxima lista!
+                Você terminou todos os leads de <strong>{lote.lista_nome}</strong>. Escolha a próxima lista para avaliar e continuar.
               </p>
             </div>
           )}
 
-          {ld&&(
-            <div style={{textAlign:"center",padding:40,color:D.muted,fontSize:14}}>Carregando listas...</div>
-          )}
+          {ld&&<div style={{textAlign:"center",padding:40,color:D.muted,fontSize:14}}>Carregando listas...</div>}
 
           {!ld&&listas.length===0&&(
             <div style={{textAlign:"center",padding:40}}>
               <div style={{fontSize:48,marginBottom:12}}>📭</div>
-              <p style={{color:D.muted,fontSize:14}}>Nenhuma lista disponível no momento.</p>
+              <p style={{color:D.muted,fontSize:14}}>Nenhuma lista disponível.</p>
               <p style={{color:D.muted,fontSize:12,marginTop:4}}>Aguarde seu gestor disponibilizar uma lista.</p>
             </div>
           )}
 
-          {/* Cards de listas */}
           {listas.map((l,i)=>{
             const nota = Number(l.nota_media||0);
-            const estrelas = nota>0 ? "★".repeat(Math.round(nota))+"☆".repeat(5-Math.round(nota)) : null;
-            const isAtiva = loteAberto?.lista_id === l.id;
+            const estrelas = nota>0?"★".repeat(Math.round(nota))+"☆".repeat(5-Math.round(nota)):null;
+            const isAtiva = lote?.lista_id === l.id;
             return (
-              <div key={i}
-                style={{
-                  background:D.card,
-                  border:isAtiva?"2px solid #2563eb":`0.5px solid ${D.border}`,
-                  borderRadius:18,padding:16,
-                  boxShadow:dark?"none":"0 2px 8px rgba(0,0,0,.06)",
-                }}>
+              <div key={i} style={{
+                background:D.card,
+                border:isAtiva?`2px solid #2563eb`:`0.5px solid ${D.border}`,
+                borderRadius:18,padding:16,
+                boxShadow:dark?"none":"0 2px 8px rgba(0,0,0,.06)",
+              }}>
                 <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:10}}>
                   <div style={{flex:1,minWidth:0}}>
                     <p style={{fontWeight:700,fontSize:15,color:D.text,margin:"0 0 2px",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>
                       {l.nome_fornecedor}
                     </p>
-                    {l.zona&&(
-                      <p style={{fontSize:11,color:"#f97316",margin:0,fontWeight:600}}>📍 {l.zona}</p>
-                    )}
+                    {l.zona&&<p style={{fontSize:11,color:"#f97316",margin:0,fontWeight:600}}>📍 {l.zona}</p>}
                   </div>
-                  {isAtiva&&(
-                    <span style={{fontSize:10,fontWeight:700,background:"#dbeafe",color:"#1d4ed8",padding:"3px 8px",borderRadius:999,marginLeft:8,flexShrink:0}}>
-                      atual
-                    </span>
-                  )}
+                  {isAtiva&&<span style={{fontSize:10,fontWeight:700,background:"#dbeafe",color:"#1d4ed8",padding:"3px 8px",borderRadius:999,marginLeft:8,flexShrink:0}}>atual</span>}
                 </div>
 
                 <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8,marginBottom:12}}>
@@ -4405,22 +4446,16 @@ function CorretorApp({ sb, token, corretor, onLogout, onVoltar }) {
                   </div>
                 </div>
 
-                {estrelas&&(
-                  <p style={{color:"#f59e0b",fontSize:14,margin:"0 0 10px"}}>{estrelas} <span style={{color:D.muted,fontSize:11}}>{nota.toFixed(1)}</span></p>
-                )}
+                {estrelas&&<p style={{color:"#f59e0b",fontSize:14,margin:"0 0 10px"}}>{estrelas} <span style={{color:D.muted,fontSize:11}}>{nota.toFixed(1)}</span></p>}
 
-                <button
-                  onClick={()=>escolherLista(l)}
-                  disabled={salvando}
+                <button onClick={()=>escolherLista(l)} disabled={salvando}
                   style={{
                     width:"100%",
-                    background: isAtiva?"#2563eb":"#059669",
+                    background:isAtiva&&temPendentes?"#2563eb":"#059669",
                     color:"#fff",border:"none",borderRadius:12,
-                    padding:"13px",fontSize:14,fontWeight:700,
-                    cursor:salvando?"not-allowed":"pointer",
-                    opacity:salvando?.7:1,
+                    padding:"13px",fontSize:14,fontWeight:700,cursor:"pointer",
                   }}>
-                  {isAtiva?"Continuar com esta lista":"Trabalhar esta lista"}
+                  {isAtiva&&temPendentes?"Continuar esta lista":"Trabalhar esta lista"}
                 </button>
               </div>
             );
