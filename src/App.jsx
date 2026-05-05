@@ -954,6 +954,13 @@ setTurnCount(c=>c+1);
             </div>
           </div>
           {lead.email&&<p className="text-base text-gray-500 mt-0.5">{lead.email}</p>}
+          {/* Zona geográfica — destaque em laranja */}
+          {lead.zona&&(
+            <div style={{display:"inline-flex",alignItems:"center",gap:5,marginTop:4,background:"#fff7ed",border:"1px solid #fed7aa",borderRadius:20,padding:"3px 10px"}}>
+              <span style={{fontSize:13}}>📍</span>
+              <span style={{fontSize:12,fontWeight:700,color:"#c2410c"}}>{lead.zona}</span>
+            </div>
+          )}
           {lead.score>0&&<span className="inline-block mt-1 text-xs bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full">Score {lead.score}/10</span>}
           <div className="mt-4 bg-gray-50 rounded-xl p-4">
             <p className="text-2xl font-mono font-bold text-gray-900">{lead.telefone_escolhido||lead.telefone_e164||"—"}</p>
@@ -4184,12 +4191,8 @@ function CorretorApp({ sb, token, corretor, onLogout, onVoltar }) {
     const solicitarLote = async (lista_id) => {
       setSalvando(true); setErro("");
       try {
-        // Se há lote aberto (sem leads pendentes), devolver primeiro
-        if(dados?.lote_aberto) {
-          const dev = await sb.rpc("devolver_lote",{p_lote_id: dados.lote_aberto.lote_id},token);
-          if(dev.error) throw new Error(dev.error);
-        }
-        const r = await sb.rpc("solicitar_lote",{p_lista_id: lista_id},token);
+        // trocar_lista faz devolver + solicitar atomicamente numa única transação
+        const r = await sb.rpc("trocar_lista", {p_lista_nova_id: lista_id}, token);
         if(r.ok) {
           setModal(null);
           handleTab("discador");
