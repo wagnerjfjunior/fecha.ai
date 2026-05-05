@@ -3675,15 +3675,23 @@ function DistribuirTab({ sb, token }) {
 }
 
 function VisibilidadePanel({ lista, sb, token, onFechar }) {
-  const [dados,    setDados]    = useState(null);
-  const [targets,  setTargets]  = useState(null);
-  const [ld,       setLd]       = useState(true);
-  const [salvando, setSalvando] = useState(false);
-  const [msg,      setMsg]      = useState("");
+  const [dados,          setDados]          = useState(null);
+  const [targets,        setTargets]        = useState([]);
+  const [modoSelecionar, setModoSelecionar] = useState(false);
+  const [ld,             setLd]             = useState(true);
+  const [salvando,       setSalvando]       = useState(false);
+  const [msg,            setMsg]            = useState("");
 
   useEffect(()=>{
     sb.rpc("gerenciar_visibilidade_lista",{p_lista_id:lista.id},token)
-      .then(r=>{ if(!r.error){ setDados(r); setTargets(r.selecionados||[]); } })
+      .then(r=>{
+        if(!r.error){
+          setDados(r);
+          const sel = r.selecionados||[];
+          setTargets(sel);
+          setModoSelecionar(r.escopo_atual==='selecionados'||sel.length>0);
+        }
+      })
       .finally(()=>setLd(false));
   },[]);
 
@@ -3692,7 +3700,7 @@ function VisibilidadePanel({ lista, sb, token, onFechar }) {
     try {
       const r = await sb.rpc("gerenciar_visibilidade_lista",{
         p_lista_id: lista.id,
-        p_targets:  JSON.stringify(targets||[]),
+        p_targets:  modoSelecionar ? targets : [],
       },token);
       if(r.error) throw new Error(r.error);
       setMsg("✅ Visibilidade salva");
@@ -3702,7 +3710,12 @@ function VisibilidadePanel({ lista, sb, token, onFechar }) {
   };
 
   const membros = dados?.membros||[];
-  const isTodos = !targets||targets.length===0;
+
+  const toggleTarget = (m) => {
+    const sel = targets.some(t=>t.target_id===m.id);
+    if(sel) setTargets(targets.filter(t=>t.target_id!==m.id));
+    else    setTargets([...targets,{target_type:m.tipo,target_id:m.id}]);
+  };
 
   return (
     <div style={{position:"fixed",inset:0,background:"rgba(0,0,0,.55)",zIndex:999,display:"flex",alignItems:"flex-end",justifyContent:"center"}}>
@@ -3720,28 +3733,28 @@ function VisibilidadePanel({ lista, sb, token, onFechar }) {
         {!ld&&(
           <>
             {/* Opção todos */}
-            <div onClick={()=>setTargets([])}
-              style={{background:isTodos?"#eff6ff":"white",border:isTodos?"2px solid #3b82f6":"1px solid #e2e8f0",
+            <div onClick={()=>setModoSelecionar(false)}
+              style={{background:!modoSelecionar?"#eff6ff":"white",border:!modoSelecionar?"2px solid #3b82f6":"1px solid #e2e8f0",
                 borderRadius:12,padding:12,marginBottom:8,cursor:"pointer",display:"flex",alignItems:"center",gap:10}}>
-              <div style={{width:18,height:18,borderRadius:"50%",border:"2px solid",borderColor:isTodos?"#3b82f6":"#cbd5e1",background:isTodos?"#3b82f6":"white",flexShrink:0}}/>
+              <div style={{width:18,height:18,borderRadius:"50%",border:"2px solid",borderColor:!modoSelecionar?"#3b82f6":"#cbd5e1",background:!modoSelecionar?"#3b82f6":"white",flexShrink:0}}/>
               <p style={{fontWeight:600,fontSize:13,color:"#1e293b",margin:0}}>
                 {membros.some(m=>m.tipo==="time")?"Todos os times":"Todo o time"} <span style={{fontSize:11,fontWeight:400,color:"#64748b"}}>(padrão)</span>
               </p>
             </div>
 
             {/* Opção selecionados */}
-            <div onClick={()=>{ if(isTodos) setTargets(membros.map(m=>({target_type:m.tipo,target_id:m.id}))); }}
-              style={{background:!isTodos?"#eff6ff":"white",border:!isTodos?"2px solid #3b82f6":"1px solid #e2e8f0",
+            <div onClick={()=>setModoSelecionar(true)}
+              style={{background:modoSelecionar?"#eff6ff":"white",border:modoSelecionar?"2px solid #3b82f6":"1px solid #e2e8f0",
                 borderRadius:12,padding:12,marginBottom:12,cursor:"pointer",display:"flex",alignItems:"center",gap:10}}>
-              <div style={{width:18,height:18,borderRadius:"50%",border:"2px solid",borderColor:!isTodos?"#3b82f6":"#cbd5e1",background:!isTodos?"#3b82f6":"white",flexShrink:0}}/>
+              <div style={{width:18,height:18,borderRadius:"50%",border:"2px solid",borderColor:modoSelecionar?"#3b82f6":"#cbd5e1",background:modoSelecionar?"#3b82f6":"white",flexShrink:0}}/>
               <p style={{fontWeight:600,fontSize:13,color:"#1e293b",margin:0}}>Selecionar específicos</p>
             </div>
 
-            {!isTodos&&membros.length>0&&(
+            {modoSelecionar&&membros.length>0&&(
               <div style={{border:"1px solid #e2e8f0",borderRadius:12,overflow:"hidden",marginBottom:12}}>
                 <div style={{padding:"8px 12px",borderBottom:"1px solid #e2e8f0",display:"flex",justifyContent:"space-between"}}>
                   <span style={{fontSize:11,fontWeight:700,color:"#374151"}}>
-                    {targets?.length||0} selecionados
+                    {targets.length} de {membros.length} selecionados
                   </span>
                   <div style={{display:"flex",gap:10}}>
                     <button onClick={()=>setTargets(membros.map(m=>({target_type:m.tipo,target_id:m.id})))}
@@ -3751,12 +3764,9 @@ function VisibilidadePanel({ lista, sb, token, onFechar }) {
                   </div>
                 </div>
                 {membros.map((m,i)=>{
-                  const sel=targets?.some(t=>t.target_id===m.id);
+                  const sel=targets.some(t=>t.target_id===m.id);
                   return (
-                    <div key={i} onClick={()=>{
-                        const atual=targets||[];
-                        setTargets(sel?atual.filter(t=>t.target_id!==m.id):[...atual,{target_type:m.tipo,target_id:m.id}]);
-                      }}
+                    <div key={i} onClick={()=>toggleTarget(m)}
                       style={{display:"flex",alignItems:"center",gap:10,padding:"10px 12px",
                         borderBottom:"0.5px solid #f1f5f9",cursor:"pointer",background:sel?"#f0f9ff":"white"}}>
                       <div style={{width:16,height:16,borderRadius:3,border:"2px solid",borderColor:sel?"#3b82f6":"#cbd5e1",
@@ -3769,6 +3779,7 @@ function VisibilidadePanel({ lista, sb, token, onFechar }) {
                           {m.tipo==="time"&&<span style={{fontSize:9,background:"#dbeafe",color:"#1d4ed8",padding:"1px 5px",borderRadius:999,marginLeft:5}}>time</span>}
                         </p>
                         {m.extra?.email&&<p style={{fontSize:10,color:"#94a3b8",margin:0}}>{m.extra.email}</p>}
+                        {m.extra?.gestor&&<p style={{fontSize:10,color:"#94a3b8",margin:0}}>Gestor: {m.extra.gestor}</p>}
                       </div>
                     </div>
                   );
