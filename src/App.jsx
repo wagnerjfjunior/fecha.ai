@@ -961,10 +961,39 @@ setTurnCount(c=>c+1);
               <span style={{fontSize:12,fontWeight:700,color:"#c2410c"}}>{lead.zona}</span>
             </div>
           )}
+          {/* Zona no badge de telefone já exibida acima */}
+          {/* Campos extras configurados na importação da lista */}
+          {(()=>{
+            const colsKey = lead.lista_id ? `fechai_cols_${lead.lista_id}` : null;
+            let cols = ["zona","bairro"];
+            try { if(colsKey) cols = JSON.parse(localStorage.getItem(colsKey)||'["zona","bairro"]'); } catch(e){}
+            const extras = [
+              {key:"bairro",  label:"Bairro",   val:lead.bairro},
+              {key:"endereco",label:"Endereço", val:lead.endereco},
+              {key:"cidade",  label:"Cidade",   val:lead.cidade},
+              {key:"email",   label:"E-mail",   val:lead.email},
+            ].filter(e => cols.includes(e.key) && e.val && e.key !== "zona");
+            if(!extras.length) return null;
+            return (
+              <div style={{marginTop:6,display:"flex",flexDirection:"column",gap:2}}>
+                {extras.map(e=>(
+                  <p key={e.key} className="text-sm text-gray-500" style={{margin:0}}>
+                    {e.label}: {e.val}
+                  </p>
+                ))}
+              </div>
+            );
+          })()}
           {lead.score>0&&<span className="inline-block mt-1 text-xs bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full">Score {lead.score}/10</span>}
           <div className="mt-4 bg-gray-50 rounded-xl p-4">
             <p className="text-2xl font-mono font-bold text-gray-900">{lead.telefone_escolhido||lead.telefone_e164||"—"}</p>
-            <p className="text-base text-gray-500 mt-1">{lead.tipo_telefone} · {lead.pais_telefone}</p>
+            <p className="text-base text-gray-500 mt-1">
+              {lead.tipo_telefone==="br_celular"?"📱 Celular BR":
+               lead.tipo_telefone==="br_fixo"?"☎️ Fixo BR":
+               lead.tipo_telefone==="internacional"?"🌐 Internacional":
+               lead.tipo_telefone||""}
+              {lead.zona? ` · 📍 ${lead.zona}`:""}
+            </p>
           </div>
           {/* Botões de contato */}
           <div className="flex gap-2 mt-4">
@@ -3025,15 +3054,15 @@ function FunilTab({ sb, token, perfilCorretor }) {
 
 
 function UploadTab({ sb, token }) {
-  const [step,     setStep]     = useState(1);   // 1=arquivo 2=fornecedor 3=colunas 4=preview 5=importando 6=resultado
-  const [file,     setFile]     = useState(null);
-  const [rows,     setRows]     = useState([]);   // array bruto do arquivo
-  const [forn,     setForn]     = useState("");
-  const [colMap,   setColMap]   = useState({});
-  const [colEdit,  setColEdit]  = useState(false);
-  const [progress, setProgress] = useState(0);
-  const [result,   setResult]   = useState(null);
-  const [err,      setErr]      = useState("");
+  const [step,         setStep]         = useState(1);
+  const [file,         setFile]         = useState(null);
+  const [rows,         setRows]         = useState([]);
+  const [forn,         setForn]         = useState("");
+  const [colMap,       setColMap]       = useState({});
+  const [colsVisiveis, setColsVisiveis] = useState(["zona","bairro"]); // padrão
+  const [progress,     setProgress]     = useState(0);
+  const [result,       setResult]       = useState(null);
+  const [err,          setErr]          = useState("");
   const fileRef = useRef();
 
   // ── Dicas de cada passo ────────────────────────────────────────────────────
@@ -3084,6 +3113,8 @@ function UploadTab({ sb, token }) {
       const lr = await sb.rpc("criar_lista",{p_nome_fornecedor:forn.trim(),p_nome_arquivo:file.name},token);
       if(lr?.error) throw new Error(lr.error);
       const lid = lr.id;
+      // Salvar preferência de colunas visíveis para esta lista
+      try { localStorage.setItem(`fechai_cols_${lid}`, JSON.stringify(colsVisiveis)); } catch(e) {}
       const leads = rows.slice(1).map(r => csvToLead(r, colMap, forn.trim()));
       const B = 100;
       const total = leads.length;
@@ -3289,6 +3320,52 @@ function UploadTab({ sb, token }) {
                 })}
               </div>
             </div>
+
+            {/* Seletor de colunas extras que o corretor quer ver no discador */}
+            {(()=>{
+              const colsExtras = [
+                {key:"zona",     label:"Zona geográfica", icon:"📍"},
+                {key:"bairro",   label:"Bairro",          icon:"🏘️"},
+                {key:"endereco", label:"Endereço",        icon:"🏠"},
+                {key:"cidade",   label:"Cidade",          icon:"🌆"},
+                {key:"email",    label:"E-mail",          icon:"✉️"},
+              ].filter(c => colMap[c.key] !== undefined);
+
+              if(colsExtras.length === 0) return null;
+
+              return (
+                <div style={{background:"#eff6ff",border:"1px solid #bfdbfe",borderRadius:14,padding:14,marginBottom:12}}>
+                  <p style={{color:"#1e40af",fontSize:12,fontWeight:700,margin:"0 0 10px"}}>
+                    💡 Quais informações o corretor deve ver no discador?
+                  </p>
+                  <div style={{display:"flex",flexWrap:"wrap",gap:8}}>
+                    {colsExtras.map(c=>{
+                      const sel = (colsVisiveis||[]).includes(c.key);
+                      return (
+                        <button key={c.key}
+                          onClick={()=>{
+                            const atual = colsVisiveis||[];
+                            setColsVisiveis(sel ? atual.filter(x=>x!==c.key) : [...atual, c.key]);
+                          }}
+                          style={{
+                            display:"inline-flex",alignItems:"center",gap:5,
+                            padding:"6px 12px",borderRadius:20,fontSize:12,fontWeight:600,
+                            border:`2px solid ${sel?"#2563eb":"#cbd5e1"}`,
+                            background:sel?"#2563eb":"white",
+                            color:sel?"white":"#64748b",
+                            cursor:"pointer",
+                          }}>
+                          {c.icon} {c.label} {sel?"✓":""}
+                        </button>
+                      );
+                    })}
+                  </div>
+                  <p style={{color:"#64748b",fontSize:10,margin:"8px 0 0"}}>
+                    Selecionados serão exibidos no card do lead durante a discagem.
+                  </p>
+                </div>
+              );
+            })()}
 
             {/* Colunas do arquivo para referência */}
             <div style={{background:"#f8fafc",borderRadius:12,padding:12,marginBottom:16}}>
