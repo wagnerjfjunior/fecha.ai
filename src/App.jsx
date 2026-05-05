@@ -3072,22 +3072,9 @@ function UploadTab({ sb, token }) {
   const carregarMembros = async () => {
     setVisLd(true);
     try {
-      // Usa lista_id de uma lista existente qualquer só para obter os membros disponíveis
-      // A RPC retorna membros baseado no perfil do usuário autenticado
-      const r = await sb.rpc("gerenciar_visibilidade_lista",{
-        p_lista_id: '00000000-0000-0000-0000-000000000000', // UUID dummy — RPC retorna membros antes de validar lista
-        p_targets: null
-      },token);
-      if(r && r.membros) setVisMembros(r.membros||[]);
-      else {
-        // Fallback: buscar membros diretamente
-        const cs = await sb.query("corretores","ativo=eq.true&order=nome.asc",token);
-        const ts = await sb.query("times","order=nome.asc",token);
-        const membros = [];
-        ts.forEach(t=>membros.push({id:t.id,nome:t.nome,tipo:"time",extra:{}}));
-        cs.filter(c=>!c.is_gestor&&!c.is_admin_local).forEach(c=>membros.push({id:c.id,nome:c.nome,tipo:"corretor",extra:{email:c.email}}));
-        setVisMembros(membros);
-      }
+      const r = await sb.rpc("listar_membros_visibilidade",{},token);
+      if(r && !r.error) setVisMembros(r.membros||[]);
+      else setVisMembros([]);
     } catch(e){ setVisMembros([]); }
     setVisLd(false);
   };
