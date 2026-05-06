@@ -843,7 +843,7 @@ useEffect(()=>{powerDialRef.current=powerDial;},[powerDial]);
       } else {
         setLead(r);
 setTurnCount(c=>c+1);
-        if(powerDialRef.current&&r.ligar&&!pauseDialerRef.current){setTimeout(()=>{const a=document.createElement('a');a.href='tel:'+r.ligar;a.style.display='none';document.body.appendChild(a);a.click();document.body.removeChild(a);},800);}
+        if(powerDialRef.current&&r.telefone_e164&&!pauseDialerRef.current){setTimeout(()=>{const a=document.createElement('a');a.href='tel:'+r.telefone_e164;a.style.display='none';document.body.appendChild(a);a.click();document.body.removeChild(a);},800);}
         setProg(r.progresso||null);
         setMsg("");
         if(r.corretor_nome) setCorretorPerfil({nome:r.corretor_nome,telefone:r.corretor_tel,empresa:r.corretor_emp});
@@ -997,7 +997,7 @@ setTurnCount(c=>c+1);
           </div>
           {/* Botões de contato */}
           <div className="flex gap-2 mt-4">
-            {lead.ligar&&<a href={"tel:"+lead.ligar} className="flex-1 bg-blue-600 text-white rounded-xl py-4 text-center font-bold text-xl no-underline">📞 Ligar</a>}
+            {lead.telefone_e164&&<a href={"tel:"+lead.telefone_e164} className="flex-1 bg-blue-600 text-white rounded-xl py-4 text-center font-bold text-xl no-underline">📞 Ligar</a>}
             <button onClick={()=>setShowMensagens(true)}
               className="flex-1 bg-purple-600 text-white rounded-xl py-4 text-center font-bold text-xl relative">
               ✉ Mensagens
@@ -1142,7 +1142,7 @@ function ProducaoTab({ sb, token, perfilCorretor }) {
                   </div>
                 </div>
                 <div className="flex gap-2 mt-2" onClick={e=>e.stopPropagation()}>
-                  {l.ligar&&<a href={"tel:"+l.ligar} className="text-sm bg-blue-100 text-blue-700 px-3 py-1.5 rounded-lg no-underline font-medium">📞</a>}
+                  {(l.telefone_e164||l.ligar)&&<a href={"tel:"+(l.telefone_e164||l.ligar)} className="text-sm bg-blue-100 text-blue-700 px-3 py-1.5 rounded-lg no-underline font-medium">📞</a>}
                   <BotaoMensagens lead={l} corretor={perfilCorretor} sb={sb} token={token}
                     className="text-sm font-medium" style={{fontSize:13,padding:"6px 12px",borderRadius:10}}/>
                 </div>
@@ -1241,7 +1241,7 @@ function CarteiraTab({ sb, token, perfilCorretor }) {
               </div>
               {l.observacao&&<p className="text-sm text-gray-600 mt-2 bg-gray-50 rounded-lg p-2 italic">"{l.observacao}"</p>}
               <div className="flex gap-2 mt-3" onClick={e=>e.stopPropagation()}>
-                {l.ligar&&<a href={"tel:"+l.ligar} className="text-sm bg-blue-100 text-blue-700 px-3 py-1.5 rounded-lg no-underline font-medium">📞</a>}
+                {(l.telefone_e164||l.ligar)&&<a href={"tel:"+(l.telefone_e164||l.ligar)} className="text-sm bg-blue-100 text-blue-700 px-3 py-1.5 rounded-lg no-underline font-medium">📞</a>}
                 <BotaoMensagens lead={l} corretor={perfilCorretor} sb={sb} token={token}
                   className="text-sm font-medium" style={{fontSize:13,padding:"6px 12px",borderRadius:10}}/>
               </div>
@@ -1485,8 +1485,8 @@ function HistoricoTab({ sb, token, perfilCorretor, isGestor }) {
             {leadSel.estagio && <p style={{fontSize:'13px',marginBottom:'8px'}}>Funil: {leadSel.estagio}</p>}
             {leadSel.observacao && <p style={{fontSize:'13px',color:'#374151',background:'#f9fafb',borderRadius:'8px',padding:'8px',marginBottom:'8px'}}>{leadSel.observacao}</p>}
             <div style={{display:'flex',gap:'8px'}}>
-              {leadSel.ligar && (
-                <a href={'tel:'+leadSel.ligar}
+              {(leadSel.telefone_e164||leadSel.ligar) && (
+                <a href={'tel:'+(leadSel.telefone_e164||leadSel.ligar)}
                   style={{flex:1,background:'#2563eb',color:'white',textAlign:'center',padding:'10px',borderRadius:'8px',fontWeight:600,fontSize:'14px',textDecoration:'none'}}>
                   Ligar
                 </a>
@@ -2697,8 +2697,8 @@ function FunilCardModal({ lead, estagios, corretor, sb, token, onMovido, onFecha
 
           {/* Ações rápidas */}
           <div className="flex gap-2 mt-3">
-            {(lead.ligar || lead.telefone) && (
-              <a href={"tel:" + (lead.ligar || lead.telefone)}
+            {(lead.telefone_e164||lead.ligar||lead.telefone) && (
+              <a href={"tel:"+(lead.telefone_e164||lead.ligar||lead.telefone)}
                 className="flex-1 bg-blue-600 text-white rounded-xl py-3 text-center text-base font-medium no-underline">
                 📞 Ligar
               </a>
@@ -2999,7 +2999,7 @@ function FunilTab({ sb, token, perfilCorretor }) {
                   {l.observacao && <p className="text-sm text-gray-500 mt-1.5 line-clamp-1 italic">"{l.observacao}"</p>}
                   {!modoSel && (
                     <div className="flex gap-2 mt-3" onClick={e => e.stopPropagation()}>
-                      {(l.ligar||l.telefone) && <a href={"tel:"+(l.ligar||l.telefone)} className="text-sm bg-blue-100 text-blue-700 px-3 py-1.5 rounded-lg no-underline font-medium">📞</a>}
+                      {(l.telefone_e164||l.ligar||l.telefone) && <a href={"tel:"+(l.telefone_e164||l.ligar||l.telefone)} className="text-sm bg-blue-100 text-blue-700 px-3 py-1.5 rounded-lg no-underline font-medium">📞</a>}
                       <BotaoMensagens lead={{...l,seq_whatsapp:l.seq_whatsapp||0,seq_email:l.seq_email||0}} corretor={corretorFunil||perfilCorretor} sb={sb} token={token} className="text-sm font-medium" style={{fontSize:13,padding:"6px 12px",borderRadius:10}}/>
                       <span className="ml-auto text-xs text-gray-300 self-center">mover →</span>
                     </div>
