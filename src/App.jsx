@@ -2531,13 +2531,18 @@ const EMAIL_CLIENTS = {
 function getEmailClient()      { try{ return localStorage.getItem("fechai_email_client")||"gmail"; } catch(e){ return "gmail"; } }
 function setEmailClient(v)     { try{ localStorage.setItem("fechai_email_client",v); } catch(e){} }
 function buildEmailLink(email, subject, body) {
-  const client = getEmailClient();
   const sub = encodeURIComponent(subject||"");
   const bod = encodeURIComponent(body||"");
+  // Mobile: sempre mailto: — abre app nativo sem pedir login
+  const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+  if(isMobile) {
+    return `mailto:${encodeURIComponent(email)}?subject=${sub}&body=${bod}`;
+  }
+  // Desktop: respeita preferência do usuário
+  const client = getEmailClient();
   if(client === "outlook") {
     return `https://outlook.live.com/mail/deeplink/compose?to=${encodeURIComponent(email)}&subject=${sub}&body=${bod}`;
   }
-  // Gmail (padrão)
   return `https://mail.google.com/mail/?view=cm&to=${encodeURIComponent(email)}&su=${sub}&body=${bod}`;
 }
 
@@ -2650,7 +2655,7 @@ function PowerZap({ leads, corretor, sb, token, onFechar }) {
       {ultimoRef.current&&(
         <div style={{background:sem?.bg||"#f0fdf4",padding:"8px 16px",display:"flex",alignItems:"center",justifyContent:"space-between"}}>
           <span style={{fontSize:12,fontWeight:700,color:sem?.cor||"#16a34a"}}>{sem?.label}</span>
-          <span style={{fontSize:11,color:"#6b7280"}}>⏱ {segundosSeg}s desde último envio</span>
+          <span style={{fontSize:11,color:"#a7f3d0"}}>⏱ {segundosSeg}s desde último envio</span>
         </div>
       )}
       {concluido?(
@@ -2669,7 +2674,7 @@ function PowerZap({ leads, corretor, sb, token, onFechar }) {
               <div style={{flex:1,minWidth:0}}>
                 <p style={{color:"#d1fae5",fontWeight:700,fontSize:16,margin:"0 0 2px",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{lead.nome}</p>
                 <p style={{color:"#10b981",fontSize:13,margin:"0 0 2px"}}>{lead.telefone||""}</p>
-                {lead.email&&<p style={{color:"#475569",fontSize:11,margin:0}}>{lead.email}</p>}
+                {lead.email&&<p style={{color:"#6ee7b7",fontSize:11,margin:0}}>{lead.email}</p>}
               </div>
               <div style={{display:"flex",flexDirection:"column",alignItems:"flex-end",gap:4,marginLeft:8,flexShrink:0}}>
                 <span style={{fontSize:10,background:"#065f46",color:"#6ee7b7",padding:"2px 8px",borderRadius:999}}>💬 {lead.seq_whatsapp||0}/{tplWpp(lead.nome,{}).lista.length}</span>
@@ -2812,7 +2817,7 @@ function PowerEmail({ leads, corretor, sb, token, onFechar }) {
           <span style={{fontSize:20}}>⚡</span>
           <div>
             <p style={{color:"#f1f5f9",fontWeight:700,fontSize:15,margin:0}}>Power E-mail</p>
-            <p style={{color:"#64748b",fontSize:11,margin:0}}>
+            <p style={{color:"#93c5fd",fontSize:11,margin:0}}>
               {enviados} enviados · {pulados} pulados · {Math.max(0,total-idx)} restantes
             </p>
           </div>
@@ -2843,7 +2848,7 @@ function PowerEmail({ leads, corretor, sb, token, onFechar }) {
         <div style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",padding:32,textAlign:"center"}}>
           <div style={{fontSize:64,marginBottom:16}}>🎉</div>
           <p style={{color:"#f1f5f9",fontWeight:800,fontSize:22,margin:"0 0 8px"}}>Fila concluída!</p>
-          <p style={{color:"#64748b",fontSize:14,margin:"0 0 8px"}}>{enviados} emails enviados · {pulados} pulados</p>
+          <p style={{color:"#93c5fd",fontSize:14,margin:"0 0 8px"}}>{enviados} emails enviados · {pulados} pulados</p>
           <button onClick={onFechar}
             style={{marginTop:24,background:"#6366f1",color:"#fff",border:"none",borderRadius:14,
               padding:"14px 32px",fontSize:15,fontWeight:700,cursor:"pointer"}}>
@@ -2852,7 +2857,7 @@ function PowerEmail({ leads, corretor, sb, token, onFechar }) {
         </div>
       ) : !lead ? (
         <div style={{flex:1,display:"flex",alignItems:"center",justifyContent:"center"}}>
-          <p style={{color:"#64748b"}}>Carregando...</p>
+          <p style={{color:"#93c5fd"}}>Carregando...</p>
         </div>
       ) : (
         <div style={{flex:1,overflow:"auto",padding:16,display:"flex",flexDirection:"column",gap:12}}>
@@ -2865,13 +2870,13 @@ function PowerEmail({ leads, corretor, sb, token, onFechar }) {
                   {lead.nome}
                 </p>
                 <p style={{color:"#6366f1",fontSize:13,margin:"0 0 2px"}}>{lead.email}</p>
-                <p style={{color:"#475569",fontSize:11,margin:0}}>{lead.telefone||""}</p>
+                <p style={{color:"#93c5fd",fontSize:11,margin:0}}>{lead.telefone||""}</p>
               </div>
               <div style={{display:"flex",flexDirection:"column",alignItems:"flex-end",gap:4,marginLeft:8,flexShrink:0}}>
                 <span style={{fontSize:10,background:"#312e81",color:"#a5b4fc",padding:"2px 8px",borderRadius:999}}>
                   📧 {lead.seq_email||0}/{tplEmail(lead.nome,{}).lista.length} enviados
                 </span>
-                <span style={{fontSize:10,color:"#475569"}}>
+                <span style={{fontSize:10,color:"#93c5fd"}}>
                   {idx+1}/{total}
                 </span>
               </div>
@@ -2884,7 +2889,7 @@ function PowerEmail({ leads, corretor, sb, token, onFechar }) {
               <p style={{color:"#818cf8",fontSize:10,fontWeight:700,margin:"0 0 4px",textTransform:"uppercase"}}>Assunto</p>
               <p style={{color:"#e2e8f0",fontWeight:700,fontSize:14,margin:"0 0 12px"}}>{preview.sub}</p>
               <p style={{color:"#818cf8",fontSize:10,fontWeight:700,margin:"0 0 4px",textTransform:"uppercase"}}>Corpo</p>
-              <p style={{color:"#94a3b8",fontSize:13,lineHeight:1.6,margin:0,whiteSpace:"pre-line"}}>{preview.body}</p>
+              <p style={{color:"#c7d2fe",fontSize:13,lineHeight:1.6,margin:0,whiteSpace:"pre-line"}}>{preview.body}</p>
             </div>
           )}
 
@@ -5123,6 +5128,219 @@ function MeuDashboardTab({ sb, token, corretor }) {
   );
 }
 
+// ─── Assistente.ai ────────────────────────────────────────────────────────────
+function AssistenteAI({ sb, token, corretor }) {
+  const [msgs,     setMsgs]     = useState([]);
+  const [input,    setInput]    = useState("");
+  const [loading,  setLoading]  = useState(false);
+  const [erro,     setErro]     = useState("");
+  const endRef  = useRef(null);
+  const inputRef = useRef(null);
+
+  const SUGESTOES = [
+    "Crie 4 variações da mensagem 1 de WhatsApp para leads frios de apartamento na Lapa",
+    "Como responder um lead que disse 'não tenho dinheiro'?",
+    "Crie um email de follow-up para lead que visitou o decorado mas não fechou",
+    "Quais são as vantagens do MCMV para o comprador em 2025?",
+    "Como calcular a capacidade de financiamento de um cliente?",
+  ];
+
+  useEffect(() => {
+    endRef.current?.scrollIntoView({ behavior:"smooth" });
+  }, [msgs, loading]);
+
+  const enviar = async (texto) => {
+    const txt = (texto || input).trim();
+    if(!txt || loading) return;
+    setInput(""); setErro("");
+
+    const novaMsgs = [...msgs, { role:"user", content:txt }];
+    setMsgs(novaMsgs);
+    setLoading(true);
+
+    try {
+      // Chamar Edge Function — chaves ficam no servidor, nunca no browser
+      const res = await fetch(
+        `${SUPABASE_URL}/functions/v1/assistente-ai`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${token}`,
+            "apikey": SUPABASE_KEY,
+          },
+          body: JSON.stringify({ messages: novaMsgs })
+        }
+      );
+      const data = await res.json();
+      if(!res.ok || data?.error) throw new Error(data?.error || "Erro na IA");
+
+      setMsgs(prev => [...prev, {
+        role: "assistant",
+        content: data.resposta,
+        modelo: data.modelo
+      }]);
+    } catch(e) {
+      setErro("Não consegui responder agora. Tente novamente.");
+      setMsgs(prev => prev.slice(0,-1)); // remove msg do user se falhou
+      setInput(txt);
+    }
+    setLoading(false);
+    setTimeout(()=>inputRef.current?.focus(), 100);
+  };
+
+  const limpar = () => { setMsgs([]); setErro(""); setInput(""); };
+
+  return (
+    <div style={{display:"flex",flexDirection:"column",height:"100vh",background:"#f5f3ff",paddingBottom:0}}>
+
+      {/* Header */}
+      <div style={{background:"linear-gradient(135deg,#7c3aed,#6d28d9)",padding:"14px 16px 16px",flexShrink:0}}>
+        <div style={{display:"flex",alignItems:"center",justifyContent:"space-between"}}>
+          <div style={{display:"flex",alignItems:"center",gap:10}}>
+            <div style={{width:36,height:36,borderRadius:"50%",background:"rgba(255,255,255,.2)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:20}}>🤖</div>
+            <div>
+              <p style={{color:"#fff",fontWeight:800,fontSize:16,margin:0}}>Assistente.ai</p>
+              <p style={{color:"rgba(255,255,255,.7)",fontSize:11,margin:0}}>Gemini + GPT · Mercado Imobiliário</p>
+            </div>
+          </div>
+          {msgs.length>0&&(
+            <button onClick={limpar}
+              style={{background:"rgba(255,255,255,.2)",border:"1px solid rgba(255,255,255,.3)",color:"#fff",borderRadius:8,padding:"5px 12px",fontSize:12,cursor:"pointer"}}>
+              Nova conversa
+            </button>
+          )}
+        </div>
+      </div>
+
+      {/* Área de mensagens */}
+      <div style={{flex:1,overflow:"auto",padding:"16px 16px 0"}}>
+
+        {/* Tela inicial com sugestões */}
+        {msgs.length===0&&(
+          <div style={{paddingBottom:16}}>
+            <div style={{textAlign:"center",padding:"24px 0 20px"}}>
+              <div style={{fontSize:48,marginBottom:8}}>🤖</div>
+              <p style={{fontWeight:700,fontSize:18,color:"#4c1d95",margin:"0 0 4px"}}>Olá, {corretor?.nome?.split(" ")[0]||"corretor"}!</p>
+              <p style={{fontSize:13,color:"#6b7280",margin:0}}>Sou seu assistente de IA para o mercado imobiliário.<br/>Posso criar templates, tirar dúvidas e muito mais.</p>
+            </div>
+            <p style={{fontSize:12,fontWeight:700,color:"#7c3aed",margin:"0 0 10px",textTransform:"uppercase",letterSpacing:.5}}>Sugestões</p>
+            {SUGESTOES.map((s,i)=>(
+              <button key={i} onClick={()=>enviar(s)}
+                style={{
+                  display:"block",width:"100%",textAlign:"left",
+                  background:"white",border:"1px solid #e9d5ff",borderRadius:12,
+                  padding:"11px 14px",fontSize:13,color:"#4c1d95",
+                  marginBottom:8,cursor:"pointer",lineHeight:1.4,
+                  fontFamily:"inherit",
+                }}>
+                {s}
+              </button>
+            ))}
+          </div>
+        )}
+
+        {/* Histórico de mensagens */}
+        {msgs.map((m,i)=>(
+          <div key={i} style={{
+            display:"flex",
+            justifyContent:m.role==="user"?"flex-end":"flex-start",
+            marginBottom:12,
+          }}>
+            {m.role==="assistant"&&(
+              <div style={{width:28,height:28,borderRadius:"50%",background:"#7c3aed",display:"flex",alignItems:"center",justifyContent:"center",fontSize:14,marginRight:8,flexShrink:0,marginTop:2}}>🤖</div>
+            )}
+            <div style={{
+              maxWidth:"82%",
+              background:m.role==="user"?"#7c3aed":"white",
+              color:m.role==="user"?"#fff":"#1f2937",
+              borderRadius:m.role==="user"?"18px 18px 4px 18px":"18px 18px 18px 4px",
+              padding:"10px 14px",
+              fontSize:13,lineHeight:1.6,
+              boxShadow:"0 1px 4px rgba(0,0,0,.08)",
+              border:m.role==="assistant"?"1px solid #f3f4f6":"none",
+              whiteSpace:"pre-wrap",wordBreak:"break-word",
+            }}>
+              {m.content}
+              {m.modelo&&(
+                <p style={{fontSize:9,color:"#9ca3af",margin:"6px 0 0",textAlign:"right"}}>
+                  via {m.modelo==="gemini"?"Gemini 1.5 Flash":"GPT-4o-mini"}
+                </p>
+              )}
+            </div>
+          </div>
+        ))}
+
+        {/* Digitando */}
+        {loading&&(
+          <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:12}}>
+            <div style={{width:28,height:28,borderRadius:"50%",background:"#7c3aed",display:"flex",alignItems:"center",justifyContent:"center",fontSize:14}}>🤖</div>
+            <div style={{background:"white",borderRadius:"18px 18px 18px 4px",padding:"10px 14px",border:"1px solid #f3f4f6",boxShadow:"0 1px 4px rgba(0,0,0,.08)"}}>
+              <div style={{display:"flex",gap:4,alignItems:"center"}}>
+                {[0,1,2].map(i=>(
+                  <div key={i} style={{
+                    width:7,height:7,borderRadius:"50%",background:"#7c3aed",
+                    animation:"bounce 1.2s infinite",
+                    animationDelay:`${i*0.2}s`,opacity:.7,
+                  }}/>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {erro&&(
+          <div style={{background:"#fef2f2",border:"1px solid #fecaca",borderRadius:10,padding:"10px 14px",fontSize:13,color:"#dc2626",marginBottom:12}}>
+            {erro}
+          </div>
+        )}
+
+        <div ref={endRef}/>
+      </div>
+
+      {/* Input */}
+      <div style={{padding:"12px 16px 32px",background:"white",borderTop:"1px solid #f3f4f6",flexShrink:0}}>
+        <div style={{display:"flex",gap:8,alignItems:"flex-end"}}>
+          <textarea
+            ref={inputRef}
+            value={input}
+            onChange={e=>setInput(e.target.value)}
+            onKeyDown={e=>{ if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();enviar();} }}
+            placeholder="Pergunte sobre imóveis, peça templates..."
+            rows={1}
+            style={{
+              flex:1,border:"1px solid #e9d5ff",borderRadius:14,padding:"10px 14px",
+              fontSize:14,fontFamily:"inherit",resize:"none",outline:"none",
+              background:"#faf5ff",color:"#1f2937",lineHeight:1.5,
+              maxHeight:120,overflowY:"auto",
+            }}
+          />
+          <button
+            onClick={()=>enviar()}
+            disabled={loading||!input.trim()}
+            style={{
+              width:44,height:44,borderRadius:"50%",border:"none",
+              background:loading||!input.trim()?"#e9d5ff":"#7c3aed",
+              color:"#fff",fontSize:20,cursor:loading||!input.trim()?"not-allowed":"pointer",
+              display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,
+            }}>
+            {loading?"⏳":"▶"}
+          </button>
+        </div>
+        <p style={{fontSize:10,color:"#9ca3af",margin:"6px 0 0",textAlign:"center"}}>
+          Powered by Gemini 1.5 Flash + GPT-4o-mini · As chaves ficam protegidas no servidor
+        </p>
+      </div>
+
+      <style>{`
+        @keyframes bounce {
+          0%,80%,100%{transform:translateY(0)} 40%{transform:translateY(-6px)}
+        }
+      `}</style>
+    </div>
+  );
+}
+
 function CorretorApp({ sb, token, corretor, onLogout, onVoltar }) {
   const TABS = [
     {id:"home",      label:"Início",     icon:"⊞", key:null},
@@ -5145,7 +5363,7 @@ function CorretorApp({ sb, token, corretor, onLogout, onVoltar }) {
     {id:"historico",  label:"Histórico",   icon:"↺",  bg:"#374151", txt:"#fff"},
     {id:"meudash",    label:"Dashboard",   icon:"📊", bg:"#1e40af", txt:"#fff"},
     {id:"instrucoes", label:"Instruções",  icon:"📖", bg:"#6d28d9", txt:"#fff"},
-    {id:"soon1",      label:"Em breve",    icon:"🔒", bg:"#e5e7eb", txt:"#9ca3af", soon:true},
+    {id:"ia",     label:"Assistente.ai", icon:"🤖", bg:"#7c3aed", txt:"#fff"},
   ];
 
   const [tab,setTab]       = useState("home");
@@ -5505,6 +5723,7 @@ function CorretorApp({ sb, token, corretor, onLogout, onVoltar }) {
 
       {tab==="home"     &&<HomeScreen/>}
       {tab==="lista"    &&<ListaTab/>}
+      {tab==="ia"       &&<AssistenteAI sb={sb} token={token} corretor={corretor}/>}
       {tab==="meudash"  &&<MeuDashboardTab sb={sb} token={token} corretor={corretor}/>}
       {tab==="discador" &&<DiscadorTab  sb={sb} token={token} corretor={corretor} onFeedback={loadContagens}/>}
       {tab==="email"    &&<EmailTab     sb={sb} token={token} perfilCorretor={perfilFinal}/>}
