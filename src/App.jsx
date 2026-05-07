@@ -2542,6 +2542,11 @@ function buildEmailLink(email, subject, body) {
 }
 
 
+// ─── Power Zap — helpers contador diário ──────────────────────────────────────
+const ZAP_HOJE_KEY = () => `fechai_zap_${new Date().toISOString().slice(0,10)}`;
+function getZapHoje() { try{ return parseInt(localStorage.getItem(ZAP_HOJE_KEY())||"0"); } catch(e){ return 0; } }
+function incZapHoje() { try{ localStorage.setItem(ZAP_HOJE_KEY(), String(getZapHoje()+1)); } catch(e){} }
+
 function PowerZap({ leads, corretor, sb, token, onFechar }) {
   const [idx,         setIdx]         = useState(0);
   const [pausado,     setPausado]     = useState(false);
