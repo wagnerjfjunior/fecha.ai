@@ -185,7 +185,7 @@ function buildWhatsAppLink(lead) {
   return `https://wa.me/${num}?text=${msg}`;
 }
 
-function buildEmailLink(lead) {
+function buildEmailLinkLegacy(lead) {
   if (!lead.email) return null;
   const nome    = getPrimeiroNome(lead.nome);
   const subject = encodeURIComponent(`${getSaudacao()}, ${nome}! Sobre seu interesse em imóveis`);
@@ -646,6 +646,9 @@ function CentralMensagens({ lead, corretor, sb, token, onFechar, onSeqAtualizado
   const [modoLivre,setModoLivre]=useState(false);
   const [salvando,setSalvando]=useState(false);
 
+  const [clienteEmail, setClienteEmail] = useState(getEmailClient());
+  const mudarCliente = (v) => { setEmailClient(v); setClienteEmail(v); };
+
   const origem = lead.origem_tipo || "lista";
   const origemLabel = ORIGEM_LABEL[origem] || "🧊 Lista Fria";
   const nome   = (lead.nome||"").split(" ")[0] || "você";
@@ -669,10 +672,10 @@ function CentralMensagens({ lead, corretor, sb, token, onFechar, onSeqAtualizado
   };
   const emailLink = () => {
     if (!lead.email) return null;
-    if (modoLivre) return livreEmail.trim() ? `mailto:${lead.email}?body=${encodeURIComponent(livreEmail)}` : null;
+    if (modoLivre) return livreEmail.trim() ? buildEmailLink(lead.email, "", livreEmail) : null;
     const t = emails[idxEfetivo];
     if (!t) return null;
-    return `mailto:${lead.email}?subject=${encodeURIComponent(t.sub)}&body=${encodeURIComponent(t.body)}`;
+    return buildEmailLink(lead.email, t.sub, t.body);
   };
 
   const marcarEnviado = async () => {
@@ -717,6 +720,23 @@ function CentralMensagens({ lead, corretor, sb, token, onFechar, onSeqAtualizado
             </button>
           ))}
         </div>
+        {/* Seletor de cliente de email */}
+        {canal==="email"&&(
+          <div style={{display:"flex",alignItems:"center",gap:6,padding:"6px 16px",background:"#f8fafc",borderBottom:"1px solid #f1f5f9"}}>
+            <span style={{fontSize:11,color:"#94a3b8",marginRight:2}}>Abrir em:</span>
+            {Object.entries(EMAIL_CLIENTS).map(([k,v])=>(
+              <button key={k} onClick={()=>mudarCliente(k)}
+                style={{
+                  fontSize:11,fontWeight:600,padding:"3px 10px",borderRadius:20,border:"1px solid",cursor:"pointer",
+                  background:clienteEmail===k?"#2563eb":"white",
+                  color:clienteEmail===k?"white":"#64748b",
+                  borderColor:clienteEmail===k?"#2563eb":"#e2e8f0",
+                }}>
+                {v.icon} {v.label}
+              </button>
+            ))}
+          </div>
+        )}
 
         <div className="p-4 pb-8">
           {/* Toggle livre */}
@@ -2503,226 +2523,178 @@ function DashboardTab({ sb, token }) {
 
 // ─── Abas do gestor ───────────────────────────────────────────────────────────
 // ─── Aba E-mail — leads Perdido sem contato ──────────────────────────────────
-// ─── Power Zap ───────────────────────────────────────────────────────────────
-function PowerZap({ leads, corretor, sb, token, onFechar }) {
-  const [idx,      setIdx]      = useState(0);
-  const [pausado,  setPausado]  = useState(false);
-  const [enviando, setEnviando] = useState(false);
-  const [enviados, setEnviados] = useState(0);
-  const [pulados,  setPulados]  = useState(0);
-  const [contagem, setContagem] = useState(0);
-  const timerRef = useRef(null);
+// ─── Preferência de cliente de email ─────────────────────────────────────────
+const EMAIL_CLIENTS = {
+  gmail:   { label:"Gmail",   icon:"✉️" },
+  outlook: { label:"Outlook", icon:"📨" },
+};
+function getEmailClient()      { try{ return localStorage.getItem("fechai_email_client")||"gmail"; } catch(e){ return "gmail"; } }
+function setEmailClient(v)     { try{ localStorage.setItem("fechai_email_client",v); } catch(e){} }
+function buildEmailLink(email, subject, body) {
+  const client = getEmailClient();
+  const sub = encodeURIComponent(subject||"");
+  const bod = encodeURIComponent(body||"");
+  if(client === "outlook") {
+    return `https://outlook.live.com/mail/deeplink/compose?to=${encodeURIComponent(email)}&subject=${sub}&body=${bod}`;
+  }
+  // Gmail (padrão)
+  return `https://mail.google.com/mail/?view=cm&to=${encodeURIComponent(email)}&su=${sub}&body=${bod}`;
+}
 
-  // Filtra só leads com WhatsApp
+
+function PowerZap({ leads, corretor, sb, token, onFechar }) {
+  const [idx,         setIdx]         = useState(0);
+  const [pausado,     setPausado]     = useState(false);
+  const [enviando,    setEnviando]    = useState(false);
+  const [enviados,    setEnviados]    = useState(0);
+  const [pulados,     setPulados]     = useState(0);
+  const [contagem,    setContagem]    = useState(0);
+  const [antiBan,     setAntiBan]     = useState(true);
+  const [segundosSeg, setSegundosSeg] = useState(0);
+  const [zapHoje,     setZapHoje]     = useState(getZapHoje());
+  const timerRef   = useRef(null);
+  const antiBanRef = useRef(null);
+  const ultimoRef  = useRef(null);
+
   const fila = leads.filter(l => l.whatsapp && l.whatsapp.startsWith("https://wa.me/"));
   const lead  = fila[idx] || null;
   const total = fila.length;
   const concluido = idx >= total;
 
-  useEffect(() => () => { if(timerRef.current) clearInterval(timerRef.current); }, []);
+  useEffect(() => {
+    antiBanRef.current = setInterval(() => {
+      if(ultimoRef.current) setSegundosSeg(Math.floor((Date.now()-ultimoRef.current)/1000));
+    }, 1000);
+    return () => { clearInterval(antiBanRef.current); if(timerRef.current) clearInterval(timerRef.current); };
+  }, []);
+
+  const semaforo = () => {
+    if(!ultimoRef.current) return null;
+    if(segundosSeg < 60)  return {cor:"#dc2626",bg:"#fef2f2",label:"🔴 Risco — aguarde",bloq:antiBan&&segundosSeg<30};
+    if(segundosSeg < 120) return {cor:"#d97706",bg:"#fffbeb",label:"🟡 Cuidado — prossiga com cautela",bloq:false};
+    return                       {cor:"#16a34a",bg:"#f0fdf4",label:"🟢 Seguro — pode enviar",bloq:false};
+  };
 
   const avancar = () => {
     if(timerRef.current) clearInterval(timerRef.current);
-    timerRef.current = null;
-    setContagem(0);
-    setIdx(i => i + 1);
+    timerRef.current = null; setContagem(0); setIdx(i=>i+1);
   };
 
   const iniciarContagem = () => {
     setContagem(3);
-    timerRef.current = setInterval(() => {
-      setContagem(c => {
-        if(c <= 1) {
-          clearInterval(timerRef.current);
-          timerRef.current = null;
-          setIdx(i => i + 1);
-          return 0;
-        }
-        return c - 1;
-      });
-    }, 1000);
+    timerRef.current = setInterval(()=>{
+      setContagem(c=>{ if(c<=1){clearInterval(timerRef.current);timerRef.current=null;setIdx(i=>i+1);return 0;} return c-1; });
+    },1000);
   };
 
   const enviarZap = async () => {
-    if(!lead || enviando) return;
+    if(!lead||enviando) return;
+    const sem = semaforo();
+    if(sem?.bloq) return;
     setEnviando(true);
-
-    // Template correto para a sequência atual
-    const c = corretor || {};
-    const wpps = tplWpp(lead.nome, c)[lead.origem_tipo||"lista"] || tplWpp(lead.nome, c).lista;
-    const seqAtual = lead.seq_whatsapp || 0;
-    const idx_wpp  = Math.min(seqAtual, wpps.length - 1);
-    const texto    = wpps[idx_wpp];
-    const num      = (lead.telefone_e164||"").replace("+","");
-    const link     = `https://wa.me/${num}?text=${encodeURIComponent(texto)}`;
-
-    // Abre WhatsApp e registra simultaneamente
-    window.open(link, '_blank');
+    const c    = corretor||{};
+    const wpps = tplWpp(lead.nome,c)[lead.origem_tipo||"lista"]||tplWpp(lead.nome,c).lista;
+    const seqA = lead.seq_whatsapp||0;
+    const txt  = wpps[Math.min(seqA,wpps.length-1)];
+    const num  = (lead.telefone_e164||"").replace("+","");
+    window.open(`https://wa.me/${num}?text=${encodeURIComponent(txt)}`,"_blank");
+    ultimoRef.current = Date.now(); setSegundosSeg(0);
     try {
-      await sb.rpc("registrar_mensagem", {
-        p_lead_id: lead.id,
-        p_canal:   "whatsapp",
-        p_seq:     seqAtual + 1
-      }, token);
-      setEnviados(e => e + 1);
-    } catch(e) {}
-
+      await sb.rpc("registrar_mensagem",{p_lead_id:lead.id,p_canal:"whatsapp",p_seq:seqA+1},token);
+      setEnviados(e=>e+1); incZapHoje(); setZapHoje(getZapHoje());
+    } catch(e){}
     setEnviando(false);
     if(!pausado) iniciarContagem();
   };
 
   const pular = () => {
     if(timerRef.current) clearInterval(timerRef.current);
-    timerRef.current = null;
-    setContagem(0);
-    setPulados(p => p + 1);
-    setIdx(i => i + 1);
+    timerRef.current=null; setContagem(0); setPulados(p=>p+1); setIdx(i=>i+1);
   };
 
-  const togglePausa = () => {
-    if(!pausado) {
-      if(timerRef.current) clearInterval(timerRef.current);
-      timerRef.current = null;
-      setContagem(0);
-    }
-    setPausado(p => !p);
-  };
-
+  const sem = semaforo();
   const getPreview = () => {
     if(!lead) return null;
-    const c = corretor || {};
-    const wpps = tplWpp(lead.nome, c)[lead.origem_tipo||"lista"] || tplWpp(lead.nome, c).lista;
-    const seqAtual = lead.seq_whatsapp || 0;
-    return wpps[Math.min(seqAtual, wpps.length - 1)];
+    const c=corretor||{};
+    const wpps=tplWpp(lead.nome,c)[lead.origem_tipo||"lista"]||tplWpp(lead.nome,c).lista;
+    return wpps[Math.min(lead.seq_whatsapp||0,wpps.length-1)];
   };
   const preview = getPreview();
 
   return (
     <div style={{position:"fixed",inset:0,background:"#052e16",zIndex:60,display:"flex",flexDirection:"column"}}>
-
-      {/* Header */}
-      <div style={{background:"#064e3b",padding:"12px 16px",display:"flex",alignItems:"center",justifyContent:"space-between",borderBottom:"1px solid #065f46"}}>
+      <div style={{background:"#064e3b",padding:"10px 16px",display:"flex",alignItems:"center",justifyContent:"space-between",borderBottom:"1px solid #065f46"}}>
         <div style={{display:"flex",alignItems:"center",gap:10}}>
           <span style={{fontSize:20}}>⚡</span>
           <div>
             <p style={{color:"#d1fae5",fontWeight:700,fontSize:15,margin:0}}>Power Zap</p>
-            <p style={{color:"#6ee7b7",fontSize:11,margin:0}}>
-              {enviados} enviados · {pulados} pulados · {Math.max(0,total-idx)} restantes
-            </p>
+            <p style={{color:"#6ee7b7",fontSize:11,margin:0}}>{enviados} enviados · {pulados} pulados · {Math.max(0,total-idx)} restantes · 📱 {zapHoje} hoje</p>
           </div>
         </div>
-        <div style={{display:"flex",gap:8,alignItems:"center"}}>
-          <button onClick={togglePausa}
-            style={{background:pausado?"#f59e0b":"#065f46",color:pausado?"#1c1917":"#6ee7b7",
-              border:"none",borderRadius:8,padding:"6px 12px",fontSize:12,fontWeight:600,cursor:"pointer"}}>
-            {pausado?"▶ Retomar":"⏸ Pausar"}
+        <div style={{display:"flex",gap:6,alignItems:"center"}}>
+          <button onClick={()=>setAntiBan(a=>!a)} style={{fontSize:10,fontWeight:700,padding:"4px 8px",borderRadius:20,border:"1px solid",cursor:"pointer",background:antiBan?"#065f46":"#7f1d1d",color:antiBan?"#6ee7b7":"#fca5a5",borderColor:antiBan?"#10b981":"#dc2626"}}>
+            {antiBan?"🛡 Anti-ban ON":"⚠️ Anti-ban OFF"}
           </button>
-          <button onClick={onFechar}
-            style={{background:"#dc2626",color:"#fff",border:"none",borderRadius:8,
-              padding:"6px 12px",fontSize:12,fontWeight:600,cursor:"pointer"}}>
-            ✕ Sair
+          <button onClick={()=>{ if(!pausado&&timerRef.current){clearInterval(timerRef.current);timerRef.current=null;setContagem(0);} setPausado(p=>!p); }} style={{background:pausado?"#f59e0b":"#065f46",color:pausado?"#1c1917":"#6ee7b7",border:"none",borderRadius:8,padding:"6px 10px",fontSize:12,fontWeight:600,cursor:"pointer"}}>
+            {pausado?"▶":"⏸"}
           </button>
+          <button onClick={onFechar} style={{background:"#dc2626",color:"#fff",border:"none",borderRadius:8,padding:"6px 10px",fontSize:12,fontWeight:600,cursor:"pointer"}}>✕</button>
         </div>
       </div>
-
-      {/* Barra de progresso */}
-      <div style={{height:4,background:"#064e3b"}}>
-        <div style={{height:"100%",background:"#10b981",
-          width:(total>0?Math.min(100,(idx/total)*100):0)+"%",
-          transition:"width 0.4s"}}/>
-      </div>
-
-      {/* Conteúdo */}
-      {concluido ? (
+      <div style={{height:4,background:"#064e3b"}}><div style={{height:"100%",background:"#10b981",width:(total>0?Math.min(100,(idx/total)*100):0)+"%",transition:"width 0.4s"}}/></div>
+      {ultimoRef.current&&(
+        <div style={{background:sem?.bg||"#f0fdf4",padding:"8px 16px",display:"flex",alignItems:"center",justifyContent:"space-between"}}>
+          <span style={{fontSize:12,fontWeight:700,color:sem?.cor||"#16a34a"}}>{sem?.label}</span>
+          <span style={{fontSize:11,color:"#6b7280"}}>⏱ {segundosSeg}s desde último envio</span>
+        </div>
+      )}
+      {concluido?(
         <div style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",padding:32,textAlign:"center"}}>
           <div style={{fontSize:64,marginBottom:16}}>🎉</div>
           <p style={{color:"#d1fae5",fontWeight:800,fontSize:22,margin:"0 0 8px"}}>Fila concluída!</p>
-          <p style={{color:"#6ee7b7",fontSize:14,margin:0}}>{enviados} mensagens enviadas · {pulados} puladas</p>
-          <button onClick={onFechar}
-            style={{marginTop:24,background:"#10b981",color:"#fff",border:"none",borderRadius:14,
-              padding:"14px 32px",fontSize:15,fontWeight:700,cursor:"pointer"}}>
-            Voltar
-          </button>
+          <p style={{color:"#6ee7b7",fontSize:14,margin:0}}>{enviados} enviadas · {zapHoje} hoje no total</p>
+          <button onClick={onFechar} style={{marginTop:24,background:"#10b981",color:"#fff",border:"none",borderRadius:14,padding:"14px 32px",fontSize:15,fontWeight:700,cursor:"pointer"}}>Voltar</button>
         </div>
-      ) : !lead ? (
-        <div style={{flex:1,display:"flex",alignItems:"center",justifyContent:"center"}}>
-          <p style={{color:"#6ee7b7"}}>Carregando...</p>
-        </div>
-      ) : (
+      ):!lead?(
+        <div style={{flex:1,display:"flex",alignItems:"center",justifyContent:"center"}}><p style={{color:"#6ee7b7"}}>Carregando...</p></div>
+      ):(
         <div style={{flex:1,overflow:"auto",padding:16,display:"flex",flexDirection:"column",gap:12}}>
-
-          {/* Card do lead */}
           <div style={{background:"#064e3b",borderRadius:16,padding:16,border:"1px solid #065f46"}}>
             <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start"}}>
               <div style={{flex:1,minWidth:0}}>
-                <p style={{color:"#d1fae5",fontWeight:700,fontSize:16,margin:"0 0 2px",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>
-                  {lead.nome}
-                </p>
+                <p style={{color:"#d1fae5",fontWeight:700,fontSize:16,margin:"0 0 2px",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{lead.nome}</p>
                 <p style={{color:"#10b981",fontSize:13,margin:"0 0 2px"}}>{lead.telefone||""}</p>
                 {lead.email&&<p style={{color:"#475569",fontSize:11,margin:0}}>{lead.email}</p>}
               </div>
               <div style={{display:"flex",flexDirection:"column",alignItems:"flex-end",gap:4,marginLeft:8,flexShrink:0}}>
-                <span style={{fontSize:10,background:"#065f46",color:"#6ee7b7",padding:"2px 8px",borderRadius:999}}>
-                  💬 {lead.seq_whatsapp||0}/{4} enviados
-                </span>
+                <span style={{fontSize:10,background:"#065f46",color:"#6ee7b7",padding:"2px 8px",borderRadius:999}}>💬 {lead.seq_whatsapp||0}/{tplWpp(lead.nome,{}).lista.length}</span>
                 <span style={{fontSize:10,color:"#6ee7b7"}}>{idx+1}/{total}</span>
               </div>
             </div>
           </div>
-
-          {/* Preview da mensagem */}
-          {preview && (
+          {preview&&(
             <div style={{background:"#064e3b",borderRadius:16,padding:16,border:"1px solid #10b981",flex:1}}>
               <p style={{color:"#34d399",fontSize:10,fontWeight:700,margin:"0 0 8px",textTransform:"uppercase"}}>
-                Mensagem {Math.min((lead.seq_whatsapp||0)+1, 4)}/4
+                Mensagem {Math.min((lead.seq_whatsapp||0)+1,tplWpp(lead.nome,{}).lista.length)}/{tplWpp(lead.nome,{}).lista.length}
               </p>
-              <p style={{color:"#d1fae5",fontSize:14,lineHeight:1.7,margin:0,whiteSpace:"pre-line"}}>
-                {preview}
-              </p>
+              <p style={{color:"#d1fae5",fontSize:14,lineHeight:1.7,margin:0,whiteSpace:"pre-line"}}>{preview}</p>
             </div>
           )}
-
-          {/* Contagem regressiva */}
-          {contagem > 0 && !pausado && (
-            <div style={{background:"#1c1917",border:"1px solid #f59e0b",borderRadius:12,padding:10,
-              display:"flex",alignItems:"center",justifyContent:"space-between"}}>
-              <p style={{color:"#fbbf24",fontSize:13,margin:0}}>
-                ⏱ Próximo em <strong>{contagem}s</strong>
-              </p>
-              <button onClick={avancar}
-                style={{background:"#f59e0b",color:"#1c1917",border:"none",borderRadius:8,
-                  padding:"4px 10px",fontSize:12,fontWeight:700,cursor:"pointer"}}>
-                Pular contagem →
-              </button>
+          {contagem>0&&!pausado&&(
+            <div style={{background:"#1c1917",border:"1px solid #f59e0b",borderRadius:12,padding:10,display:"flex",alignItems:"center",justifyContent:"space-between"}}>
+              <p style={{color:"#fbbf24",fontSize:13,margin:0}}>⏱ Próximo em <strong>{contagem}s</strong></p>
+              <button onClick={avancar} style={{background:"#f59e0b",color:"#1c1917",border:"none",borderRadius:8,padding:"4px 10px",fontSize:12,fontWeight:700,cursor:"pointer"}}>Pular →</button>
             </div>
           )}
-
-          {pausado && (
-            <div style={{background:"#1c1917",border:"1px solid #f59e0b",borderRadius:12,padding:10,textAlign:"center"}}>
-              <p style={{color:"#fbbf24",fontSize:13,margin:0}}>⏸ Pausado — clique em "Retomar" para continuar</p>
-            </div>
-          )}
+          {pausado&&<div style={{background:"#1c1917",border:"1px solid #f59e0b",borderRadius:12,padding:10,textAlign:"center"}}><p style={{color:"#fbbf24",fontSize:13,margin:0}}>⏸ Pausado</p></div>}
         </div>
       )}
-
-      {/* Botões */}
-      {!concluido && lead && (
+      {!concluido&&lead&&(
         <div style={{padding:"12px 16px 32px",background:"#052e16",borderTop:"1px solid #064e3b",display:"flex",gap:10}}>
-          <button onClick={pular}
-            style={{flex:1,background:"#064e3b",color:"#6ee7b7",border:"1px solid #065f46",
-              borderRadius:14,padding:"14px",fontSize:14,fontWeight:600,cursor:"pointer"}}>
-            Pular →
-          </button>
-          <button onClick={enviarZap} disabled={enviando}
-            style={{
-              flex:3,
-              background:enviando?"#065f46":"linear-gradient(135deg,#10b981,#059669)",
-              color:"#fff",border:"none",borderRadius:14,padding:"14px",
-              fontSize:16,fontWeight:800,cursor:enviando?"not-allowed":"pointer",
-              boxShadow:"0 4px 20px rgba(16,185,129,.4)",
-              opacity:enviando?0.7:1,
-            }}>
-            {enviando?"Abrindo...":"💬 Enviar e avançar"}
+          <button onClick={pular} style={{flex:1,background:"#064e3b",color:"#6ee7b7",border:"1px solid #065f46",borderRadius:14,padding:"14px",fontSize:14,fontWeight:600,cursor:"pointer"}}>Pular →</button>
+          <button onClick={enviarZap} disabled={enviando||(sem?.bloq&&antiBan)}
+            style={{flex:3,background:(enviando||(sem?.bloq&&antiBan))?"#065f46":"linear-gradient(135deg,#10b981,#059669)",color:"#fff",border:"none",borderRadius:14,padding:"14px",fontSize:16,fontWeight:800,cursor:(enviando||(sem?.bloq&&antiBan))?"not-allowed":"pointer",boxShadow:(sem?.bloq&&antiBan)?"none":"0 4px 20px rgba(16,185,129,.4)",opacity:(enviando||(sem?.bloq&&antiBan))?0.6:1}}>
+            {sem?.bloq&&antiBan?"⏳ Aguarde 30s...":enviando?"Abrindo...":"💬 Enviar e avançar"}
           </button>
         </div>
       )}
@@ -2730,7 +2702,6 @@ function PowerZap({ leads, corretor, sb, token, onFechar }) {
   );
 }
 
-// ─── Power Email ─────────────────────────────────────────────────────────────
 function PowerEmail({ leads, corretor, sb, token, onFechar }) {
   const [idx,       setIdx]       = useState(0);
   const [pausado,   setPausado]   = useState(false);
@@ -2781,7 +2752,7 @@ function PowerEmail({ leads, corretor, sb, token, onFechar }) {
     const seqAtual = lead.seq_email || 0;
     const idx_email = Math.min(seqAtual, emails.length - 1);
     const tpl = emails[idx_email];
-    const link = `mailto:${lead.email}?subject=${encodeURIComponent(tpl.sub)}&body=${encodeURIComponent(tpl.body)}`;
+    const link = buildEmailLink(lead.email, tpl.sub, tpl.body);
 
     // Abrir email e registrar simultaneamente
     window.open(link, '_blank');
@@ -2893,7 +2864,7 @@ function PowerEmail({ leads, corretor, sb, token, onFechar }) {
               </div>
               <div style={{display:"flex",flexDirection:"column",alignItems:"flex-end",gap:4,marginLeft:8,flexShrink:0}}>
                 <span style={{fontSize:10,background:"#312e81",color:"#a5b4fc",padding:"2px 8px",borderRadius:999}}>
-                  📧 {lead.seq_email||0}/{4} enviados
+                  📧 {lead.seq_email||0}/{tplEmail(lead.nome,{}).lista.length} enviados
                 </span>
                 <span style={{fontSize:10,color:"#475569"}}>
                   {idx+1}/{total}
@@ -3083,7 +3054,7 @@ function EmailTab({ sb, token, perfilCorretor }) {
                   <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${
                     seqE===0?"bg-orange-100 text-orange-700":
                     seqE>=5?"bg-red-100 text-red-700":"bg-blue-100 text-blue-700"}`}>
-                    📧 {seqE}/6 enviados
+                    📧 {seqE}/{SEQ_LABELS_EMAIL.length} enviados
                   </span>
                   {dias!==null&&<span className="text-xs text-gray-400">{dias===0?"hoje":`${dias}d`}</span>}
                 </div>
