@@ -10,6 +10,11 @@ function isRootIdentity(nome) {
   return String(nome || '').trim().toLowerCase() === 'root';
 }
 
+function abrirTenantProvisioning() {
+  window.location.hash = 'tenant-provisioning';
+  window.location.reload();
+}
+
 export default function HomeActions({
   nome,
   isGestor,
@@ -97,7 +102,10 @@ export default function HomeActions({
         {/* Tenant Provisioning — somente root */}
         {rootDetected && (
           <button
-            onClick={onProvisionarEmpresa || onPainelGestor}
+            onClick={() => {
+              if (onProvisionarEmpresa) onProvisionarEmpresa();
+              else abrirTenantProvisioning();
+            }}
             className="w-full bg-emerald-700 text-white rounded-2xl p-5 flex items-center gap-4 hover:bg-emerald-800 active:scale-95 transition-all shadow-md shadow-emerald-100"
           >
             <div className="w-12 h-12 bg-white/10 rounded-xl flex items-center justify-center flex-shrink-0">
