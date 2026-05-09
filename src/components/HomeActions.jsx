@@ -1,6 +1,7 @@
 // HomeActions.jsx — Tela principal pós-login
 // Corretor vê: Oferta Ativa + Mesa do Cliente
 // Gestor/Admin/Root vê: os mesmos + acesso ao painel administrativo
+// Root vê também: Provisionar Empresa
 
 // URL do Mesa do Cliente — ajuste conforme seu deploy
 const MESA_CLIENTE_URL = 'https://quiet-surf-d4a0.wagnerjfjunior.workers.dev/';
@@ -9,7 +10,15 @@ function isRootIdentity(nome) {
   return String(nome || '').trim().toLowerCase() === 'root';
 }
 
-export default function HomeActions({ nome, isGestor, isAdminLocal, isRoot, onOfertaAtiva, onPainelGestor }) {
+export default function HomeActions({
+  nome,
+  isGestor,
+  isAdminLocal,
+  isRoot,
+  onOfertaAtiva,
+  onPainelGestor,
+  onProvisionarEmpresa,
+}) {
   const rootDetected = isRoot === true || isRootIdentity(nome);
   const canAccessAdminPanel = Boolean(isGestor || isAdminLocal || rootDetected);
   const perfilLabel = rootDetected ? 'Root' : canAccessAdminPanel ? 'Gestor' : 'Corretor';
@@ -84,6 +93,28 @@ export default function HomeActions({ nome, isGestor, isAdminLocal, isRoot, onOf
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
           </svg>
         </a>
+
+        {/* Tenant Provisioning — somente root */}
+        {rootDetected && (
+          <button
+            onClick={onProvisionarEmpresa || onPainelGestor}
+            className="w-full bg-emerald-700 text-white rounded-2xl p-5 flex items-center gap-4 hover:bg-emerald-800 active:scale-95 transition-all shadow-md shadow-emerald-100"
+          >
+            <div className="w-12 h-12 bg-white/10 rounded-xl flex items-center justify-center flex-shrink-0">
+              <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+                  d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5m4 0v-5a2 2 0 00-2-2h0a2 2 0 00-2 2v5m4 0h-4" />
+              </svg>
+            </div>
+            <div className="text-left">
+              <p className="font-bold text-base">Criar Empresa</p>
+              <p className="text-emerald-100 text-sm">Provisionar tenant e admin local</p>
+            </div>
+            <svg className="w-5 h-5 text-white/60 ml-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+            </svg>
+          </button>
+        )}
 
         {/* Painel gestor/admin — gestores, admins locais e root */}
         {canAccessAdminPanel && (
