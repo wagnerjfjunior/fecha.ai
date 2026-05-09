@@ -2,7 +2,7 @@
 // Patch isolado para tratar pendência operacional de avaliação de lote.
 // Motivo: App.jsx está monolítico; este arquivo evita mexer no motor principal agora.
 // Fluxo tratado:
-// solicitar_lote() -> LOTE_ANTERIOR_SEM_AVALIACAO -> listar_lotes_pendentes_avaliacao() -> avaliar_lote() -> solicitar_lote() novamente.
+// solicitar_lote() -> LOTE_ANTERIOR_SEM_AVALIACAO -> listar_lotes_pendentes_avaliacao() -> avaliar_lote() -> solicitar_lote(p_lista_id) novamente.
 
 (function initPendingEvaluationPatch() {
   if (typeof window === "undefined") return;
@@ -38,6 +38,16 @@
 
     if (!headers.has("Content-Type")) headers.set("Content-Type", "application/json");
     return headers;
+  }
+
+  function safeJsonParse(value) {
+    try {
+      if (!value) return {};
+      if (typeof value === "string") return JSON.parse(value);
+      return {};
+    } catch (_) {
+      return {};
+    }
   }
 
   function rpcUrlFromSolicitar(url, rpcName) {
@@ -213,12 +223,18 @@
     return data;
   }
 
-  async function retrySolicitarLote(input, init) {
+  async function retrySolicitarLote(input, init, listaId) {
+    const originalBody = safeJsonParse(init?.body || (typeof input !== "string" ? input?.body : null));
+    const retryPayload = {
+      ...originalBody,
+      ...(listaId ? { p_lista_id: listaId } : {}),
+    };
+
     const retryInit = {
       ...(init || {}),
       method: init?.method || (typeof input !== "string" ? input?.method : "POST") || "POST",
       headers: cloneHeaders(input, init),
-      body: init?.body || (typeof input !== "string" ? undefined : JSON.stringify({})),
+      body: JSON.stringify(retryPayload),
     };
     const url = getUrl(input);
     const response = await originalFetch(url, retryInit);
@@ -235,6 +251,7 @@
     modalOpen = true;
 
     const lot = lots[0] || null;
+    const listaIdParaRetry = lot?.lista_id || safeJsonParse(init?.body || (typeof input !== "string" ? input?.body : null))?.p_lista_id || null;
     let nota = 0;
 
     const root = document.createElement("div");
@@ -312,7 +329,7 @@
       setMessage("Registrando avaliação e solicitando novo lote...", "");
       try {
         await avaliarLote(solicitarUrl, headers, lot.lote_id, nota, textarea.value.trim());
-        const novoLote = await retrySolicitarLote(input, init);
+        const novoLote = await retrySolicitarLote(input, init, listaIdParaRetry);
         setMessage(`Avaliação salva. Novo lote liberado${novoLote?.leads ? ` com ${novoLote.leads} leads` : ""}. Atualizando a tela...`, "success");
         window.setTimeout(() => window.location.reload(), 900);
       } catch (error) {
