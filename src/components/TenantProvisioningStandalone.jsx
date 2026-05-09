@@ -1,8 +1,8 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import TenantProvisioningRoot from './TenantProvisioningRoot'
 
-const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL || 'https://uobxxgzshrmbtjfdolxd.supabase.co'
-const SUPABASE_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVvYnh4Z3pzaHJtYnRqZmRvbHhkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYyNjcyOTUsImV4cCI6MjA5MTg0MzI5NX0.0RiMkrtJlGbprp8AqVPXC9Y5LxP6QiELfP7NoYEXJ9w'
+const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL
+const SUPABASE_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY
 
 const C = {
   bg: '#0f172a', card: '#1e293b', border: '#334155', text: '#f1f5f9',
@@ -10,6 +10,8 @@ const C = {
 }
 
 function createSB(url, key) {
+  if (!url || !key) throw new Error('Configuração Supabase ausente no ambiente Vercel.')
+
   const hd = (t) => ({ apikey: key, Authorization: 'Bearer ' + (t || key), 'Content-Type': 'application/json' })
   return {
     async query(table, params, token) {
@@ -31,19 +33,21 @@ function createSB(url, key) {
   }
 }
 
-function BlockedStandalone({ onVoltar }) {
+function MensagemSeguranca({ titulo, mensagem, detalhe, onVoltar }) {
   return (
     <div style={{ minHeight: '100vh', background: C.bg, color: C.text, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }}>
       <div style={{ width: '100%', maxWidth: 560, background: C.card, border: '1px solid ' + C.border, borderRadius: 20, padding: 24 }}>
         <button onClick={onVoltar} style={{ background: 'none', border: 'none', color: C.muted, fontSize: 14, cursor: 'pointer', marginBottom: 16 }}>← Voltar</button>
         <p style={{ color: C.muted, fontSize: 12, fontWeight: 800, letterSpacing: 0.8, textTransform: 'uppercase', margin: 0 }}>Root Admin · Segurança</p>
-        <h1 style={{ margin: '4px 0 14px', fontSize: 22, fontWeight: 800 }}>Login standalone bloqueado</h1>
+        <h1 style={{ margin: '4px 0 14px', fontSize: 22, fontWeight: 800 }}>{titulo}</h1>
         <div style={{ color: C.red, background: C.red + '18', borderRadius: 12, padding: 14, fontSize: 14, lineHeight: 1.5, marginBottom: 14 }}>
-          Por segurança, esta tela não solicita mais a senha do root no navegador. O provisionamento deve ser aberto a partir da sessão já autenticada no FECH.AI.
+          {mensagem}
         </div>
-        <p style={{ color: C.muted, fontSize: 14, lineHeight: 1.6, margin: '0 0 16px' }}>
-          A próxima etapa é integrar o formulário diretamente no App.jsx com a sessão já existente. Até lá, não use password grant para root nesta rota.
-        </p>
+        {detalhe && (
+          <p style={{ color: C.muted, fontSize: 14, lineHeight: 1.6, margin: '0 0 16px' }}>
+            {detalhe}
+          </p>
+        )}
         <button onClick={onVoltar} style={{ width: '100%', padding: 14, border: 'none', borderRadius: 12, background: C.accent, color: 'white', fontWeight: 800, cursor: 'pointer' }}>
           Voltar ao FECH.AI
         </button>
@@ -52,12 +56,86 @@ function BlockedStandalone({ onVoltar }) {
   )
 }
 
-export default function TenantProvisioningStandalone() {
-  const sb = useMemo(() => createSB(SUPABASE_URL, SUPABASE_KEY), [])
-  const [ctx] = useState(null)
+function carregarSessaoFechai() {
+  try {
+    const raw = localStorage.getItem('fechai_session')
+    if (!raw) return null
+    const parsed = JSON.parse(raw)
+    if (!parsed?.access_token || !parsed?.user?.id) return null
+    return parsed
+  } catch (_) {
+    return null
+  }
+}
 
-  if (!ctx) {
-    return <BlockedStandalone onVoltar={() => { window.location.hash = ''; window.location.reload() }} />
+export default function TenantProvisioningStandalone() {
+  const [ctx, setCtx] = useState(null)
+  const [loading, setLoading] = useState(true)
+  const [erro, setErro] = useState('')
+
+  const sb = useMemo(() => {
+    try {
+      return createSB(SUPABASE_URL, SUPABASE_KEY)
+    } catch (e) {
+      setErro(e.message || String(e))
+      return null
+    }
+  }, [])
+
+  useEffect(() => {
+    if (!sb) {
+      setLoading(false)
+      return
+    }
+
+    let ativo = true
+    ;(async () => {
+      setLoading(true)
+      setErro('')
+      try {
+        const session = carregarSessaoFechai()
+        if (!session) {
+          throw new Error('Sessão FECH.AI não encontrada. Entre primeiro no sistema como root e depois clique em Criar Empresa.')
+        }
+
+        const isRoot = await sb.rpc('is_root', {}, session.access_token)
+        if (isRoot !== true) {
+          throw new Error('Sessão encontrada, mas o usuário autenticado não é root.')
+        }
+
+        if (ativo) setCtx({ session, token: session.access_token })
+      } catch (e) {
+        if (ativo) setErro(e.message || String(e))
+      } finally {
+        if (ativo) setLoading(false)
+      }
+    })()
+
+    return () => { ativo = false }
+  }, [sb])
+
+  const voltar = () => {
+    window.location.hash = ''
+    window.location.reload()
+  }
+
+  if (loading) {
+    return (
+      <div style={{ minHeight: '100vh', background: C.bg, color: C.text, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        Validando sessão root...
+      </div>
+    )
+  }
+
+  if (erro || !ctx || !sb) {
+    return (
+      <MensagemSeguranca
+        titulo="Provisionamento bloqueado"
+        mensagem={erro || 'Não foi possível validar a sessão root.'}
+        detalhe="Esta rota não solicita senha do root. Ela reutiliza somente a sessão autenticada existente do FECH.AI."
+        onVoltar={voltar}
+      />
+    )
   }
 
   return (
@@ -65,7 +143,8 @@ export default function TenantProvisioningStandalone() {
       session={ctx.session}
       sb={sb}
       token={ctx.token}
-      onCancelar={() => { window.location.hash = ''; window.location.reload() }}
+      onProvisionado={() => {}}
+      onCancelar={voltar}
     />
   )
 }
