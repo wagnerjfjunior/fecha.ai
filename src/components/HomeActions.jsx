@@ -1,11 +1,19 @@
 // HomeActions.jsx — Tela principal pós-login
 // Corretor vê: Oferta Ativa + Mesa do Cliente
-// Gestor vê: os mesmos + acesso ao painel de gestão
+// Gestor/Admin/Root vê: os mesmos + acesso ao painel administrativo
 
 // URL do Mesa do Cliente — ajuste conforme seu deploy
 const MESA_CLIENTE_URL = 'https://quiet-surf-d4a0.wagnerjfjunior.workers.dev/';
 
-export default function HomeActions({ nome, isGestor, onOfertaAtiva, onPainelGestor }) {
+function isRootIdentity(nome) {
+  return String(nome || '').trim().toLowerCase() === 'root';
+}
+
+export default function HomeActions({ nome, isGestor, isAdminLocal, isRoot, onOfertaAtiva, onPainelGestor }) {
+  const rootDetected = isRoot === true || isRootIdentity(nome);
+  const canAccessAdminPanel = Boolean(isGestor || isAdminLocal || rootDetected);
+  const perfilLabel = rootDetected ? 'Root' : canAccessAdminPanel ? 'Gestor' : 'Corretor';
+
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
 
@@ -14,7 +22,7 @@ export default function HomeActions({ nome, isGestor, onOfertaAtiva, onPainelGes
         <div className="flex items-center justify-between">
           <div>
             <p className="text-xs text-gray-400 font-medium uppercase tracking-wide">
-              {isGestor ? 'Gestor' : 'Corretor'}
+              {perfilLabel}
             </p>
             <h1 className="text-lg font-bold text-gray-900">
               Olá, {nome?.split(' ')[0]} 👋
@@ -77,8 +85,8 @@ export default function HomeActions({ nome, isGestor, onOfertaAtiva, onPainelGes
           </svg>
         </a>
 
-        {/* Painel gestor — só aparece para gestores */}
-        {isGestor && (
+        {/* Painel gestor/admin — gestores, admins locais e root */}
+        {canAccessAdminPanel && (
           <button
             onClick={onPainelGestor}
             className="w-full bg-gray-900 text-white rounded-2xl p-5 flex items-center gap-4 hover:bg-gray-800 active:scale-95 transition-all"
@@ -91,8 +99,8 @@ export default function HomeActions({ nome, isGestor, onOfertaAtiva, onPainelGes
               </svg>
             </div>
             <div className="text-left">
-              <p className="font-bold text-base">Painel Gestor</p>
-              <p className="text-gray-400 text-sm">Importar, distribuir, usuários, logs</p>
+              <p className="font-bold text-base">Painel Gestor/Admin</p>
+              <p className="text-gray-400 text-sm">Empresas, usuários, times, listas e logs</p>
             </div>
             <svg className="w-5 h-5 text-white/40 ml-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
