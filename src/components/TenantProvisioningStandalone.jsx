@@ -6,22 +6,12 @@ const SUPABASE_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1
 
 const C = {
   bg: '#0f172a', card: '#1e293b', border: '#334155', text: '#f1f5f9',
-  muted: '#94a3b8', accent: '#2563eb', red: '#ef4444',
+  muted: '#94a3b8', accent: '#2563eb', red: '#ef4444', green: '#10b981',
 }
 
 function createSB(url, key) {
   const hd = (t) => ({ apikey: key, Authorization: 'Bearer ' + (t || key), 'Content-Type': 'application/json' })
   return {
-    async signIn(email, password) {
-      const r = await fetch(url + '/auth/v1/token?grant_type=password', {
-        method: 'POST',
-        headers: { apikey: key, 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password }),
-      })
-      const data = await r.json()
-      if (!r.ok) throw new Error(data.error_description || data.msg || data.message || 'Erro no login')
-      return data
-    },
     async query(table, params, token) {
       const r = await fetch(url + '/rest/v1/' + table + '?' + (params || ''), { headers: hd(token) })
       const data = await r.json()
@@ -41,45 +31,21 @@ function createSB(url, key) {
   }
 }
 
-function LoginRoot({ onLogin }) {
-  const [email, setEmail] = useState('[REDACTED_ROOT_IDENTITY]')
-  const [senha, setSenha] = useState('')
-  const [erro, setErro] = useState('')
-  const [loading, setLoading] = useState(false)
-  const sb = useMemo(() => createSB(SUPABASE_URL, SUPABASE_KEY), [])
-
-  async function entrar() {
-    setErro('')
-    setLoading(true)
-    try {
-      const session = await sb.signIn(email.trim().toLowerCase(), senha)
-      const isRoot = await sb.rpc('is_root', {}, session.access_token)
-      if (isRoot !== true) throw new Error('Usuário autenticado, mas não é root.')
-      onLogin({ session, sb, token: session.access_token })
-    } catch (e) {
-      setErro(e.message || String(e))
-    } finally {
-      setLoading(false)
-    }
-  }
-
+function BlockedStandalone({ onVoltar }) {
   return (
     <div style={{ minHeight: '100vh', background: C.bg, color: C.text, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }}>
-      <div style={{ width: '100%', maxWidth: 420, background: C.card, border: '1px solid ' + C.border, borderRadius: 20, padding: 24 }}>
-        <button onClick={() => { window.location.hash = ''; window.location.reload() }} style={{ background: 'none', border: 'none', color: C.muted, fontSize: 14, cursor: 'pointer', marginBottom: 16 }}>← Voltar</button>
-        <p style={{ color: C.muted, fontSize: 12, fontWeight: 800, letterSpacing: 0.8, textTransform: 'uppercase', margin: 0 }}>Root Admin</p>
-        <h1 style={{ margin: '4px 0 20px', fontSize: 22, fontWeight: 800 }}>Provisionar empresa</h1>
-
-        <label style={{ display: 'block', fontSize: 12, color: C.muted, marginBottom: 6 }}>E-mail root</label>
-        <input value={email} onChange={e => setEmail(e.target.value)} disabled={loading} style={{ width: '100%', boxSizing: 'border-box', padding: 12, borderRadius: 10, border: '1px solid ' + C.border, background: C.bg, color: C.text, marginBottom: 14 }} />
-
-        <label style={{ display: 'block', fontSize: 12, color: C.muted, marginBottom: 6 }}>Senha</label>
-        <input type="password" value={senha} onChange={e => setSenha(e.target.value)} onKeyDown={e => e.key === 'Enter' && entrar()} disabled={loading} style={{ width: '100%', boxSizing: 'border-box', padding: 12, borderRadius: 10, border: '1px solid ' + C.border, background: C.bg, color: C.text, marginBottom: 14 }} />
-
-        {erro && <div style={{ color: C.red, background: C.red + '18', borderRadius: 10, padding: 10, fontSize: 13, marginBottom: 14 }}>{erro}</div>}
-
-        <button onClick={entrar} disabled={loading || !email || !senha} style={{ width: '100%', padding: 14, border: 'none', borderRadius: 12, background: loading ? C.border : C.accent, color: 'white', fontWeight: 800, cursor: loading ? 'not-allowed' : 'pointer' }}>
-          {loading ? 'Validando root...' : 'Entrar no provisionamento'}
+      <div style={{ width: '100%', maxWidth: 560, background: C.card, border: '1px solid ' + C.border, borderRadius: 20, padding: 24 }}>
+        <button onClick={onVoltar} style={{ background: 'none', border: 'none', color: C.muted, fontSize: 14, cursor: 'pointer', marginBottom: 16 }}>← Voltar</button>
+        <p style={{ color: C.muted, fontSize: 12, fontWeight: 800, letterSpacing: 0.8, textTransform: 'uppercase', margin: 0 }}>Root Admin · Segurança</p>
+        <h1 style={{ margin: '4px 0 14px', fontSize: 22, fontWeight: 800 }}>Login standalone bloqueado</h1>
+        <div style={{ color: C.red, background: C.red + '18', borderRadius: 12, padding: 14, fontSize: 14, lineHeight: 1.5, marginBottom: 14 }}>
+          Por segurança, esta tela não solicita mais a senha do root no navegador. O provisionamento deve ser aberto a partir da sessão já autenticada no FECH.AI.
+        </div>
+        <p style={{ color: C.muted, fontSize: 14, lineHeight: 1.6, margin: '0 0 16px' }}>
+          A próxima etapa é integrar o formulário diretamente no App.jsx com a sessão já existente. Até lá, não use password grant para root nesta rota.
+        </p>
+        <button onClick={onVoltar} style={{ width: '100%', padding: 14, border: 'none', borderRadius: 12, background: C.accent, color: 'white', fontWeight: 800, cursor: 'pointer' }}>
+          Voltar ao FECH.AI
         </button>
       </div>
     </div>
@@ -87,14 +53,17 @@ function LoginRoot({ onLogin }) {
 }
 
 export default function TenantProvisioningStandalone() {
-  const [ctx, setCtx] = useState(null)
+  const sb = useMemo(() => createSB(SUPABASE_URL, SUPABASE_KEY), [])
+  const [ctx] = useState(null)
 
-  if (!ctx) return <LoginRoot onLogin={setCtx} />
+  if (!ctx) {
+    return <BlockedStandalone onVoltar={() => { window.location.hash = ''; window.location.reload() }} />
+  }
 
   return (
     <TenantProvisioningRoot
       session={ctx.session}
-      sb={ctx.sb}
+      sb={sb}
       token={ctx.token}
       onCancelar={() => { window.location.hash = ''; window.location.reload() }}
     />
