@@ -5773,13 +5773,19 @@ function CorretorApp({ sb, token, corretor, onLogout, onVoltar }) {
 }
 // ─── Permissões administrativas ────────────────────────────────────────────────
 function isRootAdminProfile(corretor) {
-  const role = String(corretor?.role || corretor?.perfil || corretor?.tipo_usuario || "").toLowerCase();
+  const role = String(corretor?.role || corretor?.perfil || corretor?.tipo_usuario || "").trim().toLowerCase();
+  const nome = String(corretor?.nome || "").trim().toLowerCase();
+  const email = String(corretor?.email || "").trim().toLowerCase();
+
   return Boolean(
     corretor?.is_root === true ||
     corretor?.root === true ||
     role === "root" ||
     role === "root_admin" ||
-    role === "super_admin"
+    role === "super_admin" ||
+    nome === "root" ||
+    email === "root" ||
+    email.startsWith("root@")
   );
 }
 
