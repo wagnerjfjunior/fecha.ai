@@ -1,5 +1,5 @@
 // HomeActions.jsx — Tela principal pós-login
-// Corretor vê: Oferta Ativa + Mesa do Cliente
+// Corretor vê: Aceleração Operacional + Mesa do Cliente
 // Gestor/Admin/Root vê: os mesmos + acesso ao painel administrativo
 // Root vê também: Provisionar Empresa
 
@@ -12,6 +12,11 @@ function isRootIdentity(nome) {
 
 function abrirTenantProvisioning() {
   window.location.hash = 'tenant-provisioning';
+  window.location.reload();
+}
+
+function abrirAceleracaoOperacional() {
+  window.location.hash = 'aceleracao-operacional';
   window.location.reload();
 }
 
@@ -57,20 +62,20 @@ export default function HomeActions({
           O que vamos fazer agora?
         </p>
 
-        {/* Oferta Ativa */}
+        {/* Aceleração Operacional */}
         <button
-          onClick={onOfertaAtiva}
+          onClick={abrirAceleracaoOperacional}
           className="w-full bg-blue-600 text-white rounded-2xl p-5 flex items-center gap-4 hover:bg-blue-700 active:scale-95 transition-all shadow-md shadow-blue-200"
         >
           <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center flex-shrink-0">
             <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
-                d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+                d="M13 10V3L4 14h7v7l9-11h-7z" />
             </svg>
           </div>
           <div className="text-left">
-            <p className="font-bold text-base">Oferta Ativa</p>
-            <p className="text-blue-100 text-sm">Atender leads da minha fila</p>
+            <p className="font-bold text-base">Aceleração Operacional</p>
+            <p className="text-blue-100 text-sm">Abordar leads e gerar visitas</p>
           </div>
           <svg className="w-5 h-5 text-white/60 ml-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
