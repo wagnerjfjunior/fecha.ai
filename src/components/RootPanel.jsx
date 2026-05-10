@@ -232,8 +232,10 @@ function AdminsTab({ empresas }) {
 }
 
 function BillingTab({ empresas, planos, billingState, onBillingChange, onSimularPlano, onAplicarPlano }) {
-  const tenantsCobraveis = empresas.filter(e => e.ativa !== false && e.provisioning_status !== 'PENDING_ADMIN')
-  const mrrPotencial = tenantsCobraveis.reduce((acc, e) => acc + Number(e?.plano?.preco_mensal || 0), 0)
+  const tenantsAtivos = empresas.filter(e => e.ativa !== false && e.provisioning_status !== 'SUSPENDED')
+  const tenantsOperacionais = tenantsAtivos.filter(e => e.provisioning_status !== 'PENDING_ADMIN')
+  const mrrContratado = tenantsAtivos.reduce((acc, e) => acc + Number(e?.plano?.preco_mensal || 0), 0)
+  const mrrOperacional = tenantsOperacionais.reduce((acc, e) => acc + Number(e?.plano?.preco_mensal || 0), 0)
   const trialsAtivos = empresas.filter(e => e.trial_ate && new Date(e.trial_ate) >= new Date()).length
   const semAdmin = empresas.filter(e => e.provisioning_status === 'PENDING_ADMIN').length
   const suspensos = empresas.filter(e => e.provisioning_status === 'SUSPENDED' || e.ativa === false).length
@@ -252,8 +254,9 @@ function BillingTab({ empresas, planos, billingState, onBillingChange, onSimular
 
   return (
     <div>
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, minmax(0, 1fr))', gap: 12, marginBottom: 16 }}>
-        <StatCard label="MRR potencial" value={money(mrrPotencial)} hint="Baseado no preço mensal do plano" />
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, minmax(0, 1fr))', gap: 12, marginBottom: 16 }}>
+        <StatCard label="MRR contratado" value={money(mrrContratado)} hint="Empresas ativas, inclusive sem admin" />
+        <StatCard label="MRR operacional" value={money(mrrOperacional)} hint="Exclui tenants sem admin" />
         <StatCard label="Trials ativos" value={trialsAtivos} />
         <StatCard label="Sem admin" value={semAdmin} />
         <StatCard label="Suspensos" value={suspensos} />
