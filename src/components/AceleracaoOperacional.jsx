@@ -42,20 +42,99 @@ function getLeadName(lead) {
   return lead?.nome || lead?.lead_nome || lead?.cliente || 'Lead sem nome'
 }
 
+function getLeadFirstName(lead) {
+  return getLeadName(lead).split(' ')[0] || 'tudo bem'
+}
+
 function getLeadPhone(lead) {
-  return lead?.telefone_escolhido || lead?.telefone_e164 || lead?.celular || lead?.telefone || 'Telefone não informado'
+  return lead?.telefone_escolhido || lead?.telefone_e164 || lead?.celular || lead?.telefone || ''
 }
 
 function getLeadEmail(lead) {
-  return lead?.email || 'E-mail não informado'
+  return lead?.email || ''
+}
+
+function onlyDigits(value) {
+  return String(value || '').replace(/\D/g, '')
+}
+
+function phoneForDial(lead) {
+  const raw = getLeadPhone(lead)
+  const digits = onlyDigits(raw)
+  if (!digits) return ''
+  if (String(raw).trim().startsWith('+')) return `+${digits}`
+  if (digits.startsWith('55')) return `+${digits}`
+  return digits
+}
+
+function phoneForWhatsapp(lead) {
+  const raw = getLeadPhone(lead)
+  const digits = onlyDigits(raw)
+  if (!digits) return ''
+  if (digits.startsWith('55')) return digits
+  if (digits.length >= 10 && digits.length <= 11) return `55${digits}`
+  return digits
+}
+
+function buildWhatsappMessage(lead, context) {
+  const firstName = getLeadFirstName(lead)
+  if (context === 'reforco') {
+    return `Olá, ${firstName}! Conforme nosso contato, estou te mandando por aqui para facilitar.\n\nQuando chegar ao stand, pode solicitar por mim na recepção para eu te atender diretamente.\n\nFico à disposição para te ajudar com valores, unidades e simulação.`
+  }
+  return `Olá, ${firstName}! Tudo bem?\n\nEstou entrando em contato sobre seu interesse em imóveis. Posso te ajudar com valores, disponibilidade e uma simulação rápida?\n\nSe fizer sentido, também consigo te orientar para uma visita ao stand.`
+}
+
+function buildEmailTemplate(lead, context) {
+  const firstName = getLeadFirstName(lead)
+  if (context === 'reforco') {
+    return {
+      subject: `${firstName}, reforçando as informações do nosso contato`,
+      body: `Olá, ${firstName}!\n\nConforme nosso contato, estou te enviando este e-mail para consolidar as informações e facilitar sua consulta.\n\nAo chegar no stand, solicite por mim na recepção para que eu consiga te atender diretamente e dar sequência ao que conversamos.\n\nFico à disposição para te apoiar com valores, disponibilidade, simulação e próximos passos.\n\nAtenciosamente,`,
+    }
+  }
+  return {
+    subject: `${firstName}, posso te ajudar com as informações do imóvel?`,
+    body: `Olá, ${firstName}!\n\nEstou entrando em contato porque identifiquei seu interesse em imóveis.\n\nPosso te ajudar com valores, disponibilidade, condições e uma simulação inicial.\n\nSe fizer sentido para você, também posso orientar uma visita ao stand para conhecer melhor o projeto.\n\nAtenciosamente,`,
+  }
+}
+
+function openChannelAction(channel, lead, context) {
+  if (!lead) return { ok: false, message: 'Nenhum lead carregado.' }
+
+  if (channel === 'call') {
+    const phone = phoneForDial(lead)
+    if (!phone) return { ok: false, message: 'Lead sem telefone para ligação.' }
+    window.location.href = `tel:${phone}`
+    return { ok: true }
+  }
+
+  if (channel === 'whatsapp') {
+    const phone = phoneForWhatsapp(lead)
+    if (!phone) return { ok: false, message: 'Lead sem WhatsApp/telefone válido.' }
+    const text = encodeURIComponent(buildWhatsappMessage(lead, context))
+    window.open(`https://wa.me/${phone}?text=${text}`, '_blank', 'noopener,noreferrer')
+    return { ok: true }
+  }
+
+  if (channel === 'email') {
+    const email = getLeadEmail(lead)
+    if (!email) return { ok: false, message: 'Lead sem e-mail cadastrado.' }
+    const template = buildEmailTemplate(lead, context)
+    const subject = encodeURIComponent(template.subject)
+    const body = encodeURIComponent(template.body)
+    window.location.href = `mailto:${email}?subject=${subject}&body=${body}`
+    return { ok: true }
+  }
+
+  return { ok: false, message: 'Canal não reconhecido.' }
 }
 
 function buildHint(channel, context) {
-  if (channel === 'call') return 'Faça a ligação. O feedback da chamada define o próximo passo.'
-  if (channel === 'whatsapp' && context === 'reforco') return 'WhatsApp de reforço: continuidade, nome do corretor e orientação de stand.'
-  if (channel === 'whatsapp') return 'WhatsApp de primeira abordagem com tom leve e direto.'
-  if (channel === 'email' && context === 'reforco') return 'E-mail de consolidação: conforme conversamos e próximos passos.'
-  return 'E-mail de curiosidade para tentar contato por outro canal.'
+  if (channel === 'call') return 'Clique para abrir o discador. Depois registre o feedback da chamada.'
+  if (channel === 'whatsapp' && context === 'reforco') return 'Abre WhatsApp com mensagem de reforço, continuidade e orientação de stand.'
+  if (channel === 'whatsapp') return 'Abre WhatsApp com mensagem de primeira abordagem.'
+  if (channel === 'email' && context === 'reforco') return 'Abre e-mail de consolidação: conforme conversamos e próximos passos.'
+  return 'Abre e-mail de curiosidade para tentar contato por outro canal.'
 }
 
 export default function AceleracaoOperacional({ nome }) {
@@ -93,6 +172,13 @@ export default function AceleracaoOperacional({ nome }) {
   }
 
   function markActionSent() {
+    setError('')
+    const result = openChannelAction(active, lead, context)
+    if (!result.ok) {
+      setError(result.message)
+      return
+    }
+
     setStats(prev => ({
       ...prev,
       whatsapps: active === 'whatsapp' ? prev.whatsapps + 1 : prev.whatsapps,
@@ -173,7 +259,7 @@ export default function AceleracaoOperacional({ nome }) {
           <div className="mt-1 text-2xl font-black text-blue-950">{activeChannel.icon} {activeChannel.label}</div>
           <p className="mt-1 text-sm text-blue-800">{buildHint(active, context)}</p>
           <div className="mt-4 flex gap-2">
-            <button onClick={markActionSent} className="rounded-2xl bg-blue-600 px-5 py-3 font-bold text-white">Ação enviada</button>
+            <button onClick={markActionSent} className="rounded-2xl bg-blue-600 px-5 py-3 font-bold text-white">Executar ação</button>
             <button onClick={() => setStep(prev => Math.min(prev + 1, flow.length - 1))} className="rounded-2xl border border-blue-200 bg-white px-5 py-3 font-bold text-blue-700">Pular</button>
           </div>
         </section>
@@ -192,8 +278,8 @@ export default function AceleracaoOperacional({ nome }) {
           ) : lead ? (
             <div className="rounded-2xl border border-gray-100 bg-gray-50 p-4">
               <p className="text-xl font-black">{getLeadName(lead)}</p>
-              <p className="text-sm text-gray-500">{getLeadPhone(lead)}</p>
-              <p className="text-sm text-gray-500">{getLeadEmail(lead)}</p>
+              <p className="text-sm text-gray-500">{getLeadPhone(lead) || 'Telefone não informado'}</p>
+              <p className="text-sm text-gray-500">{getLeadEmail(lead) || 'E-mail não informado'}</p>
             </div>
           ) : (
             <div className="rounded-2xl border border-dashed border-gray-200 bg-gray-50 p-6 text-center font-bold text-gray-700">Nenhum lead disponível.</div>
