@@ -99,7 +99,7 @@ export default function HomeActions({
           </svg>
         </a>
 
-        {/* Tenant Provisioning — somente root */}
+        {/* Painel Root — somente root */}
         {rootDetected && (
           <button
             onClick={() => {
@@ -115,8 +115,8 @@ export default function HomeActions({
               </svg>
             </div>
             <div className="text-left">
-              <p className="font-bold text-base">Criar Empresa</p>
-              <p className="text-emerald-100 text-sm">Provisionar tenant e admin local</p>
+              <p className="font-bold text-base">Painel Root</p>
+              <p className="text-emerald-100 text-sm">Tenants, admins locais e usuários</p>
             </div>
             <svg className="w-5 h-5 text-white/60 ml-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
