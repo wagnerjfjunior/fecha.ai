@@ -25,6 +25,7 @@ export default function HomeActions({
   isGestor,
   isAdminLocal,
   isRoot,
+  onMesaCliente,
   onOfertaAtiva,
   onPainelGestor,
   onProvisionarEmpresa,
@@ -103,12 +104,10 @@ export default function HomeActions({
         </button>
 
         {/* Mesa do Cliente */}
-        <a
-          href={MESA_CLIENTE_URL}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="w-full bg-white border border-gray-200 rounded-2xl p-5 flex items-center gap-4 hover:border-blue-300 hover:shadow-md active:scale-95 transition-all block"
-        >
+        <button
+  onClick={onMesaCliente}>
+  Mesa do Cliente
+        </button>
           <div className="w-12 h-12 bg-indigo-50 rounded-xl flex items-center justify-center flex-shrink-0">
             <svg className="w-6 h-6 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
