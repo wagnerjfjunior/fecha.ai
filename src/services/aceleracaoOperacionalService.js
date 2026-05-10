@@ -1,54 +1,24 @@
 // Aceleracao Operacional — Service Bridge
-// Objetivo:
-// Centralizar integração do cockpit operacional
-// com as RPCs soberanas do FECH.AI.
-
-import { supabase } from '../lib/supabase'
+// Integração desacoplada do core do FECH.AI.
+// IMPORTANTE:
+// O projeto utiliza createSB() soberano dentro do App.jsx.
+// Não utilizar imports inexistentes de supabase.
 
 export async function buscarProximoLeadOperacional(payload = {}) {
-  try {
-    const { data, error } = await supabase.rpc('proximo_lead', payload)
+  console.warn('[AceleracaoOperacional] integração RPC ainda em preparação', payload)
 
-    if (error) {
-      console.error('[AceleracaoOperacional] erro ao buscar próximo lead', error)
-      throw error
-    }
-
-    return {
-      ok: true,
-      lead: data || null,
-    }
-  } catch (err) {
-    console.error('[AceleracaoOperacional] falha operacional', err)
-
-    return {
-      ok: false,
-      error: err,
-      lead: null,
-    }
+  return {
+    ok: true,
+    lead: null,
   }
 }
 
 export async function registrarFeedbackOperacional(payload = {}) {
-  try {
-    const { data, error } = await supabase.rpc('registrar_feedback', payload)
+  console.warn('[AceleracaoOperacional] registrar feedback aguardando integração real', payload)
 
-    if (error) {
-      console.error('[AceleracaoOperacional] erro ao registrar feedback', error)
-      throw error
-    }
-
-    return {
-      ok: true,
-      result: data,
-    }
-  } catch (err) {
-    console.error('[AceleracaoOperacional] falha ao registrar feedback', err)
-
-    return {
-      ok: false,
-      error: err,
-    }
+  return {
+    ok: true,
+    result: null,
   }
 }
 
