@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import TenantProvisioningRoot from './TenantProvisioningRoot'
+import RootPanel from './RootPanel'
 
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL
 const SUPABASE_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY
@@ -95,7 +95,7 @@ export default function TenantProvisioningStandalone() {
       try {
         const session = carregarSessaoFechai()
         if (!session) {
-          throw new Error('Sessão FECH.AI não encontrada. Entre primeiro no sistema como root e depois clique em Criar Empresa.')
+          throw new Error('Sessão FECH.AI não encontrada. Entre primeiro no sistema como root e depois clique em Painel Root.')
         }
 
         const isRoot = await sb.rpc('is_root', {}, session.access_token)
@@ -139,7 +139,7 @@ export default function TenantProvisioningStandalone() {
   }
 
   return (
-    <TenantProvisioningRoot
+    <RootPanel
       session={ctx.session}
       sb={sb}
       token={ctx.token}
