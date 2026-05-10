@@ -1,7 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 
-const EDGE_URL = 'https://uobxxgzshrmbtjfdolxd.supabase.co/functions/v1/criar-usuario'
-
+const EDGE_URL = '/api/criar-usuario'
 const C = {
   bg: '#0f172a',
   card: '#1e293b',
