@@ -4695,7 +4695,7 @@ function EditarCorretorModal({ corretor, sb, token, onSalvo, onFechar, session }
           {toggle("Apto para receber lotes",apto,  setApto,  "bg-blue-100 text-blue-700")}
 
           {/* Alteração de role — só admin_local vê */}
-          {session?.corretor?.role === "admin_local" && corretor.role !== "admin_local" && (
+          {(session?.isRoot || session?.corretor?.role === "admin_local") && corretor.role !== "admin_local" && !isRootAdminProfile(corretor) && (
             <AlterarRoleSection corretor={corretor} sb={sb} token={token}
               onAlterado={novoRole=>{
                 onSalvo({...corretor, role:novoRole,
@@ -4805,7 +4805,7 @@ function LoginScreen({ sb, onLogin }) {
 }
 
 // ─── Apps compostos ───────────────────────────────────────────────────────────
-function GestorApp({ sb, token, corretor, onLogout, onVoltar, onCriarUsuario }) {
+function GestorApp({ sb, token, corretor, isRoot=false, onLogout, onVoltar, onCriarUsuario }) {
   const [tab,setTab]=useState("dashboard");
   const [confirmarSair,setConfirmarSair]=useState(false);
 
@@ -4840,7 +4840,7 @@ function GestorApp({ sb, token, corretor, onLogout, onVoltar, onCriarUsuario }) 
         <div style={{background:"#0f172a",padding:"12px 16px",display:"flex",alignItems:"center",justifyContent:"space-between",position:"sticky",top:0,zIndex:10,borderBottom:"1px solid #334155"}}>
           <div>
             <span style={{color:"#f1f5f9",fontWeight:700}}>{corretor.nome}</span>
-            <span style={{marginLeft:8,fontSize:11,background:"#1e40af",color:"#93c5fd",padding:"2px 8px",borderRadius:12}}>Gestor</span>
+            <span style={{marginLeft:8,fontSize:11,background:isRoot?"#7c2d12":"#1e40af",color:isRoot?"#fed7aa":"#93c5fd",padding:"2px 8px",borderRadius:12}}>{isRoot?"Root Admin":"Gestor"}</span>
           </div>
           <div style={{display:"flex",gap:8}}>
             <button onClick={onVoltar}
@@ -4860,7 +4860,7 @@ function GestorApp({ sb, token, corretor, onLogout, onVoltar, onCriarUsuario }) 
         <div style={{background:"#fff",borderBottom:"1px solid #e5e7eb",padding:"10px 16px",display:"flex",alignItems:"center",justifyContent:"space-between",position:"sticky",top:0,zIndex:10}}>
           <div>
             <span style={{fontWeight:600,fontSize:15,color:"#111827"}}>{corretor.nome}</span>
-            <span style={{marginLeft:8,fontSize:11,background:"#dbeafe",color:"#1d4ed8",padding:"2px 8px",borderRadius:12}}>Gestor</span>
+            <span style={{marginLeft:8,fontSize:11,background:isRoot?"#ffedd5":"#dbeafe",color:isRoot?"#9a3412":"#1d4ed8",padding:"2px 8px",borderRadius:12}}>{isRoot?"Root Admin":"Gestor"}</span>
           </div>
           <div style={{display:"flex",gap:8}}>
             <button onClick={onVoltar}
@@ -4879,7 +4879,7 @@ function GestorApp({ sb, token, corretor, onLogout, onVoltar, onCriarUsuario }) 
       {tab==="upload"     &&<UploadTab     sb={sb} token={token}/>}
       {tab==="distribuir" &&<DistribuirTab sb={sb} token={token}/>}
       {tab==="listas"     &&<ListasTab     sb={sb} token={token}/>}
-      {tab==="equipe"     &&<EquipeTab     sb={sb} token={token} onCriarUsuario={onCriarUsuario} session={{corretor}}/>}
+      {tab==="equipe"     &&<EquipeTab     sb={sb} token={token} onCriarUsuario={onCriarUsuario} session={{corretor, isRoot}}/>}
       {tab==="times"&&<TimesTab sb={sb} token={token} corretor={corretor}/>}
 
       <div style={{position:"fixed",bottom:0,left:0,right:0,zIndex:20,display:"flex",background:tab==="dashboard"?"#1e293b":"white",borderTop:tab==="dashboard"?"1px solid #334155":"1px solid #e5e7eb"}}>
@@ -5771,6 +5771,28 @@ function CorretorApp({ sb, token, corretor, onLogout, onVoltar }) {
     </div>
   );
 }
+// ─── Permissões administrativas ────────────────────────────────────────────────
+function isRootAdminProfile(corretor) {
+  const role = String(corretor?.role || corretor?.perfil || corretor?.tipo_usuario || "").trim().toLowerCase();
+  const nome = String(corretor?.nome || "").trim().toLowerCase();
+  const email = String(corretor?.email || "").trim().toLowerCase();
+
+  return Boolean(
+    corretor?.is_root === true ||
+    corretor?.root === true ||
+    role === "root" ||
+    role === "root_admin" ||
+    role === "super_admin" ||
+    nome === "root" ||
+    email === "root" ||
+    email.startsWith("root@")
+  );
+}
+
+function canAccessAdminPanel(corretor) {
+  return Boolean(corretor?.is_gestor || isRootAdminProfile(corretor));
+}
+
 // ─── App raiz ─────────────────────────────────────────────────────────────────
 export default function App() {
   const [session,setSession]=useState(null); const [corretor,setCorretor]=useState(null);
@@ -5814,9 +5836,27 @@ export default function App() {
     />
   );
 
-  if(tela==="home") return (<HomeActions nome={corretor.nome} isGestor={corretor.is_gestor} onOfertaAtiva={()=>setTela("oferta")} onPainelGestor={()=>setTela("gestor")}/>);
-  if(tela==="criar-usuario") return (<CriarUsuarioForm session={session} corretor={corretor} sb={sb} token={session.access_token} onUsuarioCriado={()=>setTela("gestor")} onCancelar={()=>setTela("gestor")}/>);
+  const isRoot = isRootAdminProfile(corretor);
+  const canAccessAdmin = canAccessAdminPanel(corretor);
+  const irParaPainelGestor = () => {
+    if (canAccessAdmin) setTela("gestor");
+    else setTela("home");
+  };
+
+  const renderHomeActions = () => (
+    <HomeActions
+      nome={corretor.nome}
+      isGestor={canAccessAdmin}
+      isRoot={isRoot}
+      canAccessAdmin={canAccessAdmin}
+      onOfertaAtiva={()=>setTela("oferta")}
+      onPainelGestor={irParaPainelGestor}
+    />
+  );
+
+  if(tela==="home") return renderHomeActions();
+  if(tela==="criar-usuario"&&canAccessAdmin) return (<CriarUsuarioForm session={session} corretor={corretor} sb={sb} token={session.access_token} onUsuarioCriado={()=>setTela("gestor")} onCancelar={()=>setTela("gestor")}/>);
   if(tela==="oferta") return (<CorretorApp sb={sb} token={session.access_token} corretor={corretor} onLogout={logout} onVoltar={()=>setTela("home")}/>);
-  if(tela==="gestor"&&corretor.is_gestor) return (<GestorApp sb={sb} token={session.access_token} corretor={corretor} onLogout={logout} onVoltar={()=>setTela("home")} onCriarUsuario={()=>setTela("criar-usuario")}/>);
-  return (<HomeActions nome={corretor.nome} isGestor={corretor.is_gestor} onOfertaAtiva={()=>setTela("oferta")} onPainelGestor={()=>setTela("gestor")}/>);
+  if(tela==="gestor"&&canAccessAdmin) return (<GestorApp sb={sb} token={session.access_token} corretor={corretor} isRoot={isRoot} onLogout={logout} onVoltar={()=>setTela("home")} onCriarUsuario={()=>setTela("criar-usuario")}/>);
+  return renderHomeActions();
 }

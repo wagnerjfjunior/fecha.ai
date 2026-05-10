@@ -1,6 +1,6 @@
 # FECH.AI
 
-Sistema inteligente de distribuição e gestão de leads imobiliários.
+Sistema inteligente de distribuição e gestão de leads imobiliários
 
 ## Stack
 - React 18 + Vite
