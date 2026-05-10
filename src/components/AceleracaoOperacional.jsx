@@ -1,4 +1,8 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
+import {
+  buscarProximoLeadOperacional,
+  registrarFeedbackOperacional,
+} from '../services/aceleracaoOperacionalService'
 
 const CHANNELS = [
   { id: 'whatsapp', label: 'WhatsApp', icon: '💬', helper: 'Mensagem pronta em 1 clique' },
@@ -8,7 +12,7 @@ const CHANNELS = [
 
 const CONTEXTS = [
   { id: 'primeira_abordagem', label: 'Primeira abordagem', description: 'Ainda não falei com o cliente.' },
-  { id: 'reforco', label: 'Já falei com cliente', description: 'Usar tom de reforço e continuidade.' },
+  { id: 'reforco', label: 'Já falou com cliente', description: 'Usar tom de reforço e continuidade.' },
 ]
 
 const QUICK_FEEDBACKS = [
@@ -134,10 +138,18 @@ export default function AceleracaoOperacional({
     setCurrentStep(prev => Math.min(prev + 1, flow.length - 1))
   }
 
-  function handleFeedback(feedbackId) {
+  async function handleFeedback(feedbackId) {
     if (feedbackId === 'agendado_visita') {
       setLocalStats(prev => ({ ...prev, visitasAgendadas: (prev.visitasAgendadas || 0) + 1 }))
     }
+
+    if (lead?.id) {
+      await registrarFeedbackOperacional({
+        p_lead_id: lead.id,
+        p_feedback: feedbackId,
+      })
+    }
+
     onRegistrarFeedback?.(feedbackId)
   }
 
