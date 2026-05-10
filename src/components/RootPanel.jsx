@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useState } from 'react'
 import TenantProvisioningRoot from './TenantProvisioningRoot'
 
 const C = {
@@ -82,6 +82,27 @@ function ActionButton({ children, danger, disabled, onClick }) {
         fontSize: 12,
         opacity: disabled ? 0.55 : 1,
         whiteSpace: 'nowrap',
+      }}
+    >
+      {children}
+    </button>
+  )
+}
+
+function PrimaryButton({ children, disabled, onClick }) {
+  return (
+    <button
+      onClick={onClick}
+      disabled={disabled}
+      style={{
+        border: 'none',
+        color: 'white',
+        background: disabled ? C.border : C.accent,
+        borderRadius: 10,
+        padding: '10px 12px',
+        cursor: disabled ? 'not-allowed' : 'pointer',
+        fontWeight: 900,
+        fontSize: 13,
       }}
     >
       {children}
@@ -210,7 +231,7 @@ function AdminsTab({ empresas }) {
   )
 }
 
-function BillingTab({ empresas }) {
+function BillingTab({ empresas, planos, billingState, onBillingChange, onSimularPlano, onAplicarPlano }) {
   const tenantsCobraveis = empresas.filter(e => e.ativa !== false && e.provisioning_status !== 'PENDING_ADMIN')
   const mrrPotencial = tenantsCobraveis.reduce((acc, e) => acc + Number(e?.plano?.preco_mensal || 0), 0)
   const trialsAtivos = empresas.filter(e => e.trial_ate && new Date(e.trial_ate) >= new Date()).length
@@ -223,6 +244,12 @@ function BillingTab({ empresas }) {
     return acc
   }, {})
 
+  const empresaSelecionada = empresas.find(e => e.empresa_id === billingState.empresaId)
+  const planosDisponiveis = planos.filter(p => p.ativo !== false && p.id !== empresaSelecionada?.plano?.id)
+  const simulacao = billingState.simulacao
+  const canSimular = Boolean(billingState.empresaId && billingState.novoPlanoId && !billingState.loading)
+  const canAplicar = Boolean(simulacao && !billingState.loading)
+
   return (
     <div>
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, minmax(0, 1fr))', gap: 12, marginBottom: 16 }}>
@@ -233,6 +260,66 @@ function BillingTab({ empresas }) {
       </div>
 
       <section style={{ background: C.card, border: '1px solid ' + C.border, borderRadius: 18, padding: 18, marginBottom: 16 }}>
+        <h2 style={{ margin: '0 0 10px', fontSize: 18, fontWeight: 900 }}>Troca de plano com pró-rata</h2>
+        <p style={{ color: C.muted, lineHeight: 1.6, margin: '0 0 16px' }}>
+          Simule a diferença proporcional do ciclo mensal atual antes de aplicar a troca. A cobrança real ainda não é enviada ao gateway; esta ação registra governança e audit trail.
+        </p>
+
+        {billingState.erro && <div style={{ color: C.red, background: C.red + '18', padding: 12, borderRadius: 10, marginBottom: 12 }}>{billingState.erro}</div>}
+        {billingState.sucesso && <div style={{ color: C.green, background: C.green + '18', padding: 12, borderRadius: 10, marginBottom: 12 }}>{billingState.sucesso}</div>}
+
+        <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr auto auto', gap: 12, alignItems: 'end' }}>
+          <div>
+            <label style={{ display: 'block', color: C.muted, fontSize: 12, fontWeight: 800, marginBottom: 6 }}>Empresa</label>
+            <select
+              value={billingState.empresaId}
+              onChange={e => onBillingChange({ empresaId: e.target.value, novoPlanoId: '', simulacao: null, erro: '', sucesso: '' })}
+              style={{ width: '100%', padding: '11px 12px', borderRadius: 10, border: '1px solid ' + C.border, background: C.card2, color: C.text }}
+            >
+              <option value="">Selecione...</option>
+              {empresas.map(e => <option key={e.empresa_id} value={e.empresa_id}>{e.nome} · {e?.plano?.nome || 'Sem plano'}</option>)}
+            </select>
+          </div>
+
+          <div>
+            <label style={{ display: 'block', color: C.muted, fontSize: 12, fontWeight: 800, marginBottom: 6 }}>Novo plano</label>
+            <select
+              value={billingState.novoPlanoId}
+              onChange={e => onBillingChange({ novoPlanoId: e.target.value, simulacao: null, erro: '', sucesso: '' })}
+              disabled={!empresaSelecionada}
+              style={{ width: '100%', padding: '11px 12px', borderRadius: 10, border: '1px solid ' + C.border, background: C.card2, color: C.text, opacity: empresaSelecionada ? 1 : 0.55 }}
+            >
+              <option value="">Selecione...</option>
+              {planosDisponiveis.map(p => <option key={p.id} value={p.id}>{p.nome} · {money(p.preco_mensal)}</option>)}
+            </select>
+          </div>
+
+          <PrimaryButton disabled={!canSimular} onClick={onSimularPlano}>
+            {billingState.loading === 'simular' ? 'Simulando...' : 'Simular'}
+          </PrimaryButton>
+
+          <PrimaryButton disabled={!canAplicar} onClick={onAplicarPlano}>
+            {billingState.loading === 'aplicar' ? 'Aplicando...' : 'Aplicar troca'}
+          </PrimaryButton>
+        </div>
+
+        {empresaSelecionada && (
+          <div style={{ marginTop: 12, color: C.muted, fontSize: 13 }}>
+            Plano atual: <strong style={{ color: C.text }}>{empresaSelecionada?.plano?.nome}</strong> · {money(empresaSelecionada?.plano?.preco_mensal)}
+          </div>
+        )}
+
+        {simulacao && (
+          <div style={{ marginTop: 16, display: 'grid', gridTemplateColumns: 'repeat(4, minmax(0, 1fr))', gap: 12 }}>
+            <StatCard label="Crédito atual" value={money(simulacao?.prorata?.credito_plano_atual)} />
+            <StatCard label="Débito novo" value={money(simulacao?.prorata?.debito_plano_novo)} />
+            <StatCard label="Ajuste líquido" value={money(simulacao?.prorata?.ajuste_liquido)} hint={simulacao?.prorata?.tipo} />
+            <StatCard label="Fator restante" value={`${Number(simulacao?.periodo?.fator_restante || 0).toFixed(2)}x`} />
+          </div>
+        )}
+      </section>
+
+      <section style={{ background: C.card, border: '1px solid ' + C.border, borderRadius: 18, padding: 18, marginBottom: 16 }}>
         <h2 style={{ margin: '0 0 10px', fontSize: 18, fontWeight: 900 }}>Billing readiness</h2>
         <p style={{ color: C.muted, lineHeight: 1.6, margin: 0 }}>
           Esta tela prepara a futura integração com meios de pagamento. O FECH.AI ainda não cobra automaticamente: os valores abaixo são projeções por plano e status do tenant.
@@ -241,7 +328,7 @@ function BillingTab({ empresas }) {
 
       <section style={{ background: C.card, border: '1px solid ' + C.border, borderRadius: 18, padding: 18 }}>
         <h2 style={{ margin: '0 0 12px', fontSize: 18, fontWeight: 900 }}>Distribuição por plano</h2>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0, 1fr))', gap: 12 }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, minmax(0, 1fr))', gap: 12 }}>
           {Object.entries(porPlano).map(([plano, total]) => (
             <div key={plano} style={{ background: C.card2, border: '1px solid ' + C.border, borderRadius: 14, padding: 14 }}>
               <p style={{ color: C.text, fontWeight: 900, margin: 0 }}>{plano}</p>
@@ -257,9 +344,15 @@ function BillingTab({ empresas }) {
 export default function RootPanel({ session, sb, token, onCancelar, onProvisionado }) {
   const [aba, setAba] = useState('empresas')
   const [empresas, setEmpresas] = useState([])
+  const [planos, setPlanos] = useState([])
   const [loading, setLoading] = useState(false)
   const [erro, setErro] = useState('')
   const [actionLoading, setActionLoading] = useState('')
+  const [billingState, setBillingState] = useState({ empresaId: '', novoPlanoId: '', simulacao: null, loading: '', erro: '', sucesso: '' })
+
+  function updateBillingState(patch) {
+    setBillingState(prev => ({ ...prev, ...patch }))
+  }
 
   async function carregarEmpresas() {
     setLoading(true)
@@ -271,6 +364,19 @@ export default function RootPanel({ session, sb, token, onCancelar, onProvisiona
       setErro(e.message || String(e))
     } finally {
       setLoading(false)
+    }
+  }
+
+  async function carregarPlanos() {
+    try {
+      const data = await sb.query(
+        'planos',
+        'select=id,nome,slug,preco_mensal,max_corretores,max_times,max_leads_mes,ativo&ativo=eq.true&order=preco_mensal.asc',
+        token
+      )
+      setPlanos(Array.isArray(data) ? data : [])
+    } catch (e) {
+      setErro(e.message || String(e))
     }
   }
 
@@ -295,8 +401,47 @@ export default function RootPanel({ session, sb, token, onCancelar, onProvisiona
     }
   }
 
+  async function simularTrocaPlano() {
+    updateBillingState({ loading: 'simular', erro: '', sucesso: '', simulacao: null })
+    try {
+      const data = await sb.rpc('simular_troca_plano_empresa_root', {
+        p_empresa_id: billingState.empresaId,
+        p_novo_plano_id: billingState.novoPlanoId,
+      }, token)
+      updateBillingState({ simulacao: data, sucesso: 'Simulação de pró-rata calculada.' })
+    } catch (e) {
+      updateBillingState({ erro: e.message || String(e) })
+    } finally {
+      updateBillingState({ loading: '' })
+    }
+  }
+
+  async function aplicarTrocaPlano() {
+    const empresa = empresas.find(e => e.empresa_id === billingState.empresaId)
+    const novoPlano = planos.find(p => p.id === billingState.novoPlanoId)
+    const ajuste = billingState?.simulacao?.prorata?.ajuste_liquido
+    const ok = window.confirm(`Confirma trocar ${empresa?.nome || 'empresa'} para ${novoPlano?.nome || 'novo plano'}? Ajuste pró-rata: ${money(ajuste)}.`)
+    if (!ok) return
+
+    updateBillingState({ loading: 'aplicar', erro: '', sucesso: '' })
+    try {
+      await sb.rpc('alterar_plano_empresa_root', {
+        p_empresa_id: billingState.empresaId,
+        p_novo_plano_id: billingState.novoPlanoId,
+        p_motivo: 'Troca manual pelo Painel Root Billing',
+      }, token)
+      await carregarEmpresas()
+      updateBillingState({ empresaId: '', novoPlanoId: '', simulacao: null, sucesso: 'Plano alterado com sucesso e audit trail registrado.' })
+    } catch (e) {
+      updateBillingState({ erro: e.message || String(e) })
+    } finally {
+      updateBillingState({ loading: '' })
+    }
+  }
+
   useEffect(() => {
     carregarEmpresas()
+    carregarPlanos()
   }, [])
 
   const handleProvisionado = async (payload) => {
@@ -326,7 +471,16 @@ export default function RootPanel({ session, sb, token, onCancelar, onProvisiona
 
         {aba === 'empresas' && <EmpresasTab empresas={empresas} loading={loading} erro={erro} onReload={carregarEmpresas} onToggleTenant={toggleTenant} actionLoading={actionLoading} />}
         {aba === 'admins' && <AdminsTab empresas={empresas} />}
-        {aba === 'billing' && <BillingTab empresas={empresas} />}
+        {aba === 'billing' && (
+          <BillingTab
+            empresas={empresas}
+            planos={planos}
+            billingState={billingState}
+            onBillingChange={updateBillingState}
+            onSimularPlano={simularTrocaPlano}
+            onAplicarPlano={aplicarTrocaPlano}
+          />
+        )}
         {aba === 'provisionamento' && (
           <TenantProvisioningRoot
             session={session}
