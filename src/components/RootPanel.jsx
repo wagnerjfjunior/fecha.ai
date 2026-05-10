@@ -32,6 +32,11 @@ function formatDate(value) {
   }
 }
 
+function money(value) {
+  const n = Number(value || 0)
+  return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(n)
+}
+
 function TabButton({ active, children, onClick }) {
   return (
     <button
@@ -51,16 +56,40 @@ function TabButton({ active, children, onClick }) {
   )
 }
 
-function StatCard({ label, value }) {
+function StatCard({ label, value, hint }) {
   return (
     <div style={{ background: C.card2, border: '1px solid ' + C.border, borderRadius: 14, padding: 14 }}>
       <p style={{ margin: 0, color: C.muted, fontSize: 12, fontWeight: 700 }}>{label}</p>
       <p style={{ margin: '4px 0 0', color: C.text, fontSize: 22, fontWeight: 900 }}>{value}</p>
+      {hint && <p style={{ margin: '4px 0 0', color: C.muted, fontSize: 11 }}>{hint}</p>}
     </div>
   )
 }
 
-function EmpresasTab({ empresas, loading, erro, onReload }) {
+function ActionButton({ children, danger, disabled, onClick }) {
+  return (
+    <button
+      onClick={onClick}
+      disabled={disabled}
+      style={{
+        border: '1px solid ' + (danger ? C.red : C.green),
+        color: danger ? C.red : C.green,
+        background: (danger ? C.red : C.green) + '12',
+        borderRadius: 9,
+        padding: '7px 9px',
+        cursor: disabled ? 'not-allowed' : 'pointer',
+        fontWeight: 800,
+        fontSize: 12,
+        opacity: disabled ? 0.55 : 1,
+        whiteSpace: 'nowrap',
+      }}
+    >
+      {children}
+    </button>
+  )
+}
+
+function EmpresasTab({ empresas, loading, erro, onReload, onToggleTenant, actionLoading }) {
   const total = empresas.length
   const ativos = empresas.filter(e => e.provisioning_status === 'ACTIVE').length
   const pendentes = empresas.filter(e => e.provisioning_status === 'PENDING_ADMIN').length
@@ -95,11 +124,13 @@ function EmpresasTab({ empresas, loading, erro, onReload }) {
                 <th style={{ padding: 10 }}>Usuários</th>
                 <th style={{ padding: 10 }}>Admins</th>
                 <th style={{ padding: 10 }}>Trial</th>
+                <th style={{ padding: 10 }}>Ações</th>
               </tr>
             </thead>
             <tbody>
               {empresas.map(e => {
                 const s = statusStyle(e.provisioning_status)
+                const disabled = actionLoading === e.empresa_id
                 return (
                   <tr key={e.empresa_id} style={{ borderBottom: '1px solid ' + C.border }}>
                     <td style={{ padding: 10 }}>
@@ -115,11 +146,22 @@ function EmpresasTab({ empresas, loading, erro, onReload }) {
                     <td style={{ padding: 10 }}>{e?.totais?.usuarios || 0}</td>
                     <td style={{ padding: 10 }}>{e?.totais?.admins_locais || 0}</td>
                     <td style={{ padding: 10 }}>{formatDate(e.trial_ate)}</td>
+                    <td style={{ padding: 10 }}>
+                      {e.ativa === false || e.provisioning_status === 'SUSPENDED' ? (
+                        <ActionButton disabled={disabled} onClick={() => onToggleTenant(e, true)}>
+                          Reativar
+                        </ActionButton>
+                      ) : (
+                        <ActionButton danger disabled={disabled} onClick={() => onToggleTenant(e, false)}>
+                          Suspender
+                        </ActionButton>
+                      )}
+                    </td>
                   </tr>
                 )
               })}
               {!loading && empresas.length === 0 && (
-                <tr><td colSpan={6} style={{ padding: 18, color: C.muted, textAlign: 'center' }}>Nenhuma empresa encontrada.</td></tr>
+                <tr><td colSpan={7} style={{ padding: 18, color: C.muted, textAlign: 'center' }}>Nenhuma empresa encontrada.</td></tr>
               )}
             </tbody>
           </table>
@@ -168,11 +210,56 @@ function AdminsTab({ empresas }) {
   )
 }
 
+function BillingTab({ empresas }) {
+  const tenantsCobraveis = empresas.filter(e => e.ativa !== false && e.provisioning_status !== 'PENDING_ADMIN')
+  const mrrPotencial = tenantsCobraveis.reduce((acc, e) => acc + Number(e?.plano?.preco_mensal || 0), 0)
+  const trialsAtivos = empresas.filter(e => e.trial_ate && new Date(e.trial_ate) >= new Date()).length
+  const semAdmin = empresas.filter(e => e.provisioning_status === 'PENDING_ADMIN').length
+  const suspensos = empresas.filter(e => e.provisioning_status === 'SUSPENDED' || e.ativa === false).length
+
+  const porPlano = empresas.reduce((acc, e) => {
+    const key = e?.plano?.nome || 'Sem plano'
+    acc[key] = (acc[key] || 0) + 1
+    return acc
+  }, {})
+
+  return (
+    <div>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, minmax(0, 1fr))', gap: 12, marginBottom: 16 }}>
+        <StatCard label="MRR potencial" value={money(mrrPotencial)} hint="Baseado no preço mensal do plano" />
+        <StatCard label="Trials ativos" value={trialsAtivos} />
+        <StatCard label="Sem admin" value={semAdmin} />
+        <StatCard label="Suspensos" value={suspensos} />
+      </div>
+
+      <section style={{ background: C.card, border: '1px solid ' + C.border, borderRadius: 18, padding: 18, marginBottom: 16 }}>
+        <h2 style={{ margin: '0 0 10px', fontSize: 18, fontWeight: 900 }}>Billing readiness</h2>
+        <p style={{ color: C.muted, lineHeight: 1.6, margin: 0 }}>
+          Esta tela prepara a futura integração com meios de pagamento. O FECH.AI ainda não cobra automaticamente: os valores abaixo são projeções por plano e status do tenant.
+        </p>
+      </section>
+
+      <section style={{ background: C.card, border: '1px solid ' + C.border, borderRadius: 18, padding: 18 }}>
+        <h2 style={{ margin: '0 0 12px', fontSize: 18, fontWeight: 900 }}>Distribuição por plano</h2>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0, 1fr))', gap: 12 }}>
+          {Object.entries(porPlano).map(([plano, total]) => (
+            <div key={plano} style={{ background: C.card2, border: '1px solid ' + C.border, borderRadius: 14, padding: 14 }}>
+              <p style={{ color: C.text, fontWeight: 900, margin: 0 }}>{plano}</p>
+              <p style={{ color: C.muted, margin: '6px 0 0' }}>{total} tenant(s)</p>
+            </div>
+          ))}
+        </div>
+      </section>
+    </div>
+  )
+}
+
 export default function RootPanel({ session, sb, token, onCancelar, onProvisionado }) {
   const [aba, setAba] = useState('empresas')
   const [empresas, setEmpresas] = useState([])
   const [loading, setLoading] = useState(false)
   const [erro, setErro] = useState('')
+  const [actionLoading, setActionLoading] = useState('')
 
   async function carregarEmpresas() {
     setLoading(true)
@@ -184,6 +271,27 @@ export default function RootPanel({ session, sb, token, onCancelar, onProvisiona
       setErro(e.message || String(e))
     } finally {
       setLoading(false)
+    }
+  }
+
+  async function toggleTenant(empresa, ativa) {
+    const verbo = ativa ? 'reativar' : 'suspender'
+    const ok = window.confirm(`Confirma ${verbo} o tenant ${empresa.nome}?`)
+    if (!ok) return
+
+    setActionLoading(empresa.empresa_id)
+    setErro('')
+    try {
+      await sb.rpc('atualizar_status_empresa_root', {
+        p_empresa_id: empresa.empresa_id,
+        p_ativa: ativa,
+        p_motivo: ativa ? 'Reativação manual pelo Painel Root' : 'Suspensão manual pelo Painel Root',
+      }, token)
+      await carregarEmpresas()
+    } catch (e) {
+      setErro(e.message || String(e))
+    } finally {
+      setActionLoading('')
     }
   }
 
@@ -212,11 +320,13 @@ export default function RootPanel({ session, sb, token, onCancelar, onProvisiona
         <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', marginBottom: 16 }}>
           <TabButton active={aba === 'empresas'} onClick={() => setAba('empresas')}>Empresas</TabButton>
           <TabButton active={aba === 'admins'} onClick={() => setAba('admins')}>Admins Locais</TabButton>
+          <TabButton active={aba === 'billing'} onClick={() => setAba('billing')}>Billing</TabButton>
           <TabButton active={aba === 'provisionamento'} onClick={() => setAba('provisionamento')}>Provisionamento</TabButton>
         </div>
 
-        {aba === 'empresas' && <EmpresasTab empresas={empresas} loading={loading} erro={erro} onReload={carregarEmpresas} />}
+        {aba === 'empresas' && <EmpresasTab empresas={empresas} loading={loading} erro={erro} onReload={carregarEmpresas} onToggleTenant={toggleTenant} actionLoading={actionLoading} />}
         {aba === 'admins' && <AdminsTab empresas={empresas} />}
+        {aba === 'billing' && <BillingTab empresas={empresas} />}
         {aba === 'provisionamento' && (
           <TenantProvisioningRoot
             session={session}
