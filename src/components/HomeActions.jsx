@@ -3,9 +3,6 @@
 // Gestor/Admin/Root vê: os mesmos + acesso ao painel administrativo
 // Root vê também: Provisionar Empresa
 
-// URL do Mesa do Cliente — ajuste conforme seu deploy
-const MESA_CLIENTE_URL = 'https://quiet-surf-d4a0.wagnerjfjunior.workers.dev/';
-
 function isRootIdentity(nome) {
   return String(nome || '').trim().toLowerCase() === 'root';
 }
@@ -105,9 +102,9 @@ export default function HomeActions({
 
         {/* Mesa do Cliente */}
         <button
-  onClick={onMesaCliente}>
-  Mesa do Cliente
-        </button>
+          onClick={onMesaCliente}
+          className="w-full bg-white border border-gray-200 rounded-2xl p-5 flex items-center gap-4 hover:border-blue-300 hover:shadow-md active:scale-95 transition-all"
+        >
           <div className="w-12 h-12 bg-indigo-50 rounded-xl flex items-center justify-center flex-shrink-0">
             <svg className="w-6 h-6 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
@@ -119,9 +116,9 @@ export default function HomeActions({
             <p className="text-gray-400 text-sm">Simulação comercial de unidades</p>
           </div>
           <svg className="w-5 h-5 text-gray-300 ml-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
           </svg>
-        </a>
+        </button>
 
         {/* Painel Root — somente root */}
         {rootDetected && (
