@@ -129,12 +129,13 @@ function openChannelAction(channel, lead, context) {
   return { ok: false, message: 'Canal não reconhecido.' }
 }
 
-function buildHint(channel, context) {
-  if (channel === 'call') return 'Clique para abrir o discador. Depois registre o feedback da chamada.'
-  if (channel === 'whatsapp' && context === 'reforco') return 'Abre WhatsApp com mensagem de reforço, continuidade e orientação de stand.'
-  if (channel === 'whatsapp') return 'Abre WhatsApp com mensagem de primeira abordagem.'
-  if (channel === 'email' && context === 'reforco') return 'Abre e-mail de consolidação: conforme conversamos e próximos passos.'
-  return 'Abre e-mail de curiosidade para tentar contato por outro canal.'
+function buildHint(channel, context, powerMode) {
+  const prefix = powerMode ? 'Modo Power ligado: ' : ''
+  if (channel === 'call') return `${prefix}abre o discador. Depois registre o feedback da chamada.`
+  if (channel === 'whatsapp' && context === 'reforco') return `${prefix}abre WhatsApp com mensagem de reforço, continuidade e orientação de stand.`
+  if (channel === 'whatsapp') return `${prefix}abre WhatsApp com mensagem de primeira abordagem.`
+  if (channel === 'email' && context === 'reforco') return `${prefix}abre e-mail de consolidação: conforme conversamos e próximos passos.`
+  return `${prefix}abre e-mail de curiosidade para tentar contato por outro canal.`
 }
 
 export default function AceleracaoOperacional({ nome }) {
@@ -144,6 +145,7 @@ export default function AceleracaoOperacional({ nome }) {
   const [lead, setLead] = useState(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+  const [powerMode, setPowerMode] = useState(false)
   const [stats, setStats] = useState({ meta: 10, visitas: 0, media: 18, ligacoes: 0, whatsapps: 0, emails: 0 })
 
   const active = flow[step] || flow[0]
@@ -154,14 +156,19 @@ export default function AceleracaoOperacional({ nome }) {
 
   const ordered = useMemo(() => flow.map(id => CHANNELS.find(c => c.id === id)).filter(Boolean), [flow])
 
-  async function loadLead() {
+  async function loadLead({ autoRun = false } = {}) {
     setLoading(true)
     setError('')
     const res = await buscarProximoLeadOperacional()
     if (!res.ok) setError(res.error?.message || 'Não foi possível carregar o próximo lead.')
-    setLead(res.ok ? res.lead : null)
+    const nextLead = res.ok ? res.lead : null
+    setLead(nextLead)
     setStep(0)
     setLoading(false)
+
+    if (autoRun && nextLead) {
+      setTimeout(() => executeCurrentAction({ targetLead: nextLead, targetChannel: flow[0] }), 500)
+    }
   }
 
   useEffect(() => { loadLead() }, [])
@@ -171,21 +178,29 @@ export default function AceleracaoOperacional({ nome }) {
     setStep(0)
   }
 
-  function markActionSent() {
-    setError('')
-    const result = openChannelAction(active, lead, context)
-    if (!result.ok) {
-      setError(result.message)
-      return
-    }
-
+  function updateStatsForChannel(channel) {
     setStats(prev => ({
       ...prev,
-      whatsapps: active === 'whatsapp' ? prev.whatsapps + 1 : prev.whatsapps,
-      ligacoes: active === 'call' ? prev.ligacoes + 1 : prev.ligacoes,
-      emails: active === 'email' ? prev.emails + 1 : prev.emails,
+      whatsapps: channel === 'whatsapp' ? prev.whatsapps + 1 : prev.whatsapps,
+      ligacoes: channel === 'call' ? prev.ligacoes + 1 : prev.ligacoes,
+      emails: channel === 'email' ? prev.emails + 1 : prev.emails,
     }))
+  }
+
+  function executeCurrentAction({ targetLead = lead, targetChannel = active } = {}) {
+    setError('')
+    const result = openChannelAction(targetChannel, targetLead, context)
+    if (!result.ok) {
+      setError(result.message)
+      return false
+    }
+    updateStatsForChannel(targetChannel)
     setStep(prev => Math.min(prev + 1, flow.length - 1))
+    return true
+  }
+
+  function markActionSent() {
+    executeCurrentAction()
   }
 
   async function feedback(feedbackId) {
@@ -204,7 +219,7 @@ export default function AceleracaoOperacional({ nome }) {
       setStats(prev => ({ ...prev, visitas: prev.visitas + 1 }))
     }
 
-    await loadLead()
+    await loadLead({ autoRun: powerMode })
   }
 
   return (
@@ -229,6 +244,21 @@ export default function AceleracaoOperacional({ nome }) {
         </section>
 
         {error && <div className="rounded-2xl border border-red-200 bg-red-50 p-4 font-semibold text-red-700">{error}</div>}
+
+        <section className="rounded-3xl border border-gray-100 bg-white p-4 shadow-sm">
+          <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+            <div>
+              <h2 className="text-lg font-black">Modo Power</h2>
+              <p className="text-sm text-gray-500">Ao registrar feedback, o sistema carrega o próximo lead e executa automaticamente a primeira ação da esteira.</p>
+            </div>
+            <button
+              onClick={() => setPowerMode(prev => !prev)}
+              className={`rounded-2xl px-5 py-3 font-black text-white ${powerMode ? 'bg-emerald-600' : 'bg-gray-900'}`}
+            >
+              {powerMode ? '⚡ Power ligado' : '⚡ Ligar Power'}
+            </button>
+          </div>
+        </section>
 
         <section className="rounded-3xl border border-gray-100 bg-white p-4 shadow-sm">
           <h2 className="text-lg font-black">Como você quer abordar?</h2>
@@ -257,7 +287,7 @@ export default function AceleracaoOperacional({ nome }) {
         <section className="rounded-3xl border border-blue-100 bg-blue-50 p-4 shadow-sm">
           <p className="text-xs font-bold uppercase tracking-wide text-blue-700">Próxima ação</p>
           <div className="mt-1 text-2xl font-black text-blue-950">{activeChannel.icon} {activeChannel.label}</div>
-          <p className="mt-1 text-sm text-blue-800">{buildHint(active, context)}</p>
+          <p className="mt-1 text-sm text-blue-800">{buildHint(active, context, powerMode)}</p>
           <div className="mt-4 flex gap-2">
             <button onClick={markActionSent} className="rounded-2xl bg-blue-600 px-5 py-3 font-bold text-white">Executar ação</button>
             <button onClick={() => setStep(prev => Math.min(prev + 1, flow.length - 1))} className="rounded-2xl border border-blue-200 bg-white px-5 py-3 font-bold text-blue-700">Pular</button>
@@ -270,7 +300,7 @@ export default function AceleracaoOperacional({ nome }) {
               <h2 className="text-lg font-black">Lead em trabalho</h2>
               <p className="text-sm text-gray-500">Conectado ao proximo_lead().</p>
             </div>
-            <button onClick={loadLead} className="rounded-2xl bg-gray-900 px-4 py-2 text-sm font-bold text-white">Próximo lead</button>
+            <button onClick={() => loadLead({ autoRun: powerMode })} className="rounded-2xl bg-gray-900 px-4 py-2 text-sm font-bold text-white">Próximo lead</button>
           </div>
 
           {loading ? (
