@@ -8,6 +8,27 @@ export function detectLayout(text = "") {
   const has = (...terms) => terms.every((term) => t.includes(String(term).toLowerCase()));
   const hasAny = (...terms) => terms.some((term) => t.includes(String(term).toLowerCase()));
 
+  // Espelhos Portal/Vendas em que a extração do PDF separa o bloco de unidades
+  // do bloco de valores financeiros. Ex.: Garden Design.
+  if (
+    hasAny("espelho de vendas", "tabela de vendas") &&
+    hasAny("andar") &&
+    hasAny("unidade") &&
+    hasAny("area", "m2", "m²") &&
+    hasAny("sinal ato") &&
+    hasAny("complemento ato", "c. ato") &&
+    hasAny("mensal") &&
+    hasAny("intermediaria", "intermediária") &&
+    hasAny("financiamento bancario", "financiamento bancário") &&
+    hasAny("valor total")
+  ) {
+    return {
+      layout: "split_block_table",
+      confidence: 0.91,
+      reason: "Detectado espelho com unidades e valores financeiros em blocos separados.",
+    };
+  }
+
   // Tabelas hierárquicas/contextuais, comuns em Tegra/Caminhos/Nova Vivere/Garden.
   // Geralmente possuem Final, faixas de andar, Garden e herança de contexto.
   if (
