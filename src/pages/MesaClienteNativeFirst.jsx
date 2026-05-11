@@ -109,10 +109,11 @@ async function parseNativeFirst({ text, filename, empreendimento, pdfDiagnostics
 function resumo(u) {
   if (!u || !validRow(u)) return { total: 0, entrada: 0, curto: 0, mensais: 0, inter: 0, chaves: 0, financiamento: 0, area: 0, m2: 0 };
   const total = Number(u.preco_total) || 0;
+  const curtoQtd = getObsInt(u.observacoes, "comp_qtd", 3);
   return {
     total,
     entrada: Number(u.sinal_1) || 0,
-    curto: (Number(u.a4_each) || 0) * 3,
+    curto: (Number(u.a4_each) || 0) * curtoQtd,
     mensais: (Number(u.mensal_each) || 0) * (Number(u.mensal_qtd) || 0),
     inter: (Number(u.inter_each) || 0) * (Number(u.inter_qtd) || 0),
     chaves: Number(u.chaves_each) || 0,
@@ -122,8 +123,70 @@ function resumo(u) {
   };
 }
 
-function Card({ label, value, helper }) {
-  return <div className="rounded-2xl border-l-4 border-blue-500 bg-white p-4 shadow-sm"><p className="text-xs font-bold uppercase text-gray-400">{label}</p><p className="mt-1 text-xl font-black text-gray-900">{value}</p>{helper && <p className="mt-1 text-xs text-gray-500">{helper}</p>}</div>;
+function getObsInt(observacoes = "", key, fallback = 0) {
+  const match = String(observacoes || "").match(new RegExp(`${key}=([0-9]+)`, "i"));
+  const value = match ? Number.parseInt(match[1], 10) : Number.NaN;
+  return Number.isFinite(value) && value > 0 ? value : fallback;
+}
+
+function inferLinhaFromUnidade(unidade = "") {
+  const digits = String(unidade || "").replace(/\D/g, "");
+  return digits.length >= 2 ? digits.slice(-2) : "";
+}
+
+function inferAndarFromUnidade(unidade = "") {
+  const digits = String(unidade || "").replace(/\D/g, "");
+  if (digits.length < 4) return "";
+  const andar = Number.parseInt(digits.slice(0, -2), 10);
+  return Number.isFinite(andar) ? String(andar) : "";
+}
+
+function formatUnitOption(u, hasMirror = false) {
+  const status = validRow(u) ? "✅" : "⚠️";
+  const linha = u.final || inferLinhaFromUnidade(u.unidade);
+  const andar = u.andar || inferAndarFromUnidade(u.unidade);
+  const parts = [
+    linha ? `Linha ${linha}` : null,
+    andar ? `Andar ${andar}` : null,
+    u.unidade || null,
+    Number(u.area_m2) > 0 ? `${num(u.area_m2)} m²` : null,
+    validRow(u) ? brl(u.preco_total) : "inconsistência",
+  ].filter(Boolean);
+
+  const mirrorInfo = hasMirror ? ` — ${u.mirror?.label || "sem espelho"}` : "";
+  return `${status} ${parts.join(" — ")}${mirrorInfo}`;
+}
+
+function paymentDisplay({ total, qtd, parcela, qtdFallback = 0 }) {
+  const qty = Number(qtd || 0) || qtdFallback;
+  const each = Number(parcela || 0);
+  const totalValue = Number(total || 0);
+
+  if (qty > 0 && each > 0) {
+    const calculatedTotal = totalValue || each * qty;
+    return {
+      value: brl(each),
+      helper: `${qty}x de ${brl(each)}`,
+      detail: `Total: ${brl(calculatedTotal)}`,
+    };
+  }
+
+  return {
+    value: brl(totalValue),
+    helper: "",
+    detail: "",
+  };
+}
+
+function Card({ label, value, helper, detail }) {
+  return (
+    <div className="rounded-2xl border-l-4 border-blue-500 bg-white p-4 shadow-sm">
+      <p className="text-xs font-bold uppercase text-gray-400">{label}</p>
+      <p className="mt-1 text-xl font-black text-gray-900">{value}</p>
+      {helper && <p className="mt-1 text-xs text-gray-500">{helper}</p>}
+      {detail && <p className="mt-1 text-[11px] font-semibold text-gray-400">{detail}</p>}
+    </div>
+  );
 }
 
 export default function MesaClienteNativeFirst({ onVoltar }) {
@@ -144,6 +207,10 @@ export default function MesaClienteNativeFirst({ onVoltar }) {
   const unidadesView = useMemo(() => hasMirror ? reconcileUnitsWithMirror(unidades, mirror.units) : unidades, [unidades, hasMirror, mirror]);
   const selected = useMemo(() => unidadesView.find((u) => u.id === selectedId) || null, [unidadesView, selectedId]);
   const r = useMemo(() => resumo(selected), [selected]);
+  const curtoQtd = useMemo(() => getObsInt(selected?.observacoes, "comp_qtd", 3), [selected]);
+  const curtoView = useMemo(() => paymentDisplay({ total: r.curto, qtd: curtoQtd, parcela: selected?.a4_each }), [r.curto, curtoQtd, selected]);
+  const mensaisView = useMemo(() => paymentDisplay({ total: r.mensais, qtd: selected?.mensal_qtd, parcela: selected?.mensal_each }), [r.mensais, selected]);
+  const interView = useMemo(() => paymentDisplay({ total: r.inter, qtd: selected?.inter_qtd, parcela: selected?.inter_each }), [r.inter, selected]);
   const podeSimular = selected && validRow(selected) && (!hasMirror || selected.mirror?.can_sell === true);
   const invalidas = unidadesView.filter((u) => !validRow(u)).length;
 
@@ -190,9 +257,79 @@ export default function MesaClienteNativeFirst({ onVoltar }) {
   function abrirWhatsApp() {
     if (!podeSimular) return;
     const label = selected.mirror?.available_units?.map((u) => u.codigo_unidade).join(", ") || selected.unidade;
-    const msg = [`Mesa do Cliente — ${empreendimento || selected.empreendimento || "Empreendimento"}`, `Unidade: ${label}`, `Área: ${num(selected.area_m2)} m²`, `Preço total: ${brl(r.total)}`, `Entrada/Sinal: ${brl(r.entrada)}`, `Mensais: ${selected.mensal_qtd}x de ${brl(selected.mensal_each)}`, `Intermediárias: ${selected.inter_qtd}x de ${brl(selected.inter_each)}`, `Financiamento: ${brl(r.financiamento)}`].join("\n");
+    const msg = [
+      `Mesa do Cliente — ${empreendimento || selected.empreendimento || "Empreendimento"}`,
+      `Unidade: ${label}`,
+      `Área: ${num(selected.area_m2)} m²`,
+      `Preço total: ${brl(r.total)}`,
+      `Entrada/Sinal: ${brl(r.entrada)}`,
+      `Curto prazo: ${curtoQtd}x de ${brl(selected.a4_each)}`,
+      `Mensais: ${selected.mensal_qtd}x de ${brl(selected.mensal_each)}`,
+      `Intermediárias: ${selected.inter_qtd}x de ${brl(selected.inter_each)}`,
+      `Financiamento: ${brl(r.financiamento)}`,
+    ].join("\n");
     window.open(`https://wa.me/?text=${encodeURIComponent(msg)}`, "_blank", "noopener,noreferrer");
   }
 
-  return <div className="min-h-screen bg-gray-50 text-gray-900"><div className="sticky top-0 z-20 border-b bg-white px-5 py-4"><div className="mx-auto flex max-w-7xl items-center justify-between"><div><p className="text-xs font-bold uppercase tracking-wide text-gray-400">FECH.AI / Mesa Cliente</p><h1 className="text-xl font-black">Mesa do Cliente</h1><p className="text-sm text-gray-500">Parser nativo primeiro. Worker/Make apenas como fallback.</p></div><button onClick={onVoltar} className="rounded-xl bg-gray-900 px-4 py-2 text-sm font-bold text-white">Voltar</button></div></div><main className="mx-auto max-w-7xl space-y-5 p-5"><section className="rounded-2xl border bg-white p-5 shadow-sm"><div className="grid grid-cols-1 gap-3 lg:grid-cols-4"><input value={empreendimento} onChange={(e) => setEmpreendimento(e.target.value)} placeholder="Empreendimento" className="rounded-xl border px-4 py-3"/><input type="file" accept="application/pdf,.pdf" onChange={(e) => setFile(e.target.files?.[0] || null)} className="rounded-xl border px-4 py-3 lg:col-span-2"/><button onClick={carregarTabela} disabled={!file || status === "processing"} className="rounded-xl bg-blue-600 px-4 py-3 font-black text-white disabled:opacity-50">{status === "processing" ? "Processando..." : "Carregar tabela"}</button></div><div className="mt-4 grid grid-cols-1 gap-3 lg:grid-cols-4"><input type="file" accept="application/pdf,.pdf,.html,.htm,.txt,.json" onChange={(e) => setMirrorFile(e.target.files?.[0] || null)} className="rounded-xl border px-4 py-3 lg:col-span-3"/><button onClick={carregarEspelho} disabled={!mirrorFile} className="rounded-xl bg-slate-900 px-4 py-3 font-black text-white disabled:opacity-50">Carregar espelho</button></div>{layout && <div className="mt-4 rounded-xl border border-blue-200 bg-blue-50 p-4 text-sm text-blue-800"><b>Layout:</b> {layout.layout}<br/><b>Motor:</b> {layout.source === "parser_nativo" ? "Parser nativo — sem Make/IA" : "Fallback Worker/Make"}<br/><b>Confiança:</b> {(layout.confidence * 100).toFixed(0)}%<br/><b>Motivo:</b> {layout.reason}{invalidas > 0 && <><br/><b>Inconsistências:</b> {invalidas}</>}</div>}{erro && <div className="mt-4 rounded-xl border border-red-200 bg-red-50 p-4 text-sm font-bold text-red-700">{erro}</div>}{mirrorErro && <div className="mt-4 rounded-xl border border-orange-200 bg-orange-50 p-4 text-sm font-bold text-orange-800">{mirrorErro}</div>}</section>{unidadesView.length > 0 && <><section className="rounded-2xl border bg-white p-5 shadow-sm"><div className="grid grid-cols-1 gap-3 lg:grid-cols-3"><select value={selectedId} onChange={(e) => setSelectedId(e.target.value)} className="rounded-xl border px-4 py-3 lg:col-span-2">{unidadesView.map((u) => <option key={u.id} value={u.id}>{validRow(u) ? "✅" : "⚠️"} {u.unidade} — {num(u.area_m2)} m² — {validRow(u) ? brl(u.preco_total) : "inconsistência"}{hasMirror ? ` — ${u.mirror?.label || "sem espelho"}` : ""}</option>)}</select><div className="flex gap-2"><button onClick={abrirWhatsApp} disabled={!podeSimular} className="flex-1 rounded-xl bg-emerald-600 px-4 py-3 font-black text-white disabled:opacity-50">WhatsApp</button><button onClick={() => podeSimular && window.print()} disabled={!podeSimular} className="flex-1 rounded-xl bg-gray-900 px-4 py-3 font-black text-white disabled:opacity-50">Imprimir</button></div></div>{selected && !validRow(selected) && <div className="mt-4 rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-800"><b>Proposta bloqueada:</b> {selected.validation?.issues?.join(", ") || "validação não informada"}</div>}{selected && hasMirror && !selected.mirror?.can_sell && <div className="mt-4 rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-800"><b>Bloqueado pelo espelho:</b> {selected.mirror?.label || "sem correspondência"}</div>}</section>{podeSimular && <section className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4"><Card label="Preço total" value={brl(r.total)} helper="Valor tabela"/><Card label="Financiamento" value={brl(r.financiamento)} helper="Saldo"/><Card label="Área" value={`${num(r.area)} m²`} helper={`m²: ${brl(r.m2)}`}/><Card label="Entrada" value={brl(r.entrada)} helper="Sinal"/><Card label="Curto prazo" value={brl(r.curto)} helper={`3x de ${brl(selected.a4_each)}`}/><Card label="Mensais" value={brl(r.mensais)} helper={`${selected.mensal_qtd}x de ${brl(selected.mensal_each)}`}/><Card label="Intermediárias" value={brl(r.inter)} helper={`${selected.inter_qtd}x de ${brl(selected.inter_each)}`}/><Card label="Chaves" value={brl(r.chaves)} helper="Parcela única"/></section>}{pipeline && <details className="rounded-2xl border bg-white p-5"><summary className="cursor-pointer font-bold">Diagnóstico técnico do pipeline</summary><pre className="mt-4 max-h-80 overflow-auto rounded-xl bg-gray-950 p-4 text-xs text-gray-100">{JSON.stringify(pipeline, null, 2)}</pre></details>}<details className="rounded-2xl border bg-white p-5"><summary className="cursor-pointer font-bold">CSV canônico</summary><pre className="mt-4 max-h-80 overflow-auto rounded-xl bg-gray-950 p-4 text-xs text-gray-100">{csvText}</pre></details></>}</main></div>;
+  return (
+    <div className="min-h-screen bg-gray-50 text-gray-900">
+      <div className="sticky top-0 z-20 border-b bg-white px-5 py-4">
+        <div className="mx-auto flex max-w-7xl items-center justify-between">
+          <div>
+            <p className="text-xs font-bold uppercase tracking-wide text-gray-400">FECH.AI / Mesa Cliente</p>
+            <h1 className="text-xl font-black">Mesa do Cliente</h1>
+            <p className="text-sm text-gray-500">Parser nativo primeiro. Worker/Make apenas como fallback.</p>
+          </div>
+          <button onClick={onVoltar} className="rounded-xl bg-gray-900 px-4 py-2 text-sm font-bold text-white">Voltar</button>
+        </div>
+      </div>
+
+      <main className="mx-auto max-w-7xl space-y-5 p-5">
+        <section className="rounded-2xl border bg-white p-5 shadow-sm">
+          <div className="grid grid-cols-1 gap-3 lg:grid-cols-4">
+            <input value={empreendimento} onChange={(e) => setEmpreendimento(e.target.value)} placeholder="Empreendimento" className="rounded-xl border px-4 py-3" />
+            <input type="file" accept="application/pdf,.pdf" onChange={(e) => setFile(e.target.files?.[0] || null)} className="rounded-xl border px-4 py-3 lg:col-span-2" />
+            <button onClick={carregarTabela} disabled={!file || status === "processing"} className="rounded-xl bg-blue-600 px-4 py-3 font-black text-white disabled:opacity-50">{status === "processing" ? "Processando..." : "Carregar tabela"}</button>
+          </div>
+          <div className="mt-4 grid grid-cols-1 gap-3 lg:grid-cols-4">
+            <input type="file" accept="application/pdf,.pdf,.html,.htm,.txt,.json" onChange={(e) => setMirrorFile(e.target.files?.[0] || null)} className="rounded-xl border px-4 py-3 lg:col-span-3" />
+            <button onClick={carregarEspelho} disabled={!mirrorFile} className="rounded-xl bg-slate-900 px-4 py-3 font-black text-white disabled:opacity-50">Carregar espelho</button>
+          </div>
+          {layout && <div className="mt-4 rounded-xl border border-blue-200 bg-blue-50 p-4 text-sm text-blue-800"><b>Layout:</b> {layout.layout}<br /><b>Motor:</b> {layout.source === "parser_nativo" ? "Parser nativo — sem Make/IA" : "Fallback Worker/Make"}<br /><b>Confiança:</b> {(layout.confidence * 100).toFixed(0)}%<br /><b>Motivo:</b> {layout.reason}{invalidas > 0 && <><br /><b>Inconsistências:</b> {invalidas}</>}</div>}
+          {erro && <div className="mt-4 rounded-xl border border-red-200 bg-red-50 p-4 text-sm font-bold text-red-700">{erro}</div>}
+          {mirrorErro && <div className="mt-4 rounded-xl border border-orange-200 bg-orange-50 p-4 text-sm font-bold text-orange-800">{mirrorErro}</div>}
+        </section>
+
+        {unidadesView.length > 0 && <>
+          <section className="rounded-2xl border bg-white p-5 shadow-sm">
+            <div className="grid grid-cols-1 gap-3 lg:grid-cols-3">
+              <select value={selectedId} onChange={(e) => setSelectedId(e.target.value)} className="rounded-xl border px-4 py-3 lg:col-span-2">
+                {unidadesView.map((u) => <option key={u.id} value={u.id}>{formatUnitOption(u, hasMirror)}</option>)}
+              </select>
+              <div className="flex gap-2">
+                <button onClick={abrirWhatsApp} disabled={!podeSimular} className="flex-1 rounded-xl bg-emerald-600 px-4 py-3 font-black text-white disabled:opacity-50">WhatsApp</button>
+                <button onClick={() => podeSimular && window.print()} disabled={!podeSimular} className="flex-1 rounded-xl bg-gray-900 px-4 py-3 font-black text-white disabled:opacity-50">Imprimir</button>
+              </div>
+            </div>
+            {selected && !validRow(selected) && <div className="mt-4 rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-800"><b>Proposta bloqueada:</b> {selected.validation?.issues?.join(", ") || "validação não informada"}</div>}
+            {selected && hasMirror && !selected.mirror?.can_sell && <div className="mt-4 rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-800"><b>Bloqueado pelo espelho:</b> {selected.mirror?.label || "sem correspondência"}</div>}
+          </section>
+
+          {podeSimular && <section className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
+            <Card label="Preço total" value={brl(r.total)} helper="Valor tabela" />
+            <Card label="Financiamento" value={brl(r.financiamento)} helper="Saldo" />
+            <Card label="Área" value={`${num(r.area)} m²`} helper={`m²: ${brl(r.m2)}`} />
+            <Card label="Entrada" value={brl(r.entrada)} helper="Sinal" />
+            <Card label="Curto prazo" value={curtoView.value} helper={curtoView.helper} detail={curtoView.detail} />
+            <Card label="Mensais" value={mensaisView.value} helper={mensaisView.helper} detail={mensaisView.detail} />
+            <Card label="Intermediárias" value={interView.value} helper={interView.helper} detail={interView.detail} />
+            <Card label="Chaves" value={brl(r.chaves)} helper="Parcela única" />
+          </section>}
+
+          {pipeline && <details className="rounded-2xl border bg-white p-5"><summary className="cursor-pointer font-bold">Diagnóstico técnico do pipeline</summary><pre className="mt-4 max-h-80 overflow-auto rounded-xl bg-gray-950 p-4 text-xs text-gray-100">{JSON.stringify(pipeline, null, 2)}</pre></details>}
+          <details className="rounded-2xl border bg-white p-5"><summary className="cursor-pointer font-bold">CSV canônico</summary><pre className="mt-4 max-h-80 overflow-auto rounded-xl bg-gray-950 p-4 text-xs text-gray-100">{csvText}</pre></details>
+        </>}
+      </main>
+    </div>
+  );
 }
