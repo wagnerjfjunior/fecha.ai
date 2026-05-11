@@ -1,27 +1,46 @@
-export function detectLayout(text = "") {
-  const raw = String(text || "");
-  const t = raw
+function normalizeForLayout(value = "") {
+  return String(value || "")
     .normalize("NFD")
     .replace(/[\u0300-\u036f]/g, "")
-    .toLowerCase();
+    .replace(/\u00a0/g, " ")
+    .replace(/\s+/g, " ")
+    .toLowerCase()
+    .trim();
+}
 
-  const has = (...terms) => terms.every((term) => t.includes(String(term).toLowerCase()));
-  const hasAny = (...terms) => terms.some((term) => t.includes(String(term).toLowerCase()));
+export function detectLayout(text = "") {
+  const raw = String(text || "");
+  const t = normalizeForLayout(raw);
+
+  const has = (...terms) => terms.every((term) => t.includes(normalizeForLayout(term)));
+  const hasAny = (...terms) => terms.some((term) => t.includes(normalizeForLayout(term)));
+
+  const hasFloorRange = /\d{1,2}\s*(?:º|o|°)?\s*(?:e|a)\s*\d{1,2}\s*(?:º|o|°)?\s*andar/i.test(raw);
+  const hasFinalBlock = /final\s+0?\d{1,2}(?:\s+e\s+0?\d{1,2})?/i.test(raw);
 
   // Tabela comercial por Final + faixa de andar.
   // Ex.: Garden Design - Tabela de Lançamento, sem unidade explícita AP3313.
   // Deve rodar antes dos layouts genéricos para não cair em hierarchical_tegra.
+  // A extração do PDF.js vem com espaçamento irregular no cabeçalho, por isso
+  // a detecção precisa ser semântica e não depender de uma frase única compacta.
   if (
-    hasAny("tabela de lancamento - garden design private park residence", "tabela de lançamento - garden design private park residence") &&
-    hasAny("final 01", "final 1") &&
-    hasAny("area vagas ato c. ato mensais anuais unica financiamento", "área vagas ato c. ato mensais anuais única financiamento") &&
-    hasAny("valor total do negocio imobiliario", "valor total do negócio imobiliário") &&
-    /\d{1,2}\s*(?:º|o|°)?\s*(?:e|a)\s*\d{1,2}\s*(?:º|o|°)?\s*andar/i.test(raw)
+    hasAny("garden design private park residence", "empreendimento: garden design") &&
+    hasFinalBlock &&
+    hasFloorRange &&
+    has("area") &&
+    has("vagas") &&
+    has("ato") &&
+    hasAny("c. ato", "c ato") &&
+    has("mensais") &&
+    has("anuais") &&
+    has("financiamento") &&
+    has("valor total") &&
+    hasAny("negocio imobiliario", "negócio imobiliário")
   ) {
     return {
       layout: "range_by_final_table",
-      confidence: 0.92,
-      reason: "Detectada tabela comercial por final e faixa de andar.",
+      confidence: 0.94,
+      reason: "Detectada tabela comercial Garden por final e faixa de andar.",
     };
   }
 
