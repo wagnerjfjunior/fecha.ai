@@ -1,4 +1,9 @@
 import { useMemo, useState } from "react";
+import { detectLayout } from "../mesa/layoutDetector";
+import { legacyParser } from "../mesa/parsers/legacyParser";
+import { parseFlatTable } from "../mesa/parsers/parseFlatTable";
+import { parseHierarchical } from "../mesa/parsers/parseHierarchical";
+import { parseERPTable } from "../mesa/parsers/parseERPTable";
 
 const WORKER_URL =
   import.meta.env.VITE_MESA_CLIENTE_WORKER_URL ||
@@ -6,45 +11,6 @@ const WORKER_URL =
 
 const PDFJS_URL = "https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.min.js";
 const PDFJS_WORKER_URL = "https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.worker.min.js";
-
-const CANON_COLUMNS = [
-  "empreendimento",
-  "torre",
-  "final",
-  "andar",
-  "unidade",
-  "area_m2",
-  "preco_total",
-  "sinal_1",
-  "a4_each",
-  "mensal_qtd",
-  "mensal_each",
-  "inter_tipo",
-  "inter_qtd",
-  "inter_each",
-  "chaves_each",
-  "financiamento",
-  "observacoes",
-];
-
-function toNum(value) {
-  if (value === 0) return 0;
-  if (!value) return 0;
-
-  let s = String(value).trim();
-  const hasComma = s.includes(",");
-  const hasDot = s.includes(".");
-
-  if (hasComma && (!hasDot || s.lastIndexOf(",") > s.lastIndexOf("."))) {
-    s = s.replace(/\./g, "").replace(",", ".");
-  } else {
-    s = s.replace(/,/g, "");
-  }
-
-  s = s.replace(/[^\d.-]/g, "");
-  const n = Number.parseFloat(s);
-  return Number.isFinite(n) ? n : 0;
-}
 
 function fmtBRL(value) {
   return new Intl.NumberFormat("pt-BR", {
@@ -135,54 +101,34 @@ async function processarTextoNoWorker({ text, filename, empreendimento }) {
   return data.csv_text;
 }
 
-function parseCsvMesa(csvText) {
-  const normalized = String(csvText || "").trim();
-  if (!normalized) return [];
+function parseMesaByLayout(csvText, extractedText) {
+  const detection = detectLayout(extractedText);
 
-  const lines = normalized.split(/\r?\n/).filter(Boolean);
-  if (lines.length < 2) return [];
+  switch (detection.layout) {
+    case "hierarchical_tegra":
+      return {
+        rows: parseHierarchical(csvText),
+        detection,
+      };
 
-  const header = lines[0].split(";").map((h) => h.trim().toLowerCase());
-  const index = {};
-  header.forEach((h, i) => {
-    index[h] = i;
-  });
+    case "singleline_flat":
+      return {
+        rows: parseFlatTable(csvText),
+        detection,
+      };
 
-  const get = (cells, key) => {
-    const i = index[key];
-    return i === undefined ? "" : cells[i] ?? "";
-  };
+    case "erp_table":
+      return {
+        rows: parseERPTable(csvText),
+        detection,
+      };
 
-  return lines.slice(1).map((line, rowIndex) => {
-    const cells = line.split(";");
-
-    const row = {};
-    CANON_COLUMNS.forEach((key) => {
-      row[key] = get(cells, key);
-    });
-
-    return {
-      id: `${row.unidade || "unidade"}-${rowIndex}`,
-      empreendimento: row.empreendimento,
-      torre: row.torre,
-      final: row.final,
-      andar: row.andar,
-      unidade: row.unidade || `Linha ${rowIndex + 1}`,
-      area_m2: toNum(row.area_m2),
-      preco_total: toNum(row.preco_total),
-      sinal_1: toNum(row.sinal_1),
-      a4_each: toNum(row.a4_each),
-      mensal_qtd: toNum(row.mensal_qtd),
-      mensal_each: toNum(row.mensal_each),
-      inter_tipo: row.inter_tipo,
-      inter_qtd: toNum(row.inter_qtd),
-      inter_each: toNum(row.inter_each),
-      chaves_each: toNum(row.chaves_each),
-      financiamento: toNum(row.financiamento),
-      observacoes: row.observacoes,
-      raw: row,
-    };
-  });
+    default:
+      return {
+        rows: legacyParser(csvText),
+        detection,
+      };
+  }
 }
 
 function buildResumoFinanceiro(unidade) {
@@ -243,6 +189,7 @@ export default function MesaCliente({ corretor, onVoltar }) {
   const [status, setStatus] = useState("idle");
   const [erro, setErro] = useState("");
   const [csvText, setCsvText] = useState("");
+  const [layoutInfo, setLayoutInfo] = useState(null);
   const [unidades, setUnidades] = useState([]);
   const [selectedId, setSelectedId] = useState("");
 
@@ -259,11 +206,13 @@ export default function MesaCliente({ corretor, onVoltar }) {
     setStatus("processing");
     setErro("");
     setCsvText("");
+    setLayoutInfo(null);
     setUnidades([]);
     setSelectedId("");
 
     try {
       const text = await extractPdfText(file);
+
       if (!text || text.length < 20) {
         throw new Error("Texto extraído do PDF ficou vazio ou muito curto.");
       }
@@ -274,12 +223,14 @@ export default function MesaCliente({ corretor, onVoltar }) {
         empreendimento,
       });
 
-      const rows = parseCsvMesa(csv);
+      const { rows, detection } = parseMesaByLayout(csv, text);
+
       if (!rows.length) {
         throw new Error("CSV retornou sem unidades válidas.");
       }
 
       setCsvText(csv);
+      setLayoutInfo(detection);
       setUnidades(rows);
       setSelectedId(rows[0].id);
       setStatus("done");
@@ -366,6 +317,16 @@ export default function MesaCliente({ corretor, onVoltar }) {
               </button>
             </div>
           </div>
+
+          {layoutInfo && (
+            <div className="mt-4 rounded-xl border border-blue-200 bg-blue-50 p-4 text-sm text-blue-800">
+              <strong>Layout detectado:</strong> {layoutInfo.layout}
+              <br />
+              <strong>Confiança:</strong> {(layoutInfo.confidence * 100).toFixed(0)}%
+              <br />
+              <strong>Motivo:</strong> {layoutInfo.reason}
+            </div>
+          )}
 
           {file && (
             <p className="mt-3 text-sm text-gray-500">
