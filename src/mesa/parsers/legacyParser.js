@@ -1,3 +1,4 @@
+import { normalizeCanonCells } from "../normalizers/normalizeCanonCells";
 import { validateCanonRow } from "../validators/validateCanonRow";
 
 const CANON_COLUMNS = [
@@ -68,7 +69,10 @@ export function legacyParser(csvText) {
   return lines
     .slice(1)
     .map((line, rowIndex) => {
-      const cells = line.split(";");
+      const originalCells = line.split(";");
+
+      const normalizedResult = normalizeCanonCells(originalCells, index);
+      const cells = normalizedResult.cells;
 
       const row = {};
 
@@ -95,6 +99,10 @@ export function legacyParser(csvText) {
         chaves_each: toNum(row.chaves_each),
         financiamento: toNum(row.financiamento),
         observacoes: row.observacoes,
+        parser_meta: {
+          repaired: normalizedResult.repaired,
+          normalization_issues: normalizedResult.issues,
+        },
         raw: row,
       };
 
