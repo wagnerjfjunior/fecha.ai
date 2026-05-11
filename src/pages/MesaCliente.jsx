@@ -131,8 +131,12 @@ function parseMesaByLayout(csvText, extractedText) {
   }
 }
 
+function isValidMesaRow(unidade) {
+  return unidade?.validation?.valid !== false;
+}
+
 function buildResumoFinanceiro(unidade) {
-  if (!unidade) {
+  if (!unidade || !isValidMesaRow(unidade)) {
     return {
       total: 0,
       entrada: 0,
@@ -198,6 +202,9 @@ export default function MesaCliente({ corretor, onVoltar }) {
     [unidades, selectedId]
   );
 
+  const unidadeValida = isValidMesaRow(unidadeSelecionada);
+  const invalidCount = unidades.filter((u) => !isValidMesaRow(u)).length;
+
   const resumo = useMemo(() => buildResumoFinanceiro(unidadeSelecionada), [unidadeSelecionada]);
 
   async function carregarTabela() {
@@ -241,7 +248,7 @@ export default function MesaCliente({ corretor, onVoltar }) {
   }
 
   function montarWhatsApp() {
-    if (!unidadeSelecionada) return;
+    if (!unidadeSelecionada || !unidadeValida) return;
 
     const msg = [
       `Mesa do Cliente — ${empreendimento || unidadeSelecionada.empreendimento || "Empreendimento"}`,
@@ -325,6 +332,12 @@ export default function MesaCliente({ corretor, onVoltar }) {
               <strong>Confiança:</strong> {(layoutInfo.confidence * 100).toFixed(0)}%
               <br />
               <strong>Motivo:</strong> {layoutInfo.reason}
+              {invalidCount > 0 && (
+                <>
+                  <br />
+                  <strong>Validação financeira:</strong> {invalidCount} linha(s) com inconsistência detectada(s).
+                </>
+              )}
             </div>
           )}
 
@@ -354,44 +367,61 @@ export default function MesaCliente({ corretor, onVoltar }) {
                     onChange={(e) => setSelectedId(e.target.value)}
                     className="w-full rounded-xl border border-gray-200 px-4 py-3 bg-white outline-none focus:ring-2 focus:ring-blue-500"
                   >
-                    {unidades.map((u) => (
-                      <option key={u.id} value={u.id}>
-                        {u.unidade} — {fmtNum(u.area_m2)} m² — {fmtBRL(u.preco_total)}
-                      </option>
-                    ))}
+                    {unidades.map((u) => {
+                      const valid = isValidMesaRow(u);
+                      return (
+                        <option key={u.id} value={u.id}>
+                          {valid ? "✅" : "⚠️"} {u.unidade} — {fmtNum(u.area_m2)} m² — {valid ? fmtBRL(u.preco_total) : "inconsistência financeira"}
+                        </option>
+                      );
+                    })}
                   </select>
                 </div>
 
                 <div className="flex gap-2">
                   <button
                     onClick={montarWhatsApp}
-                    className="flex-1 rounded-xl bg-emerald-600 text-white px-4 py-3 font-black active:scale-95"
+                    disabled={!unidadeValida}
+                    className="flex-1 rounded-xl bg-emerald-600 text-white px-4 py-3 font-black active:scale-95 disabled:cursor-not-allowed disabled:opacity-50"
                   >
                     WhatsApp
                   </button>
                   <button
-                    onClick={() => window.print()}
-                    className="flex-1 rounded-xl bg-gray-900 text-white px-4 py-3 font-black active:scale-95"
+                    onClick={() => unidadeValida && window.print()}
+                    disabled={!unidadeValida}
+                    className="flex-1 rounded-xl bg-gray-900 text-white px-4 py-3 font-black active:scale-95 disabled:cursor-not-allowed disabled:opacity-50"
                   >
                     Imprimir
                   </button>
                 </div>
               </div>
+
+              {!unidadeValida && (
+                <div className="mt-4 rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-800">
+                  <strong>Proposta bloqueada:</strong> esta linha possui inconsistência financeira e não deve ser enviada ao cliente.
+                  <br />
+                  <strong>Motivos:</strong> {unidadeSelecionada?.validation?.issues?.join(", ") || "validação não informada"}.
+                </div>
+              )}
             </section>
 
-            <section className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
-              <StatCard label="Preço total" value={fmtBRL(resumo.total)} helper="Valor tabela" tone="blue" />
-              <StatCard label="Financiamento" value={fmtBRL(resumo.financiamento)} helper="Saldo informado/estimado" tone="gray" />
-              <StatCard label="Área" value={`${fmtNum(resumo.area)} m²`} helper={`m²: ${fmtBRL(resumo.valorM2)}`} tone="purple" />
-              <StatCard label="Entrada / Sinal" value={fmtBRL(resumo.entrada)} helper="Pagamento inicial" tone="emerald" />
-            </section>
+            {unidadeValida && (
+              <>
+                <section className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
+                  <StatCard label="Preço total" value={fmtBRL(resumo.total)} helper="Valor tabela" tone="blue" />
+                  <StatCard label="Financiamento" value={fmtBRL(resumo.financiamento)} helper="Saldo informado/estimado" tone="gray" />
+                  <StatCard label="Área" value={`${fmtNum(resumo.area)} m²`} helper={`m²: ${fmtBRL(resumo.valorM2)}`} tone="purple" />
+                  <StatCard label="Entrada / Sinal" value={fmtBRL(resumo.entrada)} helper="Pagamento inicial" tone="emerald" />
+                </section>
 
-            <section className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
-              <StatCard label="Curto prazo" value={fmtBRL(resumo.curtoPrazo)} helper={`3x de ${fmtBRL(unidadeSelecionada?.a4_each)}`} tone="orange" />
-              <StatCard label="Mensais" value={fmtBRL(resumo.mensais)} helper={`${unidadeSelecionada?.mensal_qtd || 0}x de ${fmtBRL(unidadeSelecionada?.mensal_each)}`} tone="blue" />
-              <StatCard label="Intermediárias" value={fmtBRL(resumo.intermediarias)} helper={`${unidadeSelecionada?.inter_qtd || 0}x de ${fmtBRL(unidadeSelecionada?.inter_each)}`} tone="purple" />
-              <StatCard label="Chaves" value={fmtBRL(resumo.chaves)} helper="Parcela única/chaves" tone="emerald" />
-            </section>
+                <section className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
+                  <StatCard label="Curto prazo" value={fmtBRL(resumo.curtoPrazo)} helper={`3x de ${fmtBRL(unidadeSelecionada?.a4_each)}`} tone="orange" />
+                  <StatCard label="Mensais" value={fmtBRL(resumo.mensais)} helper={`${unidadeSelecionada?.mensal_qtd || 0}x de ${fmtBRL(unidadeSelecionada?.mensal_each)}`} tone="blue" />
+                  <StatCard label="Intermediárias" value={fmtBRL(resumo.intermediarias)} helper={`${unidadeSelecionada?.inter_qtd || 0}x de ${fmtBRL(unidadeSelecionada?.inter_each)}`} tone="purple" />
+                  <StatCard label="Chaves" value={fmtBRL(resumo.chaves)} helper="Parcela única/chaves" tone="emerald" />
+                </section>
+              </>
+            )}
 
             <details className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
               <summary className="cursor-pointer font-bold text-gray-700">
