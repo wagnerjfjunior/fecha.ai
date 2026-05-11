@@ -1,3 +1,4 @@
+import { expandHierarchicalUnits } from "../expanders/expandHierarchicalUnits";
 import { parseFloorRange } from "../utils/parseFloorRange";
 import { legacyParser } from "./legacyParser";
 
@@ -52,15 +53,22 @@ function enrichHierarchicalContext(rows = []) {
       next.tipo = "Garden";
     }
 
+    const expandedUnits = expandHierarchicalUnits({
+      ...next,
+      floor_meta: floorMeta,
+    });
+
     return {
       ...next,
       floor_meta: floorMeta,
+      expanded_units: expandedUnits,
       parser_meta: {
         ...(next.parser_meta || {}),
         parser: "parseHierarchical",
         inherited_final: !row.final && !!currentFinal,
         inherited_andar: !row.andar && !!currentAndar,
         floor_tipo: floorMeta.tipo,
+        expanded_units_count: expandedUnits.length,
       },
     };
   });
