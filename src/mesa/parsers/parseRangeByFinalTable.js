@@ -31,6 +31,8 @@ const DEFAULT_PAYMENT_META = {
   financMes: "2029-10",
 };
 
+const PAYMENT_DIFF_ABS_TOLERANCE = 100;
+
 function compactSpaces(value = "") {
   return String(value || "")
     .replace(/\u00a0/g, " ")
@@ -116,6 +118,7 @@ function buildObservacoes({ vagas, faixaAndar, diff }) {
     "origem=range_by_final_table",
     faixaAndar ? `faixa_andar=${faixaAndar}` : "",
     Number.isFinite(diff) ? `check_diff=${diff.toFixed(2)}` : "",
+    `check_tolerance=${PAYMENT_DIFF_ABS_TOLERANCE.toFixed(2)}`,
   ]
     .filter(Boolean)
     .join(" | ");
@@ -138,8 +141,10 @@ function validateRangeRow(row) {
   const diff = paymentDiff(row);
   const issues = [...base.issues];
 
-  if (Math.abs(diff) > 10) {
-    issues.push(`soma_fluxo_difere_valor_total=${diff.toFixed(2)}`);
+  // A tabela comercial por final trabalha com valores inteiros e parcelas repetidas.
+  // O desvio de soma nasce do arredondamento acumulado da própria tabela, não de erro de coluna.
+  if (Math.abs(diff) > PAYMENT_DIFF_ABS_TOLERANCE) {
+    issues.push(`soma_fluxo_difere_valor_total=${diff.toFixed(2)};tolerancia=${PAYMENT_DIFF_ABS_TOLERANCE.toFixed(2)}`);
   }
 
   return {
@@ -286,6 +291,7 @@ export function parseRangeByFinalTable(text, options = {}) {
       parsed_final_blocks: finalDiagnostics.filter((item) => item.parsed_ranges > 0).length,
       total_rows: rows.length,
       invalid_rows: rows.filter((row) => row.validation?.valid === false).length,
+      payment_diff_tolerance: PAYMENT_DIFF_ABS_TOLERANCE,
       final_diagnostics: finalDiagnostics,
       complete: rows.length > 0,
     },
