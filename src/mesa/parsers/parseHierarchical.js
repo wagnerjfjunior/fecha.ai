@@ -1,3 +1,4 @@
+import { parseFloorRange } from "../utils/parseFloorRange";
 import { legacyParser } from "./legacyParser";
 
 function normalizeFinal(value = "") {
@@ -45,17 +46,21 @@ function enrichHierarchicalContext(rows = []) {
       next.andar = currentAndar;
     }
 
+    const floorMeta = parseFloorRange(next.andar);
+
     if (/garden/i.test(String(next.andar || "")) && /^ap\d+/i.test(String(next.unidade || ""))) {
       next.tipo = "Garden";
     }
 
     return {
       ...next,
+      floor_meta: floorMeta,
       parser_meta: {
         ...(next.parser_meta || {}),
         parser: "parseHierarchical",
         inherited_final: !row.final && !!currentFinal,
         inherited_andar: !row.andar && !!currentAndar,
+        floor_tipo: floorMeta.tipo,
       },
     };
   });
