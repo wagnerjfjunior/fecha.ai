@@ -75,6 +75,57 @@ function buildMirrorIndex(mirrorUnits = []) {
   return index;
 }
 
+function summarizeMirrorMatch({ candidateCodes, matchedUnits }) {
+  if (!matchedUnits.length) {
+    return {
+      matched: false,
+      candidate_codes: candidateCodes,
+      status: "desconhecido",
+      label: "Sem correspondência no espelho",
+      sale_state: "unmatched",
+      can_sell: false,
+      requires_confirmation: true,
+      matched_count: 0,
+      available_count: 0,
+      unavailable_count: 0,
+      units: [],
+      available_units: [],
+      unavailable_units: [],
+    };
+  }
+
+  const available = matchedUnits.filter((unit) => unit.can_sell);
+  const unavailable = matchedUnits.filter((unit) => !unit.can_sell);
+
+  let saleState = "blocked";
+  let label = "Indisponível no espelho";
+
+  if (available.length && unavailable.length) {
+    saleState = "partial";
+    label = "Parcialmente disponível";
+  } else if (available.length) {
+    saleState = "available";
+    label = "Disponível";
+  }
+
+  return {
+    matched: true,
+    candidate_codes: candidateCodes,
+    status: saleState,
+    label,
+    sale_state: saleState,
+    matched_count: matchedUnits.length,
+    available_count: available.length,
+    unavailable_count: unavailable.length,
+    can_sell: available.length > 0,
+    requires_confirmation:
+      unavailable.length > 0 || matchedUnits.some((unit) => unit.requires_confirmation),
+    units: matchedUnits,
+    available_units: available,
+    unavailable_units: unavailable,
+  };
+}
+
 export function reconcileUnitsWithMirror(priceRows = [], mirrorUnits = []) {
   const mirrorIndex = buildMirrorIndex(mirrorUnits);
 
@@ -84,35 +135,9 @@ export function reconcileUnitsWithMirror(priceRows = [], mirrorUnits = []) {
       .map((code) => mirrorIndex.get(code))
       .filter(Boolean);
 
-    if (!matchedUnits.length) {
-      return {
-        ...row,
-        mirror: {
-          matched: false,
-          candidate_codes: candidateCodes,
-          status: "desconhecido",
-          label: "Sem correspondência no espelho",
-          can_sell: false,
-          requires_confirmation: true,
-        },
-      };
-    }
-
-    const unavailable = matchedUnits.filter((unit) => !unit.can_sell);
-    const available = matchedUnits.filter((unit) => unit.can_sell);
-
     return {
       ...row,
-      mirror: {
-        matched: true,
-        candidate_codes: candidateCodes,
-        matched_count: matchedUnits.length,
-        available_count: available.length,
-        unavailable_count: unavailable.length,
-        can_sell: available.length > 0 && unavailable.length === 0,
-        requires_confirmation: matchedUnits.some((unit) => unit.requires_confirmation),
-        units: matchedUnits,
-      },
+      mirror: summarizeMirrorMatch({ candidateCodes, matchedUnits }),
     };
   });
 }
