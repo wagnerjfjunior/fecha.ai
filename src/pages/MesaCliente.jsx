@@ -9,7 +9,8 @@ import { parseERPTable } from "../mesa/parsers/parseERPTable";
 
 const WORKER_URL =
   import.meta.env.VITE_MESA_CLIENTE_WORKER_URL ||
-  "https://quiet-surf-d4a0.wagnerjfjunior.workers.dev/";
+  import.meta.env.VITE_MESA_WORKER_URL ||
+  "https://mesacliente.wagnerjfjunior.workers.dev/";
 
 const PDFJS_URL = "https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.min.js";
 const PDFJS_WORKER_URL = "https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.worker.min.js";
