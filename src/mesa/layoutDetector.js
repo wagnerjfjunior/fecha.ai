@@ -8,6 +8,23 @@ export function detectLayout(text = "") {
   const has = (...terms) => terms.every((term) => t.includes(String(term).toLowerCase()));
   const hasAny = (...terms) => terms.some((term) => t.includes(String(term).toLowerCase()));
 
+  // Tabela comercial por Final + faixa de andar.
+  // Ex.: Garden Design - Tabela de Lançamento, sem unidade explícita AP3313.
+  // Deve rodar antes dos layouts genéricos para não cair em hierarchical_tegra.
+  if (
+    hasAny("tabela de lancamento - garden design private park residence", "tabela de lançamento - garden design private park residence") &&
+    hasAny("final 01", "final 1") &&
+    hasAny("area vagas ato c. ato mensais anuais unica financiamento", "área vagas ato c. ato mensais anuais única financiamento") &&
+    hasAny("valor total do negocio imobiliario", "valor total do negócio imobiliário") &&
+    /\d{1,2}\s*(?:º|o|°)?\s*(?:e|a)\s*\d{1,2}\s*(?:º|o|°)?\s*andar/i.test(raw)
+  ) {
+    return {
+      layout: "range_by_final_table",
+      confidence: 0.92,
+      reason: "Detectada tabela comercial por final e faixa de andar.",
+    };
+  }
+
   // Espelhos Portal/Vendas em que a extração do PDF separa o bloco de unidades
   // do bloco de valores financeiros. Ex.: Garden Design.
   if (
