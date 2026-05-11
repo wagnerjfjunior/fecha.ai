@@ -40,10 +40,14 @@ function compactSpaces(value = "") {
     .trim();
 }
 
-function removeAccents(value = "") {
+function normalizeForMatch(value = "") {
   return String(value || "")
     .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "");
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/\u00a0/g, " ")
+    .replace(/\s+/g, " ")
+    .toLowerCase()
+    .trim();
 }
 
 function areaToNumber(value = "") {
@@ -161,9 +165,9 @@ export function parseRangeByFinalTable(text, options = {}) {
     };
   }
 
-  const normalizedForDetection = removeAccents(source).toLowerCase();
+  const normalizedForDetection = normalizeForMatch(source);
   const looksCommercial =
-    normalizedForDetection.includes("final 01") &&
+    /final\s+0?1\b/i.test(source) &&
     normalizedForDetection.includes("valor total") &&
     normalizedForDetection.includes("financiamento") &&
     /\d{1,2}\s*(?:º|o|°)?\s*(?:e|a)\s*\d{1,2}\s*(?:º|o|°)?\s*andar/i.test(source);
