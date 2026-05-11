@@ -1,3 +1,5 @@
+import { validateCanonRow } from "../validators/validateCanonRow";
+
 const CANON_COLUMNS = [
   "empreendimento",
   "torre",
@@ -53,7 +55,6 @@ export function legacyParser(csvText) {
   header.forEach((h, i) => {
     if (!h) return;
 
-    // evita sobrescrever primeira ocorrência válida
     if (index[h] === undefined) {
       index[h] = i;
     }
@@ -75,7 +76,7 @@ export function legacyParser(csvText) {
         row[key] = get(cells, key);
       });
 
-      return {
+      const parsed = {
         id: `${row.unidade || "unidade"}-${rowIndex}`,
         empreendimento: row.empreendimento,
         torre: row.torre,
@@ -95,6 +96,13 @@ export function legacyParser(csvText) {
         financiamento: toNum(row.financiamento),
         observacoes: row.observacoes,
         raw: row,
+      };
+
+      const validation = validateCanonRow(parsed);
+
+      return {
+        ...parsed,
+        validation,
       };
     })
     .filter((row) => row.unidade || row.preco_total > 0);
