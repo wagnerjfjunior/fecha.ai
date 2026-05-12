@@ -6,6 +6,7 @@ import { parseHierarchical } from "../mesa/parsers/parseHierarchical";
 import { parseERPTable } from "../mesa/parsers/parseERPTable";
 import { parseSplitBlockTable } from "../mesa/parsers/parseSplitBlockTable";
 import { parseRangeByFinalTable } from "../mesa/parsers/parseRangeByFinalTable";
+import { parseReadyStockTable } from "../mesa/parsers/parseReadyStockTable";
 import { parsePortalVWebMirror } from "../mesa/mirror/parsePortalVWebMirror";
 import { reconcileUnitsWithMirror } from "../mesa/mirror/reconcileUnitsWithMirror";
 
@@ -87,6 +88,17 @@ function parseCsvFallback(csv, text, options) {
 
 async function parseNativeFirst({ text, filename, empreendimento, pdfDiagnostics }) {
   const detection = detectLayout(text);
+  if (detection.layout === "ready_stock_table") {
+    const native = parseReadyStockTable(text, { empreendimento });
+    if (native.rows.length) {
+      return {
+        rows: native.rows,
+        csvText: native.csvText,
+        detection: { ...detection, source: "parser_nativo" },
+        pipeline: { engine: "parseReadyStockTable", worker_used: false, make_used: false, rows: native.rows.length, pdf: pdfDiagnostics, parser: native.diagnostics },
+      };
+    }
+  }
   if (detection.layout === "range_by_final_table") {
     const native = parseRangeByFinalTable(text, { empreendimento });
     if (native.rows.length) {
