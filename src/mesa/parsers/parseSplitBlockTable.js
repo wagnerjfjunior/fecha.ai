@@ -124,13 +124,13 @@ function extractPaymentPlan(block = "") {
     compQtd: getPaymentQty(block, /(?:^|\s)(\d{1,2})\s+(?:COMPLEMENTO\s+ATO|C\.?\s*ATO)/i, 0),
     mensalQtd: getPaymentQty(block, /(?:^|\s)(\d{1,2})\s+MENSAL/i, 0),
     interQtd: getPaymentQty(block, /(?:^|\s)(\d{1,2})\s+INTERMEDIARIA/i, 0),
-    unicaQtd: getPaymentQty(block, /(?:^|\s)(\d{1,2})\s+PARCELA\s+(?:UNICA|ÚNICA)/i, 0),
+    unicaQtd: getPaymentQty(block, /(?:^|\s)(\d{1,2})\s+PARCELA\s*(?:UNICA|ÚNICA)/i, 0),
     financiamentoQtd: getPaymentQty(block, /(?:^|\s)(\d{1,2})\s+FINANCIAMENTO/i, 1),
     periodicidadeQtd: getPaymentQty(block, /(?:^|\s)(\d{1,2})\s+(?:FINAL\(IS\)|PERIODICIDADE)/i, 0),
     interTipo: inferInterTipo(block),
     mensalInicio: getFirstDateAfter(block, /MENSAL/i),
     anualInicio: getFirstDateAfter(block, /INTERMEDIARIA/i),
-    unica: getFirstDateAfter(block, /PARCELA\s+UNICA|PARCELA\s+ÚNICA/i),
+    unica: getFirstDateAfter(block, /PARCELA\s*UNICA|PARCELA\s*ÚNICA/i),
     financMes: getFirstDateAfter(block, /FINANCIAMENTO/i),
     periodicidadeData: getFirstDateAfter(block, /FINAL\(IS\)|PERIODICIDADE/i),
     source: "split_block_header",
@@ -199,10 +199,27 @@ function buildFinanceRows(financeValues = [], expectedRows = 0, paymentPlan = {}
     }
   }
 
-  // Modelo enxuto: SINAL + FINANCIAMENTO + FINAL/PERIODICIDADE.
-  // A terceira coluna fica apenas em observacao, sem novo campo canonico.
+  const compactUnicaFinalRows = [];
+  if (
+    paymentPlan.financiamentoQtd &&
+    paymentPlan.unicaQtd &&
+    paymentPlan.periodicidadeQtd &&
+    !paymentPlan.compQtd &&
+    !paymentPlan.mensalQtd &&
+    !paymentPlan.interQtd &&
+    financeValues.length >= expectedRows * 4
+  ) {
+    for (let i = 0; i + 3 < financeValues.length && compactUnicaFinalRows.length < expectedRows; i += 4) {
+      const candidate = financeValues.slice(i, i + 4);
+      compactUnicaFinalRows.push({ values: [candidate[0], 0, 0, 0, candidate[1], candidate[3]], periodicidadeValor: candidate[2] });
+    }
+    if (compactUnicaFinalRows.length === expectedRows) {
+      return { financeRows: compactUnicaFinalRows, mode: "split_blocks_ato_unica_final_financiamento_4", stride: 4 };
+    }
+  }
+
   const compactFinalRows = [];
-  if (paymentPlan.financiamentoQtd && !paymentPlan.compQtd && !paymentPlan.mensalQtd && !paymentPlan.interQtd && financeValues.length >= expectedRows * 3) {
+  if (paymentPlan.financiamentoQtd && !paymentPlan.unicaQtd && !paymentPlan.compQtd && !paymentPlan.mensalQtd && !paymentPlan.interQtd && financeValues.length >= expectedRows * 3) {
     for (let i = 0; i + 2 < financeValues.length && compactFinalRows.length < expectedRows; i += 3) {
       const candidate = financeValues.slice(i, i + 3);
       compactFinalRows.push({ values: [candidate[0], 0, 0, 0, 0, candidate[1]], periodicidadeValor: candidate[2] });
