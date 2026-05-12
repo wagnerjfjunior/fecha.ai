@@ -21,6 +21,7 @@ const CANON_COLUMNS = [
 ];
 
 const PAYMENT_DIFF_TOLERANCE = 5;
+const AVAILABILITY_MARKER_VALUE = 1000;
 
 function compactSpaces(value = "") {
   return String(value || "")
@@ -177,6 +178,32 @@ function extractMoneyValues(block = "") {
   return [...String(block || "").matchAll(/\$\s*([\d.,]+)/g)].map((match) => toNumber(match[1]));
 }
 
+function isAvailabilityMarker(value) {
+  return Math.abs(Number(value || 0) - AVAILABILITY_MARKER_VALUE) < 0.01;
+}
+
+function buildFinanceRows(financeValues = [], expectedRows = 0) {
+  if (!expectedRows) return { financeRows: [], mode: "none", stride: 0 };
+
+  const rowsWithMarker = [];
+  if (financeValues.length >= expectedRows * 7) {
+    for (let i = 0; i + 6 < financeValues.length && rowsWithMarker.length < expectedRows; i += 7) {
+      const candidate = financeValues.slice(i, i + 7);
+      if (!isAvailabilityMarker(candidate[6])) break;
+      rowsWithMarker.push(candidate.slice(0, 6));
+    }
+    if (rowsWithMarker.length === expectedRows) {
+      return { financeRows: rowsWithMarker, mode: "split_blocks_by_index_status_marker_7", stride: 7 };
+    }
+  }
+
+  const rowsWithoutMarker = [];
+  for (let i = 0; i + 5 < financeValues.length && rowsWithoutMarker.length < expectedRows; i += 6) {
+    rowsWithoutMarker.push(financeValues.slice(i, i + 6));
+  }
+  return { financeRows: rowsWithoutMarker, mode: "split_blocks_by_index", stride: 6 };
+}
+
 function buildObservacoes({ paymentPlan, diff, parserMode }) {
   return [
     `ato_qtd=${paymentPlan.atoQtd || 1}`,
@@ -301,8 +328,7 @@ export function parseSplitBlockTable(text, options = {}) {
     if (!units.length) return;
     const moneyValues = extractMoneyValues(block);
     const financeValues = moneyValues.slice(units.length);
-    const financeRows = [];
-    for (let i = 0; i + 5 < financeValues.length && financeRows.length < units.length; i += 6) financeRows.push(financeValues.slice(i, i + 6));
+    const { financeRows, mode: financeMode, stride } = buildFinanceRows(financeValues, units.length);
 
     units.forEach((unit, index) => {
       const financial = financeRows[index] || [];
@@ -312,10 +338,10 @@ export function parseSplitBlockTable(text, options = {}) {
         empreendimento,
         blockIndex,
         index,
-        parserMode: "split_blocks_by_index",
+        parserMode: financeMode,
       }));
     });
-    blockDiagnostics.push({ block_index: blockIndex, parser_mode: "split_blocks_by_index", units: units.length, money_values: moneyValues.length, finance_rows: financeRows.length, invalid_rows: rows.filter((row) => row.parser_meta?.block_index === blockIndex && row.validation?.valid === false).length, payment_plan: paymentPlan, complete: financeRows.length >= units.length });
+    blockDiagnostics.push({ block_index: blockIndex, parser_mode: financeMode, units: units.length, money_values: moneyValues.length, finance_values: financeValues.length, finance_stride: stride, finance_rows: financeRows.length, invalid_rows: rows.filter((row) => row.parser_meta?.block_index === blockIndex && row.validation?.valid === false).length, payment_plan: paymentPlan, complete: financeRows.length >= units.length });
   });
 
   return {
