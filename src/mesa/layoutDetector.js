@@ -27,6 +27,25 @@ export function detectLayout(text = "") {
     has("valor total") &&
     hasAny("negocio imobiliario", "negócio imobiliário");
 
+  // Estoque pronto para morar: uma linha por unidade, sem mensais/intermediárias.
+  // Ex.: ELO Duo com ATO + FINANCIAMENTO + TOTAL.
+  if (
+    has("unidade") &&
+    has("area") &&
+    has("vagas") &&
+    has("ato") &&
+    has("financiamento") &&
+    has("total") &&
+    /\bAP\d{4}\b/i.test(raw) &&
+    !hasAny("mensais", "complemento ato", "c. ato", "intermediaria", "intermediária")
+  ) {
+    return {
+      layout: "ready_stock_table",
+      confidence: 0.93,
+      reason: "Detectada tabela de estoque pronto para morar com ATO, financiamento e total.",
+    };
+  }
+
   // Tabela comercial por Final + faixa de andar.
   // Ex.: Garden Design, Nova Vivere e demais tabelas Tegra/Helbor com fluxo financeiro por final.
   // Deve rodar antes dos layouts genéricos para não cair em hierarchical_tegra.
