@@ -18,7 +18,8 @@ const brl = (v) => new Intl.NumberFormat("pt-BR", { style: "currency", currency:
 const num = (v) => new Intl.NumberFormat("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(Number(v) || 0);
 const validRow = (u) => u?.validation?.valid !== false;
 const mirrorLoaded = (m) => Array.isArray(m?.units) && m.units.length > 0;
-const isApartmentUnit = (u) => /^AP\d{4}$/i.test(String(u?.unidade || "").trim());
+const isSelectableUnit = (u) => /^(AP|SC|SU|LJ)\d{4}$/i.test(String(u?.unidade || "").trim());
+const isApartmentUnit = isSelectableUnit;
 
 function loadScriptOnce(src, globalName) {
   return new Promise((resolve, reject) => {
@@ -247,7 +248,7 @@ export default function MesaClienteNativeFirst({ onVoltar }) {
 
   const hasMirror = mirrorLoaded(mirror);
   const unidadesRaw = useMemo(() => hasMirror ? reconcileUnitsWithMirror(unidades, mirror.units) : unidades, [unidades, hasMirror, mirror]);
-  const unidadesView = useMemo(() => unidadesRaw.filter(isApartmentUnit), [unidadesRaw]);
+  const unidadesView = useMemo(() => unidadesRaw.filter(isSelectableUnit), [unidadesRaw]);
   const nonApartmentCount = useMemo(() => unidadesRaw.length - unidadesView.length, [unidadesRaw, unidadesView]);
   const selected = useMemo(() => unidadesView.find((u) => u.id === selectedId) || null, [unidadesView, selectedId]);
   const r = useMemo(() => resumo(selected), [selected]);
@@ -256,7 +257,7 @@ export default function MesaClienteNativeFirst({ onVoltar }) {
   const mensaisView = useMemo(() => paymentDisplay({ total: r.mensais, qtd: selected?.mensal_qtd, parcela: selected?.mensal_each }), [r.mensais, selected]);
   const interView = useMemo(() => paymentDisplay({ total: r.inter, qtd: selected?.inter_qtd, parcela: selected?.inter_each }), [r.inter, selected]);
   const diffStatus = useMemo(() => getPaymentDiffStatus(selected), [selected]);
-  const podeSimular = selected && isApartmentUnit(selected) && validRow(selected) && (!hasMirror || selected.mirror?.can_sell === true);
+  const podeSimular = selected && isSelectableUnit(selected) && validRow(selected) && (!hasMirror || selected.mirror?.can_sell === true);
   const invalidas = unidadesView.filter((u) => !validRow(u)).length;
 
   async function carregarTabela() {
@@ -273,8 +274,8 @@ export default function MesaClienteNativeFirst({ onVoltar }) {
       if (extracted.text.length < 20) throw new Error("Texto extraído do PDF ficou vazio ou muito curto.");
       const result = await parseNativeFirst({ text: extracted.text, filename: file.name, empreendimento, pdfDiagnostics: extracted.diagnostics });
       if (!result.rows.length) throw new Error("Tabela retornou sem unidades válidas.");
-      const firstCommercialUnit = result.rows.find(isApartmentUnit);
-      if (!firstCommercialUnit) throw new Error("Tabela processada, mas nenhuma unidade AP comercial foi identificada.");
+      const firstCommercialUnit = result.rows.find(isSelectableUnit);
+      if (!firstCommercialUnit) throw new Error("Tabela processada, mas nenhuma unidade AP/SC/SU/LJ comercial foi identificada.");
       setCsvText(result.csvText);
       setLayout(result.detection);
       setPipeline(result.pipeline);
@@ -342,7 +343,7 @@ export default function MesaClienteNativeFirst({ onVoltar }) {
             <input type="file" accept="application/pdf,.pdf,.html,.htm,.txt,.json" onChange={(e) => setMirrorFile(e.target.files?.[0] || null)} className="rounded-xl border px-4 py-3 lg:col-span-3" />
             <button onClick={carregarEspelho} disabled={!mirrorFile} className="rounded-xl bg-slate-900 px-4 py-3 font-black text-white disabled:opacity-50">Carregar espelho</button>
           </div>
-          {layout && <div className="mt-4 rounded-xl border border-blue-200 bg-blue-50 p-4 text-sm text-blue-800"><b>Layout:</b> {layout.layout}<br /><b>Motor:</b> {layout.source === "parser_nativo" ? "Parser nativo — sem Make/IA" : "Fallback Worker/Make"}<br /><b>Confiança:</b> {(layout.confidence * 100).toFixed(0)}%<br /><b>Motivo:</b> {layout.reason}{invalidas > 0 && <><br /><b>Inconsistências bloqueantes:</b> {invalidas}</>}{nonApartmentCount > 0 && <><br /><b>Itens não comerciais filtrados:</b> {nonApartmentCount}</>}</div>}
+          {layout && <div className="mt-4 rounded-xl border border-blue-200 bg-blue-50 p-4 text-sm text-blue-800"><b>Layout:</b> {layout.layout}<br /><b>Motor:</b> {layout.source === "parser_nativo" ? "Parser nativo — sem Make/IA" : "Fallback Worker/Make"}<br /><b>Confiança:</b> {(layout.confidence * 100).toFixed(0)}%<br /><b>Motivo:</b> {layout.reason}{invalidas > 0 && <><br /><b>Inconsistências bloqueantes:</b> {invalidas}</>}{nonApartmentCount > 0 && <><br /><b>Itens filtrados:</b> {nonApartmentCount}</>}</div>}
           {erro && <div className="mt-4 rounded-xl border border-red-200 bg-red-50 p-4 text-sm font-bold text-red-700">{erro}</div>}
           {mirrorErro && <div className="mt-4 rounded-xl border border-orange-200 bg-orange-50 p-4 text-sm font-bold text-orange-800">{mirrorErro}</div>}
         </section>
