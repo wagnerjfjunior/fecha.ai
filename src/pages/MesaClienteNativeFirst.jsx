@@ -17,6 +17,7 @@ const brl = (v) => new Intl.NumberFormat("pt-BR", { style: "currency", currency:
 const num = (v) => new Intl.NumberFormat("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(Number(v) || 0);
 const validRow = (u) => u?.validation?.valid !== false;
 const mirrorLoaded = (m) => Array.isArray(m?.units) && m.units.length > 0;
+const isApartmentUnit = (u) => /^AP\d{4}$/i.test(String(u?.unidade || "").trim());
 
 function loadScriptOnce(src, globalName) {
   return new Promise((resolve, reject) => {
@@ -141,6 +142,23 @@ function getObsInt(observacoes = "", key, fallback = 0) {
   return Number.isFinite(value) && value > 0 ? value : fallback;
 }
 
+function getObsNumber(observacoes = "", key, fallback = Number.NaN) {
+  const match = String(observacoes || "").match(new RegExp(`${key}=(-?[0-9]+(?:\\.[0-9]+)?)`, "i"));
+  const value = match ? Number.parseFloat(match[1]) : Number.NaN;
+  return Number.isFinite(value) ? value : fallback;
+}
+
+function getPaymentDiffStatus(u) {
+  if (!u?.observacoes) return null;
+  const diff = getObsNumber(u.observacoes, "check_diff");
+  const tolerance = getObsNumber(u.observacoes, "check_tolerance", 0);
+  if (!Number.isFinite(diff) || !Number.isFinite(tolerance) || tolerance <= 0) return null;
+  const abs = Math.abs(diff);
+  if (abs <= 10) return { kind: "ok", diff, tolerance, label: "Conferência financeira OK" };
+  if (abs <= tolerance) return { kind: "rounding", diff, tolerance, label: "Arredondamento aceito pela tabela" };
+  return { kind: "blocked", diff, tolerance, label: "Diferença financeira acima da tolerância" };
+}
+
 function inferLinhaFromUnidade(unidade = "") {
   const digits = String(unidade || "").replace(/\D/g, "");
   return digits.length >= 2 ? digits.slice(-2) : "";
@@ -216,14 +234,17 @@ export default function MesaClienteNativeFirst({ onVoltar }) {
   const [mirrorErro, setMirrorErro] = useState("");
 
   const hasMirror = mirrorLoaded(mirror);
-  const unidadesView = useMemo(() => hasMirror ? reconcileUnitsWithMirror(unidades, mirror.units) : unidades, [unidades, hasMirror, mirror]);
+  const unidadesRaw = useMemo(() => hasMirror ? reconcileUnitsWithMirror(unidades, mirror.units) : unidades, [unidades, hasMirror, mirror]);
+  const unidadesView = useMemo(() => unidadesRaw.filter(isApartmentUnit), [unidadesRaw]);
+  const nonApartmentCount = useMemo(() => unidadesRaw.length - unidadesView.length, [unidadesRaw, unidadesView]);
   const selected = useMemo(() => unidadesView.find((u) => u.id === selectedId) || null, [unidadesView, selectedId]);
   const r = useMemo(() => resumo(selected), [selected]);
   const curtoQtd = useMemo(() => getObsInt(selected?.observacoes, "comp_qtd", 3), [selected]);
   const curtoView = useMemo(() => paymentDisplay({ total: r.curto, qtd: curtoQtd, parcela: selected?.a4_each }), [r.curto, curtoQtd, selected]);
   const mensaisView = useMemo(() => paymentDisplay({ total: r.mensais, qtd: selected?.mensal_qtd, parcela: selected?.mensal_each }), [r.mensais, selected]);
   const interView = useMemo(() => paymentDisplay({ total: r.inter, qtd: selected?.inter_qtd, parcela: selected?.inter_each }), [r.inter, selected]);
-  const podeSimular = selected && validRow(selected) && (!hasMirror || selected.mirror?.can_sell === true);
+  const diffStatus = useMemo(() => getPaymentDiffStatus(selected), [selected]);
+  const podeSimular = selected && isApartmentUnit(selected) && validRow(selected) && (!hasMirror || selected.mirror?.can_sell === true);
   const invalidas = unidadesView.filter((u) => !validRow(u)).length;
 
   async function carregarTabela() {
@@ -240,11 +261,13 @@ export default function MesaClienteNativeFirst({ onVoltar }) {
       if (extracted.text.length < 20) throw new Error("Texto extraído do PDF ficou vazio ou muito curto.");
       const result = await parseNativeFirst({ text: extracted.text, filename: file.name, empreendimento, pdfDiagnostics: extracted.diagnostics });
       if (!result.rows.length) throw new Error("Tabela retornou sem unidades válidas.");
+      const firstCommercialUnit = result.rows.find(isApartmentUnit);
+      if (!firstCommercialUnit) throw new Error("Tabela processada, mas nenhuma unidade AP comercial foi identificada.");
       setCsvText(result.csvText);
       setLayout(result.detection);
       setPipeline(result.pipeline);
       setUnidades(result.rows);
-      setSelectedId(result.rows[0].id);
+      setSelectedId(firstCommercialUnit.id);
       setStatus("done");
     } catch (e) {
       setErro(e.message || "Falha ao processar a tabela.");
@@ -307,7 +330,7 @@ export default function MesaClienteNativeFirst({ onVoltar }) {
             <input type="file" accept="application/pdf,.pdf,.html,.htm,.txt,.json" onChange={(e) => setMirrorFile(e.target.files?.[0] || null)} className="rounded-xl border px-4 py-3 lg:col-span-3" />
             <button onClick={carregarEspelho} disabled={!mirrorFile} className="rounded-xl bg-slate-900 px-4 py-3 font-black text-white disabled:opacity-50">Carregar espelho</button>
           </div>
-          {layout && <div className="mt-4 rounded-xl border border-blue-200 bg-blue-50 p-4 text-sm text-blue-800"><b>Layout:</b> {layout.layout}<br /><b>Motor:</b> {layout.source === "parser_nativo" ? "Parser nativo — sem Make/IA" : "Fallback Worker/Make"}<br /><b>Confiança:</b> {(layout.confidence * 100).toFixed(0)}%<br /><b>Motivo:</b> {layout.reason}{invalidas > 0 && <><br /><b>Inconsistências:</b> {invalidas}</>}</div>}
+          {layout && <div className="mt-4 rounded-xl border border-blue-200 bg-blue-50 p-4 text-sm text-blue-800"><b>Layout:</b> {layout.layout}<br /><b>Motor:</b> {layout.source === "parser_nativo" ? "Parser nativo — sem Make/IA" : "Fallback Worker/Make"}<br /><b>Confiança:</b> {(layout.confidence * 100).toFixed(0)}%<br /><b>Motivo:</b> {layout.reason}{invalidas > 0 && <><br /><b>Inconsistências bloqueantes:</b> {invalidas}</>}{nonApartmentCount > 0 && <><br /><b>Itens não comerciais filtrados:</b> {nonApartmentCount}</>}</div>}
           {erro && <div className="mt-4 rounded-xl border border-red-200 bg-red-50 p-4 text-sm font-bold text-red-700">{erro}</div>}
           {mirrorErro && <div className="mt-4 rounded-xl border border-orange-200 bg-orange-50 p-4 text-sm font-bold text-orange-800">{mirrorErro}</div>}
         </section>
@@ -324,6 +347,8 @@ export default function MesaClienteNativeFirst({ onVoltar }) {
               </div>
             </div>
             {selected && !validRow(selected) && <div className="mt-4 rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-800"><b>Proposta bloqueada:</b> {selected.validation?.issues?.join(", ") || "validação não informada"}</div>}
+            {selected && diffStatus?.kind === "rounding" && <div className="mt-4 rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-800"><b>Arredondamento aceito:</b> diferença de {brl(diffStatus.diff)} dentro da tolerância técnica de {brl(diffStatus.tolerance)}.</div>}
+            {selected && diffStatus?.kind === "blocked" && <div className="mt-4 rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-800"><b>Diferença financeira acima da tolerância:</b> {brl(diffStatus.diff)}.</div>}
             {selected && hasMirror && !selected.mirror?.can_sell && <div className="mt-4 rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-800"><b>Bloqueado pelo espelho:</b> {selected.mirror?.label || "sem correspondência"}</div>}
           </section>
 
@@ -339,7 +364,7 @@ export default function MesaClienteNativeFirst({ onVoltar }) {
           </section>}
 
           {pipeline && <details className="rounded-2xl border bg-white p-5"><summary className="cursor-pointer font-bold">Diagnóstico técnico do pipeline</summary><pre className="mt-4 max-h-80 overflow-auto rounded-xl bg-gray-950 p-4 text-xs text-gray-100">{JSON.stringify(pipeline, null, 2)}</pre></details>}
-          <details className="rounded-2xl border bg-white p-5"><summary className="cursor-pointer font-bold">CSV canônico</summary><pre className="mt-4 max-h-80 overflow-auto rounded-xl bg-gray-950 p-4 text-xs text-gray-100">{csvText}</pre></details>
+          <details className="rounded-2xl border bg-white p-5"><summary className="cursor-pointer font-bold">CSV canônico completo</summary><pre className="mt-4 max-h-80 overflow-auto rounded-xl bg-gray-950 p-4 text-xs text-gray-100">{csvText}</pre></details>
         </>}
       </main>
     </div>
