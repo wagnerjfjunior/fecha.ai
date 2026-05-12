@@ -102,7 +102,7 @@ function extractEmpreendimento(text = "", fallback = "") {
   const normalized = compactSpaces(text);
   const bloco = normalized.match(/Bloco:\s*([^\n]+?)\s+(?:Bloco:|ANDAR\s+UNIDADE|ANDAR)/i);
   if (bloco?.[1]) return compactSpaces(bloco[1]).replace(/\s+/g, " ");
-  const title = normalized.match(/([A-Z][A-Z\s]{8,}(?:RESIDENCE|RESIDENCIAL|PARK|DESIGN|CLUB|VIVERE|LAPA|LISSONI))/);
+  const title = normalized.match(/([A-Z][A-Z\s]{8,}(?:RESIDENCE|RESIDENCIAL|PARK|DESIGN|CLUB|VIVERE|LAPA|LISSONI|MOEMA|OFFICES|STUDIOS))/);
   if (title?.[1]) return compactSpaces(title[1]);
   return "";
 }
@@ -124,13 +124,15 @@ function extractPaymentPlan(block = "") {
     compQtd: getPaymentQty(block, /(?:^|\s)(\d{1,2})\s+(?:COMPLEMENTO\s+ATO|C\.?\s*ATO)/i, 0),
     mensalQtd: getPaymentQty(block, /(?:^|\s)(\d{1,2})\s+MENSAL/i, 0),
     interQtd: getPaymentQty(block, /(?:^|\s)(\d{1,2})\s+INTERMEDIARIA/i, 0),
-    unicaQtd: getPaymentQty(block, /(?:^|\s)(\d{1,2})\s+PARCELA\s+(?:UNICA|ÚNICA)/i, 1),
+    unicaQtd: getPaymentQty(block, /(?:^|\s)(\d{1,2})\s+PARCELA\s+(?:UNICA|ÚNICA)/i, 0),
     financiamentoQtd: getPaymentQty(block, /(?:^|\s)(\d{1,2})\s+FINANCIAMENTO/i, 1),
+    periodicidadeQtd: getPaymentQty(block, /(?:^|\s)(\d{1,2})\s+(?:FINAL\(IS\)|PERIODICIDADE)/i, 0),
     interTipo: inferInterTipo(block),
     mensalInicio: getFirstDateAfter(block, /MENSAL/i),
     anualInicio: getFirstDateAfter(block, /INTERMEDIARIA/i),
     unica: getFirstDateAfter(block, /PARCELA\s+UNICA|PARCELA\s+ÚNICA/i),
     financMes: getFirstDateAfter(block, /FINANCIAMENTO/i),
+    periodicidadeData: getFirstDateAfter(block, /FINAL\(IS\)|PERIODICIDADE/i),
     source: "split_block_header",
   };
 }
@@ -182,7 +184,7 @@ function isAvailabilityMarker(value) {
   return Math.abs(Number(value || 0) - AVAILABILITY_MARKER_VALUE) < 0.01;
 }
 
-function buildFinanceRows(financeValues = [], expectedRows = 0) {
+function buildFinanceRows(financeValues = [], expectedRows = 0, paymentPlan = {}) {
   if (!expectedRows) return { financeRows: [], mode: "none", stride: 0 };
 
   const rowsWithMarker = [];
@@ -190,21 +192,34 @@ function buildFinanceRows(financeValues = [], expectedRows = 0) {
     for (let i = 0; i + 6 < financeValues.length && rowsWithMarker.length < expectedRows; i += 7) {
       const candidate = financeValues.slice(i, i + 7);
       if (!isAvailabilityMarker(candidate[6])) break;
-      rowsWithMarker.push(candidate.slice(0, 6));
+      rowsWithMarker.push({ values: candidate.slice(0, 6), periodicidadeValor: candidate[6] });
     }
     if (rowsWithMarker.length === expectedRows) {
       return { financeRows: rowsWithMarker, mode: "split_blocks_by_index_status_marker_7", stride: 7 };
     }
   }
 
+  // Modelo enxuto: SINAL + FINANCIAMENTO + FINAL/PERIODICIDADE.
+  // A terceira coluna fica apenas em observacao, sem novo campo canonico.
+  const compactFinalRows = [];
+  if (paymentPlan.financiamentoQtd && !paymentPlan.compQtd && !paymentPlan.mensalQtd && !paymentPlan.interQtd && financeValues.length >= expectedRows * 3) {
+    for (let i = 0; i + 2 < financeValues.length && compactFinalRows.length < expectedRows; i += 3) {
+      const candidate = financeValues.slice(i, i + 3);
+      compactFinalRows.push({ values: [candidate[0], 0, 0, 0, 0, candidate[1]], periodicidadeValor: candidate[2] });
+    }
+    if (compactFinalRows.length === expectedRows) {
+      return { financeRows: compactFinalRows, mode: "split_blocks_ato_financiamento_final_obs_3", stride: 3 };
+    }
+  }
+
   const rowsWithoutMarker = [];
   for (let i = 0; i + 5 < financeValues.length && rowsWithoutMarker.length < expectedRows; i += 6) {
-    rowsWithoutMarker.push(financeValues.slice(i, i + 6));
+    rowsWithoutMarker.push({ values: financeValues.slice(i, i + 6), periodicidadeValor: 0 });
   }
   return { financeRows: rowsWithoutMarker, mode: "split_blocks_by_index", stride: 6 };
 }
 
-function buildObservacoes({ paymentPlan, diff, parserMode }) {
+function buildObservacoes({ paymentPlan, diff, parserMode, periodicidadeValor }) {
   return [
     `ato_qtd=${paymentPlan.atoQtd || 1}`,
     `comp_qtd=${paymentPlan.compQtd || 0}`,
@@ -212,6 +227,9 @@ function buildObservacoes({ paymentPlan, diff, parserMode }) {
     `inter_qtd=${paymentPlan.interQtd || 0}`,
     `unica_qtd=${paymentPlan.unicaQtd || 0}`,
     `financiamento_qtd=${paymentPlan.financiamentoQtd || 1}`,
+    paymentPlan.periodicidadeQtd ? `periodicidade_qtd=${paymentPlan.periodicidadeQtd}` : "",
+    Number(periodicidadeValor || 0) > 0 ? `periodicidade_valor=${formatNumber(periodicidadeValor)}` : "",
+    paymentPlan.periodicidadeData ? `periodicidade_data=${paymentPlan.periodicidadeData}` : "",
     paymentPlan.mensalInicio ? `mensal_inicio=${paymentPlan.mensalInicio}` : "",
     paymentPlan.anualInicio ? `anual_inicio=${paymentPlan.anualInicio}` : "",
     paymentPlan.unica ? `unica=${paymentPlan.unica}` : "",
@@ -254,7 +272,7 @@ export function rowsToCanonCsv(rows = []) {
 
 function makeParsedRow({ unit, paymentPlan, empreendimento, blockIndex, index, parserMode }) {
   const diff = paymentDiff(unit, paymentPlan);
-  const observacoes = buildObservacoes({ paymentPlan, diff, parserMode });
+  const observacoes = buildObservacoes({ paymentPlan, diff, parserMode, periodicidadeValor: unit.periodicidadeValor });
   const raw = {
     empreendimento,
     torre: "",
@@ -297,6 +315,7 @@ function makeParsedRow({ unit, paymentPlan, empreendimento, blockIndex, index, p
       matched_financial_row: true,
       parser_mode: parserMode,
       payment_plan: paymentPlan,
+      periodicidade_valor: Number(unit.periodicidadeValor || 0),
     },
   };
   return { ...parsed, validation: validateSplitRow(parsed, paymentPlan) };
@@ -328,12 +347,13 @@ export function parseSplitBlockTable(text, options = {}) {
     if (!units.length) return;
     const moneyValues = extractMoneyValues(block);
     const financeValues = moneyValues.slice(units.length);
-    const { financeRows, mode: financeMode, stride } = buildFinanceRows(financeValues, units.length);
+    const { financeRows, mode: financeMode, stride } = buildFinanceRows(financeValues, units.length, paymentPlan);
 
     units.forEach((unit, index) => {
-      const financial = financeRows[index] || [];
+      const financialRow = financeRows[index] || { values: [], periodicidadeValor: 0 };
+      const financial = financialRow.values || [];
       rows.push(makeParsedRow({
-        unit: { ...unit, sinal_1: Number(financial[0] || 0), a4_each: Number(financial[1] || 0), mensal_each: Number(financial[2] || 0), inter_each: Number(financial[3] || 0), chaves_each: Number(financial[4] || 0), financiamento: Number(financial[5] || 0) },
+        unit: { ...unit, sinal_1: Number(financial[0] || 0), a4_each: Number(financial[1] || 0), mensal_each: Number(financial[2] || 0), inter_each: Number(financial[3] || 0), chaves_each: Number(financial[4] || 0), financiamento: Number(financial[5] || 0), periodicidadeValor: Number(financialRow.periodicidadeValor || 0) },
         paymentPlan,
         empreendimento,
         blockIndex,
