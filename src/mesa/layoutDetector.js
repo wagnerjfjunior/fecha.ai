@@ -27,6 +27,26 @@ export function detectLayout(text = "") {
     has("valor total") &&
     hasAny("negocio imobiliario", "negócio imobiliário");
 
+  // Espelho compacto Tegra: ATO + FINANCIAMENTO + FINAL(IS) + VALOR TOTAL.
+  // Ex.: Universo Tatuapé Órbita e Bem Moema Studios & Offices.
+  // Deve rodar antes de ready_stock_table para não cair indevidamente em fallback Worker/Make.
+  if (
+    hasAny("espelho de vendas", "tabela de vendas") &&
+    hasAny("andar") &&
+    hasAny("unidade") &&
+    hasAny("area", "m2", "m²") &&
+    hasAny("sinal ato") &&
+    hasAny("financiamento bancario", "financiamento bancário") &&
+    hasAny("final(is)", "periodicidade") &&
+    hasAny("valor total")
+  ) {
+    return {
+      layout: "split_block_table",
+      confidence: 0.92,
+      reason: "Detectado espelho compacto com ATO, financiamento, final/periodicidade e valor total.",
+    };
+  }
+
   // Estoque pronto para morar: uma linha por unidade, sem mensais/intermediárias.
   // Ex.: ELO Duo com ATO + FINANCIAMENTO + TOTAL.
   if (
@@ -37,6 +57,7 @@ export function detectLayout(text = "") {
     has("financiamento") &&
     has("total") &&
     /\bAP\d{4}\b/i.test(raw) &&
+    !hasAny("espelho de vendas", "final(is)", "periodicidade") &&
     !hasAny("mensais", "complemento ato", "c. ato", "intermediaria", "intermediária")
   ) {
     return {
