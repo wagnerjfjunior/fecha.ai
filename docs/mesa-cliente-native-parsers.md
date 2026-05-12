@@ -30,8 +30,9 @@ Esse desenho reduz custo, latência e imprevisibilidade. O Make continua existin
 | Nova Vivere Abril 2026 | `range_by_final_table` | `parseRangeByFinalTable` | OK |
 | Capitolo by Piero Lissoni | `split_block_table` | `parseSplitBlockTable` | OK |
 | ELO Duo — Caminhos da Lapa | `ready_stock_table` | `parseReadyStockTable` | OK |
+| Mozae Higienópolis Maio 2026 | `split_block_table` | `parseSplitBlockTable` | OK |
 
-Esses cinco arquivos passam a ser baseline de regressão funcional. Qualquer mudança futura em parser deve preservar o funcionamento desses casos antes de ser considerada segura.
+Esses seis arquivos passam a ser baseline de regressão funcional. Qualquer mudança futura em parser deve preservar o funcionamento desses casos antes de ser considerada segura.
 
 ---
 
@@ -81,6 +82,7 @@ Empreendimentos validados:
 
 - Garden Design Maio — Original/Espelho Oficial.
 - Capitolo by Piero Lissoni.
+- Mozae Higienópolis Maio 2026.
 
 Modos internos relevantes:
 
@@ -90,7 +92,7 @@ Modos internos relevantes:
 | `split_blocks_by_index` | Quando unidades e valores financeiros precisam ser casados por posição. |
 | `split_blocks_by_index_status_marker_7` | Quando há 7 valores financeiros por unidade e o 7º é um marcador/status, como `$1,000.00`, que deve ser ignorado. |
 
-Ponto crítico aprendido no Lissoni:
+Ponto crítico aprendido no Lissoni/Mozae:
 
 Algumas tabelas Tegra trazem um valor marcador/status no fim da linha financeira. Esse valor não faz parte do fluxo do cliente. Se ele for tratado como parcela, desloca todas as colunas seguintes e causa troca de valores entre sinal, mensal, financiamento e total.
 
@@ -105,6 +107,20 @@ parcela única
 financiamento
 marcador/status de disponibilidade ← ignorado
 ```
+
+No Mozae Higienópolis, o plano financeiro lido pelo parser foi:
+
+```txt
+1 SINAL ATO
+3 COMPLEMENTO ATO
+15 MENSAL(IS)
+2 INTERMEDIARIA SEMESTRAL(IS)
+1 PARCELA ÚNICA
+1 FINANCIAMENTO BANCÁRIO
+1 FINAL(IS) / marcador de disponibilidade ignorado no fluxo
+```
+
+O parser validou 60 unidades em duas páginas de espelho financeiro, com `invalid_rows=0`, `finance_stride=7` e modo `split_blocks_by_index_status_marker_7`.
 
 ---
 
@@ -229,12 +245,13 @@ Antes de mexer em qualquer parser existente, testar novamente:
 3. Nova Vivere Abril 2026.
 4. Capitolo by Piero Lissoni.
 5. ELO Duo — Caminhos da Lapa.
+6. Mozae Higienópolis Maio 2026.
 
 Critérios mínimos esperados:
 
 - layout correto detectado;
 - parser nativo acionado;
-- Make não acionado nos cinco casos validados;
+- Make não acionado nos seis casos validados;
 - quantidade de unidades compatível com o arquivo;
 - fluxo financeiro sem troca de colunas;
 - inconsistências bloqueantes zeradas ou justificadas por arredondamento/documento.
@@ -258,7 +275,7 @@ Adicionar na UI um quadro claro com:
 
 ### 2. Suíte automatizada de regressão
 
-Criar testes automatizados com fixtures baseadas nos cinco PDFs validados.
+Criar testes automatizados com fixtures baseadas nos seis PDFs validados.
 
 A suíte deve falhar quando:
 
