@@ -33,6 +33,21 @@ const FALLBACK_PAYMENT_META = {
 
 const PAYMENT_DIFF_ABS_TOLERANCE = 100;
 
+const MONTHS_PT = {
+  jan: "01",
+  fev: "02",
+  mar: "03",
+  abr: "04",
+  mai: "05",
+  jun: "06",
+  jul: "07",
+  ago: "08",
+  set: "09",
+  out: "10",
+  nov: "11",
+  dez: "12",
+};
+
 function compactSpaces(value = "") {
   return String(value || "")
     .replace(/\u00a0/g, " ")
@@ -110,26 +125,88 @@ function extractEmpreendimento(text = "", fallback = "") {
   return "";
 }
 
+function isPaymentPlanCandidate(values = []) {
+  if (!Array.isArray(values) || values.length !== 6 || values.some((value) => !Number.isFinite(value))) {
+    return false;
+  }
+
+  const [atoQtd, compQtd, mensalQtd, interQtd, unicaQtd, financiamentoQtd] = values;
+
+  // Bloqueia falso positivo vindo das páginas de espelho/vagas, como:
+  // 901 902 905 906 908 909.
+  return (
+    atoQtd >= 0 && atoQtd <= 5 &&
+    compQtd >= 0 && compQtd <= 12 &&
+    mensalQtd >= 1 && mensalQtd <= 120 &&
+    interQtd >= 0 && interQtd <= 12 &&
+    unicaQtd >= 0 && unicaQtd <= 5 &&
+    financiamentoQtd >= 0 && financiamentoQtd <= 5
+  );
+}
+
 function parseHeaderNumbers(header = "") {
   const compact = compactSpaces(header);
-  const matches = [...compact.matchAll(/(?:^|\s)(\d{1,3})\s+(\d{1,3})\s+(\d{1,3})\s+(\d{1,3})\s+(\d{1,3})\s+(\d{1,3})(?:\s|$)/g)];
+  const matches = [...compact.matchAll(/(?:^|\s)(\d{1,3})\s+(\d{1,3})\s+(\d{1,3})\s+(\d{1,3})\s+(\d{1,3})\s+(\d{1,3})(?:\s|$)/g)]
+    .map((m) => m.slice(1, 7).map((v) => Number.parseInt(v, 10)))
+    .filter(isPaymentPlanCandidate);
+
   if (!matches.length) return null;
-  const picked = matches.find((m) => Number(m[3]) >= 6) || matches[matches.length - 1];
-  return picked.slice(1, 7).map((v) => Number.parseInt(v, 10));
+
+  return matches.find((values) => values[2] >= 6) || matches[0];
+}
+
+function normalizePaymentDate(value = "") {
+  const raw = normalizeForMatch(value).replace(/\./g, "");
+  const withDay = raw.match(/\b(\d{1,2})-(jan|fev|mar|abr|mai|jun|jul|ago|set|out|nov|dez)-(\d{2})\b/i);
+  if (withDay) {
+    const day = withDay[1].padStart(2, "0");
+    const month = MONTHS_PT[withDay[2]];
+    const year = `20${withDay[3]}`;
+    return month ? `${year}-${month}-${day}` : value;
+  }
+
+  const monthYear = raw.match(/\b(jan|fev|mar|abr|mai|jun|jul|ago|set|out|nov|dez)-(\d{2})\b/i);
+  if (monthYear) {
+    const month = MONTHS_PT[monthYear[1]];
+    const year = `20${monthYear[2]}`;
+    return month ? `${year}-${month}` : value;
+  }
+
+  return value;
 }
 
 function parseHeaderDates(header = "") {
-  const matches = [...String(header || "").matchAll(/\b(?:jan|fev|mar|abr|mai|jun|jul|ago|set|out|nov|dez)-\d{2}\b/gi)].map((m) => m[0].toLowerCase());
+  const matches = [...String(header || "").matchAll(/\b(?:\d{1,2}-)?(?:jan|fev|mar|abr|mai|jun|jul|ago|set|out|nov|dez)-\d{2}\b/gi)]
+    .map((m) => normalizePaymentDate(m[0]));
   if (matches.length < 6) return [];
   return matches.slice(0, 6);
 }
 
+function extractFinancialHeaderWindow(source = "") {
+  const financialHeaderRegex = /[ÁA]REA\s+VAGAS\s+ATO\s+C\.?\s*ATO\s+MENSAIS\s+ANUAIS\s+[ÚU]NICA\s+FINANCIAMENTO/i;
+  const directHeaderRegex = /(\d{1,3}\s+\d{1,3}\s+\d{1,3}\s+\d{1,3}\s+\d{1,3}\s+\d{1,3})\s+[ÁA]REA\s+VAGAS\s+ATO\s+C\.?\s*ATO\s+MENSAIS\s+ANUAIS\s+[ÚU]NICA\s+FINANCIAMENTO/i;
+
+  const direct = source.match(directHeaderRegex);
+  if (direct?.index != null) {
+    return source.slice(Math.max(0, direct.index - 20), Math.min(source.length, direct.index + 900));
+  }
+
+  const label = source.match(financialHeaderRegex);
+  if (label?.index != null) {
+    return source.slice(Math.max(0, label.index - 160), Math.min(source.length, label.index + 900));
+  }
+
+  return "";
+}
+
 function extractPaymentPlan(text = "") {
   const source = compactSpaces(text);
-  const headerEnd = source.search(/Final\s+0?\d{1,2}/i);
+  const financialHeaderWindow = extractFinancialHeaderWindow(source);
+  const headerEnd = source.search(/Final\s+0?\d{1,2}\s+(?:\d{1,2}\s*(?:º|o|°|a\.)?|Garden\s+AP)/i);
   const header = headerEnd > -1 ? source.slice(0, headerEnd) : source.slice(0, 1500);
-  const numbers = parseHeaderNumbers(header) || parseHeaderNumbers(source);
-  const dates = parseHeaderDates(header);
+
+  const numbers = parseHeaderNumbers(financialHeaderWindow) || parseHeaderNumbers(header);
+  const dates = parseHeaderDates(financialHeaderWindow) || parseHeaderDates(header);
 
   if (!numbers) {
     return {
@@ -155,7 +232,7 @@ function extractPaymentPlan(text = "") {
     unica: dates[4] || "",
     financMes: dates[5] || "",
     dates,
-    source: "header",
+    source: financialHeaderWindow ? "financial_header" : "header",
   };
 }
 
