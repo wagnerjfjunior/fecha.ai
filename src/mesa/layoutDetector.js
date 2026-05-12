@@ -15,32 +15,30 @@ export function detectLayout(text = "") {
   const has = (...terms) => terms.every((term) => t.includes(normalizeForLayout(term)));
   const hasAny = (...terms) => terms.some((term) => t.includes(normalizeForLayout(term)));
 
-  const hasFloorRange = /\d{1,2}\s*(?:º|o|°)?\s*(?:e|a)\s*\d{1,2}\s*(?:º|o|°)?\s*andar/i.test(raw);
+  const hasFloorRange = /\d{1,2}\s*(?:º|o|°|a\.)?\s*(?:e|a|ao)\s*\d{1,2}\s*(?:º|o|°)?\s*andar/i.test(raw);
   const hasFinalBlock = /final\s+0?\d{1,2}(?:\s+e\s+0?\d{1,2})?/i.test(raw);
-
-  // Tabela comercial por Final + faixa de andar.
-  // Ex.: Garden Design - Tabela de Lançamento, sem unidade explícita AP3313.
-  // Deve rodar antes dos layouts genéricos para não cair em hierarchical_tegra.
-  // A extração do PDF.js vem com espaçamento irregular no cabeçalho, por isso
-  // a detecção precisa ser semântica e não depender de uma frase única compacta.
-  if (
-    hasAny("garden design private park residence", "empreendimento: garden design") &&
-    hasFinalBlock &&
-    hasFloorRange &&
+  const hasCommercialHeader =
     has("area") &&
     has("vagas") &&
     has("ato") &&
     hasAny("c. ato", "c ato") &&
     has("mensais") &&
-    has("anuais") &&
     has("financiamento") &&
     has("valor total") &&
-    hasAny("negocio imobiliario", "negócio imobiliário")
+    hasAny("negocio imobiliario", "negócio imobiliário");
+
+  // Tabela comercial por Final + faixa de andar.
+  // Ex.: Garden Design, Nova Vivere e demais tabelas Tegra/Helbor com fluxo financeiro por final.
+  // Deve rodar antes dos layouts genéricos para não cair em hierarchical_tegra.
+  if (
+    hasFinalBlock &&
+    hasCommercialHeader &&
+    (hasFloorRange || /garden\s+ap\d{4}/i.test(raw))
   ) {
     return {
       layout: "range_by_final_table",
       confidence: 0.94,
-      reason: "Detectada tabela comercial Garden por final e faixa de andar.",
+      reason: "Detectada tabela comercial por final, faixa de andar e fluxo financeiro.",
     };
   }
 
