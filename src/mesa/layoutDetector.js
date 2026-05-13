@@ -20,7 +20,7 @@ export function detectLayout(text = "") {
   const hasSalesMirrorTitle = hasAny("espelho de vendas", "tabela de vendas") || /e\s*spelho\s+de\s+vendas/i.test(raw);
   const hasSelectableUnit = /\b(AP|SC|SU|LJ)\d{4}\b/i.test(raw);
   const hasCommercialMoneyRow = /\b(AP|SC|SU|LJ)\d{4}\b[\s\S]{0,180}(?:R\$|\$)\s*\d[\d.]*,\d{2}[\s\S]{0,260}(?:R\$|\$)\s*\d[\d.]*,\d{2}/i.test(raw);
-  const hasReadyStockCommercialRow = /\b(AP|SC|SU|LJ)\d{4}\b\s+\d{1,4}(?:[,.]\d{1,3})?\s+\d{1,2}(?:\s+Moto)?\s+(?:R\$|\$)?\s*[\d.]+,\d{2}\s+(?:R\$|\$)?\s*[\d.]+,\d{2}\s+(?:R\$|\$)?\s*[\d.]+,\d{2}/i.test(raw);
+  const hasReadyStockCommercialRow = /\b(AP|SC|SU|LJ)\d{4}\b\s+(?:\d{1,2}\s+)?\d{1,4}(?:[,.]\d{1,3})?\s+\d{1,2}(?:\s+Moto)?\s+(?:R\$|\$)?\s*[\d.]+,\d{2}\s+(?:R\$|\$)?\s*[\d.]+,\d{2}\s+(?:R\$|\$)?\s*[\d.]+,\d{2}/i.test(raw);
   const hasFinancialHeader = hasAny(
     "valor total",
     "preco total",
@@ -71,6 +71,14 @@ export function detectLayout(text = "") {
   }
 
   if (
+    has("unidade") && has("area") && has("vagas") && has("ato") && has("financiamento") && has("total") &&
+    hasSelectableUnit && hasReadyStockCommercialRow &&
+    !hasAny("mensais", "complemento ato", "c. ato", "intermediaria", "intermediária")
+  ) {
+    return { layout: "ready_stock_table", confidence: 0.94, reason: "Detectada tabela comercial pronta/estoque com ATO, financiamento e total em linha." };
+  }
+
+  if (
     has("unidade") && has("area") && has("ato") && has("complemento ato") && has("mensais") &&
     hasAny("unica", "única") && has("financiamento") && has("total") && hasSelectableUnit
   ) {
@@ -79,14 +87,6 @@ export function detectLayout(text = "") {
 
   if (hasSalesMirrorTitle && hasAny("andar", "pavimento") && hasSelectableUnit && hasAny("m²", "m2") && !hasFinancialHeader) {
     return { layout: "sales_mirror_without_values", confidence: 0.91, reason: "Detectado espelho de vendas com unidades/áreas/vagas, mas sem valores financeiros para montar proposta." };
-  }
-
-  if (
-    has("unidade") && has("area") && has("vagas") && has("ato") && has("financiamento") && has("total") &&
-    hasSelectableUnit && hasReadyStockCommercialRow &&
-    !hasAny("mensais", "complemento ato", "c. ato", "intermediaria", "intermediária")
-  ) {
-    return { layout: "ready_stock_table", confidence: 0.94, reason: "Detectada tabela comercial pronta/estoque com ATO, financiamento e total em linha." };
   }
 
   if (
