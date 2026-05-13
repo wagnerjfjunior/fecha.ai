@@ -1,4 +1,4 @@
-# Mesa Cliente — Parsers nativos
+# Mesa Cliente — Native First Production Baseline
 
 Checkpoint técnico da frente **Mesa Cliente Native First** no FECH.AI.
 
@@ -15,15 +15,39 @@ A prioridade arquitetural é:
 1. detectar o layout da tabela;
 2. executar o parser nativo correspondente;
 3. validar quantidade de unidades e consistência financeira;
-4. usar Worker/Make apenas como fallback quando o parser nativo não conseguir gerar linhas úteis.
+4. bloquear proposta quando houver ausência de dados financeiros ou inconsistência relevante;
+5. usar Worker/Make apenas como fallback quando o parser nativo não conseguir gerar linhas úteis e quando o arquivo não for um caso conhecido/bloqueável.
 
 Esse desenho reduz custo, latência e imprevisibilidade. O Make continua existindo como contingência, não como primeira escolha para tabelas já aprendidas.
 
 ---
 
+## Decisão de release
+
+Baseline aprovado para rollout controlado em produção sob o marco:
+
+```txt
+Mesa Cliente — Native First Production Release
+```
+
+Regras do rollout:
+
+- preservar rollback para a versão anterior;
+- manter `feature/mesa-garden-commercial-range-parser` como branch de origem do release;
+- consolidar em `main` apenas após checklist mínimo;
+- validar em produção com arquivos sentinela antes de uso amplo.
+
+Arquivos sentinela pós-deploy:
+
+1. Garden Design Maio — valida fluxo completo com complemento, mensais, intermediárias, parcela única, financiamento e marcador.
+2. Ária Higienópolis — valida fluxo compacto ATO + financiamento + final/periodicidade.
+3. Bueno Brandão 257 sem valores — valida bloqueio correto de espelho sem dados financeiros.
+
+---
+
 ## Escopo atual validado
 
-| Arquivo / Empreendimento | Layout detectado | Parser nativo | Status |
+| Arquivo / Empreendimento | Layout detectado | Parser / comportamento | Status |
 |---|---|---|---|
 | Garden Design Abril — Tabela Comercial | `range_by_final_table` | `parseRangeByFinalTable` | OK |
 | Garden Design Maio — Original/Espelho Oficial | `split_block_table` | `parseSplitBlockTable` | OK |
@@ -31,8 +55,13 @@ Esse desenho reduz custo, latência e imprevisibilidade. O Make continua existin
 | Capitolo by Piero Lissoni | `split_block_table` | `parseSplitBlockTable` | OK |
 | ELO Duo — Caminhos da Lapa | `ready_stock_table` | `parseReadyStockTable` | OK |
 | Mozae Higienópolis Maio 2026 | `split_block_table` | `parseSplitBlockTable` | OK |
+| Bem Moema Studios & Offices | `split_block_table` | `parseSplitBlockTable` compacto | OK |
+| Universo Tatuapé Órbita | `split_block_table` | `parseSplitBlockTable` compacto | OK |
+| Bueno Brandão Studios | `split_block_table` | `parseSplitBlockTable` compacto com parcela única | OK |
+| Bueno Brandão 257 — espelho sem valores | `sales_mirror_without_values` | bloqueio nativo sem fallback | OK |
+| Ária Higienópolis | `split_block_table` | `parseSplitBlockTable` compacto | OK |
 
-Esses seis arquivos passam a ser baseline de regressão funcional. Qualquer mudança futura em parser deve preservar o funcionamento desses casos antes de ser considerada segura.
+Esses arquivos passam a ser baseline de regressão funcional. Qualquer mudança futura em parser deve preservar o funcionamento desses casos antes de ser considerada segura.
 
 ---
 
@@ -41,11 +70,13 @@ Esses seis arquivos passam a ser baseline de regressão funcional. Qualquer muda
 | Arquivo | Responsabilidade |
 |---|---|
 | `src/mesa/layoutDetector.js` | Detecta o tipo de layout antes do roteamento para parser. |
-| `src/pages/MesaClienteNativeFirst.jsx` | Orquestra a leitura Native First e decide quando usar fallback. |
+| `src/pages/MesaClienteNativeFirst.jsx` | Orquestra a leitura Native First, bloqueios e fallback. |
 | `src/mesa/parsers/parseRangeByFinalTable.js` | Parser para tabelas por final/faixa de andar. |
 | `src/mesa/parsers/parseSplitBlockTable.js` | Parser para espelhos oficiais/split block Tegra. |
 | `src/mesa/parsers/parseReadyStockTable.js` | Parser para estoque/pronto para morar com ato + financiamento. |
 | `src/mesa/validators/validateCanonRow.js` | Validação estrutural e financeira da linha canônica. |
+| `src/mesa/mirror/parsePortalVWebMirror.js` | Leitura de espelho/disponibilidade quando usado como arquivo auxiliar. |
+| `src/mesa/mirror/reconcileUnitsWithMirror.js` | Conciliação entre tabela financeira e espelho de disponibilidade. |
 
 ---
 
@@ -83,6 +114,10 @@ Empreendimentos validados:
 - Garden Design Maio — Original/Espelho Oficial.
 - Capitolo by Piero Lissoni.
 - Mozae Higienópolis Maio 2026.
+- Bem Moema Studios & Offices.
+- Universo Tatuapé Órbita.
+- Bueno Brandão Studios.
+- Ária Higienópolis.
 
 Modos internos relevantes:
 
@@ -90,11 +125,11 @@ Modos internos relevantes:
 |---|---|
 | `inline_financial_rows` | Quando a própria linha já contém unidade + todos os campos financeiros. |
 | `split_blocks_by_index` | Quando unidades e valores financeiros precisam ser casados por posição. |
-| `split_blocks_by_index_status_marker_7` | Quando há 7 valores financeiros por unidade e o 7º é um marcador/status, como `$1,000.00`, que deve ser ignorado. |
+| `split_blocks_by_index_status_marker_7` | Quando há 7 valores financeiros por unidade e o 7º é marcador/status de disponibilidade. |
+| `split_blocks_ato_financiamento_final_obs_3` | Fluxo compacto: sinal/ato + financiamento + final/periodicidade em observação. |
+| `split_blocks_ato_unica_final_financiamento_4` | Fluxo compacto: sinal/ato + parcela única + final/periodicidade em observação + financiamento. |
 
-Ponto crítico aprendido no Lissoni/Mozae:
-
-Algumas tabelas Tegra trazem um valor marcador/status no fim da linha financeira. Esse valor não faz parte do fluxo do cliente. Se ele for tratado como parcela, desloca todas as colunas seguintes e causa troca de valores entre sinal, mensal, financiamento e total.
+#### Modelo completo com marcador/status
 
 Regra implementada:
 
@@ -105,7 +140,7 @@ mensal
 intermediária
 parcela única
 financiamento
-marcador/status de disponibilidade ← ignorado
+marcador/status de disponibilidade ← ignorado no fluxo financeiro
 ```
 
 No Mozae Higienópolis, o plano financeiro lido pelo parser foi:
@@ -120,7 +155,50 @@ No Mozae Higienópolis, o plano financeiro lido pelo parser foi:
 1 FINAL(IS) / marcador de disponibilidade ignorado no fluxo
 ```
 
-O parser validou 60 unidades em duas páginas de espelho financeiro, com `invalid_rows=0`, `finance_stride=7` e modo `split_blocks_by_index_status_marker_7`.
+O parser validou o casamento posicional dos valores com modo `split_blocks_by_index_status_marker_7`.
+
+#### Modelo compacto ATO + FINANCIAMENTO + FINAL
+
+Regra implementada:
+
+```txt
+sinal_1 = valor do ATO
+financiamento = valor do financiamento
+periodicidade/final = observacoes
+```
+
+O valor de `FINAL(IS)` / periodicidade não cria campo novo. Ele fica em `observacoes`:
+
+```txt
+periodicidade_qtd=1 | periodicidade_valor=1000 | periodicidade_data=AAAA-MM-DD
+```
+
+Validados por esse padrão:
+
+- Bem Moema Studios & Offices.
+- Universo Tatuapé Órbita.
+- Ária Higienópolis.
+
+#### Modelo compacto com parcela única
+
+Regra implementada:
+
+```txt
+sinal_1 = valor do ATO
+chaves_each = parcela única
+periodicidade/final = observacoes
+financiamento = financiamento bancário
+```
+
+Modo interno:
+
+```txt
+split_blocks_ato_unica_final_financiamento_4
+```
+
+Validado por:
+
+- Bueno Brandão Studios.
 
 ---
 
@@ -142,6 +220,55 @@ Regra financeira atual:
 - Chaves/parcela única = 0.
 
 Esse parser não deve forçar campos inexistentes apenas para encaixar no padrão de obras futuras. Estoque pronto tem lógica própria.
+
+---
+
+### 4. `sales_mirror_without_values`
+
+Usado para arquivos que são espelhos de disponibilidade/estoque, mas **não contêm valores financeiros**.
+
+Exemplo validado:
+
+- Bueno Brandão 257 — espelho com APs, áreas e vagas, mas sem valor total, sinal/ato e financiamento.
+
+Comportamento esperado:
+
+- detectar nativamente;
+- não acionar Worker/Make;
+- não gerar CSV financeiro incompleto;
+- exibir mensagem clara para o usuário;
+- bloquear Mesa Cliente financeira.
+
+Mensagem operacional:
+
+```txt
+Este arquivo é um espelho de vendas com unidades, áreas e vagas, mas não contém valores financeiros. Envie a tabela comercial com valor total, sinal/ato e financiamento para montar a Mesa do Cliente.
+```
+
+Esse arquivo pode ser útil futuramente como espelho auxiliar de disponibilidade, mas não serve sozinho para proposta financeira.
+
+---
+
+## Tipos de unidades selecionáveis
+
+A Mesa Cliente não deve ser centrada apenas em apartamentos.
+
+Unidades aceitas na UI:
+
+```txt
+AP0000 = apartamento
+SC0000 = sala comercial
+SU0000 = studio
+LJ0000 = loja
+```
+
+Regex operacional:
+
+```txt
+/^(AP|SC|SU|LJ)\d{4}$/i
+```
+
+Motivo: tabelas como Bem Moema e Ária Higienópolis misturam residenciais, studios, salas comerciais e/ou lojas.
 
 ---
 
@@ -173,6 +300,7 @@ A coluna `observacoes` é usada também como trilha técnica de auditoria, conte
 
 - quantidade de parcelas lidas;
 - datas de início quando disponíveis;
+- periodicidade/final quando for informação complementar;
 - origem do plano financeiro;
 - modo interno do parser;
 - diferença de validação entre soma do fluxo e valor total.
@@ -212,7 +340,14 @@ preco_total ≈
 
 A validação aceita pequena tolerância por arredondamento, especialmente em tabelas com muitas parcelas.
 
-Inconsistência financeira não deve ser escondida. Quando houver divergência relevante, o parser deve marcar a linha como inválida ou indicar problema no diagnóstico.
+Inconsistência financeira não deve ser escondida. Quando houver divergência relevante, o parser deve marcar a linha como inválida e a UI deve bloquear a proposta.
+
+Princípio:
+
+```txt
+Cair no parser errado e falhar é aceitável.
+Cair no parser errado, montar valores trocados e não avisar é inaceitável.
+```
 
 ---
 
@@ -231,7 +366,8 @@ Regra prática:
 
 ```txt
 Parser nativo funcionou → não aciona Make.
-Parser nativo não gerou linhas úteis → pode acionar fallback.
+Arquivo conhecido sem valores financeiros → bloqueia sem Make.
+Parser nativo não gerou linhas úteis em layout desconhecido → pode acionar fallback.
 ```
 
 ---
@@ -246,15 +382,21 @@ Antes de mexer em qualquer parser existente, testar novamente:
 4. Capitolo by Piero Lissoni.
 5. ELO Duo — Caminhos da Lapa.
 6. Mozae Higienópolis Maio 2026.
+7. Bem Moema Studios & Offices.
+8. Universo Tatuapé Órbita.
+9. Bueno Brandão Studios.
+10. Bueno Brandão 257 — espelho sem valores.
+11. Ária Higienópolis.
 
 Critérios mínimos esperados:
 
 - layout correto detectado;
-- parser nativo acionado;
-- Make não acionado nos seis casos validados;
+- parser nativo acionado quando o layout já é conhecido;
+- Make não acionado nos casos validados nativos;
 - quantidade de unidades compatível com o arquivo;
 - fluxo financeiro sem troca de colunas;
-- inconsistências bloqueantes zeradas ou justificadas por arredondamento/documento.
+- inconsistências bloqueantes zeradas ou justificadas por arredondamento/documento;
+- espelho sem valores bloqueado antes de fallback.
 
 ---
 
@@ -273,9 +415,38 @@ Adicionar na UI um quadro claro com:
 - inconsistências encontradas;
 - status Native First / Worker / Make.
 
-### 2. Suíte automatizada de regressão
+### 2. Composição percentual do fluxo
 
-Criar testes automatizados com fixtures baseadas nos seis PDFs validados.
+Adicionar leitura comercial por unidade:
+
+```txt
+% sinal/ato
+% complemento
+% mensais
+% intermediárias
+% parcela única
+% financiamento
+```
+
+Fórmula:
+
+```txt
+percentual = etapa / preco_total * 100
+```
+
+Isso deve permitir frases automáticas como:
+
+```txt
+Fluxo identificado: 40% durante obra + 60% financiamento.
+```
+
+### 3. Ocultar cards zerados
+
+Na UI, ocultar cards financeiros com valor zero quando não fizerem sentido para o fluxo carregado, reduzindo poluição visual para modelos compactos.
+
+### 4. Suíte automatizada de regressão
+
+Criar testes automatizados com fixtures baseadas nos PDFs validados.
 
 A suíte deve falhar quando:
 
@@ -285,7 +456,7 @@ A suíte deve falhar quando:
 - colunas financeiras forem trocadas;
 - o fallback for acionado em arquivo já suportado.
 
-### 3. Alerta de tabela possivelmente desatualizada
+### 5. Alerta de tabela possivelmente desatualizada
 
 No futuro, implementar alerta consultivo comparando:
 
