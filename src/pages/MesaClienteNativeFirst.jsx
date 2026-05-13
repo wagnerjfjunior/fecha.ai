@@ -181,7 +181,7 @@ async function parseNativeFirst({ text, filename, empreendimento, pdfDiagnostics
       };
     }
   }
-  if (detection.layout === "split_block_table") {
+  if (detection.layout === "split_block_table" || detection.layout === "singleline_flat") {
     const native = parseSplitBlockTable(text, { empreendimento });
     if (native.rows.length) {
       return {
