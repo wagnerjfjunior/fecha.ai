@@ -47,6 +47,24 @@ export function detectLayout(text = "") {
     };
   }
 
+  // Espelho de vendas sem tabela financeira.
+  // Ex.: Bueno Brandão 257 high-end com apenas unidades, áreas e vagas, sem valor total/financiamento.
+  // Este arquivo é útil como espelho/estoque, mas não permite Mesa Cliente financeira.
+  if (
+    hasAny("espelho de vendas", "tabela de vendas") &&
+    hasAny("bloco:", "torre") &&
+    hasAny("andar") &&
+    /\b(AP|SC|SU|LJ)\d{4}\b/i.test(raw) &&
+    hasAny("m²", "m2") &&
+    !hasAny("valor total", "preco total", "preço total", "financiamento bancario", "financiamento bancário", "sinal ato")
+  ) {
+    return {
+      layout: "sales_mirror_without_values",
+      confidence: 0.9,
+      reason: "Detectado espelho de vendas com unidades/áreas/vagas, mas sem valores financeiros para montar proposta.",
+    };
+  }
+
   // Estoque pronto para morar: uma linha por unidade, sem mensais/intermediárias.
   // Ex.: ELO Duo com ATO + FINANCIAMENTO + TOTAL.
   if (
