@@ -44,6 +44,27 @@ export function detectLayout(text = "") {
     has("valor total") &&
     hasAny("negocio imobiliario", "negócio imobiliário");
 
+  // Tabela de lançamento flat com fluxo completo em linha.
+  // Ex.: YPY Alto do Ipiranga — UNIDADE, ÁREA, ATO, COMPLEMENTO ATO, MENSAIS, ÚNICA, FINANCIAMENTO, TOTAL.
+  // Precisa rodar antes do hierarchical_tegra, porque o mesmo PDF também tem quadro técnico por finais/pavimentos.
+  if (
+    has("unidade") &&
+    has("area") &&
+    has("ato") &&
+    has("complemento ato") &&
+    has("mensais") &&
+    hasAny("unica", "única") &&
+    has("financiamento") &&
+    has("total") &&
+    hasSelectableUnit
+  ) {
+    return {
+      layout: "launch_flat_payment_table",
+      confidence: 0.93,
+      reason: "Detectada tabela de lançamento com ATO, complemento, mensal, parcela única, financiamento e total em linha.",
+    };
+  }
+
   // Espelho de vendas sem tabela financeira.
   // Ex.: Bueno Brandão 257 high-end com apenas unidades, áreas e vagas, sem valor total/financiamento.
   // O PDF pode extrair "Espelho" como "E spelho", por isso usamos regex tolerante.
