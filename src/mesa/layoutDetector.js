@@ -46,6 +46,7 @@ export function detectLayout(text = "") {
 
   // Tabela de lançamento flat com fluxo completo em linha.
   // Ex.: YPY Alto do Ipiranga — UNIDADE, ÁREA, ATO, COMPLEMENTO ATO, MENSAIS, ÚNICA, FINANCIAMENTO, TOTAL.
+  // Usa o caminho nativo split_block_table, que agora delega internamente para o parser launch_flat.
   // Precisa rodar antes do hierarchical_tegra, porque o mesmo PDF também tem quadro técnico por finais/pavimentos.
   if (
     has("unidade") &&
@@ -59,7 +60,7 @@ export function detectLayout(text = "") {
     hasSelectableUnit
   ) {
     return {
-      layout: "launch_flat_payment_table",
+      layout: "split_block_table",
       confidence: 0.93,
       reason: "Detectada tabela de lançamento com ATO, complemento, mensal, parcela única, financiamento e total em linha.",
     };
