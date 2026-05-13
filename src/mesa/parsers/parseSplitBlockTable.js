@@ -1,4 +1,5 @@
 import { validateCanonRow } from "../validators/validateCanonRow";
+import { parseLaunchFlatPaymentTable } from "./parseLaunchFlatPaymentTable";
 
 const CANON_COLUMNS = [
   "empreendimento",
@@ -40,6 +41,22 @@ function removeAccents(value = "") {
 
 function normalizeForMatch(value = "") {
   return removeAccents(value).replace(/\u00a0/g, " ").replace(/\s+/g, " ").toLowerCase().trim();
+}
+
+function looksLikeLaunchFlatPaymentTable(text = "") {
+  const t = normalizeForMatch(text);
+
+  return (
+    t.includes("unidade") &&
+    t.includes("area") &&
+    t.includes("ato") &&
+    t.includes("complemento ato") &&
+    t.includes("mensais") &&
+    t.includes("unica") &&
+    t.includes("financiamento") &&
+    t.includes("total") &&
+    /\b(AP|SC|SU|LJ)\d{4}\b/i.test(String(text || ""))
+  );
 }
 
 function toNumber(value) {
@@ -341,6 +358,22 @@ function makeParsedRow({ unit, paymentPlan, empreendimento, blockIndex, index, p
 export function parseSplitBlockTable(text, options = {}) {
   const source = compactSpaces(text);
   if (!source) return { rows: [], csvText: CANON_COLUMNS.join(";"), diagnostics: { reason: "empty_source" } };
+
+  if (looksLikeLaunchFlatPaymentTable(source)) {
+    const launch = parseLaunchFlatPaymentTable(source, options);
+
+    if (launch.rows.length) {
+      return {
+        ...launch,
+        diagnostics: {
+          ...launch.diagnostics,
+          parser: "parseSplitBlockTable",
+          delegated_parser: "parseLaunchFlatPaymentTable",
+          parser_mode: "launch_flat_payment_table",
+        },
+      };
+    }
+  }
 
   const blocks = splitMirrorBlocks(source);
   const rows = [];
