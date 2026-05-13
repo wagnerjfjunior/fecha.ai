@@ -19,6 +19,8 @@ export function detectLayout(text = "") {
   const hasFinalBlock = /final\s+0?\d{1,2}(?:\s+e\s+0?\d{1,2})?/i.test(raw);
   const hasSalesMirrorTitle = hasAny("espelho de vendas", "tabela de vendas") || /e\s*spelho\s+de\s+vendas/i.test(raw);
   const hasSelectableUnit = /\b(AP|SC|SU|LJ)\d{4}\b/i.test(raw);
+  const hasCommercialMoneyRow = /\b(AP|SC|SU|LJ)\d{4}\b[\s\S]{0,180}(?:R\$|\$)\s*\d[\d.]*,\d{2}[\s\S]{0,260}(?:R\$|\$)\s*\d[\d.]*,\d{2}/i.test(raw);
+  const hasReadyStockCommercialRow = /\bAP\d{4}\b\s+\d{1,4}(?:[,.]\d{1,3})?\s+\d{1,2}(?:\s+Moto)?\s+R\$\s*[\d.]+,\d{2}\s+R\$\s*[\d.]+,\d{2}\s+R\$\s*[\d.]+,\d{2}/i.test(raw);
   const hasFinancialHeader = hasAny(
     "valor total",
     "preco total",
@@ -145,6 +147,7 @@ export function detectLayout(text = "") {
 
   // Estoque pronto para morar: uma linha por unidade, sem mensais/intermediárias.
   // Ex.: ELO Duo com ATO + FINANCIAMENTO + TOTAL.
+  // Não bloquear por presença global de Espelho/Final, pois o PDF pode ter capa ou páginas técnicas antes da tabela comercial.
   if (
     has("unidade") &&
     has("area") &&
@@ -153,13 +156,13 @@ export function detectLayout(text = "") {
     has("financiamento") &&
     has("total") &&
     /\bAP\d{4}\b/i.test(raw) &&
-    !hasAny("espelho de vendas", "final(is)", "periodicidade") &&
+    hasReadyStockCommercialRow &&
     !hasAny("mensais", "complemento ato", "c. ato", "intermediaria", "intermediária")
   ) {
     return {
       layout: "ready_stock_table",
-      confidence: 0.93,
-      reason: "Detectada tabela de estoque pronto para morar com ATO, financiamento e total.",
+      confidence: 0.94,
+      reason: "Detectada tabela comercial pronta/estoque com ATO, financiamento e total em linha.",
     };
   }
 
@@ -196,6 +199,22 @@ export function detectLayout(text = "") {
       layout: "split_block_table",
       confidence: 0.91,
       reason: "Detectado espelho com unidades e valores financeiros em blocos separados.",
+    };
+  }
+
+  // Tabela comercial explícita com unidade AP/SC/SU/LJ e valores monetários.
+  // Deve rodar antes de hierarchical_tegra/legacy, pois muitos PDFs misturam páginas técnicas e tabela comercial real.
+  // Ex.: Ária e outros espelhos comerciais extraídos com capa/legenda antes das linhas financeiras.
+  if (
+    hasSelectableUnit &&
+    hasCommercialMoneyRow &&
+    hasAny("ato", "sinal", "financiamento") &&
+    hasAny("valor total", "total", "preco", "preço")
+  ) {
+    return {
+      layout: "split_block_table",
+      confidence: 0.9,
+      reason: "Detectada tabela comercial explícita com unidade AP/SC/SU/LJ e valores financeiros em linha/bloco.",
     };
   }
 
