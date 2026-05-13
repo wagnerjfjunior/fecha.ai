@@ -99,20 +99,12 @@ function inferAndarFromUnit(unit = "") {
 
 function extractEmpreendimento(text = "", fallback = "") {
   if (fallback) return fallback;
+
   const normalized = compactSpaces(text);
-
   const match = normalized.match(/EMPREENDIMENTO\s*[:.]*\s*([^\n]+?)(?:\s+ENDEREÇO|\s+ENDERECO|\s+1\.?\s*DATA|$)/i);
-  if (match?.[1]) return compactSpaces(match[1]).replace(/\.{2,}/g, "").replace(/\s*:\s*$/, "");
 
-  const known = [
-    [/ELO\s+Duo\s*-\s*Caminhos\s+da\s+Lapa/i, "ELO Duo - Caminhos da Lapa"],
-    [/ELO\s+2\s+CAMINHOS\s+DA\s+LAPA\s*-\s*TORRE\s+B/i, "ELO 2 Caminhos da Lapa - Torre B"],
-    [/TEG\s*-?\s*SACOM[ÃA]/i, "TEG Sacomã"],
-    [/BEM\s+MOEMA/i, "Bem Moema"],
-    [/[ÓO]RBITA/i, "Órbita"],
-  ];
-  for (const [regex, name] of known) {
-    if (regex.test(normalized)) return name;
+  if (match?.[1]) {
+    return compactSpaces(match[1]).replace(/\.{2,}/g, "").replace(/\s*:\s*$/, "");
   }
 
   return "";
