@@ -44,6 +44,45 @@ export function detectLayout(text = "") {
     has("valor total") &&
     hasAny("negocio imobiliario", "negócio imobiliário");
 
+  // AW Realty — Bosque Vila Nova.
+  // Tabela por final/torre/andar com unidades numéricas puras.
+  // Rotear como split_block_table porque o parser split agora delega para parseAWPaymentTable.
+  // Deve rodar antes do hierarchical_tegra, pois o Bosque também possui Final e Andar.
+  if (
+    has("bosque vila nova") &&
+    hasFinalBlock &&
+    hasAny("jatoba", "jatobá", "manaca", "manacá") &&
+    hasAny("sinal", "30 / 60 / 90 / 120") &&
+    hasAny("finan. imobiliario", "finan. imobiliário", "financiamento") &&
+    /\d{1,2}\s*º?\s*Andar\s+\d{2,4}\s+\d{2,4}/i.test(raw)
+  ) {
+    return {
+      layout: "split_block_table",
+      confidence: 0.94,
+      reason: "Detectada tabela AW Realty por torre/final/andar com unidade numérica e fluxo financeiro explícito.",
+    };
+  }
+
+  // AW Realty — Sereno Jardim São Paulo.
+  // Tabela com unidades numéricas agrupadas na mesma linha.
+  // Rotear como split_block_table porque o parser split agora delega para parseAWPaymentTable.
+  if (
+    (has("sereno jardim sao paulo") || has("fluxo de pagamento")) &&
+    /\bUnidades?\s+\d+/i.test(raw) &&
+    hasAny("ato") &&
+    hasAny("mensal", "mensais") &&
+    hasAny("anual", "anuais") &&
+    hasAny("unica", "única") &&
+    hasAny("periodicidade") &&
+    hasAny("financiamento")
+  ) {
+    return {
+      layout: "split_block_table",
+      confidence: 0.94,
+      reason: "Detectada tabela AW Realty com unidades numéricas agrupadas e fluxo financeiro completo.",
+    };
+  }
+
   // Tabela de lançamento flat com fluxo completo em linha.
   // Ex.: YPY Alto do Ipiranga — UNIDADE, ÁREA, ATO, COMPLEMENTO ATO, MENSAIS, ÚNICA, FINANCIAMENTO, TOTAL.
   // Usa o caminho nativo split_block_table, que agora delega internamente para o parser launch_flat.
