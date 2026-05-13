@@ -89,6 +89,15 @@ function parseCsvFallback(csv, text, options) {
 
 async function parseNativeFirst({ text, filename, empreendimento, pdfDiagnostics }) {
   const detection = detectLayout(text);
+  if (detection.layout === "sales_mirror_without_values") {
+    return {
+      rows: [],
+      csvText: "",
+      detection: { ...detection, source: "parser_nativo" },
+      pipeline: { engine: "sales_mirror_without_values", worker_used: false, make_used: false, rows: 0, pdf: pdfDiagnostics },
+      hardError: "Este arquivo é um espelho de vendas com unidades, áreas e vagas, mas não contém valores financeiros. Envie a tabela comercial com valor total, sinal/ato e financiamento para montar a Mesa do Cliente.",
+    };
+  }
   if (detection.layout === "ready_stock_table") {
     const native = parseReadyStockTable(text, { empreendimento });
     if (native.rows.length) {
@@ -273,12 +282,13 @@ export default function MesaClienteNativeFirst({ onVoltar }) {
       const extracted = await extractPdfText(file);
       if (extracted.text.length < 20) throw new Error("Texto extraído do PDF ficou vazio ou muito curto.");
       const result = await parseNativeFirst({ text: extracted.text, filename: file.name, empreendimento, pdfDiagnostics: extracted.diagnostics });
+      setLayout(result.detection);
+      setPipeline(result.pipeline);
+      if (result.hardError) throw new Error(result.hardError);
       if (!result.rows.length) throw new Error("Tabela retornou sem unidades válidas.");
       const firstCommercialUnit = result.rows.find(isSelectableUnit);
       if (!firstCommercialUnit) throw new Error("Tabela processada, mas nenhuma unidade AP/SC/SU/LJ comercial foi identificada.");
       setCsvText(result.csvText);
-      setLayout(result.detection);
-      setPipeline(result.pipeline);
       setUnidades(result.rows);
       setSelectedId(firstCommercialUnit.id);
       setStatus("done");
