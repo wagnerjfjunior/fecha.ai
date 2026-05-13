@@ -51,11 +51,17 @@ function toNumber(value = "") {
   if (value === 0) return 0;
   const raw = String(value || "").trim();
   if (!raw) return 0;
-  let s = raw;
+
+  let s = raw.replace(/\s+/g, "");
   const hasComma = s.includes(",");
   const hasDot = s.includes(".");
+  const numericWithDotsOnly = s.replace(/[^\d.]/g, "");
+  const looksLikeBrazilianThousandsOnly = !hasComma && /^\d{1,3}(?:\.\d{3})+$/.test(numericWithDotsOnly);
+
   if (hasComma && hasDot) s = s.replace(/\./g, "").replace(",", ".");
   else if (hasComma) s = s.replace(/\./g, "").replace(",", ".");
+  else if (hasDot && looksLikeBrazilianThousandsOnly) s = s.replace(/\./g, "");
+
   s = s.replace(/[^\d.-]/g, "");
   const parsed = Number.parseFloat(s);
   return Number.isFinite(parsed) ? parsed : 0;
