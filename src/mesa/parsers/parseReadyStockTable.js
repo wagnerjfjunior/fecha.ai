@@ -165,15 +165,16 @@ function validateReadyStockRow(row) {
   };
 }
 
-function makeParsedRow({ empreendimento, unidade, area, vagas, ato, financiamento, total, atoInicio, financMes, index }) {
+function makeParsedRow({ empreendimento, unidade, andar, area, vagas, ato, financiamento, total, atoInicio, financMes, index }) {
   const diff = total - (ato + financiamento);
   const atoPercent = total > 0 ? ato / total : Number.NaN;
   const financiamentoPercent = total > 0 ? financiamento / total : Number.NaN;
+  const resolvedAndar = andar !== "" && andar != null ? String(andar) : inferAndarFromUnit(unidade);
   const raw = {
     empreendimento,
     torre: "",
     final: inferFinalFromUnit(unidade),
-    andar: inferAndarFromUnit(unidade),
+    andar: resolvedAndar,
     unidade,
     area_m2: formatNumber(area),
     preco_total: formatNumber(total),
@@ -241,7 +242,7 @@ export function parseReadyStockTable(text, options = {}) {
   const normalized = normalizeForMatch(source);
   const unitRegex = new RegExp(`\\b${UNIT_PREFIX}\\d{4}\\b`, "i");
   const rowProbeRegex = new RegExp(
-    `\\b${UNIT_PREFIX}\\d{4}\\b\\s+\\d{1,4}(?:[,.]\\d{1,3})?\\s+\\d{1,2}(?:\\s+Moto)?\\s+${MONEY_TOKEN}\\s+${MONEY_TOKEN}\\s+${MONEY_TOKEN}`,
+    `\\b${UNIT_PREFIX}\\d{4}\\b\\s+(?:\\d{1,2}\\s+)?\\d{1,4}(?:[,.]\\d{1,3})?\\s+\\d{1,2}(?:\\s+Moto)?\\s+${MONEY_TOKEN}\\s+${MONEY_TOKEN}\\s+${MONEY_TOKEN}`,
     "i"
   );
   const looksReadyStock =
@@ -272,6 +273,7 @@ export function parseReadyStockTable(text, options = {}) {
 
   const rowRegex = new RegExp(
     `\\b(${UNIT_PREFIX}\\d{4})\\s+` +
+      `(?:(\\d{1,2})\\s+)?` +
       `(\\d{1,4}(?:[,.]\\d{1,3})?)\\s+` +
       `(\\d{1,2})(?:\\s+Moto)?\\s+` +
       `${MONEY_TOKEN}\\s+${MONEY_TOKEN}\\s+${MONEY_TOKEN}\\b`,
@@ -281,17 +283,19 @@ export function parseReadyStockTable(text, options = {}) {
 
   while ((match = rowRegex.exec(source)) !== null) {
     const unidade = match[1].toUpperCase();
-    const area = toNumber(match[2]);
-    const vagas = Number.parseInt(match[3], 10) || 0;
-    const ato = toNumber(match[4]);
-    const financiamento = toNumber(match[5]);
-    const total = toNumber(match[6]);
+    const andar = match[2] ?? "";
+    const area = toNumber(match[3]);
+    const vagas = Number.parseInt(match[4], 10) || 0;
+    const ato = toNumber(match[5]);
+    const financiamento = toNumber(match[6]);
+    const total = toNumber(match[7]);
 
     if (!area || !ato || !financiamento || !total) continue;
 
     rows.push(makeParsedRow({
       empreendimento,
       unidade,
+      andar,
       area,
       vagas,
       ato,
