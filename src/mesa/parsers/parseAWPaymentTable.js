@@ -81,6 +81,19 @@ function inferFinalFromUnit(unit = "") {
   return digits.slice(-1).padStart(2, "0");
 }
 
+function inferAndarFromUnit(unit = "") {
+  const digits = String(unit || "").replace(/\D/g, "");
+  if (digits.length >= 3) return String(Number.parseInt(digits.slice(0, -1), 10));
+  return "";
+}
+
+function normalizeBosqueAndar(label = "", unit = "") {
+  const raw = String(label || "");
+  if (/penthouse/i.test(raw)) return inferAndarFromUnit(unit) || "Penthouse";
+  const match = raw.match(/\d{1,2}/);
+  return match?.[0] || "";
+}
+
 function extractEmpreendimento(source = "", fallback = "") {
   if (fallback) return fallback;
   const normalized = normalizeForMatch(source);
@@ -222,47 +235,63 @@ function extractLastHeader(headers = [], index = 0) {
   return current;
 }
 
+function extractBosquePaymentPlan(segment = "") {
+  const counts = String(segment || "").match(
+    /Sinal.*?([0-9]{1,2})\s+parcela[s]?\s+([0-9]{1,2})\s+parcela[s]?\s+([0-9]{1,3})\s+parcela[s]?\s+([0-9]{1,2})\s+parcela[s]?\s+([0-9]{1,2})\s+parcela[s]?/i
+  );
+  const dates = String(segment || "").match(/1ª\s*parcela\s+([^\s]+(?:\s+dias)?)\s+1ª\s*parcela\s+([^\s]+\/\d{2})\s+([^\s]+\/\d{2})/i);
+
+  return {
+    atoQtd: counts?.[1] ? Number.parseInt(counts[1], 10) : 1,
+    compQtd: counts?.[2] ? Number.parseInt(counts[2], 10) : 4,
+    mensalQtd: counts?.[3] ? Number.parseInt(counts[3], 10) : 32,
+    interQtd: counts?.[4] ? Number.parseInt(counts[4], 10) : 3,
+    unicaQtd: 0,
+    financiamentoQtd: counts?.[5] ? Number.parseInt(counts[5], 10) : 1,
+    periodicidadeQtd: 0,
+    roundingTolerance: 50,
+    compInicio: dates?.[1] || "150 dias",
+    mensalInicio: dates?.[2] || "",
+    financMes: dates?.[3] || "",
+    source: counts ? "aw_bosque_header_dynamic" : "aw_bosque_header_fallback",
+  };
+}
+
 function parseBosqueVilaNova(source = "", options = {}) {
   const empreendimento = extractEmpreendimento(source, options.empreendimento || "");
-  const headerRegex = /Final\s+([0-9]{1,2})\s*-\s*([^0-9]{3,80}?)(?=\s+Sinal|\s+\d{1,2}\s*º?\s*Andar|$)/gi;
-  const headers = [...source.matchAll(headerRegex)].map((match) => ({
-    index: match.index || 0,
-    final: String(match[1]).padStart(2, "0"),
-    torre: String(match[2] || "").replace(/\.\.\./g, "").trim(),
-  }));
+  const headerRegex = /Final\s+([0-9]{1,2})\s*-\s*([^0-9]{3,100}?)(?=\s+Sinal|\s+\d{1,2}\s*º?\s*Andar|\s+Penthouse|$)/gi;
+  const headerMatches = [...source.matchAll(headerRegex)];
+  const headers = headerMatches.map((match, index) => {
+    const start = match.index || 0;
+    const end = headerMatches[index + 1]?.index ?? source.length;
+    const segment = source.slice(start, end);
+    return {
+      index: start,
+      final: String(match[1]).padStart(2, "0"),
+      torre: String(match[2] || "").replace(/\.\.\./g, "").trim(),
+      plan: extractBosquePaymentPlan(segment),
+    };
+  });
 
   const rowRegex = new RegExp(
-    `(\\d{1,2})\\s*º?\\s*Andar\\s+` +
+    `((?:\\d{1,2}\\s*º?\\s*Andar)|(?:Penthouse))\\s+` +
     `(\\d{2,4})\\s+` +
     `(\\d{2,4}(?:[,.]\\d{1,3})?)\\s+` +
     `${MONEY_INTEGER_OR_BR}\\s+${MONEY_INTEGER_OR_BR}\\s+${MONEY_INTEGER_OR_BR}\\s+${MONEY_INTEGER_OR_BR}\\s+${MONEY_INTEGER_OR_BR}\\s+${MONEY_INTEGER_OR_BR}`,
     "gi"
   );
-  const plan = {
-    atoQtd: 1,
-    compQtd: 4,
-    mensalQtd: 32,
-    interQtd: 3,
-    unicaQtd: 0,
-    financiamentoQtd: 1,
-    periodicidadeQtd: 0,
-    roundingTolerance: 25,
-    compInicio: "150 dias",
-    mensalInicio: "jan/26",
-    interInicio: "set/28",
-    source: "aw_bosque_header",
-  };
 
   const rows = [];
   let match;
   while ((match = rowRegex.exec(source)) !== null) {
     const header = extractLastHeader(headers, match.index || 0) || {};
+    const plan = header.plan || extractBosquePaymentPlan(source);
     const unidade = normalizeUnit(match[2]);
     rows.push(makeRow({
       empreendimento,
       unidade,
       final: header.final || inferFinalFromUnit(unidade),
-      andar: match[1],
+      andar: normalizeBosqueAndar(match[1], unidade),
       torre: header.torre || "",
       area: toNumber(match[3]),
       sinal: toNumber(match[4]),
