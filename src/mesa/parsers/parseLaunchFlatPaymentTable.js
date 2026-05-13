@@ -21,6 +21,7 @@ const CANON_COLUMNS = [
 ];
 
 const CHECK_TOLERANCE = 10;
+const MONEY_TOKEN = "(?:R\\$|\\$)?\\s*([0-9]{1,3}(?:\\.[0-9]{3})*,[0-9]{2}|[0-9]+,[0-9]{2}|[0-9]{1,3}(?:\\.[0-9]{3})+|[0-9]+)";
 
 function compactSpaces(value = "") {
   return String(value || "")
@@ -40,6 +41,10 @@ function normalizeForMatch(value = "") {
     .replace(/\s+/g, " ")
     .toLowerCase()
     .trim();
+}
+
+function escapeRegExp(value = "") {
+  return String(value || "").replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
 
 function toNumber(value = "") {
@@ -77,7 +82,7 @@ function displayMonthYear(value = "") {
 
 function extractPaymentDate(source = "", label = "ATO") {
   const normalized = normalizeForMatch(source);
-  const labelNorm = normalizeForMatch(label).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  const labelNorm = escapeRegExp(normalizeForMatch(label));
   const match = normalized.match(new RegExp(`${labelNorm}\\s+(\\d{1,2}\\/\\d{4})`, "i"));
   return match ? normalizeMonthYear(match[1]) : "";
 }
@@ -208,6 +213,7 @@ function makeParsedRow({ empreendimento, unidade, area, ato, comp, mensal, unica
     raw,
     parser_meta: {
       parser: "parseLaunchFlatPaymentTable",
+      parser_mode: "launch_flat_payment_table",
       payment_model: "ato_comp_mensal_unica_financiamento",
       payment_plan: { atoQtd: 1, compQtd, mensalQtd, interQtd: 0, unicaQtd: 1, financiamentoQtd: 1, atoInicio, compInicio, mensalMes, unicaMes: unicaIso, financMes, source: "launch_flat_header", tolerance: CHECK_TOLERANCE },
     },
@@ -228,7 +234,7 @@ export function parseLaunchFlatPaymentTable(text, options = {}) {
     normalized.includes("unica") &&
     normalized.includes("financiamento") &&
     normalized.includes("total") &&
-    /\bAP\d{4}\b/i.test(source);
+    /\b(AP|SC|SU|LJ)\d{4}\b/i.test(source);
 
   if (!looksLaunchFlat) return { rows: [], csvText: CANON_COLUMNS.join(";"), diagnostics: { parser: "parseLaunchFlatPaymentTable", reason: "layout_not_matched" } };
 
@@ -244,7 +250,12 @@ export function parseLaunchFlatPaymentTable(text, options = {}) {
   const compQtd = 3;
   const mensalQtd = 1;
   const rows = [];
-  const rowRegex = /\b(AP\d{4})\s+(\d{1,3},\d{1,2})\s+R\$\s*([\d.]+(?:,\d{2})?)\s+R\$\s*([\d.]+(?:,\d{2})?)\s+R\$\s*([\d.]+(?:,\d{2})?)\s+R\$\s*([\d.]+(?:,\d{2})?)\s+R\$\s*([\d.]+(?:,\d{2})?)\s+R\$\s*([\d.]+(?:,\d{2})?)\b/gi;
+  const rowRegex = new RegExp(
+    `\\b((?:AP|SC|SU|LJ)\\d{4})\\s+` +
+    `(\\d{1,4}(?:[,.]\\d{1,3})?)\\s+` +
+    `${MONEY_TOKEN}\\s+${MONEY_TOKEN}\\s+${MONEY_TOKEN}\\s+${MONEY_TOKEN}\\s+${MONEY_TOKEN}\\s+${MONEY_TOKEN}\\b`,
+    "gi"
+  );
   let match;
   while ((match = rowRegex.exec(source)) !== null) {
     const unidade = match[1].toUpperCase();
@@ -264,10 +275,11 @@ export function parseLaunchFlatPaymentTable(text, options = {}) {
     csvText: rowsToCanonCsv(rows),
     diagnostics: {
       parser: "parseLaunchFlatPaymentTable",
+      parser_mode: "launch_flat_payment_table",
       total_rows: rows.length,
       invalid_rows: rows.filter((row) => row.validation?.valid === false).length,
       payment_model: "ato_comp_mensal_unica_financiamento",
-      payment_plan: { atoQtd: 1, compQtd, mensalQtd, interQtd: 0, unicaQtd: 1, financiamentoQtd: 1, atoInicio, compInicio, mensalMes, unicaMes: unicaIso, financMes, source: "launch_flat_header", tolerance: CHECK_TOLERANCE },
+      payment_plan: { atoQtd: 1, compQtd, mensalQtd, interQtd: 0, unicaQtd: 1, financiamentoQtd: 1, atoInicio, compInicio, mensalMes, unicaMes: unicaIso, unicaLabel, financMes, source: "launch_flat_header", tolerance: CHECK_TOLERANCE },
       complete: rows.length > 0,
     },
   };
