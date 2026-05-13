@@ -1,12 +1,104 @@
-export function detectLayout(text = "") {
-  const raw = String(text || "");
-  const t = raw
+function normalizeForLayout(value = "") {
+  return String(value || "")
     .normalize("NFD")
     .replace(/[\u0300-\u036f]/g, "")
-    .toLowerCase();
+    .replace(/\u00a0/g, " ")
+    .replace(/\s+/g, " ")
+    .toLowerCase()
+    .trim();
+}
 
-  const has = (...terms) => terms.every((term) => t.includes(String(term).toLowerCase()));
-  const hasAny = (...terms) => terms.some((term) => t.includes(String(term).toLowerCase()));
+export function detectLayout(text = "") {
+  const raw = String(text || "");
+  const t = normalizeForLayout(raw);
+
+  const has = (...terms) => terms.every((term) => t.includes(normalizeForLayout(term)));
+  const hasAny = (...terms) => terms.some((term) => t.includes(normalizeForLayout(term)));
+
+  const hasFloorRange = /\d{1,2}\s*(?:º|o|°|a\.)?\s*(?:e|a|ao)\s*\d{1,2}\s*(?:º|o|°)?\s*andar/i.test(raw);
+  const hasFinalBlock = /final\s+0?\d{1,2}(?:\s+e\s+0?\d{1,2})?/i.test(raw);
+  const hasCommercialHeader =
+    has("area") &&
+    has("vagas") &&
+    has("ato") &&
+    hasAny("c. ato", "c ato") &&
+    has("mensais") &&
+    has("financiamento") &&
+    has("valor total") &&
+    hasAny("negocio imobiliario", "negócio imobiliário");
+
+  // Espelho compacto Tegra: ATO + FINANCIAMENTO + FINAL(IS) + VALOR TOTAL.
+  // Ex.: Universo Tatuapé Órbita e Bem Moema Studios & Offices.
+  // Deve rodar antes de ready_stock_table para não cair indevidamente em fallback Worker/Make.
+  if (
+    hasAny("espelho de vendas", "tabela de vendas") &&
+    hasAny("andar") &&
+    hasAny("unidade") &&
+    hasAny("area", "m2", "m²") &&
+    hasAny("sinal ato") &&
+    hasAny("financiamento bancario", "financiamento bancário") &&
+    hasAny("final(is)", "periodicidade") &&
+    hasAny("valor total")
+  ) {
+    return {
+      layout: "split_block_table",
+      confidence: 0.92,
+      reason: "Detectado espelho compacto com ATO, financiamento, final/periodicidade e valor total.",
+    };
+  }
+
+  // Espelho de vendas sem tabela financeira.
+  // Ex.: Bueno Brandão 257 high-end com apenas unidades, áreas e vagas, sem valor total/financiamento.
+  // Este arquivo é útil como espelho/estoque, mas não permite Mesa Cliente financeira.
+  if (
+    hasAny("espelho de vendas", "tabela de vendas") &&
+    hasAny("bloco:", "torre") &&
+    hasAny("andar") &&
+    /\b(AP|SC|SU|LJ)\d{4}\b/i.test(raw) &&
+    hasAny("m²", "m2") &&
+    !hasAny("valor total", "preco total", "preço total", "financiamento bancario", "financiamento bancário", "sinal ato")
+  ) {
+    return {
+      layout: "sales_mirror_without_values",
+      confidence: 0.9,
+      reason: "Detectado espelho de vendas com unidades/áreas/vagas, mas sem valores financeiros para montar proposta.",
+    };
+  }
+
+  // Estoque pronto para morar: uma linha por unidade, sem mensais/intermediárias.
+  // Ex.: ELO Duo com ATO + FINANCIAMENTO + TOTAL.
+  if (
+    has("unidade") &&
+    has("area") &&
+    has("vagas") &&
+    has("ato") &&
+    has("financiamento") &&
+    has("total") &&
+    /\bAP\d{4}\b/i.test(raw) &&
+    !hasAny("espelho de vendas", "final(is)", "periodicidade") &&
+    !hasAny("mensais", "complemento ato", "c. ato", "intermediaria", "intermediária")
+  ) {
+    return {
+      layout: "ready_stock_table",
+      confidence: 0.93,
+      reason: "Detectada tabela de estoque pronto para morar com ATO, financiamento e total.",
+    };
+  }
+
+  // Tabela comercial por Final + faixa de andar.
+  // Ex.: Garden Design, Nova Vivere e demais tabelas Tegra/Helbor com fluxo financeiro por final.
+  // Deve rodar antes dos layouts genéricos para não cair em hierarchical_tegra.
+  if (
+    hasFinalBlock &&
+    hasCommercialHeader &&
+    (hasFloorRange || /garden\s+ap\d{4}/i.test(raw))
+  ) {
+    return {
+      layout: "range_by_final_table",
+      confidence: 0.94,
+      reason: "Detectada tabela comercial por final, faixa de andar e fluxo financeiro.",
+    };
+  }
 
   // Espelhos Portal/Vendas em que a extração do PDF separa o bloco de unidades
   // do bloco de valores financeiros. Ex.: Garden Design.
