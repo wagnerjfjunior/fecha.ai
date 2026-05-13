@@ -87,6 +87,67 @@ function parseCsvFallback(csv, text, options) {
   return { rows: legacyParser(csv), detection };
 }
 
+function appendObs(observacoes = "", entry = "") {
+  const cleanObs = String(observacoes || "").trim();
+  const cleanEntry = String(entry || "").trim();
+  if (!cleanEntry) return cleanObs;
+  if (cleanObs.includes(cleanEntry)) return cleanObs;
+  return cleanObs ? `${cleanObs};${cleanEntry}` : cleanEntry;
+}
+
+function extractUniqueInstallmentMeta(text = "") {
+  const raw = String(text || "").replace(/\u00a0/g, " ");
+  const normalized = raw.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+  const compact = normalized.replace(/\s+/g, " ");
+  const match = compact.match(/\bUNICA\s+(\d{1,2})\s*\/\s*(\d{4})\b/i);
+  if (!match) return null;
+  const month = String(Number.parseInt(match[1], 10)).padStart(2, "0");
+  const year = match[2];
+  return {
+    month,
+    year,
+    label: `${month}/${year}`,
+    isoMonth: `${year}-${month}`,
+    obs: `unica_mes=${year}-${month};unica_label=${month}/${year}`,
+  };
+}
+
+function enrichRowsWithSourceMetadata(rows = [], text = "") {
+  const uniqueMeta = extractUniqueInstallmentMeta(text);
+  if (!uniqueMeta) return rows;
+  return rows.map((row) => {
+    if (!(Number(row?.chaves_each) > 0)) return row;
+    const currentObs = String(row?.observacoes || "");
+    if (/unica_(mes|label)=/i.test(currentObs)) return row;
+    return {
+      ...row,
+      observacoes: appendObs(currentObs, uniqueMeta.obs),
+    };
+  });
+}
+
+function enrichCsvWithSourceMetadata(csv = "", text = "") {
+  const uniqueMeta = extractUniqueInstallmentMeta(text);
+  if (!uniqueMeta || !csv) return csv;
+  const lines = String(csv || "").split(/\r?\n/);
+  if (lines.length < 2) return csv;
+  const header = lines[0].split(";").map((col) => col.trim());
+  const chavesIdx = header.indexOf("chaves_each");
+  const obsIdx = header.indexOf("observacoes");
+  if (chavesIdx < 0 || obsIdx < 0) return csv;
+
+  return lines.map((line, index) => {
+    if (index === 0 || !line.trim()) return line;
+    const cols = line.split(";");
+    while (cols.length < header.length) cols.push("");
+    const chaves = Number(String(cols[chavesIdx] || "").replace(/\./g, "").replace(",", "."));
+    if (!(chaves > 0)) return line;
+    if (/unica_(mes|label)=/i.test(String(cols[obsIdx] || ""))) return line;
+    cols[obsIdx] = appendObs(cols[obsIdx], uniqueMeta.obs);
+    return cols.join(";");
+  }).join("\n");
+}
+
 async function parseNativeFirst({ text, filename, empreendimento, pdfDiagnostics }) {
   const detection = detectLayout(text);
   if (detection.layout === "sales_mirror_without_values") {
@@ -133,11 +194,13 @@ async function parseNativeFirst({ text, filename, empreendimento, pdfDiagnostics
   }
   const csv = await workerConvert({ text, filename, empreendimento });
   const parsed = parseCsvFallback(csv, text, { empreendimento });
+  const enrichedRows = enrichRowsWithSourceMetadata(parsed.rows, text);
+  const enrichedCsv = enrichCsvWithSourceMetadata(csv, text);
   return {
-    rows: parsed.rows,
-    csvText: csv,
+    rows: enrichedRows,
+    csvText: enrichedCsv,
     detection: { ...parsed.detection, source: "worker_make_fallback" },
-    pipeline: { engine: "worker_make", worker_used: true, make_used: true, rows: parsed.rows.length, csv_chars: csv.length, pdf: pdfDiagnostics },
+    pipeline: { engine: "worker_make", worker_used: true, make_used: true, rows: enrichedRows.length, csv_chars: enrichedCsv.length, pdf: pdfDiagnostics, enrichment: extractUniqueInstallmentMeta(text) ? { unique_installment_month: extractUniqueInstallmentMeta(text).label } : null },
   };
 }
 
@@ -168,6 +231,11 @@ function getObsNumber(observacoes = "", key, fallback = Number.NaN) {
   const match = String(observacoes || "").match(new RegExp(`${key}=(-?[0-9]+(?:\\.[0-9]+)?)`, "i"));
   const value = match ? Number.parseFloat(match[1]) : Number.NaN;
   return Number.isFinite(value) ? value : fallback;
+}
+
+function getObsString(observacoes = "", key, fallback = "") {
+  const match = String(observacoes || "").match(new RegExp(`${key}=([^;|]+)`, "i"));
+  return match?.[1]?.trim() || fallback;
 }
 
 function getPaymentDiffStatus(u) {
@@ -265,6 +333,7 @@ export default function MesaClienteNativeFirst({ onVoltar }) {
   const curtoView = useMemo(() => paymentDisplay({ total: r.curto, qtd: curtoQtd, parcela: selected?.a4_each }), [r.curto, curtoQtd, selected]);
   const mensaisView = useMemo(() => paymentDisplay({ total: r.mensais, qtd: selected?.mensal_qtd, parcela: selected?.mensal_each }), [r.mensais, selected]);
   const interView = useMemo(() => paymentDisplay({ total: r.inter, qtd: selected?.inter_qtd, parcela: selected?.inter_each }), [r.inter, selected]);
+  const unicaLabel = useMemo(() => getObsString(selected?.observacoes, "unica_label"), [selected]);
   const diffStatus = useMemo(() => getPaymentDiffStatus(selected), [selected]);
   const podeSimular = selected && isSelectableUnit(selected) && validRow(selected) && (!hasMirror || selected.mirror?.can_sell === true);
   const invalidas = unidadesView.filter((u) => !validRow(u)).length;
@@ -324,6 +393,7 @@ export default function MesaClienteNativeFirst({ onVoltar }) {
       `Curto prazo: ${curtoQtd}x de ${brl(selected.a4_each)}`,
       `Mensais: ${selected.mensal_qtd}x de ${brl(selected.mensal_each)}`,
       `Intermediárias: ${selected.inter_qtd}x de ${brl(selected.inter_each)}`,
+      `Parcela única${unicaLabel ? ` (${unicaLabel})` : ""}: ${brl(r.chaves)}`,
       `Financiamento: ${brl(r.financiamento)}`,
     ].join("\n");
     window.open(`https://wa.me/?text=${encodeURIComponent(msg)}`, "_blank", "noopener,noreferrer");
@@ -383,7 +453,7 @@ export default function MesaClienteNativeFirst({ onVoltar }) {
             <Card label="Curto prazo" value={curtoView.value} helper={curtoView.helper} detail={curtoView.detail} />
             <Card label="Mensais" value={mensaisView.value} helper={mensaisView.helper} detail={mensaisView.detail} />
             <Card label="Intermediárias" value={interView.value} helper={interView.helper} detail={interView.detail} />
-            <Card label="Chaves" value={brl(r.chaves)} helper="Parcela única" />
+            <Card label="Chaves" value={brl(r.chaves)} helper={unicaLabel ? `Parcela única — ${unicaLabel}` : "Parcela única"} />
           </section>}
 
           {pipeline && <details className="rounded-2xl border bg-white p-5"><summary className="cursor-pointer font-bold">Diagnóstico técnico do pipeline</summary><pre className="mt-4 max-h-80 overflow-auto rounded-xl bg-gray-950 p-4 text-xs text-gray-100">{JSON.stringify(pipeline, null, 2)}</pre></details>}
