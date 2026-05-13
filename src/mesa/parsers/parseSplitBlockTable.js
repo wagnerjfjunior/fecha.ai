@@ -1,5 +1,6 @@
 import { validateCanonRow } from "../validators/validateCanonRow";
 import { parseLaunchFlatPaymentTable } from "./parseLaunchFlatPaymentTable";
+import { parseAWPaymentTable } from "./parseAWPaymentTable";
 
 const CANON_COLUMNS = [
   "empreendimento",
@@ -57,6 +58,26 @@ function looksLikeLaunchFlatPaymentTable(text = "") {
     t.includes("total") &&
     /\b(AP|SC|SU|LJ)\d{4}\b/i.test(String(text || ""))
   );
+}
+
+function looksLikeAWPaymentTable(text = "") {
+  const raw = String(text || "");
+  const t = normalizeForMatch(raw);
+
+  const looksBosque =
+    t.includes("bosque vila nova") &&
+    /final\s+0?\d{1,2}/i.test(raw) &&
+    /(jatoba|jatobá|manaca|manacá)/i.test(raw) &&
+    /\d{1,2}\s*º?\s*Andar\s+\d{2,4}\s+\d{2,4}/i.test(raw) &&
+    (t.includes("finan. imobiliario") || t.includes("financiamento"));
+
+  const looksSereno =
+    (t.includes("sereno jardim sao paulo") || t.includes("fluxo de pagamento")) &&
+    /\bUnidades?\s+\d+/i.test(raw) &&
+    t.includes("periodicidade") &&
+    t.includes("financiamento");
+
+  return looksBosque || looksSereno;
 }
 
 function toNumber(value) {
@@ -358,6 +379,21 @@ function makeParsedRow({ unit, paymentPlan, empreendimento, blockIndex, index, p
 export function parseSplitBlockTable(text, options = {}) {
   const source = compactSpaces(text);
   if (!source) return { rows: [], csvText: CANON_COLUMNS.join(";"), diagnostics: { reason: "empty_source" } };
+
+  if (looksLikeAWPaymentTable(source)) {
+    const aw = parseAWPaymentTable(source, options);
+
+    if (aw.rows.length) {
+      return {
+        ...aw,
+        diagnostics: {
+          ...aw.diagnostics,
+          parser: "parseSplitBlockTable",
+          delegated_parser: "parseAWPaymentTable",
+        },
+      };
+    }
+  }
 
   if (looksLikeLaunchFlatPaymentTable(source)) {
     const launch = parseLaunchFlatPaymentTable(source, options);
