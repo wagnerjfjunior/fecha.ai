@@ -131,6 +131,8 @@ function buildObservacoes({ plan, diff, periodicidadeValor = 0, parserMode, torr
     plan.financMes ? `financ_mes=${plan.financMes}` : "",
     torre ? `torre=${torre}` : "",
     `payment_plan_source=${plan.source}`,
+    plan.warning ? `payment_plan_warning=${plan.warning}` : "",
+    plan.inferredFields?.length ? `payment_plan_inferred_fields=${plan.inferredFields.join(",")}` : "",
     `parser_mode=${parserMode}`,
     Number.isFinite(diff) ? `check_diff=${diff.toFixed(2)}` : "",
     `check_tolerance=${tolerance.toFixed(2)}`,
@@ -219,6 +221,7 @@ function makeRow({
 
   const base = validateCanonRow(parsed);
   const issues = [...base.issues];
+  if (plan.warning === "payment_plan_unresolved") issues.push("payment_plan_unresolved");
   if (Math.abs(diff) > getTolerance(plan, periodicidadeValor)) {
     issues.push(`soma_fluxo_difere_total=${diff.toFixed(2)}`);
   }
@@ -235,25 +238,42 @@ function extractLastHeader(headers = [], index = 0) {
   return current;
 }
 
+function unresolvedBosquePlan(reason = "payment_plan_header_not_found") {
+  return {
+    atoQtd: 1,
+    compQtd: 0,
+    mensalQtd: 0,
+    interQtd: 0,
+    unicaQtd: 0,
+    financiamentoQtd: 1,
+    periodicidadeQtd: 0,
+    roundingTolerance: 50,
+    source: "payment_plan_unresolved",
+    warning: reason,
+  };
+}
+
 function extractBosquePaymentPlan(segment = "") {
   const counts = String(segment || "").match(
     /Sinal.*?([0-9]{1,2})\s+parcela[s]?\s+([0-9]{1,2})\s+parcela[s]?\s+([0-9]{1,3})\s+parcela[s]?\s+([0-9]{1,2})\s+parcela[s]?\s+([0-9]{1,2})\s+parcela[s]?/i
   );
+  if (!counts) return unresolvedBosquePlan();
+
   const dates = String(segment || "").match(/1ª\s*parcela\s+([^\s]+(?:\s+dias)?)\s+1ª\s*parcela\s+([^\s]+\/\d{2})\s+([^\s]+\/\d{2})/i);
 
   return {
-    atoQtd: counts?.[1] ? Number.parseInt(counts[1], 10) : 1,
-    compQtd: counts?.[2] ? Number.parseInt(counts[2], 10) : 4,
-    mensalQtd: counts?.[3] ? Number.parseInt(counts[3], 10) : 32,
-    interQtd: counts?.[4] ? Number.parseInt(counts[4], 10) : 3,
+    atoQtd: Number.parseInt(counts[1], 10),
+    compQtd: Number.parseInt(counts[2], 10),
+    mensalQtd: Number.parseInt(counts[3], 10),
+    interQtd: Number.parseInt(counts[4], 10),
     unicaQtd: 0,
-    financiamentoQtd: counts?.[5] ? Number.parseInt(counts[5], 10) : 1,
+    financiamentoQtd: Number.parseInt(counts[5], 10),
     periodicidadeQtd: 0,
     roundingTolerance: 50,
-    compInicio: dates?.[1] || "150 dias",
+    compInicio: dates?.[1] || "",
     mensalInicio: dates?.[2] || "",
     financMes: dates?.[3] || "",
-    source: counts ? "aw_bosque_header_dynamic" : "aw_bosque_header_fallback",
+    source: "aw_bosque_header_dynamic",
   };
 }
 
@@ -319,6 +339,59 @@ function expandUnitList(value = "") {
     .filter(Boolean);
 }
 
+function extractSerenoPaymentPlan(source = "") {
+  const header = String(source || "").slice(0, Math.max(0, String(source || "").search(/\bUnidades?\s+\d+/i)) || 2500);
+  const compact = compactSpaces(header);
+  const labelMatch = compact.match(/Ato\s+30\s*\/\s*60\s*\/\s*90\s+Mensal\s+Anual\s+[ÚU]nica\s+Financiamento\s+Periodicidade/i);
+  if (!labelMatch) {
+    return {
+      atoQtd: 1,
+      compQtd: 0,
+      mensalQtd: 0,
+      interQtd: 0,
+      unicaQtd: 0,
+      financiamentoQtd: 1,
+      periodicidadeQtd: 0,
+      source: "payment_plan_unresolved",
+      warning: "sereno_payment_plan_header_not_found",
+    };
+  }
+  const afterLabels = compact.slice((labelMatch.index || 0) + labelMatch[0].length, (labelMatch.index || 0) + labelMatch[0].length + 300);
+  const counts = afterLabels.match(/\b(\d{1,3})\s+(\d{1,3})\s+(\d{1,3})\s+(\d{1,3})\s+(\d{1,3})\s+(\d{1,3})\s+(\d{1,3})\b/);
+  const dates = afterLabels.match(/([a-zç]+-\d{2})\s+([a-zç]+-\d{2})\s+([a-zç]+-\d{2})\s+([a-zç]+-\d{2})\s+([a-zç]+-\d{2})\s+([a-zç]+-\d{2})\s+([a-zç]+-\d{2})/i);
+  if (!counts) {
+    return {
+      atoQtd: 1,
+      compQtd: 0,
+      mensalQtd: 0,
+      interQtd: 0,
+      unicaQtd: 0,
+      financiamentoQtd: 1,
+      periodicidadeQtd: 0,
+      source: "payment_plan_unresolved",
+      warning: "sereno_payment_plan_counts_not_found",
+    };
+  }
+
+  return {
+    atoQtd: Number.parseInt(counts[1], 10),
+    compQtd: Number.parseInt(counts[2], 10),
+    mensalQtd: Number.parseInt(counts[3], 10),
+    interQtd: Number.parseInt(counts[4], 10),
+    unicaQtd: Number.parseInt(counts[5], 10),
+    financiamentoQtd: Number.parseInt(counts[6], 10),
+    periodicidadeQtd: Number.parseInt(counts[7], 10),
+    atoInicio: dates?.[1] || "",
+    compInicio: dates?.[2] || "",
+    mensalInicio: dates?.[3] || "",
+    interInicio: dates?.[4] || "",
+    unicaInicio: dates?.[5] || "",
+    financMes: dates?.[6] || "",
+    periodicidadeInicio: dates?.[7] || "",
+    source: "aw_sereno_header_dynamic",
+  };
+}
+
 function parseSerenoJardim(source = "", options = {}) {
   const empreendimento = extractEmpreendimento(source, options.empreendimento || "");
   const pavimentos = [...source.matchAll(/(\d{1,2})\s*º\s*PAVIMENTO(?:\s*\(([^)]*)\))?/gi)].map((match) => ({
@@ -334,22 +407,7 @@ function parseSerenoJardim(source = "", options = {}) {
     `${MONEY_BR}\\s+${MONEY_BR}\\s+${MONEY_BR}\\s+${MONEY_BR}\\s+${MONEY_BR}\\s+${MONEY_BR}\\s+${MONEY_BR}\\s+${MONEY_BR}`,
     "gi"
   );
-  const basePlan = {
-    atoQtd: 1,
-    compQtd: 3,
-    mensalQtd: 31,
-    interQtd: 3,
-    unicaQtd: 1,
-    financiamentoQtd: 1,
-    periodicidadeQtd: 1,
-    atoInicio: "junho-25",
-    compInicio: "julho-25",
-    mensalInicio: "outubro-25",
-    interInicio: "dezembro-25",
-    unicaInicio: "abril-28",
-    financMes: "maio-28",
-    source: "aw_sereno_fluxo_pagamento",
-  };
+  const basePlan = extractSerenoPaymentPlan(source);
 
   const rows = [];
   let match;
@@ -423,6 +481,7 @@ export function parseAWPaymentTable(text, options = {}) {
       parser_mode: parserMode,
       total_rows: rows.length,
       invalid_rows: rows.filter((row) => row.validation?.valid === false).length,
+      payment_plan_sources: [...new Set(rows.map((row) => row.parser_meta?.payment_plan?.source).filter(Boolean))],
       complete: rows.length > 0,
     },
   };
