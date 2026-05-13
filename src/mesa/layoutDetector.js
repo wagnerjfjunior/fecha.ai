@@ -17,6 +17,23 @@ export function detectLayout(text = "") {
 
   const hasFloorRange = /\d{1,2}\s*(?:º|o|°|a\.)?\s*(?:e|a|ao)\s*\d{1,2}\s*(?:º|o|°)?\s*andar/i.test(raw);
   const hasFinalBlock = /final\s+0?\d{1,2}(?:\s+e\s+0?\d{1,2})?/i.test(raw);
+  const hasSalesMirrorTitle = hasAny("espelho de vendas", "tabela de vendas") || /e\s*spelho\s+de\s+vendas/i.test(raw);
+  const hasSelectableUnit = /\b(AP|SC|SU|LJ)\d{4}\b/i.test(raw);
+  const hasFinancialHeader = hasAny(
+    "valor total",
+    "preco total",
+    "preço total",
+    "financiamento bancario",
+    "financiamento bancário",
+    "sinal ato",
+    "parcela unica",
+    "parcela única",
+    "complemento ato",
+    "c. ato",
+    "mensal(is)",
+    "intermediaria",
+    "intermediária"
+  );
   const hasCommercialHeader =
     has("area") &&
     has("vagas") &&
@@ -27,11 +44,29 @@ export function detectLayout(text = "") {
     has("valor total") &&
     hasAny("negocio imobiliario", "negócio imobiliário");
 
+  // Espelho de vendas sem tabela financeira.
+  // Ex.: Bueno Brandão 257 high-end com apenas unidades, áreas e vagas, sem valor total/financiamento.
+  // O PDF pode extrair "Espelho" como "E spelho", por isso usamos regex tolerante.
+  // Este arquivo é útil como espelho/estoque, mas não permite Mesa Cliente financeira.
+  if (
+    hasSalesMirrorTitle &&
+    hasAny("andar", "pavimento") &&
+    hasSelectableUnit &&
+    hasAny("m²", "m2") &&
+    !hasFinancialHeader
+  ) {
+    return {
+      layout: "sales_mirror_without_values",
+      confidence: 0.91,
+      reason: "Detectado espelho de vendas com unidades/áreas/vagas, mas sem valores financeiros para montar proposta.",
+    };
+  }
+
   // Espelho compacto Tegra: ATO + FINANCIAMENTO + FINAL(IS) + VALOR TOTAL.
   // Ex.: Universo Tatuapé Órbita e Bem Moema Studios & Offices.
   // Deve rodar antes de ready_stock_table para não cair indevidamente em fallback Worker/Make.
   if (
-    hasAny("espelho de vendas", "tabela de vendas") &&
+    hasSalesMirrorTitle &&
     hasAny("andar") &&
     hasAny("unidade") &&
     hasAny("area", "m2", "m²") &&
@@ -44,24 +79,6 @@ export function detectLayout(text = "") {
       layout: "split_block_table",
       confidence: 0.92,
       reason: "Detectado espelho compacto com ATO, financiamento, final/periodicidade e valor total.",
-    };
-  }
-
-  // Espelho de vendas sem tabela financeira.
-  // Ex.: Bueno Brandão 257 high-end com apenas unidades, áreas e vagas, sem valor total/financiamento.
-  // Este arquivo é útil como espelho/estoque, mas não permite Mesa Cliente financeira.
-  if (
-    hasAny("espelho de vendas", "tabela de vendas") &&
-    hasAny("bloco:", "torre") &&
-    hasAny("andar") &&
-    /\b(AP|SC|SU|LJ)\d{4}\b/i.test(raw) &&
-    hasAny("m²", "m2") &&
-    !hasAny("valor total", "preco total", "preço total", "financiamento bancario", "financiamento bancário", "sinal ato")
-  ) {
-    return {
-      layout: "sales_mirror_without_values",
-      confidence: 0.9,
-      reason: "Detectado espelho de vendas com unidades/áreas/vagas, mas sem valores financeiros para montar proposta.",
     };
   }
 
@@ -103,7 +120,7 @@ export function detectLayout(text = "") {
   // Espelhos Portal/Vendas em que a extração do PDF separa o bloco de unidades
   // do bloco de valores financeiros. Ex.: Garden Design.
   if (
-    hasAny("espelho de vendas", "tabela de vendas") &&
+    hasSalesMirrorTitle &&
     hasAny("andar") &&
     hasAny("unidade") &&
     hasAny("area", "m2", "m²") &&
@@ -162,7 +179,7 @@ export function detectLayout(text = "") {
 
   // Tabelas estilo espelho/ERP, com muitas colunas financeiras horizontais.
   if (
-    hasAny("espelho de vendas", "tabela de vendas") &&
+    hasSalesMirrorTitle &&
     hasAny("intermediaria", "intermediaria", "parcela", "saldo")
   ) {
     return {
