@@ -21,6 +21,8 @@ const CANON_COLUMNS = [
 ];
 
 const CHECK_TOLERANCE = 1;
+const UNIT_PREFIX = "(?:AP|SC|SU|LJ)";
+const MONEY_TOKEN = "(?:R\\$|\\$)?\\s*([0-9]{1,3}(?:\\.[0-9]{3})*,[0-9]{2}|[0-9]+,[0-9]{2}|[0-9]{1,3}(?:\\.[0-9]{3})+|[0-9]+)";
 
 function compactSpaces(value = "") {
   return String(value || "")
@@ -47,15 +49,15 @@ function toNumber(value = "") {
   const raw = String(value || "").trim();
   if (!raw) return 0;
 
-  let s = raw;
+  let s = raw.replace(/\s+/g, "");
   const hasComma = s.includes(",");
   const hasDot = s.includes(".");
+  const numericWithDotsOnly = s.replace(/[^\d.]/g, "");
+  const looksLikeBrazilianThousandsOnly = !hasComma && /^\d{1,3}(?:\.\d{3})+$/.test(numericWithDotsOnly);
 
-  if (hasComma && hasDot) {
-    s = s.replace(/\./g, "").replace(",", ".");
-  } else if (hasComma) {
-    s = s.replace(/\./g, "").replace(",", ".");
-  }
+  if (hasComma && hasDot) s = s.replace(/\./g, "").replace(",", ".");
+  else if (hasComma) s = s.replace(/\./g, "").replace(",", ".");
+  else if (hasDot && looksLikeBrazilianThousandsOnly) s = s.replace(/\./g, "");
 
   s = s.replace(/[^\d.-]/g, "");
   const parsed = Number.parseFloat(s);
@@ -69,14 +71,18 @@ function formatNumber(value, decimals = 2) {
 }
 
 function normalizeMonthYear(value = "") {
-  const match = String(value || "").match(/\b(\d{2})\/(\d{4})\b/);
-  return match ? `${match[2]}-${match[1]}` : "";
+  const match = String(value || "").match(/\b(\d{1,2})\/(\d{4})\b/);
+  return match ? `${match[2]}-${String(Number.parseInt(match[1], 10)).padStart(2, "0")}` : "";
+}
+
+function escapeRegExp(value = "") {
+  return String(value || "").replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
 
 function extractPaymentDate(source = "", label = "ATO") {
   const normalized = compactSpaces(source);
-  const regex = new RegExp(`${label}\\s+(\\d{2}\\/\\d{4})`, "i");
-  const match = normalized.match(regex);
+  const labelRegex = escapeRegExp(label).replace(/\s+/g, "\\s+");
+  const match = normalized.match(new RegExp(`${labelRegex}\\s+(\\d{1,2}\\/\\d{4})`, "i"));
   return match ? normalizeMonthYear(match[1]) : "";
 }
 
@@ -95,11 +101,19 @@ function extractEmpreendimento(text = "", fallback = "") {
   if (fallback) return fallback;
   const normalized = compactSpaces(text);
 
-  const eloDuo = normalized.match(/ELO\s+Duo\s*-\s*Caminhos\s+da\s+Lapa/i);
-  if (eloDuo) return "ELO Duo - Caminhos da Lapa";
+  const match = normalized.match(/EMPREENDIMENTO\s*[:.]*\s*([^\n]+?)(?:\s+ENDEREÇO|\s+ENDERECO|\s+1\.?\s*DATA|$)/i);
+  if (match?.[1]) return compactSpaces(match[1]).replace(/\.{2,}/g, "").replace(/\s*:\s*$/, "");
 
-  const eloTorre = normalized.match(/ELO\s+2\s+CAMINHOS\s+DA\s+LAPA\s*-\s*TORRE\s+B/i);
-  if (eloTorre) return "ELO 2 Caminhos da Lapa - Torre B";
+  const known = [
+    [/ELO\s+Duo\s*-\s*Caminhos\s+da\s+Lapa/i, "ELO Duo - Caminhos da Lapa"],
+    [/ELO\s+2\s+CAMINHOS\s+DA\s+LAPA\s*-\s*TORRE\s+B/i, "ELO 2 Caminhos da Lapa - Torre B"],
+    [/TEG\s*-?\s*SACOM[ÃA]/i, "TEG Sacomã"],
+    [/BEM\s+MOEMA/i, "Bem Moema"],
+    [/[ÓO]RBITA/i, "Órbita"],
+  ];
+  for (const [regex, name] of known) {
+    if (regex.test(normalized)) return name;
+  }
 
   return "";
 }
@@ -157,7 +171,7 @@ function makeParsedRow({ empreendimento, unidade, area, vagas, ato, financiament
   const financiamentoPercent = total > 0 ? financiamento / total : Number.NaN;
   const raw = {
     empreendimento,
-    torre: "B",
+    torre: "",
     final: inferFinalFromUnit(unidade),
     andar: inferAndarFromUnit(unidade),
     unidade,
@@ -225,6 +239,11 @@ export function parseReadyStockTable(text, options = {}) {
   }
 
   const normalized = normalizeForMatch(source);
+  const unitRegex = new RegExp(`\\b${UNIT_PREFIX}\\d{4}\\b`, "i");
+  const rowProbeRegex = new RegExp(
+    `\\b${UNIT_PREFIX}\\d{4}\\b\\s+\\d{1,4}(?:[,.]\\d{1,3})?\\s+\\d{1,2}(?:\\s+Moto)?\\s+${MONEY_TOKEN}\\s+${MONEY_TOKEN}\\s+${MONEY_TOKEN}`,
+    "i"
+  );
   const looksReadyStock =
     normalized.includes("unidade") &&
     normalized.includes("area") &&
@@ -232,7 +251,8 @@ export function parseReadyStockTable(text, options = {}) {
     normalized.includes("ato") &&
     normalized.includes("financiamento") &&
     normalized.includes("total") &&
-    /\bAP\d{4}\b/i.test(source) &&
+    unitRegex.test(source) &&
+    rowProbeRegex.test(source) &&
     !normalized.includes("mensais") &&
     !normalized.includes("c. ato") &&
     !normalized.includes("complemento ato");
@@ -250,7 +270,13 @@ export function parseReadyStockTable(text, options = {}) {
   const empreendimento = extractEmpreendimento(source, options.empreendimento || "");
   const rows = [];
 
-  const rowRegex = /\b(AP\d{4})\s+(\d{1,3},\d{1,2})\s+(\d{1,2})(?:\s+Moto)?\s+R\$\s*([\d.]+,\d{2})\s+R\$\s*([\d.]+,\d{2})\s+R\$\s*([\d.]+,\d{2})\b/gi;
+  const rowRegex = new RegExp(
+    `\\b(${UNIT_PREFIX}\\d{4})\\s+` +
+      `(\\d{1,4}(?:[,.]\\d{1,3})?)\\s+` +
+      `(\\d{1,2})(?:\\s+Moto)?\\s+` +
+      `${MONEY_TOKEN}\\s+${MONEY_TOKEN}\\s+${MONEY_TOKEN}\\b`,
+    "gi"
+  );
   let match;
 
   while ((match = rowRegex.exec(source)) !== null) {
