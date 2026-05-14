@@ -7,6 +7,66 @@ const C = {
   muted: '#94a3b8', accent: '#2563eb', green: '#10b981', red: '#ef4444',
 }
 
+const AMBIENTE_ATUAL = typeof window !== 'undefined' ? window.location.origin : ''
+
+function normalizarTextoErro(valor) {
+  if (!valor) return ''
+  if (typeof valor === 'string') return valor
+  if (typeof valor === 'object') {
+    return valor.error || valor.message || valor.msg || valor.details || JSON.stringify(valor)
+  }
+  return String(valor)
+}
+
+async function lerRespostaApi(response) {
+  const texto = await response.text().catch(() => '')
+  if (!texto) return {}
+  try {
+    return JSON.parse(texto)
+  } catch {
+    return { message: texto }
+  }
+}
+
+function erroAmigavelCriacaoUsuario(error, response, data) {
+  const status = response?.status
+  const bruto = normalizarTextoErro(data) || normalizarTextoErro(error)
+  const texto = bruto.toLowerCase()
+
+  if (error?.name === 'TypeError' && texto.includes('failed to fetch')) {
+    return [
+      'Não consegui conectar com o serviço de criação de usuários.',
+      '',
+      'Isso normalmente acontece quando o ambiente atual ainda não está autorizado pela função do Supabase.',
+      `Ambiente atual: ${AMBIENTE_ATUAL || 'não identificado'}`,
+      '',
+      'Tente novamente pela URL oficial de produção. Se estiver em um preview da Vercel, será necessário liberar esse domínio no CORS da Edge Function criar-usuario.'
+    ].join('\n')
+  }
+
+  if (status === 401 || status === 403 || texto.includes('unauthorized') || texto.includes('forbidden') || texto.includes('jwt')) {
+    return 'Seu acesso não foi autorizado para criar usuários. Saia, entre novamente e confirme se está usando um perfil Admin Local ou Gestor.'
+  }
+
+  if (status === 409 || texto.includes('already') || texto.includes('duplicate') || texto.includes('registered') || texto.includes('exists') || texto.includes('já existe') || texto.includes('ja existe')) {
+    return 'Este e-mail já está cadastrado no sistema. Verifique se o usuário já existe antes de criar novamente.'
+  }
+
+  if (status === 400 || texto.includes('invalid') || texto.includes('required')) {
+    return 'Não foi possível criar o usuário porque algum dado informado está inválido. Confira nome, e-mail, senha, tipo de usuário e time.'
+  }
+
+  if (status >= 500) {
+    return 'O serviço de criação de usuários respondeu com erro interno. Tente novamente em alguns instantes. Se persistir, acione o suporte técnico.'
+  }
+
+  if (bruto) {
+    return `Não foi possível criar o usuário. Detalhe técnico: ${bruto}`
+  }
+
+  return 'Não foi possível criar o usuário agora. Tente novamente ou acione o suporte técnico.'
+}
+
 function Campo({ label, type = 'text', value, onChange, placeholder, disabled }) {
   return (
     <div style={{ marginBottom: 16 }}>
@@ -55,11 +115,11 @@ export default function CriarUsuarioForm({ session, corretor, sb, token, onUsuar
 
   async function handleCriar() {
     setErro(''); setSucesso('')
-    if (!nome.trim() || !email.trim() || !senha || !confirma) { setErro('Preencha todos os campos.'); return }
-    if (senha.length < 8) { setErro('Senha mínimo 8 caracteres.'); return }
-    if (senha !== confirma) { setErro('Senhas não coincidem.'); return }
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) { setErro('E-mail inválido.'); return }
-    if (!isAdmin && !isGestor && !timeId) { setErro('Selecione o time do corretor.'); return }
+    if (!nome.trim() || !email.trim() || !senha || !confirma) { setErro('Preencha nome, e-mail, senha e confirmação para continuar.'); return }
+    if (senha.length < 8) { setErro('A senha precisa ter pelo menos 8 caracteres.'); return }
+    if (senha !== confirma) { setErro('As senhas não conferem. Digite novamente a confirmação.'); return }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) { setErro('Digite um e-mail válido para continuar.'); return }
+    if (!isAdmin && !isGestor && !timeId) { setErro('Escolha o time que este corretor fará parte.'); return }
     setCarregando(true)
     try {
       const r = await fetch(EDGE_URL, {
@@ -72,13 +132,16 @@ export default function CriarUsuarioForm({ session, corretor, sb, token, onUsuar
           time_id: (isAdmin || isGestor) ? null : (timeId || null),
         }),
       })
-      const data = await r.json()
-      if (!r.ok || data.error) { setErro(data.error || 'Erro ao criar usuário.'); return }
+      const data = await lerRespostaApi(r)
+      if (!r.ok || data.error) {
+        setErro(erroAmigavelCriacaoUsuario(null, r, data))
+        return
+      }
       setSucesso('✅ ' + nome + ' criado com sucesso!')
       setNome(''); setEmail(''); setSenha(''); setConfirma('')
       setIsGestor(false); setIsAdmin(false); setTimeId('')
       if (onUsuarioCriado) onUsuarioCriado(data)
-    } catch(e) { setErro('Erro de conexão: ' + e.message) }
+    } catch(e) { setErro(erroAmigavelCriacaoUsuario(e)) }
     finally { setCarregando(false) }
   }
 
@@ -139,7 +202,7 @@ export default function CriarUsuarioForm({ session, corretor, sb, token, onUsuar
             </label>
           </div>
         )}
-        {erro    && <div style={{ color:C.red,   fontSize:13, marginBottom:14, padding:'8px 12px', background:C.red+'18',   borderRadius:8 }}>{erro}</div>}
+        {erro    && <div style={{ color:C.red,   fontSize:13, marginBottom:14, padding:'8px 12px', background:C.red+'18',   borderRadius:8, whiteSpace:'pre-line', lineHeight:1.45 }}>{erro}</div>}
         {sucesso && <div style={{ color:C.green, fontSize:13, marginBottom:14, padding:'8px 12px', background:C.green+'18', borderRadius:8 }}>{sucesso}</div>}
         <button onClick={handleCriar} disabled={carregando}
           style={{ width:'100%', padding:14, borderRadius:12, fontSize:16, fontWeight:700, border:'none',
