@@ -5844,17 +5844,32 @@ export default function App() {
     else setTela("home");
   };
 
-  const renderHomeActions = () => (
-    <HomeActions
-      nome={corretor.nome}
-      isGestor={canAccessAdmin}
-      isRoot={isRoot}
-      canAccessAdmin={canAccessAdmin}
-      onOfertaAtiva={()=>setTela("oferta")}
-      onMesaCliente={()=>setTela("mesa-cliente")}
-      onPainelGestor={irParaPainelGestor}
-    />
-  );
+ const isAdminLocal =
+  corretor?.is_admin_local === true ||
+  corretor?.role === "admin_local" ||
+  corretor?.role === "admin_global";
+
+const isGestor =
+  corretor?.is_gestor === true ||
+  corretor?.role === "gestor";
+
+const canAccessAdmin =
+  isRoot === true ||
+  isAdminLocal ||
+  isGestor;
+
+const renderHomeActions = () => (
+  <HomeActions
+    nome={corretor?.nome}
+    isGestor={isGestor}
+    isAdminLocal={isAdminLocal}
+    isRoot={isRoot}
+    canAccessAdmin={canAccessAdmin}
+    onOfertaAtiva={() => setTela("oferta")}
+    onMesaCliente={() => setTela("mesa-cliente")}
+    onPainelGestor={irParaPainelGestor}
+  />
+);
 
   if(tela==="home") return renderHomeActions();
   if(tela==="criar-usuario"&&canAccessAdmin) return (<CriarUsuarioForm session={session} corretor={corretor} sb={sb} token={session.access_token} onUsuarioCriado={()=>setTela("gestor")} onCancelar={()=>setTela("gestor")}/>);
