@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import PMEWhatsappTemplatesPanel from './pme/PMEWhatsappTemplatesPanel'
+import PMECallScriptsPanel from './pme/PMECallScriptsPanel'
 
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL
 const SUPABASE_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY
@@ -30,7 +31,7 @@ const MODULES = [
   {
     title: 'Scripts de Ligação',
     description: 'Roteiros em blocos para orientar o corretor durante a chamada.',
-    status: 'Planejado',
+    status: 'Seed conectado',
     icon: '📞',
   },
   {
@@ -54,10 +55,10 @@ const MODULES = [
 ]
 
 const FIRST_SEEDS = [
-  'lead_quente + primeira_mensagem',
-  'lista_fria + primeira_mensagem',
-  'lista_quente + primeira_mensagem',
-  'visitou_plantao + primeira_mensagem',
+  'visitou_plantao + 40 mensagens WhatsApp completas',
+  'lista_fria + 40 mensagens WhatsApp completas',
+  'scripts de ligação para visitou_plantao',
+  'scripts de ligação para lista_fria',
 ]
 
 const SAFE_RULES = [
@@ -65,24 +66,6 @@ const SAFE_RULES = [
   'Sem alteração em banco, RPCs, RLS ou discador.',
   'Sem disparo massivo de WhatsApp.',
   'Configuração primeiro; operação depois.',
-]
-
-const LEAD_TYPES = [
-  { key: 'lead_quente', name: 'Lead quente', hint: 'Meta, Google, landing page, formulário ou WhatsApp recente.' },
-  { key: 'lista_fria', name: 'Lista fria', hint: 'Base importada, comprada, antiga ou sem intenção recente.' },
-  { key: 'lista_quente', name: 'Lista quente', hint: 'Base própria, interação anterior ou lead reativado.' },
-  { key: 'visitou_plantao', name: 'Visitou plantão', hint: 'Pessoa que já esteve no stand ou recebeu atendimento presencial.' },
-]
-
-const CALL_SCRIPT_BLOCKS = [
-  'Abertura',
-  'Contexto',
-  'Pergunta inicial',
-  'Qualificação',
-  'Gancho comercial',
-  'Objeções',
-  'Fechamento',
-  'Feedback obrigatório',
 ]
 
 function createSB(url, key) {
@@ -292,8 +275,8 @@ function OverviewTab() {
 
       <section className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         <div className="rounded-3xl bg-white border border-slate-200 p-5 shadow-sm">
-          <p className="text-xs uppercase tracking-widest text-slate-400 font-black">Primeiros seeds recomendados</p>
-          <h2 className="text-lg font-black mt-2">Começar pequeno, mas certo</h2>
+          <p className="text-xs uppercase tracking-widest text-slate-400 font-black">Operação atual priorizada</p>
+          <h2 className="text-lg font-black mt-2">Começar pelo que vende agora</h2>
           <div className="space-y-2 mt-4">
             {FIRST_SEEDS.map((item) => (
               <div key={item} className="rounded-2xl bg-slate-50 border border-slate-100 px-4 py-3 text-sm font-bold text-slate-700">
@@ -343,38 +326,11 @@ function EmailTemplatesTab() {
   )
 }
 
-function ScriptsTab() {
-  return (
-    <div className="space-y-5">
-      <div className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
-        <p className="text-xs uppercase tracking-widest text-slate-400 font-black">Scripts de Ligação</p>
-        <h2 className="text-xl font-black mt-2">Roteiros em blocos para o corretor não se perder</h2>
-        <p className="text-sm text-slate-500 leading-6 mt-2">
-          O script deve orientar a chamada, não engessar o atendimento. A ideia é mostrar blocos rápidos durante a ligação no discador.
-        </p>
-      </div>
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        {LEAD_TYPES.map((lead) => (
-          <div key={lead.key} className="rounded-3xl bg-white border border-slate-200 p-5 shadow-sm">
-            <h3 className="font-black text-slate-900">{lead.name}</h3>
-            <p className="text-xs text-slate-500 mt-2 leading-5">{lead.hint}</p>
-            <div className="mt-4 space-y-2">
-              {CALL_SCRIPT_BLOCKS.map((block) => (
-                <div key={block} className="rounded-xl bg-slate-50 px-3 py-2 text-xs font-bold text-slate-600">{block}</div>
-              ))}
-            </div>
-          </div>
-        ))}
-      </div>
-    </div>
-  )
-}
-
 function CadencesTab() {
   const rows = [
-    { type: 'Lead quente', flow: 'D0 WhatsApp → D0 Ligação → D1 WhatsApp → D2 E-mail → D3 WhatsApp → D5 Final' },
-    { type: 'Lista fria', flow: 'D0 WhatsApp leve → D2 Segunda tentativa → D5 Terceira → D8 Final' },
-    { type: 'Visitou plantão', flow: 'D0 Retomada → D1 Oportunidade → D3 Decisão → D5 Final consultiva' },
+    { type: 'Lista fria', flow: 'D0 WhatsApp leve → D0/D1 Ligação com permissão → D2 Segunda tentativa → D5 Terceira → D8 Final' },
+    { type: 'Visitou plantão', flow: 'D0 Retomada WhatsApp → D0/D1 Ligação consultiva → D2 Simulação/objeção → D5 Final consultiva' },
+    { type: 'Lead quente futuro', flow: 'Preparado para Meta/Google depois da integração com canais digitais' },
   ]
 
   return (
@@ -438,7 +394,7 @@ function HistoryTab() {
 function renderActiveTab(activeTab) {
   if (activeTab === 'whatsapp') return <PMEWhatsappTemplatesPanel />
   if (activeTab === 'email') return <EmailTemplatesTab />
-  if (activeTab === 'scripts') return <ScriptsTab />
+  if (activeTab === 'scripts') return <PMECallScriptsPanel />
   if (activeTab === 'cadences') return <CadencesTab />
   if (activeTab === 'governance') return <GovernanceTab />
   if (activeTab === 'history') return <HistoryTab />
@@ -519,7 +475,7 @@ export default function PowerMessageEngineAdmin() {
           <div className="rounded-2xl border border-slate-700 bg-slate-900 px-4 py-3">
             <p className="text-[11px] uppercase tracking-widest text-slate-500 font-bold">Acesso validado</p>
             <p className="text-sm font-black text-emerald-300">{access.perfil}</p>
-            <p className="text-xs text-slate-500 mt-1">PME Admin v0.3</p>
+            <p className="text-xs text-slate-500 mt-1">PME Admin v0.4</p>
           </div>
         </div>
       </div>
