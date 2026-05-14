@@ -1,13 +1,15 @@
+import { PME_CURRENT_OPERATION_WHATSAPP_SEEDS } from './pmeCurrentOperationSeeds'
+
 export const PME_LEAD_TYPES = [
   {
-    key: 'lead_quente',
-    name: 'Lead quente',
-    hint: 'Meta, Google, landing page, formulário ou WhatsApp recente.',
+    key: 'visitou_plantao',
+    name: 'Visitou plantão',
+    hint: 'Pessoa que já esteve no stand ou recebeu atendimento presencial. Prioridade operacional atual.',
   },
   {
     key: 'lista_fria',
     name: 'Lista fria',
-    hint: 'Base importada, comprada, antiga ou sem intenção recente.',
+    hint: 'Base importada, comprada, antiga ou sem intenção recente. Prioridade operacional atual.',
   },
   {
     key: 'lista_quente',
@@ -15,9 +17,9 @@ export const PME_LEAD_TYPES = [
     hint: 'Base própria, interação anterior ou lead reativado.',
   },
   {
-    key: 'visitou_plantao',
-    name: 'Visitou plantão',
-    hint: 'Pessoa que já esteve no stand ou recebeu atendimento presencial.',
+    key: 'lead_quente',
+    name: 'Lead quente',
+    hint: 'Meta, Google, landing page, formulário ou WhatsApp recente. Preparado para integração futura.',
   },
 ]
 
@@ -53,7 +55,7 @@ export const PME_TEMPLATE_TONES = [
   'urgencia_elegante',
 ]
 
-export const PME_INITIAL_WHATSAPP_SEEDS = [
+export const PME_BASE_WHATSAPP_SEEDS = [
   {
     id: 'wpp-lq-f1-001',
     channel: 'whatsapp',
@@ -216,6 +218,11 @@ export const PME_INITIAL_WHATSAPP_SEEDS = [
     title: 'Visitou plantão — encerramento pós-visita',
     body: '{{nome_lead}}, como não consegui falar com você depois da visita, vou deixar o contato em aberto por aqui. Se quiser retomar valores, fluxo ou disponibilidade, fico à disposição.',
   },
+]
+
+export const PME_INITIAL_WHATSAPP_SEEDS = [
+  ...PME_BASE_WHATSAPP_SEEDS,
+  ...PME_CURRENT_OPERATION_WHATSAPP_SEEDS,
 ]
 
 export function countSeedsByLeadTypeAndPhase(leadType, phase) {
