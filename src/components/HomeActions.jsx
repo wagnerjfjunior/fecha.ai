@@ -1,6 +1,6 @@
 // HomeActions.jsx — Tela principal pós-login
 // Corretor vê: Oferta Ativa + Aceleração Operacional + Mesa do Cliente
-// Gestor/Admin/Root vê: os mesmos + acesso ao painel administrativo
+// Gestor/Admin/Root vê: os mesmos + acesso ao painel administrativo e PME
 // Root vê também: Provisionar Empresa
 
 function isRootIdentity(nome) {
@@ -14,6 +14,11 @@ function abrirTenantProvisioning() {
 
 function abrirAceleracaoOperacional() {
   window.location.hash = 'aceleracao-operacional';
+  window.location.reload();
+}
+
+function abrirPMEAdmin() {
+  window.location.hash = 'pme-admin';
   window.location.reload();
 }
 
@@ -119,6 +124,28 @@ export default function HomeActions({
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
           </svg>
         </button>
+
+        {/* PME — somente gestor/admin/root */}
+        {canAccessAdminPanel && (
+          <button
+            onClick={abrirPMEAdmin}
+            className="w-full bg-blue-950 text-white rounded-2xl p-5 flex items-center gap-4 hover:bg-blue-900 active:scale-95 transition-all shadow-md shadow-blue-100"
+          >
+            <div className="w-12 h-12 bg-white/10 rounded-xl flex items-center justify-center flex-shrink-0">
+              <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+                  d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 4v-4z" />
+              </svg>
+            </div>
+            <div className="text-left">
+              <p className="font-bold text-base">PME — Central de Mensagens</p>
+              <p className="text-blue-100 text-sm">Templates, scripts e cadências</p>
+            </div>
+            <svg className="w-5 h-5 text-white/50 ml-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+            </svg>
+          </button>
+        )}
 
         {/* Painel Root — somente root */}
         {rootDetected && (
