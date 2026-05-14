@@ -5731,7 +5731,7 @@ function CorretorApp({ sb, token, corretor, onLogout, onVoltar }) {
       {tab==="producao" &&<ProducaoTab  sb={sb} token={token} perfilCorretor={perfilFinal}/>}
       {tab==="carteira" &&<CarteiraTab  sb={sb} token={token} perfilCorretor={perfilFinal}/>}
       {tab==="funil"    &&<FunilTab     sb={sb} token={token} perfilCorretor={perfilFinal}/>}
-      {tab==="historico"&&<HistoricoTab sb={sb} token={token} perfilCorretor={perfilFinal} isGestor={corretor?.is_gestor}/>}
+      {tab==="historico"&&<HistoricoTab sb={sb} token={token} perfilCorretor={perfilFinal} isGestor={canAccessAdminPanel(corretor)}/>}
 
       {tab!=="home"&&(
         <div className="fixed bottom-0 left-0 right-0 z-20" style={{
@@ -5790,8 +5790,31 @@ function isRootAdminProfile(corretor) {
   );
 }
 
+function isAdminLocalProfile(corretor) {
+  const role = String(corretor?.role || corretor?.perfil || corretor?.tipo_usuario || "").trim().toLowerCase();
+
+  return Boolean(
+    corretor?.is_admin_local === true ||
+    role === "admin_local" ||
+    role === "admin_global"
+  );
+}
+
+function isGestorProfile(corretor) {
+  const role = String(corretor?.role || corretor?.perfil || corretor?.tipo_usuario || "").trim().toLowerCase();
+
+  return Boolean(
+    corretor?.is_gestor === true ||
+    role === "gestor"
+  );
+}
+
 function canAccessAdminPanel(corretor) {
-  return Boolean(corretor?.is_gestor || isRootAdminProfile(corretor));
+  return Boolean(
+    isRootAdminProfile(corretor) ||
+    isAdminLocalProfile(corretor) ||
+    isGestorProfile(corretor)
+  );
 }
 
 // ─── App raiz ─────────────────────────────────────────────────────────────────
@@ -5838,25 +5861,14 @@ export default function App() {
   );
 
   const isRoot = isRootAdminProfile(corretor);
+  const isAdminLocal = isAdminLocalProfile(corretor);
+  const isGestor = isGestorProfile(corretor);
   const canAccessAdmin = canAccessAdminPanel(corretor);
+
   const irParaPainelGestor = () => {
     if (canAccessAdmin) setTela("gestor");
     else setTela("home");
   };
-
- const isAdminLocal =
-  corretor?.is_admin_local === true ||
-  corretor?.role === "admin_local" ||
-  corretor?.role === "admin_global";
-
-const isGestor =
-  corretor?.is_gestor === true ||
-  corretor?.role === "gestor";
-
-const canAccessAdmin =
-  isRoot === true ||
-  isAdminLocal ||
-  isGestor;
 
 const renderHomeActions = () => (
   <HomeActions
