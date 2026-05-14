@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
+import PMEWhatsappTemplatesPanel from './pme/PMEWhatsappTemplatesPanel'
 
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL
 const SUPABASE_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY
@@ -16,8 +17,8 @@ const TABS = [
 const MODULES = [
   {
     title: 'Templates WhatsApp',
-    description: 'Pools de mensagens por tipo de lead, fase, tom e objetivo comercial.',
-    status: 'Próxima fase',
+    description: 'Matriz de mensagens por tipo de lead, fase, tom e objetivo comercial.',
+    status: 'Seed conectado',
     icon: '💬',
   },
   {
@@ -64,13 +65,6 @@ const SAFE_RULES = [
   'Sem alteração em banco, RPCs, RLS ou discador.',
   'Sem disparo massivo de WhatsApp.',
   'Configuração primeiro; operação depois.',
-]
-
-const TEMPLATE_PHASES = [
-  { key: 'primeira_mensagem', name: 'Primeira mensagem', goal: 'Abrir conversa com contexto e CTA leve.' },
-  { key: 'segunda_mensagem', name: 'Segunda mensagem', goal: 'Retomar sem parecer cobrança.' },
-  { key: 'terceira_mensagem', name: 'Terceira mensagem', goal: 'Trocar argumento e tentar avanço.' },
-  { key: 'mensagem_final', name: 'Mensagem final', goal: 'Encerrar com elegância e deixar porta aberta.' },
 ]
 
 const LEAD_TYPES = [
@@ -189,8 +183,7 @@ async function validarAcessoAdmin(sb, session) {
   const adminRow = results.find(hasAdminProfile)
 
   if (adminRow) {
-    const perfil = hasAdminProfile(adminRow) ? 'Admin/Gestor' : 'Administrador'
-    return { ok: true, perfil }
+    return { ok: true, perfil: 'Admin/Gestor' }
   }
 
   return { ok: false, perfil: null }
@@ -327,50 +320,6 @@ function OverviewTab() {
   )
 }
 
-function WhatsappTemplatesTab() {
-  return (
-    <div className="space-y-5">
-      <div className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
-        <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-          <div>
-            <p className="text-xs uppercase tracking-widest text-slate-400 font-black">Templates WhatsApp</p>
-            <h2 className="text-xl font-black mt-2">Matriz de mensagens por tipo de lead e fase</h2>
-            <p className="text-sm text-slate-500 leading-6 mt-2">
-              Aqui ficarão os pools com variações humanas de abordagem. A próxima etapa será ligar esta tela ao banco e permitir cadastro real.
-            </p>
-          </div>
-          <button className="rounded-2xl bg-blue-600 px-5 py-3 text-sm font-black text-white opacity-60 cursor-not-allowed" title="Disponível quando criarmos as tabelas da PME">
-            Novo Template
-          </button>
-        </div>
-      </div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-4 gap-4">
-        {LEAD_TYPES.map((lead) => (
-          <div key={lead.key} className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
-            <h3 className="font-black text-slate-900">{lead.name}</h3>
-            <p className="text-xs text-slate-500 leading-5 mt-2">{lead.hint}</p>
-            <div className="space-y-2 mt-4">
-              {TEMPLATE_PHASES.map((phase) => (
-                <div key={phase.key} className="rounded-2xl border border-slate-100 bg-slate-50 p-3">
-                  <p className="text-sm font-black text-slate-800">{phase.name}</p>
-                  <p className="text-[11px] text-slate-500 mt-1">Meta v1: 10 variações</p>
-                </div>
-              ))}
-            </div>
-          </div>
-        ))}
-      </div>
-
-      <EmptyState
-        title="CRUD ainda não ativado"
-        description="Esta tela já define a estrutura visual. O próximo passo técnico será criar/validar as tabelas reais e conectar listagem, cadastro, edição e ativação/inativação de templates."
-        buttonLabel="Conectar banco na próxima fase"
-      />
-    </div>
-  )
-}
-
 function EmailTemplatesTab() {
   return (
     <div className="space-y-5">
@@ -408,6 +357,7 @@ function ScriptsTab() {
         {LEAD_TYPES.map((lead) => (
           <div key={lead.key} className="rounded-3xl bg-white border border-slate-200 p-5 shadow-sm">
             <h3 className="font-black text-slate-900">{lead.name}</h3>
+            <p className="text-xs text-slate-500 mt-2 leading-5">{lead.hint}</p>
             <div className="mt-4 space-y-2">
               {CALL_SCRIPT_BLOCKS.map((block) => (
                 <div key={block} className="rounded-xl bg-slate-50 px-3 py-2 text-xs font-bold text-slate-600">{block}</div>
@@ -486,7 +436,7 @@ function HistoryTab() {
 }
 
 function renderActiveTab(activeTab) {
-  if (activeTab === 'whatsapp') return <WhatsappTemplatesTab />
+  if (activeTab === 'whatsapp') return <PMEWhatsappTemplatesPanel />
   if (activeTab === 'email') return <EmailTemplatesTab />
   if (activeTab === 'scripts') return <ScriptsTab />
   if (activeTab === 'cadences') return <CadencesTab />
@@ -513,7 +463,7 @@ export default function PowerMessageEngineAdmin() {
   useEffect(() => {
     if (!sb) {
       setLoading(false)
-      return
+      return undefined
     }
 
     let mounted = true
@@ -569,7 +519,7 @@ export default function PowerMessageEngineAdmin() {
           <div className="rounded-2xl border border-slate-700 bg-slate-900 px-4 py-3">
             <p className="text-[11px] uppercase tracking-widest text-slate-500 font-bold">Acesso validado</p>
             <p className="text-sm font-black text-emerald-300">{access.perfil}</p>
-            <p className="text-xs text-slate-500 mt-1">PME Admin v0.2</p>
+            <p className="text-xs text-slate-500 mt-1">PME Admin v0.3</p>
           </div>
         </div>
       </div>
