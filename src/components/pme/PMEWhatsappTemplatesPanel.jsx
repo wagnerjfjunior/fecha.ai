@@ -1,3 +1,4 @@
+import PMEScopeNotice from './PMEScopeNotice'
 import {
   PME_LEAD_TYPES,
   PME_TEMPLATE_PHASES,
@@ -72,9 +73,14 @@ function SeedPreviewCard({ template }) {
           </p>
           <h3 className="mt-2 font-black text-slate-900">{template.title}</h3>
         </div>
-        <span className="w-fit rounded-full bg-slate-100 px-3 py-1 text-[11px] font-black text-slate-600">
-          {template.tone}
-        </span>
+        <div className="flex flex-wrap gap-2">
+          <span className="w-fit rounded-full bg-violet-50 px-3 py-1 text-[11px] font-black text-violet-700">
+            Seed Global
+          </span>
+          <span className="w-fit rounded-full bg-slate-100 px-3 py-1 text-[11px] font-black text-slate-600">
+            {template.tone}
+          </span>
+        </div>
       </div>
       <p className="mt-4 rounded-2xl bg-slate-50 p-4 text-sm leading-6 text-slate-700">
         {template.body}
@@ -82,6 +88,7 @@ function SeedPreviewCard({ template }) {
       <div className="mt-4 flex flex-wrap gap-2 text-[11px] font-bold text-slate-500">
         <span className="rounded-full bg-blue-50 px-2 py-1 text-blue-700">{template.id}</span>
         <span className="rounded-full bg-slate-100 px-2 py-1">{template.channel}</span>
+        <span className="rounded-full bg-violet-50 px-2 py-1 text-violet-700">nao vinculado a empresa</span>
       </div>
     </div>
   )
@@ -127,17 +134,19 @@ export default function PMEWhatsappTemplatesPanel() {
             <p className="text-xs uppercase tracking-widest text-slate-400 font-black">Templates WhatsApp</p>
             <h2 className="mt-2 text-xl font-black">Matriz inicial de mensagens da PME</h2>
             <p className="mt-2 text-sm leading-6 text-slate-500">
-              Esta visão mostra os templates seed versionados no frontend. A prioridade atual da operação é trabalhar listas de visitantes de plantão e listas frias/compradas antes da integração com redes sociais.
+              Esta visao mostra os templates seed versionados no frontend. A prioridade atual da operacao e trabalhar listas de visitantes de plantao e listas frias/compradas antes da integracao com redes sociais.
             </p>
           </div>
           <button
             className="rounded-2xl bg-blue-600 px-5 py-3 text-sm font-black text-white opacity-60 cursor-not-allowed"
-            title="Disponível quando criarmos as tabelas da PME"
+            title="Disponivel quando criarmos as tabelas da PME"
           >
             Novo Template
           </button>
         </div>
       </div>
+
+      <PMEScopeNotice />
 
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
         {CURRENT_OPERATION_PRIORITY.map((leadType) => (
@@ -173,11 +182,11 @@ export default function PMEWhatsappTemplatesPanel() {
       <div className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
         <div className="mb-4 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
           <div>
-            <p className="text-xs uppercase tracking-widest text-slate-400 font-black">Matriz por combinação</p>
+            <p className="text-xs uppercase tracking-widest text-slate-400 font-black">Matriz por combinacao</p>
             <h2 className="text-lg font-black text-slate-900">Tipos de lead x fases</h2>
           </div>
           <span className="w-fit rounded-full bg-amber-50 px-3 py-1 text-xs font-black text-amber-700 border border-amber-100">
-            Meta: 10 templates por célula
+            Meta: 10 templates por celula
           </span>
         </div>
 
@@ -197,11 +206,16 @@ export default function PMEWhatsappTemplatesPanel() {
                     <h3 className="font-black text-slate-900">{lead.name}</h3>
                     <p className="mt-1 text-xs leading-5 text-slate-500">{lead.hint}</p>
                   </div>
-                  {isPriority && (
-                    <span className="w-fit rounded-full bg-emerald-600 px-3 py-1 text-[11px] font-black text-white">
-                      operação atual
+                  <div className="flex flex-wrap gap-2">
+                    <span className="w-fit rounded-full bg-violet-50 px-3 py-1 text-[11px] font-black text-violet-700">
+                      seed global
                     </span>
-                  )}
+                    {isPriority && (
+                      <span className="w-fit rounded-full bg-emerald-600 px-3 py-1 text-[11px] font-black text-white">
+                        operacao atual
+                      </span>
+                    )}
+                  </div>
                 </div>
                 <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
                   {PME_TEMPLATE_PHASES.map((phase) => (
@@ -218,7 +232,7 @@ export default function PMEWhatsappTemplatesPanel() {
         <div className="mb-3 flex items-end justify-between gap-3">
           <div>
             <p className="text-xs uppercase tracking-widest text-slate-400 font-black">Preview</p>
-            <h2 className="text-lg font-black text-slate-900">Mensagens da operação atual</h2>
+            <h2 className="text-lg font-black text-slate-900">Mensagens da operacao atual</h2>
           </div>
           <span className="hidden sm:inline-flex rounded-full bg-slate-100 px-3 py-1 text-xs font-black text-slate-600">
             Mostrando {previewTemplates.length} de {PME_INITIAL_WHATSAPP_SEEDS.length}
@@ -233,9 +247,9 @@ export default function PMEWhatsappTemplatesPanel() {
       </div>
 
       <div className="rounded-3xl border border-blue-100 bg-blue-50 p-5 text-sm leading-6 text-blue-950">
-        <p className="font-black">Próxima decisão técnica</p>
+        <p className="font-black">Proxima decisao tecnica</p>
         <p className="mt-1">
-          Após validar esta matriz visual, o próximo bloco deve criar as tabelas reais da PME ou um modo híbrido: seeds versionados primeiro, persistência no Supabase depois. Para produção SaaS, o caminho final precisa ser Supabase com RLS por tenant.
+          Depois da auditoria do schema real, estes seeds poderao ser importados para o Supabase com tenant, empresa e empreendimento. Para producao SaaS, o caminho final precisa ser Supabase com RLS por tenant.
         </p>
       </div>
     </div>
