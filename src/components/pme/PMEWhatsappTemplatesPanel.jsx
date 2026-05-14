@@ -6,6 +6,8 @@ import {
   getSeedCompletionStats,
 } from './pmeSeedTemplates'
 
+const CURRENT_OPERATION_PRIORITY = ['visitou_plantao', 'lista_fria']
+
 function getLeadTypeName(key) {
   return PME_LEAD_TYPES.find((item) => item.key === key)?.name || key
 }
@@ -85,9 +87,37 @@ function SeedPreviewCard({ template }) {
   )
 }
 
+function CurrentPriorityCard({ leadType }) {
+  const lead = PME_LEAD_TYPES.find((item) => item.key === leadType)
+  const total = PME_TEMPLATE_PHASES.reduce((sum, phase) => sum + countSeedsByLeadTypeAndPhase(leadType, phase.key), 0)
+  const percent = Math.round((total / 40) * 100)
+
+  return (
+    <div className="rounded-3xl border border-emerald-100 bg-emerald-50 p-5 shadow-sm">
+      <div className="flex items-start justify-between gap-3">
+        <div>
+          <p className="text-xs uppercase tracking-widest text-emerald-700 font-black">Prioridade operacional atual</p>
+          <h3 className="mt-2 text-lg font-black text-emerald-950">{lead?.name || leadType}</h3>
+          <p className="mt-1 text-sm leading-6 text-emerald-800">{lead?.hint}</p>
+        </div>
+        <span className="rounded-2xl bg-white px-3 py-2 text-xl font-black text-emerald-700">{total}</span>
+      </div>
+      <div className="mt-4">
+        <div className="mb-2 flex justify-between text-xs font-black text-emerald-800">
+          <span>Completude operacional</span>
+          <span>{percent}%</span>
+        </div>
+        <div className="h-3 overflow-hidden rounded-full bg-white">
+          <div className="h-full rounded-full bg-emerald-600" style={{ width: percent + '%' }} />
+        </div>
+      </div>
+    </div>
+  )
+}
+
 export default function PMEWhatsappTemplatesPanel() {
   const stats = getSeedCompletionStats(10)
-  const previewTemplates = PME_INITIAL_WHATSAPP_SEEDS.slice(0, 8)
+  const previewTemplates = PME_INITIAL_WHATSAPP_SEEDS.filter((item) => CURRENT_OPERATION_PRIORITY.includes(item.leadType)).slice(0, 8)
 
   return (
     <div className="space-y-5">
@@ -97,7 +127,7 @@ export default function PMEWhatsappTemplatesPanel() {
             <p className="text-xs uppercase tracking-widest text-slate-400 font-black">Templates WhatsApp</p>
             <h2 className="mt-2 text-xl font-black">Matriz inicial de mensagens da PME</h2>
             <p className="mt-2 text-sm leading-6 text-slate-500">
-              Esta visão mostra os templates seed versionados no frontend. O próximo passo será transformar esta matriz em cadastro persistente no banco, com RLS e controle por tenant.
+              Esta visão mostra os templates seed versionados no frontend. A prioridade atual da operação é trabalhar listas de visitantes de plantão e listas frias/compradas antes da integração com redes sociais.
             </p>
           </div>
           <button
@@ -107,6 +137,12 @@ export default function PMEWhatsappTemplatesPanel() {
             Novo Template
           </button>
         </div>
+      </div>
+
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+        {CURRENT_OPERATION_PRIORITY.map((leadType) => (
+          <CurrentPriorityCard key={leadType} leadType={leadType} />
+        ))}
       </div>
 
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-4">
@@ -146,19 +182,35 @@ export default function PMEWhatsappTemplatesPanel() {
         </div>
 
         <div className="space-y-4">
-          {PME_LEAD_TYPES.map((lead) => (
-            <div key={lead.key} className="rounded-3xl border border-slate-100 bg-slate-50 p-4">
-              <div className="mb-3">
-                <h3 className="font-black text-slate-900">{lead.name}</h3>
-                <p className="mt-1 text-xs leading-5 text-slate-500">{lead.hint}</p>
+          {PME_LEAD_TYPES.map((lead) => {
+            const isPriority = CURRENT_OPERATION_PRIORITY.includes(lead.key)
+            return (
+              <div
+                key={lead.key}
+                className={
+                  'rounded-3xl border p-4 ' +
+                  (isPriority ? 'border-emerald-100 bg-emerald-50/60' : 'border-slate-100 bg-slate-50')
+                }
+              >
+                <div className="mb-3 flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+                  <div>
+                    <h3 className="font-black text-slate-900">{lead.name}</h3>
+                    <p className="mt-1 text-xs leading-5 text-slate-500">{lead.hint}</p>
+                  </div>
+                  {isPriority && (
+                    <span className="w-fit rounded-full bg-emerald-600 px-3 py-1 text-[11px] font-black text-white">
+                      operação atual
+                    </span>
+                  )}
+                </div>
+                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
+                  {PME_TEMPLATE_PHASES.map((phase) => (
+                    <MatrixCell key={lead.key + phase.key} leadType={lead.key} phase={phase.key} />
+                  ))}
+                </div>
               </div>
-              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
-                {PME_TEMPLATE_PHASES.map((phase) => (
-                  <MatrixCell key={lead.key + phase.key} leadType={lead.key} phase={phase.key} />
-                ))}
-              </div>
-            </div>
-          ))}
+            )
+          })}
         </div>
       </div>
 
@@ -166,7 +218,7 @@ export default function PMEWhatsappTemplatesPanel() {
         <div className="mb-3 flex items-end justify-between gap-3">
           <div>
             <p className="text-xs uppercase tracking-widest text-slate-400 font-black">Preview</p>
-            <h2 className="text-lg font-black text-slate-900">Primeiras mensagens cadastradas como seed</h2>
+            <h2 className="text-lg font-black text-slate-900">Mensagens da operação atual</h2>
           </div>
           <span className="hidden sm:inline-flex rounded-full bg-slate-100 px-3 py-1 text-xs font-black text-slate-600">
             Mostrando {previewTemplates.length} de {PME_INITIAL_WHATSAPP_SEEDS.length}
