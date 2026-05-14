@@ -33,7 +33,10 @@ export default function CriarUsuarioForm({ session, corretor, sb, token, onUsuar
   const [carregandoTimes, setCarregandoTimes] = useState(false)
   const [erro, setErro] = useState('')
   const [sucesso, setSucesso] = useState('')
-  const isAdminLocal = corretor && corretor.is_admin_local === true
+  const isAdminLocal =
+    corretor?.is_admin_local === true ||
+    corretor?.role === 'admin_local' ||
+    corretor?.role === 'admin_global'
 
   useEffect(() => {
     (async () => {
