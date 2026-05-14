@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import PMEWhatsappTemplatesPanel from './pme/PMEWhatsappTemplatesPanel'
 import PMECallScriptsPanel from './pme/PMECallScriptsPanel'
+import PMECadencesPanel from './pme/PMECadencesPanel'
 
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL
 const SUPABASE_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY
@@ -37,7 +38,7 @@ const MODULES = [
   {
     title: 'Cadências',
     description: 'Sequências assistidas para primeira, segunda, terceira e última tentativa.',
-    status: 'Planejado',
+    status: 'Seed conectado',
     icon: '🧭',
   },
   {
@@ -59,6 +60,7 @@ const FIRST_SEEDS = [
   'lista_fria + 40 mensagens WhatsApp completas',
   'scripts de ligação para visitou_plantao',
   'scripts de ligação para lista_fria',
+  'cadências assistidas para visitou_plantao e lista_fria',
 ]
 
 const SAFE_RULES = [
@@ -326,34 +328,6 @@ function EmailTemplatesTab() {
   )
 }
 
-function CadencesTab() {
-  const rows = [
-    { type: 'Lista fria', flow: 'D0 WhatsApp leve → D0/D1 Ligação com permissão → D2 Segunda tentativa → D5 Terceira → D8 Final' },
-    { type: 'Visitou plantão', flow: 'D0 Retomada WhatsApp → D0/D1 Ligação consultiva → D2 Simulação/objeção → D5 Final consultiva' },
-    { type: 'Lead quente futuro', flow: 'Preparado para Meta/Google depois da integração com canais digitais' },
-  ]
-
-  return (
-    <div className="space-y-5">
-      <div className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
-        <p className="text-xs uppercase tracking-widest text-slate-400 font-black">Cadências</p>
-        <h2 className="text-xl font-black mt-2">Régua assistida antes do piloto automático real</h2>
-        <p className="text-sm text-slate-500 leading-6 mt-2">
-          Na v1, a cadência deve sugerir próxima ação e evitar esquecimento. Envio automático fica bloqueado até haver governança e integração oficial segura.
-        </p>
-      </div>
-      <div className="space-y-3">
-        {rows.map((row) => (
-          <div key={row.type} className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
-            <p className="font-black text-slate-900">{row.type}</p>
-            <p className="text-sm text-slate-500 leading-6 mt-2">{row.flow}</p>
-          </div>
-        ))}
-      </div>
-    </div>
-  )
-}
-
 function GovernanceTab() {
   return (
     <div className="space-y-5">
@@ -395,7 +369,7 @@ function renderActiveTab(activeTab) {
   if (activeTab === 'whatsapp') return <PMEWhatsappTemplatesPanel />
   if (activeTab === 'email') return <EmailTemplatesTab />
   if (activeTab === 'scripts') return <PMECallScriptsPanel />
-  if (activeTab === 'cadences') return <CadencesTab />
+  if (activeTab === 'cadences') return <PMECadencesPanel />
   if (activeTab === 'governance') return <GovernanceTab />
   if (activeTab === 'history') return <HistoryTab />
   return <OverviewTab />
@@ -475,7 +449,7 @@ export default function PowerMessageEngineAdmin() {
           <div className="rounded-2xl border border-slate-700 bg-slate-900 px-4 py-3">
             <p className="text-[11px] uppercase tracking-widest text-slate-500 font-bold">Acesso validado</p>
             <p className="text-sm font-black text-emerald-300">{access.perfil}</p>
-            <p className="text-xs text-slate-500 mt-1">PME Admin v0.4</p>
+            <p className="text-xs text-slate-500 mt-1">PME Admin v0.5</p>
           </div>
         </div>
       </div>
