@@ -3,12 +3,13 @@
  * Componente principal da Mesa Cliente.
  * 3 abas: Empreendimentos | Fluxo | Histórico
  *
- * Uso no App.jsx:
- *   import MesaCliente from './components/MesaCliente';
- *   <MesaCliente empresaId={user.empresa_id} corretorId={user.id} isGestor={user.is_gestor} />
+ * Preview segura:
+ * - recebe sb/token do App principal;
+ * - não cria cliente Supabase paralelo;
+ * - mantém tenant isolation nas RPCs do banco.
  */
 
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import TabEmpreendimentos from './TabEmpreendimentos';
 import TabFluxo from './TabFluxo';
 import TabHistorico from './TabHistorico';
@@ -19,9 +20,43 @@ const TABS = [
   { id: 'hist',  label: 'Histórico',        icon: '📂' },
 ];
 
-export default function MesaCliente({ empresaId, corretorId, isGestor = false }) {
-  const [tab, setTab]               = useState('emp');
-  const [empSelecionado, setEmp]    = useState(null); // empreendimento selecionado para Fluxo
+function getRole(corretor) {
+  return String(corretor?.role || corretor?.perfil || corretor?.tipo_usuario || '').trim().toLowerCase();
+}
+
+function resolveMesaContext({ corretor, empresaId, corretorId, isGestor }) {
+  const role = getRole(corretor);
+  const gestor = Boolean(
+    isGestor ||
+    corretor?.is_gestor === true ||
+    corretor?.is_admin_local === true ||
+    corretor?.is_root === true ||
+    ['gestor', 'admin', 'admin_local', 'admin_global', 'root', 'root_admin', 'super_admin'].includes(role)
+  );
+
+  return {
+    empresaId: empresaId || corretor?.empresa_id || null,
+    corretorId: corretorId || corretor?.id || null,
+    isGestor: gestor,
+  };
+}
+
+export default function MesaCliente({
+  sb,
+  token,
+  corretor,
+  empresaId,
+  corretorId,
+  isGestor = false,
+  onVoltar,
+}) {
+  const [tab, setTab] = useState('emp');
+  const [empSelecionado, setEmp] = useState(null);
+
+  const ctx = useMemo(
+    () => resolveMesaContext({ corretor, empresaId, corretorId, isGestor }),
+    [corretor, empresaId, corretorId, isGestor]
+  );
 
   const abrirFluxo = (empreendimento) => {
     setEmp(empreendimento);
@@ -32,10 +67,37 @@ export default function MesaCliente({ empresaId, corretorId, isGestor = false })
     setTab('emp');
   };
 
-  return (
-    <div className="flex flex-col h-full bg-[var(--color-background-primary)]">
+  if (!sb || !token || !ctx.empresaId || !ctx.corretorId) {
+    return (
+      <div className="min-h-screen bg-[var(--color-background-primary)] flex flex-col items-center justify-center p-6 text-center gap-3">
+        <span className="text-5xl">🔒</span>
+        <p className="text-[16px] font-semibold text-[var(--color-text-primary)]">Mesa Cliente indisponível</p>
+        <p className="text-[13px] text-[var(--color-text-secondary)] max-w-[360px]">
+          Não foi possível identificar sessão, empresa ou corretor. Volte para o início e entre novamente.
+        </p>
+        {onVoltar && (
+          <button onClick={onVoltar} className="mt-2 px-4 py-2 rounded-xl bg-[var(--color-background-secondary)] text-[13px]">
+            Voltar
+          </button>
+        )}
+      </div>
+    );
+  }
 
-      {/* Tabs */}
+  return (
+    <div className="flex flex-col h-full min-h-screen bg-[var(--color-background-primary)]">
+      <div className="flex items-center justify-between px-3 py-2 border-b border-[var(--color-border-tertiary)] bg-[var(--color-background-secondary)]">
+        <div>
+          <p className="text-[14px] font-semibold text-[var(--color-text-primary)]">Mesa Cliente</p>
+          <p className="text-[11px] text-[var(--color-text-tertiary)]">Preview: unidades extraídas pelo parser</p>
+        </div>
+        {onVoltar && (
+          <button onClick={onVoltar} className="px-3 py-1.5 rounded-xl bg-[var(--color-background-primary)] text-[12px]">
+            ← Início
+          </button>
+        )}
+      </div>
+
       <nav className="flex border-b border-[var(--color-border-tertiary)] bg-[var(--color-background-secondary)] flex-shrink-0">
         {TABS.map(t => (
           <button
@@ -54,22 +116,24 @@ export default function MesaCliente({ empresaId, corretorId, isGestor = false })
         ))}
       </nav>
 
-      {/* Conteúdo */}
       <div className="flex-1 overflow-y-auto">
-
         {tab === 'emp' && (
           <TabEmpreendimentos
-            empresaId={empresaId}
-            isGestor={isGestor}
+            sb={sb}
+            token={token}
+            empresaId={ctx.empresaId}
+            isGestor={ctx.isGestor}
             onAbrirFluxo={abrirFluxo}
           />
         )}
 
         {tab === 'fluxo' && (
           <TabFluxo
-            empresaId={empresaId}
-            corretorId={corretorId}
-            isGestor={isGestor}
+            sb={sb}
+            token={token}
+            empresaId={ctx.empresaId}
+            corretorId={ctx.corretorId}
+            isGestor={ctx.isGestor}
             empreendimento={empSelecionado}
             onVoltar={voltarParaEmps}
             onIrParaEmps={() => setTab('emp')}
@@ -78,12 +142,13 @@ export default function MesaCliente({ empresaId, corretorId, isGestor = false })
 
         {tab === 'hist' && (
           <TabHistorico
-            empresaId={empresaId}
-            corretorId={isGestor ? null : corretorId} // gestor vê tudo
-            isGestor={isGestor}
+            sb={sb}
+            token={token}
+            empresaId={ctx.empresaId}
+            corretorId={ctx.isGestor ? null : ctx.corretorId}
+            isGestor={ctx.isGestor}
           />
         )}
-
       </div>
     </div>
   );
