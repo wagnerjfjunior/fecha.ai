@@ -5886,7 +5886,14 @@ const renderHomeActions = () => (
   if(tela==="home") return renderHomeActions();
   if(tela==="criar-usuario"&&canAccessAdmin) return (<CriarUsuarioForm session={session} corretor={corretor} sb={sb} token={session.access_token} onUsuarioCriado={()=>setTela("gestor")} onCancelar={()=>setTela("gestor")}/>);
   if(tela==="oferta") return (<CorretorApp sb={sb} token={session.access_token} corretor={corretor} onLogout={logout} onVoltar={()=>setTela("home")}/>);
-  if(tela==="mesa-cliente") return (<MesaCliente corretor={corretor} onVoltar={()=>setTela("home")}/>);
+  if(tela==="mesa-cliente") return (
+  <MesaCliente
+    sb={sb}
+    token={session.access_token}
+    corretor={corretor}
+    onVoltar={() => setTela("home")}
+  />
+);
   if(tela==="gestor"&&canAccessAdmin) return (<GestorApp sb={sb} token={session.access_token} corretor={corretor} isRoot={isRoot} onLogout={logout} onVoltar={()=>setTela("home")} onCriarUsuario={()=>setTela("criar-usuario")}/>);
   return renderHomeActions();
 }
