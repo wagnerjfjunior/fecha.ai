@@ -146,3 +146,5 @@ export function useAprovarRejeitarMesa() {
     },
   });
 }
+
+// Mesa Cliente v1.0 - supabaseClient integrado
