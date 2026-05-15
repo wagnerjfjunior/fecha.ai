@@ -1,13 +1,11 @@
 /**
  * useMesaData.js
  * Hooks TanStack Query para dados do Supabase da Mesa Cliente.
- * Todos os hooks seguem o padrão do projeto: staleTime + refetchOnWindowFocus.
  */
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '../supabaseClient';
 
-// ─── Chaves de query ───────────────────────────────────────────
 export const MESA_KEYS = {
   empreendimentos: (empresaId) => ['mesa', 'empreendimentos', empresaId],
   config: (empresaId) => ['mesa', 'config', empresaId],
@@ -110,6 +108,26 @@ export function useAprovarRejeitarMesa() {
     },
     onSuccess: (_data, variables) => {
       queryClient.invalidateQueries({ queryKey: MESA_KEYS.historico(variables.empresaId, {}) });
+    },
+  });
+}
+
+// Hook adicionado para compatibilidade com TabEmpreendimentos.jsx
+// Chama o RPC importar_mesa_cliente_parser_resultado
+export function useImportarMesaClienteParserResultado() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ empresaId, empreendimentoId, parserJson }) => {
+      const { data, error } = await supabase.rpc('importar_mesa_cliente_parser_resultado', {
+        p_empresa_id: empresaId,
+        p_empreendimento_id: empreendimentoId,
+        p_parser_json: parserJson,
+      });
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: (_data, variables) => {
+      queryClient.invalidateQueries({ queryKey: MESA_KEYS.empreendimentos(variables.empresaId) });
     },
   });
 }
