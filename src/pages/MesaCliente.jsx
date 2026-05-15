@@ -111,7 +111,7 @@ export default function MesaClientePage({ corretor, onVoltar }) {
       sb={sb}
       token={token}
       corretor={corretor}
-      empresaId={corretor?.empresa_id}
+      empresaId={session?.user?.empresa_id}
       corretorId={corretor?.id}
       isGestor={isGestorLike(corretor)}
       onVoltar={onVoltar}
