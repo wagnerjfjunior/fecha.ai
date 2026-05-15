@@ -5,7 +5,11 @@
  */
 
 import { useState } from 'react';
-import { useEmpreendimentosMesa, useRegistrarUpload } from './hooks/useMesaData';
+import {
+  useEmpreendimentosMesa,
+  useRegistrarUpload,
+  useImportarMesaClienteParserResultado,
+} from './hooks/useMesaData';
 
 const DOT_COLOR = { ok: 'bg-[#1D9E75]', yellow: 'bg-[#EF9F27]', red: 'bg-[#E24B4A]' };
 const PILL_BG   = { ok: 'bg-[#E1F5EE]', yellow: 'bg-[#FAEEDA]', red: 'bg-[#FDEAEA]' };
@@ -22,6 +26,111 @@ function StatusPill({ status = 'red', title, sub, who, obs }) {
         <div className={`text-[11px] mt-0.5 ${PILL_SUB[safeStatus]}`}>{sub}</div>
         {who && <div className="text-[10px] mt-1 opacity-70">por {who}</div>}
         {obs && <div className="text-[10px] mt-1 italic opacity-70">{obs}</div>}
+      </div>
+    </div>
+  );
+}
+
+function normalizeParserPayload(rawText) {
+  const parsed = JSON.parse(rawText);
+  const root = Array.isArray(parsed) ? { unidades: parsed } : parsed;
+  const unidades = root.unidades || root.data?.unidades || root.rows || root.items || [];
+  if (!Array.isArray(unidades) || unidades.length === 0) {
+    throw new Error('JSON sem array de unidades. Use { "unidades": [...] } ou cole diretamente um array.');
+  }
+  return {
+    empreendimentoNome: root.empreendimento_nome || root.empreendimento || root.nome_empreendimento || root.data?.empreendimento_nome || '',
+    incorporadora: root.incorporadora || root.data?.incorporadora || '',
+    bairro: root.bairro || root.data?.bairro || '',
+    cidade: root.cidade || root.data?.cidade || '',
+    nomeArquivo: root.nome_arquivo || root.fileName || root.filename || 'parser-json-manual.json',
+    parserNome: root.parser_nome || root.parser || 'manual_json_preview',
+    unidades,
+  };
+}
+
+function ImportParserModal({ onClose, onSuccess, empresaId, sb, token }) {
+  const [empreendimentoNome, setEmpreendimentoNome] = useState('');
+  const [incorporadora, setIncorporadora] = useState('');
+  const [bairro, setBairro] = useState('');
+  const [cidade, setCidade] = useState('');
+  const [jsonText, setJsonText] = useState('');
+  const [localError, setLocalError] = useState(null);
+  const [previewCount, setPreviewCount] = useState(null);
+  const { mutateAsync, isLoading, error } = useImportarMesaClienteParserResultado({ sb, token });
+
+  const handleParsePreview = () => {
+    setLocalError(null);
+    const normalized = normalizeParserPayload(jsonText);
+    if (!empreendimentoNome && normalized.empreendimentoNome) setEmpreendimentoNome(normalized.empreendimentoNome);
+    if (!incorporadora && normalized.incorporadora) setIncorporadora(normalized.incorporadora);
+    if (!bairro && normalized.bairro) setBairro(normalized.bairro);
+    if (!cidade && normalized.cidade) setCidade(normalized.cidade);
+    setPreviewCount(normalized.unidades.length);
+    return normalized;
+  };
+
+  const handleImportar = async () => {
+    try {
+      setLocalError(null);
+      const normalized = handleParsePreview();
+      const nomeFinal = empreendimentoNome || normalized.empreendimentoNome;
+      if (!nomeFinal.trim()) throw new Error('Informe o nome real do empreendimento antes de importar.');
+      await mutateAsync({
+        empresaId,
+        empreendimentoNome: nomeFinal,
+        incorporadora: incorporadora || normalized.incorporadora,
+        bairro: bairro || normalized.bairro,
+        cidade: cidade || normalized.cidade,
+        nomeArquivo: normalized.nomeArquivo,
+        parserNome: normalized.parserNome,
+        unidades: normalized.unidades,
+      });
+      onSuccess?.();
+      onClose();
+    } catch (err) {
+      setLocalError(err.message || 'Erro ao validar/importar JSON');
+    }
+  };
+
+  return (
+    <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-[9999] p-4" onClick={onClose}>
+      <div className="bg-[var(--color-background-primary)] rounded-2xl p-5 w-full max-w-[720px] relative shadow-2xl" onClick={e => e.stopPropagation()}>
+        <button onClick={onClose} className="absolute top-3 right-3 w-7 h-7 rounded-full bg-[var(--color-background-secondary)] flex items-center justify-center text-base">×</button>
+        <p className="text-[15px] font-semibold mb-1">Importar resultado do parser</p>
+        <p className="text-[12px] text-[var(--color-text-secondary)] mb-4">
+          Cole o JSON real gerado pelo parser. A RPC cria o empreendimento, snapshot e unidades com isolamento por empresa.
+        </p>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mb-3">
+          <input value={empreendimentoNome} onChange={e => setEmpreendimentoNome(e.target.value)} placeholder="Nome real do empreendimento *" className="px-3 py-2 rounded-xl border border-[var(--color-border-secondary)] bg-[var(--color-background-primary)] text-[13px] outline-none" />
+          <input value={incorporadora} onChange={e => setIncorporadora(e.target.value)} placeholder="Incorporadora" className="px-3 py-2 rounded-xl border border-[var(--color-border-secondary)] bg-[var(--color-background-primary)] text-[13px] outline-none" />
+          <input value={bairro} onChange={e => setBairro(e.target.value)} placeholder="Bairro" className="px-3 py-2 rounded-xl border border-[var(--color-border-secondary)] bg-[var(--color-background-primary)] text-[13px] outline-none" />
+          <input value={cidade} onChange={e => setCidade(e.target.value)} placeholder="Cidade" className="px-3 py-2 rounded-xl border border-[var(--color-border-secondary)] bg-[var(--color-background-primary)] text-[13px] outline-none" />
+        </div>
+
+        <textarea
+          rows={12}
+          value={jsonText}
+          onChange={e => { setJsonText(e.target.value); setPreviewCount(null); }}
+          placeholder={'Exemplo:\n{\n  "empreendimento_nome": "Garden Design",\n  "incorporadora": "Tegra",\n  "unidades": [\n    { "unidade": "101", "andar": 1, "metragem": 76, "valor_tabela": 950000 }\n  ]\n}'}
+          className="w-full rounded-xl border border-[var(--color-border-secondary)] bg-[var(--color-background-secondary)] p-3 text-[12px] font-mono outline-none resize-y"
+        />
+
+        <div className="bg-[#FAEEDA] text-[#412402] rounded-xl px-3 py-2 text-[11px] my-3 leading-relaxed">
+          ⚠️ Nesta etapa o espelho de vendas ainda não filtra vendidas. Todas as unidades importadas aparecerão para conferência e montagem de mesa.
+        </div>
+
+        {(localError || error) && <div className="bg-[#FDEAEA] text-[#4B1528] rounded-xl px-3 py-2 text-[11px] mb-3">{localError || error}</div>}
+        {previewCount !== null && <div className="bg-[#E1F5EE] text-[#0F6E56] rounded-xl px-3 py-2 text-[11px] mb-3">JSON validado: {previewCount} unidade(s) encontrada(s).</div>}
+
+        <div className="flex gap-2 justify-end">
+          <button onClick={onClose} className="px-4 py-2 rounded-xl bg-[var(--color-background-secondary)] text-[12px]">Cancelar</button>
+          <button onClick={() => { try { handleParsePreview(); } catch (err) { setLocalError(err.message); } }} className="px-4 py-2 rounded-xl bg-[var(--color-background-info)] text-[var(--color-text-info)] text-[12px] font-medium">Validar JSON</button>
+          <button onClick={handleImportar} disabled={isLoading || !jsonText.trim()} className={`px-4 py-2 rounded-xl bg-[var(--color-text-primary)] text-[var(--color-background-primary)] text-[12px] font-medium ${isLoading || !jsonText.trim() ? 'opacity-50' : ''}`}>
+            {isLoading ? 'Importando…' : 'Importar'}
+          </button>
+        </div>
       </div>
     </div>
   );
@@ -171,6 +280,7 @@ function EmpCard({ emp, onAbrirFluxo, onUpload }) {
 export default function TabEmpreendimentos({ sb, token, empresaId, onAbrirFluxo }) {
   const { data: empreendimentos = [], isLoading, error, reload } = useEmpreendimentosMesa({ sb, token, empresaId });
   const [uploadTarget, setUploadTarget] = useState(null);
+  const [showImportParser, setShowImportParser] = useState(false);
 
   const handleUpload = (emp, tipo) => setUploadTarget({ emp, tipo });
 
@@ -178,7 +288,10 @@ export default function TabEmpreendimentos({ sb, token, empresaId, onAbrirFluxo 
     <div className="p-3">
       <div className="flex items-center justify-between gap-3 bg-[var(--color-background-info)] rounded-xl px-3 py-2.5 mb-3 flex-wrap">
         <span className="text-[12px] text-[var(--color-text-info)]">📤 Recebeu tabela ou espelho pelo WhatsApp? Registre aqui para auditoria e próxima etapa de parser/storage.</span>
-        <button onClick={() => setUploadTarget({ emp: null, tipo: null })} className="text-[12px] px-3 py-1.5 rounded-xl bg-[var(--color-text-info)] text-white font-medium">Subir arquivo</button>
+        <div className="flex gap-2 flex-wrap">
+          <button onClick={() => setShowImportParser(true)} className="text-[12px] px-3 py-1.5 rounded-xl bg-[#E1F5EE] text-[#0F6E56] font-medium">Importar JSON parser</button>
+          <button onClick={() => setUploadTarget({ emp: null, tipo: null })} className="text-[12px] px-3 py-1.5 rounded-xl bg-[var(--color-text-info)] text-white font-medium">Subir arquivo</button>
+        </div>
       </div>
 
       {isLoading && <div className="text-center py-10 text-[var(--color-text-tertiary)] text-[13px]">Carregando empreendimentos…</div>}
@@ -194,13 +307,24 @@ export default function TabEmpreendimentos({ sb, token, empresaId, onAbrirFluxo 
         <div className="text-center py-12">
           <div className="text-4xl mb-3">🏢</div>
           <p className="text-[14px] font-medium text-[var(--color-text-secondary)]">Nenhum empreendimento com tabela</p>
-          <p className="text-[12px] text-[var(--color-text-tertiary)] mt-1">Suba a primeira tabela comercial para começar.</p>
+          <p className="text-[12px] text-[var(--color-text-tertiary)] mt-1">Importe o JSON real do parser para começar.</p>
+          <button onClick={() => setShowImportParser(true)} className="mt-4 text-[12px] px-4 py-2 rounded-xl bg-[#E1F5EE] text-[#0F6E56] font-medium">Importar primeira tabela</button>
         </div>
       )}
 
       {empreendimentos.map(emp => (
         <EmpCard key={emp.id} emp={emp} onAbrirFluxo={onAbrirFluxo} onUpload={handleUpload} />
       ))}
+
+      {showImportParser && (
+        <ImportParserModal
+          sb={sb}
+          token={token}
+          empresaId={empresaId}
+          onClose={() => setShowImportParser(false)}
+          onSuccess={() => { setShowImportParser(false); reload(); }}
+        />
+      )}
 
       {uploadTarget && (
         <UploadModal
