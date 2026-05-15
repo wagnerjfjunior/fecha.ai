@@ -167,6 +167,47 @@ export function useRegistrarUpload({ sb, token, onSuccess } = {}) {
   return { mutateAsync, isLoading, error };
 }
 
+export function useImportarMesaClienteParserResultado({ sb, token, onSuccess } = {}) {
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState(null);
+
+  const mutateAsync = useCallback(async ({
+    empresaId,
+    empreendimentoNome,
+    incorporadora,
+    bairro,
+    cidade,
+    nomeArquivo,
+    parserNome,
+    unidades,
+  }) => {
+    setIsLoading(true);
+    setError(null);
+    try {
+      const data = await callRpc(sb, token, 'importar_mesa_cliente_parser_resultado', {
+        p_empresa_id: empresaId,
+        p_empreendimento_nome: empreendimentoNome,
+        p_incorporadora: incorporadora ?? null,
+        p_bairro: bairro ?? null,
+        p_cidade: cidade ?? null,
+        p_nome_arquivo: nomeArquivo ?? null,
+        p_parser_nome: parserNome ?? 'native_first',
+        p_unidades: unidades ?? [],
+      });
+      onSuccess?.(data, { empresaId, empreendimentoNome });
+      return data;
+    } catch (err) {
+      const msg = normalizeError(err, 'Erro ao importar resultado do parser');
+      setError(msg);
+      throw new Error(msg);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [sb, token, onSuccess]);
+
+  return { mutateAsync, isLoading, error };
+}
+
 export function useImportarUnidadesMesaParser({ sb, token, onSuccess } = {}) {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
