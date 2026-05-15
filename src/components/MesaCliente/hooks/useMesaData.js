@@ -10,6 +10,7 @@ export const MESA_KEYS = {
   empreendimentos: (empresaId) => ['mesa', 'empreendimentos', empresaId],
   config: (empresaId) => ['mesa', 'config', empresaId],
   historico: (empresaId, filtros) => ['mesa', 'historico', empresaId, filtros],
+  unidades: (empId) => ['mesa', 'unidades', empId],
 };
 
 export function useEmpreendimentosMesa(empresaId) {
@@ -55,6 +56,22 @@ export function useHistoricoMesas(empresaId, filtros = {}, corretorId = null) {
     enabled: !!empresaId,
     staleTime: 30 * 1000,
     refetchOnWindowFocus: true,
+  });
+}
+
+export function useUnidadesMesa(empreendimentoId) {
+  return useQuery({
+    queryKey: MESA_KEYS.unidades(empreendimentoId),
+    queryFn: async () => {
+      const { data, error } = await supabase.rpc('get_unidades_mesa', {
+        p_empreendimento_id: empreendimentoId,
+      });
+      if (error) throw error;
+      return data ?? [];
+    },
+    enabled: !!empreendimentoId,
+    staleTime: 5 * 60 * 1000,
+    refetchOnWindowFocus: false,
   });
 }
 
@@ -112,8 +129,6 @@ export function useAprovarRejeitarMesa() {
   });
 }
 
-// Hook adicionado para compatibilidade com TabEmpreendimentos.jsx
-// Chama o RPC importar_mesa_cliente_parser_resultado
 export function useImportarMesaClienteParserResultado() {
   const queryClient = useQueryClient();
   return useMutation({
