@@ -1,10 +1,17 @@
 import React from 'react'
 import ReactDOM from 'react-dom/client'
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import App from './App.jsx'
 import TenantProvisioningStandalone from './components/TenantProvisioningStandalone.jsx'
 import AceleracaoOperacional from './components/AceleracaoOperacional.jsx'
 import PowerMessageEngineAdmin from './components/PowerMessageEngineAdmin.jsx'
 import './index.css'
+
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: { staleTime: 60_000, refetchOnWindowFocus: false, retry: 1 },
+  },
+})
 
 const RootComponent = window.location.hash === '#tenant-provisioning'
   ? TenantProvisioningStandalone
@@ -16,6 +23,8 @@ const RootComponent = window.location.hash === '#tenant-provisioning'
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
-    <RootComponent />
+    <QueryClientProvider client={queryClient}>
+      <RootComponent />
+    </QueryClientProvider>
   </React.StrictMode>,
 )
