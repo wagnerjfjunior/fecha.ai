@@ -43,12 +43,10 @@ function GrupoTiles({ g, tiles, selected, onSelect, onRemove, onAdd, addLabel, s
   return (
     <div className={`${st.bg} rounded-2xl p-4`}>
       <div className="flex flex-wrap justify-between items-start gap-2 mb-3"><div><span className={`text-[13px] font-bold uppercase tracking-wider ${st.total}`}>{titleLabel}</span><p className={`text-[12px] mt-1 leading-relaxed ${st.total}`}>{st.story}</p></div><span className={`text-[15px] font-bold tabular-nums ${st.total}`}>{fmtBRL(total)}</span></div>
-      <div className="flex flex-wrap gap-2 group">{tiles.map(t => <Tile key={t.id} g={g} tile={t} isSelected={selected?.g === g && selected?.id === t.id} onSelect={onSelect} onRemove={removeTileSafe(onRemove)} />)}{showAdd && <TileAdd g={g} label={addLabel} onClick={() => onAdd(g)} />}</div>
+      <div className="flex flex-wrap gap-2 group">{tiles.map(t => <Tile key={t.id} g={g} tile={t} isSelected={selected?.g === g && selected?.id === t.id} onSelect={onSelect} onRemove={onRemove} />)}{showAdd && <TileAdd g={g} label={addLabel} onClick={() => onAdd(g)} />}</div>
     </div>
   );
 }
-
-function removeTileSafe(onRemove) { return onRemove; }
 
 function EditorModal({ g, tile, onClose, onUpdateField, onUpdatePer }) {
   const [draft, setDraft] = useState(() => ({ value: Math.round(tile.value || 0), qty: tile.qty || 0, date: tile.date || tile.dateStart || '', per: tile.per || 'anual' }));
@@ -97,7 +95,7 @@ export default function FluxoBuilder({ empreendimento, precoTotal = 850000, empr
   const [clienteNome, setClienteNome] = useState('');
   const [saving, setSaving] = useState(false);
   const calc = useMesaCalc({ precoTotal, metaPct, metaEspecial, initialFluxo, resetKey: `${precoTotal}-${fluxoOrigem}` });
-  const { state, selected, totais, barStatus, surplus, deficit, obraTarget, metaAtual, selectTile, closeEditor, updateField, updatePeriodicidade, removeTile, addTile, reset, serializarFluxo } = calc;
+  const { state, selected, totais, barStatus, surplus, deficit, metaAtual, selectTile, closeEditor, updateField, updatePeriodicidade, removeTile, addTile, reset, serializarFluxo } = calc;
   const selectedTile = selected ? state[selected.g]?.find(t => t.id === selected.id) : null;
   const barColor = BAR_COLOR[barStatus];
   const barWidth = Math.min(100, (totais.pagamentoPct / Math.max(metaAtual, 1)) * Math.min(metaAtual, 100));
