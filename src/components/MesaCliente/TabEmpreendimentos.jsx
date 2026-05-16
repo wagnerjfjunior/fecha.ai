@@ -5,7 +5,7 @@ import {
 } from './hooks/useMesaData';
 import { processMesaClienteFile } from '../../features/mesaCliente/parser/nativeFirstParser';
 import { nativeRowsToParserPayload, validateParserPayloadForImport } from '../../features/mesaCliente/parser/parserPayloadAdapter';
-import EspelhoUploadPreview from './espelho/EspelhoUploadPreview';
+import DisponibilidadeUploadPreview from './disponibilidade/DisponibilidadeUploadPreview';
 
 const DOT_COLOR = { ok: 'bg-[#1D9E75]', yellow: 'bg-[#EF9F27]', red: 'bg-[#E24B4A]' };
 const PILL_BG = { ok: 'bg-[#E1F5EE]', yellow: 'bg-[#FAEEDA]', red: 'bg-[#FDEAEA]' };
@@ -23,6 +23,13 @@ const SECONDARY_BUTTON_STYLE = {
   backgroundColor: '#eef2ff',
   color: '#1e3a8a',
   border: '1px solid #c7d2fe',
+};
+
+const SUCCESS_BUTTON_STYLE = {
+  backgroundColor: '#0f766e',
+  color: '#ffffff',
+  border: '1px solid #0f766e',
+  boxShadow: '0 8px 18px rgba(15, 118, 110, 0.18)',
 };
 
 const DISABLED_BUTTON_STYLE = {
@@ -62,7 +69,7 @@ function UploadModal({ empreendimento, tipoInicial, onClose, onSuccess, empresaI
     if (!canImport || importing) return;
 
     try {
-      setFeedback({ type: 'info', text: 'Lendo PDF e executando parser Native First…' });
+      setFeedback({ type: 'info', text: 'Lendo PDF e executando leitura da tabela…' });
 
       const parserResult = await processMesaClienteFile({
         file: arquivo,
@@ -83,7 +90,7 @@ function UploadModal({ empreendimento, tipoInicial, onClose, onSuccess, empresaI
       const validation = validateParserPayloadForImport(payload);
       if (!validation.ok) throw new Error(validation.errors.join(' | '));
 
-      setFeedback({ type: 'info', text: `Parser identificou ${validation.validUnits.length} unidade(s). Salvando no banco com RPC segura…` });
+      setFeedback({ type: 'info', text: `Leitura identificou ${validation.validUnits.length} unidade(s). Salvando no banco com RPC segura…` });
 
       await importarParser({
         empresaId,
@@ -111,66 +118,50 @@ function UploadModal({ empreendimento, tipoInicial, onClose, onSuccess, empresaI
       <div className="bg-white rounded-2xl p-5 w-full max-w-[460px] relative shadow-2xl" onClick={e => e.stopPropagation()}>
         <button onClick={onClose} className="absolute top-3 right-3 w-7 h-7 rounded-full flex items-center justify-center text-base" style={SECONDARY_BUTTON_STYLE}>×</button>
 
-        <p className="text-[15px] font-semibold mb-1 text-slate-900">Importar tabela/PDF</p>
+        <p className="text-[15px] font-semibold mb-1 text-slate-900">Importar tabela comercial</p>
         <p className="text-[12px] text-slate-600 mb-4">
           {empreendimento ? empreendimento.nome : 'Envie a tabela comercial em PDF para criar/atualizar empreendimento e unidades.'}
         </p>
 
+        <div className="grid grid-cols-1 gap-2 mb-4">
+          <button
+            onClick={() => {
+              setTipo('tabela');
+              setSubTipo('trabalho');
+            }}
+            className="border rounded-xl p-3 text-center transition-all"
+            style={tipo === 'tabela' ? SECONDARY_BUTTON_STYLE : { backgroundColor: '#ffffff', color: '#111827', border: '1px solid #e5e7eb' }}
+          >
+            <div className="text-xl mb-1">📊</div>
+            <div className="text-[12px] font-semibold">Tabela comercial</div>
+            <div className="text-[10px] text-slate-500 mt-0.5">PDF com valores, parcelas e fluxo</div>
+          </button>
+        </div>
+
+        <label className="block text-[11px] font-semibold text-slate-600 mb-1">Nome do empreendimento</label>
+        <input
+          value={empreendimentoNome}
+          onChange={e => setEmpreendimentoNome(e.target.value)}
+          placeholder="Ex.: Garden Design, Nova Vivere, Reserva Caminhos da Lapa…"
+          className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-[13px] mb-3 outline-none text-slate-900"
+        />
+
         <div className="grid grid-cols-2 gap-2 mb-4">
           {[
-            { key: 'tabela', icon: '📊', label: 'Tabela comercial', sub: 'PDF com valores' },
-            { key: 'espelho', icon: '🪞', label: 'Espelho de vendas', sub: 'Prévia local' },
+            { key: 'trabalho', label: '📝 De trabalho', sub: 'WhatsApp · provisória' },
+            { key: 'oficial', label: '✅ Oficial', sub: 'Incorporadora' },
           ].map(opt => (
             <button
               key={opt.key}
-              onClick={() => {
-                setTipo(opt.key);
-                setSubTipo(opt.key === 'tabela' ? 'trabalho' : null);
-              }}
-              className="border rounded-xl p-3 text-center transition-all"
-              style={tipo === opt.key ? SECONDARY_BUTTON_STYLE : { backgroundColor: '#ffffff', color: '#111827', border: '1px solid #e5e7eb' }}
+              onClick={() => setSubTipo(opt.key)}
+              className="border rounded-xl p-2.5 text-center transition-all"
+              style={subTipo === opt.key ? SECONDARY_BUTTON_STYLE : { backgroundColor: '#ffffff', color: '#111827', border: '1px solid #e5e7eb' }}
             >
-              <div className="text-xl mb-1">{opt.icon}</div>
               <div className="text-[12px] font-semibold">{opt.label}</div>
               <div className="text-[10px] text-slate-500 mt-0.5">{opt.sub}</div>
             </button>
           ))}
         </div>
-
-        {tipo === 'espelho' && (
-          <div className="bg-[#FAEEDA] text-[#412402] rounded-xl px-3 py-2 text-[11px] mb-3 leading-relaxed">
-            Para importar espelho, feche esta janela e use o botão “Subir espelho” do card do empreendimento. A prévia abrirá em tela própria.
-          </div>
-        )}
-
-        {tipo === 'tabela' && (
-          <>
-            <label className="block text-[11px] font-semibold text-slate-600 mb-1">Nome do empreendimento</label>
-            <input
-              value={empreendimentoNome}
-              onChange={e => setEmpreendimentoNome(e.target.value)}
-              placeholder="Ex.: Garden Design, Nova Vivere, Reserva Caminhos da Lapa…"
-              className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-[13px] mb-3 outline-none text-slate-900"
-            />
-
-            <div className="grid grid-cols-2 gap-2 mb-4">
-              {[
-                { key: 'trabalho', label: '📝 De trabalho', sub: 'WhatsApp · provisória' },
-                { key: 'oficial', label: '✅ Oficial', sub: 'Incorporadora' },
-              ].map(opt => (
-                <button
-                  key={opt.key}
-                  onClick={() => setSubTipo(opt.key)}
-                  className="border rounded-xl p-2.5 text-center transition-all"
-                  style={subTipo === opt.key ? SECONDARY_BUTTON_STYLE : { backgroundColor: '#ffffff', color: '#111827', border: '1px solid #e5e7eb' }}
-                >
-                  <div className="text-[12px] font-semibold">{opt.label}</div>
-                  <div className="text-[10px] text-slate-500 mt-0.5">{opt.sub}</div>
-                </button>
-              ))}
-            </div>
-          </>
-        )}
 
         <label className="block border border-dashed border-slate-300 rounded-xl p-5 text-center cursor-pointer transition-colors mb-4 bg-slate-50">
           <div className="text-2xl mb-1">{arquivo ? '✅' : '📄'}</div>
@@ -180,7 +171,7 @@ function UploadModal({ empreendimento, tipoInicial, onClose, onSuccess, empresaI
         </label>
 
         <div className="bg-slate-50 rounded-xl px-3 py-2 text-[11px] text-slate-600 mb-4 leading-relaxed">
-          🔒 O arquivo é processado no navegador pelo parser Native First. A gravação no banco acontece somente via RPC com sessão autenticada e isolamento por empresa.
+          🔒 O arquivo é processado no navegador. A gravação no banco acontece somente via RPC com sessão autenticada e isolamento por empresa.
         </div>
 
         {feedback && feedback.type !== 'error' && (
@@ -210,9 +201,9 @@ function UploadModal({ empreendimento, tipoInicial, onClose, onSuccess, empresaI
 function EmpCard({ emp, onAbrirFluxo, onUpload }) {
   const [open, setOpen] = useState(false);
   const tabelaStatus = emp.tabela_status || 'red';
-  const espelhoStatus = emp.espelho_status || 'red';
+  const disponibilidadeStatus = emp.espelho_status || 'red';
   const tabelaTitle = tabelaStatus === 'ok' ? 'Tabela atualizada' : tabelaStatus === 'yellow' ? 'Tabela antiga' : 'Tabela desatualizada';
-  const espelhoTitle = espelhoStatus === 'ok' ? 'Espelho do dia' : espelhoStatus === 'yellow' ? 'Espelho de ontem' : 'Espelho desatualizado';
+  const disponibilidadeTitle = disponibilidadeStatus === 'ok' ? 'Disponibilidade atualizada' : disponibilidadeStatus === 'yellow' ? 'Disponibilidade antiga' : 'Disponibilidade não validada';
   const dataFmt = (iso) => iso ? new Date(iso).toLocaleDateString('pt-BR') : 'Nunca';
 
   return (
@@ -230,9 +221,9 @@ function EmpCard({ emp, onAbrirFluxo, onUpload }) {
             <div className={`w-3 h-3 rounded-full ${DOT_COLOR[tabelaStatus] || DOT_COLOR.red}`} />
             <span className="text-[9px] text-slate-500 uppercase tracking-wide">Tabela</span>
           </button>
-          <button onClick={e => { e.stopPropagation(); onUpload(emp, 'espelho'); }} className="flex flex-col items-center gap-1" title="Espelho de vendas">
-            <div className={`w-3 h-3 rounded-full ${DOT_COLOR[espelhoStatus] || DOT_COLOR.red}`} />
-            <span className="text-[9px] text-slate-500 uppercase tracking-wide">Espelho</span>
+          <button onClick={e => { e.stopPropagation(); onUpload(emp, 'disponibilidade'); }} className="flex flex-col items-center gap-1" title="Disponibilidade oficial">
+            <div className={`w-3 h-3 rounded-full ${DOT_COLOR[disponibilidadeStatus] || DOT_COLOR.red}`} />
+            <span className="text-[9px] text-slate-500 uppercase tracking-wide">Disp.</span>
           </button>
         </div>
         <span className="text-slate-500 ml-1">{open ? '▲' : '▼'}</span>
@@ -242,14 +233,14 @@ function EmpCard({ emp, onAbrirFluxo, onUpload }) {
         <div className="px-3 pb-3 border-t border-slate-200">
           <div className="flex gap-2 mt-3 flex-wrap">
             <StatusPill status={tabelaStatus} title={tabelaTitle} sub={`${dataFmt(emp.tabela_data)}${emp.tabela_tipo ? ` · ${emp.tabela_tipo}` : ''}`} who={emp.tabela_enviado_por} obs={tabelaStatus === 'red' ? 'Tabela desatualizada — suba a tabela do mês' : null} />
-            <StatusPill status={espelhoStatus} title={espelhoTitle} sub={dataFmt(emp.espelho_data)} who={emp.espelho_enviado_por} obs={espelhoStatus === 'red' ? 'Espelho desatualizado — nesta preview as unidades da tabela serão exibidas mesmo assim' : null} />
+            <StatusPill status={disponibilidadeStatus} title={disponibilidadeTitle} sub={dataFmt(emp.espelho_data)} who={emp.espelho_enviado_por} obs={disponibilidadeStatus === 'red' ? 'Envie a tabela oficial para validar unidades disponíveis' : null} />
           </div>
           <div className="flex gap-2 mt-3 flex-wrap">
             <button onClick={() => onAbrirFluxo(emp)} disabled={!emp.pode_abrir_mesa} className="px-3 py-1.5 rounded-xl text-[12px] font-medium" style={emp.pode_abrir_mesa ? { backgroundColor: '#E1F5EE', color: '#0F6E56' } : DISABLED_BUTTON_STYLE}>
               📋 Abrir Mesa
             </button>
             <button onClick={() => onUpload(emp, 'tabela')} className="px-3 py-1.5 rounded-xl text-[12px]" style={SECONDARY_BUTTON_STYLE}>📊 Subir tabela</button>
-            <button onClick={() => onUpload(emp, 'espelho')} className="px-3 py-1.5 rounded-xl text-[12px]" style={SECONDARY_BUTTON_STYLE}>🪞 Subir espelho</button>
+            <button onClick={() => onUpload(emp, 'disponibilidade')} className="px-3 py-1.5 rounded-xl text-[12px]" style={SUCCESS_BUTTON_STYLE}>✅ Atualizar disponibilidade</button>
           </div>
           <p className="text-[10px] text-slate-500 mt-2">🔍 Todas as ações são registradas com usuário, data e hora.</p>
         </div>
@@ -261,6 +252,7 @@ function EmpCard({ emp, onAbrirFluxo, onUpload }) {
 export default function TabEmpreendimentos({ sb, token, empresaId, onAbrirFluxo }) {
   const { data: empreendimentos = [], isLoading, error, reload } = useEmpreendimentosMesa({ sb, token, empresaId });
   const [uploadTarget, setUploadTarget] = useState(null);
+  const [availabilityPreviews, setAvailabilityPreviews] = useState({});
 
   const sortedEmpreendimentos = useMemo(() => empreendimentos, [empreendimentos]);
   const handleUpload = (emp, tipo) => setUploadTarget({ emp, tipo });
@@ -269,7 +261,7 @@ export default function TabEmpreendimentos({ sb, token, empresaId, onAbrirFluxo 
     <div className="p-3">
       <div className="flex items-center justify-between gap-3 rounded-xl px-3 py-3 mb-3 flex-wrap" style={{ backgroundColor: '#eff6ff', border: '1px solid #bfdbfe' }}>
         <span className="text-[12px] font-medium" style={{ color: '#1e40af' }}>
-          📤 Importe a tabela comercial para valores e o espelho oficial para leitura de disponibilidade.
+          📤 Importe a tabela comercial para valores e atualize a disponibilidade com a tabela oficial Tegra.
         </span>
         <button
           type="button"
@@ -310,14 +302,20 @@ export default function TabEmpreendimentos({ sb, token, empresaId, onAbrirFluxo 
         <EmpCard key={emp.id} emp={emp} onAbrirFluxo={onAbrirFluxo} onUpload={handleUpload} />
       ))}
 
-      {uploadTarget?.tipo === 'espelho' && (
-        <EspelhoUploadPreview
+      {uploadTarget?.tipo === 'disponibilidade' && (
+        <DisponibilidadeUploadPreview
           empreendimento={uploadTarget.emp}
+          unidadesComerciais={[]}
           onClose={() => setUploadTarget(null)}
+          onConfirmLocal={(preview) => {
+            const key = uploadTarget.emp?.id || uploadTarget.emp?.nome || 'sem_empreendimento';
+            setAvailabilityPreviews((prev) => ({ ...prev, [key]: preview }));
+            setUploadTarget(null);
+          }}
         />
       )}
 
-      {uploadTarget?.tipo !== 'espelho' && uploadTarget && (
+      {uploadTarget?.tipo !== 'disponibilidade' && uploadTarget && (
         <UploadModal
           sb={sb}
           token={token}
