@@ -108,10 +108,51 @@ function parsePayloadFromObservacoes(observacoes = '') {
   const marker = 'Payload:';
   const idx = text.indexOf(marker);
   if (idx < 0) return null;
+
   const payloadText = text.slice(idx + marker.length).trim();
-  if (!payloadText.startsWith('{')) return null;
+  const start = payloadText.indexOf('{');
+  if (start < 0) return null;
+
+  let depth = 0;
+  let inString = false;
+  let escaped = false;
+  let end = -1;
+
+  for (let i = start; i < payloadText.length; i += 1) {
+    const ch = payloadText[i];
+
+    if (escaped) {
+      escaped = false;
+      continue;
+    }
+
+    if (ch === '\\') {
+      escaped = true;
+      continue;
+    }
+
+    if (ch === '"') {
+      inString = !inString;
+      continue;
+    }
+
+    if (inString) continue;
+
+    if (ch === '{') depth += 1;
+
+    if (ch === '}') {
+      depth -= 1;
+      if (depth === 0) {
+        end = i + 1;
+        break;
+      }
+    }
+  }
+
+  if (end < 0) return null;
+
   try {
-    return safeObj(JSON.parse(payloadText));
+    return safeObj(JSON.parse(payloadText.slice(start, end)));
   } catch {
     return null;
   }
