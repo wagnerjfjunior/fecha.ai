@@ -206,16 +206,19 @@ function UnidadeCard({ unidade: unidadeInput, onSelect, condoMin, condoMax, fina
   const ref = unidade.face || '';
   return (
     <button onClick={() => onSelect(unidade)} className="w-full text-left rounded-2xl border border-[var(--color-border-tertiary)] bg-[var(--color-background-primary)] hover:border-[#0F6E56] hover:shadow-md p-4 transition-all">
-      <div className="flex items-start justify-between gap-4">
-        <div className="min-w-0">
-          <p className="text-[19px] font-bold text-[var(--color-text-primary)]">Unidade {unidade.unidade || '—'}</p>
-          <p className="text-[15px] text-[var(--color-text-secondary)] mt-1">Final {unidade.final || '—'} · {numberBR(unidade.metragem, ' m²')}</p>
-          {basics && <p className="text-[15px] text-[var(--color-text-primary)] mt-2">{basics}</p>}
-          <p className="text-[15px] text-[#0F6E56] mt-2 font-medium">{unidade.orientacao_calc.label}{ref ? ` · ${ref}` : ''}</p>
-          {unidade.vista && <p className="text-[13px] text-[var(--color-text-tertiary)] mt-1">{unidade.vista}</p>}
+      <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
+        <div className="min-w-0 flex-1">
+          <p className="text-[20px] sm:text-[19px] font-bold text-[var(--color-text-primary)] leading-tight">Unidade {unidade.unidade || '—'}</p>
+          <p className="text-[15px] text-[var(--color-text-secondary)] mt-1 leading-relaxed">Final {unidade.final || '—'} · {numberBR(unidade.metragem, ' m²')}</p>
+          {basics && <p className="text-[15px] text-[var(--color-text-primary)] mt-2 leading-relaxed">{basics}</p>}
+          <p className="text-[15px] text-[#0F6E56] mt-2 font-medium leading-relaxed">{unidade.orientacao_calc.label}{ref ? ` · ${ref}` : ''}</p>
+          {unidade.vista && <p className="text-[13px] text-[var(--color-text-tertiary)] mt-1 leading-relaxed">{unidade.vista}</p>}
           {unidade.torre && <p className="text-[12px] text-[var(--color-text-tertiary)] mt-1">Torre {unidade.torre}{unidade.andar !== null && unidade.andar !== undefined ? ` · ${unidade.andar}º andar` : ''}</p>}
         </div>
-        <div className="text-right flex-none"><p className="text-[18px] font-bold text-[#0F6E56]">{moneyBR(unidade.valor_tabela)}</p><p className="text-[12px] text-[var(--color-text-tertiary)]">Valor de Tabela</p></div>
+        <div className="text-left sm:text-right flex-none border-t sm:border-t-0 border-[var(--color-border-tertiary)] pt-3 sm:pt-0">
+          <p className="text-[20px] sm:text-[18px] font-bold text-[#0F6E56] leading-tight">{moneyBR(unidade.valor_tabela)}</p>
+          <p className="text-[12px] text-[var(--color-text-tertiary)] mt-0.5">Valor de Tabela</p>
+        </div>
       </div>
       {badges.length > 0 && <div className="flex flex-wrap gap-1.5 mt-3">{badges.map(b => <span key={b} className="rounded-full bg-[#E1F5EE] text-[#0F6E56] px-2.5 py-1 text-[12px] font-semibold">{b}</span>)}</div>}
       {resumo && <div className="mt-3 rounded-xl bg-[#E1F5EE] text-[#0F6E56] px-3 py-2 text-[13px] leading-relaxed">Fluxo sugerido: {resumo}</div>}
@@ -345,7 +348,7 @@ export default function TabFluxo({ sb, token, empresaId, corretorId, isGestor = 
       </div>
       {unidades.length === 0 && <div className="text-center py-12 border border-dashed rounded-2xl"><div className="text-4xl mb-3">📭</div><p className="text-[15px] font-semibold">Nenhuma unidade importada</p></div>}
       {unidades.length > 0 && unidadesFiltradas.length === 0 && <div className="text-center py-8 text-[14px] text-[var(--color-text-tertiary)]">Nenhuma unidade encontrada para os filtros.</div>}
-      <div className="grid grid-cols-2 lg:grid-cols-1 gap-3">{unidadesFiltradas.map(u => { const stats = byFinal.get(u.final) || {}; return <UnidadeCard key={u.id || u.unidade} unidade={u} onSelect={setUnidadeSelecionada} condoMin={condoMin} condoMax={condoMax} finalMin={stats.min} finalMax={stats.max}/>; })}</div>
+      <div className="grid grid-cols-1 xl:grid-cols-2 gap-3">{unidadesFiltradas.map(u => { const stats = byFinal.get(u.final) || {}; return <UnidadeCard key={u.id || u.unidade} unidade={u} onSelect={setUnidadeSelecionada} condoMin={condoMin} condoMax={condoMax} finalMin={stats.min} finalMax={stats.max}/>; })}</div>
       {showEnriquecimento && <EnriquecimentoModal empreendimento={empreendimento} finais={finais} unidades={unidades} onClose={() => setShowEnriquecimento(false)} onSave={handleSalvarEnriquecimento} saving={savingEnriquecimento} error={enrichmentError} />}
     </div>
   );
