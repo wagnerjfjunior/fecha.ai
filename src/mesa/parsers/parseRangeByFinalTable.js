@@ -102,12 +102,56 @@ function parseFloorRange(label = "") {
   return Array.from({ length: end - start + 1 }, (_, index) => start + index);
 }
 
-function unitCode(andar, final) {
-  return `AP${String(andar).padStart(2, "0")}${String(final).padStart(2, "0")}`;
+function extractUnitsPerFloor(text = "") {
+  const normalized = compactSpaces(text);
+  const match = normalized.match(/N[ÚU]MERO\s+DE\s+UNIDADES\s+POR\s+ANDAR\s*:\s*(\d{1,2})/i);
+  const value = Number.parseInt(match?.[1] || "", 10);
+  return Number.isFinite(value) && value > 0 ? value : null;
 }
 
-function explicitUnitToAndarFinal(unit = "") {
+function inferGeneratedUnitFormat({ text = "", finals = [] } = {}) {
+  const unitsPerFloor = extractUnitsPerFloor(text);
+  const finalNumbers = finals
+    .map((final) => Number.parseInt(String(final || "").replace(/\D/g, ""), 10))
+    .filter((value) => Number.isFinite(value) && value > 0);
+
+  if (
+    unitsPerFloor &&
+    unitsPerFloor <= 9 &&
+    finalNumbers.length > 0 &&
+    Math.max(...finalNumbers) <= unitsPerFloor
+  ) {
+    return "floor3_final1";
+  }
+
+  return "floor2_final2";
+}
+
+function unitCode(andar, final, unitFormat = "floor2_final2") {
+  const floorNumber = Number.parseInt(String(andar || "").replace(/\D/g, ""), 10);
+  const finalNumber = Number.parseInt(String(final || "").replace(/\D/g, ""), 10);
+
+  if (!Number.isFinite(floorNumber) || !Number.isFinite(finalNumber)) {
+    return `AP${String(andar).padStart(2, "0")}${String(final).padStart(2, "0")}`;
+  }
+
+  if (unitFormat === "floor3_final1" && finalNumber <= 9) {
+    return `AP${String(floorNumber).padStart(3, "0")}${String(finalNumber)}`;
+  }
+
+  return `AP${String(floorNumber).padStart(2, "0")}${String(finalNumber).padStart(2, "0")}`;
+}
+
+function explicitUnitToAndarFinal(unit = "", unitFormat = "floor2_final2") {
   const digits = String(unit || "").replace(/\D/g, "").padStart(4, "0");
+
+  if (unitFormat === "floor3_final1") {
+    return {
+      andar: String(Number.parseInt(digits.slice(0, 3), 10)),
+      final: digits.slice(3).padStart(2, "0"),
+    };
+  }
+
   return {
     andar: String(Number.parseInt(digits.slice(0, -2), 10)),
     final: digits.slice(-2),
@@ -157,7 +201,7 @@ function normalizePaymentDate(value = "") {
 
 function parseHeaderDates(header = "") {
   const dates = [...String(header || "").matchAll(/\b(?:\d{1,2}-)?(?:jan|fev|mar|abr|mai|jun|jul|ago|set|out|nov|dez)-\d{2}\b/gi)].map((match) => normalizePaymentDate(match[0]));
-  return dates.length >= 6 ? dates.slice(0, 6) : [];
+  return dates.length >= 6 ? dates.slice(0, 7) : [];
 }
 
 function findFinancialHeaderIndex(source = "") {
@@ -188,7 +232,8 @@ function extractPaymentPlan(text = "") {
   const headerEnd = financialHeaderWindow ? source.indexOf(financialHeaderWindow) + financialHeaderWindow.length : source.search(/Final\s+0?\d{1,2}\s+(?:\d{1,2}\s*(?:º|o|°|a\.)?|Garden\s+AP)/i);
   const header = headerEnd > -1 ? source.slice(0, headerEnd) : source.slice(0, 1500);
   const numbers = parseHeaderNumbers(financialHeaderWindow) || parseHeaderNumbers(header);
-  const dates = parseHeaderDates(financialHeaderWindow) || parseHeaderDates(header);
+  const windowDates = parseHeaderDates(financialHeaderWindow);
+  const dates = windowDates.length ? windowDates : parseHeaderDates(header);
   if (!numbers) {
     const fallback = { ...FALLBACK_PAYMENT_META, dates, warning: "payment_plan_header_not_found" };
     return { ...fallback, tolerance: getPaymentDiffTolerance(fallback) };
@@ -208,6 +253,7 @@ function extractPaymentPlan(text = "") {
     anualInicio: dates[3] || "",
     unica: dates[4] || "",
     financMes: dates[5] || "",
+    periodicidadeData: dates[6] || "",
     dates,
     source: financialHeaderWindow ? "financial_header" : "header",
   };
@@ -243,6 +289,7 @@ function buildObservacoes({ vagas, faixaAndar, diff, paymentPlan, explicitUnit =
     paymentPlan.unica ? `unica=${paymentPlan.unica}` : "",
     paymentPlan.financMes ? `financ_mes=${paymentPlan.financMes}` : "",
     Number(periodicidadeValor || 0) > 0 ? `periodicidade_valor=${formatNumber(periodicidadeValor)}` : "",
+    Number(periodicidadeValor || 0) > 0 && paymentPlan.periodicidadeData ? `periodicidade_data=${paymentPlan.periodicidadeData}` : "",
     Number(periodicidadeValor || 0) > 0 ? "periodicidade_alerta=true" : "",
     paymentPlan.warning ? `payment_plan_warning=${paymentPlan.warning}` : "",
     `payment_plan_source=${paymentPlan.source}`,
@@ -324,7 +371,7 @@ function makeParsedRow({ empreendimento, final, andar, unidade, area, vagas, sin
       explicit_unit: explicitUnit,
       generated_from_range: !explicitUnit,
       payment_plan: paymentPlan,
-      periodicidade: Number(periodicidade || 0) > 0 ? { valor: periodicidade, alerta: true, tipo: "final_simbolico" } : null,
+      periodicidade: Number(periodicidade || 0) > 0 ? { valor: periodicidade, data: paymentPlan.periodicidadeData || "", alerta: true, tipo: "final_simbolico" } : null,
     },
   };
   return { ...parsed, validation: validateRangeRow(parsed) };
@@ -341,6 +388,8 @@ export function parseRangeByFinalTable(text, options = {}) {
   const paymentPlan = extractPaymentPlan(text);
   const finalRegex = /Final\s+((?:\d{1,2})(?:\s*(?:,|e)\s*\d{1,2})*)/gi;
   const finalMatches = [...source.matchAll(finalRegex)];
+  const allFinals = [...new Set(finalMatches.flatMap((match) => parseFinals(match[0])))];
+  const generatedUnitFormat = inferGeneratedUnitFormat({ text, finals: allFinals });
   const rows = [];
   const finalDiagnostics = [];
   const empreendimento = extractEmpreendimento(text, options.empreendimento || "");
@@ -361,7 +410,7 @@ export function parseRangeByFinalTable(text, options = {}) {
 
     while ((match = explicitUnitRegex.exec(segment)) !== null) {
       const unidade = match[1].toUpperCase();
-      const explicit = explicitUnitToAndarFinal(unidade);
+      const explicit = explicitUnitToAndarFinal(unidade, generatedUnitFormat);
       const area = areaToNumber(match[2]);
       const vagas = Number.parseInt(match[3], 10) || 0;
       const sinal = moneyToNumber(match[4]);
@@ -395,7 +444,7 @@ export function parseRangeByFinalTable(text, options = {}) {
       parsedRanges += 1;
       finals.forEach((final) => {
         andares.forEach((andar) => {
-          rows.push(makeParsedRow({ empreendimento, final, andar, unidade: unitCode(andar, final), area, vagas, sinal, complemento, mensal, anual, unica, financiamento, periodicidade, total, faixaAndar, finalIndex, rowsLength: rows.length, paymentPlan, explicitUnit: false }));
+          rows.push(makeParsedRow({ empreendimento, final, andar, unidade: unitCode(andar, final, generatedUnitFormat), area, vagas, sinal, complemento, mensal, anual, unica, financiamento, periodicidade, total, faixaAndar, finalIndex, rowsLength: rows.length, paymentPlan, explicitUnit: false }));
           generatedUnits += 1;
         });
       });
@@ -415,6 +464,7 @@ export function parseRangeByFinalTable(text, options = {}) {
       invalid_rows: rows.filter((row) => row.validation?.valid === false).length,
       payment_diff_tolerance: Number(paymentPlan.tolerance || getPaymentDiffTolerance(paymentPlan)),
       payment_diff_tolerance_mode: "dynamic_by_installment_count_and_rounding_unit",
+      generated_unit_format: generatedUnitFormat,
       payment_plan: paymentPlan,
       final_diagnostics: finalDiagnostics,
       complete: rows.length > 0,
