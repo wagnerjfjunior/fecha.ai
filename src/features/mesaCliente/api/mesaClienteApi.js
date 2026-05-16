@@ -144,6 +144,20 @@ export function importarMesaClienteParserResultado({ sb, token, empresaId, empre
   });
 }
 
+export function importarMesaClienteDisponibilidadeOficial({ sb, token, empreendimentoId, nomeArquivo = 'disponibilidade.pdf', parserNome = 'native_first', unidades }) {
+  return callMesaRpc({
+    sb,
+    token,
+    fn: 'importar_mesa_cliente_disponibilidade_oficial',
+    args: {
+      p_empreendimento_id: empreendimentoId,
+      p_nome_arquivo: nomeArquivo,
+      p_parser_nome: parserNome,
+      p_unidades: unidades,
+    },
+  });
+}
+
 export function salvarMesaClienteEnriquecimento({ sb, token, empreendimentoId, final, dormitorios = null, suites = null, vagasQuantidade = null, orientacaoSolar = null, face = null, vista = null, observacoes = null }) {
   return callMesaRpc({
     sb,
