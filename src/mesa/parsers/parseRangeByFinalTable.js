@@ -222,11 +222,11 @@ export function rowsToCanonCsv(rows = []) {
   return [CANON_COLUMNS.join(";"), ...rows.map((row) => rowToCsv(row.raw || row))].join("\n");
 }
 
-function calcDiff({ total, sinal, complemento, mensal, anual, unica, financiamento, paymentPlan }) {
-  return total - (sinal * Number(paymentPlan.atoQtd || 1) + complemento * Number(paymentPlan.compQtd || 0) + mensal * Number(paymentPlan.mensalQtd || 0) + anual * Number(paymentPlan.interQtd || 0) + unica * Number(paymentPlan.unicaQtd || 1) + financiamento * Number(paymentPlan.financiamentoQtd || 1));
+function calcDiff({ total, sinal, complemento, mensal, anual, unica, financiamento, periodicidade = 0, paymentPlan }) {
+  return total - (sinal * Number(paymentPlan.atoQtd || 1) + complemento * Number(paymentPlan.compQtd || 0) + mensal * Number(paymentPlan.mensalQtd || 0) + anual * Number(paymentPlan.interQtd || 0) + unica * Number(paymentPlan.unicaQtd || 1) + financiamento * Number(paymentPlan.financiamentoQtd || 1) + Number(periodicidade || 0));
 }
 
-function buildObservacoes({ vagas, faixaAndar, diff, paymentPlan, explicitUnit = false }) {
+function buildObservacoes({ vagas, faixaAndar, diff, paymentPlan, explicitUnit = false, periodicidadeValor = 0 }) {
   const tolerance = Number(paymentPlan.tolerance || getPaymentDiffTolerance(paymentPlan));
   return [
     `vagas=${vagas || 0}`,
@@ -242,6 +242,8 @@ function buildObservacoes({ vagas, faixaAndar, diff, paymentPlan, explicitUnit =
     paymentPlan.anualInicio ? `anual_inicio=${paymentPlan.anualInicio}` : "",
     paymentPlan.unica ? `unica=${paymentPlan.unica}` : "",
     paymentPlan.financMes ? `financ_mes=${paymentPlan.financMes}` : "",
+    Number(periodicidadeValor || 0) > 0 ? `periodicidade_valor=${formatNumber(periodicidadeValor)}` : "",
+    Number(periodicidadeValor || 0) > 0 ? "periodicidade_alerta=true" : "",
     paymentPlan.warning ? `payment_plan_warning=${paymentPlan.warning}` : "",
     `payment_plan_source=${paymentPlan.source}`,
     "payment_rounding_tolerance=dynamic_by_installment_count",
@@ -255,7 +257,8 @@ function buildObservacoes({ vagas, faixaAndar, diff, paymentPlan, explicitUnit =
 
 function paymentDiff(row) {
   const plan = row.parser_meta?.payment_plan || FALLBACK_PAYMENT_META;
-  const expected = Number(row.sinal_1 || 0) * Number(plan.atoQtd || 1) + Number(row.a4_each || 0) * Number(plan.compQtd || 0) + Number(row.mensal_each || 0) * Number(plan.mensalQtd || 0) + Number(row.inter_each || 0) * Number(plan.interQtd || 0) + Number(row.chaves_each || 0) * Number(plan.unicaQtd || 1) + Number(row.financiamento || 0) * Number(plan.financiamentoQtd || 1);
+  const periodicidade = Number(row.parser_meta?.periodicidade?.valor || 0);
+  const expected = Number(row.sinal_1 || 0) * Number(plan.atoQtd || 1) + Number(row.a4_each || 0) * Number(plan.compQtd || 0) + Number(row.mensal_each || 0) * Number(plan.mensalQtd || 0) + Number(row.inter_each || 0) * Number(plan.interQtd || 0) + Number(row.chaves_each || 0) * Number(plan.unicaQtd || 1) + Number(row.financiamento || 0) * Number(plan.financiamentoQtd || 1) + periodicidade;
   return Number(row.preco_total || 0) - expected;
 }
 
@@ -278,8 +281,8 @@ function removeNonFinancialNoise(text = "") {
   return first >= 0 ? normalized.slice(first) : normalized;
 }
 
-function makeParsedRow({ empreendimento, final, andar, unidade, area, vagas, sinal, complemento, mensal, anual, unica, financiamento, total, faixaAndar, finalIndex, rowsLength, paymentPlan, explicitUnit = false }) {
-  const diff = calcDiff({ total, sinal, complemento, mensal, anual, unica, financiamento, paymentPlan });
+function makeParsedRow({ empreendimento, final, andar, unidade, area, vagas, sinal, complemento, mensal, anual, unica, financiamento, periodicidade = 0, total, faixaAndar, finalIndex, rowsLength, paymentPlan, explicitUnit = false }) {
+  const diff = calcDiff({ total, sinal, complemento, mensal, anual, unica, financiamento, periodicidade, paymentPlan });
   const raw = {
     empreendimento,
     torre: "",
@@ -297,7 +300,7 @@ function makeParsedRow({ empreendimento, final, andar, unidade, area, vagas, sin
     inter_each: formatNumber(anual),
     chaves_each: formatNumber(unica),
     financiamento: formatNumber(financiamento),
-    observacoes: buildObservacoes({ vagas, faixaAndar, diff, paymentPlan, explicitUnit }),
+    observacoes: buildObservacoes({ vagas, faixaAndar, diff, paymentPlan, explicitUnit, periodicidadeValor: periodicidade }),
   };
   const parsed = {
     id: `${raw.unidade}-${finalIndex}-${rowsLength}`,
@@ -321,6 +324,7 @@ function makeParsedRow({ empreendimento, final, andar, unidade, area, vagas, sin
       explicit_unit: explicitUnit,
       generated_from_range: !explicitUnit,
       payment_plan: paymentPlan,
+      periodicidade: Number(periodicidade || 0) > 0 ? { valor: periodicidade, alerta: true, tipo: "final_simbolico" } : null,
     },
   };
   return { ...parsed, validation: validateRangeRow(parsed) };
@@ -335,7 +339,7 @@ export function parseRangeByFinalTable(text, options = {}) {
   if (!looksCommercial) return { rows: [], csvText: CANON_COLUMNS.join(";"), diagnostics: { parser: "parseRangeByFinalTable", reason: "layout_not_matched" } };
 
   const paymentPlan = extractPaymentPlan(text);
-  const finalRegex = /Final\s+(\d{1,2})(?:\s+e\s+(\d{1,2}))?/gi;
+  const finalRegex = /Final\s+((?:\d{1,2})(?:\s*(?:,|e)\s*\d{1,2})*)/gi;
   const finalMatches = [...source.matchAll(finalRegex)];
   const rows = [];
   const finalDiagnostics = [];
@@ -347,8 +351,8 @@ export function parseRangeByFinalTable(text, options = {}) {
     const start = finalMatch.index || 0;
     const end = finalMatches[finalIndex + 1]?.index ?? source.length;
     const segment = source.slice(start, end);
-    const explicitUnitRegex = /(?:Garden\s+)?(AP\d{4})\s+(\d{1,3},\d{1,2})\s+(\d{1,2})\s+([\d.]+)\s+([\d.]+)\s+([\d.]+)\s+([\d.]+)\s+([\d.]+)\s+([\d.]+)\s+([\d.]+)/gi;
-    const rowRegex = /((?:\d{1,2}\s*(?:º|o|°|a\.)?\s*(?:ao|a|e)\s*\d{1,2}\s*(?:º|o|°)?|\d{1,2}\s*(?:º|o|°)?)\s*andar)\s+(\d{1,3},\d{1,2})\s+(\d{1,2})\s+([\d.]+)\s+([\d.]+)\s+([\d.]+)\s+([\d.]+)\s+([\d.]+)\s+([\d.]+)\s+([\d.]+)/gi;
+    const explicitUnitRegex = /(?:Garden\s+)?(AP\d{4})\s+(\d{1,3},\d{1,2})\s+(\d{1,2})\s+([\d.]+)\s+([\d.]+)\s+([\d.]+)\s+([\d.]+)\s+([\d.]+)\s+([\d.]+)(?:\s+([\d.]+))?\s+([\d.]+)/gi;
+    const rowRegex = /((?:\d{1,2}\s*(?:º|o|°|a\.)?\s*(?:ao|a|e)\s*\d{1,2}\s*(?:º|o|°)?|\d{1,2}\s*(?:º|o|°)?)\s*andar)\s+(\d{1,3},\d{1,2})\s+(\d{1,2})\s+([\d.]+)\s+([\d.]+)\s+([\d.]+)\s+([\d.]+)\s+([\d.]+)\s+([\d.]+)(?:\s+([\d.]+))?\s+([\d.]+)/gi;
 
     let parsedRanges = 0;
     let explicitUnits = 0;
@@ -366,10 +370,11 @@ export function parseRangeByFinalTable(text, options = {}) {
       const anual = moneyToNumber(match[7]);
       const unica = moneyToNumber(match[8]);
       const financiamento = moneyToNumber(match[9]);
-      const total = moneyToNumber(match[10]);
+      const periodicidade = moneyToNumber(match[10] || "");
+      const total = moneyToNumber(match[11]);
       if (!area || !total) continue;
       explicitUnits += 1;
-      rows.push(makeParsedRow({ empreendimento, final: explicit.final, andar: explicit.andar, unidade, area, vagas, sinal, complemento, mensal, anual, unica, financiamento, total, faixaAndar: "Garden", finalIndex, rowsLength: rows.length, paymentPlan, explicitUnit: true }));
+      rows.push(makeParsedRow({ empreendimento, final: explicit.final, andar: explicit.andar, unidade, area, vagas, sinal, complemento, mensal, anual, unica, financiamento, periodicidade, total, faixaAndar: "Garden", finalIndex, rowsLength: rows.length, paymentPlan, explicitUnit: true }));
       generatedUnits += 1;
     }
 
@@ -384,12 +389,13 @@ export function parseRangeByFinalTable(text, options = {}) {
       const anual = moneyToNumber(match[7]);
       const unica = moneyToNumber(match[8]);
       const financiamento = moneyToNumber(match[9]);
-      const total = moneyToNumber(match[10]);
+      const periodicidade = moneyToNumber(match[10] || "");
+      const total = moneyToNumber(match[11]);
       if (!andares.length || !finals.length || !area || !total) continue;
       parsedRanges += 1;
       finals.forEach((final) => {
         andares.forEach((andar) => {
-          rows.push(makeParsedRow({ empreendimento, final, andar, unidade: unitCode(andar, final), area, vagas, sinal, complemento, mensal, anual, unica, financiamento, total, faixaAndar, finalIndex, rowsLength: rows.length, paymentPlan, explicitUnit: false }));
+          rows.push(makeParsedRow({ empreendimento, final, andar, unidade: unitCode(andar, final), area, vagas, sinal, complemento, mensal, anual, unica, financiamento, periodicidade, total, faixaAndar, finalIndex, rowsLength: rows.length, paymentPlan, explicitUnit: false }));
           generatedUnits += 1;
         });
       });
