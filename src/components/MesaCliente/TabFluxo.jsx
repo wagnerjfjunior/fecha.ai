@@ -2,6 +2,7 @@
  * TabFluxo.jsx
  * Aba de montagem do fluxo de pagamento.
  * Preview: seleciona uma unidade real extraída do parser antes de abrir o FluxoBuilder.
+ * Enriquecimento manual: não altera parser e não possui regras hardcoded por empreendimento.
  */
 
 import { useEffect, useMemo, useState } from 'react';
@@ -123,7 +124,6 @@ function enrichUnit(u) {
 function buildFluxoFromParser(unidadeInput = {}) {
   const { unidade, payload, raw, meta } = getPayloadRaw(unidadeInput);
   if (!unidade.id && !unidade.observacoes) return null;
-
   const sinal = toNumber(raw.sinal_1 ?? payload.sinal_1);
   const complemento = toNumber(raw.a4_each ?? payload.a4_each);
   const mensalEach = toNumber(raw.mensal_each ?? payload.mensal_each);
@@ -135,7 +135,6 @@ function buildFluxoFromParser(unidadeInput = {}) {
   const interQtd = Number.parseInt(raw.inter_qtd || payload.inter_qtd || meta.inter_qtd || '0', 10) || 0;
   const unicaQtd = Number.parseInt(meta.unica_qtd || raw.unica_qtd || payload.unica_qtd || '0', 10) || 0;
   const interTipo = String(raw.inter_tipo || payload.inter_tipo || '').toLowerCase();
-
   const fluxo = { e: [], c: [], m: [], a: [], u: [] };
   if (sinal > 0) fluxo.e.push(atoQtd <= 1 ? { id: 'ato', label: 'Ato', date: '', value: sinal, meta: 'tabela parser', source: 'parser' } : { id: 'ato', label: 'Ato', qty: atoQtd, value: sinal, dateStart: '', meta: 'tabela parser', isGroup: true, source: 'parser' });
   if (complemento > 0 && compQtd > 0) {
@@ -205,19 +204,14 @@ function UnidadeCard({ unidade: unidadeInput, onSelect, condoMin, condoMax, fina
   if (unidade.id === finalMax?.id) badges.push('⬆️ maior da prumada');
   const basics = formatUnitBasics(unidade);
   const ref = unidade.face || '';
-
   return (
     <button onClick={() => onSelect(unidade)} className="w-full text-left rounded-2xl border border-[var(--color-border-tertiary)] bg-[var(--color-background-primary)] hover:border-[var(--color-border-secondary)] p-3 transition-all">
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
           <p className="text-[15px] font-semibold text-[var(--color-text-primary)]">Unidade {unidade.unidade || '—'}</p>
-          <p className="text-[12px] text-[var(--color-text-secondary)] mt-0.5">
-            Final {unidade.final || '—'} · {numberBR(unidade.metragem, ' m²')}
-          </p>
+          <p className="text-[12px] text-[var(--color-text-secondary)] mt-0.5">Final {unidade.final || '—'} · {numberBR(unidade.metragem, ' m²')}</p>
           {basics && <p className="text-[12px] text-[var(--color-text-primary)] mt-1">{basics}</p>}
-          <p className="text-[12px] text-[#0F6E56] mt-1">
-            {unidade.orientacao_calc.label}{ref ? ` · ${ref}` : ''}
-          </p>
+          <p className="text-[12px] text-[#0F6E56] mt-1">{unidade.orientacao_calc.label}{ref ? ` · ${ref}` : ''}</p>
           {unidade.vista && <p className="text-[11px] text-[var(--color-text-tertiary)] mt-1">{unidade.vista}</p>}
           {unidade.torre && <p className="text-[10px] text-[var(--color-text-tertiary)] mt-1">Torre {unidade.torre}{unidade.andar !== null && unidade.andar !== undefined ? ` · ${unidade.andar}º andar` : ''}</p>}
         </div>
@@ -231,13 +225,16 @@ function UnidadeCard({ unidade: unidadeInput, onSelect, condoMin, condoMax, fina
 }
 
 function EnriquecimentoModal({ empreendimento, finais, unidades, onClose, onSave, saving, error }) {
-  const [finalSelecionado, setFinalSelecionado] = useState(finais[0] || '');
-  const unidadesDoFinal = useMemo(() => unidades.filter(u => u.final === finalSelecionado), [unidades, finalSelecionado]);
-  const exemplo = unidadesDoFinal[0] || {};
+  const [finaisSelecionados, setFinaisSelecionados] = useState(finais[0] ? [finais[0]] : []);
   const [form, setForm] = useState({ dormitorios: '', suites: '', vagasQuantidade: '', orientacaoSolar: '', face: '', vista: '', observacoes: '' });
 
+  const unidadesAfetadas = useMemo(() => unidades.filter(u => finaisSelecionados.includes(u.final)), [unidades, finaisSelecionados]);
+  const exemplo = unidadesAfetadas[0] || {};
+  const metragemResumo = useMemo(() => [...new Set(unidadesAfetadas.map(u => numberBR(u.metragem, ' m²')).filter(Boolean))].slice(0, 6), [unidadesAfetadas]);
+
   useEffect(() => {
-    const base = unidades.find(u => u.final === finalSelecionado) || {};
+    if (finaisSelecionados.length !== 1) return;
+    const base = unidades.find(u => u.final === finaisSelecionados[0]) || {};
     setForm({
       dormitorios: base.dormitorios_calc ?? base.dormitorios ?? '',
       suites: base.suites ?? '',
@@ -247,18 +244,25 @@ function EnriquecimentoModal({ empreendimento, finais, unidades, onClose, onSave
       vista: base.vista || '',
       observacoes: '',
     });
-  }, [finalSelecionado, unidades]);
+  }, [finaisSelecionados, unidades]);
 
   const setField = (field, value) => setForm(prev => ({ ...prev, [field]: value }));
-
+  const toggleFinal = (final) => setFinaisSelecionados(prev => prev.includes(final) ? prev.filter(f => f !== final) : [...prev, final]);
+  const selecionarTodos = () => setFinaisSelecionados(finais);
+  const limparSelecao = () => setFinaisSelecionados([]);
+  const selecionarPorMetragem = (metragem) => {
+    const finaisMetragem = [...new Set(unidades.filter(u => Number(u.metragem) === Number(metragem)).map(u => u.final).filter(Boolean))];
+    setFinaisSelecionados(finaisMetragem);
+  };
+  const metragens = useMemo(() => [...new Set(unidades.map(u => u.metragem).filter(v => v !== null && v !== undefined))].sort((a, b) => Number(a) - Number(b)), [unidades]);
   const inputClass = "rounded-xl border border-slate-300 px-3 py-2 text-[13px] bg-white text-slate-900 outline-none focus:border-[#0F6E56]";
   const labelClass = "grid gap-1 text-[11px] text-slate-600";
 
   const handleSave = async () => {
-    if (!finalSelecionado) return;
+    if (finaisSelecionados.length === 0) return;
     await onSave({
       empreendimentoId: empreendimento.id,
-      final: finalSelecionado,
+      finais: finaisSelecionados,
       dormitorios: toIntOrNull(form.dormitorios),
       suites: toIntOrNull(form.suites),
       vagasQuantidade: toIntOrNull(form.vagasQuantidade),
@@ -271,46 +275,61 @@ function EnriquecimentoModal({ empreendimento, finais, unidades, onClose, onSave
 
   return (
     <div className="fixed inset-0 z-[9999] bg-black/55 backdrop-blur-[2px] flex items-end sm:items-center justify-center p-3" onClick={onClose}>
-      <div className="w-full max-w-[760px] max-h-[88vh] overflow-y-auto rounded-3xl bg-white text-slate-900 shadow-2xl border border-slate-200" onClick={e => e.stopPropagation()}>
+      <div className="w-full max-w-[860px] max-h-[88vh] overflow-y-auto rounded-3xl bg-white text-slate-900 shadow-2xl border border-slate-200" onClick={e => e.stopPropagation()}>
         <div className="sticky top-0 bg-white border-b border-slate-200 p-4 flex items-start justify-between gap-3 rounded-t-3xl">
           <div>
-            <p className="text-[16px] font-bold text-slate-900">Completar dados das unidades</p>
-            <p className="text-[12px] text-slate-500">{empreendimento.nome} · dados por final/prumada</p>
+            <p className="text-[16px] font-bold text-slate-900">Completar dados em lote</p>
+            <p className="text-[12px] text-slate-500">{empreendimento.nome} · selecione finais/prumadas e salve uma vez</p>
           </div>
           <button onClick={onClose} className="w-8 h-8 rounded-full bg-slate-100 text-slate-700 text-[18px] leading-none">×</button>
         </div>
 
         <div className="p-4 grid gap-4 bg-white">
           <div className="rounded-2xl bg-[#E6F1FB] text-[#042C53] px-3 py-3 text-[12px] leading-relaxed">
-            Escolha o final e preencha somente o que souber. O card da unidade vai ocultar campos vazios automaticamente.
+            Nenhuma informação de empreendimento está hardcoded. O sistema usa somente os finais e metragens extraídos da tabela importada; o gestor agrupa visualmente e aplica a regra comercial em lote.
           </div>
 
-          <div>
-            <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-500 mb-2">Finais encontrados</p>
+          <div className="grid gap-2">
+            <div className="flex items-center justify-between gap-2">
+              <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-500">Selecione os finais do mesmo grupo</p>
+              <div className="flex gap-2">
+                <button type="button" onClick={selecionarTodos} className="px-3 py-1.5 rounded-xl bg-slate-100 text-slate-700 text-[11px] font-semibold">Todos</button>
+                <button type="button" onClick={limparSelecao} className="px-3 py-1.5 rounded-xl bg-slate-100 text-slate-700 text-[11px] font-semibold">Limpar</button>
+              </div>
+            </div>
             <div className="flex flex-wrap gap-2">
               {finais.map(f => (
-                <button
-                  key={f}
-                  onClick={() => setFinalSelecionado(f)}
-                  className={`px-3 py-2 rounded-xl text-[12px] font-semibold border ${finalSelecionado === f ? 'bg-[#0F6E56] border-[#0F6E56] text-white' : 'bg-slate-100 border-slate-200 text-slate-700'}`}
-                >
+                <button key={f} type="button" onClick={() => toggleFinal(f)} className={`px-3 py-2 rounded-xl text-[12px] font-semibold border ${finaisSelecionados.includes(f) ? 'bg-[#0F6E56] border-[#0F6E56] text-white' : 'bg-slate-100 border-slate-200 text-slate-700'}`}>
                   Final {f}
                 </button>
               ))}
             </div>
           </div>
 
+          {metragens.length > 0 && (
+            <div className="grid gap-2">
+              <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-500">Atalho por metragem extraída</p>
+              <div className="flex flex-wrap gap-2">
+                {metragens.map(m => (
+                  <button key={String(m)} type="button" onClick={() => selecionarPorMetragem(m)} className="px-3 py-2 rounded-xl text-[12px] font-semibold border bg-slate-50 border-slate-200 text-slate-700">
+                    {numberBR(m, ' m²')}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
           <div className="grid grid-cols-2 sm:grid-cols-1 gap-3">
             <div className="rounded-2xl border border-slate-200 bg-white p-3">
-              <p className="text-[11px] text-slate-500">Prévia do card</p>
-              <p className="text-[15px] font-semibold mt-2 text-slate-900">Unidade {exemplo.unidade || '—'}</p>
-              <p className="text-[12px] text-slate-600">Final {finalSelecionado || '—'} · {numberBR(exemplo.metragem, ' m²')}</p>
-              <p className="text-[12px] mt-1 text-slate-900">
-                {[form.dormitorios && `${form.dormitorios} dorms`, form.suites && `${form.suites} suíte${Number(form.suites) > 1 ? 's' : ''}`, form.vagasQuantidade && `${form.vagasQuantidade} vaga${Number(form.vagasQuantidade) > 1 ? 's' : ''}`].filter(Boolean).join(' · ') || 'Tipologia não informada'}
-              </p>
+              <p className="text-[11px] text-slate-500">Prévia do grupo</p>
+              <p className="text-[15px] font-semibold mt-2 text-slate-900">{finaisSelecionados.length || 0} final(is) selecionado(s)</p>
+              <p className="text-[12px] text-slate-600">{finaisSelecionados.length ? `Finais ${finaisSelecionados.join(', ')}` : 'Nenhum final selecionado'}</p>
+              <p className="text-[12px] text-slate-600 mt-1">{metragemResumo.length ? `Metragens: ${metragemResumo.join(', ')}` : 'Metragem não identificada'}</p>
+              <p className="text-[12px] mt-2 text-slate-900">{[form.dormitorios && `${form.dormitorios} dorms`, form.suites && `${form.suites} suíte${Number(form.suites) > 1 ? 's' : ''}`, form.vagasQuantidade && `${form.vagasQuantidade} vaga${Number(form.vagasQuantidade) > 1 ? 's' : ''}`].filter(Boolean).join(' · ') || 'Tipologia não informada'}</p>
               <p className="text-[12px] text-[#0F6E56] mt-1">{solLabel(form.orientacaoSolar).label}{form.face ? ` · ${form.face}` : ''}</p>
               {form.vista && <p className="text-[11px] text-slate-500 mt-1">{form.vista}</p>}
-              <p className="text-[10px] text-slate-500 mt-3">Afeta {unidadesDoFinal.length} unidade(s) deste final.</p>
+              <p className="text-[10px] text-slate-500 mt-3">Afeta {unidadesAfetadas.length} unidade(s) da tabela importada.</p>
+              {exemplo.unidade && <p className="text-[10px] text-slate-500 mt-1">Exemplo: unidade {exemplo.unidade}, final {exemplo.final}</p>}
             </div>
 
             <div className="grid gap-3">
@@ -329,9 +348,9 @@ function EnriquecimentoModal({ empreendimento, finais, unidades, onClose, onSave
                   <option value="misto">🌅🌇 Dupla face</option>
                 </select>
               </label>
-              <label className={labelClass}>Referência da face<input value={form.face} onChange={e => setField('face', e.target.value)} placeholder="Rua Fortunato Ferraz, City Lapa…" className={inputClass} /></label>
-              <label className={labelClass}>Vista / observação comercial<input value={form.vista} onChange={e => setField('vista', e.target.value)} placeholder="Vista livre, frente para Nova Vivere…" className={inputClass} /></label>
-              <label className={labelClass}>Observação interna<input value={form.observacoes} onChange={e => setField('observacoes', e.target.value)} placeholder="Ex.: validado na maquete" className={inputClass} /></label>
+              <label className={labelClass}>Referência da face<input value={form.face} onChange={e => setField('face', e.target.value)} placeholder="Rua, bairro, praça, city, área interna…" className={inputClass} /></label>
+              <label className={labelClass}>Vista / observação comercial<input value={form.vista} onChange={e => setField('vista', e.target.value)} placeholder="Vista livre, frente para torre X, vista interna…" className={inputClass} /></label>
+              <label className={labelClass}>Observação interna<input value={form.observacoes} onChange={e => setField('observacoes', e.target.value)} placeholder="Ex.: validado na implantação/maquete" className={inputClass} /></label>
             </div>
           </div>
 
@@ -339,7 +358,9 @@ function EnriquecimentoModal({ empreendimento, finais, unidades, onClose, onSave
 
           <div className="flex gap-2 justify-end sticky bottom-0 bg-white py-3 border-t border-slate-200">
             <button onClick={onClose} className="px-4 py-2 rounded-xl bg-slate-100 text-slate-700 text-[13px]">Cancelar</button>
-            <button onClick={handleSave} disabled={saving || !finalSelecionado} className="px-4 py-2 rounded-xl bg-[#0F6E56] text-white text-[13px] font-semibold disabled:opacity-50">{saving ? 'Salvando…' : `Salvar final ${finalSelecionado}`}</button>
+            <button onClick={handleSave} disabled={saving || finaisSelecionados.length === 0} className="px-4 py-2 rounded-xl bg-[#0F6E56] text-white text-[13px] font-semibold disabled:opacity-50">
+              {saving ? 'Salvando…' : `Salvar grupo (${finaisSelecionados.length} finais)`}
+            </button>
           </div>
         </div>
       </div>
@@ -389,7 +410,10 @@ export default function TabFluxo({ sb, token, empresaId, corretorId, isGestor = 
   const fluxoParser = useMemo(() => (unidadeSelecionada ? buildFluxoFromParser(unidadeSelecionada) : null), [unidadeSelecionada]);
 
   const handleSalvarEnriquecimento = async (payload) => {
-    await salvarEnriquecimento(payload);
+    const finaisPayload = Array.isArray(payload.finais) && payload.finais.length > 0 ? payload.finais : [payload.final].filter(Boolean);
+    for (const final of finaisPayload) {
+      await salvarEnriquecimento({ ...payload, final, finais: undefined });
+    }
     await reloadUnidades?.();
   };
 
