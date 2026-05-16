@@ -10,7 +10,12 @@ import { useState, useCallback, useMemo, useEffect } from 'react';
 
 // ─── Formatação ────────────────────────────────────────────────
 export const fmtBRL = (n) =>
-  'R$ ' + Math.round(n || 0).toLocaleString('pt-BR');
+  Number(n || 0).toLocaleString('pt-BR', {
+    style: 'currency',
+    currency: 'BRL',
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0,
+  });
 
 export const fmtBRLShort = (n) => fmtBRL(n);
 
