@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react';
 import {
   useEmpreendimentosMesa,
   useImportarMesaClienteParserResultado,
+  useImportarMesaClienteDisponibilidadeOficial,
 } from './hooks/useMesaData';
 import { processMesaClienteFile } from '../../features/mesaCliente/parser/nativeFirstParser';
 import { nativeRowsToParserPayload, validateParserPayloadForImport } from '../../features/mesaCliente/parser/parserPayloadAdapter';
@@ -233,7 +234,7 @@ function EmpCard({ emp, onAbrirFluxo, onUpload }) {
         <div className="px-3 pb-3 border-t border-slate-200">
           <div className="flex gap-2 mt-3 flex-wrap">
             <StatusPill status={tabelaStatus} title={tabelaTitle} sub={`${dataFmt(emp.tabela_data)}${emp.tabela_tipo ? ` · ${emp.tabela_tipo}` : ''}`} who={emp.tabela_enviado_por} obs={tabelaStatus === 'red' ? 'Tabela desatualizada — suba a tabela do mês' : null} />
-            <StatusPill status={disponibilidadeStatus} title={disponibilidadeTitle} sub={dataFmt(emp.espelho_data)} who={emp.espelho_enviado_por} obs={disponibilidadeStatus === 'red' ? 'Envie a tabela oficial para validar unidades disponíveis' : null} />
+            <StatusPill status={disponibilidadeStatus} title={disponibilidadeTitle} sub={dataFmt(emp.espelho_data)} who={emp.espelho_enviado_por} obs={disponibilidadeStatus === 'red' ? 'Atualize com a tabela oficial Tegra para confirmar as unidades disponíveis' : null} />
           </div>
           <div className="flex gap-2 mt-3 flex-wrap">
             <button onClick={() => onAbrirFluxo(emp)} disabled={!emp.pode_abrir_mesa} className="px-3 py-1.5 rounded-xl text-[12px] font-medium" style={emp.pode_abrir_mesa ? { backgroundColor: '#E1F5EE', color: '#0F6E56' } : DISABLED_BUTTON_STYLE}>
@@ -251,8 +252,8 @@ function EmpCard({ emp, onAbrirFluxo, onUpload }) {
 
 export default function TabEmpreendimentos({ sb, token, empresaId, onAbrirFluxo }) {
   const { data: empreendimentos = [], isLoading, error, reload } = useEmpreendimentosMesa({ sb, token, empresaId });
+  const { mutateAsync: importarDisponibilidade } = useImportarMesaClienteDisponibilidadeOficial({ sb, token });
   const [uploadTarget, setUploadTarget] = useState(null);
-  const [availabilityPreviews, setAvailabilityPreviews] = useState({});
 
   const sortedEmpreendimentos = useMemo(() => empreendimentos, [empreendimentos]);
   const handleUpload = (emp, tipo) => setUploadTarget({ emp, tipo });
@@ -305,12 +306,13 @@ export default function TabEmpreendimentos({ sb, token, empresaId, onAbrirFluxo 
       {uploadTarget?.tipo === 'disponibilidade' && (
         <DisponibilidadeUploadPreview
           empreendimento={uploadTarget.emp}
+          empresaId={empresaId}
           unidadesComerciais={[]}
+          importarDisponibilidade={importarDisponibilidade}
           onClose={() => setUploadTarget(null)}
-          onConfirmLocal={(preview) => {
-            const key = uploadTarget.emp?.id || uploadTarget.emp?.nome || 'sem_empreendimento';
-            setAvailabilityPreviews((prev) => ({ ...prev, [key]: preview }));
+          onSuccess={() => {
             setUploadTarget(null);
+            reload();
           }}
         />
       )}
