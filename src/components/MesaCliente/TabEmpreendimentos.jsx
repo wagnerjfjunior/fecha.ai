@@ -5,6 +5,7 @@ import {
 } from './hooks/useMesaData';
 import { processMesaClienteFile } from '../../features/mesaCliente/parser/nativeFirstParser';
 import { nativeRowsToParserPayload, validateParserPayloadForImport } from '../../features/mesaCliente/parser/parserPayloadAdapter';
+import EspelhoUploadPreview from './espelho/EspelhoUploadPreview';
 
 const DOT_COLOR = { ok: 'bg-[#1D9E75]', yellow: 'bg-[#EF9F27]', red: 'bg-[#E24B4A]' };
 const PILL_BG = { ok: 'bg-[#E1F5EE]', yellow: 'bg-[#FAEEDA]', red: 'bg-[#FDEAEA]' };
@@ -80,9 +81,7 @@ function UploadModal({ empreendimento, tipoInicial, onClose, onSuccess, empresaI
       });
 
       const validation = validateParserPayloadForImport(payload);
-      if (!validation.ok) {
-        throw new Error(validation.errors.join(' | '));
-      }
+      if (!validation.ok) throw new Error(validation.errors.join(' | '));
 
       setFeedback({ type: 'info', text: `Parser identificou ${validation.validUnits.length} unidade(s). Salvando no banco com RPC segura…` });
 
@@ -120,7 +119,7 @@ function UploadModal({ empreendimento, tipoInicial, onClose, onSuccess, empresaI
         <div className="grid grid-cols-2 gap-2 mb-4">
           {[
             { key: 'tabela', icon: '📊', label: 'Tabela comercial', sub: 'PDF com valores' },
-            { key: 'espelho', icon: '🪞', label: 'Espelho de vendas', sub: 'Em breve' },
+            { key: 'espelho', icon: '🪞', label: 'Espelho de vendas', sub: 'Prévia local' },
           ].map(opt => (
             <button
               key={opt.key}
@@ -137,6 +136,12 @@ function UploadModal({ empreendimento, tipoInicial, onClose, onSuccess, empresaI
             </button>
           ))}
         </div>
+
+        {tipo === 'espelho' && (
+          <div className="bg-[#FAEEDA] text-[#412402] rounded-xl px-3 py-2 text-[11px] mb-3 leading-relaxed">
+            Para importar espelho, feche esta janela e use o botão “Subir espelho” do card do empreendimento. A prévia abrirá em tela própria.
+          </div>
+        )}
 
         {tipo === 'tabela' && (
           <>
@@ -173,12 +178,6 @@ function UploadModal({ empreendimento, tipoInicial, onClose, onSuccess, empresaI
           <div className="text-[11px] text-slate-500 mt-1">PDF com texto selecionável · máx. 20MB</div>
           <input type="file" accept=".pdf,.txt,.csv" className="hidden" onChange={e => setArquivo(e.target.files?.[0] ?? null)} />
         </label>
-
-        {tipo === 'espelho' && (
-          <div className="bg-[#FAEEDA] text-[#412402] rounded-xl px-3 py-2 text-[11px] mb-3 leading-relaxed">
-            O espelho de vendas ainda não será processado nesta etapa. Por enquanto, a Mesa Cliente exibirá todas as unidades extraídas da tabela comercial.
-          </div>
-        )}
 
         <div className="bg-slate-50 rounded-xl px-3 py-2 text-[11px] text-slate-600 mb-4 leading-relaxed">
           🔒 O arquivo é processado no navegador pelo parser Native First. A gravação no banco acontece somente via RPC com sessão autenticada e isolamento por empresa.
@@ -270,7 +269,7 @@ export default function TabEmpreendimentos({ sb, token, empresaId, onAbrirFluxo 
     <div className="p-3">
       <div className="flex items-center justify-between gap-3 rounded-xl px-3 py-3 mb-3 flex-wrap" style={{ backgroundColor: '#eff6ff', border: '1px solid #bfdbfe' }}>
         <span className="text-[12px] font-medium" style={{ color: '#1e40af' }}>
-          📤 Importe uma tabela/PDF para montar a Mesa Cliente. O espelho de vendas será conectado depois para filtrar vendidas.
+          📤 Importe a tabela comercial para valores e o espelho oficial para leitura de disponibilidade.
         </span>
         <button
           type="button"
@@ -311,7 +310,14 @@ export default function TabEmpreendimentos({ sb, token, empresaId, onAbrirFluxo 
         <EmpCard key={emp.id} emp={emp} onAbrirFluxo={onAbrirFluxo} onUpload={handleUpload} />
       ))}
 
-      {uploadTarget && (
+      {uploadTarget?.tipo === 'espelho' && (
+        <EspelhoUploadPreview
+          empreendimento={uploadTarget.emp}
+          onClose={() => setUploadTarget(null)}
+        />
+      )}
+
+      {uploadTarget?.tipo !== 'espelho' && uploadTarget && (
         <UploadModal
           sb={sb}
           token={token}
