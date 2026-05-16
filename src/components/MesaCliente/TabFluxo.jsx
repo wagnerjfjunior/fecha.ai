@@ -36,10 +36,15 @@ function toNumber(value) {
   return Number.isFinite(n) ? n : 0;
 }
 
+function safeObj(value) {
+  return value && typeof value === 'object' && !Array.isArray(value) ? value : {};
+}
+
 function parseObsKV(observacoes = '') {
   const out = {};
-  String(observacoes || '').split('|').forEach(part => {
-    const [k, ...rest] = part.split('=');
+  const text = typeof observacoes === 'string' ? observacoes : String(observacoes ?? '');
+  text.split('|').forEach(part => {
+    const [k, ...rest] = String(part || '').split('=');
     const key = String(k || '').trim();
     if (!key) return;
     out[key] = rest.join('=').trim();
@@ -48,22 +53,26 @@ function parseObsKV(observacoes = '') {
 }
 
 function parsePayloadFromObservacoes(observacoes = '') {
-  const text = String(observacoes || '');
+  const text = typeof observacoes === 'string' ? observacoes : String(observacoes ?? '');
   const marker = 'Payload:';
   const idx = text.indexOf(marker);
   if (idx < 0) return null;
   const payloadText = text.slice(idx + marker.length).trim();
   if (!payloadText.startsWith('{')) return null;
   try {
-    return JSON.parse(payloadText);
+    const parsed = JSON.parse(payloadText);
+    return safeObj(parsed);
   } catch {
     return null;
   }
 }
 
-function buildFluxoFromParser(unidade = {}) {
-  const payload = parsePayloadFromObservacoes(unidade.observacoes) || {};
-  const raw = payload.raw || payload;
+function buildFluxoFromParser(unidadeInput = {}) {
+  const unidade = safeObj(unidadeInput);
+  if (!unidade.id && !unidade.observacoes) return null;
+
+  const payload = safeObj(parsePayloadFromObservacoes(unidade.observacoes));
+  const raw = safeObj(payload.raw || payload);
   const meta = parseObsKV(payload.observacoes || unidade.observacoes || '');
 
   const sinal = toNumber(raw.sinal_1 ?? payload.sinal_1);
@@ -143,9 +152,12 @@ function buildFluxoFromParser(unidade = {}) {
   return hasAny ? fluxo : null;
 }
 
-function fluxoResumo(unidade = {}) {
-  const payload = parsePayloadFromObservacoes(unidade.observacoes) || {};
-  const raw = payload.raw || payload;
+function fluxoResumo(unidadeInput = {}) {
+  const unidade = safeObj(unidadeInput);
+  if (!unidade.id && !unidade.observacoes) return '';
+
+  const payload = safeObj(parsePayloadFromObservacoes(unidade.observacoes));
+  const raw = safeObj(payload.raw || payload);
   const meta = parseObsKV(payload.observacoes || unidade.observacoes || '');
   const parts = [];
   const sinal = toNumber(raw.sinal_1 ?? payload.sinal_1);
@@ -168,8 +180,11 @@ function fluxoResumo(unidade = {}) {
   return parts.join(' · ');
 }
 
-function UnidadeCard({ unidade, selected, onSelect }) {
+function UnidadeCard({ unidade: unidadeInput, selected, onSelect }) {
+  const unidade = safeObj(unidadeInput);
   const resumo = fluxoResumo(unidade);
+
+  if (!unidade.id && !unidade.unidade) return null;
 
   return (
     <button
@@ -233,7 +248,7 @@ export default function TabFluxo({
   onIrParaEmps,
 }) {
   const { data: config = {}, isLoading: configLoading, error: configError } = useEmpresaMesaConfig({ sb, token, empresaId });
-  const { data: unidades = [], isLoading: unidadesLoading, error: unidadesError, reload: reloadUnidades } = useUnidadesMesa({
+  const { data: unidadesRaw = [], isLoading: unidadesLoading, error: unidadesError, reload: reloadUnidades } = useUnidadesMesa({
     sb,
     token,
     empreendimentoId: empreendimento?.id,
@@ -244,6 +259,12 @@ export default function TabFluxo({
   const [unidadeSelecionada, setUnidadeSelecionada] = useState(null);
   const [busca, setBusca] = useState('');
 
+  const unidades = useMemo(() => (
+    Array.isArray(unidadesRaw)
+      ? unidadesRaw.filter(u => u && typeof u === 'object')
+      : []
+  ), [unidadesRaw]);
+
   const unidadesFiltradas = useMemo(() => {
     const term = busca.trim().toLowerCase();
     if (!term) return unidades;
@@ -251,7 +272,10 @@ export default function TabFluxo({
       .some(v => String(v ?? '').toLowerCase().includes(term)));
   }, [busca, unidades]);
 
-  const fluxoParser = useMemo(() => buildFluxoFromParser(unidadeSelecionada), [unidadeSelecionada]);
+  const fluxoParser = useMemo(
+    () => (unidadeSelecionada ? buildFluxoFromParser(unidadeSelecionada) : null),
+    [unidadeSelecionada]
+  );
 
   if (!empreendimento) {
     return (
@@ -356,7 +380,7 @@ export default function TabFluxo({
 
         <div className="grid gap-3">
           {unidadesFiltradas.map(u => (
-            <UnidadeCard key={u.id} unidade={u} selected={false} onSelect={setUnidadeSelecionada} />
+            <UnidadeCard key={u.id || u.unidade} unidade={u} selected={false} onSelect={setUnidadeSelecionada} />
           ))}
         </div>
       </div>
