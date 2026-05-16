@@ -386,6 +386,7 @@ export function parseRangeByFinalTable(text, options = {}) {
   if (!looksCommercial) return { rows: [], csvText: CANON_COLUMNS.join(";"), diagnostics: { parser: "parseRangeByFinalTable", reason: "layout_not_matched" } };
 
   const paymentPlan = extractPaymentPlan(text);
+  const hasPeriodicityColumn = Boolean(paymentPlan.periodicidadeData);
   const finalRegex = /Final\s+((?:\d{1,2})(?:\s*(?:,|e)\s*\d{1,2})*)/gi;
   const finalMatches = [...source.matchAll(finalRegex)];
   const allFinals = [...new Set(finalMatches.flatMap((match) => parseFinals(match[0])))];
@@ -400,8 +401,12 @@ export function parseRangeByFinalTable(text, options = {}) {
     const start = finalMatch.index || 0;
     const end = finalMatches[finalIndex + 1]?.index ?? source.length;
     const segment = source.slice(start, end);
-    const explicitUnitRegex = /(?:Garden\s+)?(AP\d{4})\s+(\d{1,3},\d{1,2})\s+(\d{1,2})\s+([\d.]+)\s+([\d.]+)\s+([\d.]+)\s+([\d.]+)\s+([\d.]+)\s+([\d.]+)(?:\s+([\d.]+))?\s+([\d.]+)/gi;
-    const rowRegex = /((?:\d{1,2}\s*(?:º|o|°|a\.)?\s*(?:ao|a|e)\s*\d{1,2}\s*(?:º|o|°)?|\d{1,2}\s*(?:º|o|°)?)\s*andar)\s+(\d{1,3},\d{1,2})\s+(\d{1,2})\s+([\d.]+)\s+([\d.]+)\s+([\d.]+)\s+([\d.]+)\s+([\d.]+)\s+([\d.]+)(?:\s+([\d.]+))?\s+([\d.]+)/gi;
+    const explicitUnitRegex = hasPeriodicityColumn
+      ? /(?:Garden\s+)?(AP\d{4})\s+(\d{1,3},\d{1,2})\s+(\d{1,2})\s+([\d.]+)\s+([\d.]+)\s+([\d.]+)\s+([\d.]+)\s+([\d.]+)\s+([\d.]+)(?:\s+([\d.]+))?\s+([\d.]+)/gi
+      : /(?:Garden\s+)?(AP\d{4})\s+(\d{1,3},\d{1,2})\s+(\d{1,2})\s+([\d.]+)\s+([\d.]+)\s+([\d.]+)\s+([\d.]+)\s+([\d.]+)\s+([\d.]+)\s+([\d.]+)/gi;
+    const rowRegex = hasPeriodicityColumn
+      ? /((?:\d{1,2}\s*(?:º|o|°|a\.)?\s*(?:ao|a|e)\s*\d{1,2}\s*(?:º|o|°)?|\d{1,2}\s*(?:º|o|°)?)\s*andar)\s+(\d{1,3},\d{1,2})\s+(\d{1,2})\s+([\d.]+)\s+([\d.]+)\s+([\d.]+)\s+([\d.]+)\s+([\d.]+)\s+([\d.]+)(?:\s+([\d.]+))?\s+([\d.]+)/gi
+      : /((?:\d{1,2}\s*(?:º|o|°|a\.)?\s*(?:ao|a|e)\s*\d{1,2}\s*(?:º|o|°)?|\d{1,2}\s*(?:º|o|°)?)\s*andar)\s+(\d{1,3},\d{1,2})\s+(\d{1,2})\s+([\d.]+)\s+([\d.]+)\s+([\d.]+)\s+([\d.]+)\s+([\d.]+)\s+([\d.]+)\s+([\d.]+)/gi;
 
     let parsedRanges = 0;
     let explicitUnits = 0;
@@ -419,8 +424,8 @@ export function parseRangeByFinalTable(text, options = {}) {
       const anual = moneyToNumber(match[7]);
       const unica = moneyToNumber(match[8]);
       const financiamento = moneyToNumber(match[9]);
-      const periodicidade = moneyToNumber(match[10] || "");
-      const total = moneyToNumber(match[11]);
+      const periodicidade = hasPeriodicityColumn ? moneyToNumber(match[10] || "") : 0;
+      const total = moneyToNumber(hasPeriodicityColumn ? match[11] : match[10]);
       if (!area || !total) continue;
       explicitUnits += 1;
       rows.push(makeParsedRow({ empreendimento, final: explicit.final, andar: explicit.andar, unidade, area, vagas, sinal, complemento, mensal, anual, unica, financiamento, periodicidade, total, faixaAndar: "Garden", finalIndex, rowsLength: rows.length, paymentPlan, explicitUnit: true }));
@@ -438,8 +443,8 @@ export function parseRangeByFinalTable(text, options = {}) {
       const anual = moneyToNumber(match[7]);
       const unica = moneyToNumber(match[8]);
       const financiamento = moneyToNumber(match[9]);
-      const periodicidade = moneyToNumber(match[10] || "");
-      const total = moneyToNumber(match[11]);
+      const periodicidade = hasPeriodicityColumn ? moneyToNumber(match[10] || "") : 0;
+      const total = moneyToNumber(hasPeriodicityColumn ? match[11] : match[10]);
       if (!andares.length || !finals.length || !area || !total) continue;
       parsedRanges += 1;
       finals.forEach((final) => {
@@ -465,6 +470,7 @@ export function parseRangeByFinalTable(text, options = {}) {
       payment_diff_tolerance: Number(paymentPlan.tolerance || getPaymentDiffTolerance(paymentPlan)),
       payment_diff_tolerance_mode: "dynamic_by_installment_count_and_rounding_unit",
       generated_unit_format: generatedUnitFormat,
+      has_periodicity_column: hasPeriodicityColumn,
       payment_plan: paymentPlan,
       final_diagnostics: finalDiagnostics,
       complete: rows.length > 0,
