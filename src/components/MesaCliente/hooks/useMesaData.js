@@ -8,6 +8,7 @@ import {
   criarMesaSimulacao,
   aprovarRejeitarMesa,
   importarMesaClienteParserResultado,
+  importarMesaClienteDisponibilidadeOficial,
   salvarMesaClienteEnriquecimento,
 } from '../../../features/mesaCliente/api/mesaClienteApi';
 
@@ -119,6 +120,18 @@ export function useImportarMesaClienteParserResultado({ sb, token }) {
     mutationFn: (variables) => importarMesaClienteParserResultado({ sb, token, ...variables }),
     onSuccess: (_data, variables) => {
       queryClient.invalidateQueries({ queryKey: MESA_KEYS.empreendimentos(variables.empresaId) });
+      queryClient.invalidateQueries({ queryKey: MESA_KEYS.root });
+    },
+  }));
+}
+
+export function useImportarMesaClienteDisponibilidadeOficial({ sb, token }) {
+  const queryClient = useQueryClient();
+  return withMutationCompat(useMutation({
+    mutationFn: (variables) => importarMesaClienteDisponibilidadeOficial({ sb, token, ...variables }),
+    onSuccess: (_data, variables) => {
+      queryClient.invalidateQueries({ queryKey: MESA_KEYS.empreendimentos(variables.empresaId) });
+      queryClient.invalidateQueries({ queryKey: MESA_KEYS.unidades(variables.empreendimentoId) });
       queryClient.invalidateQueries({ queryKey: MESA_KEYS.root });
     },
   }));
