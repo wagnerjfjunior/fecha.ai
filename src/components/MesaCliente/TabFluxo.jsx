@@ -58,6 +58,40 @@ function toIntOrNull(value) {
   return Number.isFinite(n) ? n : null;
 }
 
+function normalizarStatusComercial(status) {
+  return String(status || '')
+    .trim()
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '');
+}
+
+function isUnidadeDisponivel(unidade) {
+  return normalizarStatusComercial(unidade?.status_comercial) === 'disponivel';
+}
+
+function disponibilidadeVisual(unidade) {
+  const disponivel = isUnidadeDisponivel(unidade);
+
+  if (disponivel) {
+    return {
+      disponivel: true,
+      cardBorderClass: 'border-[#0F6E56] hover:border-[#0F6E56]',
+      avisoClass: 'bg-[#E1F5EE] text-[#0F6E56] border border-[#BCE7DA]',
+      icon: '✅',
+      fallbackAviso: 'Disponibilidade confirmada pela tabela oficial do empreendimento.',
+    };
+  }
+
+  return {
+    disponivel: false,
+    cardBorderClass: 'border-[#DC2626] hover:border-[#DC2626]',
+    avisoClass: 'bg-[#FDEAEA] text-[#7F1D1D] border border-[#F5B5B5]',
+    icon: '⛔',
+    fallbackAviso: 'Unidade fora da tabela oficial de disponibilidade. Conferir antes de apresentar ao cliente.',
+  };
+}
+
 function parseObsKV(observacoes = '') {
   const out = {};
   const text = typeof observacoes === 'string' ? observacoes : String(observacoes ?? '');
@@ -238,11 +272,12 @@ function UnidadeCard({ unidade: unidadeInput, onSelect, condoMin, condoMax, fina
 
   const basics = formatUnitBasics(unidade);
   const ref = unidade.face || '';
+  const disponibilidade = disponibilidadeVisual(unidade);
 
   return (
     <button
       onClick={() => onSelect(unidade)}
-      className="w-full text-left rounded-2xl border border-[var(--color-border-tertiary)] bg-[var(--color-background-primary)] hover:border-[#0F6E56] hover:shadow-md p-4 transition-all"
+      className={`w-full text-left rounded-2xl border bg-[var(--color-background-primary)] hover:shadow-md p-4 transition-all ${disponibilidade.cardBorderClass}`}
     >
       <div className="grid grid-cols-1 md:grid-cols-[1fr_auto] gap-3">
         <div className="min-w-0">
@@ -264,7 +299,7 @@ function UnidadeCard({ unidade: unidadeInput, onSelect, condoMin, condoMax, fina
         </div>
       )}
       {resumo && <div className="mt-3 rounded-xl bg-[#E1F5EE] text-[#0F6E56] px-3 py-2 text-[13px] leading-relaxed">Fluxo sugerido: {resumo}</div>}
-      <div className="mt-3 rounded-xl bg-[#FAEEDA] text-[#412402] px-3 py-2 text-[12px] leading-relaxed">⚠️ {unidade.aviso || 'Disponibilidade ainda não validada pelo espelho de vendas.'}</div>
+      <div className={`mt-3 rounded-xl px-3 py-2 text-[12px] leading-relaxed ${disponibilidade.avisoClass}`}>{disponibilidade.icon} {unidade.aviso || disponibilidade.fallbackAviso}</div>
     </button>
   );
 }
@@ -400,6 +435,7 @@ export default function TabFluxo({ sb, token, empresaId, corretorId, isGestor = 
   const [filtroFinal, setFiltroFinal] = useState('');
   const [filtroDorm, setFiltroDorm] = useState('');
   const [filtroSol, setFiltroSol] = useState('');
+  const [filtroDisponibilidade, setFiltroDisponibilidade] = useState('');
   const [valorMin, setValorMin] = useState('');
   const [valorMax, setValorMax] = useState('');
   const [ordenacao, setOrdenacao] = useState('menor_valor');
@@ -428,14 +464,16 @@ export default function TabFluxo({ sb, token, empresaId, corretorId, isGestor = 
     let arr = unidades.filter((u) => {
       const matchBusca = !term || [u.unidade, u.torre, u.final, u.andar, u.metragem, u.valor_tabela, u.face, u.vista].some((v) => String(v ?? '').toLowerCase().includes(term));
       const matchValor = (!min || u.valor_num >= min) && (!max || u.valor_num <= max);
-      return matchBusca && matchValor && (!filtroFinal || u.final === filtroFinal) && (!filtroDorm || String(u.dormitorios_calc) === filtroDorm) && (!filtroSol || u.orientacao_calc.value === filtroSol);
+      const disponivel = isUnidadeDisponivel(u);
+      const matchDisponibilidade = !filtroDisponibilidade || (filtroDisponibilidade === 'disponivel' ? disponivel : !disponivel);
+      return matchBusca && matchValor && matchDisponibilidade && (!filtroFinal || u.final === filtroFinal) && (!filtroDorm || String(u.dormitorios_calc) === filtroDorm) && (!filtroSol || u.orientacao_calc.value === filtroSol);
     });
     if (ordenacao === 'menor_prumada') arr = arr.filter((u) => u.id === byFinal.get(u.final)?.min?.id).sort((a, b) => a.valor_num - b.valor_num);
     else if (ordenacao === 'maior_prumada') arr = arr.filter((u) => u.id === byFinal.get(u.final)?.max?.id).sort((a, b) => b.valor_num - a.valor_num);
     else if (ordenacao === 'maior_valor') arr = arr.sort((a, b) => b.valor_num - a.valor_num);
     else arr = arr.sort((a, b) => a.valor_num - b.valor_num);
     return arr;
-  }, [busca, filtroFinal, filtroDorm, filtroSol, valorMin, valorMax, ordenacao, unidades, byFinal]);
+  }, [busca, filtroFinal, filtroDorm, filtroSol, filtroDisponibilidade, valorMin, valorMax, ordenacao, unidades, byFinal]);
 
   const fluxoParser = useMemo(() => (unidadeSelecionada ? buildFluxoFromParser(unidadeSelecionada) : null), [unidadeSelecionada]);
 
@@ -487,8 +525,9 @@ export default function TabFluxo({ sb, token, empresaId, corretorId, isGestor = 
 
       <div className="grid gap-3 mb-4">
         <input value={busca} onChange={(e) => setBusca(e.target.value)} placeholder="Buscar por unidade, torre, andar, metragem, valor, face ou vista…" className="w-full rounded-2xl border border-[var(--color-border-tertiary)] bg-[var(--color-background-primary)] px-4 py-4 text-[18px] md:text-[16px] outline-none" />
-        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-3">
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-5 gap-3">
           <select value={ordenacao} onChange={(e) => setOrdenacao(e.target.value)} className="rounded-2xl border px-4 py-4 text-[18px] md:text-[15px] bg-[var(--color-background-primary)]"><option value="menor_valor">Menor valor</option><option value="maior_valor">Maior valor</option><option value="menor_prumada">Menor por prumada</option><option value="maior_prumada">Maior por prumada</option></select>
+          <select value={filtroDisponibilidade} onChange={(e) => setFiltroDisponibilidade(e.target.value)} className="rounded-2xl border px-4 py-4 text-[18px] md:text-[15px] bg-[var(--color-background-primary)]"><option value="">Todas unidades</option><option value="disponivel">Disponíveis</option><option value="nao_disponivel">Não disponíveis</option></select>
           <select value={filtroFinal} onChange={(e) => setFiltroFinal(e.target.value)} className="rounded-2xl border px-4 py-4 text-[18px] md:text-[15px] bg-[var(--color-background-primary)]"><option value="">Todos finais</option>{finais.map((f) => <option key={f} value={f}>Final {f}</option>)}</select>
           <select value={filtroDorm} onChange={(e) => setFiltroDorm(e.target.value)} className="rounded-2xl border px-4 py-4 text-[18px] md:text-[15px] bg-[var(--color-background-primary)]"><option value="">Todos dorms</option>{dorms.map((d) => <option key={d} value={d}>{d} dorms</option>)}</select>
           <select value={filtroSol} onChange={(e) => setFiltroSol(e.target.value)} className="rounded-2xl border px-4 py-4 text-[18px] md:text-[15px] bg-[var(--color-background-primary)]"><option value="">Todos sóis</option>{sols.map((s) => <option key={s.value} value={s.value}>{s.label}</option>)}</select>
