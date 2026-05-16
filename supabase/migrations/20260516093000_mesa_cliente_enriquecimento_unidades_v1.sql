@@ -111,7 +111,11 @@ $$;
 revoke all on function public.salvar_mesa_cliente_enriquecimento(uuid, text, integer, integer, integer, text, text, text, text) from public;
 grant execute on function public.salvar_mesa_cliente_enriquecimento(uuid, text, integer, integer, integer, text, text, text, text) to authenticated;
 
-create or replace function public.get_unidades_mesa(p_empreendimento_id uuid)
+-- A assinatura de retorno da RPC muda nesta migration. PostgreSQL não permite
+-- alterar RETURNS TABLE com CREATE OR REPLACE; por isso o drop controlado.
+drop function if exists public.get_unidades_mesa(uuid);
+
+create function public.get_unidades_mesa(p_empreendimento_id uuid)
 returns table (
   id uuid, snapshot_id uuid, empreendimento_id uuid, torre text, unidade text, final text,
   andar integer, metragem numeric, dormitorios integer, suites integer, vagas_quantidade integer,
