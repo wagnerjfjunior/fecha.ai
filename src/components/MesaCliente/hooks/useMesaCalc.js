@@ -6,7 +6,7 @@
  * faz cálculos de UX; a validação oficial é feita pelo RPC criar_mesa_simulacao.
  */
 
-import { useState, useCallback, useMemo } from 'react';
+import { useState, useCallback, useMemo, useEffect } from 'react';
 
 // ─── Formatação ────────────────────────────────────────────────
 export const fmtBRL = (n) =>
@@ -17,6 +17,23 @@ export const fmtBRLShort = (n) => {
   if (n >= 1000) return 'R$ ' + (n / 1000).toFixed(n % 1000 === 0 ? 0 : 1).replace('.', ',') + 'k';
   return 'R$ ' + n;
 };
+
+function normalizeInitialFluxo(initialFluxo, precoTotal) {
+  if (!initialFluxo || typeof initialFluxo !== 'object') return defaultFluxo(precoTotal);
+  const normalized = {
+    e: Array.isArray(initialFluxo.e) ? initialFluxo.e : [],
+    c: Array.isArray(initialFluxo.c) ? initialFluxo.c : [],
+    m: Array.isArray(initialFluxo.m) ? initialFluxo.m : [],
+    a: Array.isArray(initialFluxo.a) ? initialFluxo.a : [],
+    u: Array.isArray(initialFluxo.u) ? initialFluxo.u : [],
+  };
+
+  if (!normalized.e.length && !normalized.c.length && !normalized.m.length && !normalized.a.length && !normalized.u.length) {
+    return defaultFluxo(precoTotal);
+  }
+
+  return normalized;
+}
 
 // ─── Estado padrão ─────────────────────────────────────────────
 export function defaultFluxo(precoTotal = 850000) {
@@ -72,6 +89,7 @@ export function serializarFluxo(state) {
         date: t.date || t.dateStart || null,
         periodicidade: t.per || null,
         isGroup: t.isGroup || false,
+        source: t.source || null,
       })
     );
   add('e', state.e);
@@ -86,9 +104,14 @@ export function serializarFluxo(state) {
 let _counter = 100;
 const nextId = () => 'n' + (++_counter);
 
-export function useMesaCalc({ precoTotal = 850000, metaPct = 30, metaEspecial = null } = {}) {
-  const [state, setState] = useState(() => defaultFluxo(precoTotal));
+export function useMesaCalc({ precoTotal = 850000, metaPct = 30, metaEspecial = null, initialFluxo = null, resetKey = '' } = {}) {
+  const [state, setState] = useState(() => normalizeInitialFluxo(initialFluxo, precoTotal));
   const [selected, setSelected] = useState(null); // { g, id }
+
+  useEffect(() => {
+    setState(normalizeInitialFluxo(initialFluxo, precoTotal));
+    setSelected(null);
+  }, [precoTotal, resetKey]);
 
   const metaAtual = metaEspecial !== null ? metaEspecial : metaPct;
   const obraTarget = (precoTotal * metaAtual) / 100;
@@ -159,9 +182,9 @@ export function useMesaCalc({ precoTotal = 850000, metaPct = 30, metaEspecial = 
   }, [precoTotal]);
 
   const reset = useCallback(() => {
-    setState(defaultFluxo(precoTotal));
+    setState(normalizeInitialFluxo(initialFluxo, precoTotal));
     setSelected(null);
-  }, [precoTotal]);
+  }, [precoTotal, initialFluxo]);
 
   return {
     state,
