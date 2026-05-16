@@ -18,7 +18,159 @@ function numberBR(value, suffix = '') {
   return `${Number(value).toLocaleString('pt-BR', { maximumFractionDigits: 2 })}${suffix}`;
 }
 
+function toNumber(value) {
+  if (value === null || value === undefined || value === '') return 0;
+  const raw = String(value).trim();
+  if (!raw) return 0;
+  let s = raw;
+  const hasComma = s.includes(',');
+  const hasDot = s.includes('.');
+  if (hasComma && hasDot) {
+    if (s.lastIndexOf(',') > s.lastIndexOf('.')) s = s.replace(/\./g, '').replace(',', '.');
+    else s = s.replace(/,/g, '');
+  } else if (hasComma) {
+    s = s.replace(/\./g, '').replace(',', '.');
+  }
+  s = s.replace(/[^0-9.-]/g, '');
+  const n = Number.parseFloat(s);
+  return Number.isFinite(n) ? n : 0;
+}
+
+function parseObsKV(observacoes = '') {
+  const out = {};
+  String(observacoes || '').split('|').forEach(part => {
+    const [k, ...rest] = part.split('=');
+    const key = String(k || '').trim();
+    if (!key) return;
+    out[key] = rest.join('=').trim();
+  });
+  return out;
+}
+
+function parsePayloadFromObservacoes(observacoes = '') {
+  const text = String(observacoes || '');
+  const marker = 'Payload:';
+  const idx = text.indexOf(marker);
+  if (idx < 0) return null;
+  const payloadText = text.slice(idx + marker.length).trim();
+  if (!payloadText.startsWith('{')) return null;
+  try {
+    return JSON.parse(payloadText);
+  } catch {
+    return null;
+  }
+}
+
+function buildFluxoFromParser(unidade = {}) {
+  const payload = parsePayloadFromObservacoes(unidade.observacoes) || {};
+  const raw = payload.raw || payload;
+  const meta = parseObsKV(payload.observacoes || unidade.observacoes || '');
+
+  const sinal = toNumber(raw.sinal_1 ?? payload.sinal_1);
+  const complemento = toNumber(raw.a4_each ?? payload.a4_each);
+  const mensalEach = toNumber(raw.mensal_each ?? payload.mensal_each);
+  const interEach = toNumber(raw.inter_each ?? payload.inter_each);
+  const chavesEach = toNumber(raw.chaves_each ?? payload.chaves_each);
+
+  const atoQtd = Number.parseInt(meta.ato_qtd || '1', 10) || 1;
+  const compQtd = Number.parseInt(meta.comp_qtd || '0', 10) || 0;
+  const mensalQtd = Number.parseInt(raw.mensal_qtd || payload.mensal_qtd || meta.mensal_qtd || '0', 10) || 0;
+  const interQtd = Number.parseInt(raw.inter_qtd || payload.inter_qtd || meta.inter_qtd || '0', 10) || 0;
+  const unicaQtd = Number.parseInt(meta.unica_qtd || '0', 10) || 0;
+  const interTipo = String(raw.inter_tipo || payload.inter_tipo || '').toLowerCase();
+
+  const fluxo = { e: [], c: [], m: [], a: [], u: [] };
+
+  if (sinal > 0) {
+    if (atoQtd <= 1) {
+      fluxo.e.push({ id: 'ato', label: 'Ato', date: '', value: sinal, meta: 'tabela parser', source: 'parser' });
+    } else {
+      fluxo.e.push({ id: 'ato', label: 'Ato', qty: atoQtd, value: sinal, dateStart: '', meta: 'tabela parser', isGroup: true, source: 'parser' });
+    }
+  }
+
+  if (complemento > 0 && compQtd > 0) {
+    const labels = ['+30 dias', '+60 dias', '+90 dias', '+120 dias', '+150 dias', '+180 dias'];
+    for (let i = 0; i < compQtd; i += 1) {
+      fluxo.c.push({
+        id: `c${i + 1}`,
+        label: labels[i] || `Compl. ${i + 1}`,
+        date: '',
+        value: complemento,
+        meta: 'tabela parser',
+        source: 'parser',
+      });
+    }
+  }
+
+  if (mensalEach > 0 && mensalQtd > 0) {
+    fluxo.m.push({
+      id: 'm1',
+      label: 'Mensais',
+      qty: mensalQtd,
+      value: mensalEach,
+      dateStart: meta.mensal_inicio || '',
+      meta: 'tabela parser',
+      isGroup: true,
+      source: 'parser',
+    });
+  }
+
+  if (interEach > 0 && interQtd > 0) {
+    const per = interTipo.includes('semestral') ? 'semestral' : 'anual';
+    fluxo.a.push({
+      id: 'a1',
+      label: per === 'semestral' ? 'Semestrais' : 'Anuais',
+      qty: interQtd,
+      value: interEach,
+      dateStart: meta.anual_inicio || '',
+      meta: per === 'semestral' ? 'semestral · parser' : 'anual · parser',
+      isGroup: true,
+      per,
+      source: 'parser',
+    });
+  }
+
+  if (chavesEach > 0 && unicaQtd > 0) {
+    if (unicaQtd <= 1) {
+      fluxo.u.push({ id: 'u1', label: 'Parcela única', date: meta.unica || '', value: chavesEach, meta: 'tabela parser', source: 'parser' });
+    } else {
+      fluxo.u.push({ id: 'u1', label: 'Chaves', qty: unicaQtd, value: chavesEach, dateStart: meta.unica || '', meta: 'tabela parser', isGroup: true, source: 'parser' });
+    }
+  }
+
+  const hasAny = Object.values(fluxo).some(arr => arr.length > 0);
+  return hasAny ? fluxo : null;
+}
+
+function fluxoResumo(unidade = {}) {
+  const payload = parsePayloadFromObservacoes(unidade.observacoes) || {};
+  const raw = payload.raw || payload;
+  const meta = parseObsKV(payload.observacoes || unidade.observacoes || '');
+  const parts = [];
+  const sinal = toNumber(raw.sinal_1 ?? payload.sinal_1);
+  const complemento = toNumber(raw.a4_each ?? payload.a4_each);
+  const mensalEach = toNumber(raw.mensal_each ?? payload.mensal_each);
+  const interEach = toNumber(raw.inter_each ?? payload.inter_each);
+  const chavesEach = toNumber(raw.chaves_each ?? payload.chaves_each);
+  const financiamento = toNumber(raw.financiamento ?? payload.financiamento);
+  const compQtd = Number.parseInt(meta.comp_qtd || '0', 10) || 0;
+  const mensalQtd = Number.parseInt(raw.mensal_qtd || payload.mensal_qtd || meta.mensal_qtd || '0', 10) || 0;
+  const interQtd = Number.parseInt(raw.inter_qtd || payload.inter_qtd || meta.inter_qtd || '0', 10) || 0;
+  const unicaQtd = Number.parseInt(meta.unica_qtd || '0', 10) || 0;
+
+  if (sinal > 0) parts.push(`Ato ${moneyBR(sinal)}`);
+  if (complemento > 0 && compQtd > 0) parts.push(`${compQtd} compl. de ${moneyBR(complemento)}`);
+  if (mensalEach > 0 && mensalQtd > 0) parts.push(`${mensalQtd} mensais de ${moneyBR(mensalEach)}`);
+  if (interEach > 0 && interQtd > 0) parts.push(`${interQtd} interm. de ${moneyBR(interEach)}`);
+  if (chavesEach > 0 && unicaQtd > 0) parts.push(`${unicaQtd} chaves de ${moneyBR(chavesEach)}`);
+  if (financiamento > 0) parts.push(`Fin. ${moneyBR(financiamento)}`);
+  return parts.join(' · ');
+}
+
 function UnidadeCard({ unidade, selected, onSelect }) {
+  const resumo = fluxoResumo(unidade);
+
   return (
     <button
       onClick={() => onSelect(unidade)}
@@ -58,6 +210,12 @@ function UnidadeCard({ unidade, selected, onSelect }) {
         </div>
       </div>
 
+      {resumo && (
+        <div className="mt-3 rounded-xl bg-[#E1F5EE] text-[#0F6E56] px-3 py-2 text-[11px] leading-relaxed">
+          Fluxo parser: {resumo}
+        </div>
+      )}
+
       <div className="mt-3 rounded-xl bg-[#FAEEDA] text-[#412402] px-3 py-2 text-[11px] leading-relaxed">
         ⚠️ {unidade.aviso || 'Disponibilidade ainda não validada pelo espelho de vendas.'}
       </div>
@@ -92,6 +250,8 @@ export default function TabFluxo({
     return unidades.filter(u => [u.unidade, u.torre, u.final, u.andar, u.metragem, u.valor_tabela]
       .some(v => String(v ?? '').toLowerCase().includes(term)));
   }, [busca, unidades]);
+
+  const fluxoParser = useMemo(() => buildFluxoFromParser(unidadeSelecionada), [unidadeSelecionada]);
 
   if (!empreendimento) {
     return (
@@ -214,6 +374,11 @@ export default function TabFluxo({
           <p className="text-[11px] text-[var(--color-text-tertiary)]">
             {moneyBR(unidadeSelecionada.valor_tabela)} · {numberBR(unidadeSelecionada.metragem, ' m²')} · disponibilidade não validada pelo espelho
           </p>
+          {fluxoParser && (
+            <p className="text-[11px] text-[#0F6E56] mt-1">
+              Fluxo iniciado com os valores reais extraídos da tabela.
+            </p>
+          )}
         </div>
         <button onClick={() => setUnidadeSelecionada(null)} className="px-3 py-1.5 rounded-xl bg-[var(--color-background-primary)] text-[12px]">Trocar</button>
       </div>
@@ -227,6 +392,8 @@ export default function TabFluxo({
         precoTotal={Number(unidadeSelecionada.valor_tabela)}
         empresaConfig={config}
         tabelaProvisoria={empreendimento.tabela_tipo === 'trabalho'}
+        initialFluxo={fluxoParser}
+        fluxoOrigem={fluxoParser ? 'parser' : 'padrao'}
         onSalvar={handleSalvar}
         onVoltar={() => setUnidadeSelecionada(null)}
       />
