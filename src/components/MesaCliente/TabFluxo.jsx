@@ -251,6 +251,9 @@ function EnriquecimentoModal({ empreendimento, finais, unidades, onClose, onSave
 
   const setField = (field, value) => setForm(prev => ({ ...prev, [field]: value }));
 
+  const inputClass = "rounded-xl border border-slate-300 px-3 py-2 text-[13px] bg-white text-slate-900 outline-none focus:border-[#0F6E56]";
+  const labelClass = "grid gap-1 text-[11px] text-slate-600";
+
   const handleSave = async () => {
     if (!finalSelecionado) return;
     await onSave({
@@ -267,29 +270,29 @@ function EnriquecimentoModal({ empreendimento, finais, unidades, onClose, onSave
   };
 
   return (
-    <div className="fixed inset-0 z-[9999] bg-black/40 flex items-end sm:items-center justify-center p-3" onClick={onClose}>
-      <div className="w-full max-w-[760px] max-h-[88vh] overflow-y-auto rounded-3xl bg-[var(--color-background-primary)] shadow-2xl border border-[var(--color-border-tertiary)]" onClick={e => e.stopPropagation()}>
-        <div className="sticky top-0 bg-[var(--color-background-primary)] border-b border-[var(--color-border-tertiary)] p-4 flex items-start justify-between gap-3 rounded-t-3xl">
+    <div className="fixed inset-0 z-[9999] bg-black/55 backdrop-blur-[2px] flex items-end sm:items-center justify-center p-3" onClick={onClose}>
+      <div className="w-full max-w-[760px] max-h-[88vh] overflow-y-auto rounded-3xl bg-white text-slate-900 shadow-2xl border border-slate-200" onClick={e => e.stopPropagation()}>
+        <div className="sticky top-0 bg-white border-b border-slate-200 p-4 flex items-start justify-between gap-3 rounded-t-3xl">
           <div>
-            <p className="text-[16px] font-bold text-[var(--color-text-primary)]">Completar dados das unidades</p>
-            <p className="text-[12px] text-[var(--color-text-tertiary)]">{empreendimento.nome} · dados por final/prumada</p>
+            <p className="text-[16px] font-bold text-slate-900">Completar dados das unidades</p>
+            <p className="text-[12px] text-slate-500">{empreendimento.nome} · dados por final/prumada</p>
           </div>
-          <button onClick={onClose} className="w-8 h-8 rounded-full bg-[var(--color-background-secondary)] text-[18px] leading-none">×</button>
+          <button onClick={onClose} className="w-8 h-8 rounded-full bg-slate-100 text-slate-700 text-[18px] leading-none">×</button>
         </div>
 
-        <div className="p-4 grid gap-4">
+        <div className="p-4 grid gap-4 bg-white">
           <div className="rounded-2xl bg-[#E6F1FB] text-[#042C53] px-3 py-3 text-[12px] leading-relaxed">
             Escolha o final e preencha somente o que souber. O card da unidade vai ocultar campos vazios automaticamente.
           </div>
 
           <div>
-            <p className="text-[11px] font-semibold uppercase tracking-wide text-[var(--color-text-tertiary)] mb-2">Finais encontrados</p>
+            <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-500 mb-2">Finais encontrados</p>
             <div className="flex flex-wrap gap-2">
               {finais.map(f => (
                 <button
                   key={f}
                   onClick={() => setFinalSelecionado(f)}
-                  className={`px-3 py-2 rounded-xl text-[12px] font-semibold border ${finalSelecionado === f ? 'bg-[#0F6E56] border-[#0F6E56] text-white' : 'bg-[var(--color-background-secondary)] border-[var(--color-border-tertiary)] text-[var(--color-text-secondary)]'}`}
+                  className={`px-3 py-2 rounded-xl text-[12px] font-semibold border ${finalSelecionado === f ? 'bg-[#0F6E56] border-[#0F6E56] text-white' : 'bg-slate-100 border-slate-200 text-slate-700'}`}
                 >
                   Final {f}
                 </button>
@@ -298,26 +301,26 @@ function EnriquecimentoModal({ empreendimento, finais, unidades, onClose, onSave
           </div>
 
           <div className="grid grid-cols-2 sm:grid-cols-1 gap-3">
-            <div className="rounded-2xl border border-[var(--color-border-tertiary)] p-3">
-              <p className="text-[11px] text-[var(--color-text-tertiary)]">Prévia do card</p>
-              <p className="text-[15px] font-semibold mt-2">Unidade {exemplo.unidade || '—'}</p>
-              <p className="text-[12px] text-[var(--color-text-secondary)]">Final {finalSelecionado || '—'} · {numberBR(exemplo.metragem, ' m²')}</p>
-              <p className="text-[12px] mt-1">
+            <div className="rounded-2xl border border-slate-200 bg-white p-3">
+              <p className="text-[11px] text-slate-500">Prévia do card</p>
+              <p className="text-[15px] font-semibold mt-2 text-slate-900">Unidade {exemplo.unidade || '—'}</p>
+              <p className="text-[12px] text-slate-600">Final {finalSelecionado || '—'} · {numberBR(exemplo.metragem, ' m²')}</p>
+              <p className="text-[12px] mt-1 text-slate-900">
                 {[form.dormitorios && `${form.dormitorios} dorms`, form.suites && `${form.suites} suíte${Number(form.suites) > 1 ? 's' : ''}`, form.vagasQuantidade && `${form.vagasQuantidade} vaga${Number(form.vagasQuantidade) > 1 ? 's' : ''}`].filter(Boolean).join(' · ') || 'Tipologia não informada'}
               </p>
               <p className="text-[12px] text-[#0F6E56] mt-1">{solLabel(form.orientacaoSolar).label}{form.face ? ` · ${form.face}` : ''}</p>
-              {form.vista && <p className="text-[11px] text-[var(--color-text-tertiary)] mt-1">{form.vista}</p>}
-              <p className="text-[10px] text-[var(--color-text-tertiary)] mt-3">Afeta {unidadesDoFinal.length} unidade(s) deste final.</p>
+              {form.vista && <p className="text-[11px] text-slate-500 mt-1">{form.vista}</p>}
+              <p className="text-[10px] text-slate-500 mt-3">Afeta {unidadesDoFinal.length} unidade(s) deste final.</p>
             </div>
 
             <div className="grid gap-3">
               <div className="grid grid-cols-3 gap-2">
-                <label className="grid gap-1 text-[11px] text-[var(--color-text-tertiary)]">Dorms<input value={form.dormitorios} onChange={e => setField('dormitorios', e.target.value)} type="number" min="0" max="10" className="rounded-xl border px-3 py-2 text-[13px] bg-transparent text-[var(--color-text-primary)]" /></label>
-                <label className="grid gap-1 text-[11px] text-[var(--color-text-tertiary)]">Suítes<input value={form.suites} onChange={e => setField('suites', e.target.value)} type="number" min="0" max="10" className="rounded-xl border px-3 py-2 text-[13px] bg-transparent text-[var(--color-text-primary)]" /></label>
-                <label className="grid gap-1 text-[11px] text-[var(--color-text-tertiary)]">Vagas<input value={form.vagasQuantidade} onChange={e => setField('vagasQuantidade', e.target.value)} type="number" min="0" max="10" className="rounded-xl border px-3 py-2 text-[13px] bg-transparent text-[var(--color-text-primary)]" /></label>
+                <label className={labelClass}>Dorms<input value={form.dormitorios} onChange={e => setField('dormitorios', e.target.value)} type="number" min="0" max="10" className={inputClass} /></label>
+                <label className={labelClass}>Suítes<input value={form.suites} onChange={e => setField('suites', e.target.value)} type="number" min="0" max="10" className={inputClass} /></label>
+                <label className={labelClass}>Vagas<input value={form.vagasQuantidade} onChange={e => setField('vagasQuantidade', e.target.value)} type="number" min="0" max="10" className={inputClass} /></label>
               </div>
-              <label className="grid gap-1 text-[11px] text-[var(--color-text-tertiary)]">Sol / orientação
-                <select value={form.orientacaoSolar} onChange={e => setField('orientacaoSolar', e.target.value)} className="rounded-xl border px-3 py-2 text-[13px] bg-transparent text-[var(--color-text-primary)]">
+              <label className={labelClass}>Sol / orientação
+                <select value={form.orientacaoSolar} onChange={e => setField('orientacaoSolar', e.target.value)} className={inputClass}>
                   <option value="">Não informado</option>
                   <option value="manha">🌅 Sol da manhã</option>
                   <option value="tarde">🌇 Sol da tarde</option>
@@ -326,16 +329,16 @@ function EnriquecimentoModal({ empreendimento, finais, unidades, onClose, onSave
                   <option value="misto">🌅🌇 Dupla face</option>
                 </select>
               </label>
-              <label className="grid gap-1 text-[11px] text-[var(--color-text-tertiary)]">Referência da face<input value={form.face} onChange={e => setField('face', e.target.value)} placeholder="Rua Fortunato Ferraz, City Lapa…" className="rounded-xl border px-3 py-2 text-[13px] bg-transparent text-[var(--color-text-primary)]" /></label>
-              <label className="grid gap-1 text-[11px] text-[var(--color-text-tertiary)]">Vista / observação comercial<input value={form.vista} onChange={e => setField('vista', e.target.value)} placeholder="Vista livre, frente para Nova Vivere…" className="rounded-xl border px-3 py-2 text-[13px] bg-transparent text-[var(--color-text-primary)]" /></label>
-              <label className="grid gap-1 text-[11px] text-[var(--color-text-tertiary)]">Observação interna<input value={form.observacoes} onChange={e => setField('observacoes', e.target.value)} placeholder="Ex.: validado na maquete" className="rounded-xl border px-3 py-2 text-[13px] bg-transparent text-[var(--color-text-primary)]" /></label>
+              <label className={labelClass}>Referência da face<input value={form.face} onChange={e => setField('face', e.target.value)} placeholder="Rua Fortunato Ferraz, City Lapa…" className={inputClass} /></label>
+              <label className={labelClass}>Vista / observação comercial<input value={form.vista} onChange={e => setField('vista', e.target.value)} placeholder="Vista livre, frente para Nova Vivere…" className={inputClass} /></label>
+              <label className={labelClass}>Observação interna<input value={form.observacoes} onChange={e => setField('observacoes', e.target.value)} placeholder="Ex.: validado na maquete" className={inputClass} /></label>
             </div>
           </div>
 
           {error && <div className="rounded-xl bg-[#FDEAEA] text-[#4B1528] px-3 py-2 text-[12px]">{error}</div>}
 
-          <div className="flex gap-2 justify-end sticky bottom-0 bg-[var(--color-background-primary)] py-3 border-t border-[var(--color-border-tertiary)]">
-            <button onClick={onClose} className="px-4 py-2 rounded-xl bg-[var(--color-background-secondary)] text-[13px]">Cancelar</button>
+          <div className="flex gap-2 justify-end sticky bottom-0 bg-white py-3 border-t border-slate-200">
+            <button onClick={onClose} className="px-4 py-2 rounded-xl bg-slate-100 text-slate-700 text-[13px]">Cancelar</button>
             <button onClick={handleSave} disabled={saving || !finalSelecionado} className="px-4 py-2 rounded-xl bg-[#0F6E56] text-white text-[13px] font-semibold disabled:opacity-50">{saving ? 'Salvando…' : `Salvar final ${finalSelecionado}`}</button>
           </div>
         </div>
