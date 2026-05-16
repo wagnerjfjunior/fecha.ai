@@ -1,15 +1,13 @@
-/**
- * TabEmpreendimentos.jsx
- * Lista de empreendimentos com status de tabela e espelho.
- * Todos os uploads são auditados via RPC registrar_upload_arquivo_mesa.
- */
-
 import { useState } from 'react';
 import {
   useEmpreendimentosMesa,
   useRegistrarUpload,
   useImportarMesaClienteParserResultado,
 } from './hooks/useMesaData';
+import {
+  normalizeParserPayload,
+  validateParserPayloadForImport,
+} from '../../features/mesaCliente/parser/parserPayloadAdapter';
 
 const DOT_COLOR = { ok: 'bg-[#1D9E75]', yellow: 'bg-[#EF9F27]', red: 'bg-[#E24B4A]' };
 const PILL_BG   = { ok: 'bg-[#E1F5EE]', yellow: 'bg-[#FAEEDA]', red: 'bg-[#FDEAEA]' };
@@ -31,24 +29,6 @@ function StatusPill({ status = 'red', title, sub, who, obs }) {
   );
 }
 
-function normalizeParserPayload(rawText) {
-  const parsed = JSON.parse(rawText);
-  const root = Array.isArray(parsed) ? { unidades: parsed } : parsed;
-  const unidades = root.unidades || root.data?.unidades || root.rows || root.items || [];
-  if (!Array.isArray(unidades) || unidades.length === 0) {
-    throw new Error('JSON sem array de unidades. Use { "unidades": [...] } ou cole diretamente um array.');
-  }
-  return {
-    empreendimentoNome: root.empreendimento_nome || root.empreendimento || root.nome_empreendimento || root.data?.empreendimento_nome || '',
-    incorporadora: root.incorporadora || root.data?.incorporadora || '',
-    bairro: root.bairro || root.data?.bairro || '',
-    cidade: root.cidade || root.data?.cidade || '',
-    nomeArquivo: root.nome_arquivo || root.fileName || root.filename || 'parser-json-manual.json',
-    parserNome: root.parser_nome || root.parser || 'manual_json_preview',
-    unidades,
-  };
-}
-
 function ImportParserModal({ onClose, onSuccess, empresaId, sb, token }) {
   const [empreendimentoNome, setEmpreendimentoNome] = useState('');
   const [incorporadora, setIncorporadora] = useState('');
@@ -56,7 +36,7 @@ function ImportParserModal({ onClose, onSuccess, empresaId, sb, token }) {
   const [cidade, setCidade] = useState('');
   const [jsonText, setJsonText] = useState('');
   const [localError, setLocalError] = useState(null);
-  const [previewCount, setPreviewCount] = useState(null);
+  const [preview, setPreview] = useState(null);
   const { mutateAsync, isLoading, error } = useImportarMesaClienteParserResultado({ sb, token });
 
   const handleParsePreview = () => {
@@ -66,25 +46,34 @@ function ImportParserModal({ onClose, onSuccess, empresaId, sb, token }) {
     if (!incorporadora && normalized.incorporadora) setIncorporadora(normalized.incorporadora);
     if (!bairro && normalized.bairro) setBairro(normalized.bairro);
     if (!cidade && normalized.cidade) setCidade(normalized.cidade);
-    setPreviewCount(normalized.unidades.length);
-    return normalized;
+
+    const merged = {
+      ...normalized,
+      empreendimentoNome: empreendimentoNome || normalized.empreendimentoNome,
+      incorporadora: incorporadora || normalized.incorporadora,
+      bairro: bairro || normalized.bairro,
+      cidade: cidade || normalized.cidade,
+    };
+    const validation = validateParserPayloadForImport(merged);
+    setPreview({ normalized: merged, validation });
+    return { normalized: merged, validation };
   };
 
   const handleImportar = async () => {
     try {
       setLocalError(null);
-      const normalized = handleParsePreview();
-      const nomeFinal = empreendimentoNome || normalized.empreendimentoNome;
-      if (!nomeFinal.trim()) throw new Error('Informe o nome real do empreendimento antes de importar.');
+      const { normalized, validation } = handleParsePreview();
+      if (!validation.ok) throw new Error(validation.errors.join(' '));
+
       await mutateAsync({
         empresaId,
-        empreendimentoNome: nomeFinal,
-        incorporadora: incorporadora || normalized.incorporadora,
-        bairro: bairro || normalized.bairro,
-        cidade: cidade || normalized.cidade,
+        empreendimentoNome: normalized.empreendimentoNome,
+        incorporadora: normalized.incorporadora,
+        bairro: normalized.bairro,
+        cidade: normalized.cidade,
         nomeArquivo: normalized.nomeArquivo,
-        parserNome: normalized.parserNome,
-        unidades: normalized.unidades,
+        parserNome: normalized.layout ? `${normalized.parserNome}:${normalized.layout}` : normalized.parserNome,
+        unidades: validation.validUnits,
       });
       onSuccess?.();
       onClose();
@@ -97,9 +86,9 @@ function ImportParserModal({ onClose, onSuccess, empresaId, sb, token }) {
     <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-[9999] p-4" onClick={onClose}>
       <div className="bg-[var(--color-background-primary)] rounded-2xl p-5 w-full max-w-[720px] relative shadow-2xl" onClick={e => e.stopPropagation()}>
         <button onClick={onClose} className="absolute top-3 right-3 w-7 h-7 rounded-full bg-[var(--color-background-secondary)] flex items-center justify-center text-base">×</button>
-        <p className="text-[15px] font-semibold mb-1">Importar resultado do parser</p>
+        <p className="text-[15px] font-semibold mb-1">Modo técnico: importar JSON do parser</p>
         <p className="text-[12px] text-[var(--color-text-secondary)] mb-4">
-          Cole o JSON real gerado pelo parser. A RPC cria o empreendimento, snapshot e unidades com isolamento por empresa.
+          Uso restrito para validar a ponte parser → banco. O fluxo operacional do corretor deve ser por tabela/PDF.
         </p>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mb-3">
@@ -112,7 +101,7 @@ function ImportParserModal({ onClose, onSuccess, empresaId, sb, token }) {
         <textarea
           rows={12}
           value={jsonText}
-          onChange={e => { setJsonText(e.target.value); setPreviewCount(null); }}
+          onChange={e => { setJsonText(e.target.value); setPreview(null); }}
           placeholder={'Exemplo:\n{\n  "empreendimento_nome": "Garden Design",\n  "incorporadora": "Tegra",\n  "unidades": [\n    { "unidade": "101", "andar": 1, "metragem": 76, "valor_tabela": 950000 }\n  ]\n}'}
           className="w-full rounded-xl border border-[var(--color-border-secondary)] bg-[var(--color-background-secondary)] p-3 text-[12px] font-mono outline-none resize-y"
         />
@@ -122,7 +111,12 @@ function ImportParserModal({ onClose, onSuccess, empresaId, sb, token }) {
         </div>
 
         {(localError || error) && <div className="bg-[#FDEAEA] text-[#4B1528] rounded-xl px-3 py-2 text-[11px] mb-3">{localError || error}</div>}
-        {previewCount !== null && <div className="bg-[#E1F5EE] text-[#0F6E56] rounded-xl px-3 py-2 text-[11px] mb-3">JSON validado: {previewCount} unidade(s) encontrada(s).</div>}
+        {preview && (
+          <div className="bg-[#E1F5EE] text-[#0F6E56] rounded-xl px-3 py-2 text-[11px] mb-3">
+            JSON validado: {preview.validation.validUnits.length} unidade(s) válida(s), {preview.validation.invalidUnits.length} inválida(s).
+            {preview.validation.warnings.length > 0 && ` Avisos: ${preview.validation.warnings.slice(0, 2).join(' ')}`}
+          </div>
+        )}
 
         <div className="flex gap-2 justify-end">
           <button onClick={onClose} className="px-4 py-2 rounded-xl bg-[var(--color-background-secondary)] text-[12px]">Cancelar</button>
@@ -164,15 +158,15 @@ function UploadModal({ empreendimento, tipoInicial, onClose, onSuccess, empresaI
       <div className="bg-[var(--color-background-primary)] rounded-2xl p-5 w-full max-w-[380px] relative shadow-2xl" onClick={e => e.stopPropagation()}>
         <button onClick={onClose} className="absolute top-3 right-3 w-7 h-7 rounded-full bg-[var(--color-background-secondary)] flex items-center justify-center text-base">×</button>
 
-        <p className="text-[15px] font-semibold mb-1">Subir arquivo</p>
+        <p className="text-[15px] font-semibold mb-1">Importar tabela/PDF</p>
         <p className="text-[12px] text-[var(--color-text-secondary)] mb-4">
           {empreendimento ? empreendimento.nome : 'Escolha um empreendimento primeiro'}
         </p>
 
         <div className="grid grid-cols-2 gap-2 mb-4">
           {[
-            { key: 'tabela', icon: '📊', label: 'Tabela comercial', sub: 'Mensal · INCC' },
-            { key: 'espelho', icon: '🪞', label: 'Espelho de vendas', sub: 'Diário · unidades' },
+            { key: 'tabela', icon: '📊', label: 'Tabela comercial', sub: 'PDF ou imagem' },
+            { key: 'espelho', icon: '🪞', label: 'Espelho de vendas', sub: 'Disponibilidade' },
           ].map(opt => (
             <button key={opt.key} onClick={() => { setTipo(opt.key); setSubTipo(null); }} className={`border rounded-xl p-3 text-center transition-all ${tipo === opt.key ? 'border-[var(--color-text-info)] bg-[var(--color-background-info)] ring-1 ring-[var(--color-text-info)]' : 'border-[var(--color-border-tertiary)] hover:border-[var(--color-border-secondary)]'}`}>
               <div className="text-xl mb-1">{opt.icon}</div>
@@ -186,7 +180,7 @@ function UploadModal({ empreendimento, tipoInicial, onClose, onSuccess, empresaI
           <div className="grid grid-cols-2 gap-2 mb-4">
             {[
               { key: 'trabalho', label: '📝 De trabalho', sub: 'WhatsApp · provisória' },
-              { key: 'oficial', label: '✅ Oficial', sub: 'Site Tegra/Cyrela' },
+              { key: 'oficial', label: '✅ Oficial', sub: 'Site incorporadora' },
             ].map(opt => (
               <button key={opt.key} onClick={() => setSubTipo(opt.key)} className={`border rounded-xl p-2.5 text-center transition-all ${subTipo === opt.key ? 'border-[var(--color-text-info)] bg-[var(--color-background-info)]' : 'border-[var(--color-border-tertiary)] hover:border-[var(--color-border-secondary)]'}`}>
                 <div className="text-[12px] font-semibold">{opt.label}</div>
@@ -204,7 +198,7 @@ function UploadModal({ empreendimento, tipoInicial, onClose, onSuccess, empresaI
         </label>
 
         <div className="bg-[var(--color-background-secondary)] rounded-xl px-3 py-2 text-[11px] text-[var(--color-text-secondary)] mb-4 leading-relaxed">
-          🔍 <strong>Auditoria:</strong> nesta preview o arquivo é registrado como intenção de upload. O armazenamento e parser automático entram na próxima etapa.
+          🔍 Nesta etapa o arquivo é registrado para auditoria. A ligação com o parser automático entra na próxima camada.
         </div>
 
         {!empreendimento?.id && (
@@ -277,7 +271,7 @@ function EmpCard({ emp, onAbrirFluxo, onUpload }) {
   );
 }
 
-export default function TabEmpreendimentos({ sb, token, empresaId, onAbrirFluxo }) {
+export default function TabEmpreendimentos({ sb, token, empresaId, isGestor = false, onAbrirFluxo }) {
   const { data: empreendimentos = [], isLoading, error, reload } = useEmpreendimentosMesa({ sb, token, empresaId });
   const [uploadTarget, setUploadTarget] = useState(null);
   const [showImportParser, setShowImportParser] = useState(false);
@@ -287,10 +281,12 @@ export default function TabEmpreendimentos({ sb, token, empresaId, onAbrirFluxo 
   return (
     <div className="p-3">
       <div className="flex items-center justify-between gap-3 bg-[var(--color-background-info)] rounded-xl px-3 py-2.5 mb-3 flex-wrap">
-        <span className="text-[12px] text-[var(--color-text-info)]">📤 Recebeu tabela ou espelho pelo WhatsApp? Registre aqui para auditoria e próxima etapa de parser/storage.</span>
+        <span className="text-[12px] text-[var(--color-text-info)]">📤 Importe uma tabela/PDF para montar a Mesa Cliente. O espelho de vendas será conectado depois para filtrar vendidas.</span>
         <div className="flex gap-2 flex-wrap">
-          <button onClick={() => setShowImportParser(true)} className="text-[12px] px-3 py-1.5 rounded-xl bg-[#E1F5EE] text-[#0F6E56] font-medium">Importar JSON parser</button>
-          <button onClick={() => setUploadTarget({ emp: null, tipo: null })} className="text-[12px] px-3 py-1.5 rounded-xl bg-[var(--color-text-info)] text-white font-medium">Subir arquivo</button>
+          {isGestor && (
+            <button onClick={() => setShowImportParser(true)} className="text-[12px] px-3 py-1.5 rounded-xl bg-[var(--color-background-secondary)] text-[var(--color-text-secondary)] font-medium">Modo técnico JSON</button>
+          )}
+          <button onClick={() => setUploadTarget({ emp: null, tipo: 'tabela' })} className="text-[12px] px-3 py-1.5 rounded-xl bg-[var(--color-text-info)] text-white font-medium">Importar tabela/PDF</button>
         </div>
       </div>
 
@@ -307,8 +303,11 @@ export default function TabEmpreendimentos({ sb, token, empresaId, onAbrirFluxo 
         <div className="text-center py-12">
           <div className="text-4xl mb-3">🏢</div>
           <p className="text-[14px] font-medium text-[var(--color-text-secondary)]">Nenhum empreendimento com tabela</p>
-          <p className="text-[12px] text-[var(--color-text-tertiary)] mt-1">Importe o JSON real do parser para começar.</p>
-          <button onClick={() => setShowImportParser(true)} className="mt-4 text-[12px] px-4 py-2 rounded-xl bg-[#E1F5EE] text-[#0F6E56] font-medium">Importar primeira tabela</button>
+          <p className="text-[12px] text-[var(--color-text-tertiary)] mt-1">Importe uma tabela comercial em PDF para começar.</p>
+          <button onClick={() => setUploadTarget({ emp: null, tipo: 'tabela' })} className="mt-4 text-[12px] px-4 py-2 rounded-xl bg-[var(--color-text-info)] text-white font-medium">Importar primeira tabela</button>
+          {isGestor && (
+            <button onClick={() => setShowImportParser(true)} className="mt-2 ml-2 text-[12px] px-4 py-2 rounded-xl bg-[var(--color-background-secondary)] text-[var(--color-text-secondary)] font-medium">Modo técnico JSON</button>
+          )}
         </div>
       )}
 
@@ -316,7 +315,7 @@ export default function TabEmpreendimentos({ sb, token, empresaId, onAbrirFluxo 
         <EmpCard key={emp.id} emp={emp} onAbrirFluxo={onAbrirFluxo} onUpload={handleUpload} />
       ))}
 
-      {showImportParser && (
+      {showImportParser && isGestor && (
         <ImportParserModal
           sb={sb}
           token={token}
