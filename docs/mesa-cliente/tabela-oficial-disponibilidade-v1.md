@@ -75,12 +75,13 @@ Comportamento:
 
 ## Linguagem da UI
 
-Trocar termos técnicos:
+Termos técnicos removidos ou reduzidos:
 
 ```txt
 Subir espelho → Atualizar disponibilidade
 Espelho de vendas → Tabela oficial de disponibilidade
 Parser → Leitura da tabela
+Tabela Parser → Valor de Tabela
 ```
 
 Frase recomendada:
@@ -114,6 +115,7 @@ Arquivos:
 ```txt
 availabilitySnapshot.js
 index.js
+DisponibilidadeUploadPreview.jsx
 ```
 
 Responsabilidades:
@@ -122,7 +124,27 @@ Responsabilidades:
 - extrair andar e final;
 - montar snapshot de unidades disponíveis;
 - aplicar disponibilidade nas unidades comerciais;
-- gerar resumo de cruzamento.
+- gerar resumo de cruzamento;
+- abrir prévia local de leitura da tabela oficial;
+- mostrar total de unidades disponíveis;
+- mostrar cruzamento básico com a base comercial quando ela estiver disponível na tela.
+
+## Implementação atual
+
+Foi conectado na tela de empreendimentos:
+
+```txt
+src/components/MesaCliente/TabEmpreendimentos.jsx
+```
+
+Mudanças realizadas:
+
+- botão “Subir espelho” substituído por “Atualizar disponibilidade”;
+- status visual “Espelho” substituído por “Disp.”;
+- modal antigo de espelho gráfico deixou de ser o fluxo principal;
+- novo modal `DisponibilidadeUploadPreview` lê a tabela oficial com o motor já existente;
+- a leitura gera prévia local, sem gravação no banco;
+- a confirmação local apenas guarda o preview em estado de tela, sem persistência.
 
 ## Estrutura do snapshot
 
@@ -185,9 +207,11 @@ ou:
 }
 ```
 
-## Banco de dados — etapa futura
+## Banco de dados — próxima etapa
 
-A persistência deve ser feita depois por RPC segura.
+A persistência ainda não foi aplicada nesta V1 de UI.
+
+A próxima etapa deve criar RPC segura e tabelas de snapshot.
 
 Tabelas candidatas:
 
@@ -206,6 +230,22 @@ Regras obrigatórias:
 - RPC valida usuário autenticado;
 - front não manda `empresa_id` livre sem validação interna;
 - corretor consulta apenas snapshot aplicado à própria empresa.
+
+RPC candidata:
+
+```sql
+mesa_importar_disponibilidade_snapshot(...)
+```
+
+A RPC deve:
+
+- validar `auth.uid()`;
+- resolver empresa do usuário no banco;
+- validar permissão de gestor/admin quando a regra exigir;
+- inserir snapshot;
+- inserir unidades normalizadas;
+- marcar snapshot anterior como substituído ou manter como histórico;
+- retornar resumo seguro para o front.
 
 ## Filtros recomendados
 
@@ -233,6 +273,15 @@ Mas a opção “Mostrar todas” deve existir para auditoria e transparência.
 - botão de seleção bloqueado;
 - marca d’água diagonal ou central “INDISPONÍVEL”;
 - texto menor: “Não consta na tabela oficial atualizada”.
+
+## Pendências imediatas
+
+1. Passar as unidades comerciais reais para `DisponibilidadeUploadPreview`.
+2. Persistir snapshot via RPC segura.
+3. Criar consulta RPC para trazer disponibilidade ativa por empreendimento.
+4. Aplicar visual cinza/marca d’água na tela de escolha de unidades.
+5. Adicionar filtro “Disponibilidade”.
+6. Remover/depriorizar o fluxo antigo de espelho gráfico da navegação principal, mantendo-o apenas como experimento técnico se necessário.
 
 ## Decisão final
 
