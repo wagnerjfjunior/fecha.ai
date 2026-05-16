@@ -204,17 +204,19 @@ export default function FluxoBuilder({
   precoTotal = 850000,
   empresaConfig = {},
   tabelaProvisoria = false,
+  initialFluxo = null,
+  fluxoOrigem = 'padrao',
   onSalvar,
   onVoltar,
 }) {
   const metaPct = empresaConfig.meta_obra_pct ?? 30;
   const [metaEspecial, setMetaEspecial] = useState(null);
   const [showMetaModal, setShowMetaModal] = useState(false);
-  const [showUnica, setShowUnica] = useState(false);
+  const [showUnica, setShowUnica] = useState(() => Boolean(initialFluxo?.u?.length));
   const [clienteNome, setClienteNome] = useState('');
   const [saving, setSaving] = useState(false);
 
-  const calc = useMesaCalc({ precoTotal, metaPct, metaEspecial });
+  const calc = useMesaCalc({ precoTotal, metaPct, metaEspecial, initialFluxo, resetKey: `${precoTotal}-${fluxoOrigem}` });
   const { state, selected, totais, barStatus, surplus, deficit, obraTarget, metaAtual,
     selectTile, closeEditor, updateField, updatePeriodicidade, removeTile, addTile, reset, serializarFluxo } = calc;
 
@@ -253,6 +255,7 @@ export default function FluxoBuilder({
             <span className="text-[13px] font-semibold">{empreendimento.nome}</span>
             <span className="text-[11px] text-[var(--color-text-tertiary)] ml-2">
               tabela {tabelaProvisoria ? '(de trabalho)' : '(oficial)'}
+              {fluxoOrigem === 'parser' ? ' · fluxo real do parser' : ' · fluxo padrão'}
             </span>
           </div>
           <div className="flex items-center gap-2">
@@ -365,7 +368,7 @@ export default function FluxoBuilder({
         </div>
       )}
 
-      {/* Row 1: Entrada (30%) + Complementos (70%) */}
+      {/* Row 1: Entrada + Complementos */}
       <div className="grid grid-cols-[3fr_7fr] sm:grid-cols-1 gap-2">
         <GrupoTiles g="e" tiles={state.e} selected={selected}
           onSelect={selectTile} onRemove={removeTile} onAdd={addTile}
@@ -375,7 +378,7 @@ export default function FluxoBuilder({
           addLabel="compl." showAdd={true} />
       </div>
 
-      {/* Row 2: Mensais (40%) + Anuais (60%) */}
+      {/* Row 2: Mensais + Anuais/Semestrais */}
       <div className="grid grid-cols-[4fr_6fr] sm:grid-cols-1 gap-2">
         <GrupoTiles g="m" tiles={state.m} selected={selected}
           onSelect={selectTile} onRemove={removeTile} onAdd={addTile}
@@ -418,7 +421,7 @@ export default function FluxoBuilder({
       <div className="flex gap-2">
         <button onClick={reset}
           className="flex-1 text-[12px] py-2 rounded-xl bg-[var(--color-background-secondary)] text-[var(--color-text-secondary)]">
-          ↺ Padrão
+          ↺ {fluxoOrigem === 'parser' ? 'Voltar tabela' : 'Padrão'}
         </button>
         <button onClick={() => setShowUnica(v => !v)}
           className="flex-1 text-[12px] py-2 rounded-xl bg-[var(--color-background-secondary)] text-[var(--color-text-secondary)]">
