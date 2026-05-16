@@ -8,6 +8,7 @@ import {
   criarMesaSimulacao,
   aprovarRejeitarMesa,
   importarMesaClienteParserResultado,
+  salvarMesaClienteEnriquecimento,
 } from '../../../features/mesaCliente/api/mesaClienteApi';
 
 export const MESA_KEYS = {
@@ -81,7 +82,6 @@ export function useUnidadesMesa({ sb, token, empreendimentoId }) {
 
 export function useRegistrarUpload({ sb, token }) {
   const queryClient = useQueryClient();
-
   return withMutationCompat(useMutation({
     mutationFn: (variables) => registrarUploadArquivoMesa({ sb, token, ...variables }),
     onSuccess: (_data, variables) => {
@@ -92,7 +92,6 @@ export function useRegistrarUpload({ sb, token }) {
 
 export function useCriarMesaSimulacao({ sb, token }) {
   const queryClient = useQueryClient();
-
   return withMutationCompat(useMutation({
     mutationFn: (variables) => criarMesaSimulacao({ sb, token, ...variables }),
     onSuccess: (_data, variables) => {
@@ -103,7 +102,6 @@ export function useCriarMesaSimulacao({ sb, token }) {
 
 export function useAprovarRejeitarMesa({ sb, token }) {
   const queryClient = useQueryClient();
-
   return withMutationCompat(useMutation({
     mutationFn: async (variables) => {
       const data = await aprovarRejeitarMesa({ sb, token, ...variables });
@@ -117,11 +115,21 @@ export function useAprovarRejeitarMesa({ sb, token }) {
 
 export function useImportarMesaClienteParserResultado({ sb, token }) {
   const queryClient = useQueryClient();
-
   return withMutationCompat(useMutation({
     mutationFn: (variables) => importarMesaClienteParserResultado({ sb, token, ...variables }),
     onSuccess: (_data, variables) => {
       queryClient.invalidateQueries({ queryKey: MESA_KEYS.empreendimentos(variables.empresaId) });
+      queryClient.invalidateQueries({ queryKey: MESA_KEYS.root });
+    },
+  }));
+}
+
+export function useSalvarMesaClienteEnriquecimento({ sb, token }) {
+  const queryClient = useQueryClient();
+  return withMutationCompat(useMutation({
+    mutationFn: (variables) => salvarMesaClienteEnriquecimento({ sb, token, ...variables }),
+    onSuccess: (_data, variables) => {
+      queryClient.invalidateQueries({ queryKey: MESA_KEYS.unidades(variables.empreendimentoId) });
       queryClient.invalidateQueries({ queryKey: MESA_KEYS.root });
     },
   }));
