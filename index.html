@@ -17,13 +17,36 @@
     <div id="root"></div>
     <script type="module" src="/src/main.jsx"></script>
     <script>
-      if ('serviceWorker' in navigator) {
+      /**
+       * FECH.AI PWA safety gate
+       *
+       * Em previews da Vercel, cada commit gera um host novo. Manter Service Worker
+       * ativo nesse ambiente aumenta o risco de abrir uma tela com bundle antigo,
+       * especialmente durante depuração intensa do Mesa Cliente.
+       *
+       * Regra:
+       * - vercel.app: não registra SW e remove qualquer SW antigo daquele host.
+       * - domínios finais de produção: registra normalmente.
+       */
+      (function () {
+        if (!('serviceWorker' in navigator)) return;
+
+        const isVercelPreview = /\.vercel\.app$/i.test(window.location.hostname);
+
         window.addEventListener('load', () => {
+          if (isVercelPreview) {
+            navigator.serviceWorker.getRegistrations()
+              .then(registrations => Promise.all(registrations.map(r => r.unregister())))
+              .then(() => console.log('[FECH.AI] SW desativado em preview Vercel'))
+              .catch(e => console.log('[FECH.AI] Falha ao limpar SW em preview:', e));
+            return;
+          }
+
           navigator.serviceWorker.register('/sw.js')
             .then(r => console.log('SW registrado:', r.scope))
             .catch(e => console.log('SW erro:', e));
         });
-      }
+      })();
     </script>
   </body>
 </html>
