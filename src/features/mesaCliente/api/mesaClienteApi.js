@@ -145,8 +145,8 @@ export function importarMesaClienteParserResultado({
   incorporadora = null,
   bairro = null,
   cidade = null,
-  nomeArquivo = 'parser-json-manual.json',
-  parserNome = 'manual_json_preview',
+  nomeArquivo = 'tabela.pdf',
+  parserNome = 'native_first',
   unidades,
 }) {
   return callMesaRpc({
@@ -161,7 +161,7 @@ export function importarMesaClienteParserResultado({
       p_cidade: cidade,
       p_nome_arquivo: nomeArquivo,
       p_parser_nome: parserNome,
-      p_parser_json: { unidades },
+      p_unidades: unidades,
     },
   });
 }
