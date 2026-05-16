@@ -14,11 +14,39 @@ function normalizeRpcError(error, fallback) {
   return new Error(error.message || error.error_description || error.details || fallback || String(error));
 }
 
-export async function callMesaRpc({ sb, token, fn, args = {} }) {
+function unwrapRpcResult(result, fallback) {
+  if (result && typeof result === 'object' && !Array.isArray(result) && 'error' in result && result.error) {
+    throw normalizeRpcError(result.error, fallback);
+  }
+
+  if (result && typeof result === 'object' && !Array.isArray(result) && 'data' in result) {
+    return result.data;
+  }
+
+  return result;
+}
+
+function ensureArray(value) {
+  if (Array.isArray(value)) return value;
+  if (value === null || value === undefined) return [];
+  if (typeof value === 'string') {
+    try {
+      const parsed = JSON.parse(value);
+      return Array.isArray(parsed) ? parsed : [];
+    } catch {
+      return [];
+    }
+  }
+  return [];
+}
+
+export async function callMesaRpc({ sb, token, fn, args = {}, expectArray = false }) {
   assertRpcClient({ sb, token });
 
   try {
-    return await sb.rpc(fn, args, token);
+    const result = await sb.rpc(fn, args, token);
+    const unwrapped = unwrapRpcResult(result, `Erro ao executar ${fn}`);
+    return expectArray ? ensureArray(unwrapped) : unwrapped;
   } catch (error) {
     throw normalizeRpcError(error, `Erro ao executar ${fn}`);
   }
@@ -30,6 +58,7 @@ export function getEmpreendimentosMesa({ sb, token, empresaId }) {
     token,
     fn: 'get_empreendimentos_mesa',
     args: { p_empresa_id: empresaId },
+    expectArray: true,
   });
 }
 
@@ -56,6 +85,7 @@ export function getHistoricoMesas({ sb, token, empresaId, filtros = {}, corretor
       p_limit: filtros.limit ?? 50,
       p_offset: filtros.offset ?? 0,
     },
+    expectArray: true,
   });
 }
 
@@ -65,6 +95,7 @@ export function getUnidadesMesa({ sb, token, empreendimentoId }) {
     token,
     fn: 'get_unidades_mesa',
     args: { p_empreendimento_id: empreendimentoId },
+    expectArray: true,
   });
 }
 
