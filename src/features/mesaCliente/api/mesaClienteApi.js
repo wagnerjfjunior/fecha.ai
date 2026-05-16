@@ -53,22 +53,11 @@ export async function callMesaRpc({ sb, token, fn, args = {}, expectArray = fals
 }
 
 export function getEmpreendimentosMesa({ sb, token, empresaId }) {
-  return callMesaRpc({
-    sb,
-    token,
-    fn: 'get_empreendimentos_mesa',
-    args: { p_empresa_id: empresaId },
-    expectArray: true,
-  });
+  return callMesaRpc({ sb, token, fn: 'get_empreendimentos_mesa', args: { p_empresa_id: empresaId }, expectArray: true });
 }
 
 export function getEmpresaMesaConfig({ sb, token, empresaId }) {
-  return callMesaRpc({
-    sb,
-    token,
-    fn: 'get_empresa_mesa_config',
-    args: { p_empresa_id: empresaId },
-  });
+  return callMesaRpc({ sb, token, fn: 'get_empresa_mesa_config', args: { p_empresa_id: empresaId } });
 }
 
 export function getHistoricoMesas({ sb, token, empresaId, filtros = {}, corretorId = null }) {
@@ -90,25 +79,10 @@ export function getHistoricoMesas({ sb, token, empresaId, filtros = {}, corretor
 }
 
 export function getUnidadesMesa({ sb, token, empreendimentoId }) {
-  return callMesaRpc({
-    sb,
-    token,
-    fn: 'get_unidades_mesa',
-    args: { p_empreendimento_id: empreendimentoId },
-    expectArray: true,
-  });
+  return callMesaRpc({ sb, token, fn: 'get_unidades_mesa', args: { p_empreendimento_id: empreendimentoId }, expectArray: true });
 }
 
-export function registrarUploadArquivoMesa({
-  sb,
-  token,
-  empresaId,
-  empreendimentoId,
-  tipoArquivo,
-  nomeArquivo,
-  storagePath = null,
-  observacoes = null,
-}) {
+export function registrarUploadArquivoMesa({ sb, token, empresaId, empreendimentoId, tipoArquivo, nomeArquivo, storagePath = null, observacoes = null }) {
   return callMesaRpc({
     sb,
     token,
@@ -124,19 +98,7 @@ export function registrarUploadArquivoMesa({
   });
 }
 
-export function criarMesaSimulacao({
-  sb,
-  token,
-  empresaId,
-  empreendimentoId,
-  unidadeId = null,
-  leadId = null,
-  clienteNome = null,
-  valorTotal,
-  metaObraPct = 30,
-  tabelaProvisoria = false,
-  fluxoJson,
-}) {
+export function criarMesaSimulacao({ sb, token, empresaId, empreendimentoId, unidadeId = null, leadId = null, clienteNome = null, valorTotal, metaObraPct = 30, tabelaProvisoria = false, fluxoJson }) {
   return callMesaRpc({
     sb,
     token,
@@ -160,26 +122,11 @@ export function aprovarRejeitarMesa({ sb, token, simulacaoId, acao, justificativ
     sb,
     token,
     fn: 'aprovar_rejeitar_mesa',
-    args: {
-      p_simulacao_id: simulacaoId,
-      p_acao: acao,
-      p_justificativa: justificativa,
-    },
+    args: { p_simulacao_id: simulacaoId, p_acao: acao, p_justificativa: justificativa },
   });
 }
 
-export function importarMesaClienteParserResultado({
-  sb,
-  token,
-  empresaId,
-  empreendimentoNome,
-  incorporadora = null,
-  bairro = null,
-  cidade = null,
-  nomeArquivo = 'tabela.pdf',
-  parserNome = 'native_first',
-  unidades,
-}) {
+export function importarMesaClienteParserResultado({ sb, token, empresaId, empreendimentoNome, incorporadora = null, bairro = null, cidade = null, nomeArquivo = 'tabela.pdf', parserNome = 'native_first', unidades }) {
   return callMesaRpc({
     sb,
     token,
@@ -193,6 +140,25 @@ export function importarMesaClienteParserResultado({
       p_nome_arquivo: nomeArquivo,
       p_parser_nome: parserNome,
       p_unidades: unidades,
+    },
+  });
+}
+
+export function salvarMesaClienteEnriquecimento({ sb, token, empreendimentoId, final, dormitorios = null, suites = null, vagasQuantidade = null, orientacaoSolar = null, face = null, vista = null, observacoes = null }) {
+  return callMesaRpc({
+    sb,
+    token,
+    fn: 'salvar_mesa_cliente_enriquecimento',
+    args: {
+      p_empreendimento_id: empreendimentoId,
+      p_final: final,
+      p_dormitorios: dormitorios,
+      p_suites: suites,
+      p_vagas_quantidade: vagasQuantidade,
+      p_orientacao_solar: orientacaoSolar,
+      p_face: face,
+      p_vista: vista,
+      p_observacoes: observacoes,
     },
   });
 }
