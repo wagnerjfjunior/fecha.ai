@@ -9,7 +9,7 @@
  * - mantém tenant isolation nas RPCs do banco.
  */
 
-import { useMemo, useState } from 'react';
+import { Component, useMemo, useState } from 'react';
 import TabEmpreendimentos from './TabEmpreendimentos';
 import TabFluxo from './TabFluxo';
 import TabHistorico from './TabHistorico';
@@ -19,6 +19,49 @@ const TABS = [
   { id: 'fluxo', label: 'Fluxo',           icon: '📋' },
   { id: 'hist',  label: 'Histórico',        icon: '📂' },
 ];
+
+class MesaClienteErrorBoundary extends Component {
+  constructor(props) {
+    super(props);
+    this.state = { error: null };
+  }
+
+  static getDerivedStateFromError(error) {
+    return { error };
+  }
+
+  componentDidCatch(error, info) {
+    console.error('[MesaCliente] Render error', error, info);
+  }
+
+  render() {
+    if (this.state.error) {
+      return (
+        <div className="min-h-screen bg-white flex items-center justify-center p-6">
+          <div className="max-w-[520px] w-full rounded-2xl border border-red-200 bg-red-50 p-5 text-center shadow-sm">
+            <div className="text-4xl mb-3">⚠️</div>
+            <p className="text-[16px] font-semibold text-red-900 mb-1">Erro ao abrir a Mesa Cliente</p>
+            <p className="text-[13px] text-red-800 leading-relaxed mb-3">
+              A tela encontrou um erro de renderização. A sessão e o banco podem estar ativos, mas algum dado retornou em formato inesperado.
+            </p>
+            <pre className="text-left text-[11px] bg-white border border-red-100 rounded-xl p-3 overflow-auto max-h-[180px] text-red-900">
+              {this.state.error?.message || String(this.state.error)}
+            </pre>
+            <button
+              type="button"
+              onClick={() => this.setState({ error: null })}
+              className="mt-4 px-4 py-2 rounded-xl bg-red-900 text-white text-[12px] font-semibold"
+            >
+              Tentar novamente
+            </button>
+          </div>
+        </div>
+      );
+    }
+
+    return this.props.children;
+  }
+}
 
 function getRole(corretor) {
   return String(corretor?.role || corretor?.perfil || corretor?.tipo_usuario || '').trim().toLowerCase();
@@ -41,7 +84,7 @@ function resolveMesaContext({ corretor, empresaId, corretorId, isGestor }) {
   };
 }
 
-export default function MesaCliente({
+function MesaClienteInner({
   sb,
   token,
   corretor,
@@ -151,5 +194,13 @@ export default function MesaCliente({
         )}
       </div>
     </div>
+  );
+}
+
+export default function MesaCliente(props) {
+  return (
+    <MesaClienteErrorBoundary>
+      <MesaClienteInner {...props} />
+    </MesaClienteErrorBoundary>
   );
 }
