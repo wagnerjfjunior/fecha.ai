@@ -12,11 +12,7 @@ import { useState, useCallback, useMemo, useEffect } from 'react';
 export const fmtBRL = (n) =>
   'R$ ' + Math.round(n || 0).toLocaleString('pt-BR');
 
-export const fmtBRLShort = (n) => {
-  n = Math.round(n || 0);
-  if (n >= 1000) return 'R$ ' + (n / 1000).toFixed(n % 1000 === 0 ? 0 : 1).replace('.', ',') + 'k';
-  return 'R$ ' + n;
-};
+export const fmtBRLShort = (n) => fmtBRL(n);
 
 function normalizeInitialFluxo(initialFluxo, precoTotal) {
   if (!initialFluxo || typeof initialFluxo !== 'object') return defaultFluxo(precoTotal);
@@ -61,16 +57,22 @@ export function calcTotais(state, precoTotal) {
   const vM = calcGroupTotal(state.m);
   const vA = calcGroupTotal(state.a);
   const vU = calcGroupTotal(state.u);
+
+  // obra = parcelas regulares do fluxo antes do financiamento.
+  // pagamentoFluxo = tudo que não entra no financiamento, incluindo parcela única/chaves.
   const obra = vE + vC + vM + vA;
-  const fin = precoTotal - obra - vU;
+  const pagamentoFluxo = obra + vU;
+  const fin = Math.max(0, precoTotal - pagamentoFluxo);
   const obraPct = precoTotal > 0 ? (obra / precoTotal) * 100 : 0;
+  const pagamentoPct = precoTotal > 0 ? (pagamentoFluxo / precoTotal) * 100 : 0;
   const finPct = precoTotal > 0 ? (fin / precoTotal) * 100 : 0;
-  return { vE, vC, vM, vA, vU, obra, fin, obraPct, finPct };
+
+  return { vE, vC, vM, vA, vU, obra, pagamentoFluxo, fin, obraPct, pagamentoPct, finPct };
 }
 
-export function calcBarStatus(obraPct, metaPct) {
-  if (obraPct >= metaPct) return 'ok';
-  if (obraPct >= metaPct - 5) return 'yellow';
+export function calcBarStatus(pagamentoPct, metaPct) {
+  if (pagamentoPct >= metaPct) return 'ok';
+  if (pagamentoPct >= metaPct - 5) return 'yellow';
   return 'red';
 }
 
@@ -114,13 +116,13 @@ export function useMesaCalc({ precoTotal = 850000, metaPct = 30, metaEspecial = 
   }, [precoTotal, resetKey]);
 
   const metaAtual = metaEspecial !== null ? metaEspecial : metaPct;
-  const obraTarget = (precoTotal * metaAtual) / 100;
+  const pagamentoTarget = (precoTotal * metaAtual) / 100;
 
   const totais = useMemo(() => calcTotais(state, precoTotal), [state, precoTotal]);
-  const barStatus = useMemo(() => calcBarStatus(totais.obraPct, metaAtual), [totais.obraPct, metaAtual]);
+  const barStatus = useMemo(() => calcBarStatus(totais.pagamentoPct, metaAtual), [totais.pagamentoPct, metaAtual]);
 
-  const surplus = totais.obra >= obraTarget ? totais.obra - obraTarget : 0;
-  const deficit = totais.obra < obraTarget ? obraTarget - totais.obra : 0;
+  const surplus = totais.pagamentoFluxo >= pagamentoTarget ? totais.pagamentoFluxo - pagamentoTarget : 0;
+  const deficit = totais.pagamentoFluxo < pagamentoTarget ? pagamentoTarget - totais.pagamentoFluxo : 0;
 
   const selectTile = useCallback((g, id) => {
     setSelected((prev) => (prev?.g === g && prev?.id === id ? null : { g, id }));
@@ -172,7 +174,7 @@ export function useMesaCalc({ precoTotal = 850000, metaPct = 30, metaEspecial = 
       } else if (g === 'a') {
         newTile = { id, label: 'Anuais', qty: 3, value: Math.round(precoTotal * 0.03), dateStart: '', meta: 'dez · 13º', isGroup: true, per: 'anual' };
       } else if (g === 'u') {
-        newTile = { id, label: 'Parcela única', date: '', value: 0, meta: 'antes das chaves' };
+        newTile = { id, label: 'Parcela única', date: '', value: 0, meta: 'chaves / antes do financiamento' };
       } else {
         newTile = { id, label: 'Parcela', date: '', value: 0, meta: '' };
       }
@@ -193,7 +195,8 @@ export function useMesaCalc({ precoTotal = 850000, metaPct = 30, metaEspecial = 
     barStatus,
     surplus,
     deficit,
-    obraTarget,
+    obraTarget: pagamentoTarget,
+    pagamentoTarget,
     metaAtual,
     // actions
     selectTile,
