@@ -1,8 +1,10 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import {
   useEmpreendimentosMesa,
-  useRegistrarUpload,
+  useImportarMesaClienteParserResultado,
 } from './hooks/useMesaData';
+import { processMesaClienteFile } from '../../features/mesaCliente/parser/nativeFirstParser';
+import { nativeRowsToParserPayload, validateParserPayloadForImport } from '../../features/mesaCliente/parser/parserPayloadAdapter';
 
 const DOT_COLOR = { ok: 'bg-[#1D9E75]', yellow: 'bg-[#EF9F27]', red: 'bg-[#E24B4A]' };
 const PILL_BG = { ok: 'bg-[#E1F5EE]', yellow: 'bg-[#FAEEDA]', red: 'bg-[#FDEAEA]' };
@@ -29,41 +31,74 @@ function UploadModal({ empreendimento, tipoInicial, onClose, onSuccess, empresaI
   const [tipo, setTipo] = useState(tipoInicial || 'tabela');
   const [subTipo, setSubTipo] = useState(tipoInicial === 'tabela' ? 'trabalho' : null);
   const [arquivo, setArquivo] = useState(null);
-  const { mutateAsync, isLoading, error } = useRegistrarUpload({ sb, token });
+  const [empreendimentoNome, setEmpreendimentoNome] = useState(empreendimento?.nome || '');
+  const [feedback, setFeedback] = useState(null);
+  const { mutateAsync: importarParser, isLoading: importing, error: importError } = useImportarMesaClienteParserResultado({ sb, token });
 
   const tipoFinal = tipo === 'tabela' ? (subTipo === 'oficial' ? 'tabela_oficial' : 'tabela_trabalho') : tipo;
-  const podeRegistrarAgora = Boolean(tipoFinal && arquivo && empreendimento?.id);
+  const isTabela = tipo === 'tabela';
+  const canImport = Boolean(isTabela && arquivo && empreendimentoNome.trim() && empresaId);
 
   const handleEnviar = async () => {
-    if (!podeRegistrarAgora) return;
+    if (!canImport || importing) return;
 
-    await mutateAsync({
-      empresaId,
-      empreendimentoId: empreendimento.id,
-      tipoArquivo: tipoFinal,
-      nomeArquivo: arquivo.name,
-      storagePath: null,
-      observacoes: 'Upload registrado pela Mesa Cliente. Processamento real do arquivo será conectado na camada parser/storage.',
+    setFeedback({ type: 'info', text: 'Lendo PDF e executando parser Native First…' });
+
+    const parserResult = await processMesaClienteFile({
+      file: arquivo,
+      empreendimento: empreendimentoNome.trim(),
     });
 
+    const payload = nativeRowsToParserPayload({
+      rows: parserResult.rows,
+      empreendimentoNome: empreendimentoNome.trim(),
+      nomeArquivo: arquivo.name,
+      parserNome: parserResult.pipeline?.engine || 'native_first',
+      layout: parserResult.detection?.layout,
+      confidence: parserResult.detection?.confidence,
+      csvText: parserResult.csvText,
+      pipeline: parserResult.pipeline,
+    });
+
+    const validation = validateParserPayloadForImport(payload);
+    if (!validation.ok) {
+      throw new Error(validation.errors.join(' | '));
+    }
+
+    setFeedback({ type: 'info', text: `Parser identificou ${validation.validUnits.length} unidade(s). Salvando no banco com RPC segura…` });
+
+    await importarParser({
+      empresaId,
+      empreendimentoNome: payload.empreendimentoNome,
+      incorporadora: payload.incorporadora || null,
+      bairro: payload.bairro || null,
+      cidade: payload.cidade || null,
+      nomeArquivo: payload.nomeArquivo,
+      parserNome: payload.parserNome,
+      unidades: validation.validUnits,
+    });
+
+    setFeedback({ type: 'success', text: `Tabela importada com ${validation.validUnits.length} unidade(s).` });
     onSuccess?.();
     onClose();
   };
 
+  const resolvedError = importError;
+
   return (
     <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-[9999] p-4" onClick={onClose}>
-      <div className="bg-[var(--color-background-primary)] rounded-2xl p-5 w-full max-w-[420px] relative shadow-2xl" onClick={e => e.stopPropagation()}>
+      <div className="bg-[var(--color-background-primary)] rounded-2xl p-5 w-full max-w-[460px] relative shadow-2xl" onClick={e => e.stopPropagation()}>
         <button onClick={onClose} className="absolute top-3 right-3 w-7 h-7 rounded-full bg-[var(--color-background-secondary)] flex items-center justify-center text-base">×</button>
 
         <p className="text-[15px] font-semibold mb-1">Importar tabela/PDF</p>
         <p className="text-[12px] text-[var(--color-text-secondary)] mb-4">
-          {empreendimento ? empreendimento.nome : 'Selecione uma tabela comercial para preparar a importação das unidades.'}
+          {empreendimento ? empreendimento.nome : 'Envie a tabela comercial em PDF para criar/atualizar empreendimento e unidades.'}
         </p>
 
         <div className="grid grid-cols-2 gap-2 mb-4">
           {[
-            { key: 'tabela', icon: '📊', label: 'Tabela comercial', sub: 'PDF ou imagem' },
-            { key: 'espelho', icon: '🪞', label: 'Espelho de vendas', sub: 'Disponibilidade' },
+            { key: 'tabela', icon: '📊', label: 'Tabela comercial', sub: 'PDF com valores' },
+            { key: 'espelho', icon: '🪞', label: 'Espelho de vendas', sub: 'Em breve' },
           ].map(opt => (
             <button
               key={opt.key}
@@ -81,50 +116,66 @@ function UploadModal({ empreendimento, tipoInicial, onClose, onSuccess, empresaI
         </div>
 
         {tipo === 'tabela' && (
-          <div className="grid grid-cols-2 gap-2 mb-4">
-            {[
-              { key: 'trabalho', label: '📝 De trabalho', sub: 'WhatsApp · provisória' },
-              { key: 'oficial', label: '✅ Oficial', sub: 'Incorporadora' },
-            ].map(opt => (
-              <button
-                key={opt.key}
-                onClick={() => setSubTipo(opt.key)}
-                className={`border rounded-xl p-2.5 text-center transition-all ${subTipo === opt.key ? 'border-[var(--color-text-info)] bg-[var(--color-background-info)]' : 'border-[var(--color-border-tertiary)] hover:border-[var(--color-border-secondary)]'}`}
-              >
-                <div className="text-[12px] font-semibold">{opt.label}</div>
-                <div className="text-[10px] text-[var(--color-text-tertiary)] mt-0.5">{opt.sub}</div>
-              </button>
-            ))}
-          </div>
+          <>
+            <label className="block text-[11px] font-semibold text-[var(--color-text-secondary)] mb-1">Nome do empreendimento</label>
+            <input
+              value={empreendimentoNome}
+              onChange={e => setEmpreendimentoNome(e.target.value)}
+              placeholder="Ex.: Garden Design, Nova Vivere, Reserva Caminhos da Lapa…"
+              className="w-full rounded-xl border border-[var(--color-border-tertiary)] bg-[var(--color-background-primary)] px-3 py-2 text-[13px] mb-3 outline-none"
+            />
+
+            <div className="grid grid-cols-2 gap-2 mb-4">
+              {[
+                { key: 'trabalho', label: '📝 De trabalho', sub: 'WhatsApp · provisória' },
+                { key: 'oficial', label: '✅ Oficial', sub: 'Incorporadora' },
+              ].map(opt => (
+                <button
+                  key={opt.key}
+                  onClick={() => setSubTipo(opt.key)}
+                  className={`border rounded-xl p-2.5 text-center transition-all ${subTipo === opt.key ? 'border-[var(--color-text-info)] bg-[var(--color-background-info)]' : 'border-[var(--color-border-tertiary)] hover:border-[var(--color-border-secondary)]'}`}
+                >
+                  <div className="text-[12px] font-semibold">{opt.label}</div>
+                  <div className="text-[10px] text-[var(--color-text-tertiary)] mt-0.5">{opt.sub}</div>
+                </button>
+              ))}
+            </div>
+          </>
         )}
 
         <label className="block border border-dashed border-[var(--color-border-secondary)] rounded-xl p-5 text-center cursor-pointer hover:border-[var(--color-text-info)] transition-colors mb-4">
           <div className="text-2xl mb-1">{arquivo ? '✅' : '📄'}</div>
           <div className="text-[13px] font-medium">{arquivo ? arquivo.name : 'Toque para escolher o arquivo'}</div>
-          <div className="text-[11px] text-[var(--color-text-tertiary)] mt-1">PDF, imagem · máx. 20MB</div>
-          <input type="file" accept=".pdf,image/*" className="hidden" onChange={e => setArquivo(e.target.files?.[0] ?? null)} />
+          <div className="text-[11px] text-[var(--color-text-tertiary)] mt-1">PDF com texto selecionável · máx. 20MB</div>
+          <input type="file" accept=".pdf,.txt,.csv" className="hidden" onChange={e => setArquivo(e.target.files?.[0] ?? null)} />
         </label>
 
-        <div className="bg-[var(--color-background-secondary)] rounded-xl px-3 py-2 text-[11px] text-[var(--color-text-secondary)] mb-4 leading-relaxed">
-          🔍 Nesta etapa, quando já existe empreendimento, o arquivo é registrado para auditoria. A extração automática das unidades será conectada na próxima camada do parser.
-        </div>
-
-        {!empreendimento?.id && (
-          <div className="bg-[#FAEEDA] text-[#412402] rounded-xl px-3 py-2 text-[11px] mb-3">
-            A criação automática do primeiro empreendimento a partir do arquivo será ligada ao parser. Por enquanto, esta tela prepara o fluxo visual e evita expor ferramentas técnicas ao corretor.
+        {tipo === 'espelho' && (
+          <div className="bg-[#FAEEDA] text-[#412402] rounded-xl px-3 py-2 text-[11px] mb-3 leading-relaxed">
+            O espelho de vendas ainda não será processado nesta etapa. Por enquanto, a Mesa Cliente exibirá todas as unidades extraídas da tabela comercial.
           </div>
         )}
 
-        {error && <div className="bg-[#FDEAEA] text-[#4B1528] rounded-xl px-3 py-2 text-[11px] mb-3">{error}</div>}
+        <div className="bg-[var(--color-background-secondary)] rounded-xl px-3 py-2 text-[11px] text-[var(--color-text-secondary)] mb-4 leading-relaxed">
+          🔒 O arquivo é processado no navegador pelo parser Native First. A gravação no banco acontece somente via RPC com sessão autenticada e isolamento por empresa.
+        </div>
+
+        {feedback && (
+          <div className={`rounded-xl px-3 py-2 text-[11px] mb-3 ${feedback.type === 'success' ? 'bg-[#E1F5EE] text-[#0F6E56]' : 'bg-[var(--color-background-info)] text-[var(--color-text-info)]'}`}>
+            {feedback.text}
+          </div>
+        )}
+
+        {resolvedError && <div className="bg-[#FDEAEA] text-[#4B1528] rounded-xl px-3 py-2 text-[11px] mb-3">{resolvedError}</div>}
 
         <div className="flex gap-2">
           <button onClick={onClose} className="flex-1 py-2 rounded-xl bg-[var(--color-background-secondary)] text-[12px]">Cancelar</button>
           <button
             onClick={handleEnviar}
-            disabled={!podeRegistrarAgora || isLoading}
-            className={`flex-1 py-2 rounded-xl text-[12px] font-medium transition-opacity bg-[var(--color-text-primary)] text-[var(--color-background-primary)] ${!podeRegistrarAgora || isLoading ? 'opacity-50' : ''}`}
+            disabled={!canImport || importing || !isTabela}
+            className={`flex-1 py-2 rounded-xl text-[12px] font-medium transition-opacity bg-[var(--color-text-primary)] text-[var(--color-background-primary)] ${!canImport || importing || !isTabela ? 'opacity-50' : ''}`}
           >
-            {isLoading ? 'Enviando…' : empreendimento?.id ? 'Registrar' : 'Aguardando parser'}
+            {importing ? 'Importando…' : 'Processar tabela'}
           </button>
         </div>
       </div>
@@ -187,6 +238,7 @@ export default function TabEmpreendimentos({ sb, token, empresaId, onAbrirFluxo 
   const { data: empreendimentos = [], isLoading, error, reload } = useEmpreendimentosMesa({ sb, token, empresaId });
   const [uploadTarget, setUploadTarget] = useState(null);
 
+  const sortedEmpreendimentos = useMemo(() => empreendimentos, [empreendimentos]);
   const handleUpload = (emp, tipo) => setUploadTarget({ emp, tipo });
 
   return (
@@ -205,7 +257,7 @@ export default function TabEmpreendimentos({ sb, token, empresaId, onAbrirFluxo 
         </div>
       )}
 
-      {!isLoading && !error && empreendimentos.length === 0 && (
+      {!isLoading && !error && sortedEmpreendimentos.length === 0 && (
         <div className="text-center py-12">
           <div className="text-4xl mb-3">🏢</div>
           <p className="text-[14px] font-medium text-[var(--color-text-secondary)]">Nenhum empreendimento com tabela</p>
@@ -214,7 +266,7 @@ export default function TabEmpreendimentos({ sb, token, empresaId, onAbrirFluxo 
         </div>
       )}
 
-      {empreendimentos.map(emp => (
+      {sortedEmpreendimentos.map(emp => (
         <EmpCard key={emp.id} emp={emp} onAbrirFluxo={onAbrirFluxo} onUpload={handleUpload} />
       ))}
 
