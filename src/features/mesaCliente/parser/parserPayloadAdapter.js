@@ -85,26 +85,77 @@ function normalizeConfidence(value) {
   return allowed.has(confidence) ? confidence : 'media';
 }
 
+function inferFinalFromUnit(unidade = '') {
+  const digits = String(unidade || '').replace(/\D/g, '');
+  return digits.length >= 2 ? digits.slice(-2) : null;
+}
+
+function inferAndarFromUnit(unidade = '') {
+  const digits = String(unidade || '').replace(/\D/g, '');
+  if (digits.length < 4) return null;
+  const andar = Number.parseInt(digits.slice(0, -2), 10);
+  return Number.isFinite(andar) ? andar : null;
+}
+
+function extractObsNumber(observacoes = '', key) {
+  const escaped = String(key).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const match = String(observacoes || '').match(new RegExp(`${escaped}=(-?[0-9]+(?:\\.[0-9]+)?)`, 'i'));
+  if (!match) return null;
+  const value = Number.parseFloat(match[1]);
+  return Number.isFinite(value) ? value : null;
+}
+
 export function normalizeUnit(unit, index = 0) {
   const unidade = unit.unidade || unit.apto || unit.apartamento || unit.numero || unit.id_unidade || null;
-  const valorTabela = parseNumber(unit.valor_tabela ?? unit.valor ?? unit.preco ?? unit.total ?? unit.valor_total);
+  const valorTabela = parseNumber(unit.valor_tabela ?? unit.valor ?? unit.preco ?? unit.total ?? unit.valor_total ?? unit.preco_total);
+  const observacoes = unit.observacoes ?? unit.obs ?? null;
+  const vagasFromObs = extractObsNumber(observacoes, 'vagas');
 
   return {
     row_index: unit.row_index ?? unit.rowIndex ?? index + 1,
     torre: unit.torre ?? unit.bloco ?? null,
     unidade: unidade === null || unidade === undefined ? null : String(unidade).trim(),
-    final: unit.final === null || unit.final === undefined ? null : String(unit.final).trim(),
-    andar: parseInteger(unit.andar ?? unit.pavimento),
+    final: unit.final === null || unit.final === undefined ? inferFinalFromUnit(unidade) : String(unit.final).trim(),
+    andar: parseInteger(unit.andar ?? unit.pavimento) ?? inferAndarFromUnit(unidade),
     metragem: parseNumber(unit.metragem ?? unit.area ?? unit.area_m2 ?? unit.m2),
     dormitorios: parseInteger(unit.dormitorios ?? unit.dorms ?? unit.quartos),
     suites: parseInteger(unit.suites ?? unit.suite),
-    vagas_quantidade: parseInteger(unit.vagas_quantidade ?? unit.vagas ?? unit.qtde_vagas),
+    vagas_quantidade: parseInteger(unit.vagas_quantidade ?? unit.vagas ?? unit.qtde_vagas) ?? vagasFromObs,
     valor_tabela: valorTabela,
     status_comercial: normalizeStatus(unit.status_comercial ?? unit.status),
     planta_tipo: unit.planta_tipo ?? unit.planta ?? unit.tipologia ?? null,
-    observacoes: unit.observacoes ?? unit.obs ?? null,
+    observacoes,
     confianca_linha: normalizeConfidence(unit.confianca_linha ?? unit.confianca ?? unit.confidence),
     raw: unit.raw || unit,
+  };
+}
+
+export function nativeRowsToParserPayload({
+  rows,
+  empreendimentoNome,
+  nomeArquivo,
+  parserNome,
+  layout,
+  confidence,
+  csvText,
+  pipeline,
+}) {
+  return {
+    schemaVersion: 'mesa_native_first_v1',
+    empreendimentoNome,
+    incorporadora: '',
+    bairro: '',
+    cidade: '',
+    nomeArquivo: nomeArquivo || 'tabela.pdf',
+    parserNome: parserNome || 'native_first',
+    layout: layout || null,
+    confidence: confidence || null,
+    unidades: Array.isArray(rows) ? rows.map(normalizeUnit) : [],
+    raw: {
+      rows,
+      csvText,
+      pipeline,
+    },
   };
 }
 
