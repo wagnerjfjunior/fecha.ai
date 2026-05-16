@@ -56,11 +56,13 @@ function UnitPreviewRow({ unit }) {
   );
 }
 
-export default function DisponibilidadeUploadPreview({ empreendimento, unidadesComerciais = [], onClose, onConfirmLocal }) {
+export default function DisponibilidadeUploadPreview({ empreendimento, empresaId, unidadesComerciais = [], importarDisponibilidade, onClose, onSuccess }) {
   const [arquivo, setArquivo] = useState(null);
   const [result, setResult] = useState(null);
   const [processing, setProcessing] = useState(false);
+  const [saving, setSaving] = useState(false);
   const [error, setError] = useState(null);
+  const [success, setSuccess] = useState(null);
   const [showAll, setShowAll] = useState(false);
 
   const unidades = result?.snapshot?.unidades || [];
@@ -71,6 +73,7 @@ export default function DisponibilidadeUploadPreview({ empreendimento, unidadesC
     if (!arquivo || processing) return;
     setProcessing(true);
     setError(null);
+    setSuccess(null);
     setResult(null);
 
     try {
@@ -113,6 +116,7 @@ export default function DisponibilidadeUploadPreview({ empreendimento, unidadesC
         layout: parserResult?.detection?.layout || null,
         confidence: parserResult?.detection?.confidence || null,
         snapshot,
+        unitsForRpc: validation.validUnits,
         crosscheck: summary,
       });
     } catch (err) {
@@ -122,7 +126,37 @@ export default function DisponibilidadeUploadPreview({ empreendimento, unidadesC
     }
   };
 
-  const canConfirm = Boolean(result?.snapshot?.unidades?.length);
+  const handleConfirmar = async () => {
+    if (!result?.unitsForRpc?.length || !empreendimento?.id || !empresaId || !importarDisponibilidade || saving) return;
+
+    setSaving(true);
+    setError(null);
+    setSuccess(null);
+
+    try {
+      const rpcResult = await importarDisponibilidade({
+        empresaId,
+        empreendimentoId: empreendimento.id,
+        nomeArquivo: result.fileName,
+        parserNome: result.parser,
+        unidades: result.unitsForRpc,
+      });
+
+      const row = Array.isArray(rpcResult) ? rpcResult[0] : rpcResult;
+      const disponiveis = row?.disponiveis_oficial ?? result.snapshot.total_unidades_disponiveis;
+      const marcadasDisponiveis = row?.unidades_marcadas_disponiveis ?? 0;
+      const marcadasIndisponiveis = row?.unidades_marcadas_indisponiveis ?? 0;
+
+      setSuccess(`Disponibilidade oficial salva: ${disponiveis} unidade(s) na tabela oficial, ${marcadasDisponiveis} marcada(s) como disponíveis e ${marcadasIndisponiveis} como indisponíveis.`);
+      onSuccess?.(rpcResult);
+    } catch (err) {
+      setError(err?.message || 'Não foi possível salvar a disponibilidade oficial. Verifique se a migration da RPC já foi aplicada no Supabase.');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const canConfirm = Boolean(result?.snapshot?.unidades?.length && empreendimento?.id && empresaId && importarDisponibilidade);
 
   return (
     <div className="fixed inset-0 bg-black/45 flex items-center justify-center z-[9999] p-3" onClick={onClose}>
@@ -130,21 +164,21 @@ export default function DisponibilidadeUploadPreview({ empreendimento, unidadesC
         <div className="sticky top-0 bg-white border-b border-slate-200 p-4 flex items-start justify-between gap-3 rounded-t-3xl z-10">
           <div>
             <p className="text-[20px] font-black text-slate-900 leading-tight">Atualizar disponibilidade</p>
-            <p className="text-[13px] text-slate-500 mt-1">{empreendimento?.nome || 'Empreendimento'} · tabela oficial Tegra, prévia local</p>
+            <p className="text-[13px] text-slate-500 mt-1">{empreendimento?.nome || 'Empreendimento'} · tabela oficial Tegra</p>
           </div>
           <button onClick={onClose} className="w-9 h-9 rounded-full text-[20px]" style={SECONDARY_BUTTON_STYLE}>×</button>
         </div>
 
         <div className="p-4 grid gap-4">
           <div className="rounded-2xl bg-[#E1F5EE] border border-[#b7ead9] text-[#0F6E56] px-4 py-3 text-[13px] leading-relaxed">
-            A tabela oficial de disponibilidade contém as unidades disponíveis no momento da geração. Nesta etapa o sistema lê a tabela, cria uma prévia e ainda não grava no banco.
+            A tabela oficial de disponibilidade contém as unidades disponíveis no momento da geração. Leia a tabela, confira a prévia e confirme para gravar a validação no sistema.
           </div>
 
           <label className="block border border-dashed border-slate-300 rounded-2xl p-5 text-center cursor-pointer transition-colors bg-slate-50">
             <div className="text-3xl mb-2">{arquivo ? '✅' : '📋'}</div>
             <div className="text-[15px] font-bold text-slate-900">{arquivo ? arquivo.name : 'Toque para escolher a tabela oficial de disponibilidade'}</div>
             <div className="text-[12px] text-slate-500 mt-1">PDF oficial · usado para saber quais unidades estão disponíveis agora</div>
-            <input type="file" accept=".pdf,.txt,.csv" className="hidden" onChange={(e) => { setArquivo(e.target.files?.[0] ?? null); setResult(null); setError(null); }} />
+            <input type="file" accept=".pdf,.txt,.csv" className="hidden" onChange={(e) => { setArquivo(e.target.files?.[0] ?? null); setResult(null); setError(null); setSuccess(null); }} />
           </label>
 
           <div className="flex flex-col md:flex-row gap-2">
@@ -155,6 +189,7 @@ export default function DisponibilidadeUploadPreview({ empreendimento, unidadesC
           </div>
 
           {error && <div className="rounded-2xl bg-[#FDEAEA] text-[#4B1528] px-4 py-3 text-[13px]">{error}</div>}
+          {success && <div className="rounded-2xl bg-[#E1F5EE] text-[#0F6E56] px-4 py-3 text-[13px]">{success}</div>}
 
           {result && (
             <div className="grid gap-4">
@@ -194,17 +229,17 @@ export default function DisponibilidadeUploadPreview({ empreendimento, unidadesC
               <div className="flex flex-col md:flex-row gap-2">
                 <button onClick={onClose} className="flex-1 py-3 rounded-xl text-[14px] font-semibold" style={SECONDARY_BUTTON_STYLE}>Fechar</button>
                 <button
-                  disabled={!canConfirm}
-                  onClick={() => onConfirmLocal?.(result)}
+                  disabled={!canConfirm || saving}
+                  onClick={handleConfirmar}
                   className="flex-1 py-3 rounded-xl text-[14px] font-bold"
-                  style={canConfirm ? PRIMARY_BUTTON_STYLE : DISABLED_BUTTON_STYLE}
+                  style={canConfirm && !saving ? PRIMARY_BUTTON_STYLE : DISABLED_BUTTON_STYLE}
                 >
-                  Confirmar prévia local
+                  {saving ? 'Salvando disponibilidade…' : 'Confirmar e salvar disponibilidade'}
                 </button>
               </div>
 
               <div className="rounded-2xl bg-slate-100 text-slate-600 px-4 py-3 text-[12px] leading-relaxed">
-                Esta confirmação ainda não grava no banco. A próxima etapa será persistir o snapshot via RPC segura e aplicar a marcação visual: disponível normal; indisponível cinza com marca d’água.
+                Após salvar, o sistema atualiza o status das unidades: disponíveis permanecem liberadas; unidades fora da tabela oficial ficam indisponíveis.
               </div>
             </div>
           )}
