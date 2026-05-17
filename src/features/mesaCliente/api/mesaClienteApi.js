@@ -82,6 +82,28 @@ export function getUnidadesMesa({ sb, token, empreendimentoId }) {
   return callMesaRpc({ sb, token, fn: 'get_unidades_mesa', args: { p_empreendimento_id: empreendimentoId }, expectArray: true });
 }
 
+export function getMesaClienteDescontoPolitica({ sb, token, empreendimentoId }) {
+  return callMesaRpc({
+    sb,
+    token,
+    fn: 'get_mesa_cliente_desconto_politica',
+    args: { p_empreendimento_id: empreendimentoId },
+  });
+}
+
+export function validarMesaClienteDesconto({ sb, token, empreendimentoId, valorTabela, descontoValor = 0 }) {
+  return callMesaRpc({
+    sb,
+    token,
+    fn: 'validar_mesa_cliente_desconto',
+    args: {
+      p_empreendimento_id: empreendimentoId,
+      p_valor_tabela: valorTabela,
+      p_desconto_valor: descontoValor,
+    },
+  });
+}
+
 export function registrarUploadArquivoMesa({ sb, token, empresaId, empreendimentoId, tipoArquivo, nomeArquivo, storagePath = null, observacoes = null }) {
   return callMesaRpc({
     sb,
