@@ -4,6 +4,7 @@ import {
   getEmpresaMesaConfig,
   getHistoricoMesas,
   getUnidadesMesa,
+  getMesaClienteDescontoPolitica,
   registrarUploadArquivoMesa,
   criarMesaSimulacao,
   aprovarRejeitarMesa,
@@ -16,6 +17,7 @@ export const MESA_KEYS = {
   root: ['mesa'],
   empreendimentos: (empresaId) => ['mesa', 'empreendimentos', empresaId],
   config: (empresaId) => ['mesa', 'config', empresaId],
+  descontoPolitica: (empreendimentoId) => ['mesa', 'desconto-politica', empreendimentoId],
   historico: (empresaId, filtros = {}) => ['mesa', 'historico', empresaId, filtros],
   unidades: (empreendimentoId) => ['mesa', 'unidades', empreendimentoId],
 };
@@ -57,6 +59,16 @@ export function useEmpresaMesaConfig({ sb, token, empresaId }) {
     queryFn: () => getEmpresaMesaConfig({ sb, token, empresaId }),
     enabled: Boolean(sb && token && empresaId),
     staleTime: 10 * 60 * 1000,
+    refetchOnWindowFocus: false,
+  }));
+}
+
+export function useMesaClienteDescontoPolitica({ sb, token, empreendimentoId }) {
+  return withCompat(useQuery({
+    queryKey: MESA_KEYS.descontoPolitica(empreendimentoId),
+    queryFn: () => getMesaClienteDescontoPolitica({ sb, token, empreendimentoId }),
+    enabled: Boolean(sb && token && empreendimentoId),
+    staleTime: 5 * 60 * 1000,
     refetchOnWindowFocus: false,
   }));
 }
