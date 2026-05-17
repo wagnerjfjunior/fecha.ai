@@ -5,7 +5,7 @@
  * Toda lógica oficial de persistência/validação fica nas RPCs; este componente cuida da UX.
  */
 
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useMesaCalc, fmtBRL } from './hooks/useMesaCalc';
 
 const GROUP_STYLE = {
@@ -32,6 +32,12 @@ function toNumber(value) {
   s = s.replace(/[^0-9.-]/g, '');
   const n = Number.parseFloat(s);
   return Number.isFinite(n) ? n : 0;
+}
+
+function clampNumber(value, min, max) {
+  const n = toNumber(value);
+  if (!Number.isFinite(n)) return min;
+  return Math.min(max, Math.max(min, n));
 }
 
 function safeObj(value) {
@@ -156,6 +162,186 @@ function getPeriodicidadeInfo(unidadeInput = {}) {
   };
 }
 
+function normalizeDiscountPolicy(empresaConfig = {}, empreendimento = null) {
+  const config = safeObj(empresaConfig);
+  const raw = safeObj(
+    config.politica_desconto_mesa ||
+    config.mesa_cliente_desconto ||
+    config.desconto_mesa ||
+    config.discount_policy
+  );
+
+  const porEmpreendimento = safeObj(raw.por_empreendimento || raw.by_empreendimento);
+  const empId = empreendimento?.id || empreendimento?.empreendimento_id || '';
+  const scoped = empId && porEmpreendimento[empId] ? safeObj(porEmpreendimento[empId]) : raw;
+
+  const comPremioMaxPct = toNumber(scoped.com_premio_max_pct ?? scoped.max_com_premio_pct ?? scoped.with_bonus_max_pct);
+  const semPremioMaxPct = toNumber(scoped.sem_premio_max_pct ?? scoped.max_sem_premio_pct ?? scoped.no_bonus_max_pct);
+  const maxPermitidoPct = toNumber(scoped.max_permitido_pct ?? scoped.maximo_pct ?? scoped.max_allowed_pct);
+
+  const configured = comPremioMaxPct > 0 || semPremioMaxPct > 0 || maxPermitidoPct > 0;
+
+  if (!configured) {
+    return {
+      configured: false,
+      comPremioMaxPct: 0,
+      semPremioMaxPct: 0,
+      maxPermitidoPct: 0,
+    };
+  }
+
+  return {
+    configured: true,
+    comPremioMaxPct,
+    semPremioMaxPct: Math.max(semPremioMaxPct, comPremioMaxPct),
+    maxPermitidoPct: Math.max(maxPermitidoPct, semPremioMaxPct, comPremioMaxPct),
+  };
+}
+
+function classifyDiscount(discountPct, policy) {
+  const pct = toNumber(discountPct);
+  if (pct <= 0) {
+    return {
+      status: 'sem_desconto',
+      tone: 'neutral',
+      label: 'Sem desconto aplicado',
+      message: 'O fluxo está usando o valor de tabela integral.',
+      blocked: false,
+      requiresApproval: false,
+    };
+  }
+
+  if (!policy?.configured) {
+    return {
+      status: 'politica_nao_configurada',
+      tone: 'neutral',
+      label: 'Política de desconto não configurada',
+      message: 'O desconto foi calculado para simulação, mas a validação oficial precisa da política configurada pelo gestor/admin.',
+      blocked: false,
+      requiresApproval: true,
+    };
+  }
+
+  if (policy.maxPermitidoPct > 0 && pct > policy.maxPermitidoPct) {
+    return {
+      status: 'bloqueado',
+      tone: 'blocked',
+      label: 'Desconto proibido',
+      message: 'Desconto acima da política permitida. Reduza o desconto ou solicite uma condição especial ao gestor.',
+      blocked: true,
+      requiresApproval: true,
+    };
+  }
+
+  if (policy.semPremioMaxPct > 0 && pct > policy.comPremioMaxPct) {
+    return {
+      status: 'sem_premio',
+      tone: 'red',
+      label: 'Desconto sem prêmio',
+      message: 'Esta condição pode impactar a premiação do corretor e deve ser submetida para aprovação.',
+      blocked: false,
+      requiresApproval: true,
+    };
+  }
+
+  const isAtLimit = policy.comPremioMaxPct > 0 && pct >= policy.comPremioMaxPct * 0.9;
+  if (isAtLimit) {
+    return {
+      status: 'limite_com_premio',
+      tone: 'yellow',
+      label: 'No limite com prêmio',
+      message: 'Condição próxima do desconto máximo com prêmio. Submeter para aprovação antes de proposta final.',
+      blocked: false,
+      requiresApproval: true,
+    };
+  }
+
+  return {
+    status: 'com_premio',
+    tone: 'green',
+    label: 'Dentro da política com prêmio',
+    message: 'Condição dentro da margem configurada. A premiação do corretor é preservada.',
+    blocked: false,
+    requiresApproval: false,
+  };
+}
+
+function scaleFluxoValues(initialFluxo, ratio) {
+  if (!initialFluxo || typeof initialFluxo !== 'object') return initialFluxo;
+  const safeRatio = Number.isFinite(ratio) && ratio > 0 ? ratio : 1;
+  const groups = ['e', 'c', 'm', 'a', 'u'];
+  return groups.reduce((acc, group) => {
+    acc[group] = Array.isArray(initialFluxo[group])
+      ? initialFluxo[group].map((tile) => ({
+          ...tile,
+          value: Math.round(toNumber(tile.value) * safeRatio),
+        }))
+      : [];
+    return acc;
+  }, {});
+}
+
+function DiscountPanel({ valorTabela, discountType, setDiscountType, discountInput, setDiscountInput, descontoValor, descontoPct, valorNegociado, discountStatus }) {
+  const toneClass = {
+    green: 'bg-[#E1F5EE] text-[#04342C] border-[#9FE1CB]',
+    yellow: 'bg-[#FEF9EA] text-[#78350F] border-[#FDE68A]',
+    red: 'bg-[#FEF0EB] text-[#7C3B20] border-[#F4B6A0]',
+    blocked: 'bg-[#FDECEC] text-[#7F1D1D] border-[#F5A9A9]',
+    neutral: 'bg-[var(--color-background-secondary)] text-[var(--color-text-secondary)] border-[var(--color-border-tertiary)]',
+  }[discountStatus.tone] || 'bg-[var(--color-background-secondary)] text-[var(--color-text-secondary)] border-[var(--color-border-tertiary)]';
+
+  return (
+    <div className="bg-[var(--color-background-primary)] border border-[var(--color-border-tertiary)] rounded-2xl p-4">
+      <div className="flex flex-wrap items-start justify-between gap-3 mb-4">
+        <div>
+          <div className="text-[13px] text-[var(--color-text-secondary)]">Negociação comercial</div>
+          <div className="text-[21px] font-bold leading-tight">Desconto e valor com desconto</div>
+          <p className="text-[12px] text-[var(--color-text-tertiary)] mt-1">A simulação recalcula o fluxo sobre o valor com desconto, preservando o valor de tabela como referência.</p>
+        </div>
+        <div className={`rounded-2xl border px-3 py-2 text-[13px] leading-relaxed ${toneClass}`}>
+          <strong>{discountStatus.label}</strong><br />{discountStatus.message}
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
+        <div className="rounded-2xl bg-[var(--color-background-secondary)] p-3">
+          <div className="text-[12px] text-[var(--color-text-tertiary)]">Valor de tabela</div>
+          <div className="text-[20px] font-bold tabular-nums">{fmtBRL(valorTabela)}</div>
+        </div>
+
+        <div className="rounded-2xl bg-[var(--color-background-secondary)] p-3 md:col-span-2">
+          <div className="flex flex-wrap items-center justify-between gap-2 mb-2">
+            <div className="text-[12px] text-[var(--color-text-tertiary)]">Desconto aplicado</div>
+            <div className="flex bg-[var(--color-background-primary)] rounded-xl p-1 border border-[var(--color-border-tertiary)]">
+              <button type="button" onClick={() => setDiscountType('valor')} className={`px-3 py-1.5 rounded-lg text-[12px] ${discountType === 'valor' ? 'bg-[#0F6E56] text-white' : 'text-[var(--color-text-secondary)]'}`}>R$</button>
+              <button type="button" onClick={() => setDiscountType('percentual')} className={`px-3 py-1.5 rounded-lg text-[12px] ${discountType === 'percentual' ? 'bg-[#0F6E56] text-white' : 'text-[var(--color-text-secondary)]'}`}>%</button>
+            </div>
+          </div>
+          <div className="flex items-center gap-2">
+            <input
+              type="number"
+              min="0"
+              step={discountType === 'percentual' ? '0.1' : '1000'}
+              value={discountInput}
+              onChange={(e) => setDiscountInput(e.target.value)}
+              placeholder={discountType === 'percentual' ? 'Ex.: 2,5' : 'Ex.: 35000'}
+              className="w-full bg-transparent border-none outline-none text-[24px] font-bold tabular-nums"
+            />
+            <span className="text-[14px] text-[var(--color-text-tertiary)]">{discountType === 'percentual' ? '%' : 'R$'}</span>
+          </div>
+          <div className="text-[12px] text-[var(--color-text-tertiary)] mt-1">{fmtBRL(descontoValor)} · {descontoPct.toFixed(2).replace('.', ',')}%</div>
+        </div>
+
+        <div className="rounded-2xl bg-[#E1F5EE] text-[#04342C] p-3">
+          <div className="text-[12px] opacity-80">Valor com desconto</div>
+          <div className="text-[20px] font-bold tabular-nums">{fmtBRL(valorNegociado)}</div>
+          <div className="text-[12px] mt-1">Ganho do cliente: <strong>{fmtBRL(descontoValor)}</strong></div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function Tile({ g, tile, isSelected, onSelect, onRemove }) {
   const st = GROUP_STYLE[g];
   const noRemove = g === 'e' && tile.id === 'ato';
@@ -222,17 +408,34 @@ function EditorModal({ g, tile, onClose, onUpdateField, onUpdatePer }) {
 function FinanciamentoDisplay({ precoTotal, pagamentoFluxo }) {
   const fin = Math.max(0, precoTotal - pagamentoFluxo);
   const finPct = precoTotal > 0 ? ((fin / precoTotal) * 100).toFixed(1).replace('.', ',') : '0,0';
-  return <div className="bg-[#FEF0EB] rounded-2xl p-4 grid grid-cols-1 sm:grid-cols-3 gap-4 items-center"><div className="sm:col-span-2"><div className="text-[13px] font-bold uppercase tracking-wider text-[#7C3B20] mb-1">Financiamento bancário</div><p className="text-[13px] text-[#7C3B20] leading-relaxed">Nossa assessoria pode apoiar a busca pela melhor taxa. O saldo financiado é recalculado automaticamente conforme o cliente ajusta entrada, mensais, reforços e chaves.</p></div><div className="text-left sm:text-right"><div className="text-[24px] font-bold text-[#4A1B0C] tabular-nums">{fmtBRL(fin)}</div><div className="text-[12px] text-[#A0522D]">{finPct}% do valor total</div></div></div>;
+  return <div className="bg-[#FEF0EB] rounded-2xl p-4 grid grid-cols-1 sm:grid-cols-3 gap-4 items-center"><div className="sm:col-span-2"><div className="text-[13px] font-bold uppercase tracking-wider text-[#7C3B20] mb-1">Financiamento bancário</div><p className="text-[13px] text-[#7C3B20] leading-relaxed">Nossa assessoria pode apoiar a busca pela melhor taxa. O saldo financiado é recalculado automaticamente conforme o cliente ajusta entrada, mensais, reforços e chaves.</p></div><div className="text-left sm:text-right"><div className="text-[24px] font-bold text-[#4A1B0C] tabular-nums">{fmtBRL(fin)}</div><div className="text-[12px] text-[#A0522D]">{finPct}% do valor com desconto</div></div></div>;
 }
 
 export default function FluxoBuilder({ empreendimento, unidade = null, precoTotal = 850000, empresaConfig = {}, tabelaProvisoria = false, initialFluxo = null, fluxoOrigem = 'padrao', onSalvar, onVoltar }) {
+  const valorTabela = Math.max(0, toNumber(precoTotal));
   const metaPct = empresaConfig.meta_obra_pct ?? 30;
+  const discountPolicy = useMemo(() => normalizeDiscountPolicy(empresaConfig, empreendimento), [empresaConfig, empreendimento]);
+  const [discountType, setDiscountType] = useState('valor');
+  const [discountInput, setDiscountInput] = useState('');
   const [metaEspecial, setMetaEspecial] = useState(null);
   const [showMetaModal, setShowMetaModal] = useState(false);
   const [showUnica, setShowUnica] = useState(() => Boolean(initialFluxo?.u?.length));
   const [clienteNome, setClienteNome] = useState('');
   const [saving, setSaving] = useState(false);
-  const calc = useMesaCalc({ precoTotal, metaPct, metaEspecial, initialFluxo, resetKey: `${precoTotal}-${fluxoOrigem}` });
+
+  const descontoValor = useMemo(() => {
+    if (valorTabela <= 0) return 0;
+    if (discountType === 'percentual') return Math.round(valorTabela * clampNumber(discountInput, 0, 100) / 100);
+    return Math.round(clampNumber(discountInput, 0, valorTabela));
+  }, [discountInput, discountType, valorTabela]);
+
+  const valorNegociado = Math.max(0, valorTabela - descontoValor);
+  const descontoPct = valorTabela > 0 ? (descontoValor / valorTabela) * 100 : 0;
+  const discountStatus = useMemo(() => classifyDiscount(descontoPct, discountPolicy), [descontoPct, discountPolicy]);
+  const fluxoRatio = valorTabela > 0 ? valorNegociado / valorTabela : 1;
+  const initialFluxoComDesconto = useMemo(() => scaleFluxoValues(initialFluxo, fluxoRatio), [initialFluxo, fluxoRatio]);
+
+  const calc = useMesaCalc({ precoTotal: valorNegociado, metaPct, metaEspecial, initialFluxo: initialFluxoComDesconto, resetKey: `${valorTabela}-${valorNegociado}-${fluxoOrigem}` });
   const { state, selected, totais, barStatus, surplus, deficit, metaAtual, selectTile, closeEditor, updateField, updatePeriodicidade, removeTile, addTile, reset, serializarFluxo } = calc;
   const selectedTile = selected ? state[selected.g]?.find(t => t.id === selected.id) : null;
   const barColor = BAR_COLOR[barStatus];
@@ -240,12 +443,41 @@ export default function FluxoBuilder({ empreendimento, unidade = null, precoTota
   const pctText = totais.pagamentoPct.toFixed(1).replace('.', ',');
   const periodicidadeInfo = getPeriodicidadeInfo(unidade);
   const isEstoqueProntoFluxo = fluxoOrigem === 'parser' && state.e.length > 0 && state.c.length === 0 && state.m.length === 0 && state.a.length === 0 && state.u.length === 0;
-  const handleSalvar = async () => { if (!onSalvar) return; setSaving(true); try { await onSalvar({ clienteNome, valorTotal: precoTotal, metaObraPct: metaAtual, tabelaProvisoria, metaEspecial: metaEspecial !== null, fluxoJson: serializarFluxo(), totais }); } finally { setSaving(false); } };
+  const handleSalvar = async () => {
+    if (!onSalvar || discountStatus.blocked) return;
+    setSaving(true);
+    try {
+      await onSalvar({
+        clienteNome,
+        valorTotal: valorNegociado,
+        valorTabela,
+        valorNegociado,
+        desconto: {
+          tipo: discountType,
+          valor: descontoValor,
+          percentual: Number(descontoPct.toFixed(4)),
+          ganho_cliente: descontoValor,
+          status: discountStatus.status,
+          requer_aprovacao: discountStatus.requiresApproval,
+          bloqueado: discountStatus.blocked,
+          politica_configurada: Boolean(discountPolicy.configured),
+        },
+        metaObraPct: metaAtual,
+        tabelaProvisoria,
+        metaEspecial: metaEspecial !== null,
+        fluxoJson: serializarFluxo(),
+        totais,
+      });
+    } finally {
+      setSaving(false);
+    }
+  };
 
   return (
     <div className="flex flex-col gap-3 w-full max-w-[980px] mx-auto">
-      {empreendimento && <div className="flex flex-wrap justify-between items-center gap-3 px-4 py-3 bg-[var(--color-background-secondary)] rounded-2xl"><div><span className="text-[16px] font-bold">{empreendimento.nome}</span><span className="text-[12px] text-[var(--color-text-tertiary)] ml-2">{tabelaProvisoria ? 'tabela de trabalho' : 'tabela oficial'}{fluxoOrigem === 'parser' ? ' · valores sugeridos da tabela' : ' · fluxo inicial sugerido'}</span></div><div className="flex items-center gap-2"><span className="text-[18px] font-bold tabular-nums">{fmtBRL(precoTotal)}</span>{onVoltar && <button onClick={onVoltar} className="text-[13px] px-3 py-2 rounded-xl bg-[var(--color-background-primary)] text-[var(--color-text-secondary)]">← Trocar unidade</button>}</div></div>}
+      {empreendimento && <div className="flex flex-wrap justify-between items-center gap-3 px-4 py-3 bg-[var(--color-background-secondary)] rounded-2xl"><div><span className="text-[16px] font-bold">{empreendimento.nome}</span><span className="text-[12px] text-[var(--color-text-tertiary)] ml-2">{tabelaProvisoria ? 'tabela de trabalho' : 'tabela oficial'}{fluxoOrigem === 'parser' ? ' · valores sugeridos da tabela' : ' · fluxo inicial sugerido'}</span></div><div className="flex items-center gap-2"><div className="text-right"><div className="text-[11px] text-[var(--color-text-tertiary)]">valor de tabela</div><span className="text-[18px] font-bold tabular-nums">{fmtBRL(valorTabela)}</span></div>{onVoltar && <button onClick={onVoltar} className="text-[13px] px-3 py-2 rounded-xl bg-[var(--color-background-primary)] text-[var(--color-text-secondary)]">← Trocar unidade</button>}</div></div>}
       <div className="rounded-2xl bg-[#E1F5EE] text-[#04342C] p-4"><h2 className="text-[22px] font-bold leading-tight">Agora vamos montar o fluxo de pagamento</h2><p className="text-[14px] leading-relaxed mt-2">O fluxo atual é uma sugestão da tabela. Brinque com entrada, parcelas, reforços e chaves até encontrar uma condição confortável para o cliente — sem perder a referência técnica da negociação.</p><p className="text-[13px] leading-relaxed mt-2 opacity-90">Depois da compra, o cliente acompanha a obra pelo portal. E, quando fizer sentido, podemos ajudar a amortizar saldo ou organizar o financiamento com assessoria.</p></div>
+      <DiscountPanel valorTabela={valorTabela} discountType={discountType} setDiscountType={setDiscountType} discountInput={discountInput} setDiscountInput={setDiscountInput} descontoValor={descontoValor} descontoPct={descontoPct} valorNegociado={valorNegociado} discountStatus={discountStatus} />
       {isEstoqueProntoFluxo && <div className="rounded-2xl bg-[#E6F1FB] text-[#042C53] px-4 py-3 text-[14px] leading-relaxed"><strong>🏦 Fluxo de estoque pronto:</strong> esta unidade não possui parcelas de obra na tabela importada. A condição principal é entrada/ato + financiamento bancário. Cards de mensais, reforços e chaves zerados foram ocultados para não confundir a mesa.</div>}
       {periodicidadeInfo && <div className="rounded-2xl bg-[#FEF9EA] text-[#78350F] border border-[#FDE68A] px-4 py-3 text-[14px] leading-relaxed"><strong>⚠️ Parcela final / periodicidade simbólica:</strong> {fmtBRL(periodicidadeInfo.valor)}{periodicidadeInfo.data ? ` em ${periodicidadeInfo.data}` : ''}. Condição informativa da tabela; não foi tratada como parcela principal de negociação.</div>}
       <div className="flex items-center gap-2 px-4 py-3 bg-[var(--color-background-secondary)] rounded-2xl"><span className="text-[14px] text-[var(--color-text-secondary)] min-w-[90px]">Cliente</span><input type="text" placeholder="Nome do cliente (opcional)" value={clienteNome} onChange={e => setClienteNome(e.target.value)} className="flex-1 text-[15px] bg-transparent border-none outline-none" /></div>
@@ -258,9 +490,9 @@ export default function FluxoBuilder({ empreendimento, unidade = null, precoTota
         <GrupoTiles g="a" tiles={state.a} selected={selected} onSelect={selectTile} onRemove={removeTile} onAdd={addTile} addLabel="reforço" showAdd={state.a.length === 0} />
         {showUnica && <GrupoTiles g="u" tiles={state.u} selected={selected} onSelect={selectTile} onRemove={removeTile} onAdd={addTile} addLabel="chaves" showAdd={true} />}
       </>}
-      <FinanciamentoDisplay precoTotal={precoTotal} pagamentoFluxo={totais.pagamentoFluxo} />
-      <div className="flex flex-col gap-2">{barStatus !== 'ok' && <div className="bg-[var(--color-background-danger)] text-[var(--color-text-danger)] rounded-2xl px-4 py-3 text-[14px]">Distribua {fmtBRL(deficit)} para atingir {metaAtual}% antes do financiamento.</div>}{barStatus === 'ok' && <div className="bg-[var(--color-background-success)] text-[var(--color-text-success)] rounded-2xl px-4 py-3 text-[14px]">✓ Condição validada. Financiamento estimado: {fmtBRL(totais.fin)} ({totais.finPct.toFixed(1).replace('.', ',')}% do total).</div>}{tabelaProvisoria && <div className="bg-[var(--color-background-warning)] text-[var(--color-text-warning)] rounded-2xl px-4 py-3 text-[14px]">⚠ Tabela de trabalho — aguardando tabela oficial do mês.</div>}</div>
-      <div className="flex flex-wrap gap-2"><button onClick={reset} className="flex-1 min-w-[160px] text-[14px] py-3 rounded-2xl bg-[var(--color-background-secondary)] text-[var(--color-text-secondary)]">↺ Voltar sugestão</button><button onClick={() => setShowUnica(v => !v)} className="flex-1 min-w-[160px] text-[14px] py-3 rounded-2xl bg-[var(--color-background-secondary)] text-[var(--color-text-secondary)]">{showUnica ? '− Remover chaves' : '+ Adicionar chaves'}</button><button onClick={handleSalvar} disabled={saving} className={`flex-[1.4] min-w-[190px] text-[15px] py-3 rounded-2xl font-bold ${saving ? 'opacity-60' : ''} bg-[#0F6E56] text-white`}>{saving ? 'Salvando…' : 'Salvar mesa do cliente'}</button></div>
+      <FinanciamentoDisplay precoTotal={valorNegociado} pagamentoFluxo={totais.pagamentoFluxo} />
+      <div className="flex flex-col gap-2">{barStatus !== 'ok' && <div className="bg-[var(--color-background-danger)] text-[var(--color-text-danger)] rounded-2xl px-4 py-3 text-[14px]">Distribua {fmtBRL(deficit)} para atingir {metaAtual}% antes do financiamento.</div>}{barStatus === 'ok' && <div className="bg-[var(--color-background-success)] text-[var(--color-text-success)] rounded-2xl px-4 py-3 text-[14px]">✓ Condição validada. Financiamento estimado: {fmtBRL(totais.fin)} ({totais.finPct.toFixed(1).replace('.', ',')}% do valor com desconto).</div>}{discountStatus.requiresApproval && !discountStatus.blocked && <div className="bg-[var(--color-background-warning)] text-[var(--color-text-warning)] rounded-2xl px-4 py-3 text-[14px]">⚠ Condição marcada para aprovação. Nesta etapa o envio é registrado como simulação/fake; a validação oficial deve ser feita pela política do gestor/admin.</div>}{discountStatus.blocked && <div className="bg-[var(--color-background-danger)] text-[var(--color-text-danger)] rounded-2xl px-4 py-3 text-[14px]">⛔ Desconto inválido pela política configurada. Reduza o desconto para continuar.</div>}{tabelaProvisoria && <div className="bg-[var(--color-background-warning)] text-[var(--color-text-warning)] rounded-2xl px-4 py-3 text-[14px]">⚠ Tabela de trabalho — aguardando tabela oficial do mês.</div>}</div>
+      <div className="flex flex-wrap gap-2"><button onClick={reset} className="flex-1 min-w-[160px] text-[14px] py-3 rounded-2xl bg-[var(--color-background-secondary)] text-[var(--color-text-secondary)]">↺ Voltar sugestão</button><button onClick={() => setShowUnica(v => !v)} className="flex-1 min-w-[160px] text-[14px] py-3 rounded-2xl bg-[var(--color-background-secondary)] text-[var(--color-text-secondary)]">{showUnica ? '− Remover chaves' : '+ Adicionar chaves'}</button><button onClick={handleSalvar} disabled={saving || discountStatus.blocked} className={`flex-[1.4] min-w-[190px] text-[15px] py-3 rounded-2xl font-bold ${saving || discountStatus.blocked ? 'opacity-60 cursor-not-allowed' : ''} bg-[#0F6E56] text-white`}>{saving ? 'Salvando…' : discountStatus.requiresApproval ? 'Submeter aprovação' : 'Salvar mesa do cliente'}</button></div>
       {selectedTile && <EditorModal g={selected.g} tile={selectedTile} onClose={closeEditor} onUpdateField={updateField} onUpdatePer={updatePeriodicidade} />}
     </div>
   );
