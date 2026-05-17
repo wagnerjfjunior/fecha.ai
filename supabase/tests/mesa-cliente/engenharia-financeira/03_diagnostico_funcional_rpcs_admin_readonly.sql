@@ -22,6 +22,10 @@
 --   injeta o auth.uid() na sessão via request.jwt.claim.sub e muda LOCALMENTE
 --   o role para authenticated.
 --
+-- Correção de compatibilidade:
+--   Evita max(uuid), min(uuid) e max(jsonb), pois algumas versões/instalações
+--   não possuem agregados nativos para esses tipos.
+--
 -- Resultado esperado:
 --   - 01_admin_candidate: PASS
 --   - 02_auth_context_rpc: PASS
@@ -70,10 +74,10 @@ with ctx as materialized (
 ), candidate_status as (
   select
     count(*) as qtd_ctx,
-    max(user_id) as user_id,
-    max(corretor_id) as corretor_id,
-    max(empresa_id) as empresa_id,
-    max(role) as role,
+    (array_agg(user_id))[1] as user_id,
+    (array_agg(corretor_id))[1] as corretor_id,
+    (array_agg(empresa_id))[1] as empresa_id,
+    (array_agg(role))[1] as role,
     bool_or(coalesce(is_admin_local, false)) as is_admin_local,
     bool_or(coalesce(is_gestor, false)) as is_gestor,
     bool_or(coalesce(ativo, false)) as ativo
@@ -103,8 +107,8 @@ with ctx as materialized (
 ), listar_status as (
   select
     count(*) as qtd_politicas_retornadas,
-    min(id) as primeira_politica_id,
-    min(empresa_id) as primeira_empresa_id,
+    (array_agg(id order by mes_referencia desc, vigencia_inicio desc, created_at desc))[1] as primeira_politica_id,
+    (array_agg(empresa_id order by mes_referencia desc, vigencia_inicio desc, created_at desc))[1] as primeira_empresa_id,
     jsonb_agg(
       jsonb_build_object(
         'id', id,
@@ -133,7 +137,7 @@ with ctx as materialized (
 ), obter_status as (
   select
     count(*) as qtd_payloads,
-    max(payload) as payload
+    (array_agg(payload))[1] as payload
   from obter_primeira
 )
 select
@@ -201,6 +205,8 @@ select
   jsonb_build_object(
     'mensagem', 'Valida chamada da RPC mesa_cliente_listar_politicas_financeiras(). Zero políticas não é erro; significa apenas que não há política cadastrada ainda.',
     'qtd_politicas_retornadas', coalesce(ls.qtd_politicas_retornadas, 0),
+    'primeira_politica_id', ls.primeira_politica_id,
+    'primeira_empresa_id', ls.primeira_empresa_id,
     'sample_politicas', coalesce(ls.sample_politicas, '[]'::jsonb)
   ) as detalhe
 from admin_permission ap
