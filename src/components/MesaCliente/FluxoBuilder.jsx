@@ -18,6 +18,144 @@ const GROUP_STYLE = {
 
 const BAR_COLOR = { ok: '#1D9E75', yellow: '#EF9F27', red: '#E24B4A' };
 
+function toNumber(value) {
+  if (value === null || value === undefined || value === '') return 0;
+  let s = String(value).trim();
+  if (!s) return 0;
+  const hasComma = s.includes(',');
+  const hasDot = s.includes('.');
+  if (hasComma && hasDot) {
+    s = s.lastIndexOf(',') > s.lastIndexOf('.') ? s.replace(/\./g, '').replace(',', '.') : s.replace(/,/g, '');
+  } else if (hasComma) {
+    s = s.replace(/\./g, '').replace(',', '.');
+  }
+  s = s.replace(/[^0-9.-]/g, '');
+  const n = Number.parseFloat(s);
+  return Number.isFinite(n) ? n : 0;
+}
+
+function safeObj(value) {
+  return value && typeof value === 'object' && !Array.isArray(value) ? value : {};
+}
+
+function parseObsKV(observacoes = '') {
+  const out = {};
+  const text = typeof observacoes === 'string' ? observacoes : String(observacoes ?? '');
+  text.split('|').forEach((part) => {
+    const [k, ...rest] = String(part || '').split('=');
+    const key = String(k || '').trim();
+    if (key) out[key] = rest.join('=').trim();
+  });
+  return out;
+}
+
+function parsePayloadFromObservacoes(observacoes = '') {
+  const text = typeof observacoes === 'string' ? observacoes : String(observacoes ?? '');
+  const marker = 'Payload:';
+  const idx = text.indexOf(marker);
+  if (idx < 0) return null;
+
+  const payloadText = text.slice(idx + marker.length).trim();
+  const start = payloadText.indexOf('{');
+  if (start < 0) return null;
+
+  let depth = 0;
+  let inString = false;
+  let escaped = false;
+  let end = -1;
+
+  for (let i = start; i < payloadText.length; i += 1) {
+    const ch = payloadText[i];
+
+    if (escaped) {
+      escaped = false;
+      continue;
+    }
+
+    if (ch === '\\') {
+      escaped = true;
+      continue;
+    }
+
+    if (ch === '"') {
+      inString = !inString;
+      continue;
+    }
+
+    if (inString) continue;
+
+    if (ch === '{') depth += 1;
+
+    if (ch === '}') {
+      depth -= 1;
+      if (depth === 0) {
+        end = i + 1;
+        break;
+      }
+    }
+  }
+
+  if (end < 0) return null;
+
+  try {
+    return safeObj(JSON.parse(payloadText.slice(start, end)));
+  } catch {
+    return null;
+  }
+}
+
+function getPayloadRaw(unidadeInput = {}) {
+  const unidade = safeObj(unidadeInput);
+  const payload = safeObj(parsePayloadFromObservacoes(unidade.observacoes));
+  return {
+    payload,
+    raw: safeObj(payload.raw || payload),
+    meta: parseObsKV(payload.observacoes || unidade.observacoes || ''),
+  };
+}
+
+function formatDateBR(value) {
+  const text = String(value || '').trim();
+  if (!text) return '';
+  const iso = text.match(/^(\d{4})-(\d{2})-(\d{2})/);
+  if (iso) return `${iso[3]}/${iso[2]}/${iso[1]}`;
+  return text;
+}
+
+function getPeriodicidadeInfo(unidadeInput = {}) {
+  const { payload, raw, meta } = getPayloadRaw(unidadeInput);
+  const valor = toNumber(
+    raw.periodicidade_valor ??
+    payload.periodicidade_valor ??
+    raw.parcela_final_valor ??
+    payload.parcela_final_valor ??
+    raw.final_valor ??
+    payload.final_valor ??
+    meta.periodicidade_valor ??
+    meta.parcela_final_valor ??
+    meta.final_valor
+  );
+
+  const data =
+    raw.periodicidade_data ??
+    payload.periodicidade_data ??
+    raw.parcela_final_data ??
+    payload.parcela_final_data ??
+    raw.final_data ??
+    payload.final_data ??
+    meta.periodicidade_data ??
+    meta.parcela_final_data ??
+    meta.final_data ??
+    '';
+
+  if (valor <= 0) return null;
+
+  return {
+    valor,
+    data: formatDateBR(data),
+  };
+}
+
 function Tile({ g, tile, isSelected, onSelect, onRemove }) {
   const st = GROUP_STYLE[g];
   const noRemove = g === 'e' && tile.id === 'ato';
@@ -87,7 +225,7 @@ function FinanciamentoDisplay({ precoTotal, pagamentoFluxo }) {
   return <div className="bg-[#FEF0EB] rounded-2xl p-4 grid grid-cols-1 sm:grid-cols-3 gap-4 items-center"><div className="sm:col-span-2"><div className="text-[13px] font-bold uppercase tracking-wider text-[#7C3B20] mb-1">Financiamento bancário</div><p className="text-[13px] text-[#7C3B20] leading-relaxed">Nossa assessoria pode apoiar a busca pela melhor taxa. O saldo financiado é recalculado automaticamente conforme o cliente ajusta entrada, mensais, reforços e chaves.</p></div><div className="text-left sm:text-right"><div className="text-[24px] font-bold text-[#4A1B0C] tabular-nums">{fmtBRL(fin)}</div><div className="text-[12px] text-[#A0522D]">{finPct}% do valor total</div></div></div>;
 }
 
-export default function FluxoBuilder({ empreendimento, precoTotal = 850000, empresaConfig = {}, tabelaProvisoria = false, initialFluxo = null, fluxoOrigem = 'padrao', onSalvar, onVoltar }) {
+export default function FluxoBuilder({ empreendimento, unidade = null, precoTotal = 850000, empresaConfig = {}, tabelaProvisoria = false, initialFluxo = null, fluxoOrigem = 'padrao', onSalvar, onVoltar }) {
   const metaPct = empresaConfig.meta_obra_pct ?? 30;
   const [metaEspecial, setMetaEspecial] = useState(null);
   const [showMetaModal, setShowMetaModal] = useState(false);
@@ -100,20 +238,26 @@ export default function FluxoBuilder({ empreendimento, precoTotal = 850000, empr
   const barColor = BAR_COLOR[barStatus];
   const barWidth = Math.min(100, (totais.pagamentoPct / Math.max(metaAtual, 1)) * Math.min(metaAtual, 100));
   const pctText = totais.pagamentoPct.toFixed(1).replace('.', ',');
+  const periodicidadeInfo = getPeriodicidadeInfo(unidade);
+  const isEstoqueProntoFluxo = fluxoOrigem === 'parser' && state.e.length > 0 && state.c.length === 0 && state.m.length === 0 && state.a.length === 0 && state.u.length === 0;
   const handleSalvar = async () => { if (!onSalvar) return; setSaving(true); try { await onSalvar({ clienteNome, valorTotal: precoTotal, metaObraPct: metaAtual, tabelaProvisoria, metaEspecial: metaEspecial !== null, fluxoJson: serializarFluxo(), totais }); } finally { setSaving(false); } };
 
   return (
     <div className="flex flex-col gap-3 w-full max-w-[980px] mx-auto">
       {empreendimento && <div className="flex flex-wrap justify-between items-center gap-3 px-4 py-3 bg-[var(--color-background-secondary)] rounded-2xl"><div><span className="text-[16px] font-bold">{empreendimento.nome}</span><span className="text-[12px] text-[var(--color-text-tertiary)] ml-2">{tabelaProvisoria ? 'tabela de trabalho' : 'tabela oficial'}{fluxoOrigem === 'parser' ? ' · valores sugeridos da tabela' : ' · fluxo inicial sugerido'}</span></div><div className="flex items-center gap-2"><span className="text-[18px] font-bold tabular-nums">{fmtBRL(precoTotal)}</span>{onVoltar && <button onClick={onVoltar} className="text-[13px] px-3 py-2 rounded-xl bg-[var(--color-background-primary)] text-[var(--color-text-secondary)]">← Trocar unidade</button>}</div></div>}
       <div className="rounded-2xl bg-[#E1F5EE] text-[#04342C] p-4"><h2 className="text-[22px] font-bold leading-tight">Agora vamos montar o fluxo de pagamento</h2><p className="text-[14px] leading-relaxed mt-2">O fluxo atual é uma sugestão da tabela. Brinque com entrada, parcelas, reforços e chaves até encontrar uma condição confortável para o cliente — sem perder a referência técnica da negociação.</p><p className="text-[13px] leading-relaxed mt-2 opacity-90">Depois da compra, o cliente acompanha a obra pelo portal. E, quando fizer sentido, podemos ajudar a amortizar saldo ou organizar o financiamento com assessoria.</p></div>
+      {isEstoqueProntoFluxo && <div className="rounded-2xl bg-[#E6F1FB] text-[#042C53] px-4 py-3 text-[14px] leading-relaxed"><strong>🏦 Fluxo de estoque pronto:</strong> esta unidade não possui parcelas de obra na tabela importada. A condição principal é entrada/ato + financiamento bancário. Cards de mensais, reforços e chaves zerados foram ocultados para não confundir a mesa.</div>}
+      {periodicidadeInfo && <div className="rounded-2xl bg-[#FEF9EA] text-[#78350F] border border-[#FDE68A] px-4 py-3 text-[14px] leading-relaxed"><strong>⚠️ Parcela final / periodicidade simbólica:</strong> {fmtBRL(periodicidadeInfo.valor)}{periodicidadeInfo.data ? ` em ${periodicidadeInfo.data}` : ''}. Condição informativa da tabela; não foi tratada como parcela principal de negociação.</div>}
       <div className="flex items-center gap-2 px-4 py-3 bg-[var(--color-background-secondary)] rounded-2xl"><span className="text-[14px] text-[var(--color-text-secondary)] min-w-[90px]">Cliente</span><input type="text" placeholder="Nome do cliente (opcional)" value={clienteNome} onChange={e => setClienteNome(e.target.value)} className="flex-1 text-[15px] bg-transparent border-none outline-none" /></div>
       <div className="bg-[var(--color-background-primary)] border border-[var(--color-border-tertiary)] rounded-2xl p-4"><div className="flex flex-wrap justify-between items-start gap-4 mb-3"><div><div className="text-[13px] text-[var(--color-text-secondary)]">Pago antes do financiamento</div><div className="text-[34px] font-bold tabular-nums leading-tight">{pctText}%</div><div className="text-[13px] font-semibold" style={{ color: barColor }}>{barStatus === 'ok' ? `✓ Meta atingida (${metaAtual}%)` : `Meta: ${metaAtual}% · faltam ${(metaAtual - totais.pagamentoPct).toFixed(1).replace('.', ',')} pontos`}</div></div><div className="text-left sm:text-right"><div className="text-[13px] text-[var(--color-text-secondary)]">Status da condição</div><div className="text-[18px] font-bold leading-tight" style={{ color: barColor }}>{barStatus === 'ok' ? (surplus > 200 ? 'Acima da meta' : 'Exato') : 'Ajustar fluxo'}</div><button onClick={() => setShowMetaModal(true)} className="mt-2 text-[13px] px-3 py-2 rounded-xl bg-[var(--color-background-secondary)] text-[var(--color-text-secondary)]">Alterar % da obra</button></div></div><div className="relative h-4 bg-[var(--color-background-secondary)] rounded-full"><div className="h-full rounded-full transition-all duration-200" style={{ width: `${barWidth}%`, background: barColor }} /><div className="absolute top-[-3px] w-[2px] h-[22px] bg-[var(--color-text-primary)] rounded-sm" style={{ left: `${Math.min(98, metaAtual)}%` }} /></div><div className="text-[12px] text-[var(--color-text-tertiary)] flex flex-wrap justify-between gap-2 mt-2"><span>meta {metaAtual}% · financiamento máximo {100 - metaAtual}%</span><span>{barStatus === 'ok' ? `valor antes do financiamento: ${fmtBRL(totais.pagamentoFluxo)}` : `falta distribuir: ${fmtBRL(deficit)}`}</span></div>{metaEspecial !== null && <div className="mt-3 text-[13px] bg-[var(--color-background-info)] text-[var(--color-text-info)] rounded-xl px-3 py-2">🔑 Meta especial ativa ({metaEspecial}%) — proposta exige aprovação do gestor.</div>}</div>
       {showMetaModal && <div className="bg-white text-slate-900 border border-slate-200 shadow-lg rounded-2xl p-4"><p className="text-[15px] font-bold mb-2">Percentual de pagamento antes do financiamento</p><p className="text-[13px] text-slate-600 mb-3">Padrão atual: {metaPct}%. Use apenas quando a negociação exigir condição especial.</p><div className="flex items-center gap-2 flex-wrap"><span className="text-[14px] text-slate-600">%</span><input type="number" min="5" max="100" step="1" defaultValue={metaEspecial ?? metaPct} id="meta-esp-input" className="w-24 p-3 text-[16px] rounded-xl border border-slate-300 bg-white" /></div><div className="flex gap-2 mt-3 justify-end flex-wrap"><button onClick={() => setShowMetaModal(false)} className="text-[13px] px-4 py-2 rounded-xl bg-slate-100 text-slate-700">Cancelar</button>{metaEspecial !== null && <button onClick={() => { setMetaEspecial(null); setShowMetaModal(false); }} className="text-[13px] px-4 py-2 rounded-xl bg-slate-100 text-slate-700">Remover especial</button>}<button onClick={() => { const v = parseInt(document.getElementById('meta-esp-input').value); if (v >= 1 && v <= 100) { setMetaEspecial(v); setShowMetaModal(false); } }} className="text-[13px] px-4 py-2 rounded-xl bg-[#0F6E56] text-white font-bold">Aplicar percentual</button></div></div>}
       <GrupoTiles g="e" tiles={state.e} selected={selected} onSelect={selectTile} onRemove={removeTile} onAdd={addTile} addLabel="" showAdd={false} />
-      <GrupoTiles g="c" tiles={state.c} selected={selected} onSelect={selectTile} onRemove={removeTile} onAdd={addTile} addLabel="compl." showAdd={true} />
-      <GrupoTiles g="m" tiles={state.m} selected={selected} onSelect={selectTile} onRemove={removeTile} onAdd={addTile} addLabel="mensal" showAdd={state.m.length === 0} />
-      <GrupoTiles g="a" tiles={state.a} selected={selected} onSelect={selectTile} onRemove={removeTile} onAdd={addTile} addLabel="reforço" showAdd={state.a.length === 0} />
-      {showUnica && <GrupoTiles g="u" tiles={state.u} selected={selected} onSelect={selectTile} onRemove={removeTile} onAdd={addTile} addLabel="chaves" showAdd={true} />}
+      {!isEstoqueProntoFluxo && <>
+        <GrupoTiles g="c" tiles={state.c} selected={selected} onSelect={selectTile} onRemove={removeTile} onAdd={addTile} addLabel="compl." showAdd={true} />
+        <GrupoTiles g="m" tiles={state.m} selected={selected} onSelect={selectTile} onRemove={removeTile} onAdd={addTile} addLabel="mensal" showAdd={state.m.length === 0} />
+        <GrupoTiles g="a" tiles={state.a} selected={selected} onSelect={selectTile} onRemove={removeTile} onAdd={addTile} addLabel="reforço" showAdd={state.a.length === 0} />
+        {showUnica && <GrupoTiles g="u" tiles={state.u} selected={selected} onSelect={selectTile} onRemove={removeTile} onAdd={addTile} addLabel="chaves" showAdd={true} />}
+      </>}
       <FinanciamentoDisplay precoTotal={precoTotal} pagamentoFluxo={totais.pagamentoFluxo} />
       <div className="flex flex-col gap-2">{barStatus !== 'ok' && <div className="bg-[var(--color-background-danger)] text-[var(--color-text-danger)] rounded-2xl px-4 py-3 text-[14px]">Distribua {fmtBRL(deficit)} para atingir {metaAtual}% antes do financiamento.</div>}{barStatus === 'ok' && <div className="bg-[var(--color-background-success)] text-[var(--color-text-success)] rounded-2xl px-4 py-3 text-[14px]">✓ Condição validada. Financiamento estimado: {fmtBRL(totais.fin)} ({totais.finPct.toFixed(1).replace('.', ',')}% do total).</div>}{tabelaProvisoria && <div className="bg-[var(--color-background-warning)] text-[var(--color-text-warning)] rounded-2xl px-4 py-3 text-[14px]">⚠ Tabela de trabalho — aguardando tabela oficial do mês.</div>}</div>
       <div className="flex flex-wrap gap-2"><button onClick={reset} className="flex-1 min-w-[160px] text-[14px] py-3 rounded-2xl bg-[var(--color-background-secondary)] text-[var(--color-text-secondary)]">↺ Voltar sugestão</button><button onClick={() => setShowUnica(v => !v)} className="flex-1 min-w-[160px] text-[14px] py-3 rounded-2xl bg-[var(--color-background-secondary)] text-[var(--color-text-secondary)]">{showUnica ? '− Remover chaves' : '+ Adicionar chaves'}</button><button onClick={handleSalvar} disabled={saving} className={`flex-[1.4] min-w-[190px] text-[15px] py-3 rounded-2xl font-bold ${saving ? 'opacity-60' : ''} bg-[#0F6E56] text-white`}>{saving ? 'Salvando…' : 'Salvar mesa do cliente'}</button></div>
