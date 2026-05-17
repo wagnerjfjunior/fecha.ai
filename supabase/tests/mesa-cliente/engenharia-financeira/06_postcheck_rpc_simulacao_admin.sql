@@ -8,6 +8,13 @@
 -- Observação:
 --   Este postcheck não cria política nem dados.
 --   Para validação funcional completa, use o script 06B com transação e rollback.
+--
+-- Segurança esperada:
+--   - SECURITY DEFINER
+--   - VOLATILE
+--   - authenticated tem EXECUTE
+--   - anon NÃO tem EXECUTE
+--   - PUBLIC NÃO tem EXECUTE
 
 with function_check as (
   select
@@ -58,9 +65,10 @@ from security_check
 union all
 
 select
-  '03_execute_grants' as bloco,
+  '03_execute_grants_strict' as bloco,
   case
     when count(*) filter (where grantee = 'authenticated') >= 1
+     and count(*) filter (where grantee = 'anon') = 0
      and count(*) filter (where grantee = 'PUBLIC') = 0
     then 'PASS' else 'FAIL'
   end as status,
