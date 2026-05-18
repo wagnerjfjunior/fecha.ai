@@ -193,7 +193,7 @@ Objetivo:
 
 Status: aprovado.
 
-#### `08d_validacao_bloqueio_operacao_confirmada_rollback.sql`
+#### `08d_validacao_persistencia_agenda_financeira_operacao_confirmada_rollback.sql`
 
 Objetivo:
 
