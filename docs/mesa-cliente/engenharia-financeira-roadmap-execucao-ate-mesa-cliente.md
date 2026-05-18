@@ -3,7 +3,7 @@
 **Status:** Oficial, atualizado para o contrato JSON-first da Fase 4A  
 **Branch oficial de trabalho:** `feature/mesa-cliente-engenharia-financeira`  
 **Atualizado em:** 2026-05-18  
-**Protocolo obrigatório:** `docs/protocolos/protocolo-mestre-fechai-mesacliente-v1.1.md`  
+**Protocolo obrigatório:** `docs/protocolos/protocolo-mestre-fechai-mesacliente-v1.2.md`  
 **ADR vigente:** `docs/mesa-cliente/adr/ADR-0001-fase-4a-json-first-sem-persistencia.md`  
 **Contrato canônico da Fase 4A:** `docs/mesa-cliente/fase-4a-agenda-financeira-json-first-canonica.md`  
 
@@ -67,7 +67,7 @@ Qualquer referência antiga a persistência, recriação, `INSERT`, `UPDATE` ou 
 | Backup local antes da engenharia financeira | Concluído |
 | Branch de trabalho isolada | Concluído |
 | Documentação de arquitetura | Concluído |
-| Protocolo Mestre FECH.AI / MesaCliente v1.1 | Concluído |
+| Protocolo Mestre FECH.AI / MesaCliente v1.2 | Concluído |
 | Protocolo Universal de Funcionamento v1.1 | Concluído |
 | ADR-0001 — Fase 4A JSON-first sem persistência | Concluído |
 | Contrato canônico da Fase 4A JSON-first | Concluído |
