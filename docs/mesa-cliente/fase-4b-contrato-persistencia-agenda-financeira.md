@@ -1,149 +1,66 @@
-# MesaCliente — Fase 4B — Contrato Pós-Preflight de Persistência da Agenda Financeira
+# MesaCliente — Fase 4B — Contrato final da Persistência da Agenda Financeira
 
 ## Status
 
-**Contrato técnico pós-preflight da Fase 4B consolidado.**
+**Fase 4B aprovada em rollback transacional.**
 
-Este documento substitui a leitura inicial da Fase 4B e passa a ser o contrato operacional para a criação da migration candidata de persistência da agenda financeira.
+Este documento foi atualizado após a validação final da Fase 4B para refletir a assinatura e o comportamento efetivamente aprovados.
 
-A Fase 4B está autorizada, a partir deste documento, para a criação de:
+A Fase 4B já teve seus testes 08A, 08B, 08C e 08D aprovados com `BEGIN + ROLLBACK`, conforme evidência final em:
 
-```txt
-supabase/migrations/<timestamp>_mesa_cliente_fase_4b_persistencia_agenda_financeira.sql
-supabase/tests/mesa-cliente/engenharia-financeira/08a_validacao_persistencia_agenda_financeira_rollback.sql
-supabase/tests/mesa-cliente/engenharia-financeira/08b_validacao_persistencia_agenda_financeira_idempotencia_rollback.sql
-supabase/tests/mesa-cliente/engenharia-financeira/08c_validacao_persistencia_agenda_financeira_negativos_rollback.sql
-supabase/tests/mesa-cliente/engenharia-financeira/08d_validacao_bloqueio_operacao_confirmada_rollback.sql
+```text
+docs/mesa-cliente/fase-4b-validacao-final-evidencias.md
 ```
 
-A criação da migration candidata **não significa aplicação cega em produção**. Antes da aplicação definitiva, os testes devem ser executados com `BEGIN + ROLLBACK` e o resultado deve ser documentado.
+Este documento permanece como contrato técnico da 4B, mas a evidência final prevalece se houver divergência histórica.
+
+---
 
 ## Fontes normativas
 
-Este documento segue a hierarquia abaixo:
+Hierarquia aplicável:
 
 1. `docs/protocolos/protocolo-mestre-fechai-mesacliente-v1.2.md`
 2. `docs/mesa-cliente/adr/ADR-0001-fase-4a-json-first-sem-persistencia.md`
 3. `docs/mesa-cliente/fase-4a-validacao-unica-e-transicao-json-first.md`
 4. `docs/mesa-cliente/fase-4a-agenda-financeira-json-first-canonica.md`
 5. `docs/mesa-cliente/fase-4a-validacao-final-json-first.md`
-6. `supabase/tests/mesa-cliente/engenharia-financeira/08_preflight_persistencia_agenda_readonly.sql`
+6. `docs/mesa-cliente/fase-4b-validacao-final-evidencias.md`
 7. Este documento.
 
-Frase de controle obrigatória:
+Frase de controle:
 
-> Primeiro contrato. Depois validação. Depois dry-run. Depois persistência.
+> **4A pensa. 4B grava. 4C mostra para o cliente.**
 
-Resumo operacional:
-
-> 4A pensa. 4B grava. 4C mostra para o cliente.
+---
 
 ## Decisão de passagem da 4A para 4B
 
-A Fase 4A foi validada tecnicamente e documentada em:
-
-```txt
-docs/mesa-cliente/fase-4a-validacao-final-json-first.md
-```
-
-A Fase 4A comprovou:
-
-- geração de agenda financeira em JSON;
-- retorno administrativo;
-- `cliente_safe=false`;
-- `persistencia=false`;
-- `dml_financeiro=false`;
-- bloqueio de `anon`;
-- validação de simulação, empresa/tenant, empreendimento e perfil;
-- bloqueio de `empresa_id` soberano vindo do payload;
-- rejeição de dados inválidos;
-- periodicidade simbólica não negociável;
-- zero DML em `mesa_cliente_fluxo_parcelas`;
-- zero DML em `mesa_cliente_fluxo_operacoes`.
+A Fase 4A foi validada como JSON-first, sem persistência, sem DML financeiro e sem cliente-safe.
 
 A Fase 4B só existe porque a agenda foi validada em modo JSON-first antes de qualquer persistência.
 
-## Evidência do preflight da 4B
-
-O preflight read-only da Fase 4B foi criado em:
-
-```txt
-supabase/tests/mesa-cliente/engenharia-financeira/08_preflight_persistencia_agenda_readonly.sql
-```
-
-Ele foi executado até o bloco final:
-
-```json
-[
-  {
-    "section": "99_end",
-    "instruction": "Preflight read-only 4B concluído. Envie todos os resultsets antes de criar qualquer migration de persistência."
-  }
-]
-```
-
-Depois, foi executado um bloco consolidado para permitir leitura única dos pontos mais relevantes.
-
-### Achados principais
-
-O preflight confirmou:
-
-- `mesa_cliente_fluxo_parcelas` existe;
-- `mesa_cliente_fluxo_operacoes` existe;
-- `mesa_simulacoes` existe;
-- as tabelas financeiras estavam vazias no momento da leitura;
-- `mesa_cliente_fluxo_parcelas = 0`;
-- `mesa_cliente_fluxo_operacoes = 0`;
-- `mesa_simulacoes = 0`;
-- `authenticated` não possui grant direto amplo de escrita nas tabelas financeiras;
-- `anon` não aparece com grant direto perigoso;
-- policies diretas de escrita estão bloqueadas por desenho;
-- `mesa_cliente_fluxo_parcelas` não possui colunas próprias suficientes para versionamento/idempotência/auditoria robustos;
-- `mesa_cliente_fluxo_operacoes` usa coluna real `status_operacao`, não `status`;
-- estados relevantes de operação devem considerar `status_operacao`, com valores como `simulada`, `confirmada`, `cancelada` e `bloqueada`, conforme schema real.
-
-### Correção de diagnóstico
-
-O bloco inicial do preflight procurava uma coluna genérica chamada `status` em `mesa_cliente_fluxo_operacoes`. Isso gerou leitura incompleta.
-
-A interpretação correta é:
-
-```txt
-mesa_cliente_fluxo_operacoes.status_operacao é a coluna real de status operacional.
-```
-
-Portanto, qualquer bloqueio de operação confirmada na 4B deve usar `status_operacao`, não `status`.
-
-## Decisão arquitetural da Fase 4B
-
-A decisão oficial pós-preflight é:
-
-> Fase 4B = persistência append-only versionada, com cabeçalho de agenda financeira, lock transacional, idempotência e auditoria.
-
-Não será adotado o modelo simples de `DELETE + INSERT` em `mesa_cliente_fluxo_parcelas`.
-
-Motivo:
-
-- produção única;
-- SaaS multiempresa;
-- dados financeiros sensíveis;
-- necessidade de auditoria;
-- necessidade de idempotência;
-- possibilidade futura de operação financeira confirmada;
-- ausência de colunas nativas suficientes em `mesa_cliente_fluxo_parcelas` para controlar versão/hash/status de forma limpa;
-- risco operacional de apagar/recriar parcelas em fluxo financeiro.
+---
 
 ## Objetivo da Fase 4B
 
 Persistir, de forma segura, auditável, idempotente e versionada, a agenda financeira gerada pela Fase 4A.
 
-A Fase 4B deve transformar a agenda normalizada retornada pela RPC da 4A em registros persistidos em `mesa_cliente_fluxo_parcelas`, vinculados a um cabeçalho de agenda em nova tabela própria.
+A Fase 4B transforma a agenda normalizada retornada pela RPC da 4A em:
+
+- cabeçalho persistido em `mesa_cliente_agendas_financeiras`;
+- parcelas persistidas em `mesa_cliente_fluxo_parcelas`;
+- vínculo por `agenda_id`;
+- retorno administrativo seguro.
+
+---
 
 ## Fora de escopo da Fase 4B
 
-A Fase 4B **não** deve implementar:
+A Fase 4B não implementa:
 
 - frontend;
+- BFF;
 - parser;
 - Worker;
 - Make/n8n;
@@ -155,16 +72,49 @@ A Fase 4B **não** deve implementar:
 - criação de operação financeira;
 - confirmação de operação financeira;
 - cancelamento de operação financeira;
-- simulação de impacto financeiro sobre operação confirmada;
 - envio para cliente;
 - renderização de tabela para cliente;
 - alteração do motor financeiro fora da persistência da agenda.
 
-## Princípio fundamental
+---
 
-A 4B não deve recriar, duplicar ou reinterpretar a regra de normalização da 4A sem justificativa explícita.
+## RPC oficial aprovada da Fase 4B
 
-A persistência deve usar a RPC já validada:
+Assinatura final aprovada:
+
+```sql
+public.mesa_cliente_persistir_agenda_financeira_admin(
+  p_simulacao_id uuid,
+  p_data_ato date,
+  p_fluxo_json jsonb,
+  p_payload_tabela jsonb default '{}'::jsonb
+)
+returns jsonb
+```
+
+### Decisão sobre `p_idempotency_key`
+
+A proposta inicial com parâmetro adicional:
+
+```sql
+p_idempotency_key text default null
+```
+
+foi abandonada para a Fase 4B aprovada.
+
+Motivo:
+
+- a idempotência aprovada é por checksum canônico calculado no banco;
+- não se deve depender de chave idempotente enviada pelo frontend;
+- o contrato final ficou mais simples e menos vulnerável a uso soberano de dado externo.
+
+Portanto, qualquer referência anterior a `p_idempotency_key` deve ser lida como proposta histórica substituída.
+
+---
+
+## Dependência obrigatória da 4A
+
+A 4B deve usar a RPC já validada da 4A:
 
 ```sql
 public.mesa_cliente_gerar_agenda_financeira_admin(
@@ -173,26 +123,12 @@ public.mesa_cliente_gerar_agenda_financeira_admin(
   p_fluxo_json jsonb,
   p_payload_tabela jsonb default '{}'::jsonb
 )
-```
-
-A 4B deve persistir a agenda gerada pela 4A, e não criar uma segunda fonte de verdade divergente.
-
-## Nome oficial proposto da RPC da Fase 4B
-
-```sql
-public.mesa_cliente_persistir_agenda_financeira_admin(
-  p_simulacao_id uuid,
-  p_data_ato date,
-  p_fluxo_json jsonb,
-  p_payload_tabela jsonb default '{}'::jsonb,
-  p_idempotency_key text default null
-)
 returns jsonb
 ```
 
-Não incluir `p_empresa_id` como parâmetro. Empresa/tenant devem ser resolvidos pelo banco.
+A 4B persiste a agenda gerada pela 4A. Ela não cria uma segunda normalização divergente.
 
-Não incluir `p_modo` neste momento, para evitar comportamento ambíguo. O modo oficial da 4B será append-only versionado.
+---
 
 ## Significado do sufixo `_admin`
 
@@ -203,23 +139,15 @@ O sufixo `_admin` significa:
 - acesso controlado por perfil;
 - dados adequados para backend, BFF, gestor ou corretor autorizado.
 
-O sufixo `_admin` **não** significa que apenas `admin_global` pode executar.
+Não significa que apenas `admin_global` pode executar.
 
-Perfis possíveis, sujeitos aos testes:
-
-- `root` / `is_root()`;
-- `admin_global`;
-- `admin_local`;
-- `gestor`;
-- corretor dono da simulação, se permitido operacionalmente.
+---
 
 ## Estrutura oficial da persistência
 
-### Nova tabela de cabeçalho
+### Cabeçalho de agenda
 
-A 4B deve criar uma tabela de cabeçalho de agenda financeira.
-
-Nome oficial proposto:
+Tabela oficial:
 
 ```sql
 public.mesa_cliente_agendas_financeiras
@@ -227,109 +155,59 @@ public.mesa_cliente_agendas_financeiras
 
 Responsabilidades:
 
-- identificar a versão da agenda da simulação;
-- armazenar hash canônico da agenda;
-- indicar qual agenda está ativa;
+- identificar a agenda da simulação;
+- armazenar checksum/hash canônico;
+- indicar agenda ativa;
 - permitir idempotência;
 - registrar auditoria mínima;
 - bloquear substituição quando houver operação confirmada;
-- servir como âncora para as parcelas persistidas.
+- servir como âncora para parcelas persistidas.
 
-Colunas mínimas esperadas:
+### Parcelas financeiras
 
-```txt
-id uuid primary key
-empresa_id uuid not null
-simulacao_id uuid not null
-empreendimento_id uuid not null
-versao integer not null
-agenda_hash text not null
-idempotency_key text null
-status_agenda text not null default 'ativa'
-gerada_por uuid null
-gerada_em timestamptz not null default now()
-substituida_por uuid null
-substituida_em timestamptz null
-metadata jsonb not null default '{}'::jsonb
-created_at timestamptz not null default now()
-updated_at timestamptz not null default now()
-```
-
-Status permitidos inicialmente:
-
-```txt
-ativa
-substituida
-cancelada
-bloqueada
-```
-
-A 4B usará inicialmente:
-
-```txt
-ativa
-substituida
-```
-
-`cancelada` e `bloqueada` ficam reservados para fases futuras, salvo necessidade explícita.
-
-### Alteração em `mesa_cliente_fluxo_parcelas`
-
-Adicionar colunas mínimas para vínculo com a agenda:
-
-```txt
-agenda_id uuid
-parcela_numero integer
-parcelas_total_item integer
-item_origem_index integer
-```
-
-Se alguma dessas colunas já existir no schema real, a migration deve usar `add column if not exists` ou estratégia equivalente segura.
-
-A coluna `agenda_id` deve referenciar:
-
-```txt
-public.mesa_cliente_agendas_financeiras(id)
-```
-
-## Índices e constraints esperados
-
-A migration da 4B deve criar, no mínimo:
-
-### Uma agenda ativa por simulação
-
-Índice único parcial:
+Tabela oficial:
 
 ```sql
-unique (simulacao_id)
-where status_agenda = 'ativa'
+public.mesa_cliente_fluxo_parcelas
 ```
 
-### Idempotência por simulação e hash
+Responsabilidades na 4B:
 
-Índice recomendado:
+- receber as parcelas normalizadas;
+- vincular cada parcela ao `agenda_id`;
+- preservar `empresa_id`, `simulacao_id` e `empreendimento_id` coerentes;
+- manter data, valor, grupo, negociabilidade e metadados seguros para uso interno.
 
-```sql
-unique (simulacao_id, agenda_hash)
+---
+
+## Decisão arquitetural da Fase 4B
+
+A decisão final da 4B é:
+
+```text
+persistência append-only/versionada
+cabeçalho em mesa_cliente_agendas_financeiras
+agenda_id em mesa_cliente_fluxo_parcelas
+uma agenda ativa por simulação
+checksum canônico calculado no banco
+lock transacional por simulação
+idempotência por checksum
+bloqueio por operação confirmada
+sem DELETE de parcelas
+sem DML em operações, exceto fixtures transacionais de teste
+sem cliente-safe
+sem VPL/prêmio/comissão/política exposta
 ```
 
-### Busca por agenda
+Não foi adotado o modelo simples de `DELETE + INSERT` em `mesa_cliente_fluxo_parcelas`.
 
-Índices recomendados:
-
-```txt
-mesa_cliente_fluxo_parcelas(agenda_id)
-mesa_cliente_fluxo_parcelas(simulacao_id)
-mesa_cliente_fluxo_parcelas(empresa_id)
-mesa_cliente_agendas_financeiras(simulacao_id, status_agenda)
-mesa_cliente_agendas_financeiras(empresa_id, simulacao_id)
-```
+---
 
 ## Tabelas envolvidas
 
 ### Leitura permitida
 
-A 4B poderá ler:
+A 4B pode ler:
 
 - `mesa_simulacoes`;
 - `corretores`;
@@ -341,16 +219,16 @@ A 4B poderá ler:
 
 ### Escrita permitida
 
-A 4B poderá executar DML em:
+A 4B pode executar DML em:
 
 - `mesa_cliente_agendas_financeiras`;
 - `mesa_cliente_fluxo_parcelas`.
 
 ### Escrita proibida
 
-A Fase 4B não deve fazer INSERT, UPDATE ou DELETE em:
+A Fase 4B não deve fazer DML real de negócio em:
 
-- `mesa_cliente_fluxo_operacoes`, exceto leitura para bloqueio de operação confirmada;
+- `mesa_cliente_fluxo_operacoes`;
 - tabelas de leads;
 - tabelas de usuários/corretores;
 - tabelas de empresas;
@@ -358,15 +236,19 @@ A Fase 4B não deve fazer INSERT, UPDATE ou DELETE em:
 - tabelas do parser;
 - tabelas de frontend/configuração que não façam parte da agenda financeira.
 
+Observação: o teste 08D criou uma operação confirmada como fixture transacional apenas para validar o bloqueio. Isso não é comportamento da RPC 4B.
+
+---
+
 ## DML permitido
 
 Permitido:
 
 - `INSERT` em `mesa_cliente_agendas_financeiras` para nova agenda;
-- `UPDATE` em `mesa_cliente_agendas_financeiras` para marcar agenda ativa anterior como `substituida`;
+- `UPDATE` em `mesa_cliente_agendas_financeiras` para marcar agenda ativa anterior como substituída, quando aplicável;
 - `INSERT` em `mesa_cliente_fluxo_parcelas` para parcelas da nova agenda;
 - `SELECT` em `mesa_cliente_fluxo_operacoes` para verificar existência de operação confirmada;
-- `SELECT ... FOR UPDATE` em `mesa_simulacoes`, se usado para lock de linha.
+- lock transacional por simulação.
 
 ## DML proibido
 
@@ -374,26 +256,27 @@ Proibido na 4B:
 
 - `DELETE` em `mesa_cliente_fluxo_parcelas`;
 - `UPDATE` destrutivo em `mesa_cliente_fluxo_parcelas`;
-- `INSERT` em `mesa_cliente_fluxo_operacoes`;
-- `UPDATE` em `mesa_cliente_fluxo_operacoes`;
+- `INSERT` real de negócio em `mesa_cliente_fluxo_operacoes`;
+- `UPDATE` real de negócio em `mesa_cliente_fluxo_operacoes`;
 - `DELETE` em `mesa_cliente_fluxo_operacoes`;
 - criação de operação financeira;
 - confirmação de operação;
 - cancelamento de operação;
-- gravação de VPL;
-- gravação de prêmio;
-- gravação de comissão;
-- gravação de política interna sensível;
-- persistência de dados vindos do frontend como autoridade sem validação do banco;
+- gravação/exposição de VPL;
+- gravação/exposição de prêmio;
+- gravação/exposição de comissão;
+- exposição de política interna sensível;
 - aceitação de `empresa_id` do payload como fonte soberana;
 - concessão de execução para `anon`;
 - criação de grants diretos amplos de escrita para `authenticated` nas tabelas financeiras.
+
+---
 
 ## Fluxo oficial da RPC 4B
 
 A RPC deve seguir este fluxo lógico:
 
-1. validar `auth.uid()` via `mesa_cliente_assert_auth()`;
+1. validar `auth.uid()`;
 2. resolver usuário/corretor ativo;
 3. validar perfil autorizado;
 4. obter lock transacional por `p_simulacao_id`;
@@ -403,29 +286,19 @@ A RPC deve seguir este fluxo lógico:
 8. verificar se existe operação confirmada em `mesa_cliente_fluxo_operacoes` usando `status_operacao = 'confirmada'`;
 9. chamar `public.mesa_cliente_gerar_agenda_financeira_admin(...)`;
 10. validar que o retorno da 4A tem `ok=true`, `fase='4A_JSON_FIRST'`, `persistencia=false`, `dml_financeiro=false`;
-11. calcular hash canônico da agenda no banco;
-12. verificar se já existe agenda ativa com o mesmo hash;
+11. calcular checksum canônico da agenda no banco;
+12. verificar se já existe agenda ativa com o mesmo checksum;
 13. se existir, retornar idempotente sem inserir novas parcelas;
-14. se existir agenda ativa com hash diferente, marcar agenda anterior como `substituida`;
+14. se existir agenda ativa com checksum diferente e não houver operação confirmada, substituir logicamente a agenda anterior;
 15. criar novo cabeçalho em `mesa_cliente_agendas_financeiras`;
 16. inserir parcelas vinculadas ao `agenda_id`;
 17. retornar JSON administrativo.
 
+---
+
 ## Lock transacional
 
 A Fase 4B deve usar lock por simulação.
-
-Estratégia preferencial:
-
-```txt
-SELECT ... FOR UPDATE na linha de mesa_simulacoes
-```
-
-Pode ser combinado com:
-
-```txt
-pg_advisory_xact_lock derivado de p_simulacao_id
-```
 
 Regra:
 
@@ -433,24 +306,21 @@ Regra:
 - a persistência deve ser atômica;
 - o lock não pode depender do frontend.
 
+---
+
 ## Idempotência
 
-A Fase 4B deve ser idempotente.
+A Fase 4B aprovada é idempotente por checksum canônico calculado no banco.
 
 Regras:
 
-- chamadas repetidas com a mesma entrada não podem duplicar parcelas;
-- o hash deve ser calculado no banco;
-- `p_idempotency_key` pode ajudar rastreabilidade, mas não substitui o hash canônico;
-- `p_idempotency_key` não substitui validação de tenant, empresa, simulação ou perfil;
-- idempotência não pode permitir acesso cross-tenant.
+- chamadas repetidas com a mesma entrada não duplicam parcelas;
+- o checksum é calculado no banco;
+- o checksum considera a agenda normalizada material;
+- campos voláteis não podem quebrar idempotência;
+- idempotência não permite acesso cross-tenant.
 
-Hash canônico:
-
-- deve ser calculado a partir da agenda normalizada retornada pela 4A;
-- deve evitar depender de ordem instável de chaves JSON;
-- deve considerar `simulacao_id`, `data_ato` e conteúdo material da agenda;
-- deve ignorar campos voláteis como timestamp, se existirem.
+---
 
 ## Auditoria
 
@@ -459,69 +329,59 @@ Auditoria mínima esperada no cabeçalho:
 - `simulacao_id`;
 - `empresa_id` resolvido pelo banco;
 - `empreendimento_id` resolvido pelo banco;
-- `gerada_por`;
-- `gerada_em`;
+- usuário/corretor responsável quando aplicável;
 - quantidade de parcelas persistidas;
 - valor total persistido;
-- hash da agenda;
-- idempotency key, se fornecida;
+- checksum da agenda;
 - status da agenda;
+- timestamps;
 - metadata mínima.
 
-Não criar tabela de auditoria separada nesta fase se o cabeçalho resolver a necessidade mínima.
+---
 
 ## Bloqueio por operação confirmada
 
-A Fase 4B deve verificar `mesa_cliente_fluxo_operacoes` antes de substituir a agenda ativa.
+Regra aprovada:
 
-Regra:
-
-```txt
+```text
 Se existir operação com status_operacao = 'confirmada' para a simulação, a agenda não pode ser substituída.
 ```
 
-A RPC deve retornar erro controlado e não deve inserir nova agenda nem novas parcelas.
+O teste 08D comprovou:
 
-A 4B não deve inventar estados além dos existentes no schema real.
+- bloqueio com `SQLSTATE 55000`;
+- preservação da agenda original;
+- preservação do checksum original;
+- preservação da versão original;
+- não recriação indevida das parcelas;
+- não criação de operação extra.
+
+---
 
 ## Segurança e autorização
 
-A RPC da 4B deverá obrigatoriamente:
+A RPC da 4B deve:
 
 - usar `security definer`;
 - definir `set search_path = public`;
-- chamar `mesa_cliente_assert_auth()`;
+- validar auth/contexto por banco;
 - validar usuário ativo;
-- validar empresa/tenant resolvido pelo banco;
+- validar empresa/tenant;
 - validar simulação;
 - validar empreendimento;
 - validar perfil;
 - bloquear `anon`;
 - conceder `EXECUTE` apenas para `authenticated`;
-- não conceder grants diretos de escrita para `authenticated` nas tabelas financeiras;
+- não conceder grants diretos amplos de escrita para `authenticated` nas tabelas financeiras;
 - não aceitar `empresa_id` soberano vindo do frontend/payload.
 
-## RLS e grants
+---
 
-Para a nova tabela `mesa_cliente_agendas_financeiras`:
+## Retorno esperado aprovado da RPC
 
-- RLS deve ser habilitado;
-- RLS deve preferencialmente ser forçado;
-- não conceder escrita direta para `anon`;
-- não conceder escrita direta ampla para `authenticated`;
-- leitura direta só se houver policy segura por tenant; se não houver necessidade imediata, manter acesso via RPC.
+A RPC da 4B retorna JSON administrativo, não cliente-safe.
 
-Para `mesa_cliente_fluxo_parcelas`:
-
-- não abrir escrita direta para `authenticated`;
-- escrita deve ocorrer pela RPC `security definer`;
-- manter políticas diretas conservadoras.
-
-## Retorno esperado da RPC
-
-A RPC da 4B deve retornar JSON administrativo, não cliente-safe.
-
-Campos mínimos esperados:
+Campos esperados:
 
 ```json
 {
@@ -530,19 +390,16 @@ Campos mínimos esperados:
   "visao": "administrativa",
   "cliente_safe": false,
   "persistencia": true,
+  "dml_financeiro": true,
   "simulacao_id": "uuid",
-  "empresa_id": "uuid",
-  "empreendimento_id": "uuid",
   "agenda_id": "uuid",
-  "versao": 1,
   "status_agenda": "ativa",
   "idempotente": false,
-  "agenda_hash": "hash",
+  "checksum": "hash",
   "totais": {
-    "qtd_parcelas_persistidas": 0,
+    "qtd_parcelas": 0,
     "valor_total_agenda": 0
-  },
-  "warnings": []
+  }
 }
 ```
 
@@ -556,115 +413,126 @@ O retorno não deve conter:
 - dados de outra empresa;
 - conteúdo bruto sensível desnecessário.
 
-## Testes obrigatórios da Fase 4B
+---
+
+## Testes obrigatórios aprovados da Fase 4B
 
 ### 08A — Persistência positiva
 
-Arquivo esperado:
+Arquivo:
 
-```txt
+```text
 supabase/tests/mesa-cliente/engenharia-financeira/08a_validacao_persistencia_agenda_financeira_rollback.sql
 ```
 
-Deve provar:
+Status: aprovado.
 
-- cria fixture transacional, se necessário;
-- chama RPC da 4B;
-- persiste cabeçalho em `mesa_cliente_agendas_financeiras`;
-- persiste parcelas em `mesa_cliente_fluxo_parcelas`;
-- não cria operação em `mesa_cliente_fluxo_operacoes`;
-- respeita `simulacao_id`, `empresa_id`, `empreendimento_id`;
-- parcelas persistidas batem com agenda gerada pela 4A;
-- existe exatamente uma agenda ativa para a simulação;
-- transação termina em `ROLLBACK`.
+Comprovou:
+
+- criação de agenda;
+- criação de 6 parcelas no cenário fixture;
+- valores persistidos batendo com payload;
+- periodicidade bloqueada;
+- datas resolvidas;
+- zero DML em operações;
+- rollback transacional.
 
 ### 08B — Idempotência
 
-Arquivo esperado:
+Arquivo:
 
-```txt
+```text
 supabase/tests/mesa-cliente/engenharia-financeira/08b_validacao_persistencia_agenda_financeira_idempotencia_rollback.sql
 ```
 
-Deve provar:
+Status: aprovado.
+
+Comprovou:
 
 - duas chamadas equivalentes não duplicam parcelas;
-- hash canônico é respeitado;
-- retorno indica chamada idempotente quando aplicável;
-- continua existindo uma única agenda ativa para a simulação.
+- segunda chamada retorna `idempotente=true`;
+- checksum consistente;
+- uma única agenda ativa.
 
 ### 08C — Negativos
 
-Arquivo esperado:
+Arquivo:
 
-```txt
+```text
 supabase/tests/mesa-cliente/engenharia-financeira/08c_validacao_persistencia_agenda_financeira_negativos_rollback.sql
 ```
 
-Deve provar bloqueio para:
+Status: aprovado.
 
-- `anon`;
+Comprovou bloqueio para:
+
+- `anon` sem execute;
 - simulação inexistente;
-- cross-tenant;
 - `empresa_id` fake no payload;
-- payload inválido;
-- grupo inválido;
+- item com `empresa_id` fake;
 - valor negativo;
-- usuário inativo;
-- perfil não autorizado.
+- grupo desconhecido;
+- periodicidade fraudada;
+- periodicidade simbólica marcada como negociável.
 
 ### 08D — Operação confirmada
 
-Arquivo esperado:
+Arquivo:
 
-```txt
+```text
 supabase/tests/mesa-cliente/engenharia-financeira/08d_validacao_bloqueio_operacao_confirmada_rollback.sql
 ```
 
-Deve provar:
+Status: aprovado.
 
-- quando existir operação financeira com `status_operacao = 'confirmada'` para a simulação, a agenda não pode ser substituída;
-- nenhuma agenda ativa é substituída indevidamente;
-- nenhuma parcela confirmada é apagada ou alterada;
-- erro é controlado;
-- transação termina em `ROLLBACK`.
+Comprovou:
 
-## Critérios de aceite da Fase 4B
+- operação confirmada bloqueia substituição de agenda;
+- erro controlado com `SQLSTATE 55000`;
+- agenda original permanece intacta;
+- parcelas originais não são recriadas indevidamente;
+- não cria operação extra;
+- rollback transacional.
 
-A Fase 4B só será considerada validada se:
+---
 
-1. a migration respeitar este contrato;
-2. a RPC usar `security definer` e `set search_path = public`;
-3. `anon` estiver bloqueado;
-4. `authenticated` tiver apenas `EXECUTE` na RPC, sem escrita direta ampla nas tabelas;
-5. tenant/empresa forem resolvidos pelo banco;
-6. `empresa_id` do payload não for soberano;
-7. houver lock transacional por simulação;
-8. houver idempotência comprovada;
-9. houver cabeçalho versionado de agenda;
-10. houver vínculo `agenda_id` nas parcelas;
-11. operação confirmada bloqueie substituição de agenda;
-12. testes 08A/08B/08C/08D passem;
-13. tudo rode com `BEGIN + ROLLBACK` em validação;
-14. nenhum dado cliente-safe seja exposto;
-15. nenhum VPL, prêmio, comissão ou política interna seja exposto;
-16. não haja `DELETE` em `mesa_cliente_fluxo_parcelas`;
-17. não haja DML em `mesa_cliente_fluxo_operacoes`.
+## Erros encontrados e correções incorporadas
 
-## Plano de parada
+Durante a Fase 4B foram encontrados e corrigidos:
 
-Parar imediatamente se qualquer um dos itens abaixo ocorrer:
+1. suposição de coluna `inserted_at` inexistente;
+2. suposição de coluna `a.ativa` inexistente;
+3. suposição de coluna `cliente_email` inexistente em `mesa_simulacoes`;
+4. uso frágil de tabela temporária sob `SET LOCAL ROLE authenticated`;
+5. necessidade de trocar a coleta de resultados do 08D para função `pg_temp`/estratégia compatível;
+6. divergência de constraint em `mesa_cliente_fluxo_operacoes.grupo_origem`, que aceitava `mensal` e não `mensais`;
+7. necessidade de tratar erro não esperado como bloco `00_falha_nao_tratada` para não mascarar falha.
 
-- migration tentar usar `DELETE` em `mesa_cliente_fluxo_parcelas`;
-- migration tentar criar operação financeira;
-- migration tentar confirmar/cancelar operação;
-- migration depender de `empresa_id` vindo do frontend;
-- migration conceder escrita direta ampla para `authenticated`;
-- migration conceder execução para `anon`;
-- idempotência não puder ser garantida;
-- bloqueio por `status_operacao = 'confirmada'` não puder ser testado;
-- testes exigirem policy ampla de INSERT/UPDATE para `authenticated`;
-- qualquer IA/conversa tentar implementar 4C, 5A, 5B ou 5C junto com a 4B.
+Esses erros reforçaram o padrão do Protocolo Mestre: nenhum teste deve assumir coluna, constraint ou tabela sem preflight do schema real.
+
+---
+
+## Critérios de aceite da Fase 4B — atendidos
+
+A Fase 4B foi considerada aprovada porque:
+
+1. a RPC usa contrato seguro;
+2. `anon` está bloqueado;
+3. `authenticated` executa a RPC;
+4. tenant/empresa são resolvidos pelo banco;
+5. `empresa_id` do payload não é soberano;
+6. há idempotência comprovada;
+7. há cabeçalho de agenda;
+8. parcelas são vinculadas por `agenda_id`;
+9. operação confirmada bloqueia substituição;
+10. testes 08A/08B/08C/08D passaram;
+11. tudo rodou com `BEGIN + ROLLBACK`;
+12. não houve cliente-safe;
+13. não houve VPL/prêmio/comissão/política exposta;
+14. não houve `DELETE` de parcelas;
+15. não houve DML real de negócio em operações.
+
+---
 
 ## Relação com fases futuras
 
@@ -674,11 +542,23 @@ Só começa depois da 4B validada.
 
 Objetivo: leitura cliente-safe da agenda persistida.
 
+A Fase 4C está aberta por contrato em:
+
+```text
+docs/mesa-cliente/fase-4c-agenda-financeira-cliente-safe-contrato.md
+```
+
+O preflight read-only já foi criado:
+
+```text
+supabase/tests/mesa-cliente/engenharia-financeira/09_preflight_agenda_financeira_cliente_safe_readonly.sql
+```
+
+Próxima ação: executar o 09 preflight e enviar o resultset completo antes de criar qualquer migration 4C.
+
 ### Fase 5A
 
-Só começa depois da 4B/4C.
-
-Objetivo: simular impacto financeiro usando agenda persistida.
+Só começa depois da 4C validada, salvo decisão formal.
 
 ### Fase 5B
 
@@ -688,32 +568,19 @@ Objetivo futuro: registrar operação financeira.
 
 Objetivo futuro: confirmar/cancelar operação financeira.
 
+---
+
 ## Decisão final
 
-A Fase 4B seguirá com:
-
-```txt
-append-only versionado
-nova tabela de cabeçalho mesa_cliente_agendas_financeiras
-agenda_id em mesa_cliente_fluxo_parcelas
-uma agenda ativa por simulação
-hash canônico calculado no banco
-lock transacional por simulação
-idempotência
-auditoria mínima no cabeçalho
-bloqueio por status_operacao = 'confirmada'
-sem DELETE de parcelas
-sem DML em operações
-sem cliente-safe
-sem VPL/prêmio/comissão/política
-```
+A Fase 4B está aprovada em rollback transacional.
 
 Próxima ação prática:
 
-```txt
-criar a migration candidata da Fase 4B e os testes 08A/08B/08C/08D com BEGIN + ROLLBACK.
+```text
+Executar o preflight read-only da Fase 4C:
+supabase/tests/mesa-cliente/engenharia-financeira/09_preflight_agenda_financeira_cliente_safe_readonly.sql
 ```
 
 Conclusão:
 
-> A agenda já sabe nascer em JSON. Agora ela será gravada com certidão de nascimento, histórico e trava na porta — não no grito e nem no delete nervoso.
+> A agenda já sabe nascer em JSON e já sabe ser gravada com identidade, checksum, parcelas e trava contra operação confirmada. Agora ela precisa aprender a falar com o cliente sem entregar a planilha secreta da cozinha.
