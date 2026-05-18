@@ -287,7 +287,7 @@ active_agendas_summary as (
     count(*)::bigint as total_agendas,
     count(*) filter (where status = 'ativa')::bigint as agendas_ativas,
     count(distinct simulacao_id)::bigint as simulacoes_com_agenda,
-    count(*) filter (where status = 'ativa' and totals is not null)::bigint as ativas_com_totais
+    count(*) filter (where status = 'ativa' and totais is not null)::bigint as ativas_com_totais
   from public.mesa_cliente_agendas_financeiras
 ),
 active_parcelas_summary as (
