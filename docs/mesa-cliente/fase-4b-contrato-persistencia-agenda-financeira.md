@@ -480,7 +480,7 @@ Comprovou bloqueio para:
 Arquivo:
 
 ```text
-supabase/tests/mesa-cliente/engenharia-financeira/08d_validacao_bloqueio_operacao_confirmada_rollback.sql
+supabase/tests/mesa-cliente/engenharia-financeira/08d_validacao_persistencia_agenda_financeira_operacao_confirmada_rollback.sql
 ```
 
 Status: aprovado.
