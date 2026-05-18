@@ -81,10 +81,10 @@ with candidato as materialized (
     corretor_id,
     empreendimento_id,
     'Teste rollback 07A JSON-first',
-    41500.50,
+    29500.50,
     10000.50,
     0,
-    41500.50,
+    29500.50,
     jsonb_build_object(
       'origem', 'teste_07a_json_first_rollback',
       'fixture_transacional', true
@@ -236,7 +236,7 @@ select '04_zero_persistencia_declarada',
 from p
 union all
 select '05_agenda_normalizada',
-  case when qtd_itens_origem = 4 and qtd_agenda = 6 and qtd_parcelas_normalizadas = 6 and valor_total_agenda = 41500.50 then 'PASS' else 'FAIL' end,
+  case when qtd_itens_origem = 4 and qtd_agenda = 6 and qtd_parcelas_normalizadas = 6 and valor_total_agenda = 29500.50 then 'PASS' else 'FAIL' end,
   jsonb_build_object('qtd_itens_origem', qtd_itens_origem, 'qtd_agenda', qtd_agenda, 'qtd_parcelas_normalizadas', qtd_parcelas_normalizadas, 'valor_total_agenda', valor_total_agenda)
 from p
 union all
