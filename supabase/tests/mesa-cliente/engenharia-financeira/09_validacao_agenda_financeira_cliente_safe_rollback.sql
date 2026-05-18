@@ -13,6 +13,11 @@
 --
 -- Não valida persistência 4B. Valida somente leitura cliente-safe 4C.
 --
+-- Correção operacional importante:
+--   A tabela temporária de resultados é criada antes do BEGIN e sem ON COMMIT DROP.
+--   Isso evita erro 42P01 no Supabase SQL Editor quando o editor trata blocos/commits
+--   de forma diferente do psql tradicional.
+--
 -- Critérios:
 --   - cliente_safe = true
 --   - visao = cliente_safe
@@ -26,13 +31,17 @@
 --   - zero DML em mesa_cliente_fluxo_operacoes
 --   - tudo encerrado com ROLLBACK
 
-begin;
+-- Mantém o coletor de resultados fora da transação de fixture.
+-- Não usar ON COMMIT DROP aqui: no SQL Editor isso pode derrubar a temp table antes do SELECT final.
+drop table if exists pg_temp._mc_09_resultados;
 
 create temp table _mc_09_resultados (
   bloco text not null,
   status text not null,
   detalhe jsonb not null default '{}'::jsonb
-) on commit drop;
+);
+
+begin;
 
 do $$
 declare
@@ -133,7 +142,6 @@ begin
 
   perform set_config('request.jwt.claim.sub', v_user_id::text, true);
   perform set_config('request.jwt.claim.role', 'authenticated', true);
-  perform set_config('role', 'authenticated', true);
 
   select count(*) into v_before_agendas
   from public.mesa_cliente_agendas_financeiras;
@@ -299,9 +307,14 @@ begin
     v_agenda_id,
     now(),
     now()
-  )
-  returning case when grupo = 'periodicidade' then id else v_parcela_periodicidade_id end
-  into v_parcela_periodicidade_id;
+  );
+
+  select p.id
+    into v_parcela_periodicidade_id
+  from public.mesa_cliente_fluxo_parcelas p
+  where p.agenda_id = v_agenda_id
+    and p.grupo = 'periodicidade'
+  limit 1;
 
   insert into _mc_09_resultados values (
     '01_fixture_transacional_contexto',
@@ -317,7 +330,8 @@ begin
       'empreendimento_id', v_empreendimento_id,
       'empreendimento_nome', v_empreendimento_nome,
       'simulacao_id_fixture', v_simulacao_id,
-      'agenda_id_fixture', v_agenda_id
+      'agenda_id_fixture', v_agenda_id,
+      'parcela_periodicidade_id', v_parcela_periodicidade_id
     )
   );
 
