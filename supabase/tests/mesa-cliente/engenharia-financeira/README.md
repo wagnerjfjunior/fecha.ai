@@ -25,8 +25,9 @@ Ordem de referência:
 2. `docs/mesa-cliente/adr/ADR-0001-fase-4a-json-first-sem-persistencia.md`
 3. `docs/mesa-cliente/fase-4a-validacao-final-json-first.md`
 4. `docs/mesa-cliente/fase-4b-validacao-final-evidencias.md`
-5. `docs/mesa-cliente/fase-4c-agenda-financeira-cliente-safe-contrato.md`
-6. Este README como índice operacional da pasta de testes.
+5. `docs/mesa-cliente/fase-4c-cliente-safe-fechamento.md`
+6. `docs/mesa-cliente/fase-5a-contrato-simulacao-impacto-agenda-persistida.md`
+7. Este README como índice operacional da pasta de testes.
 
 ---
 
@@ -220,7 +221,7 @@ Erros corrigidos durante o 08D:
 
 ## Fase 4C — Agenda financeira cliente-safe
 
-**Status:** contrato aberto.
+**Status:** aprovada.
 
 ### Preflight 4C
 
@@ -237,23 +238,11 @@ Objetivo:
 - mapear campos sensíveis que não podem sair no cliente-safe;
 - validar se há base técnica para criar a RPC 4C.
 
-Status: criado, pendente de execução/resultset completo.
+Status: executado e fase concluída por documentação de fechamento.
 
-Próxima ação obrigatória:
+### Testes 4C
 
-```text
-Executar 09_preflight_agenda_financeira_cliente_safe_readonly.sql no Supabase SQL Editor e enviar todos os resultsets antes de qualquer migration 4C.
-```
-
-### Testes 4C esperados, ainda não criados
-
-```text
-09a_validacao_agenda_financeira_cliente_safe_rollback.sql
-09b_validacao_agenda_financeira_cliente_safe_negativos_rollback.sql
-09c_validacao_agenda_financeira_cliente_safe_sem_vazamento_rollback.sql
-```
-
-Critérios esperados:
+Critérios aprovados:
 
 - `cliente_safe=true`;
 - `anon` bloqueado;
@@ -266,11 +255,89 @@ Critérios esperados:
 
 ---
 
+## Fase 5A.1 — Simular impacto financeiro com agenda persistida
+
+**Status:** contrato final fechado; preflight canônico criado; execução pendente.
+
+Documento canônico:
+
+```text
+docs/mesa-cliente/fase-5a-contrato-simulacao-impacto-agenda-persistida.md
+```
+
+### Preflight oficial/canônico 5A.1
+
+#### `10_preflight_simulacao_impacto_agenda_persistida_readonly.sql`
+
+Este é o único preflight 10 oficial da Fase 5A.1 neste diretório.
+
+Objetivo:
+
+- inventariar RPCs/funções de cálculo existentes;
+- inventariar colunas reais de agenda/parcelas/política/faixas;
+- validar constraints reais;
+- validar grants atuais;
+- confirmar nomes reais de status/colunas antes de escrever migration;
+- validar se existem bases mínimas para criar a RPC agenda-first da 5A.1;
+- bloquear SQL de implementação se houver divergência de schema, função ou segurança.
+
+A seção decisiva do resultset é:
+
+```text
+13_operational_interpretation
+```
+
+Próxima ação obrigatória:
+
+```text
+Executar 10_preflight_simulacao_impacto_agenda_persistida_readonly.sql no Supabase SQL Editor e enviar o resultset completo antes de qualquer migration 5A.1.
+```
+
+### Preflight exploratório arquivado
+
+O arquivo abaixo não é mais oficial nesta pasta:
+
+```text
+10_preflight_impacto_financeiro_readonly.sql
+```
+
+Ele foi movido para:
+
+```text
+docs/mesa-cliente/rascunhos-sql/preflights-exploratorios/10_preflight_impacto_financeiro_readonly.sql
+```
+
+Motivo:
+
+- era genérico/payload-first;
+- usava leitura histórica de Fase 5A.2;
+- não representava o contrato final agenda-first da 5A.1;
+- dois `10_preflight` oficiais gerariam ambiguidade operacional.
+
+### Testes 5A.1 esperados, ainda não criados
+
+```text
+10a_validacao_simulacao_impacto_agenda_persistida_rollback.sql
+10b_validacao_simulacao_impacto_agenda_persistida_negativos_rollback.sql
+10c_validacao_simulacao_impacto_agenda_persistida_zero_dml_rollback.sql
+```
+
+Critérios esperados:
+
+- `cliente_safe=false`;
+- `persistencia=false`;
+- `dml_financeiro=false`;
+- `anon` bloqueado;
+- cross-tenant bloqueado;
+- agenda ativa obrigatória;
+- política vigente obrigatória;
+- uso de cálculo composto;
+- zero DML em agenda, parcelas e operações;
+- recomendação gerada sem frontend soberano.
+
+---
+
 ## Fases futuras
-
-### Fase 5A — Simular impacto financeiro com agenda persistida
-
-Pendente. Não iniciar antes da 4C validada, salvo decisão formal.
 
 ### Fase 5B — Registrar operação financeira
 
@@ -282,7 +349,7 @@ Pendente.
 
 ### Integração Front/BFF
 
-Pendente. Proibida antes da leitura cliente-safe validada.
+Pendente. Proibida antes da leitura cliente-safe validada e antes da RPC administrativa 5A.1 passar nos testes.
 
 ---
 
@@ -306,7 +373,9 @@ Não execute teste integrador em produção única sem verificar:
 ```text
 4A aprovada.
 4B aprovada em rollback transacional.
-4C aberta por contrato.
-09 preflight cliente-safe já criado.
-Próxima ação: executar 09 preflight e enviar resultset completo.
+4C aprovada.
+5A.1 contrato final fechado.
+10 preflight canônico criado.
+Preflight exploratório antigo arquivado fora da trilha oficial.
+Próxima ação: executar 10_preflight_simulacao_impacto_agenda_persistida_readonly.sql e enviar resultset completo.
 ```
