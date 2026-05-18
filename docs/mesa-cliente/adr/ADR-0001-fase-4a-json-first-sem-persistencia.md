@@ -4,7 +4,7 @@
 **Data:** 2026-05-18  
 **Fase:** Engenharia Financeira / MesaCliente / Fase 4A  
 **Branch:** `feature/mesa-cliente-engenharia-financeira`  
-**Complementa:** `docs/protocolos/protocolo-mestre-fechai-mesacliente-v1.1.md`  
+**Complementa:** `docs/protocolos/protocolo-mestre-fechai-mesacliente-v1.2.md`  
 
 ---
 
