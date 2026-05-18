@@ -15,15 +15,10 @@
 --   - Não altera policies.
 --   - Não executa RPC de persistência.
 --
--- Como usar:
---   Rodar no Supabase SQL Editor e enviar todos os resultsets antes de qualquer migration 4B.
---
--- Resultado esperado:
---   Este preflight deve permitir decidir:
---     1. se o schema atual suporta append-only/versionamento;
---     2. se será necessário replace_draft;
---     3. se há colunas de auditoria/idempotência;
---     4. quais locks, constraints, índices e testes serão necessários.
+-- Correção de robustez:
+--   Este preflight não deve assumir colunas opcionais como inserted_at, status,
+--   empreendimento_id, grupo ou data_vencimento. Para campos incertos, usa to_jsonb(row)
+--   e information_schema, evitando erro de parse quando uma coluna não existir.
 
 -- 01 — Existência das tabelas financeiras centrais.
 select
@@ -281,62 +276,50 @@ where n.nspname = 'public'
 order by p.proname, identity_arguments;
 
 -- 16 — Migrations aplicadas relacionadas a MesaCliente/engenharia financeira.
+-- Robusto para ambientes onde schema_migrations não possui inserted_at ou name.
+with mig as (
+  select to_jsonb(sm) as row_json
+  from supabase_migrations.schema_migrations sm
+)
 select
   '16_related_migrations_applied' as section,
-  version,
-  name,
-  inserted_at
-from supabase_migrations.schema_migrations
-where version::text ilike '%mesa%'
-   or name ilike '%mesa%'
-   or name ilike '%cliente%'
-   or name ilike '%agenda%'
-   or name ilike '%fluxo%'
-   or name ilike '%financeira%'
-   or version::text in ('20260517193000', '20260517223000', '20260518120000')
-order by inserted_at desc nulls last, version desc;
+  coalesce(row_json->>'version', '') as version,
+  coalesce(row_json->>'name', '') as name,
+  row_json->>'inserted_at' as inserted_at,
+  row_json as raw_row
+from mig
+where coalesce(row_json->>'version', '') ilike '%mesa%'
+   or coalesce(row_json->>'name', '') ilike '%mesa%'
+   or coalesce(row_json->>'name', '') ilike '%cliente%'
+   or coalesce(row_json->>'name', '') ilike '%agenda%'
+   or coalesce(row_json->>'name', '') ilike '%fluxo%'
+   or coalesce(row_json->>'name', '') ilike '%financeira%'
+   or coalesce(row_json->>'version', '') in ('20260517193000', '20260517223000', '20260518120000')
+order by coalesce(row_json->>'inserted_at', '') desc nulls last, coalesce(row_json->>'version', '') desc;
 
--- 17 — Status reais existentes em operações, sem assumir nomes.
--- Se a coluna status não existir, retornar aviso em vez de erro.
+-- 17 — Status reais existentes em operações, sem assumir que a coluna status exista.
+with has_status as (
+  select exists (
+    select 1
+    from information_schema.columns c
+    where c.table_schema = 'public'
+      and c.table_name = 'mesa_cliente_fluxo_operacoes'
+      and c.column_name = 'status'
+  ) as status_exists
+), status_rows as (
+  select
+    to_jsonb(o)->>'status' as status,
+    count(*)::bigint as total
+  from public.mesa_cliente_fluxo_operacoes o
+  group by to_jsonb(o)->>'status'
+)
 select
   '17_operacoes_status_inventory' as section,
-  case
-    when exists (
-      select 1
-      from information_schema.columns c
-      where c.table_schema = 'public'
-        and c.table_name = 'mesa_cliente_fluxo_operacoes'
-        and c.column_name = 'status'
-    ) then 'status_column_exists'
-    else 'status_column_missing'
-  end as status_column_check,
-  null::text as status,
-  null::bigint as total
-where not exists (
-  select 1
-  from information_schema.columns c
-  where c.table_schema = 'public'
-    and c.table_name = 'mesa_cliente_fluxo_operacoes'
-    and c.column_name = 'status'
-)
-union all
-select
-  '17_operacoes_status_inventory' as section,
-  'status_column_exists' as status_column_check,
-  x.status::text,
-  x.total
-from (
-  select status, count(*)::bigint as total
-  from public.mesa_cliente_fluxo_operacoes
-  group by status
-) x
-where exists (
-  select 1
-  from information_schema.columns c
-  where c.table_schema = 'public'
-    and c.table_name = 'mesa_cliente_fluxo_operacoes'
-    and c.column_name = 'status'
-)
+  case when h.status_exists then 'status_column_exists' else 'status_column_missing' end as status_column_check,
+  sr.status,
+  coalesce(sr.total, 0)::bigint as total
+from has_status h
+left join status_rows sr on true
 order by status_column_check, status;
 
 -- 18 — Possíveis colunas de versionamento/idempotência/auditoria em parcelas.
@@ -454,40 +437,31 @@ left join information_schema.columns c
  and c.column_name = r.column_name
 order by r.table_name, r.column_name;
 
--- 22 — Amostra segura de parcelas existentes, se houver, sem expor dados sensíveis extensos.
+-- 22 — Amostra segura de parcelas existentes, se houver, sem assumir colunas opcionais.
 select
   '22_parcelas_sample_safe' as section,
-  p.id,
-  p.simulacao_id,
-  p.empresa_id,
-  p.empreendimento_id,
-  p.grupo,
-  p.valor,
-  p.data_vencimento,
-  p.created_at
+  to_jsonb(p)->>'id' as id,
+  to_jsonb(p)->>'simulacao_id' as simulacao_id,
+  to_jsonb(p)->>'empresa_id' as empresa_id,
+  to_jsonb(p)->>'empreendimento_id' as empreendimento_id,
+  to_jsonb(p)->>'grupo' as grupo,
+  to_jsonb(p)->>'valor' as valor,
+  to_jsonb(p)->>'data_vencimento' as data_vencimento,
+  to_jsonb(p)->>'created_at' as created_at
 from public.mesa_cliente_fluxo_parcelas p
-order by p.created_at desc nulls last, p.id
+order by coalesce(to_jsonb(p)->>'created_at', '') desc nulls last, coalesce(to_jsonb(p)->>'id', '')
 limit 10;
 
--- 23 — Amostra segura de operações existentes, se houver, sem expor payloads extensos.
+-- 23 — Amostra segura de operações existentes, se houver, sem assumir coluna status.
 select
   '23_operacoes_sample_safe' as section,
-  o.id,
-  o.simulacao_id,
-  o.empresa_id,
-  case
-    when exists (
-      select 1
-      from information_schema.columns c
-      where c.table_schema = 'public'
-        and c.table_name = 'mesa_cliente_fluxo_operacoes'
-        and c.column_name = 'status'
-    ) then o.status::text
-    else null::text
-  end as status,
-  o.created_at
+  to_jsonb(o)->>'id' as id,
+  to_jsonb(o)->>'simulacao_id' as simulacao_id,
+  to_jsonb(o)->>'empresa_id' as empresa_id,
+  to_jsonb(o)->>'status' as status,
+  to_jsonb(o)->>'created_at' as created_at
 from public.mesa_cliente_fluxo_operacoes o
-order by o.created_at desc nulls last, o.id
+order by coalesce(to_jsonb(o)->>'created_at', '') desc nulls last, coalesce(to_jsonb(o)->>'id', '')
 limit 10;
 
 -- 24 — Interpretação operacional preliminar.
