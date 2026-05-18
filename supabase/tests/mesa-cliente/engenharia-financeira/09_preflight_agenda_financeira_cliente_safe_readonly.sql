@@ -6,8 +6,18 @@
 --   Mapear o schema real e os riscos de exposição antes de criar a RPC cliente-safe.
 --
 -- Regra desta versão:
---   Este preflight não pode depender de colunas ainda não comprovadas no schema real.
---   Para resumos de linhas, usa to_jsonb(row) e catálogo, evitando erro 42703 por coluna presumida.
+--   Este preflight é catalog-first e não presume coluna inexistente.
+--   Campos de saída cliente-safe podem ter aliases sem existir fisicamente no banco.
+--
+-- Mapeamento validado pelo preflight anterior:
+--   saída cliente-safe data_vencimento  <- mesa_cliente_fluxo_parcelas.data_atual
+--   saída cliente-safe valor            <- mesa_cliente_fluxo_parcelas.valor_atual
+--   saída cliente-safe negociavel       <- derivado de eh_periodicidade_simbolica,
+--                                           pode_receber_antecipacao e pode_receber_postergacao
+--
+-- Campos que NÃO existem fisicamente e não devem mais ser exigidos como coluna real:
+--   - data_vencimento
+--   - negociavel
 --
 -- Este arquivo é read-only:
 --   - não cria fixture
@@ -123,9 +133,11 @@ expected_agenda_cols as (
       ('simulacao_id', true),
       ('empreendimento_id', true),
       ('status', true),
+      ('totais', true),
       ('versao', false),
       ('checksum', false),
-      ('totais', true),
+      ('payload_origem', false),
+      ('metadata', false),
       ('created_at', false),
       ('updated_at', false)
   ) as e(column_name, required_for_4c)
@@ -139,14 +151,18 @@ expected_parcela_cols as (
       ('simulacao_id', true),
       ('empreendimento_id', true),
       ('grupo', true),
-      ('descricao', false),
-      ('ordem', false),
-      ('parcela_numero', false),
-      ('parcelas_total_item', false),
-      ('data_vencimento', true),
+      ('descricao', true),
+      ('ordem', true),
       ('valor_atual', true),
-      ('negociavel', true),
-      ('motivos_bloqueio', false),
+      ('data_atual', true),
+      ('eh_periodicidade_simbolica', true),
+      ('pode_receber_antecipacao', true),
+      ('pode_receber_postergacao', true),
+      ('valor_original', false),
+      ('data_original', false),
+      ('origem_data', false),
+      ('regra_data', false),
+      ('pode_receber_vpl', false),
       ('metadata', false),
       ('created_at', false),
       ('updated_at', false)
@@ -161,7 +177,6 @@ expected_simulacao_cols as (
       ('empreendimento_id', true),
       ('cliente_nome', false),
       ('snapshot_payload', false),
-      ('metadata', false),
       ('created_at', false),
       ('updated_at', false)
   ) as e(column_name, required_for_4c)
@@ -204,7 +219,7 @@ sensitive_cols as (
     table_name,
     column_name,
     case
-      when column_name in ('metadata', 'snapshot_payload') then 'payload_ou_metadata_bruto'
+      when column_name in ('metadata', 'snapshot_payload', 'payload_origem') then 'payload_ou_metadata_bruto'
       when column_name in ('checksum', 'versao') then 'controle_interno'
       when column_name in ('created_by', 'updated_by', 'criado_por', 'atualizado_por', 'confirmado_por', 'cancelado_por') then 'auditoria_usuario'
       when column_name ilike '%vpl%' then 'vpl'
@@ -219,7 +234,7 @@ sensitive_cols as (
     end as risco_cliente_safe
   from cols
   where column_name in (
-      'metadata', 'snapshot_payload', 'checksum', 'versao',
+      'metadata', 'snapshot_payload', 'payload_origem', 'checksum', 'versao',
       'created_by', 'updated_by', 'criado_por', 'atualizado_por',
       'confirmado_por', 'cancelado_por'
     )
@@ -306,17 +321,21 @@ active_parcelas_summary as (
         and nullif(to_jsonb(p)->>'agenda_id', '') is not null
     )::bigint as parcelas_com_agenda_id,
     count(*) filter (
-      where to_jsonb(p) ? 'data_vencimento'
-        and nullif(to_jsonb(p)->>'data_vencimento', '') is not null
-    )::bigint as parcelas_com_data_vencimento,
+      where to_jsonb(p) ? 'data_atual'
+        and nullif(to_jsonb(p)->>'data_atual', '') is not null
+    )::bigint as parcelas_com_data_atual,
     count(*) filter (
       where to_jsonb(p) ? 'valor_atual'
         and nullif(to_jsonb(p)->>'valor_atual', '') is not null
     )::bigint as parcelas_com_valor_atual,
     count(*) filter (
-      where to_jsonb(p) ? 'negociavel'
-        and nullif(to_jsonb(p)->>'negociavel', '') is not null
-    )::bigint as parcelas_com_negociavel
+      where to_jsonb(p) ? 'eh_periodicidade_simbolica'
+        and nullif(to_jsonb(p)->>'eh_periodicidade_simbolica', '') is not null
+    )::bigint as parcelas_com_flag_periodicidade,
+    count(*) filter (
+      where to_jsonb(p) ? 'pode_receber_antecipacao'
+        and to_jsonb(p) ? 'pode_receber_postergacao'
+    )::bigint as parcelas_com_flags_negociacao
   from public.mesa_cliente_fluxo_parcelas p
 ),
 fixture_candidate_summary as (
@@ -383,7 +402,7 @@ interpretation as (
         then 'BLOQUEAR: RPC 4C existente com EXECUTE para anon.'
       when (select sum(qtd) from required_missing) > 0
         then 'BLOQUEAR: há colunas obrigatórias ausentes para leitura cliente-safe. Use os inventários 03/04/05 para ajustar o contrato aos nomes reais antes de criar a migration.'
-      else 'OK_PARA_CRIAR_MIGRATION_4C_CLIENTE_SAFE: schema mínimo mapeado; criar RPC sem expor campos sensíveis listados.'
+      else 'OK_PARA_CRIAR_MIGRATION_4C_CLIENTE_SAFE: schema mínimo mapeado; criar RPC usando aliases seguros: data_vencimento=data_atual, valor=valor_atual, negociavel=derivado de flags reais; não expor campos sensíveis listados.'
     end as recommended_next_step
 ),
 section_rows as (
@@ -440,12 +459,17 @@ section_rows as (
   select
     6,
     '06_expected_required_columns_status',
-    'status das colunas mínimas 4C conforme contrato candidato',
+    'status das colunas mínimas 4C conforme contrato alinhado ao schema real',
     case when (select sum(qtd) from required_missing) = 0 then 'PASS' else 'FAIL' end,
     jsonb_build_object(
       'agenda', (select jsonb_agg(to_jsonb(agenda_expected_status) order by column_name) from agenda_expected_status),
       'parcelas', (select jsonb_agg(to_jsonb(parcela_expected_status) order by column_name) from parcela_expected_status),
       'simulacao', (select jsonb_agg(to_jsonb(simulacao_expected_status) order by column_name) from simulacao_expected_status),
+      'output_aliases_4c', jsonb_build_object(
+        'data_vencimento', 'mesa_cliente_fluxo_parcelas.data_atual',
+        'valor', 'mesa_cliente_fluxo_parcelas.valor_atual',
+        'negociavel', 'derivado: eh_periodicidade_simbolica=false and (pode_receber_antecipacao=true or pode_receber_postergacao=true)'
+      ),
       'missing_summary', (select jsonb_agg(to_jsonb(required_missing) order by area) from required_missing)
     )
 
