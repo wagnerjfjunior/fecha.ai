@@ -20,10 +20,15 @@
 --   - Termina com ROLLBACK.
 --
 -- Observação:
---   Este teste corrige o rascunho inicial do 08D, que usava colunas inexistentes em
---   mesa_simulacoes, como cliente_email/cliente_telefone/valor_entrada/valor_financiamento.
---   A fixture agora usa a mesma base canônica validada nos testes 08A e 08C:
+--   Este teste usa fixture canônica validada nos testes 08A/08C:
 --   cliente_nome, valor_total, entrada, financiamento, valor_final, snapshot_payload e observacoes.
+--
+-- Correção importante:
+--   Não usar set_config('role', 'authenticated', true). Esse comando altera o role efetivo
+--   da sessão e pode tirar permissão de INSERT na tabela temporária de resultados.
+--   Para auth.uid(), basta configurar request.jwt.claim.sub. Para validar a execução real
+--   como authenticated, o teste usa SET LOCAL ROLE apenas ao redor das chamadas da RPC e
+--   executa RESET ROLE imediatamente depois.
 
 begin;
 
@@ -32,6 +37,8 @@ create temp table if not exists _mc_08d_resultados (
   status text,
   detalhe jsonb
 ) on commit drop;
+
+grant select, insert, update, delete on table _mc_08d_resultados to authenticated;
 
 do $$
 declare
@@ -173,7 +180,6 @@ begin
 
   perform set_config('request.jwt.claim.sub', v_user_id::text, true);
   perform set_config('request.jwt.claim.role', 'authenticated', true);
-  perform set_config('role', 'authenticated', true);
 
   select count(*) into v_agendas_before
   from public.mesa_cliente_agendas_financeiras
