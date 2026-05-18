@@ -29,7 +29,7 @@ Portanto, qualquer trecho antigo que mencione `INSERT`, `UPDATE`, `DELETE`, recr
 A execução oficial deve seguir estes arquivos:
 
 ```txt
-docs/protocolos/protocolo-mestre-fechai-mesacliente-v1.1.md
+docs/protocolos/protocolo-mestre-fechai-mesacliente-v1.2.md
 docs/mesa-cliente/adr/ADR-0001-fase-4a-json-first-sem-persistencia.md
 docs/mesa-cliente/fase-4a-agenda-financeira-json-first-canonica.md
 ```
