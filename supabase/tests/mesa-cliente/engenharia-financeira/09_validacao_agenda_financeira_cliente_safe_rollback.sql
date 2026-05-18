@@ -6,17 +6,17 @@
 --   Validar a RPC public.mesa_cliente_obter_agenda_financeira_cliente_safe(uuid)
 --   usando fixture transacional e ROLLBACK.
 --
+-- Correção operacional:
+--   Este teste NÃO usa tabela temporária.
+--   O Supabase SQL Editor pode perder temp tables entre statements/blocos e gerar 42P01.
+--   Para evitar isso, o coletor de resultado foi reescrito em CTE única.
+--
 -- Este teste cria fixture mínima dentro da transação:
 --   - simulação
 --   - agenda financeira ativa
 --   - parcelas financeiras
 --
 -- Não valida persistência 4B. Valida somente leitura cliente-safe 4C.
---
--- Correção operacional importante:
---   A tabela temporária de resultados é criada antes do BEGIN e sem ON COMMIT DROP.
---   Isso evita erro 42P01 no Supabase SQL Editor quando o editor trata blocos/commits
---   de forma diferente do psql tradicional.
 --
 -- Critérios:
 --   - cliente_safe = true
@@ -31,127 +31,54 @@
 --   - zero DML em mesa_cliente_fluxo_operacoes
 --   - tudo encerrado com ROLLBACK
 
--- Mantém o coletor de resultados fora da transação de fixture.
--- Não usar ON COMMIT DROP aqui: no SQL Editor isso pode derrubar a temp table antes do SELECT final.
-drop table if exists pg_temp._mc_09_resultados;
-
-create temp table _mc_09_resultados (
-  bloco text not null,
-  status text not null,
-  detalhe jsonb not null default '{}'::jsonb
-);
-
 begin;
 
-do $$
-declare
-  v_user_id uuid;
-  v_empresa_id uuid;
-  v_corretor_id uuid;
-  v_role text;
-  v_ativo boolean;
-  v_is_gestor boolean;
-  v_is_admin_local boolean;
-
-  v_empreendimento_id uuid;
-  v_empreendimento_nome text;
-
-  v_simulacao_id uuid := gen_random_uuid();
-  v_agenda_id uuid := gen_random_uuid();
-  v_parcela_periodicidade_id uuid := gen_random_uuid();
-
-  v_before_agendas bigint;
-  v_after_agendas bigint;
-  v_before_parcelas bigint;
-  v_after_parcelas bigint;
-  v_before_operacoes bigint;
-  v_after_operacoes bigint;
-
-  v_result jsonb;
-  v_parcelas jsonb;
-  v_sensitive_found jsonb;
-  v_forbidden_keys text[] := array[
-    'checksum',
-    'metadata',
-    'payload_origem',
-    'criado_por',
-    'atualizado_por',
-    'confirmado_por',
-    'cancelado_por',
-    'pode_receber_vpl',
-    'vpl_aplicado_pct',
-    'premio_corretor_pct',
-    'status_premio',
-    'politica_id',
-    'taxa_ano_pct',
-    'desconto_calculado',
-    'acrescimo_calculado',
-    'economia_liquida'
-  ];
-begin
+with recursive
+candidate as (
   select
     c.user_id,
     c.empresa_id,
-    c.id,
-    coalesce(c.role, ''),
-    coalesce(c.ativo, true),
-    coalesce(c.is_gestor, false),
-    coalesce(c.is_admin_local, false)
-  into
-    v_user_id,
-    v_empresa_id,
-    v_corretor_id,
-    v_role,
-    v_ativo,
-    v_is_gestor,
-    v_is_admin_local
+    c.id as corretor_id,
+    coalesce(c.role, '') as role,
+    coalesce(c.ativo, true) as ativo,
+    coalesce(c.is_gestor, false) as is_gestor,
+    coalesce(c.is_admin_local, false) as is_admin_local,
+    e.id as empreendimento_id,
+    to_jsonb(e)->>'nome' as empreendimento_nome
   from public.corretores c
+  join lateral (
+    select e1.*
+    from public.empreendimentos e1
+    where e1.empresa_id = c.empresa_id
+    order by e1.created_at asc nulls last, e1.id
+    limit 1
+  ) e on true
   where c.user_id is not null
     and coalesce(c.ativo, true) = true
   order by
     case when coalesce(c.role, '') = 'admin_global' then 0 else 1 end,
     c.created_at asc nulls last,
     c.id
-  limit 1;
-
+  limit 1
+),
+ids as (
   select
-    e.id,
-    to_jsonb(e)->>'nome'
-  into
-    v_empreendimento_id,
-    v_empreendimento_nome
-  from public.empreendimentos e
-  where e.empresa_id = v_empresa_id
-  order by e.created_at asc nulls last, e.id
-  limit 1;
-
-  if v_user_id is null or v_empresa_id is null or v_corretor_id is null or v_empreendimento_id is null then
-    insert into _mc_09_resultados values (
-      '01_fixture_transacional_contexto',
-      'FAIL',
-      jsonb_build_object(
-        'user_id', v_user_id,
-        'empresa_id', v_empresa_id,
-        'corretor_id', v_corretor_id,
-        'empreendimento_id', v_empreendimento_id,
-        'orientacao', 'Sem corretor ativo com user_id ou sem empreendimento da mesma empresa para fixture 4C.'
-      )
-    );
-    return;
-  end if;
-
-  perform set_config('request.jwt.claim.sub', v_user_id::text, true);
-  perform set_config('request.jwt.claim.role', 'authenticated', true);
-
-  select count(*) into v_before_agendas
-  from public.mesa_cliente_agendas_financeiras;
-
-  select count(*) into v_before_parcelas
-  from public.mesa_cliente_fluxo_parcelas;
-
-  select count(*) into v_before_operacoes
-  from public.mesa_cliente_fluxo_operacoes;
-
+    gen_random_uuid() as simulacao_id,
+    gen_random_uuid() as agenda_id
+),
+auth_ctx as (
+  select
+    set_config('request.jwt.claim.sub', c.user_id::text, true) as sub_set,
+    set_config('request.jwt.claim.role', 'authenticated', true) as role_set
+  from candidate c
+),
+before_counts as (
+  select
+    (select count(*) from public.mesa_cliente_agendas_financeiras)::bigint as agendas_before,
+    (select count(*) from public.mesa_cliente_fluxo_parcelas)::bigint as parcelas_before,
+    (select count(*) from public.mesa_cliente_fluxo_operacoes)::bigint as operacoes_before
+),
+ins_simulacao as (
   insert into public.mesa_simulacoes (
     id,
     empresa_id,
@@ -165,11 +92,12 @@ begin
     status,
     created_at,
     updated_at
-  ) values (
-    v_simulacao_id,
-    v_empresa_id,
-    v_corretor_id,
-    v_empreendimento_id,
+  )
+  select
+    i.simulacao_id,
+    c.empresa_id,
+    c.corretor_id,
+    c.empreendimento_id,
     'Fixture 09 - Cliente Safe',
     1000000,
     100000,
@@ -178,8 +106,12 @@ begin
     'rascunho',
     now(),
     now()
-  );
-
+  from candidate c
+  cross join ids i
+  cross join auth_ctx a
+  returning id
+),
+ins_agenda as (
   insert into public.mesa_cliente_agendas_financeiras (
     id,
     empresa_id,
@@ -195,23 +127,47 @@ begin
     criado_por,
     created_at,
     updated_at
-  ) values (
-    v_agenda_id,
-    v_empresa_id,
-    v_simulacao_id,
-    v_empreendimento_id,
+  )
+  select
+    i.agenda_id,
+    c.empresa_id,
+    i.simulacao_id,
+    c.empreendimento_id,
     1,
     'ativa',
     'fixture_09_cliente_safe',
-    md5(v_simulacao_id::text || ':fixture_09'),
+    md5(i.simulacao_id::text || ':fixture_09'),
     jsonb_build_object('nao_expor', 'payload_origem_sensivel'),
     jsonb_build_object('qtd_parcelas', 3, 'valor_total', 17500.50),
     jsonb_build_object('nao_expor', 'metadata_sensivel'),
-    v_user_id,
+    c.user_id,
     now(),
     now()
-  );
-
+  from candidate c
+  cross join ids i
+  join ins_simulacao s on s.id = i.simulacao_id
+  returning id
+),
+parcelas_fixture as (
+  select *
+  from (values
+    (1, 'entrada'::text, 'Entrada'::text, 10000::numeric, date '2099-05-31', false, true, true, true, 'metadata_parcela_entrada'::text),
+    (2, 'mensal'::text, 'Mensais'::text, 7500.50::numeric, date '2099-06-30', false, true, true, true, 'metadata_parcela_mensal'::text),
+    (3, 'periodicidade'::text, 'Periodicidade simbólica'::text, 0::numeric, date '2099-07-31', true, false, false, false, 'metadata_parcela_periodicidade'::text)
+  ) as v(
+    ordem,
+    grupo,
+    descricao,
+    valor,
+    data_ref,
+    eh_periodicidade_simbolica,
+    pode_receber_vpl,
+    pode_receber_antecipacao,
+    pode_receber_postergacao,
+    metadata_label
+  )
+),
+ins_parcelas as (
   insert into public.mesa_cliente_fluxo_parcelas (
     empresa_id,
     simulacao_id,
@@ -235,164 +191,185 @@ begin
     agenda_id,
     created_at,
     updated_at
-  ) values
-  (
-    v_empresa_id,
-    v_simulacao_id,
-    v_empreendimento_id,
-    'entrada',
-    'Entrada',
-    10000,
-    10000,
-    date '2099-05-31',
-    date '2099-05-31',
-    'tabela_comercial_mes',
+  )
+  select
+    c.empresa_id,
+    i.simulacao_id,
+    c.empreendimento_id,
+    pf.grupo,
+    pf.descricao,
+    pf.valor,
+    pf.valor,
+    pf.data_ref,
+    pf.data_ref,
+    'tabela_comercial_mes'::public.mesa_financeira_origem_data,
     'fixture_09',
-    1,
-    false,
-    true,
-    true,
-    true,
-    jsonb_build_object('nao_expor', 'metadata_parcela_entrada'),
-    v_user_id,
-    v_user_id,
-    v_agenda_id,
+    pf.ordem,
+    pf.eh_periodicidade_simbolica,
+    pf.pode_receber_vpl,
+    pf.pode_receber_antecipacao,
+    pf.pode_receber_postergacao,
+    jsonb_build_object('nao_expor', pf.metadata_label),
+    c.user_id,
+    c.user_id,
+    i.agenda_id,
     now(),
     now()
-  ),
-  (
-    v_empresa_id,
-    v_simulacao_id,
-    v_empreendimento_id,
-    'mensal',
-    'Mensais',
-    7500.50,
-    7500.50,
-    date '2099-06-30',
-    date '2099-06-30',
-    'tabela_comercial_mes',
-    'fixture_09',
-    2,
-    false,
-    true,
-    true,
-    true,
-    jsonb_build_object('nao_expor', 'metadata_parcela_mensal'),
-    v_user_id,
-    v_user_id,
-    v_agenda_id,
-    now(),
-    now()
-  ),
-  (
-    v_empresa_id,
-    v_simulacao_id,
-    v_empreendimento_id,
-    'periodicidade',
-    'Periodicidade simbólica',
-    0,
-    0,
-    date '2099-07-31',
-    date '2099-07-31',
-    'tabela_comercial_mes',
-    'fixture_09',
-    3,
-    true,
-    false,
-    false,
-    false,
-    jsonb_build_object('nao_expor', 'metadata_parcela_periodicidade'),
-    v_user_id,
-    v_user_id,
-    v_agenda_id,
-    now(),
-    now()
-  );
+  from candidate c
+  cross join ids i
+  join ins_agenda a on a.id = i.agenda_id
+  cross join parcelas_fixture pf
+  returning id, grupo
+),
+rpc_result as (
+  select public.mesa_cliente_obter_agenda_financeira_cliente_safe(i.simulacao_id) as result
+  from ids i
+  where exists (select 1 from ins_parcelas)
+),
+r as (
+  select (select result from rpc_result limit 1) as result
+),
+parcelas_payload as (
+  select coalesce((select result->'parcelas' from r), '[]'::jsonb) as parcelas
+),
+after_counts as (
+  select
+    (select count(*) from public.mesa_cliente_agendas_financeiras)::bigint as agendas_after,
+    (select count(*) from public.mesa_cliente_fluxo_parcelas)::bigint as parcelas_after,
+    (select count(*) from public.mesa_cliente_fluxo_operacoes)::bigint as operacoes_after
+),
+forbidden_keys as (
+  select array[
+    'checksum',
+    'metadata',
+    'payload_origem',
+    'criado_por',
+    'atualizado_por',
+    'confirmado_por',
+    'cancelado_por',
+    'pode_receber_vpl',
+    'vpl_aplicado_pct',
+    'premio_corretor_pct',
+    'status_premio',
+    'politica_id',
+    'taxa_ano_pct',
+    'desconto_calculado',
+    'acrescimo_calculado',
+    'economia_liquida'
+  ]::text[] as keys
+),
+walk(path, value) as (
+  select array[]::text[], (select result from r)
+  where (select result from r) is not null
 
-  select p.id
-    into v_parcela_periodicidade_id
-  from public.mesa_cliente_fluxo_parcelas p
-  where p.agenda_id = v_agenda_id
-    and p.grupo = 'periodicidade'
-  limit 1;
+  union all
 
-  insert into _mc_09_resultados values (
-    '01_fixture_transacional_contexto',
-    'PASS',
-    jsonb_build_object(
-      'user_id', v_user_id,
-      'empresa_id', v_empresa_id,
-      'corretor_id', v_corretor_id,
-      'role', v_role,
-      'ativo', v_ativo,
-      'is_gestor', v_is_gestor,
-      'is_admin_local', v_is_admin_local,
-      'empreendimento_id', v_empreendimento_id,
-      'empreendimento_nome', v_empreendimento_nome,
-      'simulacao_id_fixture', v_simulacao_id,
-      'agenda_id_fixture', v_agenda_id,
-      'parcela_periodicidade_id', v_parcela_periodicidade_id
-    )
-  );
+  select path || e.key, e.value
+  from walk
+  cross join lateral jsonb_each(walk.value) e(key, value)
+  where jsonb_typeof(walk.value) = 'object'
 
-  select public.mesa_cliente_obter_agenda_financeira_cliente_safe(v_simulacao_id)
-    into v_result;
+  union all
 
-  v_parcelas := coalesce(v_result->'parcelas', '[]'::jsonb);
+  select path || a.idx::text, a.value
+  from walk
+  cross join lateral jsonb_array_elements(walk.value) with ordinality a(value, idx)
+  where jsonb_typeof(walk.value) = 'array'
+),
+sensitive_found as (
+  select coalesce(jsonb_agg(array_to_string(path, '.')), '[]'::jsonb) as paths
+  from walk
+  cross join forbidden_keys fk
+  where array_length(path, 1) is not null
+    and path[array_length(path, 1)] = any(fk.keys)
+),
+resultados as (
+  select
+    '01_fixture_transacional_contexto'::text as bloco,
+    case when exists (select 1 from candidate) then 'PASS' else 'FAIL' end::text as status,
+    coalesce((
+      select jsonb_build_object(
+        'user_id', c.user_id,
+        'empresa_id', c.empresa_id,
+        'corretor_id', c.corretor_id,
+        'role', c.role,
+        'ativo', c.ativo,
+        'is_gestor', c.is_gestor,
+        'is_admin_local', c.is_admin_local,
+        'empreendimento_id', c.empreendimento_id,
+        'empreendimento_nome', c.empreendimento_nome,
+        'simulacao_id_fixture', i.simulacao_id,
+        'agenda_id_fixture', i.agenda_id,
+        'qtd_parcelas_fixture', (select count(*) from ins_parcelas)
+      )
+      from candidate c cross join ids i
+      limit 1
+    ), jsonb_build_object(
+      'orientacao', 'Sem corretor ativo com user_id ou sem empreendimento da mesma empresa para fixture 4C.'
+    )) as detalhe
 
-  insert into _mc_09_resultados values (
+  union all
+
+  select
     '02_rpc_executou_cliente_safe',
-    case when v_result->>'ok' = 'true' and v_result->>'fase' = '4C_CLIENTE_SAFE' then 'PASS' else 'FAIL' end,
+    case when (select result->>'ok' from r) = 'true'
+       and (select result->>'fase' from r) = '4C_CLIENTE_SAFE'
+      then 'PASS' else 'FAIL' end,
     jsonb_build_object(
-      'ok', v_result->>'ok',
-      'fase', v_result->>'fase',
-      'payload_existe', v_result is not null
+      'ok', (select result->>'ok' from r),
+      'fase', (select result->>'fase' from r),
+      'payload_existe', (select result from r) is not null
     )
-  );
 
-  insert into _mc_09_resultados values (
+  union all
+
+  select
     '03_payload_cliente_safe',
-    case when v_result->>'visao' = 'cliente_safe' and v_result->>'cliente_safe' = 'true' then 'PASS' else 'FAIL' end,
+    case when (select result->>'visao' from r) = 'cliente_safe'
+       and (select result->>'cliente_safe' from r) = 'true'
+      then 'PASS' else 'FAIL' end,
     jsonb_build_object(
-      'visao', v_result->>'visao',
-      'cliente_safe', v_result->>'cliente_safe',
-      'persistencia', v_result->>'persistencia',
-      'dml_financeiro', v_result->>'dml_financeiro'
+      'visao', (select result->>'visao' from r),
+      'cliente_safe', (select result->>'cliente_safe' from r),
+      'persistencia', (select result->>'persistencia' from r),
+      'dml_financeiro', (select result->>'dml_financeiro' from r)
     )
-  );
 
-  insert into _mc_09_resultados values (
+  union all
+
+  select
     '04_agenda_ativa_retornada',
-    case when v_result #>> '{agenda,id}' = v_agenda_id::text and v_result #>> '{agenda,status}' = 'ativa' then 'PASS' else 'FAIL' end,
+    case when (select result #>> '{agenda,id}' from r) = (select agenda_id::text from ids)
+       and (select result #>> '{agenda,status}' from r) = 'ativa'
+      then 'PASS' else 'FAIL' end,
     jsonb_build_object(
-      'agenda_id_payload', v_result #>> '{agenda,id}',
-      'agenda_id_fixture', v_agenda_id,
-      'agenda_status_payload', v_result #>> '{agenda,status}'
+      'agenda_id_payload', (select result #>> '{agenda,id}' from r),
+      'agenda_id_fixture', (select agenda_id from ids),
+      'agenda_status_payload', (select result #>> '{agenda,status}' from r)
     )
-  );
 
-  insert into _mc_09_resultados values (
+  union all
+
+  select
     '05_parcelas_cliente_safe',
-    case
-      when jsonb_array_length(v_parcelas) = 3
-       and (v_result #>> '{totais,qtd_parcelas}')::integer = 3
-       and (v_result #>> '{totais,valor_total}')::numeric = 17500.50
-      then 'PASS'
-      else 'FAIL'
-    end,
+    case when jsonb_array_length((select parcelas from parcelas_payload)) = 3
+       and ((select result #>> '{totais,qtd_parcelas}' from r)::integer = 3)
+       and ((select result #>> '{totais,valor_total}' from r)::numeric = 17500.50)
+      then 'PASS' else 'FAIL' end,
     jsonb_build_object(
-      'qtd_parcelas_payload', jsonb_array_length(v_parcelas),
-      'qtd_parcelas_totalizador', v_result #>> '{totais,qtd_parcelas}',
-      'valor_total_payload', v_result #>> '{totais,valor_total}'
+      'qtd_parcelas_payload', jsonb_array_length((select parcelas from parcelas_payload)),
+      'qtd_parcelas_totalizador', (select result #>> '{totais,qtd_parcelas}' from r),
+      'valor_total_payload', (select result #>> '{totais,valor_total}' from r)
     )
-  );
 
-  insert into _mc_09_resultados values (
+  union all
+
+  select
     '06_aliases_e_derivacoes',
     case
       when exists (
         select 1
-        from jsonb_array_elements(v_parcelas) p
+        from jsonb_array_elements((select parcelas from parcelas_payload)) p
         where p->>'descricao' = 'Mensais'
           and p->>'data_vencimento' = '2099-06-30'
           and (p->>'valor')::numeric = 7500.50
@@ -400,134 +377,99 @@ begin
       )
       and exists (
         select 1
-        from jsonb_array_elements(v_parcelas) p
+        from jsonb_array_elements((select parcelas from parcelas_payload)) p
         where p->>'grupo' = 'periodicidade'
           and p->>'negociavel' = 'false'
           and p->'motivos_bloqueio' ? 'periodicidade_simbolica_nao_negociavel'
       )
-      then 'PASS'
-      else 'FAIL'
-    end,
+      then 'PASS' else 'FAIL' end,
     jsonb_build_object(
       'mensal', (
         select p
-        from jsonb_array_elements(v_parcelas) p
+        from jsonb_array_elements((select parcelas from parcelas_payload)) p
         where p->>'descricao' = 'Mensais'
         limit 1
       ),
       'periodicidade', (
         select p
-        from jsonb_array_elements(v_parcelas) p
+        from jsonb_array_elements((select parcelas from parcelas_payload)) p
         where p->>'grupo' = 'periodicidade'
         limit 1
       )
     )
-  );
 
-  with recursive walk(path, value) as (
-    select array[]::text[], v_result
-    union all
-    select path || key, val
-    from walk,
-    lateral jsonb_each(walk.value) e(key, val)
-    where jsonb_typeof(walk.value) = 'object'
-    union all
-    select path || idx::text, val
-    from walk,
-    lateral jsonb_array_elements(walk.value) with ordinality a(val, idx)
-    where jsonb_typeof(walk.value) = 'array'
-  )
-  select coalesce(jsonb_agg(array_to_string(path, '.')), '[]'::jsonb)
-    into v_sensitive_found
-  from walk
-  where array_length(path, 1) is not null
-    and path[array_length(path, 1)] = any(v_forbidden_keys);
+  union all
 
-  insert into _mc_09_resultados values (
+  select
     '07_sem_campos_sensiveis',
-    case when jsonb_array_length(v_sensitive_found) = 0 then 'PASS' else 'FAIL' end,
+    case when jsonb_array_length((select paths from sensitive_found)) = 0 then 'PASS' else 'FAIL' end,
     jsonb_build_object(
-      'forbidden_keys_checked', to_jsonb(v_forbidden_keys),
-      'sensitive_paths_found', v_sensitive_found
+      'forbidden_keys_checked', to_jsonb((select keys from forbidden_keys)),
+      'sensitive_paths_found', (select paths from sensitive_found)
     )
-  );
 
-  insert into _mc_09_resultados values (
+  union all
+
+  select
     '08_grants_rpc_anon_bloqueado_authenticated_liberado',
     case
       when not has_function_privilege('anon', 'public.mesa_cliente_obter_agenda_financeira_cliente_safe(uuid)', 'EXECUTE')
        and has_function_privilege('authenticated', 'public.mesa_cliente_obter_agenda_financeira_cliente_safe(uuid)', 'EXECUTE')
-      then 'PASS'
-      else 'FAIL'
-    end,
+      then 'PASS' else 'FAIL' end,
     jsonb_build_object(
       'anon_can_execute', has_function_privilege('anon', 'public.mesa_cliente_obter_agenda_financeira_cliente_safe(uuid)', 'EXECUTE'),
       'authenticated_can_execute', has_function_privilege('authenticated', 'public.mesa_cliente_obter_agenda_financeira_cliente_safe(uuid)', 'EXECUTE')
     )
-  );
 
-  select count(*) into v_after_agendas
-  from public.mesa_cliente_agendas_financeiras;
+  union all
 
-  select count(*) into v_after_parcelas
-  from public.mesa_cliente_fluxo_parcelas;
-
-  select count(*) into v_after_operacoes
-  from public.mesa_cliente_fluxo_operacoes;
-
-  insert into _mc_09_resultados values (
+  select
     '09_read_only_sem_dml_adicional_agendas',
-    case when v_after_agendas = v_before_agendas + 1 then 'PASS' else 'FAIL' end,
+    case when (select agendas_after from after_counts) = (select agendas_before from before_counts) + 1
+      then 'PASS' else 'FAIL' end,
     jsonb_build_object(
-      'agendas_before', v_before_agendas,
-      'agendas_after', v_after_agendas,
+      'agendas_before', (select agendas_before from before_counts),
+      'agendas_after', (select agendas_after from after_counts),
       'observacao', 'Apenas a fixture transacional da agenda deve existir antes do rollback.'
     )
-  );
 
-  insert into _mc_09_resultados values (
+  union all
+
+  select
     '10_read_only_sem_dml_adicional_parcelas',
-    case when v_after_parcelas = v_before_parcelas + 3 then 'PASS' else 'FAIL' end,
+    case when (select parcelas_after from after_counts) = (select parcelas_before from before_counts) + 3
+      then 'PASS' else 'FAIL' end,
     jsonb_build_object(
-      'parcelas_before', v_before_parcelas,
-      'parcelas_after', v_after_parcelas,
+      'parcelas_before', (select parcelas_before from before_counts),
+      'parcelas_after', (select parcelas_after from after_counts),
       'observacao', 'Apenas as 3 parcelas fixture devem existir antes do rollback.'
     )
-  );
 
-  insert into _mc_09_resultados values (
+  union all
+
+  select
     '11_zero_dml_operacoes',
-    case when v_after_operacoes = v_before_operacoes then 'PASS' else 'FAIL' end,
+    case when (select operacoes_after from after_counts) = (select operacoes_before from before_counts)
+      then 'PASS' else 'FAIL' end,
     jsonb_build_object(
-      'operacoes_before', v_before_operacoes,
-      'operacoes_after', v_after_operacoes
+      'operacoes_before', (select operacoes_before from before_counts),
+      'operacoes_after', (select operacoes_after from after_counts)
     )
-  );
 
-  insert into _mc_09_resultados values (
+  union all
+
+  select
     '12_rollback_notice',
     'INFO',
     jsonb_build_object(
       'mensagem', 'Simulação, agenda e parcelas fixture foram criadas apenas dentro da transação. Tudo será encerrado com ROLLBACK.'
     )
-  );
-exception when others then
-  insert into _mc_09_resultados values (
-    '00_falha_nao_tratada',
-    'FAIL',
-    jsonb_build_object(
-      'message', sqlerrm,
-      'sqlstate', sqlstate,
-      'orientacao', 'Falha não tratada no teste 09 cliente-safe. Não avançar sem corrigir.'
-    )
-  );
-end $$;
-
+)
 select
   bloco,
   status,
   detalhe
-from _mc_09_resultados
+from resultados
 order by bloco;
 
 rollback;
