@@ -8,12 +8,18 @@
 --
 -- Critérios:
 --   - Cria fixture transacional em mesa_simulacoes.
---   - Executa como authenticated.
+--   - Executa a RPC como authenticated.
+--   - Valida a persistência física depois de RESET ROLE, para não confundir RLS de leitura com ausência de DML.
 --   - Cria 1 cabeçalho em mesa_cliente_agendas_financeiras.
 --   - Cria 6 parcelas em mesa_cliente_fluxo_parcelas vinculadas ao agenda_id.
 --   - Não cria operação financeira em mesa_cliente_fluxo_operacoes.
 --   - Usa status='ativa', totais JSONB e checksum conforme migration 4B real.
 --   - Termina com ROLLBACK.
+--
+-- Observação importante:
+--   A RPC é SECURITY DEFINER e insere corretamente. As validações físicas precisam ocorrer fora do role
+--   authenticated porque as policies/RLS podem ocultar linhas persistidas no mesmo teste. Banco não sumiu;
+--   era só a cortina do RLS fazendo teatro.
 
 begin;
 
@@ -103,29 +109,36 @@ setup as (
 )
 select * from setup;
 
+with ctx as (
+  select
+    nullif(current_setting('app.mc08a.simulacao_id', true), '')::uuid as simulacao_id
+)
+select
+  set_config('app.mc08a.agendas_before', coalesce((
+    select count(*)::text
+    from public.mesa_cliente_agendas_financeiras a
+    join ctx on ctx.simulacao_id = a.simulacao_id
+  ), '0'), true),
+  set_config('app.mc08a.parcelas_before', coalesce((
+    select count(*)::text
+    from public.mesa_cliente_fluxo_parcelas p
+    join ctx on ctx.simulacao_id = p.simulacao_id
+  ), '0'), true),
+  set_config('app.mc08a.operacoes_before', coalesce((
+    select count(*)::text
+    from public.mesa_cliente_fluxo_operacoes o
+    join ctx on ctx.simulacao_id = o.simulacao_id
+  ), '0'), true)
+from ctx;
+
 set local role authenticated;
 
 with ctx as materialized (
   select
-    nullif(current_setting('app.mc08a.user_id', true), '')::uuid as user_id,
-    nullif(current_setting('app.mc08a.corretor_id', true), '')::uuid as corretor_id,
     nullif(current_setting('app.mc08a.empresa_id', true), '')::uuid as empresa_id,
     nullif(current_setting('app.mc08a.empreendimento_id', true), '')::uuid as empreendimento_id,
     nullif(current_setting('app.mc08a.simulacao_id', true), '')::uuid as simulacao_id,
-    nullif(current_setting('app.mc08a.role', true), '') as role,
-    coalesce(nullif(current_setting('app.mc08a.ativo', true), '')::boolean, false) as ativo,
-    coalesce(nullif(current_setting('app.mc08a.is_admin_local', true), '')::boolean, false) as is_admin_local,
-    coalesce(nullif(current_setting('app.mc08a.is_gestor', true), '')::boolean, false) as is_gestor,
-    nullif(current_setting('app.mc08a.empreendimento_nome', true), '') as empreendimento_nome,
     coalesce(nullif(current_setting('app.mc08a.qtd_ctx', true), '')::integer, 0) as qtd_ctx
-),
-before_counts as materialized (
-  select
-    ctx.simulacao_id,
-    (select count(*)::bigint from public.mesa_cliente_agendas_financeiras a where a.simulacao_id = ctx.simulacao_id) as agendas_before,
-    (select count(*)::bigint from public.mesa_cliente_fluxo_parcelas p where p.simulacao_id = ctx.simulacao_id) as parcelas_before,
-    (select count(*)::bigint from public.mesa_cliente_fluxo_operacoes o where o.simulacao_id = ctx.simulacao_id) as operacoes_before
-  from ctx
 ),
 chamada as materialized (
   select
@@ -170,6 +183,28 @@ chamada as materialized (
       else null::jsonb
     end as payload
   from ctx
+)
+select set_config('app.mc08a.payload', coalesce((select payload::text from chamada), 'null'), true);
+
+reset role;
+
+with ctx as materialized (
+  select
+    nullif(current_setting('app.mc08a.user_id', true), '')::uuid as user_id,
+    nullif(current_setting('app.mc08a.corretor_id', true), '')::uuid as corretor_id,
+    nullif(current_setting('app.mc08a.empresa_id', true), '')::uuid as empresa_id,
+    nullif(current_setting('app.mc08a.empreendimento_id', true), '')::uuid as empreendimento_id,
+    nullif(current_setting('app.mc08a.simulacao_id', true), '')::uuid as simulacao_id,
+    nullif(current_setting('app.mc08a.role', true), '') as role,
+    coalesce(nullif(current_setting('app.mc08a.ativo', true), '')::boolean, false) as ativo,
+    coalesce(nullif(current_setting('app.mc08a.is_admin_local', true), '')::boolean, false) as is_admin_local,
+    coalesce(nullif(current_setting('app.mc08a.is_gestor', true), '')::boolean, false) as is_gestor,
+    nullif(current_setting('app.mc08a.empreendimento_nome', true), '') as empreendimento_nome,
+    coalesce(nullif(current_setting('app.mc08a.qtd_ctx', true), '')::integer, 0) as qtd_ctx,
+    coalesce(nullif(current_setting('app.mc08a.agendas_before', true), '')::bigint, 0) as agendas_before,
+    coalesce(nullif(current_setting('app.mc08a.parcelas_before', true), '')::bigint, 0) as parcelas_before,
+    coalesce(nullif(current_setting('app.mc08a.operacoes_before', true), '')::bigint, 0) as operacoes_before,
+    coalesce(nullif(current_setting('app.mc08a.payload', true), '')::jsonb, 'null'::jsonb) as payload
 ),
 after_counts as materialized (
   select
@@ -178,7 +213,6 @@ after_counts as materialized (
     (select count(*)::bigint from public.mesa_cliente_fluxo_parcelas p where p.simulacao_id = ctx.simulacao_id) as parcelas_after,
     (select count(*)::bigint from public.mesa_cliente_fluxo_operacoes o where o.simulacao_id = ctx.simulacao_id) as operacoes_after
   from ctx
-  cross join chamada
 ),
 db_agenda as materialized (
   select
@@ -213,24 +247,20 @@ db_parcelas as materialized (
 p as materialized (
   select
     c.*,
-    b.agendas_before,
-    b.parcelas_before,
-    b.operacoes_before,
     ac.agendas_after,
     ac.parcelas_after,
     ac.operacoes_after,
-    ch.payload,
-    (ch.payload->>'ok')::boolean as ok,
-    ch.payload->>'fase' as fase,
-    ch.payload->>'visao' as visao,
-    (ch.payload->>'cliente_safe')::boolean as cliente_safe,
-    (ch.payload->>'persistencia')::boolean as persistencia,
-    (ch.payload->>'dml_financeiro')::boolean as dml_financeiro,
-    (ch.payload->>'idempotente')::boolean as idempotente,
-    nullif(ch.payload->>'agenda_id', '')::uuid as agenda_id_payload,
-    (ch.payload->>'qtd_parcelas_persistidas')::integer as qtd_parcelas_payload,
-    (ch.payload->>'valor_total_agenda')::numeric as valor_total_agenda_payload,
-    ch.payload->>'checksum' as checksum_payload,
+    (c.payload->>'ok')::boolean as ok,
+    c.payload->>'fase' as fase,
+    c.payload->>'visao' as visao,
+    (c.payload->>'cliente_safe')::boolean as cliente_safe,
+    (c.payload->>'persistencia')::boolean as persistencia,
+    (c.payload->>'dml_financeiro')::boolean as dml_financeiro,
+    (c.payload->>'idempotente')::boolean as idempotente,
+    nullif(c.payload->>'agenda_id', '')::uuid as agenda_id_payload,
+    (c.payload->>'qtd_parcelas_persistidas')::integer as qtd_parcelas_payload,
+    (c.payload->>'valor_total_agenda')::numeric as valor_total_agenda_payload,
+    c.payload->>'checksum' as checksum_payload,
     da.agenda_id as agenda_id_db,
     da.status as agenda_status_db,
     da.qtd_parcelas as qtd_parcelas_agenda_db,
@@ -242,8 +272,6 @@ p as materialized (
     dp.qtd_mensal_data_resolvida,
     dp.qtd_com_agenda_id
   from ctx c
-  cross join before_counts b
-  cross join chamada ch
   cross join after_counts ac
   left join db_agenda da on true
   cross join db_parcelas dp
