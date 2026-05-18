@@ -273,7 +273,7 @@ Testes oficiais aprovados:
 supabase/tests/mesa-cliente/engenharia-financeira/08a_validacao_persistencia_agenda_financeira_rollback.sql
 supabase/tests/mesa-cliente/engenharia-financeira/08b_validacao_persistencia_agenda_financeira_idempotencia_rollback.sql
 supabase/tests/mesa-cliente/engenharia-financeira/08c_validacao_persistencia_agenda_financeira_negativos_rollback.sql
-supabase/tests/mesa-cliente/engenharia-financeira/08d_validacao_bloqueio_operacao_confirmada_rollback.sql
+supabase/tests/mesa-cliente/engenharia-financeira/08d_validacao_persistencia_agenda_financeira_operacao_confirmada_rollback.sql
 ```
 
 Aprovação comprovou:
