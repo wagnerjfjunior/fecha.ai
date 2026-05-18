@@ -5,7 +5,7 @@
 **Data:** 2026-05-18  
 **Branch:** `feature/mesa-cliente-engenharia-financeira`  
 **ADR:** `docs/mesa-cliente/adr/ADR-0001-fase-4a-json-first-sem-persistencia.md`  
-**Protocolo obrigatório:** `docs/protocolos/protocolo-mestre-fechai-mesacliente-v1.1.md`  
+**Protocolo obrigatório:** `docs/protocolos/protocolo-mestre-fechai-mesacliente-v1.2.md`  
 
 ---
 
@@ -234,7 +234,7 @@ Exemplo de retorno administrativo seguro:
       "valor_atual": 3000,
       "data_original": "2026-06-18",
       "data_atual": "2026-06-18",
-      "origem_data": "mes_ano_dia_ato",
+      "origem_data": "tabela_comercial_mes",
       "regra_data": "usar_dia_do_ato",
       "ordem": 2,
       "eh_periodicidade_simbolica": false,
