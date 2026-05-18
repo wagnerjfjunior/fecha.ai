@@ -342,7 +342,7 @@ begin
     v_simulacao_id,
     v_empreendimento_id,
     v_tipo_operacao::public.mesa_financeira_operacao_tipo,
-    'mensais',
+    'mensal',
     'entrada',
     1000.00,
     date '2099-06-30',
