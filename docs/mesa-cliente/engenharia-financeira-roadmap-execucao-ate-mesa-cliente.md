@@ -1,8 +1,37 @@
 # MesaCliente — Roadmap de execução da Engenharia Financeira até teste em mesa
 
-Branch oficial de trabalho: `feature/mesa-cliente-engenharia-financeira`.
+**Status:** Oficial, atualizado para o contrato JSON-first da Fase 4A  
+**Branch oficial de trabalho:** `feature/mesa-cliente-engenharia-financeira`  
+**Atualizado em:** 2026-05-18  
+**Protocolo obrigatório:** `docs/protocolos/protocolo-mestre-fechai-mesacliente-v1.1.md`  
+**ADR vigente:** `docs/mesa-cliente/adr/ADR-0001-fase-4a-json-first-sem-persistencia.md`  
+**Contrato canônico da Fase 4A:** `docs/mesa-cliente/fase-4a-agenda-financeira-json-first-canonica.md`  
 
-Este documento define o plano executivo completo para levar a Engenharia Financeira do MesaCliente da fase atual até o primeiro teste controlado em mesa com cliente. Ele consolida a estratégia técnica, os gates de segurança, a sequência de migrations/RPCs, os testes obrigatórios e os critérios de liberação.
+---
+
+## 0. Aviso de atualização
+
+Este roadmap substitui a leitura anterior que tratava a Fase 4A como persistência direta em `mesa_cliente_fluxo_parcelas`.
+
+A decisão oficial agora é:
+
+```txt
+4A = gerar agenda financeira em JSON, sem persistir
+4B = persistir agenda com lock, idempotência e auditoria
+4C = leitura cliente-safe
+5A = simular impacto financeiro com agenda persistida
+5B = registrar operação financeira
+5C = confirmar/cancelar operação
+Depois = integração front/BFF
+```
+
+Regra curta:
+
+> **4A pensa. 4B grava. 4C mostra para o cliente.**
+
+Qualquer referência antiga a persistência, recriação, `INSERT`, `UPDATE` ou `DELETE` de agenda dentro da Fase 4A está substituída por este roadmap, pelo ADR-0001 e pelo contrato canônico JSON-first.
+
+---
 
 ## 1. Princípios não negociáveis
 
@@ -13,10 +42,10 @@ Este documento define o plano executivo completo para levar a Engenharia Finance
 5. Nenhuma regra financeira hardcoded no frontend.
 6. RLS obrigatória nas tabelas financeiras.
 7. `auth.uid()` obrigatório em todas as RPCs sensíveis.
-8. Toda RPC deve validar usuário, empresa, tenant, empreendimento e perfil.
+8. Toda RPC deve validar usuário, empresa, tenant, empreendimento, simulação e perfil.
 9. Cliente nunca vê VPL, prêmio, comissão, política interna, impacto administrativo ou regra de remuneração.
 10. Corretor/coordenador pode ver impacto administrativo conforme perfil e autorização.
-11. Antecipação e postergação usam cálculo composto.
+11. Antecipação e postergação usam cálculo composto, mas isso não pertence à Fase 4A.
 12. Data do ato é a base de cálculo quando a tabela não trouxer data oficial.
 13. Data oficial da tabela prevalece sobre regra calculada.
 14. Quando houver apenas mês/ano, usar o dia do ato; se o mês não possuir o dia, usar o último dia válido.
@@ -26,6 +55,10 @@ Este documento define o plano executivo completo para levar a Engenharia Finance
 18. `service_role` nunca pode aparecer em frontend, variável pública, build client-side, storage público, log ou payload de navegador.
 19. Operações financeiras de escrita devem passar por RPCs fortes, com validação interna e least privilege.
 20. Todo teste em produção única deve usar `BEGIN` + `ROLLBACK` até a liberação final.
+21. Toda fase precisa respeitar seu escopo; fase misturada é falha de engenharia.
+22. Nenhuma migration obsoleta deve permanecer como canônica em `supabase/migrations`.
+
+---
 
 ## 2. Status atual consolidado
 
@@ -34,7 +67,10 @@ Este documento define o plano executivo completo para levar a Engenharia Finance
 | Backup local antes da engenharia financeira | Concluído |
 | Branch de trabalho isolada | Concluído |
 | Documentação de arquitetura | Concluído |
-| Plano técnico inicial | Concluído |
+| Protocolo Mestre FECH.AI / MesaCliente v1.1 | Concluído |
+| Protocolo Universal de Funcionamento v1.1 | Concluído |
+| ADR-0001 — Fase 4A JSON-first sem persistência | Concluído |
+| Contrato canônico da Fase 4A JSON-first | Concluído |
 | Tabelas financeiras base | Concluído |
 | RLS das tabelas financeiras | Concluído |
 | Helpers de contexto/autorização | Concluído |
@@ -46,32 +82,39 @@ Este documento define o plano executivo completo para levar a Engenharia Finance
 | Grants endurecidos sem `anon` | Concluído |
 | Teste funcional positivo da simulação admin | Concluído |
 | Teste funcional negativo da simulação admin | Concluído |
-| Persistência de agenda financeira | Pendente |
+| Fase 4A — agenda financeira JSON-first sem persistência | Pendente |
+| Fase 4B — persistência segura da agenda financeira | Pendente |
+| Fase 4C — leitura cliente-safe da agenda | Pendente |
 | Registro/confirmacão de operação financeira | Pendente |
-| Visão cliente-safe | Pendente |
-| Integração de frontend | Pendente |
+| Visão cliente-safe final | Pendente |
+| Integração de frontend/BFF | Pendente |
 | Teste controlado em mesa com cliente | Pendente |
 
-## 3. Arquitetura alvo até a mesa com cliente
+---
 
-Fluxo alvo:
+## 3. Arquitetura alvo atualizada até a mesa com cliente
+
+Fluxo alvo atualizado:
 
 ```text
 Tabela/PDF/entrada atual
   -> parser atual preservado
   -> payload financeiro bruto
-  -> RPC gerar agenda de parcelas
-  -> mesa_cliente_fluxo_parcelas
-  -> RPC simular impacto financeiro admin
-  -> revisão administrativa
-  -> RPC registrar operação financeira
-  -> mesa_cliente_fluxo_operacoes
-  -> RPC confirmar operação financeira
+  -> Fase 4A: RPC gera agenda normalizada em JSON, sem persistir
+  -> validação de datas, grupos, periodicidade e segurança
+  -> Fase 4B: persistência da agenda em mesa_cliente_fluxo_parcelas com lock/idempotência/auditoria
+  -> Fase 4C: leitura cliente-safe da agenda
+  -> Fase 5A: simular impacto financeiro com agenda persistida
+  -> Fase 5B: registrar operação financeira
+  -> Fase 5C: confirmar/cancelar operação financeira
   -> visão cliente-safe
+  -> integração front/BFF
   -> tela MesaCliente para atendimento
 ```
 
-O frontend não deve montar cálculo soberano. Ele pode exibir, solicitar simulação e renderizar o retorno seguro. Toda decisão final de elegibilidade, datas, política, limite de VPL, prêmio e gravação permanece no banco.
+O frontend não deve montar cálculo soberano. Ele pode exibir, solicitar simulação e renderizar o retorno seguro. Toda decisão final de elegibilidade, datas, política, limite de VPL, prêmio e gravação permanece no banco/RPC/BFF autorizado.
+
+---
 
 ## 4. Modelo de segurança DevSecOps
 
@@ -104,13 +147,13 @@ set search_path = public
 
 Obrigatório:
 
-- chamar `mesa_cliente_assert_auth()`;
+- chamar `mesa_cliente_assert_auth()`, se helper confirmado no schema;
 - obter contexto por `auth.uid()`;
 - validar usuário ativo;
-- validar empresa;
+- validar empresa/tenant;
 - validar empreendimento pertence à empresa;
-- validar perfil: admin global, admin local, gestor ou papel explicitamente permitido;
-- validar política vigente quando houver cálculo financeiro;
+- validar simulação pertence à empresa;
+- validar perfil permitido;
 - validar payload JSON item a item;
 - rejeitar campos inválidos com erro explícito;
 - não aceitar `empresa_id` do frontend como fonte soberana;
@@ -139,16 +182,14 @@ Proibido:
 - endpoints que aceitam operação financeira sem sessão autenticada;
 - RPC financeira com `EXECUTE` para `anon`.
 
-Sobre arquitetura client-side: se houver uso de Supabase client no navegador, ele deve servir apenas para bootstrap autenticado com token de sessão, sem permissão real em tabelas financeiras. Para operações financeiras sensíveis, preferir BFF/API server-side ou RPC com JWT autenticado e RLS forte. Se a decisão do projeto for literalmente zero chave pública Supabase no browser, criar camada BFF antes de integrar a tela.
-
 ### 4.5. Auditoria e rastreabilidade
 
-Toda gravação financeira deve registrar:
+Toda gravação financeira futura deve registrar:
 
 - `empresa_id` resolvido no banco;
 - `empreendimento_id` validado;
 - `simulacao_id`;
-- `politica_id` utilizada;
+- `politica_id` utilizada, quando aplicável;
 - `criado_por = auth.uid()` ou corretor resolvido pelo contexto;
 - timestamp;
 - payload de origem sanitizado;
@@ -156,28 +197,32 @@ Toda gravação financeira deve registrar:
 - status da operação;
 - confirmação por perfil autorizado.
 
+---
+
 ## 5. Plano de execução por fases
 
-### Fase 4A — RPC de agenda financeira
+### Fase 4A — RPC de agenda financeira JSON-first sem persistência
 
-Objetivo: transformar o fluxo bruto do MesaCliente em parcelas datadas dentro de `mesa_cliente_fluxo_parcelas`.
+Objetivo: transformar o fluxo bruto do MesaCliente em uma agenda financeira normalizada em JSON, **sem DML financeiro**.
 
-Entregáveis:
-
-1. Migration: `supabase/migrations/*_mesa_cliente_rpc_gerar_agenda_parcelas.sql`
-2. Teste rollback: `supabase/tests/mesa-cliente/engenharia-financeira/07a_validacao_agenda_parcelas_rollback.sql`
-3. Preflight read-only de grants/RLS da RPC.
-
-RPC proposta:
+RPC oficial:
 
 ```sql
-public.gerar_mesa_cliente_agenda_parcelas(
+public.mesa_cliente_gerar_agenda_financeira_admin(
   p_simulacao_id uuid,
   p_data_ato date,
   p_fluxo_json jsonb,
   p_payload_tabela jsonb default '{}'::jsonb
 )
+returns jsonb
 ```
+
+Entregáveis:
+
+1. Migration: `supabase/migrations/<timestamp>_mesa_cliente_fase_4a_agenda_financeira_json_first.sql`
+2. Teste positivo rollback: `supabase/tests/mesa-cliente/engenharia-financeira/07a_validacao_agenda_financeira_json_first_rollback.sql`
+3. Teste negativo rollback: `supabase/tests/mesa-cliente/engenharia-financeira/07b_validacao_agenda_financeira_json_first_negativos_rollback.sql`
+4. Preflight read-only de grants/RLS da RPC.
 
 Validações obrigatórias:
 
@@ -188,35 +233,67 @@ Validações obrigatórias:
 - simulação deve pertencer à empresa do usuário;
 - empreendimento da simulação deve pertencer à empresa;
 - usuário precisa acessar empresa;
-- se agenda anterior existir para a simulação, a RPC deve ser idempotente: apagar e recriar, ou versionar conforme decisão explícita.
+- perfil precisa ser autorizado;
+- payload deve ser validado item a item;
+- valores financeiros negativos devem ser bloqueados;
+- grupos desconhecidos devem ser bloqueados;
+- `empresa_id` no payload deve ser ignorado ou rejeitado, nunca usado como autoridade.
+
+Proibido na Fase 4A:
+
+- `INSERT`, `UPDATE` ou `DELETE` em `mesa_cliente_fluxo_parcelas`;
+- `INSERT`, `UPDATE` ou `DELETE` em `mesa_cliente_fluxo_operacoes`;
+- criação de operação financeira;
+- persistência definitiva de agenda;
+- cálculo ou exposição de VPL/prêmio/comissão/política interna;
+- alteração de frontend/parser/Worker/Make/n8n.
 
 Regras de datas:
 
-| Cenário | Origem gravada | Regra |
-|---|---|---|
-| data oficial completa | `tabela_oficial` | prevalece sempre |
-| data comercial completa | `tabela_comercial_data` | usar data informada |
-| apenas mês/ano | `tabela_comercial_mes` | usar dia do ato; se inválido, último dia do mês |
-| chaves por cabeçalho 30 dias | `cabecalho_regra` | `regra_data = cabecalho_30_dias` |
-| chaves por cabeçalho 60 dias | `cabecalho_regra` | `regra_data = cabecalho_60_dias` |
-| data estimada pelo ato | `calculada_ato` | usar base do ato |
+| Cenário | Regra |
+|---|---|
+| data oficial completa | prevalece sempre |
+| data comercial completa | usar data informada |
+| apenas mês/ano | usar dia do ato; se inválido, último dia do mês |
+| chaves por cabeçalho 30 dias | 30 dias antes do financiamento/data base aplicável |
+| chaves por cabeçalho 60 dias | 60 dias antes do financiamento/data base aplicável |
+| sem informação confiável | bloquear ou marcar como estimada conforme contrato da RPC |
 
 Critério de pronto:
 
-- agenda gera parcelas corretas;
+- agenda JSON gerada corretamente;
 - datas batem com casos extremos;
-- periodicidade simbólica é gravada com `eh_periodicidade_simbolica = true` e flags negociáveis falsas;
+- periodicidade simbólica retorna flags negociáveis falsas;
 - `anon` não executa;
-- teste com rollback passa 100%.
+- teste 07A passa;
+- teste 07B passa;
+- `count_before = count_after` em `mesa_cliente_fluxo_parcelas`;
+- `count_before = count_after` em `mesa_cliente_fluxo_operacoes`.
 
-### Fase 4B — RPC cliente-safe de leitura da agenda
+### Fase 4B — Persistência segura da agenda financeira
+
+Objetivo: persistir a agenda validada em `mesa_cliente_fluxo_parcelas` com segurança.
+
+Só pode começar depois da Fase 4A aprovada.
+
+Requisitos esperados:
+
+- lock por `simulacao_id`;
+- idempotência;
+- auditoria;
+- bloqueio contra alteração se houver operação confirmada;
+- validação de tenant/empresa/perfil;
+- rollback test;
+- nenhum dado soberano vindo do frontend.
+
+### Fase 4C — RPC cliente-safe de leitura da agenda
 
 Objetivo: permitir que o frontend leia a agenda sem expor campos administrativos.
 
-Entregáveis:
+Entregáveis esperados:
 
-1. RPC: `mesa_cliente_obter_agenda_cliente_safe(p_simulacao_id uuid)`
-2. RPC/admin: `mesa_cliente_obter_agenda_admin(p_simulacao_id uuid)`
+1. RPC cliente-safe: `mesa_cliente_obter_agenda_cliente_safe(p_simulacao_id uuid)`
+2. RPC/admin: `mesa_cliente_obter_agenda_admin(p_simulacao_id uuid)`, se necessário
 3. Testes de diferença entre visão cliente e visão admin.
 
 Cliente-safe pode exibir:
@@ -240,86 +317,34 @@ Cliente-safe não pode exibir:
 - metadata interna sensível;
 - IDs internos desnecessários.
 
-### Fase 5A — RPC registrar operação financeira
+### Fase 5A — Simular impacto financeiro com agenda persistida
+
+Objetivo: usar a agenda persistida como base para simular antecipação/postergação/impacto financeiro administrativo.
+
+Regras:
+
+- não confiar em valores calculados pelo frontend;
+- usar política vigente no banco;
+- retornar visão administrativa segura;
+- nunca retornar dados internos para cliente-safe.
+
+### Fase 5B — RPC registrar operação financeira
 
 Objetivo: persistir uma operação financeira simulada/aprovada em `mesa_cliente_fluxo_operacoes`.
 
-Entregáveis:
-
-1. Migration: `supabase/migrations/*_mesa_cliente_rpc_registrar_operacao_financeira.sql`
-2. Teste positivo com rollback: `08a_validacao_registrar_operacao_financeira_rollback.sql`
-3. Teste negativo com rollback: `08b_validacao_registrar_operacao_financeira_negativos_rollback.sql`
-
-RPC proposta:
-
-```sql
-public.mesa_cliente_registrar_operacao_financeira_admin(
-  p_simulacao_id uuid,
-  p_empreendimento_id uuid,
-  p_data_ato date,
-  p_operacoes jsonb,
-  p_politica_id uuid default null,
-  p_observacao text default null
-)
-```
-
 Estratégia:
 
-- chamar internamente `mesa_cliente_simular_impacto_financeiro_admin`;
+- chamar internamente a simulação administrativa;
 - só gravar operações válidas;
-- se houver rejeição, retornar erro ou payload `ok=false` sem gravar, conforme regra definida antes da implementação;
-- gravar `status_operacao = 'simulada'` ou `pendente_confirmacao`;
+- gravar `status_operacao = 'simulada'` ou `pendente_confirmacao`, conforme contrato da fase;
 - `visivel_cliente = false` por padrão;
 - `confirmado = false` por padrão;
 - preencher `metadata` com snapshot sanitizado do cálculo;
 - nunca aceitar valores calculados enviados pelo frontend como verdade.
 
-Mapeamento para schema atual:
+### Fase 5C — RPC confirmar/cancelar operação financeira
 
-| Campo lógico | Coluna real |
-|---|---|
-| empresa | `empresa_id` |
-| simulação | `simulacao_id` |
-| empreendimento | `empreendimento_id` |
-| política | `politica_id` |
-| tipo | `tipo_operacao` |
-| grupo de origem | `grupo_origem` |
-| grupo de destino | `grupo_destino` |
-| parcela origem | `parcela_origem_id` |
-| parcela destino | `parcela_destino_id` |
-| valor base/original | `valor_base` e/ou `valor_movido` |
-| valor movimentado | `valor_movido` |
-| data original | `data_origem` |
-| data nova | `data_destino` |
-| taxa | `taxa_ano_pct` |
-| impacto pct | `vpl_aplicado_pct` |
-| desconto | `desconto_calculado` |
-| acréscimo | `acrescimo_calculado` |
-| economia | `economia_liquida` |
-| prêmio | `premio_corretor_pct` |
-| status do prêmio | `status_premio` |
-| status da operação | `status_operacao` |
-| auditoria | `criado_por`, `created_at`, `metadata` |
-
-Critério de pronto:
-
-- grava operação apenas se simulação interna for válida;
-- rejeita tentativa cross-tenant;
-- rejeita `anon`;
-- rejeita usuário sem permissão;
-- rejeita política inexistente;
-- rejeita alteração de payload calculado pelo frontend;
-- rollback test passa.
-
-### Fase 5B — RPC confirmar operação financeira
-
-Objetivo: permitir confirmação controlada por gestor/admin/coordenador.
-
-Entregáveis:
-
-1. RPC: `mesa_cliente_confirmar_operacao_financeira_admin(p_operacao_id uuid)`
-2. RPC: `mesa_cliente_cancelar_operacao_financeira_admin(p_operacao_id uuid, p_motivo text)`
-3. Testes positivos e negativos.
+Objetivo: permitir confirmação/cancelamento controlado por gestor/admin/coordenador.
 
 Regras:
 
@@ -330,35 +355,11 @@ Regras:
 - operação confirmada não pode ser editada diretamente;
 - cancelamento deve preservar histórico.
 
-### Fase 5C — auditoria e trilha antifraude
+### Fase 6 — Resumos admin e cliente-safe
 
-Objetivo: deixar a operação auditável e defensável.
+Objetivo: separar claramente visão administrativa e visão cliente.
 
-Pode ser implementado com `metadata` ou tabela dedicada, conforme necessidade:
-
-- snapshot de entrada;
-- snapshot de política;
-- snapshot de resultado;
-- usuário executor;
-- perfil no momento da ação;
-- IP/user-agent se disponível via backend;
-- motivo/observação;
-- status anterior e posterior.
-
-Critério de pronto:
-
-- é possível explicar quem fez, quando fez, em qual empresa, em qual empreendimento, com qual política e qual resultado.
-
-### Fase 6A — RPC de resumo administrativo
-
-Objetivo: gerar visão para corretor/coordenador revisar impacto sem ir direto em tabela.
-
-Entregáveis:
-
-1. `mesa_cliente_obter_resumo_financeiro_admin(p_simulacao_id uuid)`
-2. Teste de permissões.
-
-Pode exibir:
+Admin pode ver, conforme perfil:
 
 - total original;
 - total calculado;
@@ -370,17 +371,7 @@ Pode exibir:
 - prêmio do corretor, se perfil permitir;
 - operações pendentes/confirmadas/canceladas.
 
-### Fase 6B — RPC de resumo cliente-safe
-
-Objetivo: gerar a visão para usar na mesa com cliente.
-
-Entregável:
-
-```sql
-public.mesa_cliente_obter_resumo_cliente_safe(p_simulacao_id uuid)
-```
-
-Pode exibir:
+Cliente-safe pode ver:
 
 - fluxo de pagamento;
 - valores finais aprovados;
@@ -388,7 +379,7 @@ Pode exibir:
 - condições comerciais aprovadas;
 - observações comerciais seguras.
 
-Nunca exibir:
+Cliente-safe nunca vê:
 
 - `politica_id`;
 - VPL;
@@ -399,7 +390,7 @@ Nunca exibir:
 - impacto de remuneração;
 - payload bruto de cálculo.
 
-### Fase 7A — camada de frontend/BFF
+### Fase 7 — Integração front/BFF
 
 Objetivo: integrar a tela sem vazar regra nem chave sensível.
 
@@ -418,46 +409,7 @@ Regras:
 - logs não podem imprimir payload sensível completo;
 - erros exibidos ao cliente devem ser amigáveis e sem stack trace.
 
-Se for mantido Supabase client no browser, a operação deve usar sessão autenticada e RPC com grants restritos. Ainda assim, tabelas financeiras permanecem fechadas por RLS e grants.
-
-### Fase 7B — UI administrativa da Engenharia Financeira
-
-Objetivo: permitir que corretor/coordenador opere a engenharia financeira durante a montagem da mesa.
-
-Componentes:
-
-- agenda de parcelas gerada;
-- seleção de parcela/grupo;
-- simular antecipação;
-- simular postergação;
-- simular VPL;
-- exibir impacto administrativo;
-- botão registrar operação;
-- botão solicitar/confirmar aprovação conforme perfil;
-- trilha de status.
-
-Campos sensíveis devem aparecer apenas para perfis permitidos.
-
-### Fase 7C — UI cliente-safe da Mesa
-
-Objetivo: apresentar ao cliente apenas a condição final segura.
-
-Componentes:
-
-- resumo de valores;
-- agenda final;
-- datas;
-- forma de pagamento;
-- observações comerciais;
-- nada de VPL/prêmio/comissão/política interna.
-
-Critério de pronto:
-
-- cliente consegue entender a proposta;
-- corretor consegue explicar sem expor bastidor;
-- payload da tela não contém dado interno sensível.
-
-### Fase 8 — testes integrados
+### Fase 8 — Testes integrados
 
 Testes mínimos obrigatórios:
 
@@ -472,18 +424,7 @@ Testes mínimos obrigatórios:
 | `09g_e2e_periodicidade_simbolica.sql` | garantir que periodicidade não negocia |
 | `09h_e2e_data_rules.sql` | datas oficiais/mês/ano/último dia válido |
 
-Também validar:
-
-- SQL injection por payload JSON;
-- campos extras ignorados ou bloqueados;
-- valores negativos;
-- taxa fora de faixa;
-- data nula;
-- empreendimento de outra empresa;
-- simulação de outra empresa;
-- operação confirmada não editável.
-
-### Fase 9 — hardening final antes de mesa real
+### Fase 9 — Hardening final antes de mesa real
 
 Checklist:
 
@@ -506,49 +447,43 @@ Antes do primeiro cliente real, executar um piloto interno:
 
 1. escolher um empreendimento real de baixo risco;
 2. usar uma simulação conhecida;
-3. gerar agenda;
-4. simular uma antecipação;
-5. simular uma postergação;
-6. registrar operação;
-7. confirmar operação;
-8. abrir visão cliente-safe;
-9. comparar com cálculo manual;
-10. validar se a tela não expõe dado interno.
+3. gerar agenda JSON-first;
+4. persistir agenda somente após 4B validada;
+5. simular uma antecipação;
+6. simular uma postergação;
+7. registrar operação;
+8. confirmar operação;
+9. abrir visão cliente-safe;
+10. comparar com cálculo manual;
+11. validar se a tela não expõe dado interno.
 
-Critério para liberar teste com cliente:
-
-- cálculo bate;
-- datas batem;
-- visão cliente-safe limpa;
-- operação registrada com auditoria;
-- rollback operacional documentado;
-- nenhum acesso indevido detectado;
-- usuário não autorizado bloqueado;
-- `anon` bloqueado;
-- gestor/corretor enxergam apenas o que devem enxergar.
+---
 
 ## 6. Sequência recomendada dos próximos arquivos
 
-Ordem de criação sugerida:
+Ordem de criação atualizada:
 
 ```text
 supabase/migrations/...
-  07_mesa_cliente_rpc_gerar_agenda_parcelas.sql
-  08_mesa_cliente_rpc_obter_agenda_cliente_safe.sql
-  09_mesa_cliente_rpc_registrar_operacao_financeira.sql
-  10_mesa_cliente_rpc_confirmar_cancelar_operacao_financeira.sql
-  11_mesa_cliente_rpc_resumos_admin_cliente_safe.sql
+  <timestamp>_mesa_cliente_fase_4a_agenda_financeira_json_first.sql
+  <timestamp>_mesa_cliente_fase_4b_persistir_agenda_financeira.sql
+  <timestamp>_mesa_cliente_fase_4c_obter_agenda_cliente_safe.sql
+  <timestamp>_mesa_cliente_fase_5b_registrar_operacao_financeira.sql
+  <timestamp>_mesa_cliente_fase_5c_confirmar_cancelar_operacao_financeira.sql
+  <timestamp>_mesa_cliente_fase_6_resumos_admin_cliente_safe.sql
 
 supabase/tests/mesa-cliente/engenharia-financeira/...
-  07a_validacao_agenda_parcelas_rollback.sql
-  07b_validacao_agenda_parcelas_negativos_rollback.sql
-  08a_validacao_registrar_operacao_financeira_rollback.sql
-  08b_validacao_registrar_operacao_financeira_negativos_rollback.sql
-  09a_validacao_confirmar_cancelar_operacao_rollback.sql
-  09b_validacao_cliente_safe_sem_dados_internos.sql
-  10a_e2e_financeiro_completo_rollback.sql
-  10b_e2e_crosstenant_anon_payload_malicioso.sql
+  07a_validacao_agenda_financeira_json_first_rollback.sql
+  07b_validacao_agenda_financeira_json_first_negativos_rollback.sql
+  08a_validacao_persistir_agenda_financeira_rollback.sql
+  08b_validacao_persistir_agenda_financeira_negativos_rollback.sql
+  09a_validacao_registrar_operacao_financeira_rollback.sql
+  09b_validacao_registrar_operacao_financeira_negativos_rollback.sql
+  10a_validacao_confirmar_cancelar_operacao_rollback.sql
+  10b_validacao_cliente_safe_sem_dados_internos.sql
 ```
+
+---
 
 ## 7. Gates de aprovação
 
@@ -556,54 +491,66 @@ Nenhuma fase avança sem cumprir seu gate.
 
 | Gate | Condição |
 |---|---|
-| Gate Banco | migration aplicada e preflight PASS |
+| Gate Contrato | fase, escopo, fora de escopo e matriz de DML definidos |
+| Gate Banco | migration criada e revisada |
 | Gate RLS | policies e grants revisados |
 | Gate Auth | `auth.uid()` validado em teste |
 | Gate Tenant | cross-tenant bloqueado |
-| Gate Cálculo | cálculo composto bate com expectativa |
+| Gate Zero DML | obrigatório para Fase 4A |
+| Gate Cálculo | cálculo composto bate com expectativa, quando a fase envolver cálculo |
 | Gate Cliente-safe | payload sem VPL/prêmio/comissão |
 | Gate Front | sem regra financeira soberana no client |
 | Gate Mesa | piloto interno aprovado |
+
+---
 
 ## 8. Riscos e mitigação
 
 | Risco | Mitigação |
 |---|---|
-| frontend manipular payload | recalcular tudo na RPC |
+| frontend manipular payload | recalcular/validar tudo na RPC |
 | corretor acessar empresa errada | validar contexto + RLS + helper |
 | `anon` executar RPC sensível | revoke de `anon` + teste automático |
 | regra financeira hardcoded | política em banco e snapshot de política |
 | cliente ver dado interno | RPC cliente-safe separada |
 | alteração quebrar parser atual | não alterar parser sem autorização |
-| gravação irreversível em produção única | testes com rollback e backup antes de cada fase crítica |
+| gravação irreversível em produção única | 4A JSON-first, testes com rollback e backup antes de fase crítica |
 | cálculo divergente por data | matriz de datas e testes de último dia válido |
 | operação confirmada editável | status imutável ou cancelamento auditado |
+| documento antigo induzir implementação errada | ADR + contrato canônico + obsolescência explícita |
+
+---
 
 ## 9. Definição de pronto final
 
 A Engenharia Financeira estará pronta para teste em mesa com cliente quando:
 
-1. agenda de parcelas for gerada por RPC;
-2. simulação administrativa estiver integrada à agenda;
-3. operação financeira puder ser registrada por RPC forte;
-4. confirmação/cancelamento estiverem auditados;
-5. visão cliente-safe estiver limpa;
-6. frontend não tiver regra financeira soberana;
-7. `anon` estiver bloqueado em RPCs/tabelas sensíveis;
-8. cross-tenant estiver bloqueado;
-9. todos os testes SQL com rollback passarem;
-10. piloto interno bater com cálculo manual;
-11. backup pré-piloto estiver feito;
-12. branch continuar isolada até aprovação explícita para merge.
+1. agenda JSON-first tiver sido validada sem DML;
+2. agenda persistida tiver sido criada somente na Fase 4B;
+3. simulação administrativa estiver integrada à agenda persistida;
+4. operação financeira puder ser registrada por RPC forte;
+5. confirmação/cancelamento estiverem auditados;
+6. visão cliente-safe estiver limpa;
+7. frontend não tiver regra financeira soberana;
+8. `anon` estiver bloqueado em RPCs/tabelas sensíveis;
+9. cross-tenant estiver bloqueado;
+10. todos os testes SQL com rollback passarem;
+11. piloto interno bater com cálculo manual;
+12. backup pré-piloto estiver feito;
+13. branch continuar isolada até aprovação explícita para merge.
+
+---
 
 ## 10. Próxima ação imediata
 
-A próxima implementação deve ser a Fase 4A:
+A próxima implementação deve ser a Fase 4A canônica:
 
 ```text
-Criar RPC gerar_mesa_cliente_agenda_parcelas
-Criar teste 07a_validacao_agenda_parcelas_rollback
-Executar em produção única apenas com ROLLBACK
+Criar RPC mesa_cliente_gerar_agenda_financeira_admin
+Criar teste 07a_validacao_agenda_financeira_json_first_rollback
+Criar teste 07b_validacao_agenda_financeira_json_first_negativos_rollback
+Executar em produção única apenas com BEGIN + ROLLBACK
+Validar count_before = count_after nas tabelas financeiras
 ```
 
-Não iniciar frontend antes da agenda financeira e das RPCs de gravação/visão segura estarem estabilizadas. O frontend bonito sem banco blindado vira vitrine de shopping com cofre aberto no fundo.
+Não iniciar frontend antes da agenda financeira, da persistência segura e das RPCs de visão segura estarem estabilizadas. Frontend bonito sem banco blindado vira vitrine de shopping com cofre aberto no fundo.
