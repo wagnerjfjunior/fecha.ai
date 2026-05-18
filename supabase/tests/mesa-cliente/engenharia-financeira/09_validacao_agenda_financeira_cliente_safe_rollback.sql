@@ -7,9 +7,10 @@
 --   usando fixture transacional e ROLLBACK.
 --
 -- Correção operacional:
---   Este teste NÃO usa tabela temporária.
+--   Este teste NÃO usa tabela temporária e NÃO usa CTE recursiva.
 --   O Supabase SQL Editor pode perder temp tables entre statements/blocos e gerar 42P01.
---   Para evitar isso, o coletor de resultado foi reescrito em CTE única.
+--   A CTE recursiva anterior também gerava 42P19 no PostgreSQL por múltiplos ramos recursivos.
+--   Para evitar ruído de ferramenta, o coletor de resultado foi reescrito em CTE única não recursiva.
 --
 -- Este teste cria fixture mínima dentro da transação:
 --   - simulação
@@ -33,7 +34,7 @@
 
 begin;
 
-with recursive
+with
 candidate as (
   select
     c.user_id,
@@ -258,30 +259,13 @@ forbidden_keys as (
     'economia_liquida'
   ]::text[] as keys
 ),
-walk(path, value) as (
-  select array[]::text[], (select result from r)
-  where (select result from r) is not null
-
-  union all
-
-  select path || e.key, e.value
-  from walk
-  cross join lateral jsonb_each(walk.value) e(key, value)
-  where jsonb_typeof(walk.value) = 'object'
-
-  union all
-
-  select path || a.idx::text, a.value
-  from walk
-  cross join lateral jsonb_array_elements(walk.value) with ordinality a(value, idx)
-  where jsonb_typeof(walk.value) = 'array'
-),
 sensitive_found as (
-  select coalesce(jsonb_agg(array_to_string(path, '.')), '[]'::jsonb) as paths
-  from walk
-  cross join forbidden_keys fk
-  where array_length(path, 1) is not null
-    and path[array_length(path, 1)] = any(fk.keys)
+  select coalesce(jsonb_agg(k.key order by k.key), '[]'::jsonb) as paths
+  from forbidden_keys fk
+  cross join lateral unnest(fk.keys) as k(key)
+  cross join r
+  where r.result is not null
+    and r.result::text like '%"' || k.key || '"%'
 ),
 resultados as (
   select
@@ -405,7 +389,7 @@ resultados as (
     case when jsonb_array_length((select paths from sensitive_found)) = 0 then 'PASS' else 'FAIL' end,
     jsonb_build_object(
       'forbidden_keys_checked', to_jsonb((select keys from forbidden_keys)),
-      'sensitive_paths_found', (select paths from sensitive_found)
+      'sensitive_keys_found', (select paths from sensitive_found)
     )
 
   union all
