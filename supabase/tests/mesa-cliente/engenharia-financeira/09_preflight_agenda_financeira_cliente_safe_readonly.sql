@@ -5,6 +5,10 @@
 -- Objetivo:
 --   Mapear o schema real e os riscos de exposição antes de criar a RPC cliente-safe.
 --
+-- Regra desta versão:
+--   Este preflight não pode depender de colunas ainda não comprovadas no schema real.
+--   Para resumos de linhas, usa to_jsonb(row) e catálogo, evitando erro 42703 por coluna presumida.
+--
 -- Este arquivo é read-only:
 --   - não cria fixture
 --   - não chama RPC de persistência
@@ -285,32 +289,52 @@ counts as (
 active_agendas_summary as (
   select
     count(*)::bigint as total_agendas,
-    count(*) filter (where status = 'ativa')::bigint as agendas_ativas,
-    count(distinct simulacao_id)::bigint as simulacoes_com_agenda,
-    count(*) filter (where status = 'ativa' and totais is not null)::bigint as ativas_com_totais
-  from public.mesa_cliente_agendas_financeiras
+    count(*) filter (where to_jsonb(a)->>'status' = 'ativa')::bigint as agendas_ativas,
+    count(distinct nullif(to_jsonb(a)->>'simulacao_id', ''))::bigint as simulacoes_com_agenda,
+    count(*) filter (
+      where to_jsonb(a)->>'status' = 'ativa'
+        and to_jsonb(a) ? 'totais'
+        and coalesce(to_jsonb(a)->'totais', 'null'::jsonb) <> 'null'::jsonb
+    )::bigint as ativas_com_totais
+  from public.mesa_cliente_agendas_financeiras a
 ),
 active_parcelas_summary as (
   select
     count(*)::bigint as total_parcelas,
-    count(*) filter (where agenda_id is not null)::bigint as parcelas_com_agenda_id,
-    count(*) filter (where data_vencimento is not null)::bigint as parcelas_com_data,
-    count(*) filter (where valor_atual is not null)::bigint as parcelas_com_valor_atual,
-    count(*) filter (where negociavel is not null)::bigint as parcelas_com_negociavel
-  from public.mesa_cliente_fluxo_parcelas
+    count(*) filter (
+      where to_jsonb(p) ? 'agenda_id'
+        and nullif(to_jsonb(p)->>'agenda_id', '') is not null
+    )::bigint as parcelas_com_agenda_id,
+    count(*) filter (
+      where to_jsonb(p) ? 'data_vencimento'
+        and nullif(to_jsonb(p)->>'data_vencimento', '') is not null
+    )::bigint as parcelas_com_data_vencimento,
+    count(*) filter (
+      where to_jsonb(p) ? 'valor_atual'
+        and nullif(to_jsonb(p)->>'valor_atual', '') is not null
+    )::bigint as parcelas_com_valor_atual,
+    count(*) filter (
+      where to_jsonb(p) ? 'negociavel'
+        and nullif(to_jsonb(p)->>'negociavel', '') is not null
+    )::bigint as parcelas_com_negociavel
+  from public.mesa_cliente_fluxo_parcelas p
 ),
 fixture_candidate_summary as (
   select
     count(*)::bigint as total_candidatos
   from public.mesa_cliente_agendas_financeiras a
-  join public.mesa_cliente_fluxo_parcelas p
-    on p.agenda_id = a.id
-   and p.simulacao_id = a.simulacao_id
-   and p.empresa_id = a.empresa_id
-  join public.mesa_simulacoes s
-    on s.id = a.simulacao_id
-   and s.empresa_id = a.empresa_id
-  where a.status = 'ativa'
+  where to_jsonb(a)->>'status' = 'ativa'
+    and exists (
+      select 1
+      from public.mesa_cliente_fluxo_parcelas p
+      where nullif(to_jsonb(p)->>'agenda_id', '') = nullif(to_jsonb(a)->>'id', '')
+    )
+    and exists (
+      select 1
+      from public.mesa_simulacoes s
+      where nullif(to_jsonb(s)->>'id', '') = nullif(to_jsonb(a)->>'simulacao_id', '')
+        and nullif(to_jsonb(s)->>'empresa_id', '') = nullif(to_jsonb(a)->>'empresa_id', '')
+    )
 ),
 auth_helpers as (
   select
@@ -358,7 +382,7 @@ interpretation as (
       when (select coalesce(anon_can_execute, false) from rpc_status where rpc_label = '4C_cliente_safe_candidata')
         then 'BLOQUEAR: RPC 4C existente com EXECUTE para anon.'
       when (select sum(qtd) from required_missing) > 0
-        then 'BLOQUEAR: há colunas obrigatórias ausentes para leitura cliente-safe.'
+        then 'BLOQUEAR: há colunas obrigatórias ausentes para leitura cliente-safe. Use os inventários 03/04/05 para ajustar o contrato aos nomes reais antes de criar a migration.'
       else 'OK_PARA_CRIAR_MIGRATION_4C_CLIENTE_SAFE: schema mínimo mapeado; criar RPC sem expor campos sensíveis listados.'
     end as recommended_next_step
 ),
@@ -416,7 +440,7 @@ section_rows as (
   select
     6,
     '06_expected_required_columns_status',
-    'status das colunas mínimas 4C',
+    'status das colunas mínimas 4C conforme contrato candidato',
     case when (select sum(qtd) from required_missing) = 0 then 'PASS' else 'FAIL' end,
     jsonb_build_object(
       'agenda', (select jsonb_agg(to_jsonb(agenda_expected_status) order by column_name) from agenda_expected_status),
@@ -430,7 +454,7 @@ section_rows as (
     7,
     '07_sensitive_columns_to_filter',
     'campos sensíveis que não podem sair no cliente-safe',
-    case when count(*) >= 0 then 'INFO' else 'INFO' end,
+    'INFO',
     coalesce(jsonb_agg(to_jsonb(sensitive_cols) order by table_name, column_name), '[]'::jsonb)
   from sensitive_cols
 
@@ -467,7 +491,7 @@ section_rows as (
   select
     11,
     '11_counts_and_fixture_candidates',
-    'contagens e candidatos existentes para validação 4C',
+    'contagens e candidatos existentes para validação 4C sem presumir colunas',
     'INFO',
     jsonb_build_object(
       'counts', (select jsonb_agg(to_jsonb(counts) order by table_name) from counts),
