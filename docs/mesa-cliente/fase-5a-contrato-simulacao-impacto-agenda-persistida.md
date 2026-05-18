@@ -1,14 +1,44 @@
-# FECH.AI / MesaCliente — Fase 5A — Contrato e Planejamento da Simulação de Impacto com Agenda Persistida
+# FECH.AI / MesaCliente — Fase 5A — Contrato Fechado da Simulação de Impacto com Agenda Persistida
 
-**Status:** contrato inicial aprovado para planejamento — sem SQL nesta etapa  
+**Status:** contrato fechado para preflight — sem SQL de implementação nesta etapa  
 **Branch:** `feature/mesa-cliente-engenharia-financeira`  
 **Área:** Engenharia Financeira / MesaCliente  
 **Fase:** 5A — simular impacto financeiro administrativo usando agenda persistida  
-**Data de abertura:** 2026-05-18
+**Data de abertura:** 2026-05-18  
+**Data de fechamento do contrato:** 2026-05-18
 
 ---
 
-## 1. Contexto de entrada
+## 1. Decisão de fechamento
+
+Este documento fecha o contrato da Fase 5A antes da criação de qualquer SQL de implementação.
+
+A partir deste fechamento, a Fase 5A está autorizada apenas para a próxima etapa técnica segura:
+
+```text
+Criar/executar o preflight 10 read-only.
+```
+
+Ainda não está autorizado:
+
+```text
+criar migration 5A
+criar RPC 5A
+criar testes 10A/10B/10C
+alterar frontend
+alterar parser
+alterar Worker
+alterar Make/n8n
+registrar operação financeira
+```
+
+Regra curta:
+
+> **4C mostra com segurança. 5A simula impacto administrativo. 5B registra. 5C confirma ou cancela.**
+
+---
+
+## 2. Contexto de entrada
 
 A Fase 5A só pode começar porque as fases anteriores criaram uma base segura:
 
@@ -32,11 +62,11 @@ mesa_cliente_politica_premio_faixas
 
 ---
 
-## 2. Decisão oficial da Fase 5A
+## 3. Objetivo da Fase 5A
 
-A Fase 5A deve criar uma camada administrativa de simulação de impacto financeiro baseada na agenda persistida pela 4B.
+Criar uma camada administrativa de simulação de impacto financeiro baseada na agenda persistida pela 4B.
 
-Ela deve permitir simular, sem confirmar e sem gravar operação financeira definitiva:
+A 5A deve permitir simular, sem confirmar e sem gravar operação financeira definitiva:
 
 - antecipação;
 - postergação;
@@ -45,28 +75,12 @@ Ela deve permitir simular, sem confirmar e sem gravar operação financeira defi
 - melhor aplicação financeira sugerida;
 - impacto de prêmio/faixa administrativa quando aplicável.
 
-A Fase 5A deve ser uma simulação administrativa.
-
-Portanto:
-
-```text
-5A calcula e recomenda.
-5B registra operação simulada/aprovada.
-5C confirma ou cancela operação.
-```
-
----
-
-## 3. Objetivo
-
-Criar uma RPC administrativa que leia a agenda ativa persistida, aplique a política financeira vigente e retorne alternativas de impacto financeiro para tomada de decisão interna.
-
 A 5A deve responder perguntas como:
 
 ```text
-Se o cliente antecipar R$ X, em qual camada/parcela isso gera maior benefício?
+Se o cliente antecipar R$ X, em qual parcela/camada isso gera maior benefício?
 Se o cliente quiser postergar R$ Y, qual será o acréscimo financeiro?
-Se aplicar VPL de Z%, quais parcelas/camadas são elegíveis e qual impacto administrativo?
+Se aplicar VPL de Z%, quais parcelas são elegíveis e qual impacto administrativo?
 Qual opção deve ser recomendada ao corretor/coordenador?
 ```
 
@@ -81,22 +95,22 @@ A Fase 5A não deve:
 - alterar Worker;
 - alterar Make/n8n;
 - alterar agenda persistida;
+- alterar parcelas persistidas;
 - inserir operação financeira definitiva;
 - confirmar operação financeira;
 - cancelar operação financeira;
-- alterar parcelas persistidas;
 - gerar payload cliente-safe final;
 - usar payload cliente-safe da 4C como base soberana;
 - permitir cálculo financeiro no frontend;
 - expor dados administrativos para cliente;
-- usar taxa, VPL ou faixa vindos do frontend como autoridade final;
+- usar taxa, VPL, política ou faixa vindos do frontend como autoridade final;
 - aceitar `empresa_id` do frontend como fonte soberana.
 
 ---
 
 ## 5. RPC candidata
 
-Nome proposto:
+Nome aprovado para orientar o preflight e a futura migration:
 
 ```sql
 public.mesa_cliente_simular_impacto_agenda_persistida_admin(
@@ -108,7 +122,9 @@ public.mesa_cliente_simular_impacto_agenda_persistida_admin(
 returns jsonb
 ```
 
-### 5.1. Justificativa do nome
+### 5.1. Decisão agenda-first
+
+A 5A deve ser agenda-first, não payload-first.
 
 A branch já possui uma RPC administrativa anterior:
 
@@ -123,13 +139,19 @@ public.mesa_cliente_simular_impacto_financeiro_admin(
 returns jsonb
 ```
 
-Essa RPC é útil, mas recebe operações já montadas por payload. A 5A deve dar um passo acima:
+Essa RPC pode ser reutilizada quando fizer sentido, mas a 5A não deve depender do frontend para montar toda a lista de operações.
+
+O fluxo correto da 5A é:
 
 ```text
-ler agenda persistida -> montar cenários elegíveis -> chamar/reutilizar cálculo composto -> recomendar alternativas
+ler agenda ativa persistida
+-> identificar parcelas elegíveis
+-> aplicar política financeira vigente
+-> reutilizar funções puras de cálculo composto
+-> gerar alternativas
+-> recomendar melhor aplicação
+-> não gravar nada
 ```
-
-Ou seja, a 5A deve ser agenda-first, não payload-first.
 
 ---
 
@@ -149,7 +171,7 @@ comparativo
 
 Usado quando o corretor informa um valor disponível para melhorar a condição.
 
-Exemplo:
+Exemplo conceitual:
 
 ```json
 {
@@ -159,13 +181,11 @@ Exemplo:
 }
 ```
 
-A RPC deve simular onde aplicar o valor para maximizar benefício administrativo/comercial dentro da política.
-
 ### 6.2. `antecipacao`
 
 Simula antecipação de parcelas futuras para uma data anterior.
 
-Exemplo:
+Exemplo conceitual:
 
 ```json
 {
@@ -179,7 +199,7 @@ Exemplo:
 
 Simula deslocamento de valor de uma parcela anterior para data futura.
 
-Exemplo:
+Exemplo conceitual:
 
 ```json
 {
@@ -193,7 +213,7 @@ Exemplo:
 
 Simula impacto administrativo de VPL aplicado sobre parcelas elegíveis.
 
-Exemplo:
+Exemplo conceitual:
 
 ```json
 {
@@ -210,7 +230,7 @@ Retorna comparação entre alternativas, sem sugerir apenas uma.
 
 ## 7. Fonte de dados autorizada
 
-A RPC 5A deve ler:
+A RPC 5A pode ler:
 
 - `mesa_simulacoes`;
 - `corretores`;
@@ -220,7 +240,7 @@ A RPC 5A deve ler:
 - `mesa_cliente_fluxo_parcelas`;
 - `mesa_cliente_politicas_financeiras`;
 - `mesa_cliente_politica_premio_faixas`;
-- opcionalmente `mesa_cliente_fluxo_operacoes` apenas para verificar bloqueios/status já confirmados.
+- `mesa_cliente_fluxo_operacoes`, apenas para verificar bloqueios/status já confirmados.
 
 A RPC 5A não deve depender de dados soberanos enviados pelo frontend.
 
@@ -249,7 +269,7 @@ Proibido:
 - `UPDATE` em `mesa_cliente_fluxo_parcelas`;
 - `DELETE` em `mesa_cliente_fluxo_parcelas`;
 - `INSERT/UPDATE/DELETE` em `mesa_cliente_agendas_financeiras`;
-- qualquer escrita em tabelas comerciais, usuários, empresas, empreendimentos, parser ou frontend.
+- escrita em tabelas comerciais, usuários, empresas, empreendimentos, parser ou frontend.
 
 Fixtures transacionais em testes rollback são permitidas apenas dentro de `BEGIN + ROLLBACK`.
 
@@ -257,7 +277,7 @@ Fixtures transacionais em testes rollback são permitidas apenas dentro de `BEGI
 
 ## 9. Segurança obrigatória
 
-A RPC 5A deve seguir:
+A futura RPC 5A deve seguir:
 
 ```sql
 security definer
@@ -285,7 +305,7 @@ Obrigatório:
 
 ## 10. Perfis autorizados
 
-A 5A retorna payload administrativo, portanto deve ser mais restrita que 4C cliente-safe.
+A 5A retorna payload administrativo. Portanto, deve ser mais restrita que a 4C cliente-safe.
 
 Perfis sugeridos:
 
@@ -297,13 +317,13 @@ coordenador
 corretor dono da simulação
 ```
 
-Corretor que não é dono da simulação só deve acessar se for gestor/coordenador/admin da mesma empresa.
+Corretor que não é dono da simulação só deve acessar se for gestor, coordenador ou admin da mesma empresa.
 
 ---
 
 ## 11. Política financeira
 
-A RPC deve buscar política vigente pelo banco:
+A RPC deve buscar política vigente pelo banco usando:
 
 ```text
 empresa_id da simulação
@@ -331,8 +351,6 @@ Regras:
 A RPC deve considerar apenas parcelas da agenda ativa.
 
 Parcelas com `eh_periodicidade_simbolica = true` devem ser excluídas de qualquer cálculo.
-
-Elegibilidade por tipo:
 
 ### 12.1. Antecipação
 
@@ -385,9 +403,7 @@ E pode reutilizar a RPC administrativa existente quando fizer sentido:
 public.mesa_cliente_simular_impacto_financeiro_admin(...)
 ```
 
-Mas a 5A não deve delegar soberania ao frontend para montar toda a lista de operações.
-
-A lista de alternativas deve nascer da agenda persistida.
+Mas a lista de alternativas deve nascer da agenda persistida.
 
 ---
 
@@ -450,7 +466,7 @@ Permitido no retorno 5A:
 - recomendação de melhor aplicação;
 - motivo de rejeição administrativa.
 
-Esses campos são proibidos em cliente-safe, mas são permitidos aqui porque a visão é administrativa.
+Esses campos são proibidos em cliente-safe, mas permitidos aqui porque a visão é administrativa.
 
 ---
 
@@ -502,7 +518,7 @@ Portanto, a 5A deve retornar identificadores suficientes para futura 5B, mas nã
 
 ### 19.1. Preflight
 
-Arquivo proposto:
+Arquivo oficial a criar/executar antes da migration:
 
 ```text
 supabase/tests/mesa-cliente/engenharia-financeira/10_preflight_simulacao_impacto_agenda_persistida_readonly.sql
@@ -514,12 +530,12 @@ Objetivo:
 - inventariar colunas reais de agenda/parcelas/política/faixas;
 - validar constraints reais;
 - validar grants atuais;
-- confirmar nome real de status/colunas antes de escrever migration;
+- confirmar nomes reais de status/colunas antes de escrever migration;
 - evitar erro de coluna deduzida.
 
-### 19.2. Teste positivo
+### 19.2. Teste positivo futuro
 
-Arquivo proposto:
+Arquivo previsto:
 
 ```text
 supabase/tests/mesa-cliente/engenharia-financeira/10a_validacao_simulacao_impacto_agenda_persistida_rollback.sql
@@ -541,9 +557,9 @@ Deve validar:
 - não cria operação;
 - rollback completo.
 
-### 19.3. Teste negativo
+### 19.3. Teste negativo futuro
 
-Arquivo proposto:
+Arquivo previsto:
 
 ```text
 supabase/tests/mesa-cliente/engenharia-financeira/10b_validacao_simulacao_impacto_agenda_persistida_negativos_rollback.sql
@@ -568,9 +584,9 @@ Deve validar bloqueios para:
 - payload tentando enviar `empresa_id` fake;
 - tentativa de ultrapassar VPL máximo.
 
-### 19.4. Teste de zero DML
+### 19.4. Teste zero DML futuro
 
-Arquivo proposto:
+Arquivo previsto:
 
 ```text
 supabase/tests/mesa-cliente/engenharia-financeira/10c_validacao_simulacao_impacto_agenda_persistida_zero_dml_rollback.sql
@@ -586,15 +602,15 @@ Deve validar:
 
 ---
 
-## 20. Critérios de aceite
+## 20. Critérios de aceite da 5A
 
-A Fase 5A só pode ser aprovada se:
+A Fase 5A só poderá ser aprovada se:
 
-1. contrato estiver documentado;
+1. este contrato permanecer fechado;
 2. preflight 10 confirmar schema real;
 3. migration/RPC 5A for criada sem DML de negócio;
 4. `anon` estiver bloqueado;
-5. `authenticated` autorizado executar apenas via RPC;
+5. `authenticated` executar apenas via RPC;
 6. cross-tenant for bloqueado;
 7. agenda ativa for obrigatória;
 8. política vigente for obrigatória;
@@ -609,39 +625,45 @@ A Fase 5A só pode ser aprovada se:
 
 ---
 
-## 21. Sequência de execução autorizada
+## 21. Sequência de execução autorizada após este fechamento
 
 Ordem correta:
 
 ```text
-1. Revisar este contrato.
-2. Executar/criar preflight 10 read-only.
-3. Validar resultset do preflight.
-4. Criar migration da RPC 5A somente após preflight.
-5. Criar testes 10A/10B/10C.
-6. Executar testes com BEGIN + ROLLBACK.
-7. Criar documento de fechamento da 5A.
-8. Só então abrir 5B.
+1. Criar/executar preflight 10 read-only.
+2. Validar resultset completo do preflight 10.
+3. Se o preflight liberar, criar migration da RPC 5A.
+4. Criar testes 10A/10B/10C.
+5. Executar testes com BEGIN + ROLLBACK.
+6. Criar documento de fechamento da 5A.
+7. Só então abrir 5B.
 ```
 
 ---
 
-## 22. Frase de controle
+## 22. Gate de bloqueio
+
+A Fase 5A fica bloqueada para SQL de implementação enquanto não existir resultado validado do preflight 10.
+
+Não criar:
 
 ```text
-4C mostra com segurança. 5A simula impacto administrativo com agenda persistida. 5B registra. 5C confirma ou cancela.
+supabase/migrations/<timestamp>_mesa_cliente_fase_5a_simulacao_impacto_agenda_persistida.sql
 ```
+
+antes do preflight.
 
 ---
 
-## 23. Veredito inicial
+## 23. Veredito final do contrato
 
-A Fase 5A está autorizada apenas em nível de contrato e planejamento.
+Contrato da Fase 5A fechado.
 
 Próxima ação técnica segura:
 
 ```text
-Criar/executar o preflight 10 read-only antes de qualquer migration 5A.
+Criar/executar:
+supabase/tests/mesa-cliente/engenharia-financeira/10_preflight_simulacao_impacto_agenda_persistida_readonly.sql
 ```
 
 Não criar SQL de implementação da 5A sem o preflight 10.
