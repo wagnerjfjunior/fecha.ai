@@ -15,6 +15,10 @@
 --     - operação possui agenda_id e checksum_operacao;
 --     - agenda e parcelas não são mutadas pela 5B;
 --     - rollback final.
+--
+-- Observação de constraint real:
+--   mesa_cliente_politica_premio_faixas não aceita faixa aberta acima do limite operacional.
+--   Por isso, o fixture usa apenas as 3 faixas necessárias dentro do vpl_max_pct=6.
 
 begin;
 
@@ -166,8 +170,7 @@ faixas as materialized (
     values
       (0.00::numeric, 2.00::numeric, 100.00::numeric, 'premio_cheio'::text, 'Faixa fixture 11A — prêmio cheio', 1),
       (2.01::numeric, 4.00::numeric, 70.00::numeric, 'premio_parcial'::text, 'Faixa fixture 11A — prêmio parcial', 2),
-      (4.01::numeric, 6.00::numeric, 0.00::numeric, 'sem_premio'::text, 'Faixa fixture 11A — sem prêmio', 3),
-      (6.01::numeric, 999.00::numeric, 0.00::numeric, 'sem_premio'::text, 'Faixa fixture 11A — acima do limite operacional', 4)
+      (4.01::numeric, 6.00::numeric, 0.00::numeric, 'sem_premio'::text, 'Faixa fixture 11A — sem prêmio', 3)
   ) as v(vpl_de_pct, vpl_ate_pct, premio_corretor_pct, status, descricao, ordem)
   returning id
 ),
