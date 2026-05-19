@@ -1,51 +1,90 @@
 # FECH.AI / MesaCliente — Fase 5B — Contrato de registro de operação financeira
 
-**Status:** contrato inicial aberto; preflight obrigatório antes de qualquer migration  
+**Status:** contrato fechado após preflight 11; liberado para migration e testes transacionais  
 **Branch:** `feature/mesa-cliente-engenharia-financeira`  
 **Área:** Engenharia Financeira / MesaCliente  
 **Fase:** 5B — registrar operação financeira administrativa  
 **Pré-requisito:** Fase 5A.1 aprovada  
+**Documento de validação:** `docs/mesa-cliente/fase-5b-validacao-preflight-11.md`  
 **Data:** 2026-05-19
 
 ---
 
 ## 1. Objetivo da Fase 5B
 
-A Fase 5B deve registrar uma operação financeira administrativa derivada de uma agenda persistida e de uma simulação de impacto previamente validada.
+A Fase 5B registra uma operação financeira administrativa derivada de uma agenda persistida e de uma simulação de impacto previamente validada.
 
 A 5B é a primeira etapa da trilha que grava operação financeira. Por isso, ela muda o nível de risco em relação à 5A.1:
 
 ```text
 5A.1 = simula impacto, não grava operação.
-5B   = registra operação financeira administrativa, ainda sem confirmar execução final.
+5B   = registra operação financeira administrativa simulada.
 5C   = confirma/cancela operação e aplica regras finais de estado.
 ```
 
-A 5B não deve ser tratada como simples continuação da 5A.1. Ela precisa de contrato, preflight, migration e testes próprios.
+A 5B não deve ser tratada como simples continuação da 5A.1. Ela tem contrato, preflight, migration e testes próprios.
 
 ---
 
-## 2. Princípio central
+## 2. Veredito do preflight 11
+
+O preflight 11 foi executado e retornou:
+
+```text
+PASS estrutural com WARNs esperados.
+```
+
+Interpretação oficial:
+
+```text
+A tabela public.mesa_cliente_fluxo_operacoes pode ser usada como base da 5B.
+A migration 5B precisa adicionar vínculo forte com agenda e idempotência canônica.
+Os WARNs não bloqueiam a fase; eles definem o escopo da migration.
+```
+
+Achados relevantes:
+
+- tabelas obrigatórias existem;
+- `mesa_cliente_fluxo_operacoes` existe e possui 31 colunas;
+- colunas core estão presentes;
+- RLS está ativo;
+- DML direto para `authenticated` está bloqueado por policies `false`;
+- `anon` não possui DML;
+- enums financeiros existem;
+- status permitidos em `status_operacao`: `simulada`, `confirmada`, `cancelada`, `bloqueada`;
+- faltam `agenda_id` e `checksum_operacao`;
+- não existe índice de idempotência;
+- a RPC 5B ainda não existe, como esperado antes da migration.
+
+---
+
+## 3. Princípio central
 
 A operação financeira registrada pela 5B deve nascer de dados soberanos do banco:
 
 - `mesa_simulacoes`;
 - `mesa_cliente_agendas_financeiras`;
 - `mesa_cliente_fluxo_parcelas`;
-- política financeira ativa/vigente;
+- `mesa_cliente_politicas_financeiras`;
 - usuário autenticado via `auth.uid()`;
-- tenant/empresa do corretor no banco;
+- tenant/empresa derivado do banco;
 - regras de elegibilidade já validadas no backend.
 
-O frontend pode solicitar uma intenção de operação, mas não pode ser autoridade para empresa, taxa, política, valor-base da parcela, tenant ou permissões.
+O frontend pode solicitar intenção de operação, mas não pode ser autoridade para empresa, taxa, política, valor-base da parcela, tenant, permissões, status ou checksum.
 
 ---
 
-## 3. Escopo funcional
+## 4. Escopo funcional
 
-A 5B deve permitir registrar uma operação administrativa como intenção/rascunho/pendência de efetivação, conforme o vocabulário real permitido pelo schema.
+A 5B deve registrar uma operação administrativa com status inicial real permitido pelo schema:
 
-Operações candidatas:
+```text
+status_operacao = 'simulada'
+confirmado = false
+visivel_cliente = false
+```
+
+Operações permitidas:
 
 ```text
 antecipacao
@@ -53,19 +92,11 @@ postergacao
 vpl
 ```
 
-A fase deve aceitar apenas operações compatíveis com a agenda persistida e com as parcelas elegíveis.
-
-A 5B deve persistir a operação em tabela financeira apropriada, preferencialmente a tabela já existente:
-
-```text
-public.mesa_cliente_fluxo_operacoes
-```
-
-Se o preflight provar que o schema atual não suporta o contrato com segurança, a migration da 5B deverá criar colunas/constraints ou tabela auxiliar, sem improviso.
+A primeira versão da 5B registra **uma operação por parcela**. Operação multi-parcela fica fora desta fase.
 
 ---
 
-## 4. Não escopo da 5B
+## 5. Não escopo da 5B
 
 A 5B não deve:
 
@@ -81,16 +112,16 @@ A 5B não deve:
 - aceitar `empresa_id` soberano do frontend;
 - aceitar taxa financeira soberana do frontend;
 - aceitar `politica_id` soberano do frontend;
+- aceitar `status_operacao` do frontend;
+- aceitar `checksum_operacao` ou `idempotency_key` do frontend;
 - gravar seed permanente;
-- criar operação confirmada diretamente, salvo decisão explícita posterior.
+- criar operação confirmada diretamente.
 
 ---
 
-## 5. Diferença entre 5B e 5C
+## 6. Diferença entre 5B e 5C
 
-### 5B — registrar operação
-
-A 5B registra a intenção/rascunho/pendência administrativa da operação.
+### 5B — registrar operação simulada
 
 Contrato lógico:
 
@@ -101,12 +132,11 @@ escopo_dml = operação financeira
 altera_agenda = false
 altera_parcelas = false
 cliente_safe = false
-status inicial = pendente/rascunho/equivalente real do schema
+status_operacao = simulada
+confirmado = false
 ```
 
 ### 5C — confirmar/cancelar operação
-
-A 5C será responsável por confirmar ou cancelar a operação registrada, com regras finais de auditoria, imutabilidade, lock e bloqueio de nova agenda quando houver operação confirmada.
 
 Contrato lógico futuro:
 
@@ -114,85 +144,118 @@ Contrato lógico futuro:
 confirmar operação
 cancelar operação
 aplicar transição de status
+preencher confirmado_por/confirmado_em quando confirmar
 preservar histórico/auditoria
 bloquear conflito com operação confirmada
 ```
 
 ---
 
-## 6. Assinatura candidata da RPC 5B
+## 7. Assinatura final da RPC 5B
 
-A assinatura final só deve ser fechada após o preflight 11 revelar o schema real de `mesa_cliente_fluxo_operacoes`, constraints, colunas, índices, policies e grants.
+Assinatura oficial:
 
-Assinatura candidata:
-
-```text
+```sql
 public.mesa_cliente_registrar_operacao_financeira_admin(
   p_simulacao_id uuid,
   p_agenda_id uuid,
   p_tipo_operacao text,
-  p_parcelas jsonb,
-  p_parametros jsonb default '{}'::jsonb
-)
-```
-
-Possível alternativa se o schema favorecer operação por parcela:
-
-```text
-public.mesa_cliente_registrar_operacao_financeira_admin(
-  p_simulacao_id uuid,
-  p_agenda_id uuid,
   p_parcela_id uuid,
-  p_tipo_operacao text,
-  p_valor_operacao numeric,
+  p_data_referencia date default current_date,
   p_data_destino date default null,
+  p_valor_operacao numeric default null,
   p_parametros jsonb default '{}'::jsonb
 )
 ```
 
-Decisão pendente:
+Racional:
 
-```text
-A forma final depende do preflight 11.
-```
+- a 5A retorna alternativas por `parcela_id`;
+- a tabela real possui `parcela_origem_id` e `parcela_destino_id`;
+- a 5B deve registrar uma operação por parcela;
+- `p_valor_operacao` é intenção e deve ser limitado/recalculado pelo banco;
+- `p_data_destino` só é obrigatório para postergação quando aplicável;
+- `p_parametros` serve apenas para observação administrativa e metadados não soberanos.
 
 ---
 
-## 7. Autoridade de dados
+## 8. Alteração estrutural aprovada para a migration 5B
+
+A migration 5B deve adicionar em `public.mesa_cliente_fluxo_operacoes`:
+
+```sql
+alter table public.mesa_cliente_fluxo_operacoes
+  add column if not exists agenda_id uuid null references public.mesa_cliente_agendas_financeiras(id) on delete set null;
+
+alter table public.mesa_cliente_fluxo_operacoes
+  add column if not exists checksum_operacao text null;
+```
+
+Índices mínimos:
+
+```sql
+create index if not exists idx_mcfo_empresa_simulacao_agenda_status
+on public.mesa_cliente_fluxo_operacoes (empresa_id, simulacao_id, agenda_id, status_operacao, created_at desc);
+
+create unique index if not exists uq_mcfo_checksum_operacao_ativo
+on public.mesa_cliente_fluxo_operacoes (empresa_id, checksum_operacao)
+where checksum_operacao is not null
+  and status_operacao in ('simulada', 'confirmada');
+```
+
+Decisões sobre colunas ausentes apontadas no preflight:
+
+| Coluna | Decisão |
+|---|---|
+| `agenda_id` | adicionar |
+| `checksum_operacao` | adicionar |
+| `created_by` | não adicionar; usar `criado_por` existente |
+| `idempotency_key` | não adicionar; usar `checksum_operacao` calculado no banco |
+| `parcela_id` | não adicionar; usar `parcela_origem_id` e `parcela_destino_id` existentes |
+
+---
+
+## 9. Autoridade de dados
 
 ### Pode vir do frontend como intenção
 
 - `p_simulacao_id`;
-- `p_agenda_id`, se validado contra a simulação e a agenda ativa;
+- `p_agenda_id`, validado contra simulação e agenda ativa;
 - `p_tipo_operacao`;
-- `p_parcela_id` ou lista de parcelas;
-- `valor_operacao` como intenção, limitado e recalculado/validado contra a parcela real;
-- `data_destino` para postergação, validada;
+- `p_parcela_id`, validado contra agenda;
+- `p_data_referencia`;
+- `p_data_destino`, quando aplicável;
+- `p_valor_operacao`, limitado e recalculado contra a parcela real;
 - observação administrativa não soberana.
 
 ### Não pode vir do frontend como autoridade
 
+A RPC deve bloquear em `p_parametros`:
+
 - `empresa_id`;
-- `corretor_id`;
 - `empreendimento_id`;
+- `corretor_id`;
 - `politica_id`;
-- taxa de antecipação;
-- taxa de postergação;
-- base de tempo;
-- método de cálculo;
-- valor atual da parcela;
-- status final da operação;
-- flags de permissão;
-- checksum final;
-- qualquer campo de tenant/autorização.
+- `taxa_ano_pct`;
+- `taxa_antecipacao_ano_pct`;
+- `taxa_postergacao_ano_pct`;
+- `base_tempo`;
+- `metodo_calculo`;
+- `status_operacao`;
+- `confirmado`;
+- `confirmado_por`;
+- `confirmado_em`;
+- `visivel_cliente`;
+- `checksum_operacao`;
+- `idempotency_key`.
 
 ---
 
-## 8. Regras de segurança
+## 10. Regras de segurança
 
 A RPC 5B deve ser `SECURITY DEFINER`, com `search_path` explícito:
 
-```text
+```sql
 set search_path = public, pg_temp
 ```
 
@@ -211,129 +274,107 @@ Validações obrigatórias:
 - cross-tenant bloqueado;
 - simulação existente;
 - agenda ativa vinculada à simulação;
-- parcelas vinculadas à agenda;
+- parcela vinculada à agenda;
 - política financeira ativa/vigente;
+- tipo de operação válido;
 - operação compatível com flags de elegibilidade da parcela;
+- valor financeiro não negativo;
+- data destino válida para postergação;
 - operação não pode ser registrada se já houver operação confirmada conflitante;
 - operação duplicada deve ser idempotente, não duplicar linha.
 
 ---
 
-## 9. Idempotência
+## 11. Idempotência
 
-A idempotência da 5B deve ser calculada no banco, por checksum canônico.
+A idempotência da 5B deve ser calculada no banco, por `checksum_operacao` canônico.
 
 O frontend não deve ser autoridade do checksum.
 
-Campos candidatos para checksum canônico:
+Campos mínimos do checksum:
 
 ```text
 empresa_id
 simulacao_id
 agenda_id
+parcela_id
 tipo_operacao
-parcelas envolvidas
-valor_operacao validado
-p_data_referencia ou data_operacao
-data_destino, quando aplicável
-política financeira usada
-versão do motor financeiro
+valor_operacao_validado
+data_referencia
+data_destino
+politica_id
+versao_motor = 5B.1
 ```
 
 Comportamento esperado:
 
 ```text
-Primeira chamada = cria operação pendente/rascunho.
+Primeira chamada = cria operação simulada.
 Segunda chamada equivalente = retorna a mesma operação com idempotente=true.
 Chamada conflitante = bloqueia com erro claro.
 ```
 
 ---
 
-## 10. Lock transacional
+## 12. Lock transacional
 
-A 5B deve usar lock transacional para impedir corrida entre dois registros concorrentes da mesma simulação/agenda/operação.
+A 5B deve usar lock transacional para impedir corrida entre dois registros concorrentes da mesma simulação/agenda/parcela.
 
-Candidatos:
+Estratégia mínima:
 
 ```text
-SELECT ... FOR UPDATE na agenda ativa;
-SELECT ... FOR UPDATE em operação existente equivalente;
-pg_advisory_xact_lock com chave derivada de empresa_id + simulacao_id + agenda_id;
+SELECT ... FOR UPDATE na agenda ativa.
+SELECT ... FOR UPDATE na parcela de origem.
+Consulta por checksum_operacao antes do INSERT.
+Índice único parcial em empresa_id + checksum_operacao para operações ativas.
 ```
-
-A escolha final depende do preflight 11 e da estrutura real de índices/constraints.
 
 ---
 
-## 11. Auditoria mínima
+## 13. Auditoria mínima
 
 A operação registrada deve permitir rastrear:
 
-- quem registrou;
-- quando registrou;
-- empresa/tenant;
-- simulação;
-- agenda;
-- parcelas envolvidas;
-- tipo de operação;
+- quem registrou: `criado_por`;
+- quando registrou: `created_at`;
+- empresa/tenant: `empresa_id`;
+- simulação: `simulacao_id`;
+- agenda: `agenda_id`;
+- parcela de origem: `parcela_origem_id`;
+- tipo de operação: `tipo_operacao`;
 - cálculo financeiro usado;
-- política financeira usada;
-- checksum/idempotência;
-- status inicial;
-- origem administrativa;
-- payload normalizado de entrada;
-- payload calculado pelo banco.
-
-Se a tabela existente não possuir colunas suficientes, a migration da 5B deve criar estrutura adequada ou usar coluna JSONB auditável, com constraints mínimas.
+- política financeira usada: `politica_id`;
+- checksum/idempotência: `checksum_operacao`;
+- status inicial: `status_operacao`;
+- payload normalizado/calculado pelo banco em `metadata`.
 
 ---
 
-## 12. Regras de DML permitidas
-
-A 5B pode gravar operação financeira.
+## 14. Regras de DML permitidas
 
 Permitido:
 
 ```text
-INSERT/UPDATE idempotente em tabela de operações financeiras.
+INSERT em mesa_cliente_fluxo_operacoes.
+SELECT FOR UPDATE em agenda/parcela/operação existente.
+Retorno idempotente de operação já existente.
 ```
 
 Proibido na 5B:
 
 ```text
-UPDATE em mesa_cliente_agendas_financeiras para alterar valores/totais.
-UPDATE em mesa_cliente_fluxo_parcelas para alterar valores/datas.
+UPDATE em mesa_cliente_agendas_financeiras.
+UPDATE em mesa_cliente_fluxo_parcelas.
 DELETE em agenda, parcelas ou operações.
 INSERT de nova agenda.
 INSERT de novas parcelas.
-```
-
-Observação:
-
-```text
-Se for necessário marcar uma operação anterior como substituída/cancelada, isso deve ser avaliado como regra da 5C, não assumido automaticamente na 5B.
+Confirmar operação.
+Cancelar operação.
 ```
 
 ---
 
-## 13. Testes oficiais esperados
-
-### 11 — Preflight read-only
-
-Arquivo esperado:
-
-```text
-supabase/tests/mesa-cliente/engenharia-financeira/11_preflight_registro_operacao_financeira_readonly.sql
-```
-
-Objetivo:
-
-- mapear schema real de operações;
-- mapear colunas, constraints, índices, policies e grants;
-- validar suporte para lock/idempotência/auditoria;
-- identificar status reais permitidos;
-- decidir se a migration deve usar tabela existente ou criar complemento.
+## 15. Testes oficiais esperados
 
 ### 11A — Positivo transacional
 
@@ -343,8 +384,8 @@ Deve validar:
 - persistência de agenda via 4B;
 - simulação de impacto via 5A;
 - registro de operação via 5B;
-- criação de uma operação pendente/rascunho;
-- operação vinculada à empresa/simulação/agenda/parcela;
+- criação de uma operação `simulada`;
+- operação vinculada a empresa/simulação/agenda/parcela;
 - cálculo/auditoria presentes;
 - sem alteração de agenda/parcelas;
 - rollback.
@@ -362,6 +403,8 @@ Deve validar:
 - `empresa_id` no payload bloqueado;
 - taxa financeira no payload bloqueada;
 - política no payload bloqueada;
+- status no payload bloqueado;
+- checksum/idempotency no payload bloqueado;
 - valor negativo bloqueado;
 - tipo de operação inválido bloqueado;
 - operação sem elegibilidade bloqueada.
@@ -394,42 +437,36 @@ Deve validar:
 
 ---
 
-## 14. Preflight obrigatório antes da migration
-
-Antes de criar qualquer migration da 5B, deve ser executado:
-
-```text
-supabase/tests/mesa-cliente/engenharia-financeira/11_preflight_registro_operacao_financeira_readonly.sql
-```
-
-Somente após o resultset completo do preflight será permitido decidir:
-
-```text
-1. usar mesa_cliente_fluxo_operacoes como tabela principal;
-2. adaptar mesa_cliente_fluxo_operacoes com colunas/índices/constraints;
-3. criar tabela auxiliar de operação/itens/auditoria;
-4. fechar a assinatura real da RPC 5B;
-5. criar migration e testes 11A/11B/11C/11D/11E.
-```
-
----
-
-## 15. Estado atual
+## 16. Estado atual
 
 ```text
 4A = aprovada
 4B = aprovada
 4C = aprovada
 5A.1 = aprovada
-5B = contrato aberto; preflight 11 pendente
+5B = contrato fechado; liberada para migration e testes 11A-11E
 ```
 
 ---
 
-## 16. Veredito
+## 17. Veredito
 
-A 5B está aberta, mas ainda não está liberada para migration.
+A 5B está liberada para implementação controlada.
 
-O próximo passo correto é executar o preflight 11 read-only e usar o schema real como fonte de decisão.
+O próximo passo correto é criar:
 
-Aqui a regra é simples: antes de gravar dinheiro no banco, a gente mede a fundação. SQL financeiro sem preflight é tipo assinar contrato com caneta invisível: até parece bonito, mas na hora da auditoria vira assombração.
+```text
+supabase/migrations/<timestamp>_mesa_cliente_fase_5b_registro_operacao_financeira.sql
+```
+
+Depois, criar e executar os testes:
+
+```text
+11A positivo
+11B negativos
+11C idempotência
+11D operação confirmada
+11E zero mutação agenda/parcelas
+```
+
+Nada de frontend ainda. Primeiro a escrita financeira precisa provar que sabe escrever sem bagunçar a agenda — caneta boa escreve, caneta ruim apaga o contrato inteiro.
