@@ -4,7 +4,7 @@ Este diretório contém os scripts de validação da Engenharia Financeira do Me
 
 ## Contexto operacional
 
-O projeto trabalha com banco Supabase de produção única. Por isso, a regra permanente é:
+O projeto trabalha com banco Supabase de produção única. Regra permanente:
 
 ```text
 Preflight read-only antes de migration.
@@ -13,7 +13,7 @@ Nenhum frontend antes de RPC e segurança validadas.
 Nenhuma premissa de schema sem consulta ao banco real.
 ```
 
-Produção não é laboratório. Aqui teste que grava sem rollback é quase churrasco dentro do datacenter: até pode esquentar, mas ninguém vai aplaudir.
+Produção não é laboratório. Teste que grava sem rollback é quase churrasco dentro do datacenter: até pode esquentar, mas ninguém vai aplaudir.
 
 ---
 
@@ -33,7 +33,8 @@ Ordem de referência:
 10. `docs/mesa-cliente/fase-5b-validacao-preflight-11.md`
 11. `docs/mesa-cliente/fase-5b-validacao-11a-registro-operacao-financeira.md`
 12. `docs/mesa-cliente/fase-5b-validacao-11b-negativos-registro-operacao-financeira.md`
-13. Este README como índice operacional da pasta de testes.
+13. `docs/mesa-cliente/fase-5b-validacao-11c-idempotencia-registro-operacao-financeira.md`
+14. Este README como índice operacional da pasta de testes.
 
 ---
 
@@ -52,15 +53,7 @@ Características:
 - não altera schema;
 - seguro para SQL Editor da produção.
 
-Valida:
-
-- tabelas obrigatórias;
-- funções obrigatórias;
-- RLS;
-- policies;
-- grants para `anon` e `authenticated`;
-- sinais de duplicidade de policies/índices;
-- triggers/funções de integridade.
+Valida tabelas obrigatórias, funções obrigatórias, RLS, policies, grants, duplicidade de policies/índices e triggers/funções de integridade.
 
 #### `01_postcheck_producao_readonly.sql`
 
@@ -104,33 +97,15 @@ Conclusão operacional registrada:
 
 #### `07a_validacao_agenda_financeira_json_first_rollback.sql`
 
-Objetivo:
-
-- validar geração positiva da agenda em JSON;
-- provar `cliente_safe=false`;
-- provar `persistencia=false`;
-- provar `dml_financeiro=false`;
-- validar datas, periodicidade simbólica e totalização;
-- provar zero DML em `mesa_cliente_fluxo_parcelas`;
-- provar zero DML em `mesa_cliente_fluxo_operacoes`.
-
 Status: aprovado.
+
+Valida geração positiva da agenda em JSON, `cliente_safe=false`, `persistencia=false`, `dml_financeiro=false`, datas, periodicidade simbólica, totalização e zero DML em `mesa_cliente_fluxo_parcelas` e `mesa_cliente_fluxo_operacoes`.
 
 #### `07b_validacao_agenda_financeira_json_first_negativos_rollback.sql`
 
-Objetivo:
-
-- validar bloqueio de `anon`;
-- validar simulação inexistente;
-- validar `empresa_id` fake no payload;
-- validar item com `empresa_id` fake;
-- validar valor negativo;
-- validar grupo desconhecido;
-- validar periodicidade fraudada;
-- validar periodicidade simbólica marcada como negociável;
-- provar zero DML financeiro.
-
 Status: aprovado.
+
+Valida bloqueios de `anon`, simulação inexistente, `empresa_id` fake no payload, item com `empresa_id` fake, valor negativo, grupo desconhecido, periodicidade fraudada, periodicidade simbólica marcada como negociável e zero DML financeiro.
 
 ---
 
@@ -142,78 +117,41 @@ Status: aprovado.
 
 #### `08_preflight_persistencia_agenda_readonly.sql`
 
-Objetivo:
+Status: aprovado.
 
-- validar schema real antes de criar persistência;
-- mapear tabelas, colunas, constraints, indexes, grants e policies;
-- identificar riscos antes da migration 4B.
+Valida schema real antes de criar persistência: tabelas, colunas, constraints, indexes, grants e policies.
 
 Achado importante:
 
-- `mesa_cliente_fluxo_operacoes` usa `status_operacao`, não coluna genérica `status`.
+```text
+mesa_cliente_fluxo_operacoes usa status_operacao, não coluna genérica status.
+```
 
 ### Testes oficiais 4B
 
 #### `08a_validacao_persistencia_agenda_financeira_rollback.sql`
 
-Objetivo:
-
-- criar fixture transacional;
-- chamar RPC 4B;
-- persistir cabeçalho em `mesa_cliente_agendas_financeiras`;
-- persistir parcelas em `mesa_cliente_fluxo_parcelas`;
-- validar total de parcelas e valor total;
-- validar periodicidade bloqueada;
-- validar datas resolvidas;
-- provar que não cria operação financeira;
-- encerrar com rollback.
-
 Status: aprovado.
+
+Valida fixture transacional, RPC 4B, persistência em `mesa_cliente_agendas_financeiras`, persistência em `mesa_cliente_fluxo_parcelas`, totais, periodicidade bloqueada, datas resolvidas, zero operação financeira e rollback.
 
 #### `08b_validacao_persistencia_agenda_financeira_idempotencia_rollback.sql`
 
-Objetivo:
-
-- chamar a persistência duas vezes com a mesma entrada;
-- provar que não duplica agenda;
-- provar que não duplica parcelas;
-- validar `idempotente=true` na segunda chamada;
-- validar checksum consistente;
-- encerrar com rollback.
-
 Status: aprovado.
+
+Valida duas chamadas com a mesma entrada, sem duplicar agenda/parcelas, `idempotente=true` na segunda chamada, checksum consistente e rollback.
 
 #### `08c_validacao_persistencia_agenda_financeira_negativos_rollback.sql`
 
-Objetivo:
-
-- validar grants da RPC;
-- bloquear simulação inexistente;
-- bloquear `empresa_id` fake no payload;
-- bloquear item com `empresa_id` fake;
-- bloquear valor negativo;
-- bloquear grupo desconhecido;
-- bloquear periodicidade fraudada;
-- bloquear periodicidade simbólica marcada como negociável;
-- provar zero DML permanente;
-- encerrar com rollback.
-
 Status: aprovado.
+
+Valida grants da RPC, simulação inexistente, `empresa_id` fake no payload, item com `empresa_id` fake, valor negativo, grupo desconhecido, periodicidade fraudada, periodicidade simbólica marcada como negociável, zero DML permanente e rollback.
 
 #### `08d_validacao_persistencia_agenda_financeira_operacao_confirmada_rollback.sql`
 
-Objetivo:
-
-- criar agenda transacional;
-- criar operação confirmada fixture dentro da transação;
-- tentar substituir agenda;
-- validar bloqueio com `SQLSTATE 55000`;
-- provar que a agenda original permanece intacta;
-- provar que parcelas originais não foram recriadas indevidamente;
-- provar que não foi criada operação extra;
-- encerrar com rollback.
-
 Status: aprovado.
+
+Valida agenda transacional, operação confirmada fixture, bloqueio de substituição de agenda com `SQLSTATE 55000`, preservação da agenda original, parcelas originais não recriadas indevidamente, zero operação extra e rollback.
 
 Erros corrigidos durante o 08D:
 
@@ -233,31 +171,22 @@ Erros corrigidos durante o 08D:
 
 #### `09_preflight_agenda_financeira_cliente_safe_readonly.sql`
 
-Objetivo:
-
-- validar tabelas reais envolvidas na leitura cliente-safe;
-- validar colunas de `mesa_cliente_agendas_financeiras`;
-- validar colunas de `mesa_cliente_fluxo_parcelas`;
-- validar colunas de `mesa_simulacoes`;
-- validar grants e policies;
-- validar existência das RPCs 4A/4B;
-- mapear campos sensíveis que não podem sair no cliente-safe;
-- validar se há base técnica para criar a RPC 4C.
-
 Status: executado e fase concluída por documentação de fechamento.
 
-### Testes 4C
+Valida tabelas reais envolvidas na leitura cliente-safe, colunas de `mesa_cliente_agendas_financeiras`, `mesa_cliente_fluxo_parcelas`, `mesa_simulacoes`, grants, policies, existência das RPCs 4A/4B, campos sensíveis e base técnica para RPC 4C.
 
-Critérios aprovados:
+### Critérios 4C aprovados
 
-- `cliente_safe=true`;
-- `anon` bloqueado;
-- `authenticated` executa;
-- cross-tenant bloqueado;
-- simulação inexistente bloqueada;
-- agenda inexistente tratada;
-- retorno sem VPL, prêmio, comissão, política, metadata bruta, checksum e payload bruto;
-- sem DML.
+```text
+cliente_safe=true
+anon bloqueado
+authenticated executa
+cross-tenant bloqueado
+simulação inexistente bloqueada
+agenda inexistente tratada
+retorno sem VPL, prêmio, comissão, política, metadata bruta, checksum e payload bruto
+sem DML
+```
 
 ---
 
@@ -339,46 +268,19 @@ Status: aprovado.
 
 Status: aprovado.
 
-Valida:
-
-- fixture transacional;
-- persistência da agenda via RPC 4B;
-- chamada positiva da RPC 5A.1;
-- `cliente_safe=false`;
-- `persistencia=false`;
-- `dml_financeiro=false`;
-- alternativas e recomendação;
-- política `composto/dias_365`;
-- zero operação financeira;
-- rollback.
+Valida fixture transacional, persistência da agenda via RPC 4B, chamada positiva da RPC 5A.1, flags administrativas, alternativas, recomendação, política `composto/dias_365`, zero operação financeira e rollback.
 
 #### `10b_validacao_simulacao_impacto_agenda_persistida_negativos_rollback.sql`
 
 Status: aprovado.
 
-Valida:
-
-- `anon` sem execute;
-- chamada sem auth bloqueada;
-- simulação inexistente bloqueada;
-- `empresa_id` no payload bloqueado;
-- valor negativo bloqueado;
-- modo inválido bloqueado;
-- agenda inexistente bloqueada;
-- rollback.
+Valida `anon` sem execute, sem auth bloqueado, simulação inexistente, `empresa_id` no payload bloqueado, valor negativo, modo inválido, agenda inexistente e rollback.
 
 #### `10c_validacao_simulacao_impacto_agenda_persistida_zero_dml_rollback.sql`
 
 Status: aprovado.
 
-Valida:
-
-- flags `persistencia=false` e `dml_financeiro=false`;
-- contagens de agendas inalteradas;
-- contagens de parcelas inalteradas;
-- contagens de operações inalteradas;
-- checksum/totais da agenda inalterados;
-- rollback.
+Valida flags `persistencia=false` e `dml_financeiro=false`, contagens de agendas/parcelas/operações inalteradas, checksum/totais da agenda inalterados e rollback.
 
 Resultado crítico do 10C:
 
@@ -415,7 +317,7 @@ docs/mesa-cliente/rascunhos-sql/preflights-exploratorios/10_preflight_impacto_fi
 
 ## Fase 5B — Registrar operação financeira administrativa
 
-**Status:** em validação transacional. 11A e 11B aprovados; 11C/11D/11E pendentes.
+**Status:** em validação transacional. 11A, 11B e 11C aprovados; 11D/11E pendentes.
 
 Documento canônico:
 
@@ -441,20 +343,19 @@ Validação 11B:
 docs/mesa-cliente/fase-5b-validacao-11b-negativos-registro-operacao-financeira.md
 ```
 
+Validação 11C:
+
+```text
+docs/mesa-cliente/fase-5b-validacao-11c-idempotencia-registro-operacao-financeira.md
+```
+
 ### Preflight oficial 5B
 
 #### `11_preflight_registro_operacao_financeira_readonly.sql`
 
 Status: aprovado com WARN estrutural esperado.
 
-Valida:
-
-- tabelas obrigatórias;
-- schema real de `mesa_cliente_fluxo_operacoes`;
-- colunas, constraints, índices, RLS, policies e grants;
-- enums financeiros;
-- presença das dependências 4B e 5A;
-- ausência esperada da RPC 5B antes da migration.
+Valida tabelas obrigatórias, schema real de `mesa_cliente_fluxo_operacoes`, colunas, constraints, índices, RLS, policies, grants, enums financeiros, dependências 4B/5A e ausência esperada da RPC 5B antes da migration.
 
 Resultado consolidado:
 
@@ -508,26 +409,7 @@ Status: executada com sucesso no Supabase.
 
 Status: aprovado.
 
-Valida:
-
-- fixture transacional;
-- persistência de agenda via 4B;
-- registro positivo via RPC 5B;
-- `fase=5B_REGISTRO_OPERACAO_FINANCEIRA`;
-- `cliente_safe=false`;
-- `persistencia=true`;
-- `dml_financeiro=true`;
-- `escopo_dml=operacao_financeira`;
-- operação com `status_operacao='simulada'`;
-- `confirmado=false`;
-- `visivel_cliente=false`;
-- `agenda_id` preenchido;
-- `parcela_origem_id` preenchido;
-- `checksum_operacao` preenchido;
-- cálculo composto/dias_365 presente;
-- agenda não mutada;
-- parcelas não mutadas;
-- rollback.
+Valida fixture transacional, persistência de agenda via 4B, registro positivo via RPC 5B, `fase=5B_REGISTRO_OPERACAO_FINANCEIRA`, `cliente_safe=false`, `persistencia=true`, `dml_financeiro=true`, `escopo_dml=operacao_financeira`, operação `simulada`, `confirmado=false`, `visivel_cliente=false`, `agenda_id`, `parcela_origem_id`, `checksum_operacao`, cálculo composto/dias_365, agenda não mutada, parcelas não mutadas e rollback.
 
 Correção aplicada antes da aprovação:
 
@@ -539,28 +421,28 @@ Removida a faixa fixture 6.01 até 999 porque a constraint real mesa_premio_faix
 
 Status: aprovado.
 
-Valida:
-
-- `anon` sem execute;
-- chamada sem auth bloqueada;
-- simulação inexistente bloqueada;
-- agenda inexistente bloqueada;
-- parcela inexistente bloqueada;
-- `empresa_id` no payload bloqueado;
-- `taxa_ano_pct` no payload bloqueada;
-- `status_operacao` no payload bloqueado;
-- `checksum_operacao` / `idempotency_key` no payload bloqueados;
-- valor negativo bloqueado;
-- tipo de operação inválido bloqueado;
-- `p_parametros` não objeto bloqueado;
-- postergação sem `data_destino` bloqueada;
-- parcela simbólica bloqueada;
-- zero operações criadas pelos negativos;
-- rollback.
+Valida `anon` sem execute, sem auth bloqueado, simulação inexistente, agenda inexistente, parcela inexistente, `empresa_id` no payload bloqueado, `taxa_ano_pct` bloqueada, `status_operacao` bloqueado, `checksum_operacao`/`idempotency_key` bloqueados, valor negativo, tipo inválido, `p_parametros` não objeto, postergação sem `data_destino`, parcela simbólica, zero operações criadas pelos negativos e rollback.
 
 #### `11c_validacao_registro_operacao_financeira_idempotencia_rollback.sql`
 
-Status: pendente.
+Status: aprovado.
+
+Valida primeira chamada criando operação, segunda chamada reutilizando a mesma operação, idempotência por `checksum_operacao` calculado no banco, ausência de duplicidade em `mesa_cliente_fluxo_operacoes`, agenda não mutada, parcelas não mutadas, flags do contrato 5B preservadas e rollback.
+
+Resultado crítico do 11C:
+
+```text
+primeira chamada: idempotente=false
+segunda chamada: idempotente=true
+operacao_id_primeira = operacao_id_segunda
+checksum_primeira = checksum_segunda
+before.operacoes = 0
+mid_apos_primeira.operacoes = 1
+after_apos_segunda.operacoes = 1
+agenda_checksum_before = agenda_checksum_after
+parcelas_before = parcelas_after = 6
+valor_total_parcelas_before = valor_total_parcelas_after = 29500.50
+```
 
 #### `11d_validacao_registro_operacao_financeira_confirmada_rollback.sql`
 
@@ -613,5 +495,5 @@ Não execute teste integrador em produção única sem verificar:
 4B aprovada em rollback transacional.
 4C aprovada.
 5A.1 aprovada.
-5B em validação transacional: migration executada, 11A e 11B aprovados, 11C/11D/11E pendentes.
+5B em validação transacional: migration executada, 11A, 11B e 11C aprovados, 11D/11E pendentes.
 ```
