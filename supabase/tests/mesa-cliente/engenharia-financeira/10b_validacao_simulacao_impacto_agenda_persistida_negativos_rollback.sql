@@ -14,37 +14,46 @@
 --
 -- Nota técnica:
 --   Este teste troca role para authenticated para simular execução real via Supabase.
---   A tabela temporária de resultados precisa conceder permissão explícita para authenticated,
---   senão os blocos de exception não conseguem registrar PASS/FAIL após SET LOCAL ROLE.
+--   Não usa temp table para armazenar resultados, porque temp table + SET LOCAL ROLE
+--   pode gerar erro de permissão ou resolução de schema no SQL Editor.
+--   Os resultados são acumulados em uma variável transacional via set_config(...).
 
 begin;
 
-create temp table tmp_10b_results (
-  bloco text primary key,
-  status text not null,
-  detalhe jsonb not null default '{}'::jsonb
-) on commit drop;
+select set_config('app.mc10b.results', '[]', true);
+select set_config('app.mc10b.simulacao_id', '', true);
+select set_config('app.mc10b.empresa_id', '', true);
 
-grant select, insert, update, delete on table tmp_10b_results to authenticated;
-
+-- 01: anon não pode executar a RPC.
 do $$
+declare
+  v_results jsonb := coalesce(nullif(current_setting('app.mc10b.results', true), '')::jsonb, '[]'::jsonb);
+  v_item jsonb;
 begin
   if has_function_privilege('anon', 'public.mesa_cliente_simular_impacto_agenda_persistida_admin(uuid,date,text,jsonb)'::regprocedure, 'EXECUTE') then
-    insert into tmp_10b_results values ('01_grant_anon_bloqueado', 'FAIL', jsonb_build_object('anon_can_execute', true));
+    v_item := jsonb_build_object('bloco', '01_grant_anon_bloqueado', 'status', 'FAIL', 'detalhe', jsonb_build_object('anon_can_execute', true));
   else
-    insert into tmp_10b_results values ('01_grant_anon_bloqueado', 'PASS', jsonb_build_object('anon_can_execute', false));
+    v_item := jsonb_build_object('bloco', '01_grant_anon_bloqueado', 'status', 'PASS', 'detalhe', jsonb_build_object('anon_can_execute', false));
   end if;
+
+  perform set_config('app.mc10b.results', (v_results || jsonb_build_array(v_item))::text, true);
 end $$;
 
+-- 02: chamada sem auth deve bloquear.
 do $$
+declare
+  v_results jsonb := coalesce(nullif(current_setting('app.mc10b.results', true), '')::jsonb, '[]'::jsonb);
+  v_item jsonb;
 begin
   perform set_config('request.jwt.claim.sub', '', true);
   perform public.mesa_cliente_simular_impacto_agenda_persistida_admin(gen_random_uuid(), current_date, 'melhor_aplicacao', jsonb_build_object('valor_disponivel', 1000));
-  insert into tmp_10b_results values ('02_sem_auth_bloqueado', 'FAIL', jsonb_build_object('erro', 'chamada sem auth não bloqueou'));
+  v_item := jsonb_build_object('bloco', '02_sem_auth_bloqueado', 'status', 'FAIL', 'detalhe', jsonb_build_object('erro', 'chamada sem auth não bloqueou'));
 exception when others then
-  insert into tmp_10b_results values ('02_sem_auth_bloqueado', case when sqlstate = '28000' then 'PASS' else 'FAIL' end, jsonb_build_object('sqlstate', sqlstate, 'message', sqlerrm));
+  v_item := jsonb_build_object('bloco', '02_sem_auth_bloqueado', 'status', case when sqlstate = '28000' then 'PASS' else 'FAIL' end, 'detalhe', jsonb_build_object('sqlstate', sqlstate, 'message', sqlerrm));
+  perform set_config('app.mc10b.results', (v_results || jsonb_build_array(v_item))::text, true);
 end $$;
 
+-- Seleciona usuário administrativo real para os testes com authenticated.
 with candidato as materialized (
   select c.user_id
   from public.corretores c
@@ -65,12 +74,17 @@ from candidato;
 
 set local role authenticated;
 
+-- 03: simulação inexistente deve bloquear.
 do $$
+declare
+  v_results jsonb := coalesce(nullif(current_setting('app.mc10b.results', true), '')::jsonb, '[]'::jsonb);
+  v_item jsonb;
 begin
   perform public.mesa_cliente_simular_impacto_agenda_persistida_admin(gen_random_uuid(), current_date, 'melhor_aplicacao', jsonb_build_object('valor_disponivel', 1000));
-  insert into tmp_10b_results values ('03_simulacao_inexistente_bloqueada', 'FAIL', jsonb_build_object('erro', 'simulação inexistente não bloqueou'));
+  v_item := jsonb_build_object('bloco', '03_simulacao_inexistente_bloqueada', 'status', 'FAIL', 'detalhe', jsonb_build_object('erro', 'simulação inexistente não bloqueou'));
 exception when others then
-  insert into tmp_10b_results values ('03_simulacao_inexistente_bloqueada', case when sqlstate = 'P0002' then 'PASS' else 'FAIL' end, jsonb_build_object('sqlstate', sqlstate, 'message', sqlerrm));
+  v_item := jsonb_build_object('bloco', '03_simulacao_inexistente_bloqueada', 'status', case when sqlstate = 'P0002' then 'PASS' else 'FAIL' end, 'detalhe', jsonb_build_object('sqlstate', sqlstate, 'message', sqlerrm));
+  perform set_config('app.mc10b.results', (v_results || jsonb_build_array(v_item))::text, true);
 end $$;
 
 -- Fixture mínima sem agenda para testar bloqueio de agenda inexistente e validações de payload.
@@ -121,57 +135,79 @@ select count(*) from setup;
 
 set local role authenticated;
 
+-- 04: empresa_id no payload deve bloquear antes de qualquer leitura de agenda.
 do $$
 declare
+  v_results jsonb := coalesce(nullif(current_setting('app.mc10b.results', true), '')::jsonb, '[]'::jsonb);
+  v_item jsonb;
   v_sim uuid := current_setting('app.mc10b.simulacao_id', true)::uuid;
 begin
   perform public.mesa_cliente_simular_impacto_agenda_persistida_admin(v_sim, current_date, 'melhor_aplicacao', jsonb_build_object('empresa_id', gen_random_uuid(), 'valor_disponivel', 1000));
-  insert into tmp_10b_results values ('04_empresa_id_payload_bloqueado', 'FAIL', jsonb_build_object('erro', 'empresa_id no payload não bloqueou'));
+  v_item := jsonb_build_object('bloco', '04_empresa_id_payload_bloqueado', 'status', 'FAIL', 'detalhe', jsonb_build_object('erro', 'empresa_id no payload não bloqueou'));
 exception when others then
-  insert into tmp_10b_results values ('04_empresa_id_payload_bloqueado', case when sqlstate = '42501' then 'PASS' else 'FAIL' end, jsonb_build_object('sqlstate', sqlstate, 'message', sqlerrm));
+  v_item := jsonb_build_object('bloco', '04_empresa_id_payload_bloqueado', 'status', case when sqlstate = '42501' then 'PASS' else 'FAIL' end, 'detalhe', jsonb_build_object('sqlstate', sqlstate, 'message', sqlerrm));
+  perform set_config('app.mc10b.results', (v_results || jsonb_build_array(v_item))::text, true);
 end $$;
 
+-- 05: valor negativo deve bloquear.
 do $$
 declare
+  v_results jsonb := coalesce(nullif(current_setting('app.mc10b.results', true), '')::jsonb, '[]'::jsonb);
+  v_item jsonb;
   v_sim uuid := current_setting('app.mc10b.simulacao_id', true)::uuid;
 begin
   perform public.mesa_cliente_simular_impacto_agenda_persistida_admin(v_sim, current_date, 'melhor_aplicacao', jsonb_build_object('valor_disponivel', -100));
-  insert into tmp_10b_results values ('05_valor_negativo_bloqueado', 'FAIL', jsonb_build_object('erro', 'valor negativo não bloqueou'));
+  v_item := jsonb_build_object('bloco', '05_valor_negativo_bloqueado', 'status', 'FAIL', 'detalhe', jsonb_build_object('erro', 'valor negativo não bloqueou'));
 exception when others then
-  insert into tmp_10b_results values ('05_valor_negativo_bloqueado', case when sqlstate = '22023' then 'PASS' else 'FAIL' end, jsonb_build_object('sqlstate', sqlstate, 'message', sqlerrm));
+  v_item := jsonb_build_object('bloco', '05_valor_negativo_bloqueado', 'status', case when sqlstate = '22023' then 'PASS' else 'FAIL' end, 'detalhe', jsonb_build_object('sqlstate', sqlstate, 'message', sqlerrm));
+  perform set_config('app.mc10b.results', (v_results || jsonb_build_array(v_item))::text, true);
 end $$;
 
+-- 06: modo inválido deve bloquear.
 do $$
 declare
+  v_results jsonb := coalesce(nullif(current_setting('app.mc10b.results', true), '')::jsonb, '[]'::jsonb);
+  v_item jsonb;
   v_sim uuid := current_setting('app.mc10b.simulacao_id', true)::uuid;
 begin
   perform public.mesa_cliente_simular_impacto_agenda_persistida_admin(v_sim, current_date, 'modo_invalido', jsonb_build_object('valor_disponivel', 1000));
-  insert into tmp_10b_results values ('06_modo_invalido_bloqueado', 'FAIL', jsonb_build_object('erro', 'modo inválido não bloqueou'));
+  v_item := jsonb_build_object('bloco', '06_modo_invalido_bloqueado', 'status', 'FAIL', 'detalhe', jsonb_build_object('erro', 'modo inválido não bloqueou'));
 exception when others then
-  insert into tmp_10b_results values ('06_modo_invalido_bloqueado', case when sqlstate = '22023' then 'PASS' else 'FAIL' end, jsonb_build_object('sqlstate', sqlstate, 'message', sqlerrm));
+  v_item := jsonb_build_object('bloco', '06_modo_invalido_bloqueado', 'status', case when sqlstate = '22023' then 'PASS' else 'FAIL' end, 'detalhe', jsonb_build_object('sqlstate', sqlstate, 'message', sqlerrm));
+  perform set_config('app.mc10b.results', (v_results || jsonb_build_array(v_item))::text, true);
 end $$;
 
+-- 07: simulação válida sem agenda ativa deve bloquear.
 do $$
 declare
+  v_results jsonb := coalesce(nullif(current_setting('app.mc10b.results', true), '')::jsonb, '[]'::jsonb);
+  v_item jsonb;
   v_sim uuid := current_setting('app.mc10b.simulacao_id', true)::uuid;
 begin
   perform public.mesa_cliente_simular_impacto_agenda_persistida_admin(v_sim, current_date, 'melhor_aplicacao', jsonb_build_object('valor_disponivel', 1000));
-  insert into tmp_10b_results values ('07_agenda_inexistente_bloqueada', 'FAIL', jsonb_build_object('erro', 'agenda inexistente não bloqueou'));
+  v_item := jsonb_build_object('bloco', '07_agenda_inexistente_bloqueada', 'status', 'FAIL', 'detalhe', jsonb_build_object('erro', 'agenda inexistente não bloqueou'));
 exception when others then
-  insert into tmp_10b_results values ('07_agenda_inexistente_bloqueada', case when sqlstate = 'P0002' then 'PASS' else 'FAIL' end, jsonb_build_object('sqlstate', sqlstate, 'message', sqlerrm));
+  v_item := jsonb_build_object('bloco', '07_agenda_inexistente_bloqueada', 'status', case when sqlstate = 'P0002' then 'PASS' else 'FAIL' end, 'detalhe', jsonb_build_object('sqlstate', sqlstate, 'message', sqlerrm));
+  perform set_config('app.mc10b.results', (v_results || jsonb_build_array(v_item))::text, true);
 end $$;
 
 reset role;
 
-insert into tmp_10b_results
-select
-  '99_rollback_notice',
-  'INFO',
-  jsonb_build_object('mensagem', 'Teste 10B encerra com ROLLBACK. Nada deve permanecer no banco.')
-on conflict (bloco) do update set status = excluded.status, detalhe = excluded.detalhe;
+-- 99: aviso de rollback.
+do $$
+declare
+  v_results jsonb := coalesce(nullif(current_setting('app.mc10b.results', true), '')::jsonb, '[]'::jsonb);
+  v_item jsonb;
+begin
+  v_item := jsonb_build_object('bloco', '99_rollback_notice', 'status', 'INFO', 'detalhe', jsonb_build_object('mensagem', 'Teste 10B encerra com ROLLBACK. Nada deve permanecer no banco.'));
+  perform set_config('app.mc10b.results', (v_results || jsonb_build_array(v_item))::text, true);
+end $$;
 
-select bloco, status, detalhe
-from tmp_10b_results
-order by bloco;
+select
+  item->>'bloco' as bloco,
+  item->>'status' as status,
+  item->'detalhe' as detalhe
+from jsonb_array_elements(current_setting('app.mc10b.results', true)::jsonb) with ordinality as r(item, ord)
+order by ord;
 
 rollback;
