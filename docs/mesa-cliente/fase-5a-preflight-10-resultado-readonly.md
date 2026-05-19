@@ -1,25 +1,44 @@
-# FECH.AI / MesaCliente — Fase 5A.1 — Resultado do Preflight 10 e 10P
+# FECH.AI / MesaCliente — Fase 5A.1 — Resultado final do Preflight 10, 10P, 10A, 10B e 10C
 
-**Status:** preflight 10 executado; 10P transacional aprovado; migration/RPC 5A.1 criada para validação  
+**Status:** aprovada  
 **Branch:** `feature/mesa-cliente-engenharia-financeira`  
 **Área:** Engenharia Financeira / MesaCliente  
 **Fase:** 5A.1 — simulação administrativa de impacto financeiro com agenda persistida  
 **Preflight executado:** `supabase/tests/mesa-cliente/engenharia-financeira/10_preflight_simulacao_impacto_agenda_persistida_readonly.sql`  
 **Preparação executada:** `supabase/tests/mesa-cliente/engenharia-financeira/10p_preparacao_base_minima_5a_agenda_persistida_rollback.sql`  
-**Migration criada:** `supabase/migrations/20260518193000_mesa_cliente_fase_5a_simulacao_impacto_agenda_persistida.sql`  
-**Documento canônico relacionado:** `docs/mesa-cliente/fase-5a-contrato-simulacao-impacto-agenda-persistida.md`
+**Migration principal:** `supabase/migrations/20260518193000_mesa_cliente_fase_5a_simulacao_impacto_agenda_persistida.sql`  
+**Migration corretiva:** `supabase/migrations/20260518194500_fix_mesa_cliente_5a_remover_agenda_id_operacoes.sql`  
+**Documento canônico relacionado:** `docs/mesa-cliente/fase-5a-contrato-simulacao-impacto-agenda-persistida.md`  
+**Fechamento final:** `docs/mesa-cliente/fase-5a-validacao-final-simulacao-impacto-agenda-persistida.md`
 
 ---
 
-## 1. Veredito executivo
+## 1. Veredito executivo final
 
-O preflight 10 canônico da Fase 5A.1 foi executado inicialmente e retornou:
+A Fase 5A.1 está **aprovada**.
+
+Resultados consolidados:
+
+```text
+10P = PASS
+10A = PASS
+10B = PASS
+10C = PASS
+```
+
+A RPC administrativa de simulação de impacto financeiro foi validada com agenda persistida como fonte soberana, sem exposição cliente-safe e sem DML financeiro permanente.
+
+---
+
+## 2. Resultado do preflight 10 read-only
+
+O preflight 10 canônico foi executado inicialmente e retornou:
 
 ```text
 13_operational_interpretation = FAIL
 ```
 
-A falha não era estrutural de schema. O bloqueio ocorreu porque o ambiente não possuía base mínima operacional permanente para testar a RPC agenda-first:
+A falha não era estrutural de schema. O bloqueio ocorreu por ausência de base mínima operacional permanente para testar a RPC agenda-first:
 
 ```text
 politicas_ativas_compostas_dias_365 = 0
@@ -27,39 +46,11 @@ agendas_ativas_com_parcelas = 0
 total_fixture_candidates_5a = 0
 ```
 
-Para não criar seed permanente e não contaminar o banco de produção única, foi criada a etapa intermediária 10P, com `BEGIN + ROLLBACK`.
-
-O 10P foi executado e retornou **PASS em todos os blocos críticos**.
-
-Resultado final deste ciclo:
+Interpretação aprovada:
 
 ```text
-Preflight 10: FAIL operacional por falta de dados mínimos.
-10P: PASS transacional.
-Gate liberado para criar migration/RPC 5A.1.
-Migration/RPC 5A.1 criada.
-Testes 10A/10B/10C criados para execução em rollback.
+Schema e funções mínimas estavam presentes, mas não havia dados mínimos permanentes para liberar a 5A.1 sem fixture.
 ```
-
----
-
-## 2. Resultado do preflight 10 read-only
-
-| Ordem | Seção | Status | Interpretação |
-|---:|---|---|---|
-| 1 | `01_tables_inventory` | PASS | Tabelas necessárias foram encontradas. |
-| 2 | `02_function_inventory` | PASS | Funções/RPCs prévias necessárias foram encontradas. |
-| 3 | `03_columns_inventory` | INFO | Inventário amplo de colunas retornado. |
-| 4 | `04_expected_required_columns_status` | PASS | Nenhuma coluna obrigatória ausente. |
-| 5 | `05_finance_column_candidates` | INFO | Candidatos financeiros mapeados. |
-| 6 | `06_constraints_inventory` | INFO | Constraints inventariadas. |
-| 7 | `07_indexes_inventory` | INFO | Índices inventariados. |
-| 8 | `08_rls_policies_and_table_grants` | PASS | RLS/policies/grants inventariados sem bloqueio crítico. |
-| 9 | `09_counts_and_data_readiness` | INFO | Ambiente sem dados mínimos para fixture/cenário real 5A. |
-| 10 | `10_security_findings` | PASS | Achados de segurança sem bloqueio crítico para o preflight. |
-| 11 | `11_migration_5a_contract_reminder` | INFO | Contrato 5A.1 reafirmado: administrativo, sem persistência e sem DML financeiro. |
-| 13 | `13_operational_interpretation` | FAIL | Bloqueou migration/RPC 5A.1 naquele momento. |
-| 99 | `99_end` | INFO | Preflight concluído. |
 
 ---
 
@@ -71,19 +62,11 @@ Arquivo executado:
 supabase/tests/mesa-cliente/engenharia-financeira/10p_preparacao_base_minima_5a_agenda_persistida_rollback.sql
 ```
 
-Resultado enviado:
+Resultado:
 
-| Bloco | Status | Evidência principal |
-|---|---|---|
-| `01_contexto_transacional` | PASS | Contexto admin_global válido, empresa/corretor/empreendimento/simulação/política encontrados/criados em fixture. |
-| `02_politica_financeira_ativa_composta_dias_365` | PASS | Política ativa com `metodo_calculo=composto` e `base_tempo=dias_365`. |
-| `03_faixas_premio_administrativas` | PASS | 3 faixas administrativas criadas em transação. |
-| `04_rpc_4b_persistiu_agenda_fixture` | PASS | RPC 4B persistiu agenda fixture com `ok=true`. |
-| `05_agenda_ativa_com_parcelas` | PASS | Agenda ativa com 6 parcelas e total de R$ 29.500,50. |
-| `06_parcelas_elegiveis_para_5a` | PASS | 5 parcelas elegíveis para VPL/antecipação/postergacão e 1 periodicidade simbólica. |
-| `07_zero_operacoes_financeiras_confirmadas` | PASS | Nenhuma operação financeira registrada. |
-| `08_readiness_para_migration_5a` | PASS | Readiness aprovado para criar migration/RPC 5A.1. |
-| `99_rollback_notice` | INFO | Fixture transacional encerrada com ROLLBACK. |
+```text
+PASS
+```
 
 Evidências relevantes:
 
@@ -95,17 +78,17 @@ qtd_faixas_db = 3
 total_operacoes = 0
 ```
 
----
-
-## 4. Decisão após 10P
-
-Com o 10P aprovado, a decisão oficial passou a ser:
+Decisão após 10P:
 
 ```text
 Liberado criar a migration/RPC 5A.1 e os testes transacionais 10A/10B/10C.
 ```
 
-Migration criada:
+---
+
+## 4. Migration/RPC 5A.1 criada
+
+Migration principal:
 
 ```text
 supabase/migrations/20260518193000_mesa_cliente_fase_5a_simulacao_impacto_agenda_persistida.sql
@@ -122,7 +105,7 @@ public.mesa_cliente_simular_impacto_agenda_persistida_admin(
 )
 ```
 
-Características da RPC:
+Características contratuais:
 
 ```text
 visao = administrativa
@@ -137,133 +120,222 @@ authenticated = execute
 
 ---
 
-## 5. Testes criados para validação da migration/RPC 5A.1
+## 5. Correções aplicadas durante a validação
 
-### 5.1. 10A — positivo
+### 5.1. Correção do 10A — escopo de CTE
+
+Erro observado:
+
+```text
+relation "chamada_5a" does not exist
+```
+
+Causa:
+
+```text
+Uso de CTE fora do comando SQL imediatamente seguinte.
+```
+
+Correção:
+
+```text
+O 10A foi ajustado para gravar payload_4b e payload_5a no mesmo comando SQL em que as CTEs existem.
+```
+
+### 5.2. Correção da RPC 5A.1 — coluna inexistente `o.agenda_id`
+
+Erro observado:
+
+```text
+column o.agenda_id does not exist
+```
+
+Causa:
+
+```text
+A RPC 5A.1 assumiu indevidamente que public.mesa_cliente_fluxo_operacoes possuía agenda_id.
+```
+
+Decisão técnica:
+
+```text
+Não usar agenda_id em mesa_cliente_fluxo_operacoes.
+Bloquear operação confirmada por empresa_id + simulacao_id + status_operacao = 'confirmada'.
+```
+
+Migration corretiva criada:
+
+```text
+supabase/migrations/20260518194500_fix_mesa_cliente_5a_remover_agenda_id_operacoes.sql
+```
+
+### 5.3. Correção do 10B — remoção de temp table com SET LOCAL ROLE
+
+Erros observados:
+
+```text
+permission denied for table tmp_10b_results
+relation "tmp_10b_results" does not exist
+```
+
+Causa:
+
+```text
+Temp table + SET LOCAL ROLE authenticated ficou frágil no SQL Editor/Supabase.
+```
+
+Correção:
+
+```text
+O 10B deixou de usar temp table e passou a acumular resultados em variável transacional via set_config('app.mc10b.results', ..., true).
+```
+
+---
+
+## 6. Resultado do 10A — aprovado
+
+Arquivo executado:
 
 ```text
 supabase/tests/mesa-cliente/engenharia-financeira/10a_validacao_simulacao_impacto_agenda_persistida_rollback.sql
 ```
 
-Valida:
+Resultado consolidado:
 
-- fixture transacional;
-- persistência da agenda via RPC 4B;
-- chamada positiva da RPC 5A.1;
-- `cliente_safe=false`;
-- `persistencia=false`;
-- `dml_financeiro=false`;
-- alternativas geradas;
-- recomendação administrativa;
-- política usada com `composto/dias_365`;
-- zero operação financeira;
-- rollback.
+| Bloco | Status | Evidência principal |
+|---|---|---|
+| `01_retorno_basico_5a` | PASS | Retorno `5A_SIMULACAO_IMPACTO_AGENDA_PERSISTIDA`, visão administrativa, `cliente_safe=false`, `persistencia=false`, `dml_financeiro=false`. |
+| `02_alternativas_e_recomendacao` | PASS | 8 alternativas geradas; recomendação principal por antecipação. |
+| `03_politica_usada` | PASS | Política `composto/dias_365`, VPL máximo 6%, taxas de antecipação/postergacão 12% a.a. |
+| `04_zero_operacoes_financeiras` | PASS | `total_operacoes=0`, fixture com 6 parcelas. |
+| `99_rollback_notice` | INFO | Teste encerrado com ROLLBACK. |
 
-### 5.2. 10B — negativos
+Veredito:
+
+```text
+10A aprovado.
+```
+
+---
+
+## 7. Resultado do 10B — aprovado
+
+Arquivo executado:
 
 ```text
 supabase/tests/mesa-cliente/engenharia-financeira/10b_validacao_simulacao_impacto_agenda_persistida_negativos_rollback.sql
 ```
 
-Valida:
+Resultado consolidado:
 
-- `anon` sem execute;
-- chamada sem auth bloqueada;
-- simulação inexistente bloqueada;
-- `empresa_id` no payload bloqueado;
-- valor negativo bloqueado;
-- modo inválido bloqueado;
-- agenda inexistente bloqueada;
-- rollback.
+| Bloco | Status | Evidência principal |
+|---|---|---|
+| `01_grant_anon_bloqueado` | PASS | `anon_can_execute=false`. |
+| `02_sem_auth_bloqueado` | PASS | Bloqueio sem auth com SQLSTATE `28000`. |
+| `03_simulacao_inexistente_bloqueada` | PASS | Simulação inexistente bloqueada com SQLSTATE `P0002`. |
+| `04_empresa_id_payload_bloqueado` | PASS | `empresa_id` no payload bloqueado com SQLSTATE `42501`. |
+| `05_valor_negativo_bloqueado` | PASS | Valor negativo bloqueado com SQLSTATE `22023`. |
+| `06_modo_invalido_bloqueado` | PASS | Modo inválido bloqueado com SQLSTATE `22023`. |
+| `07_agenda_inexistente_bloqueada` | PASS | Agenda ativa inexistente bloqueada com SQLSTATE `P0002`. |
+| `99_rollback_notice` | INFO | Teste encerrado com ROLLBACK. |
 
-### 5.3. 10C — zero DML
+Veredito:
+
+```text
+10B aprovado.
+```
+
+---
+
+## 8. Resultado do 10C — aprovado
+
+Arquivo executado:
 
 ```text
 supabase/tests/mesa-cliente/engenharia-financeira/10c_validacao_simulacao_impacto_agenda_persistida_zero_dml_rollback.sql
 ```
 
-Valida:
+Resultado consolidado:
 
-- chamada 5A com `comparativo`;
-- flags `persistencia=false` e `dml_financeiro=false`;
-- contagens de agendas inalteradas;
-- contagens de parcelas inalteradas;
-- contagens de operações inalteradas;
-- checksum/totais da agenda inalterados;
-- rollback.
+| Bloco | Status | Evidência principal |
+|---|---|---|
+| `01_retorno_5a_zero_dml_flags` | PASS | RPC retornou `persistencia=false` e `dml_financeiro=false`. |
+| `02_contagens_inalteradas` | PASS | Antes/depois: 1 agenda, 6 parcelas, 0 operações. |
+| `03_agenda_checksum_totais_inalterados` | PASS | Mesmo `agenda_id`, mesmo checksum e mesmos totais antes/depois. |
+| `99_rollback_notice` | INFO | Teste encerrado com ROLLBACK. |
+
+Evidências relevantes:
+
+```text
+agendas_before = 1
+agendas_after = 1
+parcelas_before = 6
+parcelas_after = 6
+operacoes_before = 0
+operacoes_after = 0
+agenda_id_before = 92f1fcc0-e280-4211-8372-4ff4bdb95587
+agenda_id_after = 92f1fcc0-e280-4211-8372-4ff4bdb95587
+checksum_before = 3373755171d33c447fa959808f5b2f41
+checksum_after = 3373755171d33c447fa959808f5b2f41
+totais_iguais = true
+valor_total = 29500.5
+qtd_parcelas = 6
+```
+
+Interpretação:
+
+```text
+A RPC 5A.1 não alterou agenda, parcelas, operações, checksum ou totais.
+```
+
+Veredito:
+
+```text
+10C aprovado.
+```
 
 ---
 
-## 6. Próxima ação operacional
+## 9. Guardrails mantidos
 
-A sequência obrigatória agora é:
+Continuam preservados:
 
-1. Aplicar a migration:
-
-```text
-supabase/migrations/20260518193000_mesa_cliente_fase_5a_simulacao_impacto_agenda_persistida.sql
-```
-
-2. Executar:
-
-```text
-supabase/tests/mesa-cliente/engenharia-financeira/10a_validacao_simulacao_impacto_agenda_persistida_rollback.sql
-```
-
-3. Executar:
-
-```text
-supabase/tests/mesa-cliente/engenharia-financeira/10b_validacao_simulacao_impacto_agenda_persistida_negativos_rollback.sql
-```
-
-4. Executar:
-
-```text
-supabase/tests/mesa-cliente/engenharia-financeira/10c_validacao_simulacao_impacto_agenda_persistida_zero_dml_rollback.sql
-```
-
-5. Enviar os três resultsets completos.
-
-Somente após os três testes passarem, a Fase 5A.1 poderá ser marcada como aprovada.
+- sem alteração de frontend;
+- sem alteração de parser;
+- sem alteração de Worker;
+- sem alteração de Make/n8n;
+- sem seed permanente;
+- sem autoridade financeira vinda do frontend;
+- sem `empresa_id` soberano no payload;
+- sem DML financeiro pela RPC 5A.1;
+- sem escrita em `mesa_cliente_fluxo_operacoes`;
+- sem alteração em `mesa_cliente_fluxo_parcelas`;
+- sem alteração em `mesa_cliente_agendas_financeiras`;
+- sem exposição cliente-safe.
 
 ---
 
-## 7. Guardrails mantidos
-
-Continuam proibidos nesta etapa:
-
-- alterar frontend;
-- alterar parser;
-- alterar Worker;
-- alterar Make/n8n;
-- aceitar taxa, VPL, política ou `empresa_id` como autoridade do frontend;
-- gravar em `mesa_cliente_fluxo_operacoes` pela RPC 5A.1;
-- alterar parcelas persistidas pela RPC 5A.1;
-- alterar agenda persistida pela RPC 5A.1;
-- usar payload cliente-safe como base soberana;
-- criar seed permanente sem decisão explícita.
-
----
-
-## 8. Estado operacional atualizado
+## 10. Estado operacional final
 
 ```text
 4A aprovada.
 4B aprovada em rollback transacional.
 4C aprovada.
-5A.1 contrato final fechado.
-10 preflight canônico executado.
-10P aprovado.
-Migration/RPC 5A.1 criada.
-Testes 10A/10B/10C criados.
-Próxima ação: aplicar migration e executar 10A/10B/10C.
-Fase 5A.1 ainda não aprovada até os testes passarem.
+5A.1 aprovada.
+```
+
+Próximas fases naturais:
+
+```text
+5B — registrar operação financeira em tabela própria, com lock/idempotência/auditoria.
+5C — confirmar/cancelar operação financeira.
+Integração Front/BFF — somente após contrato administrativo e cliente-safe estarem fechados para leitura/escrita necessária.
 ```
 
 ---
 
-## 9. Veredito final
+## 11. Veredito final
 
-O 10P cumpriu o papel de ponte segura entre o preflight read-only e a implementação.
+A 5A.1 cumpriu seu papel: simular impacto financeiro sobre agenda persistida, entregar visão administrativa e provar que não altera o estado financeiro.
 
-A 5A.1 agora tem chão para subir a parede, mas a parede ainda precisa passar no prumo: **executar 10A, 10B e 10C antes de declarar fase aprovada.**
+A etapa está encerrada e aprovada.
