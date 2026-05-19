@@ -32,7 +32,8 @@ Ordem de referência:
 9. `docs/mesa-cliente/fase-5b-contrato-registro-operacao-financeira.md`
 10. `docs/mesa-cliente/fase-5b-validacao-preflight-11.md`
 11. `docs/mesa-cliente/fase-5b-validacao-11a-registro-operacao-financeira.md`
-12. Este README como índice operacional da pasta de testes.
+12. `docs/mesa-cliente/fase-5b-validacao-11b-negativos-registro-operacao-financeira.md`
+13. Este README como índice operacional da pasta de testes.
 
 ---
 
@@ -414,7 +415,7 @@ docs/mesa-cliente/rascunhos-sql/preflights-exploratorios/10_preflight_impacto_fi
 
 ## Fase 5B — Registrar operação financeira administrativa
 
-**Status:** em validação transacional. 11A aprovado; 11B/11C/11D/11E pendentes.
+**Status:** em validação transacional. 11A e 11B aprovados; 11C/11D/11E pendentes.
 
 Documento canônico:
 
@@ -432,6 +433,12 @@ Validação 11A:
 
 ```text
 docs/mesa-cliente/fase-5b-validacao-11a-registro-operacao-financeira.md
+```
+
+Validação 11B:
+
+```text
+docs/mesa-cliente/fase-5b-validacao-11b-negativos-registro-operacao-financeira.md
 ```
 
 ### Preflight oficial 5B
@@ -530,7 +537,26 @@ Removida a faixa fixture 6.01 até 999 porque a constraint real mesa_premio_faix
 
 #### `11b_validacao_registro_operacao_financeira_negativos_rollback.sql`
 
-Status: pendente.
+Status: aprovado.
+
+Valida:
+
+- `anon` sem execute;
+- chamada sem auth bloqueada;
+- simulação inexistente bloqueada;
+- agenda inexistente bloqueada;
+- parcela inexistente bloqueada;
+- `empresa_id` no payload bloqueado;
+- `taxa_ano_pct` no payload bloqueada;
+- `status_operacao` no payload bloqueado;
+- `checksum_operacao` / `idempotency_key` no payload bloqueados;
+- valor negativo bloqueado;
+- tipo de operação inválido bloqueado;
+- `p_parametros` não objeto bloqueado;
+- postergação sem `data_destino` bloqueada;
+- parcela simbólica bloqueada;
+- zero operações criadas pelos negativos;
+- rollback.
 
 #### `11c_validacao_registro_operacao_financeira_idempotencia_rollback.sql`
 
@@ -587,5 +613,5 @@ Não execute teste integrador em produção única sem verificar:
 4B aprovada em rollback transacional.
 4C aprovada.
 5A.1 aprovada.
-5B em validação transacional: migration executada, 11A aprovado, 11B/11C/11D/11E pendentes.
+5B em validação transacional: migration executada, 11A e 11B aprovados, 11C/11D/11E pendentes.
 ```
