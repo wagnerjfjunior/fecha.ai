@@ -258,7 +258,7 @@ Critérios aprovados:
 
 ## Fase 5A.1 — Simular impacto financeiro com agenda persistida
 
-**Status:** contrato final fechado; preflight canônico executado; implementação bloqueada até validação 10P.
+**Status:** migration/RPC criada; testes 10A/10B/10C criados; aguardando execução.
 
 Documento canônico:
 
@@ -266,10 +266,22 @@ Documento canônico:
 docs/mesa-cliente/fase-5a-contrato-simulacao-impacto-agenda-persistida.md
 ```
 
-Resultado do preflight canônico:
+Resultado do preflight/10P:
 
 ```text
 docs/mesa-cliente/fase-5a-preflight-10-resultado-readonly.md
+```
+
+Migration criada:
+
+```text
+supabase/migrations/20260518193000_mesa_cliente_fase_5a_simulacao_impacto_agenda_persistida.sql
+```
+
+RPC criada:
+
+```text
+public.mesa_cliente_simular_impacto_agenda_persistida_admin(uuid,date,text,jsonb)
 ```
 
 ### Preflight oficial/canônico 5A.1
@@ -278,17 +290,7 @@ docs/mesa-cliente/fase-5a-preflight-10-resultado-readonly.md
 
 Este é o único preflight 10 oficial da Fase 5A.1 neste diretório.
 
-Objetivo:
-
-- inventariar RPCs/funções de cálculo existentes;
-- inventariar colunas reais de agenda/parcelas/política/faixas;
-- validar constraints reais;
-- validar grants atuais;
-- confirmar nomes reais de status/colunas antes de escrever migration;
-- validar se existem bases mínimas para criar a RPC agenda-first da 5A.1;
-- bloquear SQL de implementação se houver divergência de schema, função ou segurança.
-
-Resultado registrado:
+Resultado original:
 
 ```text
 13_operational_interpretation = FAIL
@@ -305,35 +307,83 @@ total_fixture_candidates_5a = 0
 Interpretação:
 
 ```text
-Schema e funções mínimas estão presentes, mas o ambiente não possui base operacional permanente para liberar a migration/RPC 5A.1.
+Schema e funções mínimas estavam presentes, mas o ambiente não possuía base operacional permanente para liberar a migration/RPC 5A.1.
 ```
 
 ### Preparação transacional da base mínima 5A.1
 
 #### `10p_preparacao_base_minima_5a_agenda_persistida_rollback.sql`
 
-Uso: após o preflight 10 canônico retornar FAIL operacional por ausência de dados mínimos.
+Status: aprovado.
+
+Resultado comprovado:
+
+```text
+politica_valida_5a = true
+agenda_valida_5a = true
+total_parcelas = 6
+parcelas_podem_vpl = 5
+parcelas_podem_antecipacao = 5
+parcelas_podem_postergacao = 5
+total_operacoes = 0
+```
+
+Decisão após 10P:
+
+```text
+Liberado criar migration/RPC 5A.1 e testes 10A/10B/10C.
+```
+
+### Testes oficiais 5A.1
+
+#### `10a_validacao_simulacao_impacto_agenda_persistida_rollback.sql`
 
 Objetivo:
 
-- criar simulação fixture em `BEGIN + ROLLBACK`;
-- criar política financeira ativa fixture com `metodo_calculo=composto` e `base_tempo=dias_365`;
-- criar faixas administrativas de prêmio fixture;
-- chamar a RPC 4B para persistir agenda ativa fixture;
-- validar parcelas vinculadas à agenda;
-- validar elegibilidade mínima para antecipação/postergacão/VPL;
-- provar que nenhuma operação financeira é registrada;
-- encerrar tudo com `ROLLBACK`.
+- criar fixture transacional;
+- criar política ativa fixture;
+- persistir agenda via RPC 4B;
+- chamar RPC 5A.1;
+- validar `cliente_safe=false`;
+- validar `persistencia=false`;
+- validar `dml_financeiro=false`;
+- validar geração de alternativas e recomendação;
+- validar uso de política `composto/dias_365`;
+- provar zero operação financeira criada;
+- encerrar com rollback.
 
-Este script não substitui o preflight 10 canônico e não é seed permanente. Ele é um teste transacional de preparação/readiness.
+Status: criado; aguardando execução.
 
-Próxima ação obrigatória:
+#### `10b_validacao_simulacao_impacto_agenda_persistida_negativos_rollback.sql`
 
-```text
-Executar 10p_preparacao_base_minima_5a_agenda_persistida_rollback.sql no Supabase SQL Editor e enviar o resultset completo.
-```
+Objetivo:
 
-Se o 10P passar, a próxima etapa segura será criar a migration/RPC 5A.1 e os testes 10A/10B/10C.
+- validar `anon` sem execute;
+- bloquear chamada sem auth;
+- bloquear simulação inexistente;
+- bloquear `empresa_id` no payload;
+- bloquear valor negativo;
+- bloquear modo inválido;
+- bloquear agenda inexistente;
+- encerrar com rollback.
+
+Status: criado; aguardando execução.
+
+#### `10c_validacao_simulacao_impacto_agenda_persistida_zero_dml_rollback.sql`
+
+Objetivo:
+
+- capturar contagens/checksum/totais antes da 5A;
+- chamar RPC 5A.1;
+- validar `persistencia=false`;
+- validar `dml_financeiro=false`;
+- provar contagens de agendas inalteradas;
+- provar contagens de parcelas inalteradas;
+- provar contagens de operações inalteradas;
+- provar checksum/totais da agenda inalterados;
+- encerrar com rollback.
+
+Status: criado; aguardando execução.
 
 ### Preflight exploratório arquivado
 
@@ -349,33 +399,35 @@ Ele foi movido para:
 docs/mesa-cliente/rascunhos-sql/preflights-exploratorios/10_preflight_impacto_financeiro_readonly.sql
 ```
 
-Motivo:
+---
 
-- era genérico/payload-first;
-- usava leitura histórica de Fase 5A.2;
-- não representava o contrato final agenda-first da 5A.1;
-- dois `10_preflight` oficiais gerariam ambiguidade operacional.
+## Próxima execução obrigatória
 
-### Testes 5A.1 esperados, ainda não criados
+1. Aplicar a migration:
 
 ```text
-10a_validacao_simulacao_impacto_agenda_persistida_rollback.sql
-10b_validacao_simulacao_impacto_agenda_persistida_negativos_rollback.sql
-10c_validacao_simulacao_impacto_agenda_persistida_zero_dml_rollback.sql
+supabase/migrations/20260518193000_mesa_cliente_fase_5a_simulacao_impacto_agenda_persistida.sql
 ```
 
-Critérios esperados:
+2. Executar 10A:
 
-- `cliente_safe=false`;
-- `persistencia=false`;
-- `dml_financeiro=false`;
-- `anon` bloqueado;
-- cross-tenant bloqueado;
-- agenda ativa obrigatória;
-- política vigente obrigatória;
-- uso de cálculo composto;
-- zero DML em agenda, parcelas e operações;
-- recomendação gerada sem frontend soberano.
+```text
+supabase/tests/mesa-cliente/engenharia-financeira/10a_validacao_simulacao_impacto_agenda_persistida_rollback.sql
+```
+
+3. Executar 10B:
+
+```text
+supabase/tests/mesa-cliente/engenharia-financeira/10b_validacao_simulacao_impacto_agenda_persistida_negativos_rollback.sql
+```
+
+4. Executar 10C:
+
+```text
+supabase/tests/mesa-cliente/engenharia-financeira/10c_validacao_simulacao_impacto_agenda_persistida_zero_dml_rollback.sql
+```
+
+5. Enviar os três resultsets completos.
 
 ---
 
@@ -418,8 +470,9 @@ Não execute teste integrador em produção única sem verificar:
 4C aprovada.
 5A.1 contrato final fechado.
 10 preflight canônico executado.
-Resultado do 10 preflight: FAIL operacional por ausência de base mínima.
-10P preparação transacional criada.
-Preflight exploratório antigo arquivado fora da trilha oficial.
-Próxima ação: executar 10p_preparacao_base_minima_5a_agenda_persistida_rollback.sql e enviar resultset completo.
+10P aprovado.
+Migration/RPC 5A.1 criada.
+Testes 10A/10B/10C criados.
+Próxima ação: aplicar migration e executar 10A/10B/10C.
+Fase 5A.1 ainda não aprovada até os testes passarem.
 ```
