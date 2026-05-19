@@ -11,6 +11,11 @@
 --     - valor negativo;
 --     - modo inválido;
 --     - agenda inexistente.
+--
+-- Nota técnica:
+--   Este teste troca role para authenticated para simular execução real via Supabase.
+--   A tabela temporária de resultados precisa conceder permissão explícita para authenticated,
+--   senão os blocos de exception não conseguem registrar PASS/FAIL após SET LOCAL ROLE.
 
 begin;
 
@@ -19,6 +24,8 @@ create temp table tmp_10b_results (
   status text not null,
   detalhe jsonb not null default '{}'::jsonb
 ) on commit drop;
+
+grant select, insert, update, delete on table tmp_10b_results to authenticated;
 
 do $$
 begin
