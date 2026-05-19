@@ -237,7 +237,7 @@ with ctx as (
   select current_setting('app.mc12a.simulacao_id', true)::uuid as simulacao_id
 ),
 agenda as (
-  select a.id, a.checksum, a.totais, a.updated_at
+  select a.*
   from public.mesa_cliente_agendas_financeiras a
   join ctx on ctx.simulacao_id = a.simulacao_id
   where a.status = 'ativa'
@@ -261,16 +261,11 @@ snapshot_before_5b as (
     'agenda_checksum', (select checksum from agenda),
     'agenda_tots', (select totais from agenda),
     'agenda_updated_at', (select updated_at from agenda),
+    'agenda_full_hash', (select md5(to_jsonb(agenda.*)::text) from agenda),
     'parcelas', (select count(*) from public.mesa_cliente_fluxo_parcelas fp join agenda a on a.id = fp.agenda_id),
     'valor_total_parcelas', (select coalesce(sum(fp.valor_atual), 0) from public.mesa_cliente_fluxo_parcelas fp join agenda a on a.id = fp.agenda_id),
-    'parcelas_hash', (
-      select md5(coalesce(string_agg(
-        fp.id::text || '|' || fp.grupo || '|' || fp.valor_atual::text || '|' || fp.data_atual::text || '|' || coalesce(fp.status, ''),
-        ';' order by fp.id
-      ), ''))
-      from public.mesa_cliente_fluxo_parcelas fp
-      join agenda a on a.id = fp.agenda_id
-    ),
+    'parcelas_ids', (select coalesce(jsonb_agg(fp.id::text order by fp.id::text), '[]'::jsonb) from public.mesa_cliente_fluxo_parcelas fp join agenda a on a.id = fp.agenda_id),
+    'parcelas_full_hash', (select md5(coalesce(jsonb_agg(to_jsonb(fp.*) order by fp.id)::text, '[]')) from public.mesa_cliente_fluxo_parcelas fp join agenda a on a.id = fp.agenda_id),
     'operacoes', (select count(*) from public.mesa_cliente_fluxo_operacoes o join ctx on ctx.simulacao_id = o.simulacao_id)
   ) as payload
 ),
@@ -317,22 +312,23 @@ with ctx as (
     current_setting('app.mc12a.simulacao_id', true)::uuid as simulacao_id,
     current_setting('app.mc12a.agenda_id', true)::uuid as agenda_id
 ),
+agenda as (
+  select a.*
+  from public.mesa_cliente_agendas_financeiras a
+  join ctx on ctx.agenda_id = a.id
+  limit 1
+),
 snapshot_after_5b as (
   select jsonb_build_object(
     'agenda_id', ctx.agenda_id,
-    'agenda_checksum', (select a.checksum from public.mesa_cliente_agendas_financeiras a where a.id = ctx.agenda_id),
-    'agenda_tots', (select a.totais from public.mesa_cliente_agendas_financeiras a where a.id = ctx.agenda_id),
-    'agenda_updated_at', (select a.updated_at from public.mesa_cliente_agendas_financeiras a where a.id = ctx.agenda_id),
+    'agenda_checksum', (select checksum from agenda),
+    'agenda_tots', (select totais from agenda),
+    'agenda_updated_at', (select updated_at from agenda),
+    'agenda_full_hash', (select md5(to_jsonb(agenda.*)::text) from agenda),
     'parcelas', (select count(*) from public.mesa_cliente_fluxo_parcelas fp where fp.agenda_id = ctx.agenda_id),
     'valor_total_parcelas', (select coalesce(sum(fp.valor_atual), 0) from public.mesa_cliente_fluxo_parcelas fp where fp.agenda_id = ctx.agenda_id),
-    'parcelas_hash', (
-      select md5(coalesce(string_agg(
-        fp.id::text || '|' || fp.grupo || '|' || fp.valor_atual::text || '|' || fp.data_atual::text || '|' || coalesce(fp.status, ''),
-        ';' order by fp.id
-      ), ''))
-      from public.mesa_cliente_fluxo_parcelas fp
-      where fp.agenda_id = ctx.agenda_id
-    ),
+    'parcelas_ids', (select coalesce(jsonb_agg(fp.id::text order by fp.id::text), '[]'::jsonb) from public.mesa_cliente_fluxo_parcelas fp where fp.agenda_id = ctx.agenda_id),
+    'parcelas_full_hash', (select md5(coalesce(jsonb_agg(to_jsonb(fp.*) order by fp.id)::text, '[]')) from public.mesa_cliente_fluxo_parcelas fp where fp.agenda_id = ctx.agenda_id),
     'operacoes', (select count(*) from public.mesa_cliente_fluxo_operacoes o where o.simulacao_id = ctx.simulacao_id and o.agenda_id = ctx.agenda_id),
     'operacoes_lista', (select coalesce(jsonb_agg(jsonb_build_object('id', o.id, 'status_operacao', o.status_operacao, 'confirmado', o.confirmado, 'visivel_cliente', o.visivel_cliente, 'checksum_operacao', o.checksum_operacao) order by o.created_at, o.id), '[]'::jsonb) from public.mesa_cliente_fluxo_operacoes o where o.simulacao_id = ctx.simulacao_id and o.agenda_id = ctx.agenda_id)
   ) as payload
@@ -359,22 +355,23 @@ with ctx as (
     current_setting('app.mc12a.simulacao_id', true)::uuid as simulacao_id,
     current_setting('app.mc12a.agenda_id', true)::uuid as agenda_id
 ),
+agenda as (
+  select a.*
+  from public.mesa_cliente_agendas_financeiras a
+  join ctx on ctx.agenda_id = a.id
+  limit 1
+),
 snapshot_after_5c as (
   select jsonb_build_object(
     'agenda_id', ctx.agenda_id,
-    'agenda_checksum', (select a.checksum from public.mesa_cliente_agendas_financeiras a where a.id = ctx.agenda_id),
-    'agenda_tots', (select a.totais from public.mesa_cliente_agendas_financeiras a where a.id = ctx.agenda_id),
-    'agenda_updated_at', (select a.updated_at from public.mesa_cliente_agendas_financeiras a where a.id = ctx.agenda_id),
+    'agenda_checksum', (select checksum from agenda),
+    'agenda_tots', (select totais from agenda),
+    'agenda_updated_at', (select updated_at from agenda),
+    'agenda_full_hash', (select md5(to_jsonb(agenda.*)::text) from agenda),
     'parcelas', (select count(*) from public.mesa_cliente_fluxo_parcelas fp where fp.agenda_id = ctx.agenda_id),
     'valor_total_parcelas', (select coalesce(sum(fp.valor_atual), 0) from public.mesa_cliente_fluxo_parcelas fp where fp.agenda_id = ctx.agenda_id),
-    'parcelas_hash', (
-      select md5(coalesce(string_agg(
-        fp.id::text || '|' || fp.grupo || '|' || fp.valor_atual::text || '|' || fp.data_atual::text || '|' || coalesce(fp.status, ''),
-        ';' order by fp.id
-      ), ''))
-      from public.mesa_cliente_fluxo_parcelas fp
-      where fp.agenda_id = ctx.agenda_id
-    ),
+    'parcelas_ids', (select coalesce(jsonb_agg(fp.id::text order by fp.id::text), '[]'::jsonb) from public.mesa_cliente_fluxo_parcelas fp where fp.agenda_id = ctx.agenda_id),
+    'parcelas_full_hash', (select md5(coalesce(jsonb_agg(to_jsonb(fp.*) order by fp.id)::text, '[]')) from public.mesa_cliente_fluxo_parcelas fp where fp.agenda_id = ctx.agenda_id),
     'operacoes', (select count(*) from public.mesa_cliente_fluxo_operacoes o where o.simulacao_id = ctx.simulacao_id and o.agenda_id = ctx.agenda_id),
     'operacoes_confirmadas', (select count(*) from public.mesa_cliente_fluxo_operacoes o where o.simulacao_id = ctx.simulacao_id and o.agenda_id = ctx.agenda_id and o.status_operacao = 'confirmada'),
     'operacoes_canceladas', (select count(*) from public.mesa_cliente_fluxo_operacoes o where o.simulacao_id = ctx.simulacao_id and o.agenda_id = ctx.agenda_id and o.status_operacao = 'cancelada'),
@@ -519,22 +516,28 @@ from (
       when b->>'agenda_id' = s5c->>'agenda_id'
        and b->>'agenda_checksum' = s5c->>'agenda_checksum'
        and b->'agenda_tots' = s5c->'agenda_tots'
+       and b->>'agenda_full_hash' = s5c->>'agenda_full_hash'
        and b->>'parcelas' = s5c->>'parcelas'
        and b->>'valor_total_parcelas' = s5c->>'valor_total_parcelas'
-       and b->>'parcelas_hash' = s5c->>'parcelas_hash'
+       and b->>'parcelas_ids' = s5c->>'parcelas_ids'
+       and b->>'parcelas_full_hash' = s5c->>'parcelas_full_hash'
     then 'PASS' else 'FAIL' end,
     jsonb_build_object(
       'agenda_id_before', b->>'agenda_id',
       'agenda_id_after', s5c->>'agenda_id',
       'checksum_before', b->>'agenda_checksum',
       'checksum_after', s5c->>'agenda_checksum',
+      'agenda_full_hash_before', b->>'agenda_full_hash',
+      'agenda_full_hash_after', s5c->>'agenda_full_hash',
       'totais_iguais', b->'agenda_tots' = s5c->'agenda_tots',
       'parcelas_before', b->>'parcelas',
       'parcelas_after', s5c->>'parcelas',
       'valor_total_parcelas_before', b->>'valor_total_parcelas',
       'valor_total_parcelas_after', s5c->>'valor_total_parcelas',
-      'parcelas_hash_before', b->>'parcelas_hash',
-      'parcelas_hash_after', s5c->>'parcelas_hash'
+      'parcelas_ids_before', b->>'parcelas_ids',
+      'parcelas_ids_after', s5c->>'parcelas_ids',
+      'parcelas_full_hash_before', b->>'parcelas_full_hash',
+      'parcelas_full_hash_after', s5c->>'parcelas_full_hash'
     )
   from dados
 
