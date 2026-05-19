@@ -196,7 +196,7 @@ with ctx as (
     current_setting('app.mc10a.empresa_id', true)::uuid as empresa_id,
     current_setting('app.mc10a.empreendimento_id', true)::uuid as empreendimento_id
 ),
-chamada_4b as (
+chamada_4b as materialized (
   select public.mesa_cliente_persistir_agenda_financeira_admin(
     ctx.simulacao_id,
     date '2099-05-31',
@@ -210,16 +210,19 @@ chamada_4b as (
   ) as payload
   from ctx
 ),
-chamada_5a as (
+chamada_5a as materialized (
   select public.mesa_cliente_simular_impacto_agenda_persistida_admin(
     (select simulacao_id from ctx),
     date '2099-05-31',
     'melhor_aplicacao',
     jsonb_build_object('valor_disponivel', 5000, 'vpl_aplicado_pct', 3.5)
   ) as payload
+  from chamada_4b
+  where (chamada_4b.payload->>'ok')::boolean is true
 )
-select set_config('app.mc10a.payload_4b', (select payload::text from chamada_4b), true);
-select set_config('app.mc10a.payload_5a', (select payload::text from chamada_5a), true);
+select
+  set_config('app.mc10a.payload_4b', coalesce((select payload::text from chamada_4b), 'null'), true),
+  set_config('app.mc10a.payload_5a', coalesce((select payload::text from chamada_5a), 'null'), true);
 
 reset role;
 
