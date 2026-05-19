@@ -31,7 +31,8 @@ Ordem de referência:
 8. `docs/mesa-cliente/fase-5a-validacao-final-simulacao-impacto-agenda-persistida.md`
 9. `docs/mesa-cliente/fase-5b-contrato-registro-operacao-financeira.md`
 10. `docs/mesa-cliente/fase-5b-validacao-preflight-11.md`
-11. Este README como índice operacional da pasta de testes.
+11. `docs/mesa-cliente/fase-5b-validacao-11a-registro-operacao-financeira.md`
+12. Este README como índice operacional da pasta de testes.
 
 ---
 
@@ -413,7 +414,7 @@ docs/mesa-cliente/rascunhos-sql/preflights-exploratorios/10_preflight_impacto_fi
 
 ## Fase 5B — Registrar operação financeira administrativa
 
-**Status:** contrato fechado após preflight 11; liberada para migration e testes transacionais.
+**Status:** em validação transacional. 11A aprovado; 11B/11C/11D/11E pendentes.
 
 Documento canônico:
 
@@ -425,6 +426,12 @@ Validação do preflight:
 
 ```text
 docs/mesa-cliente/fase-5b-validacao-preflight-11.md
+```
+
+Validação 11A:
+
+```text
+docs/mesa-cliente/fase-5b-validacao-11a-registro-operacao-financeira.md
 ```
 
 ### Preflight oficial 5B
@@ -480,19 +487,62 @@ public.mesa_cliente_registrar_operacao_financeira_admin(
 )
 ```
 
-### Próximos testes oficiais 5B
-
-Arquivos esperados:
+### Migration 5B
 
 ```text
-11a_validacao_registro_operacao_financeira_rollback.sql
-11b_validacao_registro_operacao_financeira_negativos_rollback.sql
-11c_validacao_registro_operacao_financeira_idempotencia_rollback.sql
-11d_validacao_registro_operacao_financeira_confirmada_rollback.sql
-11e_validacao_registro_operacao_financeira_zero_mutacao_agenda_parcelas_rollback.sql
+supabase/migrations/20260519123000_mesa_cliente_fase_5b_registro_operacao_financeira.sql
 ```
 
-Ainda pendentes até a migration 5B ser criada.
+Status: executada com sucesso no Supabase.
+
+### Testes oficiais 5B
+
+#### `11a_validacao_registro_operacao_financeira_rollback.sql`
+
+Status: aprovado.
+
+Valida:
+
+- fixture transacional;
+- persistência de agenda via 4B;
+- registro positivo via RPC 5B;
+- `fase=5B_REGISTRO_OPERACAO_FINANCEIRA`;
+- `cliente_safe=false`;
+- `persistencia=true`;
+- `dml_financeiro=true`;
+- `escopo_dml=operacao_financeira`;
+- operação com `status_operacao='simulada'`;
+- `confirmado=false`;
+- `visivel_cliente=false`;
+- `agenda_id` preenchido;
+- `parcela_origem_id` preenchido;
+- `checksum_operacao` preenchido;
+- cálculo composto/dias_365 presente;
+- agenda não mutada;
+- parcelas não mutadas;
+- rollback.
+
+Correção aplicada antes da aprovação:
+
+```text
+Removida a faixa fixture 6.01 até 999 porque a constraint real mesa_premio_faixas_intervalo_check não aceita faixa acima do vpl_max_pct=6.
+```
+
+#### `11b_validacao_registro_operacao_financeira_negativos_rollback.sql`
+
+Status: pendente.
+
+#### `11c_validacao_registro_operacao_financeira_idempotencia_rollback.sql`
+
+Status: pendente.
+
+#### `11d_validacao_registro_operacao_financeira_confirmada_rollback.sql`
+
+Status: pendente.
+
+#### `11e_validacao_registro_operacao_financeira_zero_mutacao_agenda_parcelas_rollback.sql`
+
+Status: pendente.
 
 ---
 
@@ -537,5 +587,5 @@ Não execute teste integrador em produção única sem verificar:
 4B aprovada em rollback transacional.
 4C aprovada.
 5A.1 aprovada.
-5B preflight aprovado com WARN estrutural; contrato fechado; próxima etapa: migration 5B e testes 11A-11E.
+5B em validação transacional: migration executada, 11A aprovado, 11B/11C/11D/11E pendentes.
 ```
