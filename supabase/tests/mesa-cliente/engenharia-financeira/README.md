@@ -27,7 +27,8 @@ Ordem de referência:
 4. `docs/mesa-cliente/fase-4b-validacao-final-evidencias.md`
 5. `docs/mesa-cliente/fase-4c-cliente-safe-fechamento.md`
 6. `docs/mesa-cliente/fase-5a-contrato-simulacao-impacto-agenda-persistida.md`
-7. Este README como índice operacional da pasta de testes.
+7. `docs/mesa-cliente/fase-5a-preflight-10-resultado-readonly.md`
+8. Este README como índice operacional da pasta de testes.
 
 ---
 
@@ -257,12 +258,18 @@ Critérios aprovados:
 
 ## Fase 5A.1 — Simular impacto financeiro com agenda persistida
 
-**Status:** contrato final fechado; preflight canônico criado; execução pendente.
+**Status:** contrato final fechado; preflight canônico executado; implementação bloqueada até validação 10P.
 
 Documento canônico:
 
 ```text
 docs/mesa-cliente/fase-5a-contrato-simulacao-impacto-agenda-persistida.md
+```
+
+Resultado do preflight canônico:
+
+```text
+docs/mesa-cliente/fase-5a-preflight-10-resultado-readonly.md
 ```
 
 ### Preflight oficial/canônico 5A.1
@@ -281,17 +288,52 @@ Objetivo:
 - validar se existem bases mínimas para criar a RPC agenda-first da 5A.1;
 - bloquear SQL de implementação se houver divergência de schema, função ou segurança.
 
-A seção decisiva do resultset é:
+Resultado registrado:
 
 ```text
-13_operational_interpretation
+13_operational_interpretation = FAIL
 ```
+
+Motivos principais:
+
+```text
+politicas_ativas_compostas_dias_365 = 0
+agendas_ativas_com_parcelas = 0
+total_fixture_candidates_5a = 0
+```
+
+Interpretação:
+
+```text
+Schema e funções mínimas estão presentes, mas o ambiente não possui base operacional permanente para liberar a migration/RPC 5A.1.
+```
+
+### Preparação transacional da base mínima 5A.1
+
+#### `10p_preparacao_base_minima_5a_agenda_persistida_rollback.sql`
+
+Uso: após o preflight 10 canônico retornar FAIL operacional por ausência de dados mínimos.
+
+Objetivo:
+
+- criar simulação fixture em `BEGIN + ROLLBACK`;
+- criar política financeira ativa fixture com `metodo_calculo=composto` e `base_tempo=dias_365`;
+- criar faixas administrativas de prêmio fixture;
+- chamar a RPC 4B para persistir agenda ativa fixture;
+- validar parcelas vinculadas à agenda;
+- validar elegibilidade mínima para antecipação/postergacão/VPL;
+- provar que nenhuma operação financeira é registrada;
+- encerrar tudo com `ROLLBACK`.
+
+Este script não substitui o preflight 10 canônico e não é seed permanente. Ele é um teste transacional de preparação/readiness.
 
 Próxima ação obrigatória:
 
 ```text
-Executar 10_preflight_simulacao_impacto_agenda_persistida_readonly.sql no Supabase SQL Editor e enviar o resultset completo antes de qualquer migration 5A.1.
+Executar 10p_preparacao_base_minima_5a_agenda_persistida_rollback.sql no Supabase SQL Editor e enviar o resultset completo.
 ```
+
+Se o 10P passar, a próxima etapa segura será criar a migration/RPC 5A.1 e os testes 10A/10B/10C.
 
 ### Preflight exploratório arquivado
 
@@ -375,7 +417,9 @@ Não execute teste integrador em produção única sem verificar:
 4B aprovada em rollback transacional.
 4C aprovada.
 5A.1 contrato final fechado.
-10 preflight canônico criado.
+10 preflight canônico executado.
+Resultado do 10 preflight: FAIL operacional por ausência de base mínima.
+10P preparação transacional criada.
 Preflight exploratório antigo arquivado fora da trilha oficial.
-Próxima ação: executar 10_preflight_simulacao_impacto_agenda_persistida_readonly.sql e enviar resultset completo.
+Próxima ação: executar 10p_preparacao_base_minima_5a_agenda_persistida_rollback.sql e enviar resultset completo.
 ```
