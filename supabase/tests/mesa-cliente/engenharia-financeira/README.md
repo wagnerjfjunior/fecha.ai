@@ -29,7 +29,9 @@ Ordem de referência:
 6. `docs/mesa-cliente/fase-5a-contrato-simulacao-impacto-agenda-persistida.md`
 7. `docs/mesa-cliente/fase-5a-preflight-10-resultado-readonly.md`
 8. `docs/mesa-cliente/fase-5a-validacao-final-simulacao-impacto-agenda-persistida.md`
-9. Este README como índice operacional da pasta de testes.
+9. `docs/mesa-cliente/fase-5b-contrato-registro-operacao-financeira.md`
+10. `docs/mesa-cliente/fase-5b-validacao-preflight-11.md`
+11. Este README como índice operacional da pasta de testes.
 
 ---
 
@@ -409,20 +411,92 @@ docs/mesa-cliente/rascunhos-sql/preflights-exploratorios/10_preflight_impacto_fi
 
 ---
 
+## Fase 5B — Registrar operação financeira administrativa
+
+**Status:** contrato fechado após preflight 11; liberada para migration e testes transacionais.
+
+Documento canônico:
+
+```text
+docs/mesa-cliente/fase-5b-contrato-registro-operacao-financeira.md
+```
+
+Validação do preflight:
+
+```text
+docs/mesa-cliente/fase-5b-validacao-preflight-11.md
+```
+
+### Preflight oficial 5B
+
+#### `11_preflight_registro_operacao_financeira_readonly.sql`
+
+Status: aprovado com WARN estrutural esperado.
+
+Valida:
+
+- tabelas obrigatórias;
+- schema real de `mesa_cliente_fluxo_operacoes`;
+- colunas, constraints, índices, RLS, policies e grants;
+- enums financeiros;
+- presença das dependências 4B e 5A;
+- ausência esperada da RPC 5B antes da migration.
+
+Resultado consolidado:
+
+```text
+Tabela base aprovada: public.mesa_cliente_fluxo_operacoes
+Core estrutural: PASS
+RLS/policies/grants: PASS
+Enums financeiros: PASS
+Índices/idempotência: WARN esperado
+Colunas recomendadas 5B: WARN esperado
+Readiness 5B: WARN que define migration, não bloqueio
+```
+
+Decisões fechadas após o preflight:
+
+```text
+Adicionar agenda_id.
+Adicionar checksum_operacao.
+Não adicionar created_by; usar criado_por existente.
+Não adicionar idempotency_key; usar checksum_operacao calculado no banco.
+Não adicionar parcela_id; usar parcela_origem_id/parcela_destino_id existentes.
+Status inicial oficial: status_operacao='simulada', confirmado=false, visivel_cliente=false.
+```
+
+Assinatura oficial da RPC 5B:
+
+```text
+public.mesa_cliente_registrar_operacao_financeira_admin(
+  p_simulacao_id uuid,
+  p_agenda_id uuid,
+  p_tipo_operacao text,
+  p_parcela_id uuid,
+  p_data_referencia date default current_date,
+  p_data_destino date default null,
+  p_valor_operacao numeric default null,
+  p_parametros jsonb default '{}'::jsonb
+)
+```
+
+### Próximos testes oficiais 5B
+
+Arquivos esperados:
+
+```text
+11a_validacao_registro_operacao_financeira_rollback.sql
+11b_validacao_registro_operacao_financeira_negativos_rollback.sql
+11c_validacao_registro_operacao_financeira_idempotencia_rollback.sql
+11d_validacao_registro_operacao_financeira_confirmada_rollback.sql
+11e_validacao_registro_operacao_financeira_zero_mutacao_agenda_parcelas_rollback.sql
+```
+
+Ainda pendentes até a migration 5B ser criada.
+
+---
+
 ## Fases futuras
-
-### Fase 5B — Registrar operação financeira
-
-Pendente.
-
-Escopo provável:
-
-- registrar operação financeira em tabela própria;
-- lock transacional;
-- idempotência;
-- auditoria;
-- validação de operação confirmada;
-- separação clara entre simular e registrar.
 
 ### Fase 5C — Confirmar/cancelar operação financeira
 
@@ -437,7 +511,7 @@ Escopo provável:
 
 ### Integração Front/BFF
 
-Pendente. Ainda proibida antes do contrato da escrita financeira estar fechado.
+Pendente. Ainda proibida antes do contrato da escrita financeira estar fechado e validado por testes.
 
 ---
 
@@ -463,5 +537,5 @@ Não execute teste integrador em produção única sem verificar:
 4B aprovada em rollback transacional.
 4C aprovada.
 5A.1 aprovada.
-Próxima etapa recomendada: planejar Fase 5B.
+5B preflight aprovado com WARN estrutural; contrato fechado; próxima etapa: migration 5B e testes 11A-11E.
 ```
