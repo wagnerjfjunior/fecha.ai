@@ -6,7 +6,8 @@
 **Fase:** 5A.1 — simulação administrativa de impacto financeiro com agenda persistida  
 **Arquivo executado:** `supabase/tests/mesa-cliente/engenharia-financeira/10_preflight_simulacao_impacto_agenda_persistida_readonly.sql`  
 **Data de registro documental:** 2026-05-18  
-**Documento canônico relacionado:** `docs/mesa-cliente/fase-5a-contrato-simulacao-impacto-agenda-persistida.md`
+**Documento canônico relacionado:** `docs/mesa-cliente/fase-5a-contrato-simulacao-impacto-agenda-persistida.md`  
+**Etapa intermediária criada:** `supabase/tests/mesa-cliente/engenharia-financeira/10p_preparacao_base_minima_5a_agenda_persistida_rollback.sql`
 
 ---
 
@@ -185,27 +186,51 @@ Não criar ainda os testes finais 10A/10B/10C como se a migration já estivesse 
 
 ---
 
-## 6. Próximo passo seguro
+## 6. Próximo passo seguro — 10P transacional
 
-Antes de qualquer migration 5A.1, é necessário preparar a base mínima controlada para a simulação agenda-first.
+Antes de qualquer migration 5A.1, é necessário preparar e validar uma base mínima controlada para a simulação agenda-first.
 
-Sequência recomendada:
-
-1. Criar ou validar uma política financeira ativa de teste/empresa/empreendimento com:
-   - `metodo_calculo = 'composto'`;
-   - `base_tempo = 'dias_365'`;
-   - vigência compatível com a data de referência;
-   - flags de grupos compatíveis com antecipação/postergacão/VPL.
-2. Gerar ou validar uma simulação com agenda ativa persistida pela trilha 4B.
-3. Garantir parcelas vinculadas à agenda ativa, com valores e datas elegíveis.
-4. Garantir que qualquer fixture criada para teste continue transacional quando aplicável.
-5. Reexecutar:
+Foi criado o arquivo:
 
 ```text
-supabase/tests/mesa-cliente/engenharia-financeira/10_preflight_simulacao_impacto_agenda_persistida_readonly.sql
+supabase/tests/mesa-cliente/engenharia-financeira/10p_preparacao_base_minima_5a_agenda_persistida_rollback.sql
 ```
 
-Somente se o novo resultset retornar liberação operacional, criar a migration/RPC 5A.1.
+Objetivo do 10P:
+
+1. Criar uma simulação fixture em `BEGIN + ROLLBACK`.
+2. Criar política financeira fixture ativa com:
+   - `metodo_calculo = 'composto'`;
+   - `base_tempo = 'dias_365'`;
+   - vigência compatível com `2099-05-31`;
+   - flags de grupos compatíveis com antecipação/postergacão/VPL.
+3. Criar faixas administrativas de prêmio fixture.
+4. Persistir uma agenda ativa fixture usando a RPC 4B já aprovada:
+
+```text
+public.mesa_cliente_persistir_agenda_financeira_admin(uuid,date,jsonb,jsonb)
+```
+
+5. Validar parcelas vinculadas à agenda ativa, com valores e datas elegíveis.
+6. Confirmar que nenhuma operação financeira foi registrada.
+7. Encerrar tudo com `ROLLBACK`.
+
+Importante:
+
+```text
+O 10P não é seed permanente.
+O 10P não substitui o preflight 10 canônico.
+O 10P não cria migration.
+O 10P não cria RPC 5A.1.
+```
+
+Próxima ação operacional:
+
+```text
+Executar 10p_preparacao_base_minima_5a_agenda_persistida_rollback.sql no Supabase SQL Editor e enviar o resultset completo.
+```
+
+Somente se o 10P passar, a próxima etapa segura será criar a migration/RPC 5A.1 e os testes 10A/10B/10C.
 
 ---
 
@@ -218,10 +243,11 @@ Continuam proibidos nesta etapa:
 - alterar Worker;
 - alterar Make/n8n;
 - aceitar taxa, VPL, política ou `empresa_id` como autoridade do frontend;
-- gravar em `mesa_cliente_fluxo_operacoes`;
-- alterar parcelas persistidas;
+- gravar em `mesa_cliente_fluxo_operacoes` fora de teste futuro específico;
+- alterar parcelas persistidas fora de fixture transacional;
 - substituir agenda ativa sem regra de lock;
-- usar payload cliente-safe como base soberana.
+- usar payload cliente-safe como base soberana;
+- criar seed permanente sem decisão explícita.
 
 A Fase 5A.1 continua com o contrato:
 
@@ -245,8 +271,9 @@ dml_financeiro = false
 10 preflight canônico executado.
 Resultado do 10 preflight: FAIL operacional.
 Motivo principal: ausência de política ativa composta/dias_365 e ausência de agenda ativa com parcelas.
-Próxima ação: preparar/validar base mínima controlada e reexecutar o preflight 10.
-Migration/RPC 5A.1: bloqueada até novo preflight aprovado.
+10P preparação transacional criada.
+Próxima ação: executar 10P e enviar resultset completo.
+Migration/RPC 5A.1: bloqueada até 10P aprovado.
 ```
 
 ---
@@ -255,8 +282,8 @@ Migration/RPC 5A.1: bloqueada até novo preflight aprovado.
 
 O preflight funcionou exatamente como deveria: não deixou a implementação avançar com estrutura incompleta.
 
-O caminho agora é corrigir o ambiente de validação, não forçar SQL de implementação.
+O caminho agora é validar uma base mínima transacional, não forçar SQL de implementação.
 
 Regra de controle:
 
-> **Sem política ativa e sem agenda ativa com parcelas, a 5A.1 não tem chão. Primeiro cria o chão; depois sobe a parede.**
+> **Sem política ativa e sem agenda ativa com parcelas, a 5A.1 não tem chão. Primeiro cria o chão em rollback; depois sobe a parede.**
