@@ -5,8 +5,11 @@
 -- Objetivo:
 --   Validar sanidade operacional das RPCs 5D em ambiente real sem criar fixture.
 --
--- Escopo:
---   - read-only;
+-- Escopo estrito:
+--   - READ ONLY real;
+--   - sem CREATE FUNCTION;
+--   - sem CREATE TEMP TABLE;
+--   - sem DO block;
 --   - sem INSERT;
 --   - sem UPDATE;
 --   - sem DELETE;
@@ -15,12 +18,16 @@
 --   - sem alteração de agenda;
 --   - sem alteração de parcela.
 --
+-- Observação técnica:
+--   Este smoke não executa teste negativo que gera exception esperada, porque capturar exception
+--   dentro do SQL Editor exigiria PL/pgSQL via função temporária ou DO block, ambos incompatíveis
+--   com uma transação READ ONLY estrita. Negativos/allowlists ficam cobertos pelos testes 13C/13E.
+--
 -- Resultado esperado:
 --   bloco | status | detalhe
 --
--- Observação:
---   Se não existir operação financeira real acessível por admin, o teste retorna SKIP_DATA.
---   Isso não autoriza criar fixture em produção.
+-- Se não existir operação financeira real acessível por admin, retorna SKIP_DATA.
+-- Isso não autoriza criar fixture em produção.
 
 begin;
 set transaction read only;
@@ -36,80 +43,32 @@ select set_config('app.mc5d_smoke.list_payload', 'null', true);
 select set_config('app.mc5d_smoke.detail_payload', 'null', true);
 select set_config('request.jwt.claim.sub', '', true);
 
-create or replace function pg_temp.mc5d_smoke_add_result(
-  p_bloco text,
-  p_status text,
-  p_detalhe jsonb default '{}'::jsonb
-)
-returns void
-language plpgsql
-as $$
-declare
-  v_atual jsonb;
-begin
-  v_atual := coalesce(nullif(current_setting('app.mc5d_smoke.results', true), '')::jsonb, '[]'::jsonb);
-
-  perform set_config(
-    'app.mc5d_smoke.results',
-    (v_atual || jsonb_build_array(jsonb_build_object(
-      'bloco', p_bloco,
-      'status', p_status,
-      'detalhe', coalesce(p_detalhe, '{}'::jsonb)
-    )))::text,
-    true
-  );
-end;
-$$;
-
-create or replace function pg_temp.mc5d_smoke_expect_error(
-  p_bloco text,
-  p_expected_sqlstate text,
-  p_sql text,
-  p_fail_message text
-)
-returns void
-language plpgsql
-as $$
-declare
-  v_state text;
-  v_msg text;
-begin
-  execute p_sql;
-
-  perform pg_temp.mc5d_smoke_add_result(
-    p_bloco,
-    'FAIL',
-    jsonb_build_object('erro', p_fail_message)
-  );
-exception when others then
-  get stacked diagnostics v_msg = message_text;
-  v_state := sqlstate;
-
-  perform pg_temp.mc5d_smoke_add_result(
-    p_bloco,
-    case when v_state = p_expected_sqlstate then 'PASS' else 'FAIL' end,
-    jsonb_build_object('sqlstate', v_state, 'message', v_msg)
-  );
-end;
-$$;
-
+-- 00 — Existência das RPCs 5D.
 with funcoes as (
   select
     to_regprocedure('public.mesa_cliente_listar_operacoes_financeiras_admin(uuid,uuid,jsonb)') is not null as listar_existe,
     to_regprocedure('public.mesa_cliente_obter_operacao_financeira_admin(uuid,jsonb)') is not null as obter_existe
 )
-select pg_temp.mc5d_smoke_add_result(
-  '00_funcoes_5d_existentes',
-  case when listar_existe and obter_existe then 'PASS' else 'FAIL' end,
-  jsonb_build_object(
-    'listar_existe', listar_existe,
-    'obter_existe', obter_existe,
-    'listar_regprocedure', to_regprocedure('public.mesa_cliente_listar_operacoes_financeiras_admin(uuid,uuid,jsonb)')::text,
-    'obter_regprocedure', to_regprocedure('public.mesa_cliente_obter_operacao_financeira_admin(uuid,jsonb)')::text
-  )
+select set_config(
+  'app.mc5d_smoke.results',
+  (
+    current_setting('app.mc5d_smoke.results', true)::jsonb ||
+    jsonb_build_array(jsonb_build_object(
+      'bloco', '00_funcoes_5d_existentes',
+      'status', case when listar_existe and obter_existe then 'PASS' else 'FAIL' end,
+      'detalhe', jsonb_build_object(
+        'listar_existe', listar_existe,
+        'obter_existe', obter_existe,
+        'listar_regprocedure', to_regprocedure('public.mesa_cliente_listar_operacoes_financeiras_admin(uuid,uuid,jsonb)')::text,
+        'obter_regprocedure', to_regprocedure('public.mesa_cliente_obter_operacao_financeira_admin(uuid,jsonb)')::text
+      )
+    ))
+  )::text,
+  true
 )
 from funcoes;
 
+-- 01 — Seleciona um alvo real, sem criar fixture.
 with alvo as materialized (
   select
     c.user_id,
@@ -154,11 +113,8 @@ with alvo as materialized (
     set_config('app.mc5d_smoke.operacao_id', operacao_id::text, true) as cfg_operacao,
     *
   from alvo
-)
-select pg_temp.mc5d_smoke_add_result(
-  '01_alvo_admin_operacao_real',
-  case when exists(select 1 from setup) then 'PASS' else 'SKIP_DATA' end,
-  coalesce(
+), detalhe_resultado as (
+  select coalesce(
     (
       select jsonb_build_object(
         'user_id', user_id,
@@ -176,11 +132,26 @@ select pg_temp.mc5d_smoke_add_result(
     jsonb_build_object(
       'mensagem', 'Nenhuma operação financeira real acessível por perfil administrativo ativo foi encontrada. Smoke não cria fixture em produção.'
     )
-  )
-);
+  ) as detalhe,
+  exists(select 1 from setup) as tem_alvo
+)
+select set_config(
+  'app.mc5d_smoke.results',
+  (
+    current_setting('app.mc5d_smoke.results', true)::jsonb ||
+    jsonb_build_array(jsonb_build_object(
+      'bloco', '01_alvo_admin_operacao_real',
+      'status', case when tem_alvo then 'PASS' else 'SKIP_DATA' end,
+      'detalhe', detalhe
+    ))
+  )::text,
+  true
+)
+from detalhe_resultado;
 
 set local role authenticated;
 
+-- 02 — Chamada real da listagem 5D.
 with target as (
   select
     nullif(current_setting('app.mc5d_smoke.simulacao_id', true), '')::uuid as simulacao_id,
@@ -198,6 +169,7 @@ with target as (
 )
 select set_config('app.mc5d_smoke.list_payload', coalesce((select payload::text from listagem), 'null'), true);
 
+-- 03 — Chamada real do detalhe 5D.
 with target as (
   select nullif(current_setting('app.mc5d_smoke.operacao_id', true), '')::uuid as operacao_id
 ), detalhe as materialized (
@@ -212,109 +184,143 @@ select set_config('app.mc5d_smoke.detail_payload', coalesce((select payload::tex
 
 reset role;
 
-select pg_temp.mc5d_smoke_add_result(
-  '02_listagem_admin_readonly_smoke',
-  case
-    when current_setting('app.mc5d_smoke.operacao_id', true) = '' then 'SKIP_DATA'
-    when current_setting('app.mc5d_smoke.list_payload', true)::jsonb->>'ok' = 'true'
-     and current_setting('app.mc5d_smoke.list_payload', true)::jsonb->>'fase' = '5D_LEITURA_OPERACOES_FINANCEIRAS_ADMIN'
-     and current_setting('app.mc5d_smoke.list_payload', true)::jsonb->>'readonly' = 'true'
-     and current_setting('app.mc5d_smoke.list_payload', true)::jsonb->>'dml_financeiro' = 'false'
-     and (current_setting('app.mc5d_smoke.list_payload', true)::jsonb->>'total')::integer >= 1
-     and jsonb_array_length(current_setting('app.mc5d_smoke.list_payload', true)::jsonb->'operacoes') >= 1
-    then 'PASS'
-    else 'FAIL'
-  end,
-  jsonb_build_object(
-    'payload_ok', current_setting('app.mc5d_smoke.list_payload', true)::jsonb->>'ok',
-    'fase', current_setting('app.mc5d_smoke.list_payload', true)::jsonb->>'fase',
-    'readonly', current_setting('app.mc5d_smoke.list_payload', true)::jsonb->>'readonly',
-    'dml_financeiro', current_setting('app.mc5d_smoke.list_payload', true)::jsonb->>'dml_financeiro',
-    'total', current_setting('app.mc5d_smoke.list_payload', true)::jsonb->>'total',
-    'qtd_operacoes_retorno', case
-      when current_setting('app.mc5d_smoke.list_payload', true)::jsonb ? 'operacoes'
-      then jsonb_array_length(current_setting('app.mc5d_smoke.list_payload', true)::jsonb->'operacoes')
-      else null
-    end
-  )
+-- 02 — Resultado da listagem.
+select set_config(
+  'app.mc5d_smoke.results',
+  (
+    current_setting('app.mc5d_smoke.results', true)::jsonb ||
+    jsonb_build_array(jsonb_build_object(
+      'bloco', '02_listagem_admin_readonly_smoke',
+      'status', case
+        when current_setting('app.mc5d_smoke.operacao_id', true) = '' then 'SKIP_DATA'
+        when current_setting('app.mc5d_smoke.list_payload', true)::jsonb->>'ok' = 'true'
+         and current_setting('app.mc5d_smoke.list_payload', true)::jsonb->>'fase' = '5D_LEITURA_OPERACOES_FINANCEIRAS_ADMIN'
+         and current_setting('app.mc5d_smoke.list_payload', true)::jsonb->>'readonly' = 'true'
+         and current_setting('app.mc5d_smoke.list_payload', true)::jsonb->>'dml_financeiro' = 'false'
+         and (current_setting('app.mc5d_smoke.list_payload', true)::jsonb->>'total')::integer >= 1
+         and jsonb_array_length(current_setting('app.mc5d_smoke.list_payload', true)::jsonb->'operacoes') >= 1
+        then 'PASS'
+        else 'FAIL'
+      end,
+      'detalhe', jsonb_build_object(
+        'payload_ok', current_setting('app.mc5d_smoke.list_payload', true)::jsonb->>'ok',
+        'fase', current_setting('app.mc5d_smoke.list_payload', true)::jsonb->>'fase',
+        'readonly', current_setting('app.mc5d_smoke.list_payload', true)::jsonb->>'readonly',
+        'dml_financeiro', current_setting('app.mc5d_smoke.list_payload', true)::jsonb->>'dml_financeiro',
+        'total', current_setting('app.mc5d_smoke.list_payload', true)::jsonb->>'total',
+        'qtd_operacoes_retorno', case
+          when current_setting('app.mc5d_smoke.list_payload', true)::jsonb ? 'operacoes'
+          then jsonb_array_length(current_setting('app.mc5d_smoke.list_payload', true)::jsonb->'operacoes')
+          else null
+        end
+      )
+    ))
+  )::text,
+  true
 );
 
-select pg_temp.mc5d_smoke_add_result(
-  '03_detalhe_admin_readonly_smoke',
-  case
-    when current_setting('app.mc5d_smoke.operacao_id', true) = '' then 'SKIP_DATA'
-    when current_setting('app.mc5d_smoke.detail_payload', true)::jsonb->>'ok' = 'true'
-     and current_setting('app.mc5d_smoke.detail_payload', true)::jsonb->>'fase' = '5D_LEITURA_OPERACAO_FINANCEIRA_ADMIN'
-     and current_setting('app.mc5d_smoke.detail_payload', true)::jsonb->>'readonly' = 'true'
-     and current_setting('app.mc5d_smoke.detail_payload', true)::jsonb->>'dml_financeiro' = 'false'
-     and current_setting('app.mc5d_smoke.detail_payload', true)::jsonb->'operacao'->>'id' = current_setting('app.mc5d_smoke.operacao_id', true)
-    then 'PASS'
-    else 'FAIL'
-  end,
-  jsonb_build_object(
-    'payload_ok', current_setting('app.mc5d_smoke.detail_payload', true)::jsonb->>'ok',
-    'fase', current_setting('app.mc5d_smoke.detail_payload', true)::jsonb->>'fase',
-    'readonly', current_setting('app.mc5d_smoke.detail_payload', true)::jsonb->>'readonly',
-    'dml_financeiro', current_setting('app.mc5d_smoke.detail_payload', true)::jsonb->>'dml_financeiro',
-    'operacao_id_retorno', current_setting('app.mc5d_smoke.detail_payload', true)::jsonb->'operacao'->>'id'
-  )
+-- 03 — Resultado do detalhe.
+select set_config(
+  'app.mc5d_smoke.results',
+  (
+    current_setting('app.mc5d_smoke.results', true)::jsonb ||
+    jsonb_build_array(jsonb_build_object(
+      'bloco', '03_detalhe_admin_readonly_smoke',
+      'status', case
+        when current_setting('app.mc5d_smoke.operacao_id', true) = '' then 'SKIP_DATA'
+        when current_setting('app.mc5d_smoke.detail_payload', true)::jsonb->>'ok' = 'true'
+         and current_setting('app.mc5d_smoke.detail_payload', true)::jsonb->>'fase' = '5D_LEITURA_OPERACAO_FINANCEIRA_ADMIN'
+         and current_setting('app.mc5d_smoke.detail_payload', true)::jsonb->>'readonly' = 'true'
+         and current_setting('app.mc5d_smoke.detail_payload', true)::jsonb->>'dml_financeiro' = 'false'
+         and current_setting('app.mc5d_smoke.detail_payload', true)::jsonb->'operacao'->>'id' = current_setting('app.mc5d_smoke.operacao_id', true)
+        then 'PASS'
+        else 'FAIL'
+      end,
+      'detalhe', jsonb_build_object(
+        'payload_ok', current_setting('app.mc5d_smoke.detail_payload', true)::jsonb->>'ok',
+        'fase', current_setting('app.mc5d_smoke.detail_payload', true)::jsonb->>'fase',
+        'readonly', current_setting('app.mc5d_smoke.detail_payload', true)::jsonb->>'readonly',
+        'dml_financeiro', current_setting('app.mc5d_smoke.detail_payload', true)::jsonb->>'dml_financeiro',
+        'operacao_id_retorno', current_setting('app.mc5d_smoke.detail_payload', true)::jsonb->'operacao'->>'id'
+      )
+    ))
+  )::text,
+  true
 );
 
-select pg_temp.mc5d_smoke_add_result(
-  '04_contrato_readonly_minimo',
-  case
-    when current_setting('app.mc5d_smoke.operacao_id', true) = '' then 'SKIP_DATA'
-    when current_setting('app.mc5d_smoke.list_payload', true)::jsonb->>'altera_agenda' = 'false'
-     and current_setting('app.mc5d_smoke.list_payload', true)::jsonb->>'altera_parcelas' = 'false'
-     and current_setting('app.mc5d_smoke.list_payload', true)::jsonb->>'recalcula_operacao' = 'false'
-     and current_setting('app.mc5d_smoke.detail_payload', true)::jsonb->>'altera_agenda' = 'false'
-     and current_setting('app.mc5d_smoke.detail_payload', true)::jsonb->>'altera_parcelas' = 'false'
-     and current_setting('app.mc5d_smoke.detail_payload', true)::jsonb->>'recalcula_operacao' = 'false'
-     and current_setting('app.mc5d_smoke.list_payload', true)::jsonb->>'cliente_safe' = 'false'
-     and current_setting('app.mc5d_smoke.detail_payload', true)::jsonb->>'cliente_safe' = 'false'
-    then 'PASS'
-    else 'FAIL'
-  end,
-  jsonb_build_object(
-    'list_flags', jsonb_build_object(
-      'altera_agenda', current_setting('app.mc5d_smoke.list_payload', true)::jsonb->>'altera_agenda',
-      'altera_parcelas', current_setting('app.mc5d_smoke.list_payload', true)::jsonb->>'altera_parcelas',
-      'recalcula_operacao', current_setting('app.mc5d_smoke.list_payload', true)::jsonb->>'recalcula_operacao',
-      'cliente_safe', current_setting('app.mc5d_smoke.list_payload', true)::jsonb->>'cliente_safe'
-    ),
-    'detail_flags', jsonb_build_object(
-      'altera_agenda', current_setting('app.mc5d_smoke.detail_payload', true)::jsonb->>'altera_agenda',
-      'altera_parcelas', current_setting('app.mc5d_smoke.detail_payload', true)::jsonb->>'altera_parcelas',
-      'recalcula_operacao', current_setting('app.mc5d_smoke.detail_payload', true)::jsonb->>'recalcula_operacao',
-      'cliente_safe', current_setting('app.mc5d_smoke.detail_payload', true)::jsonb->>'cliente_safe'
-    )
-  )
+-- 04 — Contrato mínimo read-only.
+select set_config(
+  'app.mc5d_smoke.results',
+  (
+    current_setting('app.mc5d_smoke.results', true)::jsonb ||
+    jsonb_build_array(jsonb_build_object(
+      'bloco', '04_contrato_readonly_minimo',
+      'status', case
+        when current_setting('app.mc5d_smoke.operacao_id', true) = '' then 'SKIP_DATA'
+        when current_setting('app.mc5d_smoke.list_payload', true)::jsonb->>'altera_agenda' = 'false'
+         and current_setting('app.mc5d_smoke.list_payload', true)::jsonb->>'altera_parcelas' = 'false'
+         and current_setting('app.mc5d_smoke.list_payload', true)::jsonb->>'recalcula_operacao' = 'false'
+         and current_setting('app.mc5d_smoke.detail_payload', true)::jsonb->>'altera_agenda' = 'false'
+         and current_setting('app.mc5d_smoke.detail_payload', true)::jsonb->>'altera_parcelas' = 'false'
+         and current_setting('app.mc5d_smoke.detail_payload', true)::jsonb->>'recalcula_operacao' = 'false'
+         and current_setting('app.mc5d_smoke.list_payload', true)::jsonb->>'cliente_safe' = 'false'
+         and current_setting('app.mc5d_smoke.detail_payload', true)::jsonb->>'cliente_safe' = 'false'
+        then 'PASS'
+        else 'FAIL'
+      end,
+      'detalhe', jsonb_build_object(
+        'list_flags', jsonb_build_object(
+          'altera_agenda', current_setting('app.mc5d_smoke.list_payload', true)::jsonb->>'altera_agenda',
+          'altera_parcelas', current_setting('app.mc5d_smoke.list_payload', true)::jsonb->>'altera_parcelas',
+          'recalcula_operacao', current_setting('app.mc5d_smoke.list_payload', true)::jsonb->>'recalcula_operacao',
+          'cliente_safe', current_setting('app.mc5d_smoke.list_payload', true)::jsonb->>'cliente_safe'
+        ),
+        'detail_flags', jsonb_build_object(
+          'altera_agenda', current_setting('app.mc5d_smoke.detail_payload', true)::jsonb->>'altera_agenda',
+          'altera_parcelas', current_setting('app.mc5d_smoke.detail_payload', true)::jsonb->>'altera_parcelas',
+          'recalcula_operacao', current_setting('app.mc5d_smoke.detail_payload', true)::jsonb->>'recalcula_operacao',
+          'cliente_safe', current_setting('app.mc5d_smoke.detail_payload', true)::jsonb->>'cliente_safe'
+        )
+      )
+    ))
+  )::text,
+  true
 );
 
-set local role authenticated;
+-- 05 — Registro explícito do limite do smoke estritamente read-only.
+select set_config(
+  'app.mc5d_smoke.results',
+  (
+    current_setting('app.mc5d_smoke.results', true)::jsonb ||
+    jsonb_build_array(jsonb_build_object(
+      'bloco', '05_negativos_allowlist_nao_executados_no_smoke_readonly',
+      'status', 'INFO',
+      'detalhe', jsonb_build_object(
+        'motivo', 'Capturar erro esperado em SQL exige função temporária, DO block ou cliente externo; todos foram removidos para manter transação READ ONLY estrita.',
+        'cobertura_oficial', 'Negativos e allowlists permanecem cobertos nos testes 13C/13E em ambiente de teste/homologação.',
+        'garantia_do_smoke', 'Este smoke valida disponibilidade e contrato read-only operacional em ambiente real, sem DDL e sem DML.'
+      )
+    ))
+  )::text,
+  true
+);
 
-select pg_temp.mc5d_smoke_expect_error(
-  '05_order_by_invalido_bloqueado',
-  '22023',
-  format(
-    $sql$select public.mesa_cliente_listar_operacoes_financeiras_admin(%L::uuid, null::uuid, jsonb_build_object('order_by', 'empresa_id'))$sql$,
-    nullif(current_setting('app.mc5d_smoke.simulacao_id', true), '')
-  ),
-  'order_by inválido foi aceito no smoke pós-produção'
-)
-where nullif(current_setting('app.mc5d_smoke.simulacao_id', true), '') is not null;
-
-reset role;
-
-select pg_temp.mc5d_smoke_add_result(
-  '99_smoke_readonly_notice',
-  'INFO',
-  jsonb_build_object(
-    'mensagem', 'Smoke pós-produção 5D executado em transação READ ONLY. Não cria fixture e não executa DML financeiro.',
-    'fase', '5D_LEITURA_OPERACOES_FINANCEIRAS_ADMIN',
-    'operacao_id', nullif(current_setting('app.mc5d_smoke.operacao_id', true), ''),
-    'simulacao_id', nullif(current_setting('app.mc5d_smoke.simulacao_id', true), '')
-  )
+select set_config(
+  'app.mc5d_smoke.results',
+  (
+    current_setting('app.mc5d_smoke.results', true)::jsonb ||
+    jsonb_build_array(jsonb_build_object(
+      'bloco', '99_smoke_readonly_notice',
+      'status', 'INFO',
+      'detalhe', jsonb_build_object(
+        'mensagem', 'Smoke pós-produção 5D executado em transação READ ONLY estrita. Não cria fixture, não cria função temporária e não executa DML financeiro.',
+        'fase', '5D_LEITURA_OPERACOES_FINANCEIRAS_ADMIN',
+        'operacao_id', nullif(current_setting('app.mc5d_smoke.operacao_id', true), ''),
+        'simulacao_id', nullif(current_setting('app.mc5d_smoke.simulacao_id', true), '')
+      )
+    ))
+  )::text,
+  true
 );
 
 select
