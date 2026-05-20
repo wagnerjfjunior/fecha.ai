@@ -8,6 +8,11 @@
 --     public.mesa_cliente_listar_operacoes_financeiras_admin(uuid, uuid, jsonb)
 --     public.mesa_cliente_obter_operacao_financeira_admin(uuid, jsonb)
 --
+-- Observação técnica:
+--   O teste alterna SET LOCAL ROLE authenticated para simular execução real das RPCs.
+--   Por isso a tabela temporária de resultados precisa conceder INSERT/SELECT ao role
+--   authenticated e USAGE na sequence identity, evitando falso negativo de teste.
+--
 -- Segurança do teste:
 --   - cria fixture transacional mínima via 4B/5B;
 --   - executa somente negativos contra 5D;
@@ -22,6 +27,18 @@ create temp table if not exists tmp_13c_resultados (
   status text not null,
   detalhe jsonb not null default '{}'::jsonb
 ) on commit drop;
+
+do $$
+declare
+  v_seq regclass;
+begin
+  grant insert, select on table tmp_13c_resultados to authenticated;
+
+  v_seq := pg_get_serial_sequence('tmp_13c_resultados', 'ordem')::regclass;
+  if v_seq is not null then
+    execute format('grant usage, select on sequence %s to authenticated', v_seq);
+  end if;
+end $$;
 
 select set_config('app.mc13c.user_id', '', true);
 select set_config('app.mc13c.other_user_id', '', true);
@@ -391,11 +408,7 @@ exception when others then
   get stacked diagnostics v_msg = message_text;
   v_state := sqlstate;
   insert into tmp_13c_resultados (bloco, status, detalhe)
-  values (
-    '03a_listar_sem_auth_bloqueado',
-    case when v_state = '28000' then 'PASS' else 'FAIL' end,
-    jsonb_build_object('sqlstate', v_state, 'message', v_msg)
-  );
+  values ('03a_listar_sem_auth_bloqueado', case when v_state = '28000' then 'PASS' else 'FAIL' end, jsonb_build_object('sqlstate', v_state, 'message', v_msg));
 end $$;
 
 -- 03B: sem auth.uid() no detalhe
@@ -413,11 +426,7 @@ exception when others then
   get stacked diagnostics v_msg = message_text;
   v_state := sqlstate;
   insert into tmp_13c_resultados (bloco, status, detalhe)
-  values (
-    '03b_obter_sem_auth_bloqueado',
-    case when v_state = '28000' then 'PASS' else 'FAIL' end,
-    jsonb_build_object('sqlstate', v_state, 'message', v_msg)
-  );
+  values ('03b_obter_sem_auth_bloqueado', case when v_state = '28000' then 'PASS' else 'FAIL' end, jsonb_build_object('sqlstate', v_state, 'message', v_msg));
 end $$;
 
 -- Reautentica usuário base para os negativos seguintes.
@@ -606,7 +615,6 @@ begin
       null,
       '{}'::jsonb
     );
-
     insert into tmp_13c_resultados (bloco, status, detalhe)
     values ('08a_listar_cross_tenant_bloqueado', 'FAIL', jsonb_build_object('erro', 'usuário de outro tenant listou simulação fixture'));
   exception when others then
@@ -621,7 +629,6 @@ begin
       current_setting('app.mc13c.operacao_id', true)::uuid,
       '{}'::jsonb
     );
-
     insert into tmp_13c_resultados (bloco, status, detalhe)
     values ('08b_obter_cross_tenant_bloqueado', 'FAIL', jsonb_build_object('erro', 'usuário de outro tenant obteve operação fixture'));
   exception when others then
