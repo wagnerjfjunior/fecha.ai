@@ -13,6 +13,15 @@
 --   - Seguro para Supabase SQL Editor em produção única.
 --   - Não cria função temporária.
 --   - Não usa DO block.
+--
+-- Observação técnica:
+--   Este preflight deve validar o contrato REAL pós-5D, não nomes conceituais.
+--   Portanto, não espera colunas inexistentes como resultado, valor_operacao,
+--   valor, numero_parcela ou total_parcelas. Os campos canônicos atuais são:
+--   - operações: valor_movido, valor_base, desconto_calculado, acrescimo_calculado,
+--     economia_liquida, dias_calculo, checksum_operacao, metadata etc.
+--   - parcelas: valor_original, valor_atual, ordem e metadados com parcela_numero /
+--     parcelas_total_item quando aplicável.
 
 set transaction read only;
 
@@ -69,73 +78,105 @@ function_check as (
 ),
 expected_operacoes_cols as (
   select * from (values
-    ('id'::text),
-    ('simulacao_id'),
-    ('agenda_id'),
-    ('empresa_id'),
-    ('tipo_operacao'),
-    ('status_operacao'),
-    ('confirmado'),
-    ('confirmado_por'),
-    ('confirmado_em'),
-    ('cancelado_por'),
-    ('cancelado_em'),
-    ('motivo_cancelamento'),
-    ('parcela_origem_id'),
-    ('parcela_destino_id'),
-    ('valor_operacao'),
-    ('resultado'),
-    ('metadata'),
-    ('checksum_operacao'),
-    ('visivel_cliente'),
-    ('created_at'),
-    ('updated_at')
-  ) as c(column_name)
+    ('core'::text, 'id'::text),
+    ('core', 'empresa_id'),
+    ('core', 'simulacao_id'),
+    ('core', 'empreendimento_id'),
+    ('core', 'agenda_id'),
+    ('core', 'politica_id'),
+    ('core', 'tipo_operacao'),
+    ('core', 'status_operacao'),
+    ('core', 'confirmado'),
+    ('core', 'confirmado_por'),
+    ('core', 'confirmado_em'),
+    ('core', 'cancelado_por'),
+    ('core', 'cancelado_em'),
+    ('core', 'motivo_cancelamento'),
+    ('core', 'parcela_origem_id'),
+    ('core', 'parcela_destino_id'),
+    ('calculo', 'grupo_origem'),
+    ('calculo', 'grupo_destino'),
+    ('calculo', 'valor_movido'),
+    ('calculo', 'valor_base'),
+    ('calculo', 'data_origem'),
+    ('calculo', 'data_destino'),
+    ('calculo', 'dias_calculo'),
+    ('calculo', 'taxa_ano_pct'),
+    ('calculo', 'vpl_aplicado_pct'),
+    ('calculo', 'desconto_calculado'),
+    ('calculo', 'acrescimo_calculado'),
+    ('calculo', 'economia_liquida'),
+    ('interno', 'premio_corretor_pct'),
+    ('interno', 'status_premio'),
+    ('seguranca', 'metadata'),
+    ('seguranca', 'checksum_operacao'),
+    ('seguranca', 'visivel_cliente'),
+    ('auditoria', 'criado_por'),
+    ('auditoria', 'created_at'),
+    ('auditoria', 'updated_at')
+  ) as c(grupo, column_name)
 ),
 actual_operacoes_cols as (
-  select column_name, data_type, udt_name, is_nullable
+  select column_name, ordinal_position, data_type, udt_name, is_nullable, column_default
   from information_schema.columns
   where table_schema = 'public'
     and table_name = 'mesa_cliente_fluxo_operacoes'
 ),
 operacoes_col_check as (
   select
+    e.grupo,
     e.column_name,
     (a.column_name is not null) as existe,
+    a.ordinal_position,
     a.data_type,
     a.udt_name,
-    a.is_nullable
+    a.is_nullable,
+    a.column_default
   from expected_operacoes_cols e
   left join actual_operacoes_cols a on a.column_name = e.column_name
 ),
 expected_parcelas_cols as (
   select * from (values
-    ('id'::text),
-    ('agenda_id'),
-    ('simulacao_id'),
-    ('empresa_id'),
-    ('grupo'),
-    ('descricao'),
-    ('valor'),
-    ('data_atual'),
-    ('numero_parcela'),
-    ('total_parcelas'),
-    ('metadata')
-  ) as c(column_name)
+    ('core'::text, 'id'::text),
+    ('core', 'agenda_id'),
+    ('core', 'empresa_id'),
+    ('core', 'simulacao_id'),
+    ('core', 'empreendimento_id'),
+    ('core', 'unidade_estoque_id'),
+    ('core', 'grupo'),
+    ('core', 'descricao'),
+    ('calculo', 'valor_original'),
+    ('calculo', 'valor_atual'),
+    ('calculo', 'data_original'),
+    ('calculo', 'data_atual'),
+    ('calculo', 'origem_data'),
+    ('calculo', 'regra_data'),
+    ('calculo', 'ordem'),
+    ('seguranca', 'eh_periodicidade_simbolica'),
+    ('seguranca', 'pode_receber_vpl'),
+    ('seguranca', 'pode_receber_antecipacao'),
+    ('seguranca', 'pode_receber_postergacao'),
+    ('seguranca', 'metadata'),
+    ('auditoria', 'created_at'),
+    ('auditoria', 'updated_at')
+  ) as c(grupo, column_name)
 ),
 actual_parcelas_cols as (
-  select column_name, data_type, udt_name, is_nullable
+  select column_name, ordinal_position, data_type, udt_name, is_nullable, column_default
   from information_schema.columns
   where table_schema = 'public'
     and table_name = 'mesa_cliente_fluxo_parcelas'
 ),
 parcelas_col_check as (
   select
+    e.grupo,
     e.column_name,
     (a.column_name is not null) as existe,
+    a.ordinal_position,
     a.data_type,
     a.udt_name,
-    a.is_nullable
+    a.is_nullable,
+    a.column_default
   from expected_parcelas_cols e
   left join actual_parcelas_cols a on a.column_name = e.column_name
 ),
@@ -285,7 +326,9 @@ from (
     '03_colunas_operacoes' as bloco,
     jsonb_build_object(
       'ok', (select bool_and(existe) from operacoes_col_check),
-      'itens', (select jsonb_agg(to_jsonb(c) order by column_name) from operacoes_col_check c)
+      'itens', (select jsonb_agg(to_jsonb(c) order by grupo, column_name) from operacoes_col_check c),
+      'inventario_real', (select jsonb_agg(to_jsonb(a) order by ordinal_position) from actual_operacoes_cols a),
+      'observacao', 'Contrato alinhado ao schema real pós-5D: valor_movido/valor_base/calculados no lugar de nomes conceituais como valor_operacao/resultado.'
     ) as detalhe
 
   union all
@@ -294,7 +337,9 @@ from (
     '04_colunas_parcelas' as bloco,
     jsonb_build_object(
       'ok', (select bool_and(existe) from parcelas_col_check),
-      'itens', (select jsonb_agg(to_jsonb(c) order by column_name) from parcelas_col_check c)
+      'itens', (select jsonb_agg(to_jsonb(c) order by grupo, column_name) from parcelas_col_check c),
+      'inventario_real', (select jsonb_agg(to_jsonb(a) order by ordinal_position) from actual_parcelas_cols a),
+      'observacao', 'Contrato alinhado ao schema real pós-4B/5D: valor_original/valor_atual/ordem; numeração agregada permanece em metadata quando aplicável.'
     ) as detalhe
 
   union all
