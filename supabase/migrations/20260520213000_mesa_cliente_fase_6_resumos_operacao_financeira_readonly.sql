@@ -36,17 +36,16 @@
 --   - anon e public sem execute.
 --   - authenticated com execute controlado por validações internas.
 --
--- Campos internos que não devem aparecer no cliente-safe:
---   - empresa_id / tenant_id.
---   - politica_id.
---   - taxa_ano_pct.
---   - vpl_aplicado_pct.
---   - premio_corretor_pct.
---   - status_premio.
---   - checksum_operacao.
---   - metadata.
---   - confirmado_por / cancelado_por.
---   - payload bruto.
+-- Blindagem cliente-safe:
+--   A RPC cliente-safe não deve expor campos administrativos, identificadores internos
+--   de tenant/empresa/política, payload bruto, checksum, metadata nem termos que revelem
+--   a existência de regras financeiras internas sensíveis.
+--
+-- Observação sobre publicação:
+--   Esta fase não cria mecanismo de publicação para cliente.
+--   A RPC cliente-safe apenas lê operações já marcadas como visíveis.
+--   A política de quando uma operação fica visível ao cliente permanece fora do escopo
+--   desta migration e deve ser tratada por fase própria.
 
 
 -- -----------------------------------------------------------------------------
@@ -74,13 +73,13 @@ declare
   -- Entidade operacional vinculada ao usuário autenticado.
   v_corretor public.corretores%rowtype;
 
-  -- Registro financeiro central da Fase 6.
+  -- Registro financeiro central.
   v_operacao public.mesa_cliente_fluxo_operacoes%rowtype;
 
   -- Simulação vinculada à operação.
   v_simulacao public.mesa_simulacoes%rowtype;
 
-  -- Controle de parâmetros não permitidos.
+  -- Parâmetro proibido detectado.
   v_bad_key text;
 
   -- Controle de perfil administrativo.
@@ -126,36 +125,28 @@ declare
     'visao'
   ];
 begin
-  -- ---------------------------------------------------------------------------
-  -- Gate 01 — autenticação obrigatória
-  -- ---------------------------------------------------------------------------
+  -- Gate 01 — autenticação obrigatória.
   if v_auth_uid is null then
     raise exception using
       errcode = '28000',
       message = 'auth_required';
   end if;
 
-  -- ---------------------------------------------------------------------------
-  -- Gate 02 — operação obrigatória
-  -- ---------------------------------------------------------------------------
+  -- Gate 02 — operação obrigatória.
   if p_operacao_id is null then
     raise exception using
       errcode = '22023',
       message = 'p_operacao_id_required';
   end if;
 
-  -- ---------------------------------------------------------------------------
-  -- Gate 03 — parâmetros opcionais devem ser objeto JSON
-  -- ---------------------------------------------------------------------------
+  -- Gate 03 — parâmetros opcionais devem ser objeto JSON.
   if jsonb_typeof(v_params) <> 'object' then
     raise exception using
       errcode = '22023',
       message = 'p_parametros_must_be_object';
   end if;
 
-  -- ---------------------------------------------------------------------------
-  -- Gate 04 — frontend não pode enviar autoridade soberana
-  -- ---------------------------------------------------------------------------
+  -- Gate 04 — frontend não pode enviar autoridade soberana.
   select k
     into v_bad_key
   from jsonb_object_keys(v_params) as t(k)
@@ -168,9 +159,7 @@ begin
       message = 'frontend_authority_forbidden:' || v_bad_key;
   end if;
 
-  -- ---------------------------------------------------------------------------
-  -- Gate 05 — localizar corretor ativo pelo auth.uid()
-  -- ---------------------------------------------------------------------------
+  -- Gate 05 — localizar corretor ativo pelo auth.uid().
   select c.*
     into v_corretor
   from public.corretores c
@@ -194,9 +183,7 @@ begin
       message = 'active_corretor_not_found';
   end if;
 
-  -- ---------------------------------------------------------------------------
-  -- Gate 06 — perfil administrativo/gestão obrigatório
-  -- ---------------------------------------------------------------------------
+  -- Gate 06 — perfil administrativo/gestão obrigatório.
   v_admin :=
     coalesce(v_corretor.role, '') in (
       'admin_global',
@@ -213,9 +200,7 @@ begin
       message = 'admin_profile_required';
   end if;
 
-  -- ---------------------------------------------------------------------------
-  -- Gate 07 — localizar operação financeira
-  -- ---------------------------------------------------------------------------
+  -- Gate 07 — localizar operação financeira.
   select o.*
     into v_operacao
   from public.mesa_cliente_fluxo_operacoes o
@@ -228,9 +213,7 @@ begin
       message = 'operacao_not_found';
   end if;
 
-  -- ---------------------------------------------------------------------------
-  -- Gate 08 — proteção cross-tenant
-  -- ---------------------------------------------------------------------------
+  -- Gate 08 — proteção cross-tenant.
   if coalesce(v_corretor.role, '') <> 'admin_global'
      and v_corretor.empresa_id is distinct from v_operacao.empresa_id then
     raise exception using
@@ -238,9 +221,7 @@ begin
       message = 'cross_tenant_denied';
   end if;
 
-  -- ---------------------------------------------------------------------------
-  -- Gate 09 — simulação vinculada e consistente com o tenant
-  -- ---------------------------------------------------------------------------
+  -- Gate 09 — simulação vinculada e consistente com tenant.
   select s.*
     into v_simulacao
   from public.mesa_simulacoes s
@@ -254,9 +235,7 @@ begin
       message = 'simulacao_not_found';
   end if;
 
-  -- ---------------------------------------------------------------------------
-  -- Retorno administrativo
-  -- ---------------------------------------------------------------------------
+  -- Retorno administrativo.
   return jsonb_build_object(
     'ok',
     true,
@@ -499,7 +478,7 @@ declare
   -- Payload opcional, nunca soberano.
   v_params jsonb := coalesce(p_parametros, '{}'::jsonb);
 
-  -- Lista de chaves soberanas proibidas.
+  -- Chaves que o frontend não pode enviar como autoridade.
   v_forbidden text[] := array[
     'empresa_id',
     'tenant_id',
@@ -536,36 +515,28 @@ declare
     'visao'
   ];
 begin
-  -- ---------------------------------------------------------------------------
-  -- Gate 01 — autenticação obrigatória
-  -- ---------------------------------------------------------------------------
+  -- Gate 01 — autenticação obrigatória.
   if v_auth_uid is null then
     raise exception using
       errcode = '28000',
       message = 'auth_required';
   end if;
 
-  -- ---------------------------------------------------------------------------
-  -- Gate 02 — operação obrigatória
-  -- ---------------------------------------------------------------------------
+  -- Gate 02 — operação obrigatória.
   if p_operacao_id is null then
     raise exception using
       errcode = '22023',
       message = 'p_operacao_id_required';
   end if;
 
-  -- ---------------------------------------------------------------------------
-  -- Gate 03 — parâmetros opcionais devem ser objeto JSON
-  -- ---------------------------------------------------------------------------
+  -- Gate 03 — parâmetros opcionais devem ser objeto JSON.
   if jsonb_typeof(v_params) <> 'object' then
     raise exception using
       errcode = '22023',
       message = 'p_parametros_must_be_object';
   end if;
 
-  -- ---------------------------------------------------------------------------
-  -- Gate 04 — frontend não pode enviar autoridade soberana
-  -- ---------------------------------------------------------------------------
+  -- Gate 04 — frontend não pode enviar autoridade soberana.
   select k
     into v_bad_key
   from jsonb_object_keys(v_params) as t(k)
@@ -578,9 +549,7 @@ begin
       message = 'frontend_authority_forbidden:' || v_bad_key;
   end if;
 
-  -- ---------------------------------------------------------------------------
-  -- Gate 05 — localizar corretor ativo pelo auth.uid()
-  -- ---------------------------------------------------------------------------
+  -- Gate 05 — localizar corretor ativo pelo auth.uid().
   select c.*
     into v_corretor
   from public.corretores c
@@ -604,9 +573,7 @@ begin
       message = 'active_corretor_not_found';
   end if;
 
-  -- ---------------------------------------------------------------------------
-  -- Gate 06 — identificar perfil administrativo ou escopo de corretor
-  -- ---------------------------------------------------------------------------
+  -- Gate 06 — identificar perfil administrativo ou escopo de corretor.
   v_admin :=
     coalesce(v_corretor.role, '') in (
       'admin_global',
@@ -617,9 +584,7 @@ begin
     or coalesce(v_corretor.is_admin_local, false)
     or coalesce(v_corretor.is_gestor, false);
 
-  -- ---------------------------------------------------------------------------
-  -- Gate 07 — localizar operação financeira
-  -- ---------------------------------------------------------------------------
+  -- Gate 07 — localizar operação financeira.
   select o.*
     into v_operacao
   from public.mesa_cliente_fluxo_operacoes o
@@ -632,9 +597,7 @@ begin
       message = 'operacao_not_found';
   end if;
 
-  -- ---------------------------------------------------------------------------
-  -- Gate 08 — proteção cross-tenant
-  -- ---------------------------------------------------------------------------
+  -- Gate 08 — proteção cross-tenant.
   if coalesce(v_corretor.role, '') <> 'admin_global'
      and v_corretor.empresa_id is distinct from v_operacao.empresa_id then
     raise exception using
@@ -642,9 +605,7 @@ begin
       message = 'cross_tenant_denied';
   end if;
 
-  -- ---------------------------------------------------------------------------
-  -- Gate 09 — localizar simulação vinculada
-  -- ---------------------------------------------------------------------------
+  -- Gate 09 — localizar simulação vinculada.
   select s.*
     into v_simulacao
   from public.mesa_simulacoes s
@@ -658,9 +619,7 @@ begin
       message = 'simulacao_not_found';
   end if;
 
-  -- ---------------------------------------------------------------------------
-  -- Gate 10 — corretor comum só acessa operação vinculada à sua simulação
-  -- ---------------------------------------------------------------------------
+  -- Gate 10 — corretor comum só acessa operação vinculada à sua simulação.
   if not v_admin
      and v_simulacao.corretor_id is distinct from v_corretor.id then
     raise exception using
@@ -668,18 +627,14 @@ begin
       message = 'corretor_scope_denied';
   end if;
 
-  -- ---------------------------------------------------------------------------
-  -- Gate 11 — cliente-safe só libera operação marcada como visível
-  -- ---------------------------------------------------------------------------
+  -- Gate 11 — cliente-safe só libera operação marcada como visível.
   if coalesce(v_operacao.visivel_cliente, false) is false then
     raise exception using
       errcode = '42501',
       message = 'cliente_safe_not_released';
   end if;
 
-  -- ---------------------------------------------------------------------------
-  -- Leitura auxiliar: parcela origem
-  -- ---------------------------------------------------------------------------
+  -- Leitura auxiliar: parcela origem.
   if v_operacao.parcela_origem_id is not null then
     select p.*
       into v_origem
@@ -690,9 +645,7 @@ begin
     limit 1;
   end if;
 
-  -- ---------------------------------------------------------------------------
-  -- Leitura auxiliar: parcela destino
-  -- ---------------------------------------------------------------------------
+  -- Leitura auxiliar: parcela destino.
   if v_operacao.parcela_destino_id is not null then
     select p.*
       into v_destino
@@ -703,9 +656,7 @@ begin
     limit 1;
   end if;
 
-  -- ---------------------------------------------------------------------------
-  -- Tradução de status interno para status comercial
-  -- ---------------------------------------------------------------------------
+  -- Tradução de status interno para status comercial.
   v_status_comercial := case
     when v_operacao.status_operacao = 'confirmada'
          and coalesce(v_operacao.confirmado, false)
@@ -717,9 +668,7 @@ begin
     else 'condicao_em_analise'
   end;
 
-  -- ---------------------------------------------------------------------------
-  -- Retorno cliente-safe
-  -- ---------------------------------------------------------------------------
+  -- Retorno cliente-safe.
   return jsonb_build_object(
     'ok',
     true,
@@ -854,7 +803,7 @@ begin
 
     'avisos',
     jsonb_build_array(
-      'cliente_safe_sem_taxa_vpl_premio_politica_checksum_metadata_payload_bruto',
+      'resumo_comercial_sem_regras_internas_ou_dados_administrativos',
       'condicao_sujeita_a_validacao_comercial_conforme_status'
     )
   );
@@ -893,4 +842,4 @@ grant execute on function public.mesa_cliente_obter_resumo_operacao_cliente_safe
 to authenticated;
 
 comment on function public.mesa_cliente_obter_resumo_operacao_cliente_safe(uuid,jsonb)
-is 'FECH.AI MesaCliente Fase 6: resumo cliente-safe read-only, separado da visao admin, sem VPL/taxa/premio/politica/checksum/metadata.';
+is 'FECH.AI MesaCliente Fase 6: resumo cliente-safe read-only, separado da visao admin, sem exposicao de regra interna sensivel.';
