@@ -22,13 +22,11 @@
 --     - order_dir allowlist;
 --     - retorno canônico de filtros_aplicados/limit/offset/order_by/order_dir.
 --
--- Também valida negativos específicos de filtro/ordenação que não devem ficar apenas no contrato:
---   - order_by inválido;
---   - order_dir inválido;
---   - offset inválido;
---   - data_de/data_ate inválidas;
---   - data_de maior que data_ate;
---   - visivel_cliente não booleano.
+-- Correção assertiva 13E:
+--   A postergação não usa data_destino fixa. A data_destino é calculada a partir da
+--   data_atual real da parcela selecionada: parcela_3.data_atual + 60 dias.
+--   Isso respeita a regra soberana da Fase 5B:
+--     p_data_destino > mesa_cliente_fluxo_parcelas.data_atual.
 --
 -- Segurança:
 --   - cria fixture transacional;
@@ -49,6 +47,8 @@ select set_config('app.mc13e.parcela_1_id', '', true);
 select set_config('app.mc13e.parcela_2_id', '', true);
 select set_config('app.mc13e.parcela_3_id', '', true);
 select set_config('app.mc13e.parcela_4_id', '', true);
+select set_config('app.mc13e.parcela_3_data_atual', '', true);
+select set_config('app.mc13e.parcela_3_data_destino', '', true);
 select set_config('app.mc13e.op1_id', '', true);
 select set_config('app.mc13e.op2_id', '', true);
 select set_config('app.mc13e.op3_id', '', true);
@@ -233,7 +233,7 @@ politica as materialized (
     empreendimento_id,
     date '2099-10-01',
     date '2099-01-01',
-    date '2099-12-31',
+    date '2101-12-31',
     6.00,
     12.00,
     12.00,
@@ -354,7 +354,8 @@ agenda as (
 parcelas_ranked as (
   select
     fp.id,
-    row_number() over (order by fp.valor_atual desc, fp.data_atual desc, fp.id) as rn
+    fp.data_atual,
+    row_number() over (order by fp.data_atual asc, fp.valor_atual desc, fp.id asc) as rn
   from public.mesa_cliente_fluxo_parcelas fp
   join agenda a on a.id = fp.agenda_id
   where fp.valor_atual >= 1000.00
@@ -370,7 +371,9 @@ setups as (
     set_config('app.mc13e.parcela_1_id', (select id::text from parcelas_ranked where rn = 1), true),
     set_config('app.mc13e.parcela_2_id', (select id::text from parcelas_ranked where rn = 2), true),
     set_config('app.mc13e.parcela_3_id', (select id::text from parcelas_ranked where rn = 3), true),
-    set_config('app.mc13e.parcela_4_id', (select id::text from parcelas_ranked where rn = 4), true)
+    set_config('app.mc13e.parcela_4_id', (select id::text from parcelas_ranked where rn = 4), true),
+    set_config('app.mc13e.parcela_3_data_atual', (select data_atual::text from parcelas_ranked where rn = 3), true),
+    set_config('app.mc13e.parcela_3_data_destino', (select (data_atual + interval '60 days')::date::text from parcelas_ranked where rn = 3), true)
 )
 select pg_temp.mc13e_add_result(
   '00b_agenda_parcelas_fixture_13e',
@@ -380,6 +383,7 @@ select pg_temp.mc13e_add_result(
      and current_setting('app.mc13e.parcela_2_id', true) <> ''
      and current_setting('app.mc13e.parcela_3_id', true) <> ''
      and current_setting('app.mc13e.parcela_4_id', true) <> ''
+     and current_setting('app.mc13e.parcela_3_data_destino', true)::date > current_setting('app.mc13e.parcela_3_data_atual', true)::date
     then 'PASS' else 'FAIL'
   end,
   jsonb_build_object(
@@ -388,6 +392,8 @@ select pg_temp.mc13e_add_result(
     'parcela_2_id', current_setting('app.mc13e.parcela_2_id', true),
     'parcela_3_id', current_setting('app.mc13e.parcela_3_id', true),
     'parcela_4_id', current_setting('app.mc13e.parcela_4_id', true),
+    'parcela_3_data_atual', current_setting('app.mc13e.parcela_3_data_atual', true),
+    'parcela_3_data_destino', current_setting('app.mc13e.parcela_3_data_destino', true),
     'qtd_parcelas_elegiveis', (select count(*) from parcelas_ranked)
   )
 )
@@ -434,9 +440,14 @@ with chamada_5b_op3 as materialized (
     'postergacao',
     current_setting('app.mc13e.parcela_3_id', true)::uuid,
     date '2099-10-31',
-    date '2100-03-31',
+    current_setting('app.mc13e.parcela_3_data_destino', true)::date,
     1200.00,
-    jsonb_build_object('origem_teste', '13e', 'op', 'op3_postergacao_simulada')
+    jsonb_build_object(
+      'origem_teste', '13e',
+      'op', 'op3_postergacao_simulada',
+      'data_atual_parcela', current_setting('app.mc13e.parcela_3_data_atual', true),
+      'data_destino_calculada', current_setting('app.mc13e.parcela_3_data_destino', true)
+    )
   ) as payload
 )
 select
@@ -502,7 +513,9 @@ select pg_temp.mc13e_add_result(
     'op1_antecipacao_confirmada', current_setting('app.mc13e.op1_id', true),
     'op2_antecipacao_cancelada', current_setting('app.mc13e.op2_id', true),
     'op3_postergacao_simulada', current_setting('app.mc13e.op3_id', true),
-    'op4_vpl_simulada', current_setting('app.mc13e.op4_id', true)
+    'op4_vpl_simulada', current_setting('app.mc13e.op4_id', true),
+    'postergacao_data_atual', current_setting('app.mc13e.parcela_3_data_atual', true),
+    'postergacao_data_destino', current_setting('app.mc13e.parcela_3_data_destino', true)
   )
 );
 
@@ -647,9 +660,9 @@ select pg_temp.mc13e_add_result(
     then 'PASS' else 'FAIL'
   end,
   jsonb_build_object(
-    'confirmada', current_setting('app.mc13e.filter_status_confirmada', true)::jsonb,
-    'cancelada', current_setting('app.mc13e.filter_status_cancelada', true)::jsonb,
-    'simulada', current_setting('app.mc13e.filter_status_simulada', true)::jsonb
+    'confirmada_ids', pg_temp.mc13e_list_ids(current_setting('app.mc13e.filter_status_confirmada', true)::jsonb),
+    'cancelada_ids', pg_temp.mc13e_list_ids(current_setting('app.mc13e.filter_status_cancelada', true)::jsonb),
+    'simulada_statuses', pg_temp.mc13e_list_statuses(current_setting('app.mc13e.filter_status_simulada', true)::jsonb)
   )
 );
 
@@ -719,10 +732,8 @@ select pg_temp.mc13e_add_result(
      and current_setting('app.mc13e.order_status_asc', true)::jsonb->>'order_dir' = 'asc'
      and current_setting('app.mc13e.order_status_desc', true)::jsonb->>'order_by' = 'status_operacao'
      and current_setting('app.mc13e.order_status_desc', true)::jsonb->>'order_dir' = 'desc'
-     and (pg_temp.mc13e_list_statuses(current_setting('app.mc13e.order_status_asc', true)::jsonb))[1] = 'cancelada'
-     and (pg_temp.mc13e_list_statuses(current_setting('app.mc13e.order_status_asc', true)::jsonb))[2] = 'confirmada'
-     and (pg_temp.mc13e_list_statuses(current_setting('app.mc13e.order_status_desc', true)::jsonb))[1] = 'simulada'
-     and (pg_temp.mc13e_list_statuses(current_setting('app.mc13e.order_status_desc', true)::jsonb))[4] = 'cancelada'
+     and pg_temp.mc13e_list_statuses(current_setting('app.mc13e.order_status_asc', true)::jsonb) = array['cancelada', 'confirmada', 'simulada', 'simulada']::text[]
+     and pg_temp.mc13e_list_statuses(current_setting('app.mc13e.order_status_desc', true)::jsonb) = array['simulada', 'simulada', 'confirmada', 'cancelada']::text[]
     then 'PASS' else 'FAIL'
   end,
   jsonb_build_object(
@@ -738,11 +749,8 @@ select pg_temp.mc13e_add_result(
      and current_setting('app.mc13e.order_tipo_asc', true)::jsonb->>'order_dir' = 'asc'
      and current_setting('app.mc13e.order_tipo_desc', true)::jsonb->>'order_by' = 'tipo_operacao'
      and current_setting('app.mc13e.order_tipo_desc', true)::jsonb->>'order_dir' = 'desc'
-     and (pg_temp.mc13e_list_tipos(current_setting('app.mc13e.order_tipo_asc', true)::jsonb))[1] = 'antecipacao'
-     and (pg_temp.mc13e_list_tipos(current_setting('app.mc13e.order_tipo_asc', true)::jsonb))[3] = 'postergacao'
-     and (pg_temp.mc13e_list_tipos(current_setting('app.mc13e.order_tipo_asc', true)::jsonb))[4] = 'vpl'
-     and (pg_temp.mc13e_list_tipos(current_setting('app.mc13e.order_tipo_desc', true)::jsonb))[1] = 'vpl'
-     and (pg_temp.mc13e_list_tipos(current_setting('app.mc13e.order_tipo_desc', true)::jsonb))[2] = 'postergacao'
+     and pg_temp.mc13e_list_tipos(current_setting('app.mc13e.order_tipo_asc', true)::jsonb) = array['antecipacao', 'antecipacao', 'postergacao', 'vpl']::text[]
+     and pg_temp.mc13e_list_tipos(current_setting('app.mc13e.order_tipo_desc', true)::jsonb) = array['vpl', 'postergacao', 'antecipacao', 'antecipacao']::text[]
     then 'PASS' else 'FAIL'
   end,
   jsonb_build_object(
