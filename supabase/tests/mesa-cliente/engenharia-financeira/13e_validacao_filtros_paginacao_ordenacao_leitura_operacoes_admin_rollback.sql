@@ -2,14 +2,15 @@
 -- Engenharia Financeira — Fase 5D
 -- 13E — Filtros, paginação e ordenação da listagem administrativa de operações financeiras.
 --
--- Princípio deste teste:
---   - não hardcodar tenant/empresa/usuário;
---   - não usar datas mágicas de calendário para a massa financeira;
---   - derivar datas de teste a partir de current_date e da própria parcela criada;
---   - respeitar as regras soberanas das RPCs 4B/5B/5C;
+-- Princípios do teste:
+--   - não hardcodar tenant/empresa/usuário/perfil;
+--   - não usar datas mágicas de calendário para massa financeira;
+--   - derivar datas a partir de current_date e da própria parcela criada;
+--   - selecionar parcelas por grupo financeiro permitido pela regra soberana da 5B;
+--   - respeitar as RPCs 4B/5B/5C como fonte de verdade;
 --   - encerrar tudo com ROLLBACK.
 --
--- O que este teste valida na RPC 5D:
+-- O que valida na RPC 5D:
 --   - filtro por agenda_id;
 --   - filtro por status_operacao;
 --   - filtro por tipo_operacao;
@@ -33,6 +34,10 @@ select set_config('app.mc13e.parcela_1_id', '', true);
 select set_config('app.mc13e.parcela_2_id', '', true);
 select set_config('app.mc13e.parcela_3_id', '', true);
 select set_config('app.mc13e.parcela_4_id', '', true);
+select set_config('app.mc13e.parcela_1_grupo_norm', '', true);
+select set_config('app.mc13e.parcela_2_grupo_norm', '', true);
+select set_config('app.mc13e.parcela_3_grupo_norm', '', true);
+select set_config('app.mc13e.parcela_4_grupo_norm', '', true);
 select set_config('app.mc13e.parcela_3_data_atual', '', true);
 select set_config('app.mc13e.parcela_3_data_destino', '', true);
 select set_config('app.mc13e.op1_id', '', true);
@@ -48,7 +53,7 @@ select set_config('app.mc13e.payload_5c_confirmar_op1', 'null', true);
 select set_config('app.mc13e.payload_5c_cancelar_op2', 'null', true);
 select set_config('request.jwt.claim.sub', '', true);
 
--- Datas dinâmicas da fixture. Nada de ano fixo/mágico.
+-- Datas dinâmicas da fixture. Sem ano fixo/mágico.
 select set_config('app.mc13e.data_referencia', current_date::text, true);
 select set_config('app.mc13e.data_ato', (current_date + interval '730 days')::date::text, true);
 select set_config('app.mc13e.mes_mensais', to_char((current_date + interval '760 days')::date, 'MM/YYYY'), true);
@@ -58,6 +63,7 @@ select set_config('app.mc13e.politica_vigencia_inicio', (current_date - interval
 select set_config('app.mc13e.politica_vigencia_fim', (current_date + interval '20 years')::date::text, true);
 select set_config('app.mc13e.data_sem_resultado_de', (current_date + interval '1 day')::date::text, true);
 select set_config('app.mc13e.data_sem_resultado_ate', (current_date + interval '2 days')::date::text, true);
+select set_config('app.mc13e.data_formato_invalido', to_char(current_date, 'DD/MM/YYYY'), true);
 
 create or replace function pg_temp.mc13e_add_result(
   p_bloco text,
@@ -114,6 +120,20 @@ exception when others then
     jsonb_build_object('sqlstate', v_state, 'message', v_msg)
   );
 end;
+$$;
+
+create or replace function pg_temp.mc13e_norm_grupo(p_grupo text)
+returns text
+language sql
+immutable
+as $$
+  select case
+    when lower(coalesce(p_grupo, '')) in ('financiamento', 'financiamento_bancario', 'financiamento bancário') then 'financiamento'
+    when lower(coalesce(p_grupo, '')) in ('chaves', 'chave') then 'chaves'
+    when lower(coalesce(p_grupo, '')) in ('anual', 'anuais', 'intermediaria', 'intermediarias', 'intermediária', 'intermediárias') then 'anuais'
+    when lower(coalesce(p_grupo, '')) in ('mensal', 'mensais') then 'mensais'
+    else lower(coalesce(p_grupo, ''))
+  end;
 $$;
 
 create or replace function pg_temp.mc13e_list_statuses(p_payload jsonb)
@@ -316,20 +336,13 @@ from setup;
 set local role authenticated;
 
 with ctx as (
-  select
-    current_setting('app.mc13e.simulacao_id', true)::uuid as simulacao_id
+  select current_setting('app.mc13e.simulacao_id', true)::uuid as simulacao_id
 ),
 chamada_4b as materialized (
   select public.mesa_cliente_persistir_agenda_financeira_admin(
     ctx.simulacao_id,
     current_setting('app.mc13e.data_ato', true)::date,
     jsonb_build_array(
-      jsonb_build_object(
-        'grupo','entrada',
-        'descricao','Sinal ato 13E',
-        'valor','18000.00',
-        'data', current_setting('app.mc13e.data_ato', true)
-      ),
       jsonb_build_object(
         'grupo','mensais',
         'descricao','Mensais 13E',
@@ -343,12 +356,6 @@ chamada_4b as materialized (
         'valor','10000.00',
         'quantidade',2,
         'mes_ano', current_setting('app.mc13e.mes_intermediarias', true)
-      ),
-      jsonb_build_object(
-        'grupo','periodicidade',
-        'descricao','Periodicidade simbólica 13E',
-        'valor',0,
-        'mes_ano', current_setting('app.mc13e.mes_mensais', true)
       )
     ),
     jsonb_build_object('origem_teste', '13e')
@@ -370,11 +377,13 @@ agenda as (
   order by a.created_at desc nulls last, a.id desc
   limit 1
 ),
-parcelas_ranked as (
+parcelas_base as materialized (
   select
     fp.id,
     fp.data_atual,
-    row_number() over (order by fp.data_atual asc, fp.valor_atual desc, fp.id asc) as rn
+    fp.valor_atual,
+    fp.grupo::text as grupo_raw,
+    pg_temp.mc13e_norm_grupo(fp.grupo::text) as grupo_norm
   from public.mesa_cliente_fluxo_parcelas fp
   join agenda a on a.id = fp.agenda_id
   where fp.valor_atual > 0
@@ -383,6 +392,29 @@ parcelas_ranked as (
     and coalesce(fp.pode_receber_antecipacao, false) = true
     and coalesce(fp.pode_receber_postergacao, false) = true
     and coalesce(fp.pode_receber_vpl, false) = true
+    and pg_temp.mc13e_norm_grupo(fp.grupo::text) in ('financiamento', 'chaves', 'anuais', 'mensais')
+),
+parcelas_ranked as (
+  select
+    id,
+    data_atual,
+    valor_atual,
+    grupo_raw,
+    grupo_norm,
+    row_number() over (
+      order by
+        case grupo_norm
+          when 'mensais' then 1
+          when 'anuais' then 2
+          when 'chaves' then 3
+          when 'financiamento' then 4
+          else 9
+        end,
+        data_atual asc,
+        valor_atual desc,
+        id asc
+    ) as rn
+  from parcelas_base
 ),
 setups as (
   select
@@ -391,6 +423,10 @@ setups as (
     set_config('app.mc13e.parcela_2_id', (select id::text from parcelas_ranked where rn = 2), true),
     set_config('app.mc13e.parcela_3_id', (select id::text from parcelas_ranked where rn = 3), true),
     set_config('app.mc13e.parcela_4_id', (select id::text from parcelas_ranked where rn = 4), true),
+    set_config('app.mc13e.parcela_1_grupo_norm', (select grupo_norm from parcelas_ranked where rn = 1), true),
+    set_config('app.mc13e.parcela_2_grupo_norm', (select grupo_norm from parcelas_ranked where rn = 2), true),
+    set_config('app.mc13e.parcela_3_grupo_norm', (select grupo_norm from parcelas_ranked where rn = 3), true),
+    set_config('app.mc13e.parcela_4_grupo_norm', (select grupo_norm from parcelas_ranked where rn = 4), true),
     set_config('app.mc13e.parcela_3_data_atual', (select data_atual::text from parcelas_ranked where rn = 3), true),
     set_config('app.mc13e.parcela_3_data_destino', (select (data_atual + interval '60 days')::date::text from parcelas_ranked where rn = 3), true)
 )
@@ -402,18 +438,26 @@ select pg_temp.mc13e_add_result(
      and current_setting('app.mc13e.parcela_2_id', true) <> ''
      and current_setting('app.mc13e.parcela_3_id', true) <> ''
      and current_setting('app.mc13e.parcela_4_id', true) <> ''
+     and current_setting('app.mc13e.parcela_1_grupo_norm', true) in ('financiamento', 'chaves', 'anuais', 'mensais')
+     and current_setting('app.mc13e.parcela_2_grupo_norm', true) in ('financiamento', 'chaves', 'anuais', 'mensais')
+     and current_setting('app.mc13e.parcela_3_grupo_norm', true) in ('financiamento', 'chaves', 'anuais', 'mensais')
+     and current_setting('app.mc13e.parcela_4_grupo_norm', true) in ('financiamento', 'chaves', 'anuais', 'mensais')
      and current_setting('app.mc13e.parcela_3_data_destino', true)::date > current_setting('app.mc13e.parcela_3_data_atual', true)::date
     then 'PASS' else 'FAIL'
   end,
   jsonb_build_object(
     'agenda_id', current_setting('app.mc13e.agenda_id', true),
     'parcela_1_id', current_setting('app.mc13e.parcela_1_id', true),
+    'parcela_1_grupo_norm', current_setting('app.mc13e.parcela_1_grupo_norm', true),
     'parcela_2_id', current_setting('app.mc13e.parcela_2_id', true),
+    'parcela_2_grupo_norm', current_setting('app.mc13e.parcela_2_grupo_norm', true),
     'parcela_3_id', current_setting('app.mc13e.parcela_3_id', true),
+    'parcela_3_grupo_norm', current_setting('app.mc13e.parcela_3_grupo_norm', true),
     'parcela_4_id', current_setting('app.mc13e.parcela_4_id', true),
+    'parcela_4_grupo_norm', current_setting('app.mc13e.parcela_4_grupo_norm', true),
     'parcela_3_data_atual', current_setting('app.mc13e.parcela_3_data_atual', true),
     'parcela_3_data_destino', current_setting('app.mc13e.parcela_3_data_destino', true),
-    'qtd_parcelas_elegiveis', (select count(*) from parcelas_ranked)
+    'qtd_parcelas_grupo_permitido', (select count(*) from parcelas_base)
   )
 )
 from setups;
@@ -533,6 +577,12 @@ select pg_temp.mc13e_add_result(
     'op2_antecipacao_cancelada', current_setting('app.mc13e.op2_id', true),
     'op3_postergacao_simulada', current_setting('app.mc13e.op3_id', true),
     'op4_vpl_simulada', current_setting('app.mc13e.op4_id', true),
+    'grupos_normalizados', jsonb_build_array(
+      current_setting('app.mc13e.parcela_1_grupo_norm', true),
+      current_setting('app.mc13e.parcela_2_grupo_norm', true),
+      current_setting('app.mc13e.parcela_3_grupo_norm', true),
+      current_setting('app.mc13e.parcela_4_grupo_norm', true)
+    ),
     'postergacao_data_atual', current_setting('app.mc13e.parcela_3_data_atual', true),
     'postergacao_data_destino', current_setting('app.mc13e.parcela_3_data_destino', true)
   )
@@ -824,9 +874,10 @@ select pg_temp.mc13e_expect_error(
   '09d_data_de_formato_invalido_bloqueada',
   '22023',
   format(
-    $sql$select public.mesa_cliente_listar_operacoes_financeiras_admin(%L::uuid, %L::uuid, jsonb_build_object('data_de', '31/10/2099'))$sql$,
+    $sql$select public.mesa_cliente_listar_operacoes_financeiras_admin(%L::uuid, %L::uuid, jsonb_build_object('data_de', %L))$sql$,
     current_setting('app.mc13e.simulacao_id', true),
-    current_setting('app.mc13e.agenda_id', true)
+    current_setting('app.mc13e.agenda_id', true),
+    current_setting('app.mc13e.data_formato_invalido', true)
   ),
   'data_de inválida foi aceita'
 );
@@ -835,9 +886,10 @@ select pg_temp.mc13e_expect_error(
   '09e_data_ate_formato_invalido_bloqueada',
   '22023',
   format(
-    $sql$select public.mesa_cliente_listar_operacoes_financeiras_admin(%L::uuid, %L::uuid, jsonb_build_object('data_ate', '31/10/2099'))$sql$,
+    $sql$select public.mesa_cliente_listar_operacoes_financeiras_admin(%L::uuid, %L::uuid, jsonb_build_object('data_ate', %L))$sql$,
     current_setting('app.mc13e.simulacao_id', true),
-    current_setting('app.mc13e.agenda_id', true)
+    current_setting('app.mc13e.agenda_id', true),
+    current_setting('app.mc13e.data_formato_invalido', true)
   ),
   'data_ate inválida foi aceita'
 );
