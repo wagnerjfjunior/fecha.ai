@@ -14,20 +14,29 @@
 --   validados por has_function_privilege(), e as regras internas das RPCs são validadas
 --   por auth.uid() via request.jwt.claim.sub.
 --
+-- Correção de robustez 13C:
+--   A tabela temporária de resultados é criada ANTES do BEGIN principal, com
+--   ON COMMIT PRESERVE ROWS, e referenciada por pg_temp.tmp_13c_resultados.
+--   Isso evita erro 42P01 quando o SQL Editor/Supabase quebra o contexto
+--   transacional ou executa commit implícito antes do SELECT final.
+--
 -- Segurança do teste:
 --   - cria fixture transacional mínima via 4B/5B;
 --   - executa somente negativos contra 5D;
 --   - compara hashes antes/depois;
 --   - encerra com ROLLBACK.
 
-begin;
+-- Harness fora da transação principal para sobreviver ao contexto do SQL Editor.
+drop table if exists pg_temp.tmp_13c_resultados;
 
 create temp table tmp_13c_resultados (
   ordem integer generated always as identity,
   bloco text not null,
   status text not null,
   detalhe jsonb not null default '{}'::jsonb
-) on commit drop;
+) on commit preserve rows;
+
+begin;
 
 select set_config('app.mc13c.user_id', '', true);
 select set_config('app.mc13c.other_user_id', '', true);
@@ -225,7 +234,7 @@ setup as (
   join simulacao s on true
   join politica p on true
 )
-insert into tmp_13c_resultados (bloco, status, detalhe)
+insert into pg_temp.tmp_13c_resultados (bloco, status, detalhe)
 select
   '00_setup_fixture_13c',
   case when count(*) = 1 then 'PASS' else 'FAIL' end,
@@ -285,7 +294,7 @@ setups as (
     set_config('app.mc13c.agenda_id', (select id::text from agenda), true),
     set_config('app.mc13c.parcela_id', (select id::text from parcela), true)
 )
-insert into tmp_13c_resultados (bloco, status, detalhe)
+insert into pg_temp.tmp_13c_resultados (bloco, status, detalhe)
 select
   '00b_agenda_parcela_fixture_13c',
   case
@@ -335,7 +344,7 @@ snapshot_before as (
 )
 select set_config('app.mc13c.snapshot_before', coalesce((select payload::text from snapshot_before), 'null'), true);
 
-insert into tmp_13c_resultados (bloco, status, detalhe)
+insert into pg_temp.tmp_13c_resultados (bloco, status, detalhe)
 select
   '01_operacao_fixture_5b_preparada',
   case
@@ -350,7 +359,7 @@ select
     'snapshot_before', current_setting('app.mc13c.snapshot_before', true)::jsonb
   );
 
-insert into tmp_13c_resultados (bloco, status, detalhe)
+insert into pg_temp.tmp_13c_resultados (bloco, status, detalhe)
 select
   '02_grants_5d_anon_bloqueado_authenticated_liberado',
   case
@@ -377,12 +386,12 @@ do $$
 declare v_state text; v_msg text;
 begin
   perform public.mesa_cliente_listar_operacoes_financeiras_admin(current_setting('app.mc13c.simulacao_id', true)::uuid, null, '{}'::jsonb);
-  insert into tmp_13c_resultados (bloco, status, detalhe)
+  insert into pg_temp.tmp_13c_resultados (bloco, status, detalhe)
   values ('03a_listar_sem_auth_bloqueado', 'FAIL', jsonb_build_object('erro', 'chamada sem auth.uid() foi aceita'));
 exception when others then
   get stacked diagnostics v_msg = message_text;
   v_state := sqlstate;
-  insert into tmp_13c_resultados (bloco, status, detalhe)
+  insert into pg_temp.tmp_13c_resultados (bloco, status, detalhe)
   values ('03a_listar_sem_auth_bloqueado', case when v_state = '28000' then 'PASS' else 'FAIL' end, jsonb_build_object('sqlstate', v_state, 'message', v_msg));
 end $$;
 
@@ -392,12 +401,12 @@ do $$
 declare v_state text; v_msg text;
 begin
   perform public.mesa_cliente_obter_operacao_financeira_admin(current_setting('app.mc13c.operacao_id', true)::uuid, '{}'::jsonb);
-  insert into tmp_13c_resultados (bloco, status, detalhe)
+  insert into pg_temp.tmp_13c_resultados (bloco, status, detalhe)
   values ('03b_obter_sem_auth_bloqueado', 'FAIL', jsonb_build_object('erro', 'chamada sem auth.uid() foi aceita'));
 exception when others then
   get stacked diagnostics v_msg = message_text;
   v_state := sqlstate;
-  insert into tmp_13c_resultados (bloco, status, detalhe)
+  insert into pg_temp.tmp_13c_resultados (bloco, status, detalhe)
   values ('03b_obter_sem_auth_bloqueado', case when v_state = '28000' then 'PASS' else 'FAIL' end, jsonb_build_object('sqlstate', v_state, 'message', v_msg));
 end $$;
 
@@ -408,12 +417,12 @@ do $$
 declare v_state text; v_msg text;
 begin
   perform public.mesa_cliente_listar_operacoes_financeiras_admin('00000000-0000-0000-0000-000000000001'::uuid, null, '{}'::jsonb);
-  insert into tmp_13c_resultados (bloco, status, detalhe)
+  insert into pg_temp.tmp_13c_resultados (bloco, status, detalhe)
   values ('04a_listar_simulacao_inexistente_bloqueada', 'FAIL', jsonb_build_object('erro', 'simulação inexistente foi aceita'));
 exception when others then
   get stacked diagnostics v_msg = message_text;
   v_state := sqlstate;
-  insert into tmp_13c_resultados (bloco, status, detalhe)
+  insert into pg_temp.tmp_13c_resultados (bloco, status, detalhe)
   values ('04a_listar_simulacao_inexistente_bloqueada', case when v_state = 'P0002' then 'PASS' else 'FAIL' end, jsonb_build_object('sqlstate', v_state, 'message', v_msg));
 end $$;
 
@@ -422,12 +431,12 @@ do $$
 declare v_state text; v_msg text;
 begin
   perform public.mesa_cliente_obter_operacao_financeira_admin('00000000-0000-0000-0000-000000000001'::uuid, '{}'::jsonb);
-  insert into tmp_13c_resultados (bloco, status, detalhe)
+  insert into pg_temp.tmp_13c_resultados (bloco, status, detalhe)
   values ('04b_obter_operacao_inexistente_bloqueada', 'FAIL', jsonb_build_object('erro', 'operação inexistente foi aceita'));
 exception when others then
   get stacked diagnostics v_msg = message_text;
   v_state := sqlstate;
-  insert into tmp_13c_resultados (bloco, status, detalhe)
+  insert into pg_temp.tmp_13c_resultados (bloco, status, detalhe)
   values ('04b_obter_operacao_inexistente_bloqueada', case when v_state = 'P0002' then 'PASS' else 'FAIL' end, jsonb_build_object('sqlstate', v_state, 'message', v_msg));
 end $$;
 
@@ -436,12 +445,12 @@ do $$
 declare v_state text; v_msg text;
 begin
   perform public.mesa_cliente_listar_operacoes_financeiras_admin(current_setting('app.mc13c.simulacao_id', true)::uuid, null, '[]'::jsonb);
-  insert into tmp_13c_resultados (bloco, status, detalhe)
+  insert into pg_temp.tmp_13c_resultados (bloco, status, detalhe)
   values ('05a_listar_filtros_nao_objeto_bloqueado', 'FAIL', jsonb_build_object('erro', 'p_filtros array foi aceito'));
 exception when others then
   get stacked diagnostics v_msg = message_text;
   v_state := sqlstate;
-  insert into tmp_13c_resultados (bloco, status, detalhe)
+  insert into pg_temp.tmp_13c_resultados (bloco, status, detalhe)
   values ('05a_listar_filtros_nao_objeto_bloqueado', case when v_state = '22023' then 'PASS' else 'FAIL' end, jsonb_build_object('sqlstate', v_state, 'message', v_msg));
 end $$;
 
@@ -450,12 +459,12 @@ do $$
 declare v_state text; v_msg text;
 begin
   perform public.mesa_cliente_obter_operacao_financeira_admin(current_setting('app.mc13c.operacao_id', true)::uuid, '[]'::jsonb);
-  insert into tmp_13c_resultados (bloco, status, detalhe)
+  insert into pg_temp.tmp_13c_resultados (bloco, status, detalhe)
   values ('05b_obter_parametros_nao_objeto_bloqueado', 'FAIL', jsonb_build_object('erro', 'p_parametros array foi aceito'));
 exception when others then
   get stacked diagnostics v_msg = message_text;
   v_state := sqlstate;
-  insert into tmp_13c_resultados (bloco, status, detalhe)
+  insert into pg_temp.tmp_13c_resultados (bloco, status, detalhe)
   values ('05b_obter_parametros_nao_objeto_bloqueado', case when v_state = '22023' then 'PASS' else 'FAIL' end, jsonb_build_object('sqlstate', v_state, 'message', v_msg));
 end $$;
 
@@ -468,12 +477,12 @@ begin
     null,
     jsonb_build_object('empresa_id', current_setting('app.mc13c.empresa_id', true))
   );
-  insert into tmp_13c_resultados (bloco, status, detalhe)
+  insert into pg_temp.tmp_13c_resultados (bloco, status, detalhe)
   values ('06a_listar_payload_soberano_bloqueado', 'FAIL', jsonb_build_object('erro', 'empresa_id em p_filtros foi aceito'));
 exception when others then
   get stacked diagnostics v_msg = message_text;
   v_state := sqlstate;
-  insert into tmp_13c_resultados (bloco, status, detalhe)
+  insert into pg_temp.tmp_13c_resultados (bloco, status, detalhe)
   values ('06a_listar_payload_soberano_bloqueado', case when v_state = '42501' then 'PASS' else 'FAIL' end, jsonb_build_object('sqlstate', v_state, 'message', v_msg));
 end $$;
 
@@ -485,12 +494,12 @@ begin
     current_setting('app.mc13c.operacao_id', true)::uuid,
     jsonb_build_object('simulacao_id', current_setting('app.mc13c.simulacao_id', true))
   );
-  insert into tmp_13c_resultados (bloco, status, detalhe)
+  insert into pg_temp.tmp_13c_resultados (bloco, status, detalhe)
   values ('06b_obter_payload_soberano_bloqueado', 'FAIL', jsonb_build_object('erro', 'simulacao_id em p_parametros foi aceito'));
 exception when others then
   get stacked diagnostics v_msg = message_text;
   v_state := sqlstate;
-  insert into tmp_13c_resultados (bloco, status, detalhe)
+  insert into pg_temp.tmp_13c_resultados (bloco, status, detalhe)
   values ('06b_obter_payload_soberano_bloqueado', case when v_state = '42501' then 'PASS' else 'FAIL' end, jsonb_build_object('sqlstate', v_state, 'message', v_msg));
 end $$;
 
@@ -503,12 +512,12 @@ begin
     null,
     jsonb_build_object('status_operacao', 'hack')
   );
-  insert into tmp_13c_resultados (bloco, status, detalhe)
+  insert into pg_temp.tmp_13c_resultados (bloco, status, detalhe)
   values ('07a_listar_status_invalido_bloqueado', 'FAIL', jsonb_build_object('erro', 'status inválido foi aceito'));
 exception when others then
   get stacked diagnostics v_msg = message_text;
   v_state := sqlstate;
-  insert into tmp_13c_resultados (bloco, status, detalhe)
+  insert into pg_temp.tmp_13c_resultados (bloco, status, detalhe)
   values ('07a_listar_status_invalido_bloqueado', case when v_state = '22023' then 'PASS' else 'FAIL' end, jsonb_build_object('sqlstate', v_state, 'message', v_msg));
 end $$;
 
@@ -521,12 +530,12 @@ begin
     null,
     jsonb_build_object('limit', 201)
   );
-  insert into tmp_13c_resultados (bloco, status, detalhe)
+  insert into pg_temp.tmp_13c_resultados (bloco, status, detalhe)
   values ('07b_listar_limit_invalido_bloqueado', 'FAIL', jsonb_build_object('erro', 'limit inválido foi aceito'));
 exception when others then
   get stacked diagnostics v_msg = message_text;
   v_state := sqlstate;
-  insert into tmp_13c_resultados (bloco, status, detalhe)
+  insert into pg_temp.tmp_13c_resultados (bloco, status, detalhe)
   values ('07b_listar_limit_invalido_bloqueado', case when v_state = '22023' then 'PASS' else 'FAIL' end, jsonb_build_object('sqlstate', v_state, 'message', v_msg));
 end $$;
 
@@ -539,12 +548,12 @@ begin
     '00000000-0000-0000-0000-000000000001'::uuid,
     '{}'::jsonb
   );
-  insert into tmp_13c_resultados (bloco, status, detalhe)
+  insert into pg_temp.tmp_13c_resultados (bloco, status, detalhe)
   values ('07c_listar_agenda_incompativel_bloqueada', 'FAIL', jsonb_build_object('erro', 'agenda incompatível/inexistente foi aceita'));
 exception when others then
   get stacked diagnostics v_msg = message_text;
   v_state := sqlstate;
-  insert into tmp_13c_resultados (bloco, status, detalhe)
+  insert into pg_temp.tmp_13c_resultados (bloco, status, detalhe)
   values ('07c_listar_agenda_incompativel_bloqueada', case when v_state = 'P0002' then 'PASS' else 'FAIL' end, jsonb_build_object('sqlstate', v_state, 'message', v_msg));
 end $$;
 
@@ -555,7 +564,7 @@ begin
   v_other := nullif(current_setting('app.mc13c.other_user_id', true), '');
 
   if v_other is null then
-    insert into tmp_13c_resultados (bloco, status, detalhe)
+    insert into pg_temp.tmp_13c_resultados (bloco, status, detalhe)
     values (
       '08_tenant_cross_empresa_bloqueado',
       'INFO',
@@ -568,23 +577,23 @@ begin
 
   begin
     perform public.mesa_cliente_listar_operacoes_financeiras_admin(current_setting('app.mc13c.simulacao_id', true)::uuid, null, '{}'::jsonb);
-    insert into tmp_13c_resultados (bloco, status, detalhe)
+    insert into pg_temp.tmp_13c_resultados (bloco, status, detalhe)
     values ('08a_listar_cross_tenant_bloqueado', 'FAIL', jsonb_build_object('erro', 'usuário de outro tenant listou simulação fixture'));
   exception when others then
     get stacked diagnostics v_msg = message_text;
     v_state := sqlstate;
-    insert into tmp_13c_resultados (bloco, status, detalhe)
+    insert into pg_temp.tmp_13c_resultados (bloco, status, detalhe)
     values ('08a_listar_cross_tenant_bloqueado', case when v_state = '42501' then 'PASS' else 'FAIL' end, jsonb_build_object('sqlstate', v_state, 'message', v_msg));
   end;
 
   begin
     perform public.mesa_cliente_obter_operacao_financeira_admin(current_setting('app.mc13c.operacao_id', true)::uuid, '{}'::jsonb);
-    insert into tmp_13c_resultados (bloco, status, detalhe)
+    insert into pg_temp.tmp_13c_resultados (bloco, status, detalhe)
     values ('08b_obter_cross_tenant_bloqueado', 'FAIL', jsonb_build_object('erro', 'usuário de outro tenant obteve operação fixture'));
   exception when others then
     get stacked diagnostics v_msg = message_text;
     v_state := sqlstate;
-    insert into tmp_13c_resultados (bloco, status, detalhe)
+    insert into pg_temp.tmp_13c_resultados (bloco, status, detalhe)
     values ('08b_obter_cross_tenant_bloqueado', case when v_state = '42501' then 'PASS' else 'FAIL' end, jsonb_build_object('sqlstate', v_state, 'message', v_msg));
   end;
 
@@ -613,7 +622,7 @@ snapshot_after as (
 )
 select set_config('app.mc13c.snapshot_after', coalesce((select payload::text from snapshot_after), 'null'), true);
 
-insert into tmp_13c_resultados (bloco, status, detalhe)
+insert into pg_temp.tmp_13c_resultados (bloco, status, detalhe)
 select
   '09_negativos_readonly_nao_mutaram_agenda_parcelas_operacoes',
   case
@@ -635,7 +644,7 @@ from
   (select current_setting('app.mc13c.snapshot_before', true)::jsonb as b) before_data,
   (select current_setting('app.mc13c.snapshot_after', true)::jsonb as a) after_data;
 
-insert into tmp_13c_resultados (bloco, status, detalhe)
+insert into pg_temp.tmp_13c_resultados (bloco, status, detalhe)
 values (
   '99_rollback_notice',
   'INFO',
@@ -647,7 +656,7 @@ values (
 );
 
 select bloco, status, detalhe
-from tmp_13c_resultados
+from pg_temp.tmp_13c_resultados
 order by ordem;
 
 rollback;
