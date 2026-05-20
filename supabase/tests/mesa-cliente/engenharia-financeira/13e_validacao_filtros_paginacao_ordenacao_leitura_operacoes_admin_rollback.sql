@@ -2,37 +2,23 @@
 -- Engenharia Financeira — Fase 5D
 -- 13E — Filtros, paginação e ordenação da listagem administrativa de operações financeiras.
 --
--- Pré-requisitos:
---   - Fase 4B aplicada;
---   - Fase 5B aplicada;
---   - Fase 5C aplicada;
---   - Fase 5D aplicada.
+-- Princípio deste teste:
+--   - não hardcodar tenant/empresa/usuário;
+--   - não usar datas mágicas de calendário para a massa financeira;
+--   - derivar datas de teste a partir de current_date e da própria parcela criada;
+--   - respeitar as regras soberanas das RPCs 4B/5B/5C;
+--   - encerrar tudo com ROLLBACK.
 --
--- Objetivo:
---   Validar, com fixture transacional controlada, que a RPC:
---     public.mesa_cliente_listar_operacoes_financeiras_admin(uuid, uuid, jsonb)
---   aplica corretamente:
---     - filtro por agenda_id;
---     - filtro por status_operacao;
---     - filtro por tipo_operacao;
---     - filtro por visivel_cliente;
---     - filtro por data_de/data_ate;
---     - paginação limit/offset;
---     - order_by allowlist;
---     - order_dir allowlist;
---     - retorno canônico de filtros_aplicados/limit/offset/order_by/order_dir.
---
--- Correção assertiva 13E:
---   A postergação não usa data_destino fixa. A data_destino é calculada a partir da
---   data_atual real da parcela selecionada: parcela_3.data_atual + 60 dias.
---   Isso respeita a regra soberana da Fase 5B:
---     p_data_destino > mesa_cliente_fluxo_parcelas.data_atual.
---
--- Segurança:
---   - cria fixture transacional;
---   - usa 4B/5B/5C apenas para preparar massa;
---   - executa 5D apenas como leitura;
---   - encerra com ROLLBACK.
+-- O que este teste valida na RPC 5D:
+--   - filtro por agenda_id;
+--   - filtro por status_operacao;
+--   - filtro por tipo_operacao;
+--   - filtro por visivel_cliente;
+--   - filtro por data_de/data_ate;
+--   - paginação limit/offset;
+--   - order_by allowlist;
+--   - order_dir allowlist;
+--   - retorno canônico dos metadados da listagem.
 
 begin;
 
@@ -61,6 +47,17 @@ select set_config('app.mc13e.payload_5b_op4', 'null', true);
 select set_config('app.mc13e.payload_5c_confirmar_op1', 'null', true);
 select set_config('app.mc13e.payload_5c_cancelar_op2', 'null', true);
 select set_config('request.jwt.claim.sub', '', true);
+
+-- Datas dinâmicas da fixture. Nada de ano fixo/mágico.
+select set_config('app.mc13e.data_referencia', current_date::text, true);
+select set_config('app.mc13e.data_ato', (current_date + interval '730 days')::date::text, true);
+select set_config('app.mc13e.mes_mensais', to_char((current_date + interval '760 days')::date, 'MM/YYYY'), true);
+select set_config('app.mc13e.mes_intermediarias', to_char((current_date + interval '820 days')::date, 'MM/YYYY'), true);
+select set_config('app.mc13e.politica_mes_referencia', date_trunc('month', current_date + interval '20 years')::date::text, true);
+select set_config('app.mc13e.politica_vigencia_inicio', (current_date - interval '1 year')::date::text, true);
+select set_config('app.mc13e.politica_vigencia_fim', (current_date + interval '20 years')::date::text, true);
+select set_config('app.mc13e.data_sem_resultado_de', (current_date + interval '1 day')::date::text, true);
+select set_config('app.mc13e.data_sem_resultado_ate', (current_date + interval '2 days')::date::text, true);
 
 create or replace function pg_temp.mc13e_add_result(
   p_bloco text,
@@ -124,8 +121,8 @@ returns text[]
 language sql
 stable
 as $$
-  select coalesce(array_agg(item->>'status_operacao'), array[]::text[])
-  from jsonb_array_elements(coalesce(p_payload->'operacoes', '[]'::jsonb)) as t(item);
+  select coalesce(array_agg(item->>'status_operacao' order by ord), array[]::text[])
+  from jsonb_array_elements(coalesce(p_payload->'operacoes', '[]'::jsonb)) with ordinality as t(item, ord);
 $$;
 
 create or replace function pg_temp.mc13e_list_tipos(p_payload jsonb)
@@ -133,8 +130,8 @@ returns text[]
 language sql
 stable
 as $$
-  select coalesce(array_agg(item->>'tipo_operacao'), array[]::text[])
-  from jsonb_array_elements(coalesce(p_payload->'operacoes', '[]'::jsonb)) as t(item);
+  select coalesce(array_agg(item->>'tipo_operacao' order by ord), array[]::text[])
+  from jsonb_array_elements(coalesce(p_payload->'operacoes', '[]'::jsonb)) with ordinality as t(item, ord);
 $$;
 
 create or replace function pg_temp.mc13e_list_ids(p_payload jsonb)
@@ -142,8 +139,8 @@ returns uuid[]
 language sql
 stable
 as $$
-  select coalesce(array_agg((item->>'id')::uuid), array[]::uuid[])
-  from jsonb_array_elements(coalesce(p_payload->'operacoes', '[]'::jsonb)) as t(item);
+  select coalesce(array_agg((item->>'id')::uuid order by ord), array[]::uuid[])
+  from jsonb_array_elements(coalesce(p_payload->'operacoes', '[]'::jsonb)) with ordinality as t(item, ord);
 $$;
 
 with candidato as materialized (
@@ -196,7 +193,7 @@ simulacao as materialized (
     18000.00,
     0,
     78000.00,
-    jsonb_build_object('origem', 'teste_13e_5d_rollback', 'fixture_transacional', true),
+    jsonb_build_object('origem_teste', '13e_5d_rollback', 'fixture_transacional', true),
     'Fixture transacional 13E. Deve sumir no ROLLBACK.'
   from candidato
   returning id, empresa_id, corretor_id, empreendimento_id
@@ -231,9 +228,9 @@ politica as materialized (
   select
     empresa_id,
     empreendimento_id,
-    date '2099-10-01',
-    date '2099-01-01',
-    date '2101-12-31',
+    current_setting('app.mc13e.politica_mes_referencia', true)::date,
+    current_setting('app.mc13e.politica_vigencia_inicio', true)::date,
+    current_setting('app.mc13e.politica_vigencia_fim', true)::date,
     6.00,
     12.00,
     12.00,
@@ -241,7 +238,7 @@ politica as materialized (
     'dias_365'::public.mesa_financeira_base_tempo,
     true,true,true,true,true,true,true,true,true,true,true,true,
     true,
-    'Fixture 13E para filtros, paginação e ordenação 5D.'
+    'Fixture transacional 13E para filtros, paginação e ordenação 5D.'
   from simulacao
   on conflict (empresa_id, empreendimento_id, mes_referencia)
   do update set
@@ -309,6 +306,8 @@ select pg_temp.mc13e_add_result(
   jsonb_build_object(
     'simulacao_id', current_setting('app.mc13e.simulacao_id', true),
     'politica_id', current_setting('app.mc13e.politica_id', true),
+    'data_referencia', current_setting('app.mc13e.data_referencia', true),
+    'data_ato', current_setting('app.mc13e.data_ato', true),
     'qtd_faixas', (select count(*) from faixas)
   )
 )
@@ -318,21 +317,41 @@ set local role authenticated;
 
 with ctx as (
   select
-    current_setting('app.mc13e.simulacao_id', true)::uuid as simulacao_id,
-    current_setting('app.mc13e.empresa_id', true)::uuid as empresa_id,
-    current_setting('app.mc13e.empreendimento_id', true)::uuid as empreendimento_id
+    current_setting('app.mc13e.simulacao_id', true)::uuid as simulacao_id
 ),
 chamada_4b as materialized (
   select public.mesa_cliente_persistir_agenda_financeira_admin(
     ctx.simulacao_id,
-    date '2099-10-31',
+    current_setting('app.mc13e.data_ato', true)::date,
     jsonb_build_array(
-      jsonb_build_object('grupo','entrada','descricao','Sinal ato 13E','valor','18000.00','data','2099-10-31'),
-      jsonb_build_object('grupo','mensais','descricao','Mensais 13E','valor','3000.00','quantidade',6,'mes_ano','11/2099'),
-      jsonb_build_object('grupo','intermediarias','descricao','Intermediária 13E','valor','10000.00','quantidade',2,'mes_ano','12/2099'),
-      jsonb_build_object('grupo','periodicidade','descricao','Periodicidade simbólica 13E','valor',0,'mes_ano','11/2099')
+      jsonb_build_object(
+        'grupo','entrada',
+        'descricao','Sinal ato 13E',
+        'valor','18000.00',
+        'data', current_setting('app.mc13e.data_ato', true)
+      ),
+      jsonb_build_object(
+        'grupo','mensais',
+        'descricao','Mensais 13E',
+        'valor','3000.00',
+        'quantidade',6,
+        'mes_ano', current_setting('app.mc13e.mes_mensais', true)
+      ),
+      jsonb_build_object(
+        'grupo','intermediarias',
+        'descricao','Intermediária 13E',
+        'valor','10000.00',
+        'quantidade',2,
+        'mes_ano', current_setting('app.mc13e.mes_intermediarias', true)
+      ),
+      jsonb_build_object(
+        'grupo','periodicidade',
+        'descricao','Periodicidade simbólica 13E',
+        'valor',0,
+        'mes_ano', current_setting('app.mc13e.mes_mensais', true)
+      )
     ),
-    jsonb_build_object('empresa_id', ctx.empresa_id, 'empreendimento_id', ctx.empreendimento_id, 'origem', 'teste_13e')
+    jsonb_build_object('origem_teste', '13e')
   ) as payload
   from ctx
 )
@@ -358,8 +377,8 @@ parcelas_ranked as (
     row_number() over (order by fp.data_atual asc, fp.valor_atual desc, fp.id asc) as rn
   from public.mesa_cliente_fluxo_parcelas fp
   join agenda a on a.id = fp.agenda_id
-  where fp.valor_atual >= 1000.00
-    and fp.data_atual > date '2099-10-31'
+  where fp.valor_atual > 0
+    and fp.data_atual > current_setting('app.mc13e.data_referencia', true)::date
     and coalesce(fp.eh_periodicidade_simbolica, false) = false
     and coalesce(fp.pode_receber_antecipacao, false) = true
     and coalesce(fp.pode_receber_postergacao, false) = true
@@ -407,9 +426,9 @@ with chamada_5b_op1 as materialized (
     current_setting('app.mc13e.agenda_id', true)::uuid,
     'antecipacao',
     current_setting('app.mc13e.parcela_1_id', true)::uuid,
-    date '2099-10-31',
+    current_setting('app.mc13e.data_referencia', true)::date,
     null,
-    1000.00,
+    null,
     jsonb_build_object('origem_teste', '13e', 'op', 'op1_antecipacao_confirmada')
   ) as payload
 )
@@ -423,9 +442,9 @@ with chamada_5b_op2 as materialized (
     current_setting('app.mc13e.agenda_id', true)::uuid,
     'antecipacao',
     current_setting('app.mc13e.parcela_2_id', true)::uuid,
-    date '2099-10-31',
+    current_setting('app.mc13e.data_referencia', true)::date,
     null,
-    1100.00,
+    null,
     jsonb_build_object('origem_teste', '13e', 'op', 'op2_antecipacao_cancelada')
   ) as payload
 )
@@ -439,9 +458,9 @@ with chamada_5b_op3 as materialized (
     current_setting('app.mc13e.agenda_id', true)::uuid,
     'postergacao',
     current_setting('app.mc13e.parcela_3_id', true)::uuid,
-    date '2099-10-31',
+    current_setting('app.mc13e.data_referencia', true)::date,
     current_setting('app.mc13e.parcela_3_data_destino', true)::date,
-    1200.00,
+    null,
     jsonb_build_object(
       'origem_teste', '13e',
       'op', 'op3_postergacao_simulada',
@@ -460,9 +479,9 @@ with chamada_5b_op4 as materialized (
     current_setting('app.mc13e.agenda_id', true)::uuid,
     'vpl',
     current_setting('app.mc13e.parcela_4_id', true)::uuid,
-    date '2099-10-31',
+    current_setting('app.mc13e.data_referencia', true)::date,
     null,
-    1300.00,
+    null,
     jsonb_build_object('origem_teste', '13e', 'op', 'op4_vpl_simulada', 'vpl_aplicado_pct', 3.00)
   ) as payload
 )
@@ -521,7 +540,6 @@ select pg_temp.mc13e_add_result(
 
 set local role authenticated;
 
--- Chamadas positivas de filtro/paginação/ordenação.
 select set_config('app.mc13e.list_all', public.mesa_cliente_listar_operacoes_financeiras_admin(
   current_setting('app.mc13e.simulacao_id', true)::uuid,
   null,
@@ -585,7 +603,14 @@ select set_config('app.mc13e.filter_data_hoje', public.mesa_cliente_listar_opera
 select set_config('app.mc13e.filter_data_futura_sem_resultado', public.mesa_cliente_listar_operacoes_financeiras_admin(
   current_setting('app.mc13e.simulacao_id', true)::uuid,
   current_setting('app.mc13e.agenda_id', true)::uuid,
-  jsonb_build_object('data_de', '2101-01-01', 'data_ate', '2101-12-31', 'limit', 50, 'offset', 0, 'order_by', 'created_at', 'order_dir', 'asc')
+  jsonb_build_object(
+    'data_de', current_setting('app.mc13e.data_sem_resultado_de', true),
+    'data_ate', current_setting('app.mc13e.data_sem_resultado_ate', true),
+    'limit', 50,
+    'offset', 0,
+    'order_by', 'created_at',
+    'order_dir', 'asc'
+  )
 )::text, true);
 
 select set_config('app.mc13e.page_1', public.mesa_cliente_listar_operacoes_financeiras_admin(
@@ -699,7 +724,8 @@ select pg_temp.mc13e_add_result(
     'visivel_false_total', current_setting('app.mc13e.filter_visivel_false', true)::jsonb->>'total',
     'data_hoje_total', current_setting('app.mc13e.filter_data_hoje', true)::jsonb->>'total',
     'data_futura_total', current_setting('app.mc13e.filter_data_futura_sem_resultado', true)::jsonb->>'total',
-    'data_hoje_filtros', current_setting('app.mc13e.filter_data_hoje', true)::jsonb->'filtros_aplicados'
+    'data_futura_de', current_setting('app.mc13e.data_sem_resultado_de', true),
+    'data_futura_ate', current_setting('app.mc13e.data_sem_resultado_ate', true)
   )
 );
 
@@ -761,7 +787,6 @@ select pg_temp.mc13e_add_result(
 
 set local role authenticated;
 
--- Negativos específicos de filtros/paginação/ordenação.
 select pg_temp.mc13e_expect_error(
   '09a_order_by_invalido_bloqueado',
   '22023',
@@ -821,9 +846,11 @@ select pg_temp.mc13e_expect_error(
   '09f_data_de_maior_que_data_ate_bloqueada',
   '22023',
   format(
-    $sql$select public.mesa_cliente_listar_operacoes_financeiras_admin(%L::uuid, %L::uuid, jsonb_build_object('data_de', '2101-12-31', 'data_ate', '2101-01-01'))$sql$,
+    $sql$select public.mesa_cliente_listar_operacoes_financeiras_admin(%L::uuid, %L::uuid, jsonb_build_object('data_de', %L, 'data_ate', %L))$sql$,
     current_setting('app.mc13e.simulacao_id', true),
-    current_setting('app.mc13e.agenda_id', true)
+    current_setting('app.mc13e.agenda_id', true),
+    current_setting('app.mc13e.data_sem_resultado_ate', true),
+    current_setting('app.mc13e.data_sem_resultado_de', true)
   ),
   'range de data invertido foi aceito'
 );
