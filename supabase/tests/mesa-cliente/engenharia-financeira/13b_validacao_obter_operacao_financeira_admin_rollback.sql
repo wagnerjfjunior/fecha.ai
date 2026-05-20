@@ -690,9 +690,11 @@ from (
        and nullif(d_confirmada->'operacao'->>'checksum_operacao', '') is not null
        and nullif(d_cancelada->'operacao'->>'checksum_operacao', '') is not null
        and nullif(d_simulada->'operacao'->>'checksum_operacao', '') is not null
-       and d_confirmada->'operacao'->'metadata'->>'origem_teste' = '13b'
-       and d_cancelada->'operacao'->'metadata'->>'origem_teste' = '13b'
-       and d_simulada->'operacao'->'metadata'->>'origem_teste' = '13b'
+       and d_confirmada->'operacao'->'metadata'->'parametros_nao_soberanos'->>'origem_teste' = '13b'
+       and d_cancelada->'operacao'->'metadata'->'parametros_nao_soberanos'->>'origem_teste' = '13b'
+       and d_simulada->'operacao'->'metadata'->'parametros_nao_soberanos'->>'origem_teste' = '13b'
+       and d_confirmada->'operacao'->'metadata'->'fase_5c'->'parametros_nao_soberanos'->>'origem_teste' = '13b'
+       and d_cancelada->'operacao'->'metadata'->'fase_5c'->'parametros_nao_soberanos'->>'origem_teste' = '13b'
     then 'PASS' else 'FAIL' end,
     jsonb_build_object(
       'confirmada_checksum', d_confirmada->'operacao'->>'checksum_operacao',
