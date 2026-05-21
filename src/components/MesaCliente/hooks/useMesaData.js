@@ -8,6 +8,8 @@ import {
   criarMesaSimulacao,
   aprovarRejeitarMesa,
   importarMesaClienteParserResultado,
+  usuarioPodeImportarMesaJsonAdmin,
+  importarMesaClienteJsonAdmin,
   importarMesaClienteDisponibilidadeOficial,
   salvarMesaClienteEnriquecimento,
 } from '../../../features/mesaCliente/api/mesaClienteApi';
@@ -18,6 +20,7 @@ export const MESA_KEYS = {
   config: (empresaId) => ['mesa', 'config', empresaId],
   historico: (empresaId, filtros = {}) => ['mesa', 'historico', empresaId, filtros],
   unidades: (empreendimentoId) => ['mesa', 'unidades', empreendimentoId],
+  jsonAdminPermission: (empresaId) => ['mesa', 'json-admin-permission', empresaId],
 };
 
 function normalizeError(error) {
@@ -58,6 +61,16 @@ export function useEmpresaMesaConfig({ sb, token, empresaId }) {
     enabled: Boolean(sb && token && empresaId),
     staleTime: 10 * 60 * 1000,
     refetchOnWindowFocus: false,
+  }));
+}
+
+export function useMesaJsonAdminPermission({ sb, token, empresaId }) {
+  return withCompat(useQuery({
+    queryKey: MESA_KEYS.jsonAdminPermission(empresaId),
+    queryFn: () => usuarioPodeImportarMesaJsonAdmin({ sb, token, empresaId }),
+    enabled: Boolean(sb && token && empresaId),
+    staleTime: 5 * 60 * 1000,
+    refetchOnWindowFocus: true,
   }));
 }
 
@@ -118,6 +131,17 @@ export function useImportarMesaClienteParserResultado({ sb, token }) {
   const queryClient = useQueryClient();
   return withMutationCompat(useMutation({
     mutationFn: (variables) => importarMesaClienteParserResultado({ sb, token, ...variables }),
+    onSuccess: (_data, variables) => {
+      queryClient.invalidateQueries({ queryKey: MESA_KEYS.empreendimentos(variables.empresaId) });
+      queryClient.invalidateQueries({ queryKey: MESA_KEYS.root });
+    },
+  }));
+}
+
+export function useImportarMesaClienteJsonAdmin({ sb, token }) {
+  const queryClient = useQueryClient();
+  return withMutationCompat(useMutation({
+    mutationFn: (variables) => importarMesaClienteJsonAdmin({ sb, token, ...variables }),
     onSuccess: (_data, variables) => {
       queryClient.invalidateQueries({ queryKey: MESA_KEYS.empreendimentos(variables.empresaId) });
       queryClient.invalidateQueries({ queryKey: MESA_KEYS.root });

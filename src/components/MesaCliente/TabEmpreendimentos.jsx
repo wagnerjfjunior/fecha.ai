@@ -1,11 +1,14 @@
 import { useMemo, useState } from 'react';
 import {
   useEmpreendimentosMesa,
+  useMesaJsonAdminPermission,
   useImportarMesaClienteParserResultado,
+  useImportarMesaClienteJsonAdmin,
   useImportarMesaClienteDisponibilidadeOficial,
 } from './hooks/useMesaData';
 import { processMesaClienteFile } from '../../features/mesaCliente/parser/nativeFirstParser';
-import { nativeRowsToParserPayload, validateParserPayloadForImport } from '../../features/mesaCliente/parser/parserPayloadAdapter';
+import { nativeRowsToParserPayload, normalizeParserPayload, validateParserPayloadForImport } from '../../features/mesaCliente/parser/parserPayloadAdapter';
+import { assertCanReadJsonAdminFile, isJsonAdminFile, validateJsonAdminPayloadShape } from '../../features/mesaCliente/security/jsonAdminImport';
 import DisponibilidadeUploadPreview from './disponibilidade/DisponibilidadeUploadPreview';
 
 const DOT_COLOR = { ok: 'bg-[#1D9E75]', yellow: 'bg-[#EF9F27]', red: 'bg-[#E24B4A]' };
@@ -55,21 +58,61 @@ function StatusPill({ status = 'red', title, sub, who, obs }) {
   );
 }
 
-function UploadModal({ empreendimento, tipoInicial, onClose, onSuccess, empresaId, sb, token }) {
+function UploadModal({ empreendimento, tipoInicial, onClose, onSuccess, empresaId, sb, token, canImportJsonAdmin = false }) {
   const [tipo, setTipo] = useState(tipoInicial || 'tabela');
   const [subTipo, setSubTipo] = useState(tipoInicial === 'tabela' ? 'trabalho' : null);
   const [arquivo, setArquivo] = useState(null);
   const [empreendimentoNome, setEmpreendimentoNome] = useState(empreendimento?.nome || '');
   const [feedback, setFeedback] = useState(null);
-  const { mutateAsync: importarParser, isLoading: importing, error: importError } = useImportarMesaClienteParserResultado({ sb, token });
+  const { mutateAsync: importarParser, isLoading: importingParser, error: importError } = useImportarMesaClienteParserResultado({ sb, token });
+  const { mutateAsync: importarJsonAdmin, isLoading: importingJsonAdmin, error: importJsonError } = useImportarMesaClienteJsonAdmin({ sb, token });
 
   const isTabela = tipo === 'tabela';
-  const canImport = Boolean(isTabela && arquivo && empreendimentoNome.trim() && empresaId);
+  const isJsonFile = arquivo ? isJsonAdminFile(arquivo) : false;
+  const importing = importingParser || importingJsonAdmin;
+  const canImport = Boolean(isTabela && arquivo && empreendimentoNome.trim() && empresaId && (!isJsonFile || canImportJsonAdmin));
 
   const handleEnviar = async () => {
     if (!canImport || importing) return;
 
     try {
+      if (isJsonFile) {
+        if (!canImportJsonAdmin) {
+          throw new Error('Importação JSON é restrita a administrador/root.');
+        }
+
+        assertCanReadJsonAdminFile(arquivo);
+        setFeedback({ type: 'info', text: 'Validando JSON administrativo…' });
+
+        const text = await arquivo.text();
+        const jsonShape = validateJsonAdminPayloadShape(text);
+        const payload = normalizeParserPayload(jsonShape.root);
+        const validation = validateParserPayloadForImport(payload);
+        if (!validation.ok) throw new Error(validation.errors.join(' | '));
+
+        const warningsText = [...(jsonShape.warnings || []), ...(validation.warnings || [])].slice(0, 4).join(' | ');
+        setFeedback({
+          type: 'info',
+          text: `JSON validado com ${validation.validUnits.length} unidade(s). Gravando via RPC admin segura…${warningsText ? ` Avisos: ${warningsText}` : ''}`,
+        });
+
+        await importarJsonAdmin({
+          empresaId,
+          empreendimentoNome: payload.empreendimentoNome || empreendimentoNome.trim(),
+          incorporadora: payload.incorporadora || null,
+          bairro: payload.bairro || null,
+          cidade: payload.cidade || null,
+          nomeArquivo: payload.nomeArquivo || arquivo.name,
+          parserNome: payload.parserNome || 'manual_json_admin_import',
+          unidades: validation.validUnits,
+        });
+
+        setFeedback({ type: 'success', text: `JSON administrativo importado com ${validation.validUnits.length} unidade(s).` });
+        onSuccess?.();
+        onClose();
+        return;
+      }
+
       setFeedback({ type: 'info', text: 'Lendo PDF e executando leitura da tabela…' });
 
       const parserResult = await processMesaClienteFile({
@@ -112,7 +155,9 @@ function UploadModal({ empreendimento, tipoInicial, onClose, onSuccess, empresaI
     }
   };
 
-  const resolvedError = importError || (feedback?.type === 'error' ? feedback.text : null);
+  const resolvedError = importError || importJsonError || (feedback?.type === 'error' ? feedback.text : null);
+  const acceptTypes = canImportJsonAdmin ? '.pdf,.txt,.csv,.json,application/json' : '.pdf,.txt,.csv';
+  const helperText = canImportJsonAdmin ? 'PDF/TXT/CSV · JSON admin validado · máx. 20MB' : 'PDF/TXT/CSV com texto selecionável · máx. 20MB';
 
   return (
     <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-[9999] p-4" onClick={onClose}>
@@ -121,7 +166,7 @@ function UploadModal({ empreendimento, tipoInicial, onClose, onSuccess, empresaI
 
         <p className="text-[15px] font-semibold mb-1 text-slate-900">Importar tabela comercial</p>
         <p className="text-[12px] text-slate-600 mb-4">
-          {empreendimento ? empreendimento.nome : 'Envie a tabela comercial em PDF para criar/atualizar empreendimento e unidades.'}
+          {empreendimento ? empreendimento.nome : 'Envie a tabela comercial para criar/atualizar empreendimento e unidades.'}
         </p>
 
         <div className="grid grid-cols-1 gap-2 mb-4">
@@ -135,7 +180,7 @@ function UploadModal({ empreendimento, tipoInicial, onClose, onSuccess, empresaI
           >
             <div className="text-xl mb-1">📊</div>
             <div className="text-[12px] font-semibold">Tabela comercial</div>
-            <div className="text-[10px] text-slate-500 mt-0.5">PDF com valores, parcelas e fluxo</div>
+            <div className="text-[10px] text-slate-500 mt-0.5">PDF/CSV normal · JSON somente admin</div>
           </button>
         </div>
 
@@ -167,12 +212,18 @@ function UploadModal({ empreendimento, tipoInicial, onClose, onSuccess, empresaI
         <label className="block border border-dashed border-slate-300 rounded-xl p-5 text-center cursor-pointer transition-colors mb-4 bg-slate-50">
           <div className="text-2xl mb-1">{arquivo ? '✅' : '📄'}</div>
           <div className="text-[13px] font-medium text-slate-900">{arquivo ? arquivo.name : 'Toque para escolher o arquivo'}</div>
-          <div className="text-[11px] text-slate-500 mt-1">PDF com texto selecionável · máx. 20MB</div>
-          <input type="file" accept=".pdf,.txt,.csv" className="hidden" onChange={e => setArquivo(e.target.files?.[0] ?? null)} />
+          <div className="text-[11px] text-slate-500 mt-1">{helperText}</div>
+          <input type="file" accept={acceptTypes} className="hidden" onChange={e => setArquivo(e.target.files?.[0] ?? null)} />
         </label>
 
+        {isJsonFile && !canImportJsonAdmin && (
+          <div className="bg-[#FDEAEA] text-[#4B1528] rounded-xl px-3 py-2 text-[11px] mb-3">
+            🔒 JSON administrativo bloqueado: entre com usuário admin/root para importar payload canônico.
+          </div>
+        )}
+
         <div className="bg-slate-50 rounded-xl px-3 py-2 text-[11px] text-slate-600 mb-4 leading-relaxed">
-          🔒 O arquivo é processado no navegador. A gravação no banco acontece somente via RPC com sessão autenticada e isolamento por empresa.
+          🔒 A gravação no banco acontece somente via RPC com sessão autenticada e isolamento por empresa. JSON passa por validação admin antes da importação.
         </div>
 
         {feedback && feedback.type !== 'error' && (
@@ -191,7 +242,7 @@ function UploadModal({ empreendimento, tipoInicial, onClose, onSuccess, empresaI
             className="flex-1 py-2 rounded-xl text-[12px] font-medium transition-opacity"
             style={!canImport || importing || !isTabela ? DISABLED_BUTTON_STYLE : PRIMARY_BUTTON_STYLE}
           >
-            {importing ? 'Importando…' : 'Processar tabela'}
+            {importing ? 'Importando…' : isJsonFile ? 'Importar JSON admin' : 'Processar tabela'}
           </button>
         </div>
       </div>
@@ -252,6 +303,7 @@ function EmpCard({ emp, onAbrirFluxo, onUpload }) {
 
 export default function TabEmpreendimentos({ sb, token, empresaId, onAbrirFluxo }) {
   const { data: empreendimentos = [], isLoading, error, reload } = useEmpreendimentosMesa({ sb, token, empresaId });
+  const { data: canImportJsonAdmin = false } = useMesaJsonAdminPermission({ sb, token, empresaId });
   const { mutateAsync: importarDisponibilidade } = useImportarMesaClienteDisponibilidadeOficial({ sb, token });
   const [uploadTarget, setUploadTarget] = useState(null);
 
@@ -324,6 +376,7 @@ export default function TabEmpreendimentos({ sb, token, empresaId, onAbrirFluxo 
           empresaId={empresaId}
           empreendimento={uploadTarget.emp}
           tipoInicial={uploadTarget.tipo}
+          canImportJsonAdmin={Boolean(canImportJsonAdmin)}
           onClose={() => setUploadTarget(null)}
           onSuccess={() => { setUploadTarget(null); reload(); }}
         />
