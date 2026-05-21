@@ -15,10 +15,13 @@ export function normalizeParserPayload(rawInput) {
   return {
     schemaVersion: root.schema_version || root.schemaVersion || 'mesa_parser_v1',
     empreendimentoNome:
+      root.empreendimentoNome ||
       root.empreendimento_nome ||
       root.empreendimento ||
       root.nome_empreendimento ||
+      root.metadata?.empreendimentoNome ||
       root.metadata?.empreendimento_nome_detectado ||
+      root.data?.empreendimentoNome ||
       root.data?.empreendimento_nome ||
       '',
     incorporadora:
@@ -29,18 +32,20 @@ export function normalizeParserPayload(rawInput) {
     bairro: root.bairro || root.metadata?.bairro || root.data?.bairro || '',
     cidade: root.cidade || root.metadata?.cidade || root.data?.cidade || '',
     nomeArquivo:
+      root.nomeArquivo ||
       root.nome_arquivo ||
       root.fileName ||
       root.filename ||
       root.source?.filename ||
       'parser-json-manual.json',
     parserNome:
+      root.parserNome ||
       root.parser_nome ||
       root.parser ||
       root.source?.parser ||
       'manual_json_preview',
     layout: root.layout || root.source?.layout || null,
-    confidence: root.quality?.confidence || root.confianca || null,
+    confidence: root.quality?.confidence || root.confianca || root.confidence || null,
     unidades: unidades.map(normalizeUnit),
     raw: root,
   };
