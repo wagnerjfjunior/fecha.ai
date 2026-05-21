@@ -144,6 +144,33 @@ export function importarMesaClienteParserResultado({ sb, token, empresaId, empre
   });
 }
 
+export function usuarioPodeImportarMesaJsonAdmin({ sb, token, empresaId }) {
+  return callMesaRpc({
+    sb,
+    token,
+    fn: 'usuario_pode_importar_mesa_json_admin',
+    args: { p_empresa_id: empresaId },
+  });
+}
+
+export function importarMesaClienteJsonAdmin({ sb, token, empresaId, empreendimentoNome, incorporadora = null, bairro = null, cidade = null, nomeArquivo = 'payload-json-admin.json', parserNome = 'manual_json_admin_import', unidades }) {
+  return callMesaRpc({
+    sb,
+    token,
+    fn: 'importar_mesa_cliente_json_admin',
+    args: {
+      p_empresa_id: empresaId,
+      p_empreendimento_nome: empreendimentoNome,
+      p_incorporadora: incorporadora,
+      p_bairro: bairro,
+      p_cidade: cidade,
+      p_nome_arquivo: nomeArquivo,
+      p_parser_nome: parserNome,
+      p_unidades: unidades,
+    },
+  });
+}
+
 export function importarMesaClienteDisponibilidadeOficial({ sb, token, empreendimentoId, nomeArquivo = 'disponibilidade.pdf', parserNome = 'native_first', unidades }) {
   return callMesaRpc({
     sb,
