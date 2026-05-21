@@ -11,6 +11,7 @@ Preflight read-only antes de migration.
 Teste com BEGIN + ROLLBACK antes de considerar fase aprovada.
 Nenhum frontend antes de RPC e segurança validadas.
 Nenhuma premissa de schema sem consulta ao banco real.
+Smoke pós-produção não cria fixture, não cria função temporária e não executa DDL/DML.
 ```
 
 Produção não é laboratório. Teste que grava sem rollback é quase churrasco dentro do datacenter: até pode esquentar, mas ninguém vai aplaudir.
@@ -26,15 +27,14 @@ Ordem de referência:
 3. `docs/mesa-cliente/fase-4a-validacao-final-json-first.md`
 4. `docs/mesa-cliente/fase-4b-validacao-final-evidencias.md`
 5. `docs/mesa-cliente/fase-4c-cliente-safe-fechamento.md`
-6. `docs/mesa-cliente/fase-5a-contrato-simulacao-impacto-agenda-persistida.md`
-7. `docs/mesa-cliente/fase-5a-preflight-10-resultado-readonly.md`
-8. `docs/mesa-cliente/fase-5a-validacao-final-simulacao-impacto-agenda-persistida.md`
-9. `docs/mesa-cliente/fase-5b-contrato-registro-operacao-financeira.md`
-10. `docs/mesa-cliente/fase-5b-validacao-preflight-11.md`
-11. `docs/mesa-cliente/fase-5b-validacao-11a-registro-operacao-financeira.md`
-12. `docs/mesa-cliente/fase-5b-validacao-11b-negativos-registro-operacao-financeira.md`
-13. `docs/mesa-cliente/fase-5b-validacao-11c-idempotencia-registro-operacao-financeira.md`
-14. Este README como índice operacional da pasta de testes.
+6. `docs/mesa-cliente/fase-5a-validacao-final-simulacao-impacto-agenda-persistida.md`
+7. `docs/mesa-cliente/fase-5b-fechamento-registro-operacao-financeira.md`
+8. `docs/mesa-cliente/fase-5c-fechamento-tecnico.md`
+9. `docs/mesa-cliente/fase-5d-fechamento-tecnico.md`
+10. `docs/mesa-cliente/fase-5d-smoke-pos-producao.md`
+11. `docs/mesa-cliente/fase-5d-smoke-pos-producao-execucao.md`
+12. `docs/mesa-cliente/engenharia-financeira-roadmap-execucao-ate-mesa-cliente.md`
+13. Este README como índice operacional da pasta de testes.
 
 ---
 
@@ -43,6 +43,8 @@ Ordem de referência:
 ### Etapa 00/01 — Hardening inicial de produção única
 
 #### `00_preflight_producao_readonly.sql`
+
+Status: executado na trilha inicial.
 
 Uso: antes da migration de hardening.
 
@@ -56,6 +58,8 @@ Características:
 Valida tabelas obrigatórias, funções obrigatórias, RLS, policies, grants, duplicidade de policies/índices e triggers/funções de integridade.
 
 #### `01_postcheck_producao_readonly.sql`
+
+Status: executado na trilha inicial.
 
 Uso: depois da migration de hardening.
 
@@ -77,6 +81,8 @@ Resultado esperado: blocos críticos em `PASS`.
 ### Preflight legado/transição
 
 #### `07_preflight_agenda_legada_readonly.sql`
+
+Status: concluído.
 
 Objetivo:
 
@@ -111,7 +117,7 @@ Valida bloqueios de `anon`, simulação inexistente, `empresa_id` fake no payloa
 
 ## Fase 4B — Persistência segura da agenda financeira
 
-**Status:** aprovada em rollback transacional.
+**Status:** aprovada.
 
 ### Preflight 4B
 
@@ -152,14 +158,6 @@ Valida grants da RPC, simulação inexistente, `empresa_id` fake no payload, ite
 Status: aprovado.
 
 Valida agenda transacional, operação confirmada fixture, bloqueio de substituição de agenda com `SQLSTATE 55000`, preservação da agenda original, parcelas originais não recriadas indevidamente, zero operação extra e rollback.
-
-Erros corrigidos durante o 08D:
-
-- uso de colunas inexistentes como `cliente_email`;
-- uso de coluna inexistente `inserted_at`;
-- suposição de `a.ativa`;
-- tabela temporária inacessível sob troca de role;
-- constraint real aceitava `mensal`, não `mensais`.
 
 ---
 
@@ -238,17 +236,9 @@ sem alterar agenda, parcelas ou operações
 
 #### `10_preflight_simulacao_impacto_agenda_persistida_readonly.sql`
 
-Resultado original:
+Status: aprovado após preparação transacional.
 
-```text
-13_operational_interpretation = FAIL
-```
-
-Motivo:
-
-```text
-Ausência de base mínima operacional permanente.
-```
+Resultado original teve `13_operational_interpretation = FAIL` por ausência de base mínima operacional permanente.
 
 Resolução:
 
@@ -293,12 +283,6 @@ valor_total = 29500.5
 qtd_parcelas = 6
 ```
 
-### Correções registradas na validação 5A.1
-
-- 10A: correção de escopo CTE;
-- RPC 5A.1: removida dependência indevida de `o.agenda_id`;
-- 10B: removida temp table por fragilidade com `SET LOCAL ROLE authenticated`.
-
 ### Preflight exploratório arquivado
 
 O arquivo abaixo não é oficial nesta pasta:
@@ -317,7 +301,7 @@ docs/mesa-cliente/rascunhos-sql/preflights-exploratorios/10_preflight_impacto_fi
 
 ## Fase 5B — Registrar operação financeira administrativa
 
-**Status:** em validação transacional. 11A, 11B e 11C aprovados; 11D/11E pendentes.
+**Status:** aprovada em validação transacional.
 
 Documento canônico:
 
@@ -325,28 +309,10 @@ Documento canônico:
 docs/mesa-cliente/fase-5b-contrato-registro-operacao-financeira.md
 ```
 
-Validação do preflight:
+Fechamento técnico:
 
 ```text
-docs/mesa-cliente/fase-5b-validacao-preflight-11.md
-```
-
-Validação 11A:
-
-```text
-docs/mesa-cliente/fase-5b-validacao-11a-registro-operacao-financeira.md
-```
-
-Validação 11B:
-
-```text
-docs/mesa-cliente/fase-5b-validacao-11b-negativos-registro-operacao-financeira.md
-```
-
-Validação 11C:
-
-```text
-docs/mesa-cliente/fase-5b-validacao-11c-idempotencia-registro-operacao-financeira.md
+docs/mesa-cliente/fase-5b-fechamento-registro-operacao-financeira.md
 ```
 
 ### Preflight oficial 5B
@@ -357,18 +323,6 @@ Status: aprovado com WARN estrutural esperado.
 
 Valida tabelas obrigatórias, schema real de `mesa_cliente_fluxo_operacoes`, colunas, constraints, índices, RLS, policies, grants, enums financeiros, dependências 4B/5A e ausência esperada da RPC 5B antes da migration.
 
-Resultado consolidado:
-
-```text
-Tabela base aprovada: public.mesa_cliente_fluxo_operacoes
-Core estrutural: PASS
-RLS/policies/grants: PASS
-Enums financeiros: PASS
-Índices/idempotência: WARN esperado
-Colunas recomendadas 5B: WARN esperado
-Readiness 5B: WARN que define migration, não bloqueio
-```
-
 Decisões fechadas após o preflight:
 
 ```text
@@ -378,21 +332,6 @@ Não adicionar created_by; usar criado_por existente.
 Não adicionar idempotency_key; usar checksum_operacao calculado no banco.
 Não adicionar parcela_id; usar parcela_origem_id/parcela_destino_id existentes.
 Status inicial oficial: status_operacao='simulada', confirmado=false, visivel_cliente=false.
-```
-
-Assinatura oficial da RPC 5B:
-
-```text
-public.mesa_cliente_registrar_operacao_financeira_admin(
-  p_simulacao_id uuid,
-  p_agenda_id uuid,
-  p_tipo_operacao text,
-  p_parcela_id uuid,
-  p_data_referencia date default current_date,
-  p_data_destino date default null,
-  p_valor_operacao numeric default null,
-  p_parametros jsonb default '{}'::jsonb
-)
 ```
 
 ### Migration 5B
@@ -409,67 +348,215 @@ Status: executada com sucesso no Supabase.
 
 Status: aprovado.
 
-Valida fixture transacional, persistência de agenda via 4B, registro positivo via RPC 5B, `fase=5B_REGISTRO_OPERACAO_FINANCEIRA`, `cliente_safe=false`, `persistencia=true`, `dml_financeiro=true`, `escopo_dml=operacao_financeira`, operação `simulada`, `confirmado=false`, `visivel_cliente=false`, `agenda_id`, `parcela_origem_id`, `checksum_operacao`, cálculo composto/dias_365, agenda não mutada, parcelas não mutadas e rollback.
-
-Correção aplicada antes da aprovação:
-
-```text
-Removida a faixa fixture 6.01 até 999 porque a constraint real mesa_premio_faixas_intervalo_check não aceita faixa acima do vpl_max_pct=6.
-```
+Valida registro positivo de operação financeira simulada, `cliente_safe=false`, `persistencia=true`, `dml_financeiro=true`, operação `simulada`, `confirmado=false`, `visivel_cliente=false`, `agenda_id`, `parcela_origem_id`, `checksum_operacao`, cálculo composto/dias_365, agenda não mutada, parcelas não mutadas e rollback.
 
 #### `11b_validacao_registro_operacao_financeira_negativos_rollback.sql`
 
 Status: aprovado.
 
-Valida `anon` sem execute, sem auth bloqueado, simulação inexistente, agenda inexistente, parcela inexistente, `empresa_id` no payload bloqueado, `taxa_ano_pct` bloqueada, `status_operacao` bloqueado, `checksum_operacao`/`idempotency_key` bloqueados, valor negativo, tipo inválido, `p_parametros` não objeto, postergação sem `data_destino`, parcela simbólica, zero operações criadas pelos negativos e rollback.
+Valida `anon` sem execute, sem auth bloqueado, simulação inexistente, agenda inexistente, parcela inexistente, payload autoritativo bloqueado, valor negativo, tipo inválido, `p_parametros` não objeto, postergação sem `data_destino`, parcela simbólica, zero operações criadas pelos negativos e rollback.
 
 #### `11c_validacao_registro_operacao_financeira_idempotencia_rollback.sql`
 
 Status: aprovado.
 
-Valida primeira chamada criando operação, segunda chamada reutilizando a mesma operação, idempotência por `checksum_operacao` calculado no banco, ausência de duplicidade em `mesa_cliente_fluxo_operacoes`, agenda não mutada, parcelas não mutadas, flags do contrato 5B preservadas e rollback.
-
-Resultado crítico do 11C:
-
-```text
-primeira chamada: idempotente=false
-segunda chamada: idempotente=true
-operacao_id_primeira = operacao_id_segunda
-checksum_primeira = checksum_segunda
-before.operacoes = 0
-mid_apos_primeira.operacoes = 1
-after_apos_segunda.operacoes = 1
-agenda_checksum_before = agenda_checksum_after
-parcelas_before = parcelas_after = 6
-valor_total_parcelas_before = valor_total_parcelas_after = 29500.50
-```
+Valida primeira chamada criando operação, segunda chamada reutilizando a mesma operação, idempotência por `checksum_operacao` calculado no banco, ausência de duplicidade, agenda não mutada, parcelas não mutadas e rollback.
 
 #### `11d_validacao_registro_operacao_financeira_confirmada_rollback.sql`
 
-Status: pendente.
+Status: aprovado.
+
+Valida operação confirmada fixture, mesmo checksum reaproveita operação confirmada, operação conflitante bloqueia com `SQLSTATE 55000`, operação confirmada preservada, sem duplicidade, agenda não mutada, parcelas não mutadas e rollback.
 
 #### `11e_validacao_registro_operacao_financeira_zero_mutacao_agenda_parcelas_rollback.sql`
 
-Status: pendente.
+Status: aprovado.
+
+Valida que a RPC altera somente `mesa_cliente_fluxo_operacoes`, agenda e parcelas preservadas por hash completo, somente operações incrementa uma linha, operação nasce simulada, não confirmada e não cliente-safe, rollback.
 
 ---
 
-## Fases futuras
+## Fase 5C — Confirmar/cancelar operação financeira
 
-### Fase 5C — Confirmar/cancelar operação financeira
+**Status:** fechada tecnicamente.
 
-Pendente.
+Fechamento técnico:
 
-Escopo provável:
+```text
+docs/mesa-cliente/fase-5c-fechamento-tecnico.md
+```
 
-- confirmar operação;
-- cancelar operação;
-- histórico/auditoria;
-- bloqueio de alteração indevida em agenda já confirmada.
+Migration:
 
-### Integração Front/BFF
+```text
+supabase/migrations/20260519182000_mesa_cliente_fase_5c_confirmacao_cancelamento_operacao_financeira.sql
+```
 
-Pendente. Ainda proibida antes do contrato da escrita financeira estar fechado e validado por testes.
+RPC validada:
+
+```text
+public.mesa_cliente_atualizar_status_operacao_financeira_admin(uuid,text,text,jsonb)
+```
+
+### Testes oficiais 5C
+
+#### `12_preflight_confirmacao_cancelamento_operacao_financeira_readonly.sql`
+
+Status: aprovado.
+
+#### `12a_validacao_confirmar_operacao_financeira_rollback.sql`
+
+Status: aprovado.
+
+Valida confirmação positiva de operação financeira simulada.
+
+#### `12b_validacao_cancelar_operacao_financeira_simulada_rollback.sql`
+
+Status: aprovado.
+
+Valida cancelamento positivo de operação financeira simulada.
+
+#### `12c_validacao_negativos_seguranca_confirmacao_cancelamento_rollback.sql`
+
+Status: aprovado.
+
+Valida negativos, segurança, grants, payload autoritativo e transições bloqueadas.
+
+#### `12d_validacao_idempotencia_confirmacao_cancelamento_rollback.sql`
+
+Status: aprovado.
+
+Valida idempotência da confirmação e do cancelamento.
+
+#### `12e_validacao_zero_mutacao_rigido_confirmacao_cancelamento_rollback.sql`
+
+Status: aprovado.
+
+Valida zero mutação rígido de operação, agenda e parcelas fora do escopo permitido.
+
+---
+
+## Fase 5D — Leitura administrativa de operações financeiras
+
+**Status:** fechada tecnicamente, mergeada na `main` e com smoke estrutural pós-produção aprovado com `SKIP_DATA`.
+
+Fechamento técnico:
+
+```text
+docs/mesa-cliente/fase-5d-fechamento-tecnico.md
+```
+
+Smoke pós-produção:
+
+```text
+docs/mesa-cliente/fase-5d-smoke-pos-producao.md
+docs/mesa-cliente/fase-5d-smoke-pos-producao-execucao.md
+```
+
+Migration:
+
+```text
+supabase/migrations/20260520190000_mesa_cliente_fase_5d_leitura_operacoes_financeiras_admin.sql
+```
+
+RPCs validadas:
+
+```text
+public.mesa_cliente_listar_operacoes_financeiras_admin(uuid,uuid,jsonb)
+public.mesa_cliente_obter_operacao_financeira_admin(uuid,jsonb)
+```
+
+### Testes oficiais 5D
+
+#### `13_preflight_leitura_operacoes_financeiras_admin_readonly.sql`
+
+Status: validado.
+
+Valida preflight estrutural e contrato read-only.
+
+#### `13a_validacao_listar_operacoes_financeiras_admin_rollback.sql`
+
+Status: validado.
+
+Valida listagem administrativa positiva.
+
+#### `13b_validacao_obter_operacao_financeira_admin_rollback.sql`
+
+Status: validado.
+
+Valida detalhe administrativo positivo.
+
+#### `13c_validacao_seguranca_leitura_operacoes_admin_rollback.sql`
+
+Status: validado.
+
+Valida segurança, negativos e isolamento. O arquivo original foi mantido e corrigido sem remoção de cobertura crítica.
+
+#### `13cv2_validacao_seguranca_leitura_operacoes_admin_rollback.sql`
+
+Status: validado.
+
+Versão alternativa segura criada sem sobrescrever o 13C original.
+
+#### `13d_validacao_zero_dml_readonly_rigido_leitura_operacoes_admin_rollback.sql`
+
+Status: validado.
+
+Valida zero DML/read-only rígido com checagem de `xmin`.
+
+#### `13e_validacao_filtros_paginacao_ordenacao_leitura_operacoes_admin_rollback.sql`
+
+Status: validado.
+
+Valida filtros, paginação, ordenação e allowlists.
+
+#### `13_smoke_pos_producao_leitura_operacoes_admin_readonly.sql`
+
+Status: aprovado estruturalmente com `SKIP_DATA`.
+
+Resultado:
+
+```text
+00_funcoes_5d_existentes = PASS
+01_alvo_admin_operacao_real = SKIP_DATA
+02_listagem_admin_readonly_smoke = SKIP_DATA
+03_detalhe_admin_readonly_smoke = SKIP_DATA
+04_contrato_readonly_minimo = SKIP_DATA
+05_negativos_allowlist_nao_executados_no_smoke_readonly = INFO
+99_smoke_readonly_notice = INFO
+```
+
+Interpretação:
+
+```text
+As RPCs existem no ambiente.
+O smoke executa em READ ONLY estrito.
+Não houve DDL, DML ou fixture.
+A validação funcional com dado real ficou pendente por ausência de operação financeira real acessível.
+```
+
+---
+
+## Fase 6 — Resumos administrativos e visão cliente-safe / handoff para integração
+
+**Status:** próxima fase canônica.
+
+Primeiros arquivos previstos:
+
+```text
+docs/mesa-cliente/fase-6-contrato-resumos-operacao-financeira.md
+supabase/tests/mesa-cliente/engenharia-financeira/14_preflight_resumos_operacao_financeira_readonly.sql
+```
+
+Regras de entrada:
+
+```text
+Contrato antes de migration.
+Preflight read-only antes de migration.
+Nenhum frontend antes da validação cliente-safe.
+Nenhuma regra financeira nova hardcoded no app.
+Nenhuma alteração no parser, Worker, Make/n8n ou motor financeiro sem autorização explícita.
+```
 
 ---
 
@@ -477,14 +564,15 @@ Pendente. Ainda proibida antes do contrato da escrita financeira estar fechado e
 
 Não execute teste integrador em produção única sem verificar:
 
-1. se ele começa com `BEGIN`;
-2. se termina com `ROLLBACK`;
-3. se não contém DDL destrutivo inesperado;
+1. se ele começa com `BEGIN` quando houver fixture ou DML transacional;
+2. se termina com `ROLLBACK` quando houver fixture ou DML transacional;
+3. se teste read-only não contém DDL, `CREATE FUNCTION`, `CREATE TABLE`, `DO` block ou DML;
 4. se fixtures são transacionais;
 5. se não usa colunas presumidas sem preflight;
 6. se não concede privilégio para `anon`;
 7. se não mexe em frontend/parser/Worker/Make/n8n;
-8. se o resultado esperado está documentado.
+8. se o resultado esperado está documentado;
+9. se negativos não foram removidos para fazer teste passar.
 
 ---
 
@@ -492,8 +580,11 @@ Não execute teste integrador em produção única sem verificar:
 
 ```text
 4A aprovada.
-4B aprovada em rollback transacional.
+4B aprovada.
 4C aprovada.
 5A.1 aprovada.
-5B em validação transacional: migration executada, 11A, 11B e 11C aprovados, 11D/11E pendentes.
+5B aprovada.
+5C fechada tecnicamente.
+5D fechada tecnicamente, mergeada na main e com smoke estrutural pós-produção aprovado com SKIP_DATA.
+Próxima fase canônica: Fase 6 — resumos administrativos e visão cliente-safe de operação financeira.
 ```
