@@ -1,35 +1,37 @@
 # MesaCliente — Roadmap de execução da Engenharia Financeira até teste em mesa
 
-**Status:** Oficial — atualizado após aprovação da Fase 4B e abertura da Fase 4C  
-**Branch oficial de trabalho:** `feature/mesa-cliente-engenharia-financeira`  
-**Atualizado em:** 2026-05-18  
+**Status:** Oficial — atualizado após merge da Fase 5D na `main`  
+**Branch oficial de alinhamento:** `feature/mesa-cliente-pos-5d-alinhamento-proxima-fase`  
+**Base:** `main` pós-merge do PR #11 / merge commit `9784d4416adf02f50a4d66ca8f26a9228b8cfa75`  
+**Atualizado em:** 2026-05-20  
 **Protocolo obrigatório:** `docs/protocolos/protocolo-mestre-fechai-mesacliente-v1.2.md`  
-**ADR vigente:** `docs/mesa-cliente/adr/ADR-0001-fase-4a-json-first-sem-persistencia.md`  
+**ADR vigente:** `docs/mesa-cliente/adr/ADR-0001-fase-4a-json-first-sem-persistencia.md`
 
 ---
 
-## 0. Aviso de atualização
+## 0. Aviso de atualização pós-5D
 
-Este roadmap foi atualizado para remover a divergência documental identificada após a validação da Fase 4B.
+Este roadmap substitui o estado operacional antigo que ainda tratava 4C/5A/5B/5C como pendências.
 
 A leitura oficial atual é:
 
-```txt
-4A = aprovada — agenda financeira JSON-first, sem persistência
-4B = aprovada em rollback transacional — persistência da agenda com lock, idempotência e auditoria
-4C = aberta por contrato — leitura cliente-safe da agenda persistida
-09 preflight 4C = criado — pendente de execução e envio do resultset completo
-5A = pendente — simular impacto financeiro com agenda persistida
-5B = pendente — registrar operação financeira
-5C = pendente — confirmar/cancelar operação financeira
-Depois = integração front/BFF
+```text
+4A  = aprovada — agenda financeira JSON-first, sem persistência
+4B  = aprovada — persistência segura da agenda financeira
+4C  = aprovada — leitura cliente-safe da agenda persistida
+5A.1 = aprovada — simulação administrativa de impacto com agenda persistida
+5B  = aprovada — registro administrativo de operação financeira
+5C  = fechada tecnicamente — confirmação/cancelamento administrativo de operação financeira
+5D  = fechada tecnicamente e mergeada na main — leitura administrativa read-only de operações financeiras
+Smoke 5D pós-produção = estrutural aprovado com SKIP_DATA por ausência de operação financeira real acessível
+Próxima fase canônica = Fase 6 — resumos administrativos e visão cliente-safe de operação financeira / handoff para integração
 ```
 
 Regra curta:
 
-> **4A pensa. 4B grava. 4C mostra para o cliente.**
+> **4A pensa. 4B grava agenda. 4C mostra agenda ao cliente. 5A simula impacto. 5B registra operação. 5C muda status. 5D consulta operação. 6 prepara resumo seguro para uso real.**
 
-Qualquer documento, teste ou comentário antigo que ainda trate a Fase 4A como persistência direta, ou que trate 4A/4B como pendentes, está subordinado a esta versão atualizada do roadmap, ao Protocolo Mestre v1.2 e aos documentos de evidência final das fases.
+Qualquer documento antigo que trate 5B, 5C ou 5D como pendente está subordinado a este roadmap, aos documentos de fechamento das fases e ao Protocolo Mestre v1.2.
 
 ---
 
@@ -39,14 +41,16 @@ Ordem de referência para qualquer IA, dev ou conversa técnica:
 
 1. `docs/protocolos/protocolo-mestre-fechai-mesacliente-v1.2.md`
 2. `docs/mesa-cliente/adr/ADR-0001-fase-4a-json-first-sem-persistencia.md`
-3. `docs/mesa-cliente/fase-4a-validacao-unica-e-transicao-json-first.md`
-4. `docs/mesa-cliente/fase-4a-agenda-financeira-json-first-canonica.md`
-5. `docs/mesa-cliente/fase-4a-validacao-final-json-first.md`
-6. `docs/mesa-cliente/fase-4b-contrato-persistencia-agenda-financeira.md`
-7. `docs/mesa-cliente/fase-4b-validacao-final-evidencias.md`
-8. `docs/mesa-cliente/fase-4c-agenda-financeira-cliente-safe-contrato.md`
-9. `supabase/tests/mesa-cliente/engenharia-financeira/09_preflight_agenda_financeira_cliente_safe_readonly.sql`
-10. Este roadmap como índice operacional atualizado.
+3. `docs/mesa-cliente/fase-4a-validacao-final-json-first.md`
+4. `docs/mesa-cliente/fase-4b-validacao-final-evidencias.md`
+5. `docs/mesa-cliente/fase-4c-cliente-safe-fechamento.md`
+6. `docs/mesa-cliente/fase-5a-validacao-final-simulacao-impacto-agenda-persistida.md`
+7. `docs/mesa-cliente/fase-5b-fechamento-registro-operacao-financeira.md`
+8. `docs/mesa-cliente/fase-5c-fechamento-tecnico.md`
+9. `docs/mesa-cliente/fase-5d-fechamento-tecnico.md`
+10. `docs/mesa-cliente/fase-5d-smoke-pos-producao.md`
+11. `docs/mesa-cliente/fase-5d-smoke-pos-producao-execucao.md`
+12. Este roadmap como índice operacional atualizado.
 
 O roadmap é índice de navegação. Em caso de conflito entre roadmap e evidência final de fase, prevalece a evidência final mais recente, desde que compatível com o Protocolo Mestre.
 
@@ -55,7 +59,7 @@ O roadmap é índice de navegação. Em caso de conflito entre roadmap e evidên
 ## 2. Princípios não negociáveis
 
 1. Não levar desconto simples global para `main`.
-2. Não alterar parser, motor financeiro atual, Worker, Make, n8n ou `main` sem autorização explícita.
+2. Não alterar parser, motor financeiro atual, Worker, Make, n8n ou frontend sem autorização explícita.
 3. O app é multiempresa e multitenant por desenho, não por convenção de frontend.
 4. Banco/RPC é soberano. Frontend é consultivo e nunca decide regra financeira.
 5. Nenhuma regra financeira hardcoded no frontend.
@@ -63,7 +67,7 @@ O roadmap é índice de navegação. Em caso de conflito entre roadmap e evidên
 7. `auth.uid()` obrigatório em RPCs sensíveis.
 8. Toda RPC deve validar usuário, empresa, tenant, empreendimento, simulação e perfil.
 9. Cliente nunca vê VPL, prêmio, comissão, política interna, impacto administrativo ou regra de remuneração.
-10. Corretor/coordenador pode ver impacto administrativo conforme perfil e autorização.
+10. Corretor/coordenador/gestor/admin pode ver impacto administrativo conforme perfil e autorização no banco.
 11. Data oficial da tabela prevalece sobre regra calculada.
 12. Quando houver apenas mês/ano, usar o dia do ato; se o mês não possuir o dia, usar o último dia válido.
 13. Chaves/parcela única devem vir da tabela ou cabeçalho, podendo ser 30 ou 60 dias antes do financiamento quando o contrato permitir.
@@ -72,9 +76,11 @@ O roadmap é índice de navegação. Em caso de conflito entre roadmap e evidên
 16. `service_role` nunca aparece em frontend, variável pública, build client-side, storage público, log ou payload de navegador.
 17. Operações financeiras de escrita passam por RPCs fortes, com validação interna e least privilege.
 18. Teste em produção única usa `BEGIN` + `ROLLBACK` até liberação formal.
-19. Toda fase precisa respeitar seu escopo; fase misturada é falha de engenharia.
-20. Migration obsoleta não permanece como canônica em `supabase/migrations`.
-21. Documento antigo não pode contrariar evidência final de fase aprovada.
+19. Smoke pós-produção não cria fixture, não cria função temporária e não executa DDL/DML.
+20. Toda fase precisa respeitar seu escopo; fase misturada é falha de engenharia.
+21. Migration obsoleta não permanece como canônica em `supabase/migrations`.
+22. Documento antigo não pode contrariar evidência final de fase aprovada.
+23. Não contornar teste removendo cobertura crítica; corrigir a causa mantendo a intenção de validação.
 
 ---
 
@@ -83,31 +89,28 @@ O roadmap é índice de navegação. Em caso de conflito entre roadmap e evidên
 | Área | Status |
 |---|---:|
 | Backup local antes da engenharia financeira | Concluído |
-| Branch de trabalho isolada | Concluído |
+| Branches isoladas por fase | Concluído |
 | Protocolo Mestre FECH.AI / MesaCliente v1.2 | Concluído |
 | Protocolo Universal de Funcionamento v1.1 | Concluído |
 | ADR-0001 — Fase 4A JSON-first sem persistência | Concluído |
-| Contrato canônico da Fase 4A JSON-first | Concluído |
 | Tabelas financeiras base | Concluído |
 | RLS das tabelas financeiras | Concluído |
 | Helpers de contexto/autorização | Concluído |
 | RPCs administrativas de política/faixas | Concluído |
-| Teste funcional de política/faixas com rollback | Concluído |
 | Funções puras de cálculo composto | Concluído |
-| Testes de exceção das funções financeiras | Concluído |
 | RPC de simulação administrativa sem gravação | Concluído |
 | Grants endurecidos sem `anon` | Concluído |
-| Teste funcional positivo da simulação admin | Concluído |
-| Teste funcional negativo da simulação admin | Concluído |
 | Fase 4A — agenda financeira JSON-first sem persistência | Aprovada |
-| Testes 07A/07B — JSON-first | Aprovados |
-| Fase 4B — persistência segura da agenda financeira | Aprovada em rollback transacional |
-| Testes 08A/08B/08C/08D — persistência/idempotência/negativos/operação confirmada | Aprovados |
-| Fase 4C — leitura cliente-safe da agenda persistida | Contrato aberto |
-| Teste 09 preflight cliente-safe | Criado, pendente de execução/resultset |
-| Migration/RPC 4C cliente-safe | Pendente — bloqueada até validação do 09 preflight |
-| Registro/confirmacão de operação financeira | Pendente — fase 5B/5C |
-| Integração de frontend/BFF | Pendente — proibida antes da 4C validada |
+| Fase 4B — persistência segura da agenda financeira | Aprovada |
+| Fase 4C — leitura cliente-safe da agenda persistida | Aprovada |
+| Fase 5A.1 — simulação de impacto com agenda persistida | Aprovada |
+| Fase 5B — registro de operação financeira | Aprovada |
+| Fase 5C — confirmação/cancelamento de operação financeira | Fechada tecnicamente |
+| Fase 5D — leitura administrativa de operações financeiras | Fechada tecnicamente e mergeada na `main` |
+| Smoke 5D pós-produção | Aprovado estruturalmente com `SKIP_DATA` por ausência de massa real |
+| Smoke 5D funcional com operação real | Pendente por ausência de operação financeira real acessível |
+| Fase 6 — resumos admin e cliente-safe / handoff | Próxima fase canônica |
+| Integração frontend/BFF | Pendente — proibida antes do contrato e testes da Fase 6 |
 | Teste controlado em mesa com cliente | Pendente |
 
 ---
@@ -123,15 +126,16 @@ Tabela/PDF/entrada atual
   -> Fase 4A: RPC gera agenda normalizada em JSON, sem persistir
   -> Fase 4B: RPC persiste agenda e parcelas com lock/idempotência/auditoria
   -> Fase 4C: RPC lê agenda persistida em visão cliente-safe
-  -> Fase 5A: simular impacto financeiro com agenda persistida
-  -> Fase 5B: registrar operação financeira
-  -> Fase 5C: confirmar/cancelar operação financeira
-  -> visão cliente-safe final
-  -> integração front/BFF
-  -> tela MesaCliente para atendimento
+  -> Fase 5A.1: RPC simula impacto financeiro administrativo com agenda persistida
+  -> Fase 5B: RPC registra operação financeira simulada
+  -> Fase 5C: RPC confirma/cancela operação financeira simulada
+  -> Fase 5D: RPC lista/obtém operações financeiras em visão administrativa read-only
+  -> Fase 6: RPC/contrato de resumo administrativo e visão cliente-safe de operação financeira
+  -> integração BFF/front somente após contrato e testes da Fase 6
+  -> teste controlado em mesa
 ```
 
-O frontend não monta cálculo soberano. Ele pode exibir, solicitar simulação e renderizar retorno seguro. Toda decisão final de elegibilidade, datas, política, limite de VPL, prêmio e gravação permanece no banco/RPC/BFF autorizado.
+O frontend não monta cálculo soberano. Ele pode exibir, solicitar simulação e renderizar retorno seguro. Toda decisão final de elegibilidade, datas, política, limite de VPL, prêmio, gravação, confirmação e publicação permanece no banco/RPC/BFF autorizado.
 
 ---
 
@@ -148,7 +152,7 @@ Tabelas relevantes:
 - `mesa_cliente_fluxo_parcelas`
 - `mesa_cliente_fluxo_operacoes`
 - `mesa_cliente_agendas_financeiras`
-- futuras tabelas de snapshot/auditoria financeira
+- futuras tabelas de snapshot/auditoria/publicação financeira
 
 Regras:
 
@@ -175,6 +179,7 @@ Obrigatório:
 - validar empresa/tenant;
 - validar empreendimento pertence à empresa;
 - validar simulação pertence à empresa;
+- validar agenda/operação/parcela pertence ao mesmo escopo;
 - validar perfil permitido;
 - validar payload JSON item a item quando houver payload;
 - rejeitar campos inválidos com erro explícito;
@@ -215,35 +220,16 @@ public.mesa_cliente_gerar_agenda_financeira_admin(
 returns jsonb
 ```
 
-Evidência final:
-
-```text
-docs/mesa-cliente/fase-4a-validacao-final-json-first.md
-```
-
 Testes oficiais aprovados:
 
 ```text
-supabase/tests/mesa-cliente/engenharia-financeira/07a_validacao_agenda_financeira_json_first_rollback.sql
-supabase/tests/mesa-cliente/engenharia-financeira/07b_validacao_agenda_financeira_json_first_negativos_rollback.sql
+07a_validacao_agenda_financeira_json_first_rollback.sql
+07b_validacao_agenda_financeira_json_first_negativos_rollback.sql
 ```
-
-Aprovação comprovou:
-
-- agenda JSON gerada corretamente;
-- `cliente_safe=false`;
-- `persistencia=false`;
-- `dml_financeiro=false`;
-- `anon` bloqueado;
-- payload inválido bloqueado;
-- `empresa_id` fake bloqueado;
-- periodicidade simbólica não negociável;
-- zero DML em `mesa_cliente_fluxo_parcelas`;
-- zero DML em `mesa_cliente_fluxo_operacoes`.
 
 ### Fase 4B — Persistência segura da agenda financeira
 
-**Status:** aprovada em rollback transacional.
+**Status:** aprovada.
 
 Objetivo: persistir a agenda validada da 4A em cabeçalho versionado e parcelas vinculadas, com lock, idempotência e auditoria.
 
@@ -259,121 +245,254 @@ public.mesa_cliente_persistir_agenda_financeira_admin(
 returns jsonb
 ```
 
-Observação: proposta anterior com `p_idempotency_key` foi substituída pela idempotência por checksum canônico calculado no banco.
-
-Evidência final:
+Testes oficiais aprovados:
 
 ```text
-docs/mesa-cliente/fase-4b-validacao-final-evidencias.md
+08a_validacao_persistencia_agenda_financeira_rollback.sql
+08b_validacao_persistencia_agenda_financeira_idempotencia_rollback.sql
+08c_validacao_persistencia_agenda_financeira_negativos_rollback.sql
+08d_validacao_persistencia_agenda_financeira_operacao_confirmada_rollback.sql
+```
+
+### Fase 4C — Leitura cliente-safe da agenda financeira persistida
+
+**Status:** aprovada.
+
+Objetivo: permitir leitura segura da agenda persistida sem expor campos administrativos.
+
+Contrato cliente-safe aprovado:
+
+```text
+cliente_safe=true
+sem VPL
+sem taxa interna
+sem prêmio
+sem comissão
+sem política
+sem impacto administrativo
+sem metadata bruta
+sem checksum
+sem payload bruto
+sem DML
+```
+
+### Fase 5A.1 — Simular impacto financeiro com agenda persistida
+
+**Status:** aprovada.
+
+RPC validada:
+
+```text
+public.mesa_cliente_simular_impacto_agenda_persistida_admin(uuid,date,text,jsonb)
+```
+
+Contrato validado:
+
+```text
+agenda-first
+administrativa
+cliente_safe=false
+persistencia=false
+dml_financeiro=false
+sem alterar agenda, parcelas ou operações
 ```
 
 Testes oficiais aprovados:
 
 ```text
-supabase/tests/mesa-cliente/engenharia-financeira/08a_validacao_persistencia_agenda_financeira_rollback.sql
-supabase/tests/mesa-cliente/engenharia-financeira/08b_validacao_persistencia_agenda_financeira_idempotencia_rollback.sql
-supabase/tests/mesa-cliente/engenharia-financeira/08c_validacao_persistencia_agenda_financeira_negativos_rollback.sql
-supabase/tests/mesa-cliente/engenharia-financeira/08d_validacao_persistencia_agenda_financeira_operacao_confirmada_rollback.sql
+10_preflight_simulacao_impacto_agenda_persistida_readonly.sql
+10p_preparacao_base_minima_5a_agenda_persistida_rollback.sql
+10a_validacao_simulacao_impacto_agenda_persistida_rollback.sql
+10b_validacao_simulacao_impacto_agenda_persistida_negativos_rollback.sql
+10c_validacao_simulacao_impacto_agenda_persistida_zero_dml_rollback.sql
 ```
 
-Aprovação comprovou:
+### Fase 5B — Registrar operação financeira administrativa
 
-- criação de cabeçalho em `mesa_cliente_agendas_financeiras`;
-- criação de parcelas em `mesa_cliente_fluxo_parcelas`;
-- retorno administrativo `cliente_safe=false`;
-- idempotência sem duplicar agenda ou parcelas;
-- `anon` bloqueado;
-- payload inválido bloqueado;
-- `empresa_id` fake bloqueado;
-- zero DML em `mesa_cliente_fluxo_operacoes`, exceto fixture transacional controlada no 08D;
-- operação confirmada bloqueia substituição de agenda com `SQLSTATE 55000`;
-- agenda original permanece intacta;
-- tudo validado com `BEGIN + ROLLBACK`.
+**Status:** aprovada em validação transacional.
 
-### Fase 4C — Leitura cliente-safe da agenda financeira persistida
-
-**Status:** contrato aberto.
-
-Objetivo: permitir leitura segura da agenda persistida sem expor campos administrativos.
-
-Contrato atual:
-
-```text
-docs/mesa-cliente/fase-4c-agenda-financeira-cliente-safe-contrato.md
-```
-
-RPC candidata:
+RPC validada:
 
 ```sql
-public.mesa_cliente_obter_agenda_financeira_cliente_safe(
-  p_simulacao_id uuid
+public.mesa_cliente_registrar_operacao_financeira_admin(
+  p_simulacao_id uuid,
+  p_agenda_id uuid,
+  p_tipo_operacao text,
+  p_parcela_id uuid,
+  p_data_referencia date default current_date,
+  p_data_destino date default null,
+  p_valor_operacao numeric default null,
+  p_parametros jsonb default '{}'::jsonb
 )
-returns jsonb
 ```
 
-Preflight já criado:
+Contrato validado:
 
 ```text
-supabase/tests/mesa-cliente/engenharia-financeira/09_preflight_agenda_financeira_cliente_safe_readonly.sql
+fase = 5B_REGISTRO_OPERACAO_FINANCEIRA
+visao = administrativa
+escopo_dml = operacao_financeira
+cliente_safe = false
+persistencia = true
+dml_financeiro = true
+altera_agenda = false
+altera_parcelas = false
 ```
 
-Próxima ação obrigatória:
+Testes oficiais aprovados:
 
 ```text
-Executar o 09 preflight no Supabase SQL Editor e enviar o resultset completo antes de criar qualquer migration/RPC 4C.
+11_preflight_registro_operacao_financeira_readonly.sql
+11a_validacao_registro_operacao_financeira_rollback.sql
+11b_validacao_registro_operacao_financeira_negativos_rollback.sql
+11c_validacao_registro_operacao_financeira_idempotencia_rollback.sql
+11d_validacao_registro_operacao_financeira_confirmada_rollback.sql
+11e_validacao_registro_operacao_financeira_zero_mutacao_agenda_parcelas_rollback.sql
 ```
 
-Cliente-safe pode exibir:
+### Fase 5C — Confirmar/cancelar operação financeira
 
-- grupo;
-- descrição comercial limpa;
-- valor;
-- data de vencimento;
-- número da parcela;
-- total de parcelas do item;
-- status/resumo comercial neutro;
-- avisos sem regra interna.
+**Status:** fechada tecnicamente.
 
-Cliente-safe não pode exibir:
+RPC validada:
 
-- VPL;
-- taxa interna;
-- prêmio;
-- comissão;
-- política;
-- impacto administrativo;
-- metadata bruta;
-- checksum;
-- versão interna, salvo decisão formal;
-- payload bruto;
-- IDs internos desnecessários;
-- motivos de bloqueio internos que revelem regra comercial.
+```sql
+public.mesa_cliente_atualizar_status_operacao_financeira_admin(
+  p_operacao_id uuid,
+  p_acao text,
+  p_motivo text default null,
+  p_parametros jsonb default '{}'::jsonb
+)
+```
 
-### Fase 5A — Simular impacto financeiro com agenda persistida
+Ações suportadas:
 
-**Status:** pendente.
+```text
+confirmar
+cancelar
+```
 
-Objetivo: usar a agenda persistida como base para simular antecipação/postergação/impacto financeiro administrativo.
+Contrato validado:
 
-Só começa depois da 4C validada, salvo decisão formal em contrário.
+```text
+altera somente mesa_cliente_fluxo_operacoes
+não altera agenda
+não altera parcelas
+não recalcula operação
+não expõe ao cliente automaticamente
+bloqueia anon
+bloqueia payload autoritativo vindo do frontend
+bloqueia cancelamento de operação confirmada nesta versão
+```
 
-### Fase 5B — RPC registrar operação financeira
+Testes oficiais aprovados:
 
-**Status:** pendente.
+```text
+12_preflight_confirmacao_cancelamento_operacao_financeira_readonly.sql
+12a_validacao_confirmar_operacao_financeira_rollback.sql
+12b_validacao_cancelar_operacao_financeira_simulada_rollback.sql
+12c_validacao_negativos_seguranca_confirmacao_cancelamento_rollback.sql
+12d_validacao_idempotencia_confirmacao_cancelamento_rollback.sql
+12e_validacao_zero_mutacao_rigido_confirmacao_cancelamento_rollback.sql
+```
 
-Objetivo futuro: persistir operação financeira simulada/aprovada em `mesa_cliente_fluxo_operacoes`.
+### Fase 5D — Leitura administrativa de operações financeiras
 
-### Fase 5C — RPC confirmar/cancelar operação financeira
+**Status:** fechada tecnicamente e mergeada na `main`.
 
-**Status:** pendente.
+RPCs validadas:
 
-Objetivo futuro: permitir confirmação/cancelamento controlado por gestor/admin/coordenador.
+```sql
+public.mesa_cliente_listar_operacoes_financeiras_admin(uuid, uuid, jsonb)
+public.mesa_cliente_obter_operacao_financeira_admin(uuid, jsonb)
+```
 
-### Fase 6 — Resumos admin e cliente-safe
+Contrato validado:
 
-**Status:** pendente.
+```text
+read-only administrativo
+cliente_safe=false
+sem DML financeiro
+sem alterar agenda
+sem alterar parcelas
+sem confirmar/cancelar operação
+sem recalcular operação
+sem exposição cliente-safe automática
+validar auth.uid()
+validar usuário ativo
+validar perfil administrativo
+validar tenant/empresa no banco
+admin_global com escopo global
+admin_local/gestor/coordenador limitado por empresa
+allowlist para filtros, paginação e ordenação
+```
 
-Objetivo: separar visão administrativa e visão cliente.
+Testes oficiais aprovados:
+
+```text
+13_preflight_leitura_operacoes_financeiras_admin_readonly.sql
+13a_validacao_listar_operacoes_financeiras_admin_rollback.sql
+13b_validacao_obter_operacao_financeira_admin_rollback.sql
+13c_validacao_seguranca_leitura_operacoes_admin_rollback.sql
+13cv2_validacao_seguranca_leitura_operacoes_admin_rollback.sql
+13d_validacao_zero_dml_readonly_rigido_leitura_operacoes_admin_rollback.sql
+13e_validacao_filtros_paginacao_ordenacao_leitura_operacoes_admin_rollback.sql
+13_smoke_pos_producao_leitura_operacoes_admin_readonly.sql
+```
+
+Smoke pós-produção:
+
+```text
+Estrutural/read-only aprovado.
+Resultado funcional com dado real = SKIP_DATA por ausência de operação financeira real acessível.
+Não criar fixture diretamente em produção para forçar smoke.
+Reexecutar smoke quando houver operação real criada pelo fluxo normal/controlado.
+```
+
+### Fase 6 — Resumos administrativos e visão cliente-safe / handoff para integração
+
+**Status:** próxima fase canônica.
+
+Objetivo: criar a camada de resumo e consumo seguro sobre a trilha já validada de agenda + operação financeira.
+
+A Fase 6 deve separar, formalmente, pelo menos duas visões:
+
+```text
+1. Visão administrativa:
+   resumo operacional interno para gestor/admin/coordenador/corretor autorizado.
+
+2. Visão cliente-safe:
+   resumo comercial limpo para atendimento em mesa, sem vazamento de regra interna.
+```
+
+A Fase 6 pode consumir dados das fases anteriores, mas não pode alterar o motor financeiro.
+
+Fora do escopo inicial da Fase 6:
+
+```text
+alterar parser
+alterar Worker/Make/n8n
+alterar motor financeiro 4A/4B/5A/5B/5C/5D
+criar cálculo no frontend
+expor VPL/prêmio/comissão/política para cliente
+publicar operação automaticamente ao cliente sem contrato de visibilidade
+criar DML antes do contrato e preflight
+```
+
+Primeira ação obrigatória da Fase 6:
+
+```text
+Abrir contrato da Fase 6 e criar preflight read-only 14.
+```
+
+Arquivos previstos para iniciar a Fase 6:
+
+```text
+docs/mesa-cliente/fase-6-contrato-resumos-operacao-financeira.md
+supabase/tests/mesa-cliente/engenharia-financeira/14_preflight_resumos_operacao_financeira_readonly.sql
+```
+
+Migration 6 somente depois do contrato e do preflight aprovados.
 
 ### Fase 7 — Integração front/BFF
 
@@ -385,7 +504,7 @@ Opção preferencial para segurança máxima:
 Frontend -> BFF/API server-side -> Supabase RPC -> resposta sanitizada
 ```
 
-Proibido antes da 4C aprovada:
+Proibido antes da Fase 6 validada:
 
 - tela final cliente-safe;
 - BFF consumindo RPC ainda não validada;
@@ -396,7 +515,7 @@ Proibido antes da 4C aprovada:
 
 **Status:** pendente.
 
-Deve validar ponta a ponta após as fases 4C/5A/5B/5C.
+Deve validar ponta a ponta após as fases 4C/5A/5B/5C/5D/6.
 
 ### Fase 9 — Hardening final antes de mesa real
 
@@ -417,21 +536,22 @@ Executar somente após validação cliente-safe e trilha de operação financeir
 Próxima sequência permitida:
 
 ```text
-1. Executar:
-   supabase/tests/mesa-cliente/engenharia-financeira/09_preflight_agenda_financeira_cliente_safe_readonly.sql
+1. Criar contrato da Fase 6:
+   docs/mesa-cliente/fase-6-contrato-resumos-operacao-financeira.md
 
-2. Validar resultset completo do 09 preflight.
+2. Criar preflight read-only 14:
+   supabase/tests/mesa-cliente/engenharia-financeira/14_preflight_resumos_operacao_financeira_readonly.sql
 
-3. Se o preflight liberar, criar:
-   supabase/migrations/<timestamp>_mesa_cliente_fase_4c_agenda_financeira_cliente_safe.sql
+3. Executar o preflight 14 no Supabase SQL Editor.
 
-4. Criar testes 4C:
-   supabase/tests/mesa-cliente/engenharia-financeira/09a_validacao_agenda_financeira_cliente_safe_rollback.sql
-   supabase/tests/mesa-cliente/engenharia-financeira/09b_validacao_agenda_financeira_cliente_safe_negativos_rollback.sql
-   supabase/tests/mesa-cliente/engenharia-financeira/09c_validacao_agenda_financeira_cliente_safe_sem_vazamento_rollback.sql
+4. Validar o resultset completo do preflight 14.
+
+5. Somente se o preflight liberar, criar migration/RPCs da Fase 6.
+
+6. Depois da Fase 6 validada, iniciar integração BFF/front.
 ```
 
-Não criar arquivos de Fase 5 antes da Fase 4C ser validada.
+Não criar arquivos de frontend antes da Fase 6 validar payload cliente-safe.
 
 ---
 
@@ -441,13 +561,14 @@ Não criar arquivos de Fase 5 antes da Fase 4C ser validada.
 |---|---|
 | Gate Contrato | fase, escopo, fora de escopo e matriz de DML definidos |
 | Gate Preflight | schema real, grants, RLS e riscos mapeados antes da migration |
-| Gate Banco | migration criada e revisada |
+| Gate Banco | migration criada e revisada somente após preflight |
 | Gate RLS | policies e grants revisados |
 | Gate Auth | `auth.uid()` validado em teste |
 | Gate Tenant | cross-tenant bloqueado |
-| Gate Zero DML | obrigatório para Fase 4A e leituras cliente-safe |
-| Gate Persistência | obrigatório para 4B, sem DML em operações |
+| Gate Zero DML | obrigatório para leituras e resumos read-only |
+| Gate Persistência | obrigatório para fases de escrita, sem mutar agenda/parcela indevidamente |
 | Gate Cliente-safe | payload sem VPL/prêmio/comissão/política/metadata bruta |
+| Gate Admin-safe | payload administrativo autorizado apenas para perfil correto |
 | Gate Front | sem regra financeira soberana no client |
 | Gate Mesa | piloto interno aprovado |
 
@@ -461,11 +582,12 @@ Não criar arquivos de Fase 5 antes da Fase 4C ser validada.
 | corretor acessar empresa errada | contexto + RLS + helper + teste cross-tenant |
 | `anon` executar RPC sensível | revoke de `anon` + teste automático |
 | regra financeira hardcoded | política em banco e snapshot de política |
-| cliente ver dado interno | RPC cliente-safe separada + teste 09C sem vazamento |
+| cliente ver dado interno | RPC cliente-safe separada + teste sem vazamento |
+| resumo cliente-safe vazar operação administrativa | contrato de visibilidade e sanitização explícita |
 | alteração quebrar parser atual | não alterar parser sem autorização |
 | gravação irreversível em produção única | testes com rollback e backup antes de fase crítica |
 | cálculo divergente por data | matriz de datas e testes de último dia válido |
-| operação confirmada editável | bloqueio 08D e fluxo futuro de cancelamento auditado |
+| operação confirmada editável | fluxo 5C bloqueia transições indevidas; futura reversão deve ter contrato próprio |
 | documento antigo induzir implementação errada | roadmap atualizado + evidências finais + README de testes atualizado |
 
 ---
@@ -475,40 +597,35 @@ Não criar arquivos de Fase 5 antes da Fase 4C ser validada.
 A Engenharia Financeira estará pronta para teste em mesa com cliente quando:
 
 1. 4A JSON-first estiver validada — concluído;
-2. 4B persistência segura estiver validada — concluído em rollback transacional;
-3. 4C cliente-safe estiver validada — pendente;
-4. simulação administrativa estiver integrada à agenda persistida — pendente;
-5. operação financeira puder ser registrada por RPC forte — pendente;
-6. confirmação/cancelamento estiverem auditados — pendente;
-7. visão cliente-safe estiver limpa — pendente;
-8. frontend não tiver regra financeira soberana — pendente;
-9. `anon` estiver bloqueado em RPCs/tabelas sensíveis — em validação contínua;
-10. cross-tenant estiver bloqueado — em validação contínua;
-11. todos os testes SQL com rollback passarem;
-12. piloto interno bater com cálculo manual;
-13. backup pré-piloto estiver feito;
-14. branch continuar isolada até aprovação explícita para merge.
+2. 4B persistência segura estiver validada — concluído;
+3. 4C cliente-safe da agenda estiver validada — concluído;
+4. simulação administrativa estiver integrada à agenda persistida — concluído;
+5. operação financeira puder ser registrada por RPC forte — concluído;
+6. confirmação/cancelamento estiverem auditados — concluído tecnicamente;
+7. leitura administrativa de operações estiver validada — concluído tecnicamente;
+8. smoke 5D funcional com operação real estiver reexecutado quando houver massa real — pendente operacional;
+9. resumo cliente-safe de operação financeira estiver validado — pendente Fase 6;
+10. frontend não tiver regra financeira soberana — pendente validação de integração;
+11. `anon` estiver bloqueado em RPCs/tabelas sensíveis — validação contínua;
+12. cross-tenant estiver bloqueado — validação contínua;
+13. todos os testes SQL com rollback passarem;
+14. piloto interno bater com cálculo manual;
+15. backup pré-piloto estiver feito;
+16. branch continuar isolada até aprovação explícita para merge.
 
 ---
 
 ## 11. Próxima ação imediata
 
-A próxima ação não é criar nova migration.
+A próxima ação não é criar migration e não é mexer no frontend.
 
-A próxima ação é executar o preflight 09 já criado:
-
-```text
-supabase/tests/mesa-cliente/engenharia-financeira/09_preflight_agenda_financeira_cliente_safe_readonly.sql
-```
-
-Enviar o resultset completo, principalmente a seção:
+A próxima ação é abrir o contrato da Fase 6 e o preflight read-only 14:
 
 ```text
-13_operational_interpretation
+docs/mesa-cliente/fase-6-contrato-resumos-operacao-financeira.md
+supabase/tests/mesa-cliente/engenharia-financeira/14_preflight_resumos_operacao_financeira_readonly.sql
 ```
-
-Somente se o resultado liberar a 4C, criar a migration da RPC cliente-safe.
 
 Frase de controle atual:
 
-> **4A aprovada. 4B aprovada em rollback transacional. 4C aberta por contrato. 09 preflight cliente-safe já criado; próxima ação é executar e validar o resultset antes de qualquer migration 4C.**
+> **5D mergeada na main. Branch nova limpa. Próxima fase canônica: Fase 6 — resumos administrativos e visão cliente-safe de operação financeira. Primeiro contrato e preflight; migration só depois de evidência.**
