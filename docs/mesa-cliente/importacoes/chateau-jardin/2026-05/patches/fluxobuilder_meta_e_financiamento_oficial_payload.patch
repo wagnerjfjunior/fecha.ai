@@ -1,0 +1,26 @@
+diff --git a/src/components/MesaCliente/FluxoBuilder.jsx b/src/components/MesaCliente/FluxoBuilder.jsx
+--- a/src/components/MesaCliente/FluxoBuilder.jsx
++++ b/src/components/MesaCliente/FluxoBuilder.jsx
+@@
++// Patch opcional arquivado para a Fase 8 / Chateau Jardin.
++//
++// Objetivo:
++// - Ler `meta_obra_pct` do payload da unidade quando existir.
++// - Exibir `financiamento` como Principal Financ. (set/29).
++// - Tratar `financiamento_price_11_2029` apenas como valor informativo.
++//
++// Este patch NÃO deve ser aplicado automaticamente sem revisão, pois altera
++// visualização/comportamento de apresentação no FluxoBuilder.
++// A migration principal de preservação dos campos financeiros está em:
++// supabase/migrations/20260521193000_mesa_cliente_json_admin_preserve_fluxo_fields.sql
++
+@@
+-  const metaPct = empresaConfig.meta_obra_pct ?? 30;
++  const metaPct = getMetaObraPct(unidade) ?? empresaConfig.meta_obra_pct ?? 30;
+@@
+-      <FinanciamentoDisplay precoTotal={precoTotal} pagamentoFluxo={totais.pagamentoFluxo} />
++      <FinanciamentoDisplay
++        precoTotal={precoTotal}
++        pagamentoFluxo={totais.pagamentoFluxo}
++        financiamentoInfo={getFinanciamentoTabelaInfo(unidade)}
++      />
