@@ -1,0 +1,38 @@
+{
+  "schemaVersion": "mesa_parser_chateau_jardin_v7_example",
+  "empreendimentoNome": "Chateau Jardin",
+  "incorporadora": "Tegra Incorporadora",
+  "meta_obra_pct": 45,
+  "summary": {
+    "total_unidades": 144,
+    "observacao": "Exemplo estrutural sem preços reais. Não usar para importação."
+  },
+  "unidades": [
+    {
+      "row_index": 1,
+      "torre": "Harmonie Vert e Gris",
+      "unidade": "201",
+      "final": "2",
+      "prumada": "2",
+      "andar": 1,
+      "metragem": 248.5,
+      "dormitorios": 4,
+      "suites": 4,
+      "vagas_quantidade": 4,
+      "valor_tabela": 0,
+      "status_comercial": "disponivel",
+      "planta_tipo": "Tipo 248m²",
+      "sinal_1": 0,
+      "a4_each": 0,
+      "mensal_each": 0,
+      "inter_each": 0,
+      "chaves_each": 0,
+      "financiamento": 0,
+      "principal_financ_set_29": 0,
+      "financiamento_price_11_2029": 0,
+      "meta_obra_pct": 45,
+      "financiamento_observacao": "financiamento = Principal Financ. (set/29); financiamento_price_11_2029 é apenas informativo com Tabela Price.",
+      "observacoes": "Exemplo sem valores reais."
+    }
+  ]
+}
