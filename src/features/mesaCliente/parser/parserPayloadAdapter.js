@@ -46,7 +46,7 @@ export function normalizeParserPayload(rawInput) {
       'manual_json_preview',
     layout: root.layout || root.source?.layout || null,
     confidence: root.quality?.confidence || root.confianca || root.confidence || null,
-    unidades: unidades.map((unit, index) => normalizeUnit(unit, index, root)),
+    unidades: unidades.map(normalizeUnit),
     raw: root,
   };
 }
@@ -110,83 +110,7 @@ function extractObsNumber(observacoes = '', key) {
   return Number.isFinite(value) ? value : null;
 }
 
-function pick(...values) {
-  return values.find(value => value !== null && value !== undefined && value !== '');
-}
-
-function pickNumber(...values) {
-  return parseNumber(pick(...values));
-}
-
-function pickInteger(...values) {
-  const value = pickNumber(...values);
-  return value === null ? null : Math.trunc(value);
-}
-
-function buildFinanceFields(unit, root = {}) {
-  const raw = unit.raw && typeof unit.raw === 'object' ? unit.raw : {};
-
-  const sinal1 = pickNumber(unit.sinal_1, unit.ato, raw.sinal_1, raw.ato);
-  const a4Each = pickNumber(unit.a4_each, unit.complemento_each, raw.a4_each, raw.complemento_each);
-  const mensalEach = pickNumber(unit.mensal_each, unit.mensais_each, raw.mensal_each, raw.mensais_each);
-  const interEach = pickNumber(unit.inter_each, unit.intermediaria_each, raw.inter_each, raw.intermediaria_each);
-  const chavesEach = pickNumber(
-    unit.chaves_each,
-    unit.unica_each,
-    unit.parcela_unica_each,
-    unit.parcela_unica,
-    unit.unica,
-    raw.chaves_each,
-    raw.unica_each,
-    raw.parcela_unica_each,
-    raw.parcela_unica,
-    raw.unica
-  );
-  const financiamento = pickNumber(
-    unit.financiamento,
-    unit.principal_financ_set_29,
-    unit.principal_financ_original_set_29,
-    raw.financiamento,
-    raw.principal_financ_set_29,
-    raw.principal_financ_original_set_29
-  );
-  const financiamentoPrice = pickNumber(
-    unit.financiamento_price_11_2029,
-    unit.financ_corrigido_original_11_2029,
-    raw.financiamento_price_11_2029,
-    raw.financ_corrigido_original_11_2029
-  );
-  const metaObraPct = pickNumber(unit.meta_obra_pct, raw.meta_obra_pct, root.meta_obra_pct);
-
-  const fields = {
-    sinal_1: sinal1,
-    ato_qtd: pickInteger(unit.ato_qtd, raw.ato_qtd),
-    a4_each: a4Each,
-    comp_qtd: pickInteger(unit.comp_qtd, raw.comp_qtd),
-    mensal_each: mensalEach,
-    mensal_qtd: pickInteger(unit.mensal_qtd, raw.mensal_qtd),
-    inter_each: interEach,
-    inter_qtd: pickInteger(unit.inter_qtd, raw.inter_qtd),
-    inter_tipo: pick(unit.inter_tipo, raw.inter_tipo),
-    chaves_each: chavesEach,
-    unica_qtd: pickInteger(unit.unica_qtd, raw.unica_qtd),
-    financiamento,
-    principal_financ_set_29: pickNumber(unit.principal_financ_set_29, unit.principal_financ_original_set_29, raw.principal_financ_set_29, raw.principal_financ_original_set_29, financiamento),
-    financiamento_price_11_2029: financiamentoPrice,
-    meta_obra_pct: metaObraPct,
-    valor_total: pickNumber(unit.valor_total, unit.valor_tabela, raw.valor_total, raw.valor_tabela),
-    soma_pre_financiamento: pickNumber(unit.soma_pre_financiamento, raw.soma_pre_financiamento),
-    principal_residual_para_bater_total: pickNumber(unit.principal_residual_para_bater_total, raw.principal_residual_para_bater_total),
-    financiamento_pct_por_total: pickNumber(unit.financiamento_pct_por_total, raw.financiamento_pct_por_total),
-    obra_pct_por_total_menos_principal: pickNumber(unit.obra_pct_por_total_menos_principal, raw.obra_pct_por_total_menos_principal),
-    financiamento_observacao: pick(unit.financiamento_observacao, raw.financiamento_observacao),
-    periodicidade_observacao: pick(unit.periodicidade_observacao, raw.periodicidade_observacao),
-  };
-
-  return Object.fromEntries(Object.entries(fields).filter(([, value]) => value !== null && value !== undefined && value !== ''));
-}
-
-export function normalizeUnit(unit, index = 0, root = {}) {
+export function normalizeUnit(unit, index = 0) {
   const unidade = unit.unidade || unit.apto || unit.apartamento || unit.numero || unit.id_unidade || null;
   const valorTabela = parseNumber(unit.valor_tabela ?? unit.valor ?? unit.preco ?? unit.total ?? unit.valor_total ?? unit.preco_total);
   const observacoes = unit.observacoes ?? unit.obs ?? null;
@@ -207,7 +131,6 @@ export function normalizeUnit(unit, index = 0, root = {}) {
     planta_tipo: unit.planta_tipo ?? unit.planta ?? unit.tipologia ?? null,
     observacoes,
     confianca_linha: normalizeConfidence(unit.confianca_linha ?? unit.confianca ?? unit.confidence),
-    ...buildFinanceFields(unit, root),
     raw: unit.raw || unit,
   };
 }
