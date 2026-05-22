@@ -47,6 +47,23 @@ A IA não está funcionando por combinação de:
 - Chamada da IA agora valida token ausente/expirado antes do POST.
 - Chamada da IA removeu `apikey` para evitar conflito com CORS da Edge Function atual.
 
+## Correções adicionais aplicadas no frontend v0.2.2
+
+- Título `Discador Flow AI` movido para o topo da página do discador, antes do quadro do lead.
+- O frame do assistente deixou de repetir o título principal e passou a exibir `Fluxo de atendimento`.
+- Botão duplicado `Power Dial — OFF/ON` do canto superior direito passou a ser ocultado visualmente.
+- O `Power Dial` do próprio Discador Flow AI passa a sincronizar com o botão real do app quando possível.
+- Botões originais `Ligar` e `Mensagens` do primeiro quadro foram ocultados para reduzir redundância e compactar o bloco do lead.
+- A seção de execução foi criada entre o quadro do assistente e o feedback.
+- O botão principal agora é dinâmico conforme o canal:
+  - Ligação: `Efetuar ligação`;
+  - WhatsApp: `Abrir WhatsApp`;
+  - E-mail: `Preparar e-mail`.
+- Para ligação, a ação copia a fala de apoio e tenta iniciar `tel:`.
+- Para WhatsApp, a ação abre `wa.me` com a mensagem pronta.
+- Para e-mail, a ação monta `mailto:` com assunto e corpo quando o e-mail do lead é encontrado.
+- Corrigido problema provável do combo `Tipo de abordagem` fechar imediatamente: o MutationObserver agora pausa o re-render enquanto o select está focado/aberto.
+
 ## Testes pendentes
 
 - [ ] Reautenticar usuário e repetir chamada.
@@ -58,6 +75,11 @@ A IA não está funcionando por combinação de:
 - [ ] Validar se os badges respondem com um clique no mobile.
 - [ ] Validar se os badges ficam centralizados no desktop.
 - [ ] Validar se Power Dial/Power Zap/Power Mail aparecem acima dos canais corretos.
+- [ ] Validar se o título aparece no topo da página.
+- [ ] Validar se o botão duplicado Power Dial não aparece mais no canto superior direito.
+- [ ] Validar se os botões originais Ligar/Mensagens foram ocultados.
+- [ ] Validar se o combo Tipo de abordagem permite escolha sem fechar imediatamente.
+- [ ] Validar se o botão de execução muda corretamente por canal.
 
 ## Resultado final
 
