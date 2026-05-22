@@ -1,13 +1,13 @@
 /*
  * FECH.AI — Discador Flow AI / PME Beta
- * Version: 0.2.3
+ * Version: 0.2.4
  * Purpose: fluxo assistido do corretor no discador, mobile-first, com fallback manual e IA opcional.
  * Safety: sem envio automático, sem alteração de feedback/RPC/RLS, sem service_role, sem segredo sensível no frontend.
  */
 (function () {
   'use strict';
 
-  const VERSION = '0.2.3';
+  const VERSION = '0.2.4';
   const ROOT_ID = 'fechai-pme-call-assistant';
   const TOP_ID = 'fechai-pme-page-title';
   const STYLE_ID = 'fechai-pme-call-assistant-style';
@@ -15,6 +15,7 @@
   const SUPABASE_URL = 'https://uobxxgzshrmbtjfdolxd.supabase.co';
 
   let suspendAutoRenderUntil = 0;
+  let lastPointerHandledAt = 0;
 
   const CONTEXTS = {
     carteira: { label: 'Carteira', icon: '📒', hint: 'Lead inserido ou acompanhado pelo próprio corretor. Use abordagem mais consultiva e com histórico.' },
@@ -124,7 +125,7 @@
     },
     argumentacoes: {
       ligacao: { primeira_abordagem: ['A melhor oportunidade não é só o menor valor. É a combinação entre unidade, andar, vaga, posição, fluxo e timing. O barato errado vira caro com vista bonita para o problema.'], objecao_preco: ['Às vezes existe preço bom com unidade ruim, vaga ruim ou fluxo ruim. O ponto é comparar o conjunto, não só o metro quadrado.'], objecao_entrada: ['Entrada é parte da estratégia, não o único número. O que importa é entender se o fluxo completo cabe e se o imóvel sustenta valor.'] },
-      whatsapp: { primeira_abordagem: ['Um ponto importante: nem sempre o melhor valor é a melhor oportunidade. É preciso olhar unidade, andar, vaga, posição, fluxo e momento de tabela. É aí que uma escolha estratégica faz diferença.'], objecao_preco: ['Preço baixo sozinho não garante bom negócio. Às vezes você ganha no valor e perde na vaga, andar, posição ou liquidez. O conjunto é que decide.'] },
+      whatsapp: { primeira_abordagem: ['Um ponto importante: nem sempre o melhor valor é a melhor oportunidade. É preciso olhar unidade, andar, vaga, posição e momento de tabela. É aí que uma escolha estratégica faz diferença.'], objecao_preco: ['Preço baixo sozinho não garante bom negócio. Às vezes você ganha no valor e perde na vaga, andar, posição ou liquidez. O conjunto é que decide.'] },
     },
   };
 
@@ -162,7 +163,7 @@
       #${TOP_ID} .pme-top-sub{font-size:13px;opacity:.88;margin-top:5px;line-height:1.35;}
       #${ROOT_ID}{font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:#fff;border:1px solid #e5e7eb;border-radius:22px;padding:18px;box-shadow:0 10px 28px rgba(15,23,42,.08);margin:14px 0;max-width:100%;overflow:hidden;box-sizing:border-box;}
       #${ROOT_ID} *{box-sizing:border-box;}
-      #${ROOT_ID} button,#${ROOT_ID} a,#${ROOT_ID} select{touch-action:manipulation;-webkit-tap-highlight-color:transparent;}
+      #${ROOT_ID} button,#${ROOT_ID} a,#${ROOT_ID} select,#${MODAL_ID} button,#${MODAL_ID} a{touch-action:manipulation;-webkit-tap-highlight-color:transparent;user-select:none;}
       #${ROOT_ID} .pme-header{display:flex;justify-content:space-between;gap:12px;align-items:flex-start;margin-bottom:14px;}
       #${ROOT_ID} .pme-title{font-size:22px;font-weight:950;color:#111827;line-height:1.15;}
       #${ROOT_ID} .pme-sub{font-size:14px;color:#475569;margin-top:5px;line-height:1.4;}
@@ -173,15 +174,16 @@
       #${ROOT_ID} .pme-channel-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;align-items:stretch;margin:10px auto;max-width:820px;}
       #${ROOT_ID} .pme-channel-card{display:flex;flex-direction:column;gap:8px;align-items:stretch;justify-content:flex-start;min-width:0;}
       #${ROOT_ID} .pme-pill{border:1px solid #dbeafe;background:#f8fafc;color:#334155;border-radius:18px;padding:13px 14px;font-size:15px;font-weight:950;white-space:normal;cursor:pointer;min-height:50px;line-height:1.15;width:100%;}
+      #${ROOT_ID} .pme-pill:active,#${ROOT_ID} .pme-action:active,#${MODAL_ID} button:active{transform:scale(.985);}
       #${ROOT_ID} .pme-pill.active{background:#2563eb;color:white;border-color:#2563eb;box-shadow:0 8px 18px rgba(37,99,235,.24);}
       #${ROOT_ID} .pme-power{background:#e5e7eb;color:#374151;border:1px solid #d1d5db;border-radius:999px;padding:9px 8px;font-size:12px;font-weight:950;cursor:pointer;min-height:36px;}
       #${ROOT_ID} .pme-power.on{background:#dcfce7;color:#166534;border-color:#86efac;}
       #${ROOT_ID} .pme-channel{border-radius:18px;padding:14px 8px;font-size:15px;min-height:52px;}
       #${ROOT_ID} .pme-select-wrap{max-width:680px;margin:10px auto 0;background:#f8fafc;border:1px solid #dbeafe;border-radius:18px;padding:10px;}
-      #${ROOT_ID} .pme-select{width:100%;display:block;border:1px solid #93c5fd;border-radius:14px;padding:14px 42px 14px 14px;font-size:16px;font-weight:900;background:#fff;color:#0f172a;text-align:center;min-height:54px;appearance:auto;}
+      #${ROOT_ID} .pme-select{width:100%;display:block;border:1px solid #93c5fd;border-radius:14px;padding:14px 42px 14px 14px;font-size:16px;font-weight:900;background:#fff;color:#0f172a;text-align:center;min-height:54px;appearance:auto;user-select:auto;}
       #${ROOT_ID} .pme-box{background:#f8fafc;border:1px solid #e2e8f0;border-radius:18px;padding:14px;margin-top:16px;max-width:100%;overflow:hidden;}
       #${ROOT_ID} .pme-box-title{font-size:15px;color:#0f172a;font-weight:950;margin-bottom:7px;}
-      #${ROOT_ID} .pme-text{font-size:16px;line-height:1.55;color:#111827;white-space:pre-line;overflow-wrap:anywhere;word-break:normal;}
+      #${ROOT_ID} .pme-text{font-size:16px;line-height:1.55;color:#111827;white-space:pre-line;overflow-wrap:anywhere;word-break:normal;user-select:text;}
       #${ROOT_ID} .pme-exec{background:#f8fafc;border:1px solid #e2e8f0;border-radius:18px;padding:14px;margin-top:14px;}
       #${ROOT_ID} .pme-exec-title{text-align:center;font-size:15px;color:#0f172a;font-weight:950;margin-bottom:10px;}
       #${ROOT_ID} .pme-actions{display:grid;grid-template-columns:1.4fr .8fr .8fr 1.1fr;gap:10px;}
@@ -195,16 +197,16 @@
       #${MODAL_ID} .pme-modal-head{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;margin-bottom:10px;}
       #${MODAL_ID} .pme-title{font-size:18px;font-weight:950;color:#111827;line-height:1.15;}
       #${MODAL_ID} .pme-sub{font-size:13px;color:#64748b;margin-top:3px;line-height:1.35;}
-      #${MODAL_ID} textarea{width:100%;min-height:180px;border:1px solid #cbd5e1;border-radius:16px;padding:12px;font-size:16px;line-height:1.45;resize:vertical;}
-      #${MODAL_ID} input{width:100%;border:1px solid #cbd5e1;border-radius:14px;padding:13px;font-size:15px;margin-top:8px;}
-      #${MODAL_ID} .pme-modal-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px;}
-      #${MODAL_ID} .pme-modal-actions button,#${MODAL_ID} .pme-modal-actions a,#${MODAL_ID} .pme-close{border:0;border-radius:14px;padding:12px 10px;font-size:14px;font-weight:900;text-decoration:none;cursor:pointer;text-align:center;line-height:1.2;}
+      #${MODAL_ID} .pme-modal-channel{font-size:13px;font-weight:900;color:#1d4ed8;background:#eff6ff;border:1px solid #bfdbfe;border-radius:999px;padding:8px 10px;text-align:center;margin:8px 0 10px;}
+      #${MODAL_ID} textarea{width:100%;min-height:180px;border:1px solid #cbd5e1;border-radius:16px;padding:12px;font-size:16px;line-height:1.45;resize:vertical;user-select:text;}
+      #${MODAL_ID} input{width:100%;border:1px solid #cbd5e1;border-radius:14px;padding:13px;font-size:15px;margin-top:8px;user-select:text;}
+      #${MODAL_ID} .pme-modal-actions{display:grid;grid-template-columns:1.3fr 1fr .75fr;gap:8px;margin-top:10px;}
+      #${MODAL_ID} .pme-modal-actions button,#${MODAL_ID} .pme-close{border:0;border-radius:14px;padding:13px 10px;font-size:14px;font-weight:900;text-decoration:none;cursor:pointer;text-align:center;line-height:1.2;}
       #${MODAL_ID} .pme-primary{background:#2563eb;color:#fff;}
-      #${MODAL_ID} .pme-green{background:#059669;color:#fff;}
       #${MODAL_ID} .pme-muted{background:#e5e7eb;color:#374151;}
       #${MODAL_ID} .pme-warn{background:#fff7ed;color:#9a3412;border:1px solid #fed7aa;}
       #${MODAL_ID} .pme-note{font-size:13px;color:#64748b;margin-top:8px;line-height:1.35;}
-      @media(max-width:700px){#${ROOT_ID} .pme-origin-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;}#${ROOT_ID} .pme-channel-grid{gap:7px;}#${ROOT_ID} .pme-pill{font-size:13px;padding:12px 8px;}#${ROOT_ID} .pme-power{font-size:10px;padding:8px 4px;}#${ROOT_ID} .pme-channel{font-size:12px;padding:12px 3px;}#${ROOT_ID} .pme-step-title{font-size:16px;}#${ROOT_ID} .pme-step-help{font-size:12px;}#${ROOT_ID} .pme-actions{grid-template-columns:repeat(2,minmax(0,1fr));}#${ROOT_ID} .pme-action.primary{grid-column:1/-1;}#${ROOT_ID} .pme-action{font-size:13px;}#${MODAL_ID}{align-items:end;}#${MODAL_ID} .pme-modal-actions{grid-template-columns:1fr;}}
+      @media(max-width:700px){#${ROOT_ID} .pme-origin-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;}#${ROOT_ID} .pme-channel-grid{gap:7px;}#${ROOT_ID} .pme-pill{font-size:13px;padding:12px 8px;}#${ROOT_ID} .pme-power{font-size:10px;padding:8px 4px;}#${ROOT_ID} .pme-channel{font-size:12px;padding:12px 3px;}#${ROOT_ID} .pme-step-title{font-size:16px;}#${ROOT_ID} .pme-step-help{font-size:12px;}#${ROOT_ID} .pme-actions{grid-template-columns:repeat(2,minmax(0,1fr));}#${ROOT_ID} .pme-action.primary{grid-column:1/-1;}#${ROOT_ID} .pme-action{font-size:13px;}#${MODAL_ID}{align-items:end;}#${MODAL_ID} .pme-modal-actions{grid-template-columns:1fr;}#${MODAL_ID} .pme-modal-actions button{min-height:48px;}}
       @media(max-width:420px){#${TOP_ID}{border-radius:16px;padding:13px 14px;}#${TOP_ID} .pme-top-title{font-size:19px;}#${ROOT_ID}{border-radius:16px;padding:13px;margin:12px 0;}#${ROOT_ID} .pme-header{flex-direction:column;align-items:stretch;}#${ROOT_ID} .pme-chip{text-align:center;white-space:normal;}#${ROOT_ID} .pme-origin-grid{grid-template-columns:1fr 1fr;}#${ROOT_ID} .pme-select{font-size:16px;min-height:56px;}#${ROOT_ID} .pme-text{font-size:15px;} }
     `;
     document.head.appendChild(style);
@@ -286,9 +288,10 @@
     const parts = parseEmailParts(text || getCurrentText());
     return 'mailto:' + encodeURIComponent(email) + '?subject=' + encodeURIComponent(parts.subject) + '&body=' + encodeURIComponent(parts.body);
   }
-  async function copyText(text, label) {
-    try { await navigator.clipboard.writeText(text); setStatus(label || 'Copiado.'); return true; }
-    catch (_) { window.prompt('Copie o texto:', text); setStatus('Copie manualmente pela janela aberta.'); return false; }
+  async function copyText(text, label, statusFn) {
+    const fn = typeof statusFn === 'function' ? statusFn : setStatus;
+    try { await navigator.clipboard.writeText(text); fn(label || 'Copiado.'); return true; }
+    catch (_) { window.prompt('Copie o texto:', text); fn('Copie manualmente pela janela aberta.'); return false; }
   }
   function setStatus(text) {
     const root = document.getElementById(ROOT_ID);
@@ -439,16 +442,29 @@
     if (root.__pmeBound) return;
     root.__pmeBound = true;
     root.addEventListener('pointerdown', handleRootPointerDown, true);
+    root.addEventListener('pointerup', handleRootActivation, true);
+    root.addEventListener('click', handleRootActivation, true);
     root.addEventListener('focusin', handleRootFocusIn, true);
-    root.addEventListener('click', handleRootClick, true);
     root.addEventListener('change', handleRootChange, true);
   }
-  function handleRootPointerDown(e) { if (e.target.closest('[data-pme="approach"]')) markInteraction(2500); }
+  function handleRootPointerDown(e) {
+    if (e.target.closest('[data-pme="approach"]')) markInteraction(2500);
+    if (e.target.closest('[data-pme-context],[data-pme-channel],[data-pme-power],[data-pme-action]')) markInteraction(450);
+  }
   function handleRootFocusIn(e) { if (e.target.closest('[data-pme="approach"]')) markInteraction(2500); }
-  function handleRootClick(e) {
+  function handleRootActivation(e) {
+    if (e.target.closest('[data-pme="approach"]')) return;
     const target = e.target.closest('[data-pme-context],[data-pme-channel],[data-pme-power],[data-pme-action]');
     if (!target || !document.getElementById(ROOT_ID)?.contains(target)) return;
+
+    if (e.type === 'click' && Date.now() - lastPointerHandledAt < 650) {
+      e.preventDefault(); e.stopPropagation();
+      return;
+    }
+    if (e.type === 'pointerup') lastPointerHandledAt = Date.now();
+
     e.preventDefault(); e.stopPropagation();
+
     const context = target.getAttribute('data-pme-context');
     if (context) { state.context = context; state.variant = 0; saveState(); render(true); return; }
     const channel = target.getAttribute('data-pme-channel');
@@ -458,7 +474,7 @@
     const action = target.getAttribute('data-pme-action');
     if (action === 'next') { state.variant += 1; saveState(); render(true); return; }
     if (action === 'prev') { state.variant -= 1; saveState(); render(true); return; }
-    if (action === 'use') { useCurrentText(); return; }
+    if (action === 'use') { executeText(getCurrentText(), setStatus); return; }
     if (action === 'ai') openModal(getCurrentText(), true);
   }
   function handleRootChange(e) {
@@ -471,67 +487,82 @@
     render(true);
   }
   function powerLabel(key) { const found = Object.values(CHANNELS).find((c) => c.powerKey === key); return found ? found.powerLabel : key; }
-  async function useCurrentText() {
-    const text = getCurrentText();
+
+  async function executeText(text, statusFn) {
+    const fn = typeof statusFn === 'function' ? statusFn : setStatus;
     if (state.channel === 'whatsapp') {
       const url = buildWhatsappUrl(text);
-      if (!url) { await copyText(text, 'Telefone não identificado. Texto copiado para uso manual.'); return; }
-      window.open(url, '_blank', 'noopener,noreferrer'); setStatus('WhatsApp aberto com texto pronto. Confirme manualmente antes de enviar.'); return;
+      if (!url) { await copyText(text, 'Telefone não identificado. Texto copiado para uso manual.', fn); return; }
+      window.open(url, '_blank', 'noopener,noreferrer');
+      fn('WhatsApp aberto com a mensagem pronta. Confirme manualmente antes de enviar.');
+      return;
     }
     if (state.channel === 'email') {
       const mailto = buildMailtoUrl(text);
-      if (mailto) { window.location.href = mailto; setStatus('E-mail preparado no cliente de e-mail. Revise antes de enviar.'); return; }
-      await copyText(text, 'E-mail não identificado. Texto copiado para uso manual.'); return;
+      if (mailto) { window.location.href = mailto; fn('E-mail preparado no cliente de e-mail. Revise antes de enviar.'); return; }
+      await copyText(text, 'E-mail não identificado. Texto copiado para uso manual.', fn);
+      return;
     }
-    await copyText(text, 'Fala de ligação copiada. A ligação será iniciada se o dispositivo permitir.');
+    await copyText(text, 'Fala de ligação copiada. A ligação será iniciada se o dispositivo permitir.', fn);
     const phone = getPhoneE164();
-    if (phone) { window.location.href = 'tel:' + phone; setStatus('Ligação acionada e fala copiada como apoio.'); }
+    if (phone) { window.location.href = 'tel:' + phone; fn('Ligação acionada e fala copiada como apoio.'); }
   }
 
   function ensureModal() {
     if (document.getElementById(MODAL_ID)) return;
     const modal = document.createElement('div');
     modal.id = MODAL_ID;
-    modal.innerHTML = `<div class="pme-modal-card"><div class="pme-modal-head"><div><div class="pme-title">Melhorar com IA</div><div class="pme-sub">Revise antes de utilizar. Nada será enviado automaticamente.</div></div><button class="pme-close pme-muted" data-modal-action="close">Fechar</button></div><textarea data-modal="text"></textarea><input data-modal="tip" placeholder="Dica para IA: cliente achou caro, quer entrada menor, já visitou..." /><div class="pme-note" data-modal="status"></div><div class="pme-modal-actions"><button class="pme-primary" data-modal-action="use">Utilizar versão</button><button class="pme-warn" data-modal-action="ai">Melhorar novamente</button><button class="pme-muted" data-modal-action="copy">Copiar</button><a class="pme-green" data-modal-action="whatsapp" target="_blank" rel="noopener noreferrer" href="#">Abrir WhatsApp</a></div></div>`;
+    modal.innerHTML = `<div class="pme-modal-card"><div class="pme-modal-head"><div><div class="pme-title">Melhorar com IA</div><div class="pme-sub">A IA melhora o texto. Depois execute pelo canal já escolhido no fluxo.</div></div><button class="pme-close pme-muted" data-modal-action="close">Fechar</button></div><div class="pme-modal-channel" data-modal="channel"></div><textarea data-modal="text"></textarea><input data-modal="tip" placeholder="Dica para IA: cliente achou caro, quer entrada menor, já visitou..." /><div class="pme-note" data-modal="status"></div><div class="pme-modal-actions"><button class="pme-primary" data-modal-action="execute"></button><button class="pme-warn" data-modal-action="ai">Melhorar novamente</button><button class="pme-muted" data-modal-action="close">Fechar</button></div></div>`;
     document.body.appendChild(modal);
-    modal.addEventListener('click', handleModalClick, true);
-    modal.addEventListener('input', updateModalWhatsapp, true);
+    modal.addEventListener('pointerdown', handleModalPointerDown, true);
+    modal.addEventListener('pointerup', handleModalActivation, true);
+    modal.addEventListener('click', handleModalActivation, true);
   }
-  function handleModalClick(e) {
+  function handleModalPointerDown(e) {
+    if (e.target.closest('[data-modal-action]')) markInteraction(450);
+  }
+  function handleModalActivation(e) {
     const modal = document.getElementById(MODAL_ID); if (!modal) return;
     if (e.target === modal) { closeModal(); return; }
     const target = e.target.closest('[data-modal-action]'); if (!target || !modal.contains(target)) return;
+
+    if (e.type === 'click' && Date.now() - lastPointerHandledAt < 650) {
+      e.preventDefault(); e.stopPropagation();
+      return;
+    }
+    if (e.type === 'pointerup') lastPointerHandledAt = Date.now();
+
+    e.preventDefault(); e.stopPropagation();
     const action = target.getAttribute('data-modal-action');
-    if (action !== 'whatsapp') { e.preventDefault(); e.stopPropagation(); }
     if (action === 'close') closeModal();
-    if (action === 'copy') copyText(modal.querySelector('[data-modal="text"]').value, 'Texto copiado.');
-    if (action === 'use') useModalText();
+    if (action === 'execute') executeModalText();
     if (action === 'ai') improveModalText(true);
   }
   function openModal(text, runAi) {
     const modal = document.getElementById(MODAL_ID); if (!modal) return;
     modal.querySelector('[data-modal="text"]').value = text || getCurrentText();
     modal.querySelector('[data-modal="tip"]').value = '';
+    refreshModalExecution();
     setModalStatus('Preparando IA. Se falhar, use o texto base.');
-    updateModalWhatsapp(); modal.classList.add('open'); if (runAi) improveModalText(false);
+    modal.classList.add('open');
+    if (runAi) improveModalText(false);
+  }
+  function refreshModalExecution() {
+    const modal = document.getElementById(MODAL_ID); if (!modal) return;
+    const channel = CHANNELS[state.channel] || CHANNELS.ligacao;
+    const channelEl = modal.querySelector('[data-modal="channel"]');
+    const executeBtn = modal.querySelector('[data-modal-action="execute"]');
+    if (channelEl) channelEl.textContent = `Canal escolhido: ${channel.icon} ${channel.label}`;
+    if (executeBtn) executeBtn.textContent = getExecuteLabel();
   }
   function closeModal() { document.getElementById(MODAL_ID)?.classList.remove('open'); }
   function setModalStatus(text) { const el = document.querySelector(`#${MODAL_ID} [data-modal="status"]`); if (el) el.textContent = text || ''; }
-  async function useModalText() {
+  async function executeModalText() {
     const modal = document.getElementById(MODAL_ID); if (!modal) return;
     const text = modal.querySelector('[data-modal="text"]').value;
-    if (state.channel === 'whatsapp') { const url = buildWhatsappUrl(text); if (url) { window.open(url, '_blank', 'noopener,noreferrer'); setModalStatus('WhatsApp aberto. Confirme manualmente antes de enviar.'); return; } }
-    if (state.channel === 'email') { const mailto = buildMailtoUrl(text); if (mailto) { window.location.href = mailto; setModalStatus('E-mail preparado. Revise antes de enviar.'); return; } }
-    await copyText(text, 'Texto copiado.'); setModalStatus('Texto copiado para uso manual.');
+    await executeText(text, setModalStatus);
   }
-  function updateModalWhatsapp() {
-    const modal = document.getElementById(MODAL_ID); if (!modal) return;
-    const link = modal.querySelector('[data-modal-action="whatsapp"]');
-    const text = modal.querySelector('[data-modal="text"]').value;
-    const url = buildWhatsappUrl(text);
-    if (url && state.channel === 'whatsapp') { link.href = url; link.style.display = 'block'; }
-    else { link.href = '#'; link.style.display = 'none'; }
-  }
+
   function getSupabaseAccessToken() {
     const candidates = [];
     try {
@@ -567,6 +598,7 @@
   }
   async function improveModalText(forceRetry) {
     const modal = document.getElementById(MODAL_ID); if (!modal) return;
+    refreshModalExecution();
     const textarea = modal.querySelector('[data-modal="text"]');
     const tip = modal.querySelector('[data-modal="tip"]').value.trim();
     const session = getSupabaseAccessToken();
@@ -580,7 +612,7 @@
       if (!res.ok) throw new Error(data?.error || data?.message || `Erro ${res.status}`);
       const improved = extractAiText(data);
       if (!improved) throw new Error('A IA não retornou texto utilizável.');
-      textarea.value = improved; setModalStatus('IA gerou uma versão. Revise antes de utilizar.'); updateModalWhatsapp();
+      textarea.value = improved; setModalStatus('IA gerou uma versão. Revise e execute pelo canal escolhido.'); refreshModalExecution();
     } catch (err) { setModalStatus(`IA indisponível: ${err.message || 'falha não identificada'}. Use o texto base e registre o feedback normalmente.`); }
   }
   function buildAiPrompt(baseText, tip, forceRetry) {
