@@ -5,6 +5,7 @@
 **Status:** contrato inicial para implementação controlada  
 **Branch de trabalho:** `feature/ccam-pme-mvp-v0.1`  
 **Branch alvo futura:** `main`, somente via PR validado  
+**PR:** #20  
 **Protocolo obrigatório:** Protocolo Mestre FECH.AI / MesaCliente v1.2  
 **Classificação inicial:** R1/R2 para frontend isolado; R3/R4 se tocar Supabase, RPC, RLS, auth, tenant, billing ou dados pessoais.
 
@@ -40,7 +41,21 @@ O MVP deve permitir que o corretor:
 
 ---
 
-## 3. Escopo do MVP
+## 3. Diagnóstico inicial da IA
+
+Arquivo HAR analisado indicou:
+
+- `get_contagens_corretor` retornando `401 JWT expired`;
+- `OPTIONS` da Edge Function `assistente-ai` retornando `200`;
+- `POST` para `assistente-ai` aparecendo com status `0` no navegador.
+
+Hipótese inicial: a IA falha por combinação de sessão expirada, ausência de tratamento claro de erro no frontend e possível falha de CORS/runtime/resposta na Edge Function.
+
+Regra de MVP: **falha da IA nunca pode travar a operação manual da PME**.
+
+---
+
+## 4. Escopo do MVP
 
 ### Dentro do escopo
 
@@ -74,6 +89,7 @@ O MVP deve permitir que o corretor:
 - Registro de resposta selecionada/utilizada para futura base de conhecimento.
 - Score simples da interação.
 - Associação entre nota, feedback e resposta utilizada.
+- Registro documental de branch, main, release, rollback e checklist.
 
 ### Fora do escopo nesta primeira etapa
 
@@ -89,7 +105,7 @@ O MVP deve permitir que o corretor:
 
 ---
 
-## 4. Estratégia de IA no MVP
+## 5. Estratégia de IA no MVP
 
 A IA entra como **copiloto de texto**, não como dona do fluxo.
 
@@ -100,7 +116,9 @@ No MVP, a IA deve:
 - respeitar tenant/empresa/perfil quando a camada de backend estiver implementada;
 - retornar variações curtas, úteis e comerciais;
 - nunca decidir feedback automaticamente;
-- nunca enviar mensagem automaticamente.
+- nunca enviar mensagem automaticamente;
+- retornar erro tratável quando JWT estiver expirado;
+- permitir fallback para texto base quando a Edge Function falhar.
 
 ### Modelo recomendado para MVP
 
@@ -108,7 +126,7 @@ Usar um modelo econômico e seguro para geração operacional curta, com fallbac
 
 ---
 
-## 5. IA como módulo SaaS pago
+## 6. IA como módulo SaaS pago
 
 O acesso à IA será tratado como módulo comercial separado.
 
@@ -123,7 +141,7 @@ O MVP deve prever flags futuras:
 
 ---
 
-## 6. Base de respostas e reaproveitamento
+## 7. Base de respostas e reaproveitamento
 
 Toda resposta usada deve poder virar dado para inteligência comercial.
 
@@ -144,7 +162,38 @@ Objetivo: identificar quais scripts convertem melhor por origem, canal, tipo de 
 
 ---
 
-## 7. Critérios de aceite
+## 8. Governança de branch
+
+Branch oficial desta entrega:
+
+`feature/ccam-pme-mvp-v0.1`
+
+Registro obrigatório:
+
+`docs/branches/BRANCH_REGISTRY.md`
+
+Regra: cada branch precisa ter objetivo, escopo, fora de escopo, rollback, status e condição de merge.
+
+---
+
+## 9. Governança de atualização para main
+
+Arquivos obrigatórios:
+
+- `docs/main/MAIN_UPDATE_REGISTRY.md`;
+- `docs/main/MAIN_MERGE_CHECKLIST.md`;
+- `docs/main/MAIN_ROLLBACK_LOG.md`;
+- `docs/releases/ccam-pme-mvp-v0.1/RELEASE_NOTES.md`;
+- `docs/releases/ccam-pme-mvp-v0.1/MERGE_PLAN.md`;
+- `docs/releases/ccam-pme-mvp-v0.1/VALIDATION_REPORT.md`;
+- `docs/releases/ccam-pme-mvp-v0.1/ROLLBACK_PLAN.md`;
+- `docs/releases/ccam-pme-mvp-v0.1/POST_MERGE_CHECKLIST.md`.
+
+Nada sobe para `main` sem passar pelo checklist.
+
+---
+
+## 10. Critérios de aceite
 
 - Tela mobile não pode ter script encavalado.
 - Badges devem ser clicáveis e mudar o contexto exibido.
@@ -158,7 +207,7 @@ Objetivo: identificar quais scripts convertem melhor por origem, canal, tipo de 
 
 ---
 
-## 8. Critérios de bloqueio
+## 11. Critérios de bloqueio
 
 Bloquear merge se ocorrer qualquer item abaixo:
 
@@ -170,24 +219,27 @@ Bloquear merge se ocorrer qualquer item abaixo:
 - componente mobile ilegível;
 - botão que aparenta enviar mensagem automaticamente sem confirmação do usuário;
 - ausência de fallback quando IA falhar;
-- ausência de documentação do que foi alterado.
+- ausência de documentação do que foi alterado;
+- PR sem checklist de main atualizado.
 
 ---
 
-## 9. Estratégia de atualização para main
+## 12. Estratégia de atualização para main
 
 1. Trabalhar na branch `feature/ccam-pme-mvp-v0.1`.
-2. Criar PR em modo draft para `main`.
+2. Manter PR em modo draft enquanto houver risco funcional.
 3. Validar diff.
 4. Executar caderno de testes.
 5. Registrar evidências.
 6. Atualizar contrato se houver mudança de escopo.
-7. Marcar PR pronto somente após PASS funcional.
-8. Fazer merge somente com aprovação explícita.
+7. Atualizar `MAIN_UPDATE_REGISTRY.md`.
+8. Marcar PR pronto somente após PASS funcional.
+9. Fazer merge somente com aprovação explícita.
+10. Executar `POST_MERGE_CHECKLIST.md`.
 
 ---
 
-## 10. Decisão canônica inicial
+## 13. Decisão canônica inicial
 
 O módulo será tratado como **Assistente de Fluxo do Corretor**, não apenas como discador.
 
