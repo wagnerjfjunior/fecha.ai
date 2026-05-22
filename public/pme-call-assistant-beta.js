@@ -1,17 +1,20 @@
 /*
  * FECH.AI — Discador Flow AI / PME Beta
- * Version: 0.2.1
+ * Version: 0.2.2
  * Purpose: fluxo assistido do corretor no discador, mobile-first, com fallback manual e IA opcional.
  * Safety: sem envio automático, sem alteração de feedback/RPC/RLS, sem service_role, sem segredo sensível no frontend.
  */
 (function () {
   'use strict';
 
-  const VERSION = '0.2.1';
+  const VERSION = '0.2.2';
   const ROOT_ID = 'fechai-pme-call-assistant';
+  const TOP_ID = 'fechai-pme-page-title';
   const STYLE_ID = 'fechai-pme-call-assistant-style';
   const MODAL_ID = 'fechai-pme-flow-modal';
   const SUPABASE_URL = 'https://uobxxgzshrmbtjfdolxd.supabase.co';
+
+  let suspendAutoRenderUntil = 0;
 
   const CONTEXTS = {
     lista_fria: { label: 'Lista fria', icon: '🧊', hint: 'Lead frio precisa de permissão, triagem e saída elegante.' },
@@ -163,11 +166,14 @@
     const style = document.createElement('style');
     style.id = STYLE_ID;
     style.textContent = `
+      #${TOP_ID}{font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:linear-gradient(135deg,#0f172a,#1d4ed8);color:#fff;border-radius:20px;padding:14px 16px;box-shadow:0 10px 28px rgba(15,23,42,.14);margin:0 0 12px;}
+      #${TOP_ID} .pme-top-title{font-size:20px;font-weight:950;line-height:1.1;}
+      #${TOP_ID} .pme-top-sub{font-size:12px;opacity:.84;margin-top:4px;line-height:1.35;}
       #${ROOT_ID}{font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:#fff;border:1px solid #e5e7eb;border-radius:20px;padding:14px;box-shadow:0 10px 28px rgba(15,23,42,.08);margin:14px 0;max-width:100%;overflow:hidden;box-sizing:border-box;}
       #${ROOT_ID} *{box-sizing:border-box;}
       #${ROOT_ID} button,#${ROOT_ID} a,#${ROOT_ID} select{touch-action:manipulation;-webkit-tap-highlight-color:transparent;}
-      #${ROOT_ID} .pme-header{display:flex;justify-content:space-between;gap:10px;align-items:flex-start;margin-bottom:12px;}
-      #${ROOT_ID} .pme-title{font-size:17px;font-weight:950;color:#111827;line-height:1.15;}
+      #${ROOT_ID} .pme-header{display:flex;justify-content:space-between;gap:10px;align-items:flex-start;margin-bottom:10px;}
+      #${ROOT_ID} .pme-title{font-size:15px;font-weight:950;color:#111827;line-height:1.15;}
       #${ROOT_ID} .pme-sub{font-size:11px;color:#64748b;margin-top:3px;line-height:1.35;}
       #${ROOT_ID} .pme-chip{font-size:10px;font-weight:900;color:#1d4ed8;background:#eff6ff;border:1px solid #bfdbfe;padding:5px 8px;border-radius:999px;white-space:nowrap;}
       #${ROOT_ID} .pme-lead{background:#f8fafc;border:1px solid #e2e8f0;border-radius:16px;padding:10px 12px;margin:8px 0 12px;display:grid;gap:2px;}
@@ -186,7 +192,9 @@
       #${ROOT_ID} .pme-box{background:#f8fafc;border:1px solid #e2e8f0;border-radius:16px;padding:12px;margin-top:10px;max-width:100%;overflow:hidden;}
       #${ROOT_ID} .pme-box .pme-label{text-align:left;margin:0 0 6px;}
       #${ROOT_ID} .pme-text{font-size:14px;line-height:1.48;color:#111827;white-space:pre-line;overflow-wrap:anywhere;word-break:normal;}
-      #${ROOT_ID} .pme-actions{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin-top:10px;}
+      #${ROOT_ID} .pme-exec{background:#f8fafc;border:1px solid #e2e8f0;border-radius:18px;padding:12px;margin-top:12px;}
+      #${ROOT_ID} .pme-exec-title{text-align:center;font-size:11px;color:#64748b;font-weight:950;text-transform:uppercase;letter-spacing:.04em;margin-bottom:8px;}
+      #${ROOT_ID} .pme-actions{display:grid;grid-template-columns:1.4fr .8fr .8fr 1.1fr;gap:8px;}
       #${ROOT_ID} .pme-action{border:1px solid #dbeafe;background:#eff6ff;color:#1d4ed8;border-radius:999px;padding:10px 8px;font-size:12px;font-weight:950;text-decoration:none;cursor:pointer;text-align:center;line-height:1.2;min-height:40px;}
       #${ROOT_ID} .pme-action.primary{background:#2563eb;color:#fff;border-color:#2563eb;}
       #${ROOT_ID} .pme-action.ai{background:#fff7ed;color:#9a3412;border-color:#fed7aa;}
@@ -195,6 +203,8 @@
       #${MODAL_ID}.open{display:flex;}
       #${MODAL_ID} .pme-modal-card{background:#fff;border-radius:22px;padding:16px;width:100%;max-width:620px;max-height:86vh;overflow:auto;box-shadow:0 24px 70px rgba(15,23,42,.35);}
       #${MODAL_ID} .pme-modal-head{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;margin-bottom:10px;}
+      #${MODAL_ID} .pme-title{font-size:16px;font-weight:950;color:#111827;line-height:1.15;}
+      #${MODAL_ID} .pme-sub{font-size:11px;color:#64748b;margin-top:3px;line-height:1.35;}
       #${MODAL_ID} textarea{width:100%;min-height:170px;border:1px solid #cbd5e1;border-radius:16px;padding:12px;font-size:14px;line-height:1.45;resize:vertical;}
       #${MODAL_ID} input{width:100%;border:1px solid #cbd5e1;border-radius:14px;padding:11px;font-size:13px;margin-top:8px;}
       #${MODAL_ID} .pme-modal-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px;}
@@ -204,9 +214,13 @@
       #${MODAL_ID} .pme-muted{background:#e5e7eb;color:#374151;}
       #${MODAL_ID} .pme-warn{background:#fff7ed;color:#9a3412;border:1px solid #fed7aa;}
       #${MODAL_ID} .pme-note{font-size:11px;color:#64748b;margin-top:8px;line-height:1.35;}
-      @media(max-width:560px){#${ROOT_ID}{border-radius:16px;padding:12px;margin:12px 0;}#${ROOT_ID} .pme-header{flex-direction:column;align-items:stretch;}#${ROOT_ID} .pme-chip{text-align:center;white-space:normal;}#${ROOT_ID} .pme-channel-grid{grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;}#${ROOT_ID} .pme-power{font-size:9px;padding:7px 4px;}#${ROOT_ID} .pme-channel{font-size:11px;padding:10px 3px;}#${ROOT_ID} .pme-actions{grid-template-columns:repeat(2,minmax(0,1fr));}#${ROOT_ID} .pme-action{font-size:12px;}#${MODAL_ID}{align-items:end;}#${MODAL_ID} .pme-modal-actions{grid-template-columns:1fr;}}
+      @media(max-width:560px){#${TOP_ID}{border-radius:16px;padding:13px 14px;}#${TOP_ID} .pme-top-title{font-size:19px;}#${ROOT_ID}{border-radius:16px;padding:12px;margin:12px 0;}#${ROOT_ID} .pme-header{flex-direction:column;align-items:stretch;}#${ROOT_ID} .pme-chip{text-align:center;white-space:normal;}#${ROOT_ID} .pme-channel-grid{grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;}#${ROOT_ID} .pme-power{font-size:9px;padding:7px 4px;}#${ROOT_ID} .pme-channel{font-size:11px;padding:10px 3px;}#${ROOT_ID} .pme-actions{grid-template-columns:repeat(2,minmax(0,1fr));}#${ROOT_ID} .pme-action.primary{grid-column:1/-1;}#${ROOT_ID} .pme-action{font-size:12px;}#${MODAL_ID}{align-items:end;}#${MODAL_ID} .pme-modal-actions{grid-template-columns:1fr;}}
     `;
     document.head.appendChild(style);
+  }
+
+  function markInteraction(ms) {
+    suspendAutoRenderUntil = Date.now() + (ms || 1200);
   }
 
   function firstWord(text) { return String(text || '').trim().split(/\s+/)[0] || 'cliente'; }
@@ -274,10 +288,31 @@
     return renderTemplate(list[index]);
   }
 
+  function getExecuteLabel() {
+    if (state.channel === 'ligacao') return 'Efetuar ligação';
+    if (state.channel === 'whatsapp') return 'Abrir WhatsApp';
+    if (state.channel === 'email') return 'Preparar e-mail';
+    return 'Executar';
+  }
+
   function buildWhatsappUrl(text) {
     const phone = getPhoneE164().replace('+', '').replace(/\D/g, '');
     if (!phone) return '';
     return 'https://wa.me/' + phone + '?text=' + encodeURIComponent(text || getCurrentText());
+  }
+
+  function parseEmailParts(text) {
+    const raw = String(text || '');
+    const match = raw.match(/^\s*Assunto:\s*([^\n]+)\n+/i);
+    if (!match) return { subject: 'Contato sobre imóvel', body: raw };
+    return { subject: match[1].trim(), body: raw.slice(match[0].length).trim() };
+  }
+
+  function buildMailtoUrl(text) {
+    const email = getEmail();
+    if (!email) return '';
+    const parts = parseEmailParts(text || getCurrentText());
+    return 'mailto:' + encodeURIComponent(email) + '?subject=' + encodeURIComponent(parts.subject) + '&body=' + encodeURIComponent(parts.body);
   }
 
   async function copyText(text, label) {
@@ -315,6 +350,85 @@
     return null;
   }
 
+  function findDiscadorContainer() {
+    const tel = document.querySelector('a[href^="tel:"]');
+    const card = tel ? tel.closest('.bg-white') || tel.closest('[class*="bg-white"]') : null;
+    return card ? card.parentElement : null;
+  }
+
+  function ensureTopTitle() {
+    const container = findDiscadorContainer();
+    if (!container) return;
+    let top = document.getElementById(TOP_ID);
+    if (!top) {
+      top = document.createElement('div');
+      top.id = TOP_ID;
+    }
+    top.innerHTML = '<div class="pme-top-title">⚡ Discador Flow AI</div><div class="pme-top-sub">Atendimento guiado: lead → situação → canal → execução → feedback</div>';
+    if (top.parentElement !== container || container.firstElementChild !== top) {
+      container.insertBefore(top, container.firstElementChild || null);
+    }
+  }
+
+  function hideOriginalTopPowerDial() {
+    const buttons = Array.from(document.querySelectorAll('button'));
+    const btn = buttons.find((b) => !document.getElementById(ROOT_ID)?.contains(b) && /Power\s*Dial/i.test(b.textContent || ''));
+    if (!btn) return;
+    const row = btn.parentElement;
+    if (row && !row.dataset.pmeOriginalPowerHidden) {
+      row.dataset.pmeOriginalPowerHidden = '1';
+      row.style.display = 'none';
+    }
+  }
+
+  function hideOriginalContactButtons() {
+    const tel = document.querySelector('a[href^="tel:"]');
+    if (!tel || document.getElementById(ROOT_ID)?.contains(tel)) return;
+    const card = tel.closest('.bg-white') || tel.closest('[class*="bg-white"]');
+    if (!card) return;
+    const rows = Array.from(card.querySelectorAll('div'));
+    const row = rows.find((r) => {
+      const txt = r.textContent || '';
+      return r.querySelector('a[href^="tel:"]') && /Mensagens/i.test(txt);
+    });
+    if (row && !row.dataset.pmeOriginalContactHidden) {
+      row.dataset.pmeOriginalContactHidden = '1';
+      row.style.display = 'none';
+    }
+  }
+
+  function getExternalPowerDialButton() {
+    const root = document.getElementById(ROOT_ID);
+    return Array.from(document.querySelectorAll('button')).find((b) => (!root || !root.contains(b)) && /Power\s*Dial/i.test(b.textContent || '')) || null;
+  }
+
+  function syncPowerDialFromApp() {
+    const btn = getExternalPowerDialButton();
+    const txt = btn ? (btn.textContent || '') : '';
+    const byText = /ON/i.test(txt) ? 'on' : (/OFF/i.test(txt) ? 'off' : '');
+    const byStorage = safeGet('powerDial', '') === 'true' ? 'on' : 'off';
+    state.power.power_dial = byText || byStorage;
+    safeSet('fechai_pme_power_dial', state.power.power_dial);
+  }
+
+  function togglePower(key) {
+    if (key === 'power_dial') {
+      const btn = getExternalPowerDialButton();
+      if (btn) btn.click();
+      else {
+        const next = state.power.power_dial === 'on' ? 'off' : 'on';
+        state.power.power_dial = next;
+        safeSet('powerDial', next === 'on' ? 'true' : 'false');
+      }
+      setTimeout(() => { syncPowerDialFromApp(); render(true); }, 80);
+      return;
+    }
+    state.power[key] = state.power[key] === 'on' ? 'off' : 'on';
+    saveState();
+    render(true);
+    setTimeout(() => setStatus(`${powerLabel(key)} ${state.power[key].toUpperCase()}. No MVP isso não executa automação sozinho.`), 0);
+  }
+
   function renderPills(items, active, attr) {
     return Object.entries(items).map(([key, item]) => {
       const label = typeof item === 'string' ? item : `${item.icon || ''} ${item.label}`;
@@ -323,9 +437,11 @@
   }
 
   function renderChannelGrid() {
+    syncPowerDialFromApp();
     return `<div class="pme-channel-grid">${Object.entries(CHANNELS).map(([key, item]) => {
-      const powerStatus = state.power[item.powerKey] === 'on' ? 'ON' : 'OFF';
-      const powerClass = state.power[item.powerKey] === 'on' ? 'on' : '';
+      const currentPower = state.power[item.powerKey] === 'on' ? 'on' : 'off';
+      const powerStatus = currentPower === 'on' ? 'ON' : 'OFF';
+      const powerClass = currentPower === 'on' ? 'on' : '';
       return `
         <div class="pme-channel-card">
           <button type="button" class="pme-power ${powerClass}" data-pme-power="${escapeHtml(item.powerKey)}">${escapeHtml(item.powerLabel)} ${powerStatus}</button>
@@ -348,16 +464,24 @@
       </div>`;
   }
 
-  function render() {
+  function render(force) {
     ensureStyle();
     ensureModal();
     if (!hasDiscadorLead()) {
       const old = document.getElementById(ROOT_ID);
+      const top = document.getElementById(TOP_ID);
       if (old) old.remove();
+      if (top) top.remove();
       return;
     }
+    if (!force && shouldSkipAutoRender()) return;
     const mount = findMountPoint();
     if (!mount) return;
+
+    ensureTopTitle();
+    hideOriginalTopPowerDial();
+    hideOriginalContactButtons();
+
     let root = document.getElementById(ROOT_ID);
     if (!root) {
       root = document.createElement('div');
@@ -377,8 +501,8 @@
     root.innerHTML = `
       <div class="pme-header">
         <div>
-          <div class="pme-title">⚡ Discador Flow AI</div>
-          <div class="pme-sub">PME Beta ${VERSION} · fluxo guiado do corretor</div>
+          <div class="pme-title">Fluxo de atendimento</div>
+          <div class="pme-sub">PME Beta ${VERSION} · escolha situação, canal e abordagem</div>
         </div>
         <div class="pme-chip">${escapeHtml(ctx.label)} · ${escapeHtml(channel.label)}</div>
       </div>
@@ -393,11 +517,14 @@
         <div class="pme-label">Sugestão pronta</div>
         <div class="pme-text">${escapeHtml(text)}</div>
       </div>
-      <div class="pme-actions">
-        <button class="pme-action primary" data-pme-action="use">Utilizar</button>
-        <button class="pme-action" data-pme-action="prev">Voltar</button>
-        <button class="pme-action" data-pme-action="next">Próximo</button>
-        <button class="pme-action ai" data-pme-action="ai">Melhorar com IA</button>
+      <div class="pme-exec">
+        <div class="pme-exec-title">4. Execução</div>
+        <div class="pme-actions">
+          <button class="pme-action primary" data-pme-action="use">${escapeHtml(getExecuteLabel())}</button>
+          <button class="pme-action" data-pme-action="prev">Voltar</button>
+          <button class="pme-action" data-pme-action="next">Próximo</button>
+          <button class="pme-action ai" data-pme-action="ai">Melhorar com IA</button>
+        </div>
       </div>
       <div class="pme-status" data-pme-status>${escapeHtml(ctx.hint)} A PME não envia mensagem sozinha e não registra feedback automaticamente.</div>
     `;
@@ -410,11 +537,31 @@
     saveState();
   }
 
+  function shouldSkipAutoRender() {
+    if (Date.now() < suspendAutoRenderUntil) return true;
+    const active = document.activeElement;
+    const root = document.getElementById(ROOT_ID);
+    const modal = document.getElementById(MODAL_ID);
+    if (root && active && root.contains(active) && active.tagName === 'SELECT') return true;
+    if (modal && active && modal.contains(active)) return true;
+    return false;
+  }
+
   function bindRootOnce(root) {
     if (root.__pmeBound) return;
     root.__pmeBound = true;
+    root.addEventListener('pointerdown', handleRootPointerDown, true);
+    root.addEventListener('focusin', handleRootFocusIn, true);
     root.addEventListener('click', handleRootClick, true);
     root.addEventListener('change', handleRootChange, true);
+  }
+
+  function handleRootPointerDown(e) {
+    if (e.target.closest('[data-pme="approach"]')) markInteraction(2500);
+  }
+
+  function handleRootFocusIn(e) {
+    if (e.target.closest('[data-pme="approach"]')) markInteraction(2500);
   }
 
   function handleRootClick(e) {
@@ -428,7 +575,7 @@
       state.context = context;
       state.variant = 0;
       saveState();
-      render();
+      render(true);
       return;
     }
 
@@ -437,16 +584,13 @@
       state.channel = channel;
       state.variant = 0;
       saveState();
-      render();
+      render(true);
       return;
     }
 
     const power = target.getAttribute('data-pme-power');
     if (power) {
-      state.power[power] = state.power[power] === 'on' ? 'off' : 'on';
-      saveState();
-      render();
-      setTimeout(() => setStatus(`${powerLabel(power)} ${state.power[power].toUpperCase()}. No MVP isso não executa automação sozinho.`), 0);
+      togglePower(power);
       return;
     }
 
@@ -454,13 +598,13 @@
     if (action === 'next') {
       state.variant += 1;
       saveState();
-      render();
+      render(true);
       return;
     }
     if (action === 'prev') {
       state.variant -= 1;
       saveState();
-      render();
+      render(true);
       return;
     }
     if (action === 'use') {
@@ -475,10 +619,11 @@
   function handleRootChange(e) {
     const el = e.target.closest('[data-pme="approach"]');
     if (!el) return;
+    suspendAutoRenderUntil = 0;
     state.approach = el.value;
     state.variant = 0;
     saveState();
-    render();
+    render(true);
   }
 
   function powerLabel(key) {
@@ -499,10 +644,22 @@
       return;
     }
     if (state.channel === 'email') {
-      await copyText(text, 'E-mail copiado. Cole no seu cliente de e-mail e revise antes de enviar.');
+      const mailto = buildMailtoUrl(text);
+      if (mailto) {
+        window.location.href = mailto;
+        setStatus('E-mail preparado no cliente de e-mail. Revise antes de enviar.');
+        return;
+      }
+      await copyText(text, 'E-mail não identificado. Texto copiado para uso manual.');
       return;
     }
-    await copyText(text, 'Fala de ligação copiada. Use como apoio, não como leitura robótica.');
+
+    await copyText(text, 'Fala de ligação copiada. A ligação será iniciada se o dispositivo permitir.');
+    const phone = getPhoneE164();
+    if (phone) {
+      window.location.href = 'tel:' + phone;
+      setStatus('Ligação acionada e fala copiada como apoio.');
+    }
   }
 
   function ensureModal() {
@@ -531,6 +688,7 @@
     `;
     document.body.appendChild(modal);
     modal.addEventListener('click', handleModalClick, true);
+    modal.addEventListener('input', updateModalWhatsapp, true);
   }
 
   function handleModalClick(e) {
@@ -580,6 +738,14 @@
       if (url) {
         window.open(url, '_blank', 'noopener,noreferrer');
         setModalStatus('WhatsApp aberto. Confirme manualmente antes de enviar.');
+        return;
+      }
+    }
+    if (state.channel === 'email') {
+      const mailto = buildMailtoUrl(text);
+      if (mailto) {
+        window.location.href = mailto;
+        setModalStatus('E-mail preparado. Revise antes de enviar.');
         return;
       }
     }
@@ -775,12 +941,12 @@
     return function () { clearTimeout(t); t = setTimeout(fn, wait); };
   }
 
-  const debouncedRender = debounce(render, 350);
+  const debouncedRender = debounce(() => render(false), 350);
 
-  window.FECHAI_PME_CALL_ASSISTANT = { version: VERSION, render, data: { CONTEXTS, CHANNELS, APPROACHES, TEMPLATES } };
+  window.FECHAI_PME_CALL_ASSISTANT = { version: VERSION, render: () => render(true), data: { CONTEXTS, CHANNELS, APPROACHES, TEMPLATES } };
 
-  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', render);
-  else render();
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', () => render(true));
+  else render(true);
 
   const observer = new MutationObserver(debouncedRender);
   observer.observe(document.body, { childList: true, subtree: true });
