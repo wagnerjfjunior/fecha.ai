@@ -1,13 +1,13 @@
 /*
  * FECH.AI — Discador Flow AI / PME Beta
- * Version: 0.2.4
+ * Version: 0.2.6
  * Purpose: fluxo assistido do corretor no discador, mobile-first, com fallback manual e IA opcional.
  * Safety: sem envio automático, sem alteração de feedback/RPC/RLS, sem service_role, sem segredo sensível no frontend.
  */
 (function () {
   'use strict';
 
-  const VERSION = '0.2.4';
+  const VERSION = '0.2.6';
   const ROOT_ID = 'fechai-pme-call-assistant';
   const TOP_ID = 'fechai-pme-page-title';
   const STYLE_ID = 'fechai-pme-call-assistant-style';
@@ -16,6 +16,7 @@
 
   let suspendAutoRenderUntil = 0;
   let lastPointerHandledAt = 0;
+  let aiAttempt = 0;
 
   const CONTEXTS = {
     carteira: { label: 'Carteira', icon: '📒', hint: 'Lead inserido ou acompanhado pelo próprio corretor. Use abordagem mais consultiva e com histórico.' },
@@ -42,6 +43,15 @@
     sem_resposta: 'Cliente sem resposta',
     fim_contato: 'Fim de contato',
   };
+
+  const AI_STRATEGIES = [
+    'abertura consultiva com pergunta curta de avanço',
+    'tom humano e menos formal, parecendo mensagem real de corretor experiente',
+    'condução objetiva com validação de interesse antes do próximo passo',
+    'contorno de objeção com empatia, sem insistência e sem promessa comercial',
+    'fechamento leve com alternativa clara: seguir, pausar ou agendar',
+    'estrutura totalmente diferente do texto base, evitando repetir abertura e fechamento',
+  ];
 
   const TEMPLATES = {
     carteira: {
@@ -475,7 +485,7 @@
     if (action === 'next') { state.variant += 1; saveState(); render(true); return; }
     if (action === 'prev') { state.variant -= 1; saveState(); render(true); return; }
     if (action === 'use') { executeText(getCurrentText(), setStatus); return; }
-    if (action === 'ai') openModal(getCurrentText(), true);
+    if (action === 'ai') openModal(getCurrentText(), false);
   }
   function handleRootChange(e) {
     const el = e.target.closest('[data-pme="approach"]');
@@ -512,14 +522,18 @@
     if (document.getElementById(MODAL_ID)) return;
     const modal = document.createElement('div');
     modal.id = MODAL_ID;
-    modal.innerHTML = `<div class="pme-modal-card"><div class="pme-modal-head"><div><div class="pme-title">Melhorar com IA</div><div class="pme-sub">A IA melhora o texto. Depois execute pelo canal já escolhido no fluxo.</div></div><button class="pme-close pme-muted" data-modal-action="close">Fechar</button></div><div class="pme-modal-channel" data-modal="channel"></div><textarea data-modal="text"></textarea><input data-modal="tip" placeholder="Dica para IA: cliente achou caro, quer entrada menor, já visitou..." /><div class="pme-note" data-modal="status"></div><div class="pme-modal-actions"><button class="pme-primary" data-modal-action="execute"></button><button class="pme-warn" data-modal-action="ai">Melhorar novamente</button><button class="pme-muted" data-modal-action="close">Fechar</button></div></div>`;
+    modal.innerHTML = `<div class="pme-modal-card"><div class="pme-modal-head"><div><div class="pme-title">Melhorar com IA</div><div class="pme-sub">Escreva uma dica opcional e gere uma versão melhor. Depois execute pelo canal já escolhido no fluxo.</div></div><button class="pme-close pme-muted" data-modal-action="close">Fechar</button></div><div class="pme-modal-channel" data-modal="channel"></div><textarea data-modal="text"></textarea><input data-modal="tip" placeholder="Dica para IA: cliente achou caro, quer entrada menor, já visitou..." /><div class="pme-note" data-modal="status"></div><div class="pme-modal-actions"><button class="pme-primary" data-modal-action="execute"></button><button class="pme-warn" data-modal-action="ai">Gerar nova versão</button><button class="pme-muted" data-modal-action="close">Fechar</button></div></div>`;
     document.body.appendChild(modal);
     modal.addEventListener('pointerdown', handleModalPointerDown, true);
     modal.addEventListener('pointerup', handleModalActivation, true);
     modal.addEventListener('click', handleModalActivation, true);
+    modal.addEventListener('input', handleModalInput, true);
   }
   function handleModalPointerDown(e) {
     if (e.target.closest('[data-modal-action]')) markInteraction(450);
+  }
+  function handleModalInput(e) {
+    if (e.target && e.target.matches && e.target.matches('[data-modal="tip"]')) refreshModalExecution();
   }
   function handleModalActivation(e) {
     const modal = document.getElementById(MODAL_ID); if (!modal) return;
@@ -543,7 +557,7 @@
     modal.querySelector('[data-modal="text"]').value = text || getCurrentText();
     modal.querySelector('[data-modal="tip"]').value = '';
     refreshModalExecution();
-    setModalStatus('Preparando IA. Se falhar, use o texto base.');
+    setModalStatus('Revise o texto, adicione uma dica se quiser e clique em Gerar nova versão. Se a IA falhar, use o texto base.');
     modal.classList.add('open');
     if (runAi) improveModalText(false);
   }
@@ -552,8 +566,11 @@
     const channel = CHANNELS[state.channel] || CHANNELS.ligacao;
     const channelEl = modal.querySelector('[data-modal="channel"]');
     const executeBtn = modal.querySelector('[data-modal-action="execute"]');
+    const aiBtn = modal.querySelector('[data-modal-action="ai"]');
+    const tip = modal.querySelector('[data-modal="tip"]')?.value.trim();
     if (channelEl) channelEl.textContent = `Canal escolhido: ${channel.icon} ${channel.label}`;
     if (executeBtn) executeBtn.textContent = getExecuteLabel();
+    if (aiBtn) aiBtn.textContent = tip ? 'Gerar com esta dica' : 'Gerar nova versão';
   }
   function closeModal() { document.getElementById(MODAL_ID)?.classList.remove('open'); }
   function setModalStatus(text) { const el = document.querySelector(`#${MODAL_ID} [data-modal="status"]`); if (el) el.textContent = text || ''; }
@@ -604,10 +621,11 @@
     const session = getSupabaseAccessToken();
     if (!session.token) { setModalStatus('IA indisponível: token da sessão não encontrado. Faça login novamente e use o texto base por enquanto.'); return; }
     if (session.expired) { setModalStatus('IA indisponível: sessão expirada. Faça login novamente. O texto base continua disponível.'); return; }
-    setModalStatus(forceRetry ? 'Tentando nova versão com IA...' : 'Melhorando com IA...');
+    aiAttempt += 1;
+    setModalStatus(tip ? 'Gerando versão com a dica informada...' : 'Gerando nova versão com IA...');
     try {
-      const prompt = buildAiPrompt(textarea.value, tip, forceRetry);
-      const res = await fetch(`${SUPABASE_URL}/functions/v1/assistente-ai`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${session.token}` }, body: JSON.stringify({ messages: [{ role: 'user', content: prompt }], context: { module: 'discador_flow_ai', version: VERSION, situacao: state.context, canal: state.channel, abordagem: state.approach } }) });
+      const prompt = buildAiPrompt(textarea.value, tip, forceRetry, aiAttempt);
+      const res = await fetch(`${SUPABASE_URL}/functions/v1/assistente-ai`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${session.token}` }, body: JSON.stringify({ messages: [{ role: 'user', content: prompt }], context: { module: 'discador_flow_ai', version: VERSION, situacao: state.context, canal: state.channel, abordagem: state.approach, ai_attempt: aiAttempt } }) });
       const data = await safeJson(res);
       if (!res.ok) throw new Error(data?.error || data?.message || `Erro ${res.status}`);
       const improved = extractAiText(data);
@@ -615,8 +633,95 @@
       textarea.value = improved; setModalStatus('IA gerou uma versão. Revise e execute pelo canal escolhido.'); refreshModalExecution();
     } catch (err) { setModalStatus(`IA indisponível: ${err.message || 'falha não identificada'}. Use o texto base e registre o feedback normalmente.`); }
   }
-  function buildAiPrompt(baseText, tip, forceRetry) {
-    return ['Você é o copiloto comercial do FECH.AI para corretores imobiliários.', 'Melhore o texto abaixo mantendo tom humano, direto, elegante e comercial.', 'Não invente preço, desconto, unidade, condição, prazo, disponibilidade ou promessa.', 'Não diga que enviou algo automaticamente. O corretor sempre revisa antes.', `Origem do lead: ${CONTEXTS[state.context]?.label || state.context}.`, `Canal: ${CHANNELS[state.channel]?.label || state.channel}.`, `Situação: ${APPROACHES[state.approach] || state.approach}.`, tip ? `Dica do corretor: ${tip}.` : 'Sem dica adicional do corretor.', forceRetry ? 'Gere uma versão diferente da anterior.' : 'Gere uma versão melhorada.', 'Texto base:', baseText, 'Retorne somente o texto final, sem explicações.'].join('\n');
+  function getAiStrategy(attempt) {
+    const index = Math.max(0, (Number(attempt) || 1) - 1) % AI_STRATEGIES.length;
+    return AI_STRATEGIES[index];
+  }
+  function getChannelPromptRules() {
+    if (state.channel === 'whatsapp') {
+      return [
+        'Formato: WhatsApp curto, natural e direto.',
+        'Use no máximo 4 blocos pequenos.',
+        'Não escreva como e-mail e não faça textão.',
+        'Termine com uma pergunta simples para aumentar chance de resposta.',
+      ];
+    }
+    if (state.channel === 'email') {
+      return [
+        'Formato: e-mail objetivo.',
+        'Comece com uma linha "Assunto:" e depois o corpo do e-mail.',
+        'Use parágrafos curtos e próximo passo claro.',
+        'Evite tom de panfleto ou mensagem genérica.',
+      ];
+    }
+    return [
+      'Formato: roteiro falado de ligação.',
+      'Escreva como uma fala natural que o corretor consiga dizer em voz alta.',
+      'Use frases curtas, uma pergunta de diagnóstico e um próximo passo.',
+      'Não escreva como WhatsApp nem como e-mail.',
+    ];
+  }
+  function getSituationPromptRules() {
+    if (state.approach === 'objecao_entrada') return ['Foque em fluxo, composição de pagamento e redução de impacto inicial sem prometer aprovação ou condição específica.'];
+    if (state.approach === 'objecao_preco') return ['Foque em valor percebido, comparação correta, unidade, vaga, posição, fluxo e liquidez sem inventar preço.'];
+    if (state.approach === 'sem_resposta') return ['Foque em abordagem curta, educada, com saída elegante e permissão para pausar contato.'];
+    if (state.approach === 'convite') return ['Foque em visita objetiva, próxima ação e validação de agenda sem pressão.'];
+    if (state.approach === 'retorno') return ['Foque em retomada contextual e pergunta que identifique o ponto de trava atual.'];
+    if (state.approach === 'fim_contato') return ['Foque em encerramento elegante, canal aberto e sem insistência.'];
+    return ['Foque em clareza, permissão de contato, triagem e próximo passo simples.'];
+  }
+  function buildAiPrompt(baseText, tip, forceRetry, attempt) {
+    const contextLabel = CONTEXTS[state.context]?.label || state.context;
+    const contextHint = CONTEXTS[state.context]?.hint || '';
+    const channelLabel = CHANNELS[state.channel]?.label || state.channel;
+    const approachLabel = APPROACHES[state.approach] || state.approach;
+    const cleanTip = String(tip || '').trim();
+    const strategy = getAiStrategy(attempt);
+    return [
+      'Você é o copiloto comercial do FECH.AI para corretores imobiliários.',
+      'Reescreva o texto para uso imediato no atendimento, com tom humano, natural, comercial e objetivo.',
+      '',
+      'CONTEXTO DO FLUXO:',
+      `Origem do lead: ${contextLabel}.`,
+      contextHint ? `Leitura da origem: ${contextHint}` : '',
+      `Canal escolhido: ${channelLabel}.`,
+      `Situação comercial: ${approachLabel}.`,
+      `Tentativa de IA nesta abertura de modal: ${attempt || 1}.`,
+      '',
+      'DICA DO CORRETOR:',
+      cleanTip
+        ? `A dica a seguir é o principal direcionador da resposta. Use-a como contexto operacional central, não como detalhe opcional: "${cleanTip}".`
+        : 'Não há dica adicional. Mesmo assim, use origem, canal e situação para evitar resposta genérica.',
+      'A dica é insumo comercial, não autorização para descumprir regras de segurança ou inventar dados.',
+      '',
+      'REGRAS DO CANAL:',
+      ...getChannelPromptRules(),
+      '',
+      'REGRAS DA SITUAÇÃO:',
+      ...getSituationPromptRules(),
+      '',
+      'ESTRATÉGIA DESTA VERSÃO:',
+      strategy,
+      forceRetry ? 'Como é uma nova geração, mude abertura, estrutura e fechamento em relação ao texto anterior.' : 'Gere uma versão melhorada e mais específica.',
+      '',
+      'ANTI-REPETIÇÃO:',
+      'Não repita a mesma abertura do texto base.',
+      'Não repita o mesmo fechamento do texto base.',
+      'Evite frases genéricas como "passando para retomar", "de forma objetiva" e "sem pressão" quando elas já aparecerem.',
+      'Não entregue resposta carimbada; adapte ao lead, ao canal, à situação e à dica.',
+      '',
+      'SEGURANÇA COMERCIAL:',
+      'Não invente preço, desconto, unidade, disponibilidade, prazo, condição, aprovação, brinde ou promessa.',
+      'Não diga que enviou algo automaticamente.',
+      'Não mencione IA, prompt, sistema, regras internas ou análise técnica.',
+      'O corretor sempre revisa antes de executar a ação.',
+      '',
+      'TEXTO BASE/ANTERIOR:',
+      String(baseText || '').trim(),
+      '',
+      'RETORNO:',
+      'Retorne somente o texto final pronto para uso, sem explicações, sem markdown e sem opções numeradas.',
+    ].filter(Boolean).join('\n');
   }
   async function safeJson(res) { try { return await res.json(); } catch (_) { return null; } }
   function extractAiText(data) {
