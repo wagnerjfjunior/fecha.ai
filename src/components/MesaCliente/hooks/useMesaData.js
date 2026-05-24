@@ -13,6 +13,14 @@ import {
   importarMesaClienteDisponibilidadeOficial,
   salvarMesaClienteEnriquecimento,
 } from '../../../features/mesaCliente/api/mesaClienteApi';
+import {
+  aplicarOperacaoFinanceiraAdmin,
+  mapMesaClienteOperacaoFinanceiraError,
+  obterOperacaoFinanceiraAdmin,
+  obterResumoOperacaoClienteSafe,
+  resumirOperacaoFinanceiraAdmin,
+  listarOperacoesFinanceirasAdmin,
+} from '../../../features/mesaCliente/api/mesaClienteOperacoesFinanceirasApi';
 
 export const MESA_KEYS = {
   root: ['mesa'],
@@ -21,6 +29,16 @@ export const MESA_KEYS = {
   historico: (empresaId, filtros = {}) => ['mesa', 'historico', empresaId, filtros],
   unidades: (empreendimentoId) => ['mesa', 'unidades', empreendimentoId],
   jsonAdminPermission: (empresaId) => ['mesa', 'json-admin-permission', empresaId],
+  operacoesFinanceiras: (simulacaoId, agendaId = null, filtros = {}) => [
+    'mesa',
+    'operacoes-financeiras',
+    simulacaoId,
+    agendaId,
+    filtros,
+  ],
+  operacaoFinanceira: (operacaoId) => ['mesa', 'operacao-financeira', operacaoId],
+  resumoOperacaoFinanceiraAdmin: (operacaoId) => ['mesa', 'resumo-operacao-financeira-admin', operacaoId],
+  resumoOperacaoClienteSafe: (operacaoId) => ['mesa', 'resumo-operacao-cliente-safe', operacaoId],
 };
 
 function normalizeError(error) {
@@ -41,6 +59,13 @@ function withMutationCompat(result) {
     ...result,
     isLoading: result.isPending,
     error: normalizeError(result.error),
+  };
+}
+
+function withFinanceMutationCompat(result) {
+  return {
+    ...withMutationCompat(result),
+    mappedError: result.error ? mapMesaClienteOperacaoFinanceiraError(result.error) : null,
   };
 }
 
@@ -94,6 +119,46 @@ export function useUnidadesMesa({ sb, token, empreendimentoId }) {
   }));
 }
 
+export function useOperacoesFinanceirasAdmin({ sb, token, simulacaoId, agendaId = null, filtros = {} }) {
+  return withCompat(useQuery({
+    queryKey: MESA_KEYS.operacoesFinanceiras(simulacaoId, agendaId, filtros),
+    queryFn: () => listarOperacoesFinanceirasAdmin({ sb, token, simulacaoId, agendaId, filtros }),
+    enabled: Boolean(sb && token && simulacaoId),
+    staleTime: 15 * 1000,
+    refetchOnWindowFocus: true,
+  }));
+}
+
+export function useOperacaoFinanceiraAdmin({ sb, token, operacaoId, parametros = {} }) {
+  return withCompat(useQuery({
+    queryKey: MESA_KEYS.operacaoFinanceira(operacaoId),
+    queryFn: () => obterOperacaoFinanceiraAdmin({ sb, token, operacaoId, parametros }),
+    enabled: Boolean(sb && token && operacaoId),
+    staleTime: 15 * 1000,
+    refetchOnWindowFocus: true,
+  }));
+}
+
+export function useResumoOperacaoFinanceiraAdmin({ sb, token, operacaoId, parametros = {} }) {
+  return withCompat(useQuery({
+    queryKey: MESA_KEYS.resumoOperacaoFinanceiraAdmin(operacaoId),
+    queryFn: () => resumirOperacaoFinanceiraAdmin({ sb, token, operacaoId, parametros }),
+    enabled: Boolean(sb && token && operacaoId),
+    staleTime: 15 * 1000,
+    refetchOnWindowFocus: true,
+  }));
+}
+
+export function useResumoOperacaoClienteSafe({ sb, token, operacaoId, parametros = {} }) {
+  return withCompat(useQuery({
+    queryKey: MESA_KEYS.resumoOperacaoClienteSafe(operacaoId),
+    queryFn: () => obterResumoOperacaoClienteSafe({ sb, token, operacaoId, parametros }),
+    enabled: Boolean(sb && token && operacaoId),
+    staleTime: 15 * 1000,
+    refetchOnWindowFocus: true,
+  }));
+}
+
 export function useRegistrarUpload({ sb, token }) {
   const queryClient = useQueryClient();
   return withMutationCompat(useMutation({
@@ -123,6 +188,21 @@ export function useAprovarRejeitarMesa({ sb, token }) {
     },
     onSuccess: (_data, variables) => {
       queryClient.invalidateQueries({ queryKey: ['mesa', 'historico', variables.empresaId] });
+    },
+  }));
+}
+
+export function useAplicarOperacaoFinanceiraAdmin({ sb, token }) {
+  const queryClient = useQueryClient();
+
+  return withFinanceMutationCompat(useMutation({
+    mutationFn: (variables) => aplicarOperacaoFinanceiraAdmin({ sb, token, ...variables }),
+    onSuccess: (_data, variables) => {
+      queryClient.invalidateQueries({ queryKey: ['mesa', 'operacoes-financeiras'] });
+      queryClient.invalidateQueries({ queryKey: MESA_KEYS.operacaoFinanceira(variables.operacaoId) });
+      queryClient.invalidateQueries({ queryKey: MESA_KEYS.resumoOperacaoFinanceiraAdmin(variables.operacaoId) });
+      queryClient.invalidateQueries({ queryKey: MESA_KEYS.resumoOperacaoClienteSafe(variables.operacaoId) });
+      queryClient.invalidateQueries({ queryKey: MESA_KEYS.root });
     },
   }));
 }
