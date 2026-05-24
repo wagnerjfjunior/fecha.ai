@@ -7,6 +7,8 @@ on:
     paths:
       - ".github/workflows/mesa-cliente-17b.yml"
       - "scripts/tests/mesa-cliente/17b_validacao_estatica_front_bff_operacoes_financeiras.mjs"
+      - "src/App.jsx"
+      - "src/Appx.jsx"
       - "src/features/mesaCliente/api/mesaClienteOperacoesFinanceirasApi.js"
       - "src/components/MesaCliente/hooks/useMesaData.js"
       - "docs/mesa-cliente/fase-8b-adapter-front-operacoes-financeiras.md"
@@ -18,6 +20,8 @@ on:
     paths:
       - ".github/workflows/mesa-cliente-17b.yml"
       - "scripts/tests/mesa-cliente/17b_validacao_estatica_front_bff_operacoes_financeiras.mjs"
+      - "src/App.jsx"
+      - "src/Appx.jsx"
       - "src/features/mesaCliente/api/mesaClienteOperacoesFinanceirasApi.js"
       - "src/components/MesaCliente/hooks/useMesaData.js"
       - "docs/mesa-cliente/fase-8b-adapter-front-operacoes-financeiras.md"
