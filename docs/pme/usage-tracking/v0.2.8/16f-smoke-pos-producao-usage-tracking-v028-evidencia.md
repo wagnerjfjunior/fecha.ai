@@ -10,7 +10,7 @@
 **DML:** não  
 **Fixture:** não  
 **Transação:** `read only`  
-**Status final:** `PASS COM OBSERVAÇÃO DE INVENTÁRIO DE MIGRATIONS`
+**Status final:** `PASS`
 
 ---
 
@@ -30,11 +30,11 @@ O smoke 16F valida:
 
 ---
 
-## Resultado objetivo
+## Resultado objetivo após repair do inventário
 
 | Bloco | Status | Leitura técnica |
 |---|---:|---|
-| `00_migrations_v028_inventario` | INFO | As versões `20260523173000` e `20260523202000` aparecem como não registradas em `supabase_migrations.schema_migrations`. Não reprova o smoke porque o bloco é informativo, mas fica documentado como observação de rastreabilidade. |
+| `00_migrations_v028_inventario` | INFO | As versões `20260523173000` e `20260523202000` agora constam como `aplicada=true` em `supabase_migrations.schema_migrations`. Observação anterior eliminada. |
 | `01_contrato_rpc_catalogo_pos_producao` | PASS | RPC `pme_registrar_message_usage(uuid,jsonb)` presente, `SECURITY DEFINER`, `search_path=public, pg_temp`, sem `anon`, com `authenticated/service_role` e comentário presente. |
 | `02_rls_schema_pme_pos_producao` | PASS | RLS ativo em `pme_message_templates` e `pme_message_usage`; schema mínimo presente. |
 | `03_append_only_hardening_usage` | PASS | `pme_message_usage` sem policies `UPDATE/DELETE`; append-only preservado. |
@@ -42,6 +42,25 @@ O smoke 16F valida:
 | `05_execucao_rpc_mutacional` | SKIP | Skip proposital; a RPC é append-only e grava usage, portanto não foi chamada em produção sem fixture controlada. |
 | `06_readiness_pos_producao` | PASS | `readiness_pos_producao=true`, com `ddl=false`, `dml=false`, `fixture=false`, transação read-only. |
 | `99_interpretacao_operacional` | INFO | Smoke executado sem DDL, sem DML, sem fixture e sem chamada mutacional à RPC. |
+
+---
+
+## Inventário de migrations v0.2.8
+
+```json
+[
+  {
+    "version": "20260523173000",
+    "aplicada": true
+  },
+  {
+    "version": "20260523202000",
+    "aplicada": true
+  }
+]
+```
+
+Leitura técnica: a divergência anterior de rastreabilidade foi sanada. Os objetos já estavam presentes no catálogo e agora o histórico `supabase_migrations.schema_migrations` também reflete as duas versões como aplicadas.
 
 ---
 
@@ -72,11 +91,12 @@ Leitura técnica: o contrato esperado da RPC está presente em produção e endu
   "tabelas": [
     { "relname": "pme_message_templates", "force_rls": false, "rls_ativo": true },
     { "relname": "pme_message_usage", "force_rls": false, "rls_ativo": true }
-  ]
+  ],
+  "colunas_obrigatorias": "todas com existe=true"
 }
 ```
 
-Todas as colunas mínimas exigidas pelo smoke 16F foram identificadas com `existe=true`.
+Leitura técnica: as duas tabelas PME estão com RLS ativo e as colunas obrigatórias do smoke 16F foram identificadas.
 
 ---
 
@@ -86,6 +106,24 @@ Todas as colunas mínimas exigidas pelo smoke 16F foram identificadas com `exist
 {
   "policies_update_delete_usage": 0,
   "policies_inventario": [
+    {
+      "cmd": "INSERT",
+      "roles": ["public"],
+      "tablename": "pme_message_templates",
+      "policyname": "pme_message_templates_insert"
+    },
+    {
+      "cmd": "SELECT",
+      "roles": ["public"],
+      "tablename": "pme_message_templates",
+      "policyname": "pme_message_templates_select"
+    },
+    {
+      "cmd": "UPDATE",
+      "roles": ["public"],
+      "tablename": "pme_message_templates",
+      "policyname": "pme_message_templates_update"
+    },
     {
       "cmd": "INSERT",
       "roles": ["public"],
@@ -122,27 +160,6 @@ Leitura técnica: não há templates nem usages PME reais cadastrados no momento
 
 ---
 
-## Observação sobre inventário de migrations
-
-O bloco `00_migrations_v028_inventario` retornou:
-
-```json
-[
-  { "version": "20260523173000", "aplicada": false },
-  { "version": "20260523202000", "aplicada": false }
-]
-```
-
-Interpretação controlada:
-
-- o catálogo real do banco contém a RPC, tabelas, RLS, grants e policies esperadas;
-- portanto, a entrega funcional está presente;
-- porém, o histórico `supabase_migrations.schema_migrations` não acusa essas duas versões como aplicadas;
-- isso indica possível diferença entre o mecanismo usado para aplicar SQL e o mecanismo de registro de migrations do Supabase;
-- não bloqueia o 16F, mas deve permanecer documentado como ponto de rastreabilidade para futura auditoria de deployment/migrations.
-
----
-
 ## Readiness pós-produção
 
 ```json
@@ -170,7 +187,7 @@ A v0.2.8 está tecnicamente encerrada com:
 16C PASS
 16D PASS
 16E PASS
-16F PASS COM OBSERVAÇÃO
+16F PASS
 ```
 
-Observação remanescente: investigar futuramente a divergência de inventário em `supabase_migrations.schema_migrations`, pois os objetos existem no catálogo, mas as versões de migration aparecem como `aplicada=false`.
+Não há pendência remanescente de inventário de migrations para a v0.2.8.
