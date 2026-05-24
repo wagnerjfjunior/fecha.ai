@@ -22,6 +22,12 @@
 --   - não executa DDL;
 --   - não altera dados permanentes;
 --   - encerra obrigatoriamente com ROLLBACK.
+--
+-- Observação de compatibilidade com schema real:
+--   A constraint public.leads.leads_status_check aceita:
+--     disponivel, distribuido, finalizado, invalido.
+--   Portanto a fixture usa status='distribuido', equivalente operacional
+--   a lead já alocado/ativo para uso do corretor no teste.
 
 begin;
 
@@ -148,12 +154,12 @@ with lead_fixture as materialized (
     '11999999999',
     '11999999999',
     '+5511999999999',
-    'em_atendimento',
+    'distribuido',
     'lista',
     'fixture_16b_pme',
     'Fixture transacional 16B. Deve sumir no ROLLBACK.'
   )
-  returning id, empresa_id, corretor_id
+  returning id, empresa_id, corretor_id, status
 ), template_fixture as materialized (
   insert into public.pme_message_templates (
     empresa_id,
@@ -207,6 +213,7 @@ select pg_temp.pme16b_add_result(
   jsonb_build_object(
     'lead_id', nullif(current_setting('app.pme16b.lead_id', true), ''),
     'template_id', nullif(current_setting('app.pme16b.template_id', true), ''),
+    'lead_status_fixture', 'distribuido',
     'empresa_id', current_setting('app.pme16b.empresa_id', true),
     'corretor_id', current_setting('app.pme16b.corretor_id', true)
   )
