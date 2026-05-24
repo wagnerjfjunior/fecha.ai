@@ -3,11 +3,11 @@
 ## Identificação
 
 **Fase:** `v0.2.8 — Banco/RPC/RLS do PME Usage Tracking`  
-**Branch:** `feature/pme-usage-tracking-db-v0.2.8`  
+**Branch de implementação:** `feature/pme-usage-tracking-db-v0.2.8`  
 **Base:** `main`  
-**Base commit no início da comparação:** `4165660579031f9ce2b723d3ecf66840187de4de`  
-**Status técnico:** `APROVADO PARA PR/MERGE`  
-**Smoke pós-produção:** pendente após merge/deploy (`16F`)
+**PR:** `#24 — PME Usage Tracking DB/RLS/RPC v0.2.8`  
+**Status técnico:** `ENCERRADA`  
+**Smoke pós-produção:** `16F PASS`
 
 ---
 
@@ -95,7 +95,7 @@ A fase validou que:
 | 16C | `16c_rpc_registrar_message_usage_security_negative_rollback.sql` | PASS | Segurança negativa: auth, soberania frontend, payload e domínios inválidos. |
 | 16D | `16d_rpc_registrar_message_usage_scope_rls_cross_tenant_rollback.sql` | PASS | Escopo/RLS/cross-tenant: usuário/template fora da empresa bloqueados. |
 | 16E | `16e_regressao_final_usage_tracking_v028_rollback.sql` | PASS | Regressão final consolidada com readiness para PR/merge. |
-| 16F | a criar após merge/deploy | PENDENTE | Smoke pós-produção. |
+| 16F | `16f_smoke_pos_producao_usage_tracking_v028.sql` | PASS | Smoke pós-produção read-only validado após repair do inventário de migrations. |
 
 ---
 
@@ -107,6 +107,7 @@ docs/pme/usage-tracking/v0.2.8/16b-rpc-registrar-message-usage-positive-rollback
 docs/pme/usage-tracking/v0.2.8/16c-rpc-registrar-message-usage-security-negative-rollback-evidencia.md
 docs/pme/usage-tracking/v0.2.8/16d-rpc-registrar-message-usage-scope-rls-cross-tenant-rollback-evidencia.md
 docs/pme/usage-tracking/v0.2.8/16e-regressao-final-usage-tracking-v028-rollback-evidencia.md
+docs/pme/usage-tracking/v0.2.8/16f-smoke-pos-producao-usage-tracking-v028-evidencia.md
 ```
 
 ---
@@ -135,23 +136,27 @@ rollback
 
 ---
 
-## Comparação com a main antes do fechamento
+## Resultado pós-produção 16F
 
-No momento de fechamento antes da criação deste documento:
+O smoke pós-produção `16F` validou:
 
 ```text
-base: main
-head: feature/pme-usage-tracking-db-v0.2.8
-status: ahead
-ahead_by: 16
-behind_by: 0
-total_commits: 16
-base_commit: 4165660579031f9ce2b723d3ecf66840187de4de
+16F PASS
+readiness_pos_producao = true
+DDL = false
+DML = false
+fixture = false
+transaction = read only
 ```
 
-Leitura: branch sem atraso em relação à `main` no ponto de comparação, contendo apenas os commits da fase v0.2.8.
+Também confirmou o inventário das migrations v0.2.8:
 
-Este documento de fechamento adiciona um commit documental adicional antes da abertura da PR.
+```text
+20260523173000 aplicada = true
+20260523202000 aplicada = true
+```
+
+Leitura: a divergência anterior de rastreabilidade no `supabase_migrations.schema_migrations` foi sanada. Os objetos já estavam presentes no catálogo e o histórico de migrations agora reflete as duas versões como aplicadas.
 
 ---
 
@@ -163,6 +168,7 @@ docs/pme/usage-tracking/v0.2.8/16b-rpc-registrar-message-usage-positive-rollback
 docs/pme/usage-tracking/v0.2.8/16c-rpc-registrar-message-usage-security-negative-rollback-evidencia.md
 docs/pme/usage-tracking/v0.2.8/16d-rpc-registrar-message-usage-scope-rls-cross-tenant-rollback-evidencia.md
 docs/pme/usage-tracking/v0.2.8/16e-regressao-final-usage-tracking-v028-rollback-evidencia.md
+docs/pme/usage-tracking/v0.2.8/16f-smoke-pos-producao-usage-tracking-v028-evidencia.md
 docs/pme/usage-tracking/v0.2.8/FECHAMENTO_TECNICO.md
 docs/releases/pme-usage-tracking-db-v0.2.8/SHARED_SCRIPT_LIBRARY_STRATEGY.md
 docs/releases/pme-usage-tracking-db-v0.2.8/TENANCY_RBAC_TREE.md
@@ -173,15 +179,16 @@ supabase/tests/pme/usage-tracking/16b_rpc_registrar_message_usage_positive_rollb
 supabase/tests/pme/usage-tracking/16c_rpc_registrar_message_usage_security_negative_rollback.sql
 supabase/tests/pme/usage-tracking/16d_rpc_registrar_message_usage_scope_rls_cross_tenant_rollback.sql
 supabase/tests/pme/usage-tracking/16e_regressao_final_usage_tracking_v028_rollback.sql
+supabase/tests/pme/usage-tracking/16f_smoke_pos_producao_usage_tracking_v028.sql
 ```
 
 ---
 
 ## Decisão técnica
 
-A fase `v0.2.8 — Banco/RPC/RLS do PME Usage Tracking` está tecnicamente encerrada para PR.
+A fase `v0.2.8 — Banco/RPC/RLS do PME Usage Tracking` está tecnicamente encerrada.
 
-Condição de aprovação:
+Condição final de aprovação:
 
 ```text
 16A PASS
@@ -189,39 +196,15 @@ Condição de aprovação:
 16C PASS
 16D PASS
 16E PASS
+16F PASS
 readiness_pr_merge true
+readiness_pos_producao true
 ```
-
-Pendência controlada:
-
-```text
-16F — smoke pós-produção após merge/deploy
-```
-
----
-
-## Próximo passo após merge/deploy
-
-Criar e executar o teste:
-
-```text
-supabase/tests/pme/usage-tracking/16f_smoke_pos_producao_usage_tracking_v028.sql
-```
-
-Escopo esperado do 16F:
-
-- confirmar catálogo da RPC em produção;
-- confirmar RLS ativo em tabelas PME;
-- confirmar grants pós-deploy;
-- preferencialmente executar smoke controlado se houver fixture/lead operacional elegível;
-- se não houver dado real elegível, registrar `SKIP` operacional sem reprovar catálogo/deploy;
-- não executar DDL persistente;
-- evitar mutação fora de cenário explicitamente controlado.
 
 ---
 
 ## Conclusão
 
-A v0.2.8 está aprovada para abertura de PR contra a `main`.
+A v0.2.8 está encerrada na `main`.
 
-O núcleo entregue é seguro para o próximo estágio do FECH.AI, com rastreabilidade operacional de uso de mensagens PME, isolamento multiempresa, RLS ativo e política append-only documentada e testada.
+O núcleo entregue é seguro para o próximo estágio do FECH.AI, com rastreabilidade operacional de uso de mensagens PME, isolamento multiempresa, RLS ativo, política append-only documentada e testada, e smoke pós-produção aprovado sem pendências remanescentes.
