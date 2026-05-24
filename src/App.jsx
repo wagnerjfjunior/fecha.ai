@@ -62,8 +62,8 @@ const FECHAI_DASHBOARD_RESPONSIVE_CSS = `
   }
 `;
 
-const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL || "https://uobxxgzshrmbtjfdolxd.supabase.co";
-const SUPABASE_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY || "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVvYnh4Z3pzaHJtYnRqZmRvbHhkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYyNjcyOTUsImV4cCI6MjA5MTg0MzI5NX0.0RiMkrtJlGbprp8AqVPXC9Y5LxP6QiELfP7NoYEXJ9w";
+const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
+const SUPABASE_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
 // Feedbacks: esquerdo = positivos, direito = negativos
 const FEEDBACKS_ESQ = [
