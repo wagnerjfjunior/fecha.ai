@@ -4603,7 +4603,7 @@ function EditarCorretorModal({ corretor, sb, token, onSalvo, onFechar, session }
     if (novaSenha.length < 8) { setMsgSenha("Mínimo 8 caracteres."); return; }
     setLdSenha(true); setMsgSenha("");
     try {
-      // Usa a mesma Edge Function de criação que tem service_role
+      // Usa a mesma Edge Function de criação administrativa
       const r = await fetch("https://uobxxgzshrmbtjfdolxd.supabase.co/functions/v1/criar-usuario", {
         method: "POST",
         headers: { "Content-Type":"application/json", "Authorization":"Bearer "+token },
