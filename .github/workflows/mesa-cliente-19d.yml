@@ -1,0 +1,79 @@
+name: MesaCliente 19D - Payload Completo Fluxo
+
+on:
+  push:
+    branches:
+      - feature/mesa-cliente-fase-8-front-operacoes-financeiras
+    paths:
+      - ".github/workflows/mesa-cliente-19d.yml"
+      - "scripts/tests/mesa-cliente/19d_validacao_estatica_payload_completo_fluxo.mjs"
+      - "docs/mesa-cliente/fase-8j-contrato-validacao-payload-completo-fluxo.md"
+      - "src/components/MesaCliente/TabFluxo.jsx"
+      - "src/components/MesaCliente/FluxoBuilder.jsx"
+      - "src/components/MesaCliente/hooks/useMesaCalc.js"
+
+  pull_request:
+    branches:
+      - main
+    paths:
+      - ".github/workflows/mesa-cliente-19d.yml"
+      - "scripts/tests/mesa-cliente/19d_validacao_estatica_payload_completo_fluxo.mjs"
+      - "docs/mesa-cliente/fase-8j-contrato-validacao-payload-completo-fluxo.md"
+      - "src/components/MesaCliente/TabFluxo.jsx"
+      - "src/components/MesaCliente/FluxoBuilder.jsx"
+      - "src/components/MesaCliente/hooks/useMesaCalc.js"
+
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  mesa-cliente-19d:
+    name: Run 19D static validation for complete fluxo payload
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+
+      - name: Show execution context
+        run: |
+          echo "Branch:"
+          git branch --show-current || true
+          echo "Latest commit:"
+          git log --oneline -n 10
+          echo "Node:"
+          node -v
+
+      - name: Run MesaCliente 19D static validation
+        id: run_19d
+        continue-on-error: true
+        run: |
+          mkdir -p tmp
+          node scripts/tests/mesa-cliente/19d_validacao_estatica_payload_completo_fluxo.mjs | tee tmp/19d_resultado.json
+          echo "exit_code=${PIPESTATUS[0]}" >> "$GITHUB_OUTPUT"
+
+      - name: Upload 19D evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: mesa-cliente-19d-resultado
+          path: tmp/19d_resultado.json
+
+      - name: Fail if 19D has FAIL block
+        run: |
+          if grep -q '"status": "FAIL"' tmp/19d_resultado.json; then
+            echo "19D encontrou bloco FAIL"
+            cat tmp/19d_resultado.json
+            exit 1
+          fi
+
+          echo "19D sem FAIL"
