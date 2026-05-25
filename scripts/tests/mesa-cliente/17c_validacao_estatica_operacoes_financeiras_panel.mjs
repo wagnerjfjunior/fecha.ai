@@ -16,6 +16,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import process from 'node:process';
+import { execSync } from 'node:child_process';
 
 const ROOT = process.cwd();
 
@@ -98,24 +99,6 @@ function exists(relativePath) {
   return fs.existsSync(path.join(ROOT, relativePath));
 }
 
-function walkFiles(dirRelative, acc = []) {
-  const absolute = path.join(ROOT, dirRelative);
-  if (!fs.existsSync(absolute)) return acc;
-
-  for (const entry of fs.readdirSync(absolute, { withFileTypes: true })) {
-    const full = path.join(absolute, entry.name);
-    const rel = path.relative(ROOT, full).replaceAll(path.sep, '/');
-    if (entry.isDirectory()) {
-      if (['node_modules', '.git', 'dist', 'build', '.next'].includes(entry.name)) continue;
-      walkFiles(rel, acc);
-      continue;
-    }
-    acc.push(rel);
-  }
-
-  return acc;
-}
-
 function result(bloco, status, detalhe = {}) {
   return { bloco, status, detalhe };
 }
@@ -130,39 +113,67 @@ function regexMatches(content, patterns) {
     .map((pattern) => String(pattern));
 }
 
+function runGit(command) {
+  return execSync(command, {
+    cwd: ROOT,
+    encoding: 'utf8',
+    stdio: ['ignore', 'pipe', 'pipe'],
+  }).trim();
+}
+
 function getChangedFilesFromGit() {
+  const attempts = [];
+
   try {
-    const { execSync } = awaitImportChildProcess();
-    const output = execSync('git diff --name-only main...HEAD', {
-      cwd: ROOT,
-      encoding: 'utf8',
-      stdio: ['ignore', 'pipe', 'ignore'],
-    });
-    return output.split('\n').map((line) => line.trim()).filter(Boolean);
-  } catch {
-    return [];
+    runGit('git rev-parse --is-inside-work-tree');
+  } catch (error) {
+    return {
+      files: [],
+      range: null,
+      attempts,
+      warning: `not_a_git_worktree: ${error.message}`,
+    };
   }
+
+  try {
+    runGit('git fetch --quiet origin main');
+    attempts.push({ command: 'git fetch --quiet origin main', ok: true });
+  } catch (error) {
+    attempts.push({ command: 'git fetch --quiet origin main', ok: false, error: error.message });
+  }
+
+  const candidateRanges = [
+    'origin/main...HEAD',
+    'main...HEAD',
+    'HEAD~1...HEAD',
+  ];
+
+  for (const range of candidateRanges) {
+    try {
+      const output = runGit(`git diff --name-only ${range}`);
+      const files = output.split('\n').map((line) => line.trim()).filter(Boolean);
+      attempts.push({ range, ok: true, count: files.length });
+
+      if (files.length > 0 || range === candidateRanges.at(-1)) {
+        return {
+          files,
+          range,
+          attempts,
+          warning: files.length === 0 ? 'diff_empty_after_all_ranges' : null,
+        };
+      }
+    } catch (error) {
+      attempts.push({ range, ok: false, error: error.message });
+    }
+  }
+
+  return {
+    files: [],
+    range: null,
+    attempts,
+    warning: 'unable_to_resolve_git_diff_range',
+  };
 }
-
-function awaitImportChildProcess() {
-  // Mantém compatibilidade simples em Node ESM sem top-level await neste ponto.
-  return globalThis.__childProcessModule || (globalThis.__childProcessModule = fs.existsSync('/bin/sh')
-    ? requireShimChildProcess()
-    : null);
-}
-
-function requireShimChildProcess() {
-  // createRequire evita converter o arquivo para CommonJS.
-  const { createRequire } = globalThis.__moduleRequireShim || {};
-  if (createRequire) return createRequire(import.meta.url)('node:child_process');
-
-  // Fallback controlado: se não conseguir carregar, o bloco de diff vira INFO vazio.
-  throw new Error('child_process_unavailable');
-}
-
-// Node ESM não expõe require nativamente; esta pequena ponte é usada só para git diff informativo.
-import { createRequire } from 'node:module';
-globalThis.__moduleRequireShim = { createRequire };
 
 const resultados = [];
 
@@ -259,10 +270,14 @@ if (!panel) {
   }));
 }
 
-const changedFiles = getChangedFilesFromGit();
+const changedFilesInfo = getChangedFilesFromGit();
+const changedFiles = changedFilesInfo.files;
 const forbiddenEngineFiles = changedFiles.filter((file) => FORBIDDEN_ENGINE_PATH_PATTERNS.some((pattern) => pattern.test(file)));
 resultados.push(result('11_motor_preservado', forbiddenEngineFiles.length === 0 ? 'PASS' : 'FAIL', {
   changed_files: changedFiles,
+  diff_range: changedFilesInfo.range,
+  diff_warning: changedFilesInfo.warning,
+  diff_attempts: changedFilesInfo.attempts,
   forbidden_engine_files: forbiddenEngineFiles,
   ddl: false,
   dml: false,
