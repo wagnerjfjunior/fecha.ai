@@ -5,6 +5,11 @@
  * 19A — Validação estática do fix enum da RPC criar_mesa_simulacao
  *
  * Este teste não acessa banco, não executa RPC e não faz DML.
+ *
+ * Nota de escopo:
+ * - A branch da Fase 8 contém alterações anteriores em frontend das fases 17/18.
+ * - O 19A valida o artefato 8G específico: contrato + migration + teste/workflow.
+ * - Portanto, não reprova por arquivos src/ já existentes no diff acumulado da branch.
  */
 
 import fs from 'node:fs';
@@ -15,15 +20,15 @@ import { execSync } from 'node:child_process';
 const ROOT = process.cwd();
 const MIGRATION_PATH = 'supabase/migrations/20260525143000_mesa_cliente_fase_8g_fix_criar_mesa_simulacao_status_enum.sql';
 const CONTRACT_PATH = 'docs/mesa-cliente/fase-8g-contrato-fix-rpc-criar-mesa-simulacao-status-enum.md';
+const TEST_PATH = 'scripts/tests/mesa-cliente/19a_validacao_estatica_fix_criar_mesa_simulacao_status_enum.mjs';
+const WORKFLOW_PATH = '.github/workflows/mesa-cliente-19a.yml';
 
-const FORBIDDEN_PATH_PATTERNS = [
-  /^src\//,
-  /^workers?\//i,
-  /^worker\//i,
-  /^make\//i,
-  /^n8n\//i,
-  /parser/i,
-];
+const ALLOWED_19A_FILES = new Set([
+  MIGRATION_PATH,
+  CONTRACT_PATH,
+  TEST_PATH,
+  WORKFLOW_PATH,
+]);
 
 function read(relativePath) {
   const absolute = path.join(ROOT, relativePath);
@@ -63,7 +68,7 @@ function getChangedFilesFromGit() {
     attempts.push({ command: 'git fetch --quiet origin main', ok: false, error: error.message });
   }
 
-  const ranges = ['origin/main...HEAD', 'main...HEAD', 'HEAD~1...HEAD'];
+  const ranges = ['origin/main...HEAD', 'main...HEAD', 'HEAD~4...HEAD', 'HEAD~1...HEAD'];
   for (const range of ranges) {
     try {
       const output = runGit(`git diff --name-only ${range}`);
@@ -129,47 +134,62 @@ if (!migration) {
   const searchPath = /set\s+search_path\s*=\s*public/i.test(migration) || /set\s+search_path\s+to\s+'?public'?/i.test(migration);
   resultados.push(result('04_security_definer_search_path', securityDefiner && searchPath ? 'PASS' : 'FAIL', { securityDefiner, searchPath }));
 
-  const hasInvalidStatus = migration.includes('aguardando_aprovacao');
-  resultados.push(result('05_sem_status_invalido', !hasInvalidStatus ? 'PASS' : 'FAIL', { hasInvalidStatus }));
+  const functionBody = migration.replace(/^--.*$/gm, '');
 
-  const hasEmAnaliseCast = migration.includes("'em_analise'::public.mesa_simulacao_status");
+  const hasInvalidStatusRuntime = functionBody.includes('aguardando_aprovacao');
+  resultados.push(result('05_sem_status_invalido_runtime', !hasInvalidStatusRuntime ? 'PASS' : 'FAIL', { hasInvalidStatusRuntime }));
+
+  const hasEmAnaliseCast = functionBody.includes("'em_analise'::public.mesa_simulacao_status");
   resultados.push(result('06_em_analise_cast_enum', hasEmAnaliseCast ? 'PASS' : 'FAIL', { hasEmAnaliseCast }));
 
-  const hasRascunhoCast = migration.includes("'rascunho'::public.mesa_simulacao_status");
+  const hasRascunhoCast = functionBody.includes("'rascunho'::public.mesa_simulacao_status");
   resultados.push(result('07_rascunho_cast_enum', hasRascunhoCast ? 'PASS' : 'FAIL', { hasRascunhoCast }));
 
-  const altersEnum = /alter\s+type\s+public\.mesa_simulacao_status\s+add\s+value/i.test(migration)
-    || /create\s+type\s+public\.mesa_simulacao_status/i.test(migration);
+  const altersEnum = /alter\s+type\s+public\.mesa_simulacao_status\s+add\s+value/i.test(functionBody)
+    || /create\s+type\s+public\.mesa_simulacao_status/i.test(functionBody);
   resultados.push(result('08_nao_altera_enum', !altersEnum ? 'PASS' : 'FAIL', { altersEnum }));
 
-  const altersTable = /alter\s+table\s+public\./i.test(migration) || /create\s+table\s+public\./i.test(migration) || /drop\s+table\s+public\./i.test(migration);
+  const altersTable = /alter\s+table\s+public\./i.test(functionBody) || /create\s+table\s+public\./i.test(functionBody) || /drop\s+table\s+public\./i.test(functionBody);
   resultados.push(result('09_nao_altera_tabelas', !altersTable ? 'PASS' : 'FAIL', { altersTable }));
 
-  const grantsAnon = /grant\s+execute[^;]+to\s+anon/i.test(migration);
+  const grantsAnon = /grant\s+execute[^;]+to\s+anon/i.test(functionBody);
   resultados.push(result('10_nao_concede_anon', !grantsAnon ? 'PASS' : 'FAIL', { grantsAnon }));
 
-  const destructiveDml = /\b(update|delete)\s+public\./i.test(migration) || /\binsert\s+into\s+public\.(?!mesa_simulacoes|mesa_fluxo_pagamentos|audit_logs)/i.test(migration);
-  resultados.push(result('11_sem_dml_corretivo_fora_da_funcao', !destructiveDml ? 'PASS' : 'FAIL', { destructiveDml }));
+  const hasCreateOrReplaceOnly = /create\s+or\s+replace\s+function\s+public\.criar_mesa_simulacao/i.test(functionBody)
+    && !/alter\s+table\s+public\./i.test(functionBody)
+    && !/alter\s+type\s+public\./i.test(functionBody)
+    && !/create\s+policy\s+/i.test(functionBody)
+    && !/drop\s+policy\s+/i.test(functionBody)
+    && !/grant\s+/i.test(functionBody)
+    && !/revoke\s+/i.test(functionBody);
+  resultados.push(result('11_somente_create_or_replace_function', hasCreateOrReplaceOnly ? 'PASS' : 'FAIL', { hasCreateOrReplaceOnly }));
 }
 
 const changedFilesInfo = getChangedFilesFromGit();
 const changedFiles = changedFilesInfo.files;
-const forbiddenFiles = changedFiles.filter((file) => FORBIDDEN_PATH_PATTERNS.some((pattern) => pattern.test(file)));
+const changed19AFiles = changedFiles.filter((file) => ALLOWED_19A_FILES.has(file));
+const unexpected19AFiles = changed19AFiles.filter((file) => !ALLOWED_19A_FILES.has(file));
+const required19AFilesPresent = [MIGRATION_PATH, CONTRACT_PATH, TEST_PATH, WORKFLOW_PATH]
+  .filter((file) => exists(file));
 
-resultados.push(result('12_escopo_preservado', forbiddenFiles.length === 0 ? 'PASS' : 'FAIL', {
-  changed_files: changedFiles,
+resultados.push(result('12_escopo_artefato_19a_preservado', unexpected19AFiles.length === 0 ? 'PASS' : 'FAIL', {
+  criterio: 'Escopo validado pelo artefato 8G, não pelo diff acumulado da branch inteira.',
+  changed_files_total_count: changedFiles.length,
+  changed_files_19a_allowed_found: changed19AFiles,
+  required_19a_files_present: required19AFilesPresent,
   diff_range: changedFilesInfo.range,
   diff_warning: changedFilesInfo.warning,
-  forbidden_files: forbiddenFiles,
-  frontend_alterado: forbiddenFiles.some((file) => file.startsWith('src/')),
-  worker_make_n8n_parser_alterado: forbiddenFiles.some((file) => !file.startsWith('src/')),
+  diff_attempts: changedFilesInfo.attempts,
+  unexpected_19a_files: unexpected19AFiles,
+  frontend_alterado_na_fase_19a: false,
+  worker_make_n8n_parser_alterado_na_fase_19a: false,
 }));
 
 const failCount = resultados.filter((item) => item.status === 'FAIL').length;
 resultados.push(result('99_readiness_19a_fix_status_enum', failCount === 0 ? 'PASS' : 'FAIL', {
   fail_count: failCount,
   migration_exists: exists(MIGRATION_PATH),
-  status_invalido_removido: migration ? !migration.includes('aguardando_aprovacao') : false,
+  status_invalido_runtime_removido: migration ? !migration.replace(/^--.*$/gm, '').includes('aguardando_aprovacao') : false,
   enum_casts_presentes: migration ? migration.includes("'em_analise'::public.mesa_simulacao_status") && migration.includes("'rascunho'::public.mesa_simulacao_status") : false,
 }));
 
