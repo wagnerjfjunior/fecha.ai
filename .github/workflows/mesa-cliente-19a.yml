@@ -1,0 +1,81 @@
+name: MesaCliente 19A - Fix Criar Mesa Status Enum
+
+on:
+  push:
+    branches:
+      - feature/mesa-cliente-fase-8-front-operacoes-financeiras
+    paths:
+      - ".github/workflows/mesa-cliente-19a.yml"
+      - "scripts/tests/mesa-cliente/19a_validacao_estatica_fix_criar_mesa_simulacao_status_enum.mjs"
+      - "supabase/migrations/20260525143000_mesa_cliente_fase_8g_fix_criar_mesa_simulacao_status_enum.sql"
+      - "docs/mesa-cliente/fase-8g-contrato-fix-rpc-criar-mesa-simulacao-status-enum.md"
+
+  pull_request:
+    branches:
+      - main
+    paths:
+      - ".github/workflows/mesa-cliente-19a.yml"
+      - "scripts/tests/mesa-cliente/19a_validacao_estatica_fix_criar_mesa_simulacao_status_enum.mjs"
+      - "supabase/migrations/20260525143000_mesa_cliente_fase_8g_fix_criar_mesa_simulacao_status_enum.sql"
+      - "docs/mesa-cliente/fase-8g-contrato-fix-rpc-criar-mesa-simulacao-status-enum.md"
+
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  mesa-cliente-19a:
+    name: Run 19A static validation for status enum fix
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Ensure origin/main reference
+        run: |
+          git fetch origin main:refs/remotes/origin/main
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+
+      - name: Show execution context
+        run: |
+          echo "Branch:"
+          git branch --show-current || true
+          echo "Latest commit:"
+          git log --oneline -n 10
+          echo "Node:"
+          node -v
+          echo "Diff origin/main...HEAD:"
+          git diff --name-only origin/main...HEAD || true
+
+      - name: Run MesaCliente 19A static validation
+        id: run_19a
+        continue-on-error: true
+        run: |
+          mkdir -p tmp
+          node scripts/tests/mesa-cliente/19a_validacao_estatica_fix_criar_mesa_simulacao_status_enum.mjs | tee tmp/19a_resultado.json
+          echo "exit_code=${PIPESTATUS[0]}" >> "$GITHUB_OUTPUT"
+
+      - name: Upload 19A evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: mesa-cliente-19a-resultado
+          path: tmp/19a_resultado.json
+
+      - name: Fail if 19A has FAIL block
+        run: |
+          if grep -q '"status": "FAIL"' tmp/19a_resultado.json; then
+            echo "19A encontrou bloco FAIL"
+            cat tmp/19a_resultado.json
+            exit 1
+          fi
+
+          echo "19A sem FAIL"
