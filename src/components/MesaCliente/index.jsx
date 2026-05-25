@@ -1,7 +1,7 @@
 /**
  * MesaCliente/index.jsx
  * Componente principal da Mesa Cliente.
- * 3 abas: Empreendimentos | Fluxo | Histórico
+ * 4 abas: Empreendimentos | Fluxo | Histórico | Operações
  *
  * Preview segura:
  * - recebe sb/token do App principal;
@@ -13,11 +13,13 @@ import { Component, useMemo, useState } from 'react';
 import TabEmpreendimentos from './TabEmpreendimentos';
 import TabFluxo from './TabFluxo';
 import TabHistorico from './TabHistorico';
+import OperacoesFinanceirasPanel from './OperacoesFinanceirasPanel';
 
 const TABS = [
   { id: 'emp',   label: 'Empreendimentos', icon: '🏢' },
   { id: 'fluxo', label: 'Fluxo',           icon: '📋' },
   { id: 'hist',  label: 'Histórico',        icon: '📂' },
+  { id: 'ops',   label: 'Operações',        icon: '💳' },
 ];
 
 class MesaClienteErrorBoundary extends Component {
@@ -191,6 +193,19 @@ function MesaClienteInner({
             corretorId={ctx.isGestor ? null : ctx.corretorId}
             isGestor={ctx.isGestor}
           />
+        )}
+
+        {tab === 'ops' && (
+          <div className="p-3">
+            <OperacoesFinanceirasPanel
+              sb={sb}
+              token={token}
+              simulacaoId={null}
+              agendaId={null}
+              usuarioPodeAplicar={ctx.isGestor}
+              modo="admin"
+            />
+          </div>
         )}
       </div>
     </div>
