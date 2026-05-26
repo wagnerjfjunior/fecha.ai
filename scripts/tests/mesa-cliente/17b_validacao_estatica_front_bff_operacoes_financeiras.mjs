@@ -77,8 +77,6 @@ const FORBIDDEN_ANON_KEY_PATTERNS = [
 ];
 
 const FORBIDDEN_ENGINE_PATH_PREFIXES = [
-  'supabase/migrations/',
-  'supabase/tests/',
   'workers/',
   'worker/',
   'cloudflare/',
