@@ -12,6 +12,7 @@ import {
   importarMesaClienteJsonAdmin,
   importarMesaClienteDisponibilidadeOficial,
   salvarMesaClienteEnriquecimento,
+  obterSimulacaoFluxoHistorico,
 } from '../../../features/mesaCliente/api/mesaClienteApi';
 import {
   aplicarOperacaoFinanceiraAdmin,
@@ -28,6 +29,7 @@ export const MESA_KEYS = {
   config: (empresaId) => ['mesa', 'config', empresaId],
   historico: (empresaId, filtros = {}) => ['mesa', 'historico', empresaId, filtros],
   unidades: (empreendimentoId) => ['mesa', 'unidades', empreendimentoId],
+  fluxoHistorico: (simulacaoId) => ['mesa', 'fluxo-historico', simulacaoId],
   jsonAdminPermission: (empresaId) => ['mesa', 'json-admin-permission', empresaId],
   operacoesFinanceiras: (simulacaoId, agendaId = null, filtros = {}) => [
     'mesa',
@@ -115,6 +117,16 @@ export function useUnidadesMesa({ sb, token, empreendimentoId }) {
     queryFn: () => getUnidadesMesa({ sb, token, empreendimentoId }),
     enabled: Boolean(sb && token && empreendimentoId),
     staleTime: 5 * 60 * 1000,
+    refetchOnWindowFocus: false,
+  }));
+}
+
+export function useSimulacaoFluxoHistorico({ sb, token, simulacaoId, parametros = {} }) {
+  return withCompat(useQuery({
+    queryKey: MESA_KEYS.fluxoHistorico(simulacaoId),
+    queryFn: () => obterSimulacaoFluxoHistorico({ sb, token, simulacaoId, parametros }),
+    enabled: Boolean(sb && token && simulacaoId),
+    staleTime: 15 * 1000,
     refetchOnWindowFocus: false,
   }));
 }
