@@ -19,11 +19,17 @@ Use a navegação abaixo conforme o objetivo.
 | Entender a arquitetura técnica | `docs/02-arquitetura-tecnica/arquitetura-atual.md` |
 | Entender onde o sistema roda hoje | `docs/03-infraestrutura-cloud/topologia-cloud.md` |
 | Entender o banco de dados | `docs/04-banco-de-dados/mapa-tabelas.md` |
+| Documentar tabelas e campos | `docs/04-banco-de-dados/dicionario-de-dados.md` |
+| Documentar RPCs e functions | `docs/04-banco-de-dados/rpcs-e-functions.md` |
 | Planejar monitoramento e alta disponibilidade | `docs/05-observabilidade-ha/observabilidade-non-stop.md` |
+| Responder incidentes | `docs/05-observabilidade-ha/runbook-incidentes.md` |
+| Entender segurança multi-tenant | `docs/06-seguranca-compliance/seguranca-multitenant.md` |
+| Preparar LGPD e privacidade | `docs/06-seguranca-compliance/lgpd.md` |
 | Organizar suporte operacional | `docs/07-operacao-suporte/guia-suporte-n1-n2-n3.md` |
 | Definir monetização SaaS | `docs/08-comercial-monetizacao/modelo-saas.md` |
 | Mapear financeiro, custos e impostos | `docs/09-financeiro-juridico-fiscal/estrutura-financeira.md` |
 | Validar tributação e notas fiscais | `docs/09-financeiro-juridico-fiscal/impostos-e-regime-tributario.md` |
+| Preparar Fase 20C com segurança | `docs/mesa-cliente/pre-20c-reconciliacao-github-supabase.md` |
 
 ---
 
@@ -35,7 +41,7 @@ A proposta é transformar a rotina de atendimento imobiliário em um processo me
 
 ---
 
-## 3. Documentos iniciais deste pacote
+## 3. Documentos deste pacote
 
 ```text
 docs/
@@ -48,8 +54,14 @@ docs/
     topologia-cloud.md
   04-banco-de-dados/
     mapa-tabelas.md
+    dicionario-de-dados.md
+    rpcs-e-functions.md
   05-observabilidade-ha/
     observabilidade-non-stop.md
+    runbook-incidentes.md
+  06-seguranca-compliance/
+    seguranca-multitenant.md
+    lgpd.md
   07-operacao-suporte/
     guia-suporte-n1-n2-n3.md
   08-comercial-monetizacao/
@@ -57,6 +69,8 @@ docs/
   09-financeiro-juridico-fiscal/
     estrutura-financeira.md
     impostos-e-regime-tributario.md
+  mesa-cliente/
+    pre-20c-reconciliacao-github-supabase.md
 ```
 
 ---
@@ -94,14 +108,13 @@ Quando houver conflito entre informação antiga e nova, usar esta ordem:
 
 ## 6. Próximos documentos recomendados
 
-Após este pacote inicial, criar:
+Após este pacote, criar:
 
 ```text
-docs/04-banco-de-dados/dicionario-de-dados.md
-docs/04-banco-de-dados/rpcs-e-functions.md
-docs/05-observabilidade-ha/runbook-incidentes.md
-docs/06-seguranca-compliance/lgpd.md
-docs/06-seguranca-compliance/seguranca-multitenant.md
-docs/mesa-cliente/pre-20c-reconciliacao-github-supabase.md
 docs/mesa-cliente/fase-20c-rastreabilidade-fluxo-historico.md
+docs/10-roadmap-e-governanca/backlog-priorizado.md
+docs/10-roadmap-e-governanca/matriz-dependencias.md
+docs/10-roadmap-e-governanca/due-diligence.md
+docs/08-comercial-monetizacao/planos-e-precos.md
+docs/08-comercial-monetizacao/proposta-comercial.md
 ```
