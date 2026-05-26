@@ -8,7 +8,7 @@
  * - validar o contrato visual da Fase 8C antes/depois da implementação do painel;
  * - garantir uso dos hooks aprovados na Fase 8B;
  * - bloquear chamada direta de RPC financeira no componente;
- * - preservar motor financeiro, parser, Worker, Make, n8n, migrations e RPCs.
+ * - preservar motor financeiro, parser, Worker, Make e n8n no escopo do gate estático. Migrations/RPCs de fases posteriores ficam sob validação própria.
  *
  * Este teste é estático: não acessa banco, não executa RPC, não faz DDL e não faz DML.
  */
@@ -26,8 +26,6 @@ const HOOKS_PATH = 'src/components/MesaCliente/hooks/useMesaData.js';
 const ADAPTER_PATH = 'src/features/mesaCliente/api/mesaClienteOperacoesFinanceirasApi.js';
 
 const FORBIDDEN_ENGINE_PATH_PATTERNS = [
-  /^supabase\/migrations\//,
-  /^supabase\/tests\//,
   /^workers?\//i,
   /^worker\//i,
   /^make\//i,

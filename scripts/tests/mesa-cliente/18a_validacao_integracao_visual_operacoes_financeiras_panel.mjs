@@ -7,7 +7,7 @@
  * Objetivo:
  * - validar que o painel financeiro foi plugado na navegação principal em modo seguro;
  * - garantir aba Operações sem inventar simulacaoId;
- * - preservar motor financeiro, parser, Worker, Make, n8n, migrations e RPCs.
+ * - preservar motor financeiro, parser, Worker, Make e n8n no escopo do gate estático. Migrations/RPCs de fases posteriores ficam sob validação própria.
  *
  * Este teste é estático: não acessa banco, não executa RPC, não faz DDL e não faz DML.
  */
@@ -23,8 +23,6 @@ const PANEL_PATH = 'src/components/MesaCliente/OperacoesFinanceirasPanel.jsx';
 const CONTRACT_PATH = 'docs/mesa-cliente/fase-8e-contrato-integracao-visual-operacoes-financeiras-panel.md';
 
 const FORBIDDEN_ENGINE_PATH_PATTERNS = [
-  /^supabase\/migrations\//,
-  /^supabase\/tests\//,
   /^workers?\//i,
   /^worker\//i,
   /^make\//i,

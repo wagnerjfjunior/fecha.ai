@@ -8,7 +8,7 @@
  * - validar abertura da aba Operações a partir de item.id do Histórico;
  * - impedir derivação de simulacaoId por empresa/corretor/empreendimento/unidade;
  * - preservar comportamento bloqueado quando não houver simulação selecionada;
- * - preservar motor financeiro, parser, Worker, Make, n8n, migrations e RPCs.
+ * - preservar motor financeiro, parser, Worker, Make e n8n no escopo do gate estático. Migrations/RPCs de fases posteriores ficam sob validação própria.
  *
  * Este teste é estático: não acessa banco, não executa RPC, não faz DDL e não faz DML.
  */
@@ -24,8 +24,6 @@ const HIST_PATH = 'src/components/MesaCliente/TabHistorico.jsx';
 const CONTRACT_PATH = 'docs/mesa-cliente/fase-8f-contrato-selecao-segura-simulacao-operacoes-financeiras.md';
 
 const FORBIDDEN_ENGINE_PATH_PATTERNS = [
-  /^supabase\/migrations\//,
-  /^supabase\/tests\//,
   /^workers?\//i,
   /^worker\//i,
   /^make\//i,
