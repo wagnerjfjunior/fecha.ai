@@ -1,0 +1,131 @@
+name: MesaCliente 17D - Build Validation
+
+on:
+  push:
+    branches:
+      - feature/mesa-cliente-fase-8-front-operacoes-financeiras
+    paths:
+      - ".github/workflows/mesa-cliente-17d-build.yml"
+      - "package.json"
+      - "package-lock.json"
+      - "vite.config.*"
+      - "postcss.config.*"
+      - "tailwind.config.*"
+      - "index.html"
+      - "src/**"
+
+  pull_request:
+    branches:
+      - main
+    paths:
+      - ".github/workflows/mesa-cliente-17d-build.yml"
+      - "package.json"
+      - "package-lock.json"
+      - "vite.config.*"
+      - "postcss.config.*"
+      - "tailwind.config.*"
+      - "index.html"
+      - "src/**"
+
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  mesa-cliente-17d-build:
+    name: Run 17D build validation
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: package.json
+
+      - name: Show execution context
+        run: |
+          echo "Branch:"
+          git branch --show-current || true
+          echo "Latest commit:"
+          git log --oneline -n 5
+          echo "Node:"
+          node -v
+          echo "NPM:"
+          npm -v
+          echo "Package scripts:"
+          node -e "const p=require('./package.json'); console.log(JSON.stringify(p.scripts,null,2))"
+
+      - name: Install dependencies
+        id: npm_install
+        continue-on-error: true
+        run: |
+          mkdir -p tmp
+          set +e
+          npm install 2>&1 | tee tmp/17d_npm_install.log
+          code=${PIPESTATUS[0]}
+          echo "exit_code=$code" >> "$GITHUB_OUTPUT"
+          exit $code
+
+      - name: Build frontend
+        id: npm_build
+        if: always()
+        continue-on-error: true
+        run: |
+          mkdir -p tmp
+          set +e
+          npm run build 2>&1 | tee tmp/17d_build.log
+          code=${PIPESTATUS[0]}
+          echo "exit_code=$code" >> "$GITHUB_OUTPUT"
+          exit $code
+
+      - name: Generate 17D summary artifact
+        if: always()
+        run: |
+          mkdir -p tmp
+          cat > tmp/17d_resultado.json <<JSON
+          {
+            "teste": "17D — Build Validation",
+            "branch": "${GITHUB_REF_NAME}",
+            "commit": "${GITHUB_SHA}",
+            "npm_install_exit_code": "${{ steps.npm_install.outputs.exit_code }}",
+            "npm_build_exit_code": "${{ steps.npm_build.outputs.exit_code }}",
+            "status": "${{ steps.npm_install.outputs.exit_code == '0' && steps.npm_build.outputs.exit_code == '0' && 'PASS' || 'FAIL' }}",
+            "ddl": false,
+            "dml": false,
+            "banco_alterado": false,
+            "motor_financeiro_preservado": true
+          }
+          JSON
+          cat tmp/17d_resultado.json
+
+      - name: Upload 17D evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: mesa-cliente-17d-build-resultado
+          path: |
+            tmp/17d_resultado.json
+            tmp/17d_npm_install.log
+            tmp/17d_build.log
+
+      - name: Fail if install or build failed
+        run: |
+          if [ "${{ steps.npm_install.outputs.exit_code }}" != "0" ]; then
+            echo "17D FAIL: npm install falhou"
+            exit 1
+          fi
+
+          if [ "${{ steps.npm_build.outputs.exit_code }}" != "0" ]; then
+            echo "17D FAIL: npm run build falhou"
+            exit 1
+          fi
+
+          echo "17D PASS: install e build concluídos"

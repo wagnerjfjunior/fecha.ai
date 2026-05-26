@@ -1,0 +1,75 @@
+name: MesaCliente 19C - Fix Criar Mesa Fluxo Tipo Enum
+
+on:
+  push:
+    branches:
+      - feature/mesa-cliente-fase-8-front-operacoes-financeiras
+    paths:
+      - ".github/workflows/mesa-cliente-19c.yml"
+      - "scripts/tests/mesa-cliente/19c_validacao_estatica_fix_criar_mesa_fluxo_tipo_enum.mjs"
+      - "supabase/migrations/20260525161000_mesa_cliente_fase_8i_fix_criar_mesa_fluxo_tipo_enum.sql"
+      - "docs/mesa-cliente/fase-8i-contrato-fix-rpc-criar-mesa-fluxo-tipo-enum.md"
+
+  pull_request:
+    branches:
+      - main
+    paths:
+      - ".github/workflows/mesa-cliente-19c.yml"
+      - "scripts/tests/mesa-cliente/19c_validacao_estatica_fix_criar_mesa_fluxo_tipo_enum.mjs"
+      - "supabase/migrations/20260525161000_mesa_cliente_fase_8i_fix_criar_mesa_fluxo_tipo_enum.sql"
+      - "docs/mesa-cliente/fase-8i-contrato-fix-rpc-criar-mesa-fluxo-tipo-enum.md"
+
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  mesa-cliente-19c:
+    name: Run 19C static validation for fluxo tipo enum fix
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+
+      - name: Show execution context
+        run: |
+          echo "Branch:"
+          git branch --show-current || true
+          echo "Latest commit:"
+          git log --oneline -n 10
+          echo "Node:"
+          node -v
+
+      - name: Run MesaCliente 19C static validation
+        id: run_19c
+        continue-on-error: true
+        run: |
+          mkdir -p tmp
+          node scripts/tests/mesa-cliente/19c_validacao_estatica_fix_criar_mesa_fluxo_tipo_enum.mjs | tee tmp/19c_resultado.json
+          echo "exit_code=${PIPESTATUS[0]}" >> "$GITHUB_OUTPUT"
+
+      - name: Upload 19C evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: mesa-cliente-19c-resultado
+          path: tmp/19c_resultado.json
+
+      - name: Fail if 19C has FAIL block
+        run: |
+          if grep -q '"status": "FAIL"' tmp/19c_resultado.json; then
+            echo "19C encontrou bloco FAIL"
+            cat tmp/19c_resultado.json
+            exit 1
+          fi
+
+          echo "19C sem FAIL"

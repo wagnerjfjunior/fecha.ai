@@ -203,3 +203,15 @@ export function salvarMesaClienteEnriquecimento({ sb, token, empreendimentoId, f
     },
   });
 }
+
+export function obterSimulacaoFluxoHistorico({ sb, token, simulacaoId, parametros = {} }) {
+  return callMesaRpc({
+    sb,
+    token,
+    fn: 'mesa_cliente_obter_simulacao_fluxo_historico',
+    args: {
+      p_simulacao_id: simulacaoId,
+      p_parametros: parametros && typeof parametros === 'object' ? parametros : {},
+    },
+  });
+}

@@ -1,0 +1,84 @@
+name: MesaCliente 17B - Static Front BFF Validation
+
+on:
+  push:
+    branches:
+      - feature/mesa-cliente-fase-8-front-operacoes-financeiras
+    paths:
+      - ".github/workflows/mesa-cliente-17b.yml"
+      - "scripts/tests/mesa-cliente/17b_validacao_estatica_front_bff_operacoes_financeiras.mjs"
+      - "src/App.jsx"
+      - "src/Appx.jsx"
+      - "src/features/mesaCliente/api/mesaClienteOperacoesFinanceirasApi.js"
+      - "src/components/MesaCliente/hooks/useMesaData.js"
+      - "docs/mesa-cliente/fase-8b-adapter-front-operacoes-financeiras.md"
+      - "docs/mesa-cliente/fase-8b-teste-17b-validacao-estatica-front-bff-operacoes-financeiras.md"
+
+  pull_request:
+    branches:
+      - main
+    paths:
+      - ".github/workflows/mesa-cliente-17b.yml"
+      - "scripts/tests/mesa-cliente/17b_validacao_estatica_front_bff_operacoes_financeiras.mjs"
+      - "src/App.jsx"
+      - "src/Appx.jsx"
+      - "src/features/mesaCliente/api/mesaClienteOperacoesFinanceirasApi.js"
+      - "src/components/MesaCliente/hooks/useMesaData.js"
+      - "docs/mesa-cliente/fase-8b-adapter-front-operacoes-financeiras.md"
+      - "docs/mesa-cliente/fase-8b-teste-17b-validacao-estatica-front-bff-operacoes-financeiras.md"
+
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  mesa-cliente-17b:
+    name: Run 17B static validation
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Ensure origin/main reference
+        run: |
+          git fetch origin main:refs/remotes/origin/main
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+
+      - name: Show execution context
+        run: |
+          echo "Branch:"
+          git branch --show-current || true
+          echo "Latest commit:"
+          git log --oneline -n 3
+          echo "Node:"
+          node -v
+
+      - name: Run MesaCliente 17B static validation
+        run: |
+          mkdir -p tmp
+          node scripts/tests/mesa-cliente/17b_validacao_estatica_front_bff_operacoes_financeiras.mjs | tee tmp/17b_resultado.json
+
+      - name: Fail if 17B has FAIL block
+        run: |
+          if grep -q '"status": "FAIL"' tmp/17b_resultado.json; then
+            echo "17B encontrou bloco FAIL"
+            cat tmp/17b_resultado.json
+            exit 1
+          fi
+
+          echo "17B sem FAIL"
+
+      - name: Upload 17B evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: mesa-cliente-17b-resultado
+          path: tmp/17b_resultado.json
