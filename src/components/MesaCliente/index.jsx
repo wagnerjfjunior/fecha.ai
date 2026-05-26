@@ -14,6 +14,7 @@ import TabEmpreendimentos from './TabEmpreendimentos';
 import TabFluxo from './TabFluxo';
 import TabHistorico from './TabHistorico';
 import OperacoesFinanceirasPanel from './OperacoesFinanceirasPanel';
+import SegundaViaHistoricoPanel from './SegundaViaHistoricoPanel';
 
 const TABS = [
   { id: 'emp',   label: 'Empreendimentos', icon: '🏢' },
@@ -117,6 +118,7 @@ function MesaClienteInner({
   const [tab, setTab] = useState('emp');
   const [empSelecionado, setEmp] = useState(null);
   const [simulacaoOperacoesSelecionada, setSimulacaoOperacoesSelecionada] = useState(null);
+  const [simulacaoSegundaViaSelecionada, setSimulacaoSegundaViaSelecionada] = useState(null);
 
   const ctx = useMemo(
     () => resolveMesaContext({ corretor, empresaId, corretorId, isGestor }),
@@ -138,6 +140,14 @@ function MesaClienteInner({
 
     setSimulacaoOperacoesSelecionada(contexto);
     setTab('ops');
+  };
+
+  const abrirSegundaVia = (item) => {
+    const contexto = buildSimulacaoOperacoesContext(item);
+    if (!contexto?.id) return;
+
+    setSimulacaoSegundaViaSelecionada(contexto);
+    setTab('segunda-via');
   };
 
   const limparSimulacaoOperacoes = () => {
@@ -224,6 +234,18 @@ function MesaClienteInner({
             empresaId={ctx.empresaId}
             corretorId={ctx.isGestor ? null : ctx.corretorId}
             isGestor={ctx.isGestor}
+            onAbrirOperacoesFinanceiras={abrirOperacoesFinanceiras}
+            onAbrirSegundaVia={abrirSegundaVia}
+          />
+        )}
+
+        {tab === 'segunda-via' && (
+          <SegundaViaHistoricoPanel
+            sb={sb}
+            token={token}
+            simulacaoId={simulacaoSegundaViaSelecionada?.id || null}
+            context={simulacaoSegundaViaSelecionada}
+            onVoltar={() => setTab('hist')}
             onAbrirOperacoesFinanceiras={abrirOperacoesFinanceiras}
           />
         )}
