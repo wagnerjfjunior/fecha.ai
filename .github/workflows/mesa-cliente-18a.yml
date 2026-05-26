@@ -1,0 +1,83 @@
+name: MesaCliente 18A - Financial Panel Visual Integration
+
+on:
+  push:
+    branches:
+      - feature/mesa-cliente-fase-8-front-operacoes-financeiras
+    paths:
+      - ".github/workflows/mesa-cliente-18a.yml"
+      - "scripts/tests/mesa-cliente/18a_validacao_integracao_visual_operacoes_financeiras_panel.mjs"
+      - "src/components/MesaCliente/index.jsx"
+      - "src/components/MesaCliente/OperacoesFinanceirasPanel.jsx"
+      - "docs/mesa-cliente/fase-8e-contrato-integracao-visual-operacoes-financeiras-panel.md"
+
+  pull_request:
+    branches:
+      - main
+    paths:
+      - ".github/workflows/mesa-cliente-18a.yml"
+      - "scripts/tests/mesa-cliente/18a_validacao_integracao_visual_operacoes_financeiras_panel.mjs"
+      - "src/components/MesaCliente/index.jsx"
+      - "src/components/MesaCliente/OperacoesFinanceirasPanel.jsx"
+      - "docs/mesa-cliente/fase-8e-contrato-integracao-visual-operacoes-financeiras-panel.md"
+
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  mesa-cliente-18a:
+    name: Run 18A visual integration validation
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Ensure origin/main reference
+        run: |
+          git fetch origin main:refs/remotes/origin/main
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+
+      - name: Show execution context
+        run: |
+          echo "Branch:"
+          git branch --show-current || true
+          echo "Latest commit:"
+          git log --oneline -n 5
+          echo "Node:"
+          node -v
+          echo "Diff origin/main...HEAD:"
+          git diff --name-only origin/main...HEAD || true
+
+      - name: Run MesaCliente 18A static validation
+        id: run_18a
+        continue-on-error: true
+        run: |
+          mkdir -p tmp
+          node scripts/tests/mesa-cliente/18a_validacao_integracao_visual_operacoes_financeiras_panel.mjs | tee tmp/18a_resultado.json
+          echo "exit_code=${PIPESTATUS[0]}" >> "$GITHUB_OUTPUT"
+
+      - name: Upload 18A evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: mesa-cliente-18a-resultado
+          path: tmp/18a_resultado.json
+
+      - name: Fail if 18A has FAIL block
+        run: |
+          if grep -q '"status": "FAIL"' tmp/18a_resultado.json; then
+            echo "18A encontrou bloco FAIL"
+            cat tmp/18a_resultado.json
+            exit 1
+          fi
+
+          echo "18A sem FAIL"

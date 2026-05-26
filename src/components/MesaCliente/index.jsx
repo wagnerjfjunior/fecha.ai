@@ -1,7 +1,7 @@
 /**
  * MesaCliente/index.jsx
  * Componente principal da Mesa Cliente.
- * 3 abas: Empreendimentos | Fluxo | Histórico
+ * 4 abas: Empreendimentos | Fluxo | Histórico | Operações
  *
  * Preview segura:
  * - recebe sb/token do App principal;
@@ -13,11 +13,14 @@ import { Component, useMemo, useState } from 'react';
 import TabEmpreendimentos from './TabEmpreendimentos';
 import TabFluxo from './TabFluxo';
 import TabHistorico from './TabHistorico';
+import OperacoesFinanceirasPanel from './OperacoesFinanceirasPanel';
+import SegundaViaHistoricoPanel from './SegundaViaHistoricoPanel';
 
 const TABS = [
   { id: 'emp',   label: 'Empreendimentos', icon: '🏢' },
   { id: 'fluxo', label: 'Fluxo',           icon: '📋' },
   { id: 'hist',  label: 'Histórico',        icon: '📂' },
+  { id: 'ops',   label: 'Operações',        icon: '💳' },
 ];
 
 class MesaClienteErrorBoundary extends Component {
@@ -84,6 +87,25 @@ function resolveMesaContext({ corretor, empresaId, corretorId, isGestor }) {
   };
 }
 
+function buildSimulacaoOperacoesContext(item) {
+  if (!item?.id) return null;
+
+  return {
+    id: item.id,
+    cliente_nome: item.cliente_nome || null,
+    empreendimento: item.empreendimento || null,
+    unidade: item.unidade || null,
+    status: item.status || null,
+    valor_total: item.valor_total ?? null,
+  };
+}
+
+function fmtBRL(value) {
+  const parsed = Number(value);
+  if (!Number.isFinite(parsed)) return '—';
+  return parsed.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+}
+
 function MesaClienteInner({
   sb,
   token,
@@ -95,6 +117,8 @@ function MesaClienteInner({
 }) {
   const [tab, setTab] = useState('emp');
   const [empSelecionado, setEmp] = useState(null);
+  const [simulacaoOperacoesSelecionada, setSimulacaoOperacoesSelecionada] = useState(null);
+  const [simulacaoSegundaViaSelecionada, setSimulacaoSegundaViaSelecionada] = useState(null);
 
   const ctx = useMemo(
     () => resolveMesaContext({ corretor, empresaId, corretorId, isGestor }),
@@ -108,6 +132,26 @@ function MesaClienteInner({
 
   const voltarParaEmps = () => {
     setTab('emp');
+  };
+
+  const abrirOperacoesFinanceiras = (item) => {
+    const contexto = buildSimulacaoOperacoesContext(item);
+    if (!contexto?.id) return;
+
+    setSimulacaoOperacoesSelecionada(contexto);
+    setTab('ops');
+  };
+
+  const abrirSegundaVia = (item) => {
+    const contexto = buildSimulacaoOperacoesContext(item);
+    if (!contexto?.id) return;
+
+    setSimulacaoSegundaViaSelecionada(contexto);
+    setTab('segunda-via');
+  };
+
+  const limparSimulacaoOperacoes = () => {
+    setSimulacaoOperacoesSelecionada(null);
   };
 
   if (!sb || !token || !ctx.empresaId || !ctx.corretorId) {
@@ -190,7 +234,68 @@ function MesaClienteInner({
             empresaId={ctx.empresaId}
             corretorId={ctx.isGestor ? null : ctx.corretorId}
             isGestor={ctx.isGestor}
+            onAbrirOperacoesFinanceiras={abrirOperacoesFinanceiras}
+            onAbrirSegundaVia={abrirSegundaVia}
           />
+        )}
+
+        {tab === 'segunda-via' && (
+          <SegundaViaHistoricoPanel
+            sb={sb}
+            token={token}
+            simulacaoId={simulacaoSegundaViaSelecionada?.id || null}
+            context={simulacaoSegundaViaSelecionada}
+            onVoltar={() => setTab('hist')}
+            onAbrirOperacoesFinanceiras={abrirOperacoesFinanceiras}
+          />
+        )}
+
+        {tab === 'ops' && (
+          <div className="p-3 space-y-3">
+            {simulacaoOperacoesSelecionada && (
+              <div className="rounded-2xl border border-[var(--color-border-tertiary)] bg-[var(--color-background-secondary)] p-3">
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                  <div>
+                    <p className="text-[12px] font-semibold uppercase tracking-wide text-[var(--color-text-tertiary)]">
+                      Simulação selecionada no Histórico
+                    </p>
+                    <p className="text-[15px] font-bold text-[var(--color-text-primary)] mt-1">
+                      {simulacaoOperacoesSelecionada.cliente_nome || '(sem nome)'}
+                    </p>
+                    <p className="text-[12px] text-[var(--color-text-secondary)] mt-1">
+                      {simulacaoOperacoesSelecionada.empreendimento || 'Empreendimento não informado'}
+                      {simulacaoOperacoesSelecionada.unidade ? ` · Unidade ${simulacaoOperacoesSelecionada.unidade}` : ''}
+                    </p>
+                    <div className="flex flex-wrap gap-2 mt-2">
+                      <span className="rounded-full bg-[var(--color-background-primary)] px-2 py-0.5 text-[11px] text-[var(--color-text-secondary)]">
+                        Status: {simulacaoOperacoesSelecionada.status || '—'}
+                      </span>
+                      <span className="rounded-full bg-[var(--color-background-primary)] px-2 py-0.5 text-[11px] text-[var(--color-text-secondary)]">
+                        Valor: {fmtBRL(simulacaoOperacoesSelecionada.valor_total)}
+                      </span>
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={limparSimulacaoOperacoes}
+                    className="rounded-xl bg-[var(--color-background-primary)] px-3 py-2 text-[12px] font-semibold text-[var(--color-text-primary)]"
+                  >
+                    Limpar seleção
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* Sem seleção, o fallback preserva comportamento equivalente a simulacaoId={null}. */}
+            <OperacoesFinanceirasPanel
+              sb={sb}
+              token={token}
+              simulacaoId={simulacaoOperacoesSelecionada?.id || null}
+              agendaId={null}
+              usuarioPodeAplicar={ctx.isGestor}
+              modo="admin"
+            />
+          </div>
         )}
       </div>
     </div>

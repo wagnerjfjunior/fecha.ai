@@ -62,8 +62,8 @@ const FECHAI_DASHBOARD_RESPONSIVE_CSS = `
   }
 `;
 
-const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL || "https://uobxxgzshrmbtjfdolxd.supabase.co";
-const SUPABASE_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY || "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVvYnh4Z3pzaHJtYnRqZmRvbHhkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYyNjcyOTUsImV4cCI6MjA5MTg0MzI5NX0.0RiMkrtJlGbprp8AqVPXC9Y5LxP6QiELfP7NoYEXJ9w";
+const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
+const SUPABASE_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
 // Feedbacks: esquerdo = positivos, direito = negativos
 const FEEDBACKS_ESQ = [
@@ -4603,7 +4603,7 @@ function EditarCorretorModal({ corretor, sb, token, onSalvo, onFechar, session }
     if (novaSenha.length < 8) { setMsgSenha("Mínimo 8 caracteres."); return; }
     setLdSenha(true); setMsgSenha("");
     try {
-      // Usa a mesma Edge Function de criação que tem service_role
+      // Usa a mesma Edge Function de criação administrativa
       const r = await fetch("https://uobxxgzshrmbtjfdolxd.supabase.co/functions/v1/criar-usuario", {
         method: "POST",
         headers: { "Content-Type":"application/json", "Authorization":"Bearer "+token },
