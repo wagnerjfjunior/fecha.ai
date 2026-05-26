@@ -1,7 +1,7 @@
 /**
  * TabHistorico.jsx
  * Histórico de simulações/propostas da Mesa Cliente.
- * Gestor vê todas. Corretor vê só as suas.
+ * Gestor vê todas conforme RPC segura. Corretor vê só as suas.
  * Gestor pode aprovar/rejeitar inline via RPC segura.
  */
 
@@ -20,7 +20,7 @@ const STATUS_CFG = {
 const fmtBRL = (n) => 'R$ ' + Math.round(n || 0).toLocaleString('pt-BR');
 const fmtData = (iso) => iso ? new Date(iso).toLocaleDateString('pt-BR', { day: '2-digit', month: 'short', year: 'numeric' }) : '—';
 
-function HistCard({ item, isGestor, empresaId, sb, token, onRefetch, onAbrirOperacoesFinanceiras }) {
+function HistCard({ item, isGestor, empresaId, sb, token, onRefetch, onAbrirOperacoesFinanceiras, onAbrirSegundaVia }) {
   const [showAprov, setShowAprov] = useState(false);
   const [justificativa, setJustificativa] = useState('');
   const { mutateAsync: aprovarRejeitar, isLoading, error } = useAprovarRejeitarMesa({ sb, token });
@@ -28,6 +28,7 @@ function HistCard({ item, isGestor, empresaId, sb, token, onRefetch, onAbrirOper
   const st = STATUS_CFG[item.status] ?? STATUS_CFG.rascunho;
   const podeAprovar = isGestor && item.status === 'pendente';
   const podeAbrirOperacoes = Boolean(item?.id && onAbrirOperacoesFinanceiras);
+  const podeAbrirSegundaVia = Boolean(item?.id && onAbrirSegundaVia);
 
   const handleAcao = async (acao) => {
     await aprovarRejeitar({ simulacaoId: item.id, acao, justificativa, empresaId });
@@ -59,6 +60,16 @@ function HistCard({ item, isGestor, empresaId, sb, token, onRefetch, onAbrirOper
           </div>
 
           <div className="mt-2 flex flex-wrap gap-2">
+            {podeAbrirSegundaVia && (
+              <button
+                type="button"
+                onClick={() => onAbrirSegundaVia(item)}
+                className="text-[11px] px-3 py-1.5 rounded-xl bg-[#E1F5EE] text-[#0F6E56] font-medium"
+              >
+                Abrir 2ª via
+              </button>
+            )}
+
             {podeAbrirOperacoes && (
               <button
                 type="button"
@@ -92,7 +103,7 @@ function HistCard({ item, isGestor, empresaId, sb, token, onRefetch, onAbrirOper
   );
 }
 
-export default function TabHistorico({ sb, token, empresaId, corretorId, isGestor, onAbrirOperacoesFinanceiras }) {
+export default function TabHistorico({ sb, token, empresaId, corretorId, isGestor, onAbrirOperacoesFinanceiras, onAbrirSegundaVia }) {
   const [busca, setBusca] = useState('');
   const [stFiltro, setSt] = useState('');
 
@@ -157,6 +168,7 @@ export default function TabHistorico({ sb, token, empresaId, corretorId, isGesto
           token={token}
           onRefetch={reload}
           onAbrirOperacoesFinanceiras={onAbrirOperacoesFinanceiras}
+          onAbrirSegundaVia={onAbrirSegundaVia}
         />
       ))}
     </div>
