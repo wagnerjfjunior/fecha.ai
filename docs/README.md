@@ -27,9 +27,15 @@ Use a navegação abaixo conforme o objetivo.
 | Preparar LGPD e privacidade | `docs/06-seguranca-compliance/lgpd.md` |
 | Organizar suporte operacional | `docs/07-operacao-suporte/guia-suporte-n1-n2-n3.md` |
 | Definir monetização SaaS | `docs/08-comercial-monetizacao/modelo-saas.md` |
+| Definir planos e preços | `docs/08-comercial-monetizacao/planos-e-precos.md` |
+| Montar proposta comercial | `docs/08-comercial-monetizacao/proposta-comercial.md` |
 | Mapear financeiro, custos e impostos | `docs/09-financeiro-juridico-fiscal/estrutura-financeira.md` |
 | Validar tributação e notas fiscais | `docs/09-financeiro-juridico-fiscal/impostos-e-regime-tributario.md` |
+| Preparar due diligence | `docs/10-roadmap-e-governanca/due-diligence.md` |
+| Priorizar roadmap | `docs/10-roadmap-e-governanca/backlog-priorizado.md` |
+| Entender dependências | `docs/10-roadmap-e-governanca/matriz-dependencias.md` |
 | Preparar Fase 20C com segurança | `docs/mesa-cliente/pre-20c-reconciliacao-github-supabase.md` |
+| Entender contrato da Fase 20C | `docs/mesa-cliente/fase-20c-rastreabilidade-fluxo-historico.md` |
 
 ---
 
@@ -66,11 +72,18 @@ docs/
     guia-suporte-n1-n2-n3.md
   08-comercial-monetizacao/
     modelo-saas.md
+    planos-e-precos.md
+    proposta-comercial.md
   09-financeiro-juridico-fiscal/
     estrutura-financeira.md
     impostos-e-regime-tributario.md
+  10-roadmap-e-governanca/
+    due-diligence.md
+    backlog-priorizado.md
+    matriz-dependencias.md
   mesa-cliente/
     pre-20c-reconciliacao-github-supabase.md
+    fase-20c-rastreabilidade-fluxo-historico.md
 ```
 
 ---
@@ -111,10 +124,10 @@ Quando houver conflito entre informação antiga e nova, usar esta ordem:
 Após este pacote, criar:
 
 ```text
-docs/mesa-cliente/fase-20c-rastreabilidade-fluxo-historico.md
-docs/10-roadmap-e-governanca/backlog-priorizado.md
-docs/10-roadmap-e-governanca/matriz-dependencias.md
-docs/10-roadmap-e-governanca/due-diligence.md
-docs/08-comercial-monetizacao/planos-e-precos.md
-docs/08-comercial-monetizacao/proposta-comercial.md
+docs/00-visao-executiva/pitch-para-socio-ou-investidor.md
+docs/00-visao-executiva/diferenciais-competitivos.md
+docs/01-produto/jornada-do-usuario.md
+docs/03-infraestrutura-cloud/variaveis-ambiente.md
+docs/07-operacao-suporte/onboarding-cliente.md
+docs/08-comercial-monetizacao/calculadora-roi.md
 ```
