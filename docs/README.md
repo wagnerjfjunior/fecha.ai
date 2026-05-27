@@ -17,6 +17,10 @@ Use a navegação abaixo conforme o objetivo.
 |---|---|
 | Entender o produto para venda ou sociedade | `docs/00-visao-executiva/resumo-executivo.md` |
 | Entender a proposta de valor | `docs/00-visao-executiva/canvas-proposta-de-valor.md` |
+| Apresentar para sócio/investidor | `docs/00-visao-executiva/pitch-para-socio-ou-investidor.md` |
+| Defender diferenciais competitivos | `docs/00-visao-executiva/diferenciais-competitivos.md` |
+| Estruturar landing page comercial | `docs/00-visao-executiva/landing-page-comercial.md` |
+| Entender jornada do usuário | `docs/01-produto/jornada-do-usuario.md` |
 | Entender a arquitetura técnica | `docs/02-arquitetura-tecnica/arquitetura-atual.md` |
 | Entender onde o sistema roda hoje | `docs/03-infraestrutura-cloud/topologia-cloud.md` |
 | Entender o banco de dados | `docs/04-banco-de-dados/mapa-tabelas.md` |
@@ -27,6 +31,7 @@ Use a navegação abaixo conforme o objetivo.
 | Entender segurança multi-tenant | `docs/06-seguranca-compliance/seguranca-multitenant.md` |
 | Preparar LGPD e privacidade | `docs/06-seguranca-compliance/lgpd.md` |
 | Organizar suporte operacional | `docs/07-operacao-suporte/guia-suporte-n1-n2-n3.md` |
+| Demonstrar o produto | `docs/07-operacao-suporte/roteiro-demonstracao-produto.md` |
 | Definir monetização SaaS | `docs/08-comercial-monetizacao/modelo-saas.md` |
 | Definir planos e preços | `docs/08-comercial-monetizacao/planos-e-precos.md` |
 | Montar proposta comercial | `docs/08-comercial-monetizacao/proposta-comercial.md` |
@@ -56,6 +61,11 @@ docs/
   00-visao-executiva/
     resumo-executivo.md
     canvas-proposta-de-valor.md
+    pitch-para-socio-ou-investidor.md
+    diferenciais-competitivos.md
+    landing-page-comercial.md
+  01-produto/
+    jornada-do-usuario.md
   02-arquitetura-tecnica/
     arquitetura-atual.md
   03-infraestrutura-cloud/
@@ -72,6 +82,7 @@ docs/
     lgpd.md
   07-operacao-suporte/
     guia-suporte-n1-n2-n3.md
+    roteiro-demonstracao-produto.md
   08-comercial-monetizacao/
     modelo-saas.md
     planos-e-precos.md
@@ -126,10 +137,9 @@ Quando houver conflito entre informação antiga e nova, usar esta ordem:
 Após este pacote, criar:
 
 ```text
-docs/00-visao-executiva/pitch-para-socio-ou-investidor.md
-docs/00-visao-executiva/diferenciais-competitivos.md
-docs/01-produto/jornada-do-usuario.md
 docs/03-infraestrutura-cloud/variaveis-ambiente.md
 docs/07-operacao-suporte/onboarding-cliente.md
 docs/08-comercial-monetizacao/calculadora-roi.md
+docs/08-comercial-monetizacao/playbook-vendas.md
+docs/10-roadmap-e-governanca/changelog.md
 ```
