@@ -16,6 +16,7 @@ Use a navegação abaixo conforme o objetivo.
 | Objetivo | Ler primeiro |
 |---|---|
 | Entender o produto para venda ou sociedade | `docs/00-visao-executiva/resumo-executivo.md` |
+| Entender a proposta de valor | `docs/00-visao-executiva/canvas-proposta-de-valor.md` |
 | Entender a arquitetura técnica | `docs/02-arquitetura-tecnica/arquitetura-atual.md` |
 | Entender onde o sistema roda hoje | `docs/03-infraestrutura-cloud/topologia-cloud.md` |
 | Entender o banco de dados | `docs/04-banco-de-dados/mapa-tabelas.md` |
@@ -54,6 +55,7 @@ docs/
   README.md
   00-visao-executiva/
     resumo-executivo.md
+    canvas-proposta-de-valor.md
   02-arquitetura-tecnica/
     arquitetura-atual.md
   03-infraestrutura-cloud/
