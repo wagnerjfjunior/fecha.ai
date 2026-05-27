@@ -1,5 +1,65 @@
 begin;
 
+-- -----------------------------------------------------------------------------
+-- MesaCliente — Fase 20D.4
+-- Adaptador read-only: fluxo histórico -> agenda canônica
+-- -----------------------------------------------------------------------------
+-- Objetivo:
+--   Criar a RPC public.mesa_cliente_montar_payload_agenda_canonica(uuid)
+--   para montar payload canônico de agenda financeira a partir de
+--   public.mesa_fluxo_pagamentos, sem aceitar valores financeiros vindos do
+--   frontend e sem executar DML financeiro.
+--
+-- Fora do escopo:
+--   - INSERT/UPDATE/DELETE em agenda/parcela/operação financeira.
+--   - Chamada automática da 4A ou 4B.
+--   - Persistência de agenda.
+--   - Alteração de parser, Worker, Make/n8n, frontend ou motor financeiro.
+-- -----------------------------------------------------------------------------
+
+-- -----------------------------------------------------------------------------
+-- 1. Pré-requisitos defensivos
+-- -----------------------------------------------------------------------------
+
+do $$
+begin
+  if to_regclass('public.mesa_simulacoes') is null then
+    raise exception 'Tabela public.mesa_simulacoes não encontrada. Migração 20D.4 abortada.';
+  end if;
+
+  if to_regclass('public.mesa_fluxo_pagamentos') is null then
+    raise exception 'Tabela public.mesa_fluxo_pagamentos não encontrada. Migração 20D.4 abortada.';
+  end if;
+
+  if to_regprocedure('public.is_root()') is null then
+    raise exception 'Função public.is_root() não encontrada. Migração 20D.4 abortada.';
+  end if;
+
+  if to_regprocedure('public.mesa_cliente_assert_auth()') is null then
+    raise exception 'Função public.mesa_cliente_assert_auth() não encontrada. Migração 20D.4 abortada.';
+  end if;
+
+  if to_regprocedure('public.mesa_cliente_current_corretor_context()') is null then
+    raise exception 'Função public.mesa_cliente_current_corretor_context() não encontrada. Migração 20D.4 abortada.';
+  end if;
+
+  if to_regprocedure('public.mesa_cliente_can_admin_empresa(uuid)') is null then
+    raise exception 'Função public.mesa_cliente_can_admin_empresa(uuid) não encontrada. Migração 20D.4 abortada.';
+  end if;
+
+  if to_regprocedure('public.mesa_cliente_can_access_empresa(uuid)') is null then
+    raise exception 'Função public.mesa_cliente_can_access_empresa(uuid) não encontrada. Migração 20D.4 abortada.';
+  end if;
+
+  if to_regprocedure('public.mesa_cliente_assert_empreendimento_empresa(uuid,uuid)') is null then
+    raise exception 'Função public.mesa_cliente_assert_empreendimento_empresa(uuid,uuid) não encontrada. Migração 20D.4 abortada.';
+  end if;
+end $$;
+
+-- -----------------------------------------------------------------------------
+-- 2. RPC adaptadora read-only
+-- -----------------------------------------------------------------------------
+
 create or replace function public.mesa_cliente_montar_payload_agenda_canonica(
   p_simulacao_id uuid
 )
@@ -230,7 +290,6 @@ begin
 
     v_fluxo_json := v_fluxo_json || jsonb_build_array(jsonb_build_object(
       'ordem', v_row.ordem,
-      'tipo', v_tipo,
       'grupo', v_grupo,
       'descricao', v_descricao,
       'valor', round(v_valor, 2),
@@ -303,7 +362,7 @@ end;
 $$;
 
 comment on function public.mesa_cliente_montar_payload_agenda_canonica(uuid) is
-  'MesaCliente 20D: adaptador read-only do fluxo histórico para payload canônico de agenda financeira.';
+  'MesaCliente 20D.4: adaptador read-only do fluxo histórico para payload canônico de agenda financeira. Não executa DML financeiro e não chama 4A/4B.';
 
 revoke all on function public.mesa_cliente_montar_payload_agenda_canonica(uuid) from public;
 revoke all on function public.mesa_cliente_montar_payload_agenda_canonica(uuid) from anon;
