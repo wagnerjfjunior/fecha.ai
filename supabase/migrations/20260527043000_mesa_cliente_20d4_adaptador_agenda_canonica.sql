@@ -1,32 +1,41 @@
 begin;
 
 -- -----------------------------------------------------------------------------
--- MesaCliente — Fase 20D.4
+-- MesaCliente — Fase 20D.4.3
 -- Adaptador read-only: fluxo histórico -> agenda canônica
 -- -----------------------------------------------------------------------------
 -- Objetivo:
---   Criar a RPC public.mesa_cliente_montar_payload_agenda_canonica(uuid)
+--   Criar/atualizar a RPC public.mesa_cliente_montar_payload_agenda_canonica(uuid)
 --   para montar payload canônico de agenda financeira a partir de
 --   public.mesa_fluxo_pagamentos, sem aceitar valores financeiros vindos do
 --   frontend e sem executar DML financeiro.
 --
--- Correções semânticas incorporadas nesta versão:
---   - ATO + curto_prazo compõem complemento de entrada/obra.
+-- Princípios desta versão:
+--   - A tabela de valores importada é a fonte soberana do fluxo.
+--   - No escopo atual do adaptador, public.mesa_fluxo_pagamentos representa
+--     o histórico financeiro já derivado/importado da tabela.
+--   - data_prevista, quando preenchida, é tratada como data oficial importada
+--     e prevalece sobre qualquer regra derivada.
+--   - Regra comercial por ATO/complemento/mensais/intermediárias é fallback
+--     controlado e/ou validação, nunca fonte primária quando a tabela trouxe data.
+--   - Tipo de parcela NÃO pode ser identificado por quantidade.
+--   - quantidade informa apenas repetição/expansão, nunca natureza financeira.
+--   - ATO + curto_prazo compõem entrada/complemento de entrada de obra.
 --   - curto_prazo sem data_prevista aceita +30/+60/+90/+120... desde que
 --     o número seja múltiplo de 30 e convertido por mês comercial.
---   - A primeira mensal deve iniciar depois do último complemento de entrada:
---       ATO +30/+60/+90       => primeira mensal em +120;
---       ATO +30/+60/+90/+120  => primeira mensal em +150.
---   - Quando a mensal já possui data_prevista oficial, a data é respeitada,
---     mas deve ser posterior ao último complemento de entrada.
---   - Intermediárias anuais/semestrais podem coincidir com a mensal do mesmo
---     mês/data. Isso não é erro e não deve gerar deduplicação.
+--   - Mensais sem data_prevista podem usar fallback pelo mês seguinte ao último
+--     complemento de entrada, sempre diagnosticado.
+--   - Mensais com data_prevista oficial são respeitadas, mas validadas para
+--     iniciar depois do último complemento de entrada.
+--   - Intermediárias anuais/semestrais podem coincidir com mensal do mesmo mês/data.
+--     Isso não é erro e não gera deduplicação.
 --   - Parcela única/chaves pertence ao ciclo de obra e não deve ser tratada
 --     como quitação do saldo devedor.
 --   - O enum histórico tipo=quitacao só pode virar parcela_unica quando a
 --     descrição indicar compatibilidade histórica com parcela única/chaves.
---   - tipo=quitacao com semântica de saldo/repasse/quitação real é bloqueado
---     para evitar classificação financeira incorreta.
+--   - tipo=quitacao com semântica de saldo/repasse/quitação real é bloqueado.
+--   - tipo=observacao representa item não financeiro/operacional, por exemplo
+--     Final(is)/Periodicidade simbólica de obra, e não deve entrar na 4A/4B.
 --
 -- Fora do escopo:
 --   - INSERT/UPDATE/DELETE em agenda/parcela/operação financeira.
@@ -93,17 +102,19 @@ declare
   v_sim record;
   v_is_admin boolean := false;
   v_is_owner boolean := false;
-  v_qtd_origem integer := 0;
-  v_qtd_adaptados integer := 0;
+  v_qtd_origem_total integer := 0;
+  v_qtd_financeiros_adaptados integer := 0;
+  v_qtd_observacao_ignorados integer := 0;
   v_data_ato date;
   v_max_complemento_data date;
   v_fluxo_json jsonb := '[]'::jsonb;
   v_diagnostico_itens jsonb := '[]'::jsonb;
-  v_datas_inferidas jsonb := '[]'::jsonb;
+  v_itens_observacao jsonb := '[]'::jsonb;
+  v_datas_fallback jsonb := '[]'::jsonb;
   v_warnings jsonb := '[]'::jsonb;
   v_curto_prazo_para_entrada integer := 0;
   v_periodica_para_mensais integer := 0;
-  v_primeira_mensal_inferida_pos_complemento integer := 0;
+  v_primeira_mensal_fallback_pos_complemento integer := 0;
   v_intermediaria_para_intermediarias integer := 0;
   v_quitacao_historica_para_parcela_unica_obra integer := 0;
   v_financiamento_para_financiamento integer := 0;
@@ -193,12 +204,12 @@ begin
     raise exception 'Fluxo possui item com empresa_id divergente da simulação' using errcode = '42501';
   end if;
 
-  select count(*)::integer into v_qtd_origem
+  select count(*)::integer into v_qtd_origem_total
   from public.mesa_fluxo_pagamentos f
   where f.simulacao_id = p_simulacao_id
     and f.empresa_id = v_sim.empresa_id;
 
-  if coalesce(v_qtd_origem, 0) = 0 then
+  if coalesce(v_qtd_origem_total, 0) = 0 then
     raise exception 'Fluxo financeiro histórico vazio para a simulação' using errcode = '22023';
   end if;
 
@@ -216,12 +227,17 @@ begin
     from public.mesa_fluxo_pagamentos f
     where f.simulacao_id = p_simulacao_id
       and f.empresa_id = v_sim.empresa_id
+      and f.tipo::text <> 'observacao'
       and f.data_prevista is not null;
+
+    if v_data_ato is not null then
+      v_warnings := v_warnings || jsonb_build_array('data_ato_fallback_por_menor_data_financeira_importada');
+    end if;
   end if;
 
   if v_data_ato is null then
     v_data_ato := v_sim.created_at::date;
-    v_warnings := v_warnings || jsonb_build_array('data_ato_inferida_por_created_at_simulacao');
+    v_warnings := v_warnings || jsonb_build_array('data_ato_fallback_fraco_por_created_at_simulacao');
   end if;
 
   if v_data_ato is null then
@@ -231,9 +247,8 @@ begin
   v_max_complemento_data := v_data_ato;
 
   -- Pré-cálculo do último complemento de entrada.
-  -- Usado para inferir a primeira mensal quando o item periodica/mensais vier
-  -- sem data_prevista. Se houver +30/+60/+90/+120, a mensal deve iniciar no
-  -- mês comercial seguinte ao último complemento.
+  -- data_prevista prevalece como data oficial importada. Descrição +N dias só
+  -- entra como fallback de compatibilidade quando data_prevista estiver nula.
   for v_pre_row in
     select f.*
     from public.mesa_fluxo_pagamentos f
@@ -259,7 +274,7 @@ begin
       v_pre_dias := v_pre_match[1]::integer;
 
       if v_pre_dias < 30 or v_pre_dias > 360 or mod(v_pre_dias, 30) <> 0 then
-        raise exception 'Complemento de entrada inválido no pré-cálculo. Esperado +N dias com N múltiplo de 30 entre 30 e 360. descricao=%, dias=%, fluxo_pagamento_id=%', v_pre_descricao, v_pre_dias, v_pre_row.id
+        raise exception 'Complemento de entrada inválido no fallback. Esperado +N dias com N múltiplo de 30 entre 30 e 360. descricao=%, dias=%, fluxo_pagamento_id=%', v_pre_descricao, v_pre_dias, v_pre_row.id
           using errcode = '22023';
       end if;
 
@@ -284,7 +299,7 @@ begin
     v_valor := v_row.valor;
     v_quantidade := coalesce(v_row.quantidade, 1);
     v_data_vencimento := v_row.data_prevista;
-    v_regra_data := case when v_row.data_prevista is not null then 'data_prevista_historica' else null end;
+    v_regra_data := case when v_row.data_prevista is not null then 'data_prevista_tabela_importada' else null end;
     v_meses_offset := null;
     v_dias_complemento := null;
     v_match := null;
@@ -294,8 +309,25 @@ begin
       raise exception 'Item de fluxo sem tipo. fluxo_pagamento_id=%', v_row.id using errcode = '22023';
     end if;
 
+    if v_quantidade < 1 or v_quantidade > 240 then
+      raise exception 'Quantidade inválida no fluxo. fluxo_pagamento_id=%, quantidade=%', v_row.id, v_quantidade using errcode = '22023';
+    end if;
+
     if v_tipo = 'observacao' then
-      raise exception 'Tipo observacao não pode entrar como item financeiro. fluxo_pagamento_id=%', v_row.id using errcode = '22023';
+      v_itens_observacao := v_itens_observacao || jsonb_build_array(jsonb_build_object(
+        'fluxo_pagamento_id', v_row.id,
+        'ordem', v_row.ordem,
+        'tipo_original', v_tipo,
+        'descricao', v_descricao,
+        'valor', case when v_valor is null then null else round(v_valor, 2) end,
+        'quantidade', v_quantidade,
+        'periodicidade', v_row.periodicidade,
+        'data_prevista_original', v_row.data_prevista,
+        'natureza', 'observacao_nao_financeira_operacional',
+        'tratamento', 'ignorado_no_fluxo_financeiro_4a_4b'
+      ));
+      v_qtd_observacao_ignorados := v_qtd_observacao_ignorados + 1;
+      continue;
     end if;
 
     if v_tipo = 'quitacao' then
@@ -341,10 +373,6 @@ begin
       raise exception 'Item financeiro com valor negativo. fluxo_pagamento_id=%', v_row.id using errcode = '22023';
     end if;
 
-    if v_quantidade < 1 or v_quantidade > 240 then
-      raise exception 'Quantidade inválida no fluxo. fluxo_pagamento_id=%, quantidade=%', v_row.id, v_quantidade using errcode = '22023';
-    end if;
-
     if v_descricao is null then
       v_descricao := v_grupo;
     end if;
@@ -357,7 +385,7 @@ begin
       end if;
 
       if v_dias_complemento is null then
-        raise exception 'Data de complemento de entrada impossível de inferir. descricao=%, fluxo_pagamento_id=%', v_descricao, v_row.id
+        raise exception 'Data de complemento de entrada impossível de inferir por fallback. descricao=%, fluxo_pagamento_id=%', v_descricao, v_row.id
           using errcode = '22023';
       end if;
 
@@ -368,9 +396,9 @@ begin
 
       v_meses_offset := v_dias_complemento / 30;
       v_data_vencimento := (v_data_ato + make_interval(months => v_meses_offset))::date;
-      v_regra_data := 'mes_comercial_+' || v_dias_complemento::text;
+      v_regra_data := 'fallback_compatibilidade_historica_mes_comercial_+' || v_dias_complemento::text;
 
-      v_datas_inferidas := v_datas_inferidas || jsonb_build_array(jsonb_build_object(
+      v_datas_fallback := v_datas_fallback || jsonb_build_array(jsonb_build_object(
         'fluxo_pagamento_id', v_row.id,
         'ordem', v_row.ordem,
         'tipo', v_tipo,
@@ -384,10 +412,10 @@ begin
 
     if v_data_vencimento is null and v_tipo = 'periodica' then
       v_data_vencimento := (v_max_complemento_data + interval '1 month')::date;
-      v_regra_data := 'primeira_mensal_apos_ultimo_complemento_entrada';
-      v_primeira_mensal_inferida_pos_complemento := v_primeira_mensal_inferida_pos_complemento + 1;
+      v_regra_data := 'fallback_primeira_mensal_apos_ultimo_complemento_entrada';
+      v_primeira_mensal_fallback_pos_complemento := v_primeira_mensal_fallback_pos_complemento + 1;
 
-      v_datas_inferidas := v_datas_inferidas || jsonb_build_array(jsonb_build_object(
+      v_datas_fallback := v_datas_fallback || jsonb_build_array(jsonb_build_object(
         'fluxo_pagamento_id', v_row.id,
         'ordem', v_row.ordem,
         'tipo', v_tipo,
@@ -399,7 +427,7 @@ begin
     end if;
 
     if v_data_vencimento is null then
-      raise exception 'data_vencimento impossível de determinar. tipo=%, descricao=%, fluxo_pagamento_id=%', v_tipo, v_descricao, v_row.id using errcode = '22023';
+      raise exception 'data_vencimento impossível de determinar sem data da tabela e sem fallback seguro. tipo=%, descricao=%, fluxo_pagamento_id=%', v_tipo, v_descricao, v_row.id using errcode = '22023';
     end if;
 
     if v_tipo = 'periodica' and v_data_vencimento <= v_max_complemento_data then
@@ -435,19 +463,21 @@ begin
       'periodicidade', v_row.periodicidade,
       'data_prevista_original', v_row.data_prevista,
       'data_vencimento', v_data_vencimento,
-      'regra_data', v_regra_data
+      'regra_data', v_regra_data,
+      'origem_tipo', 'tipo_importado_ou_historico_nao_derivado_de_quantidade'
     ));
 
-    v_qtd_adaptados := v_qtd_adaptados + 1;
+    v_qtd_financeiros_adaptados := v_qtd_financeiros_adaptados + 1;
   end loop;
 
-  if v_qtd_adaptados <> v_qtd_origem then
-    raise exception 'Quantidade de itens adaptados diverge da origem. origem=%, adaptados=%', v_qtd_origem, v_qtd_adaptados using errcode = '22023';
+  if v_qtd_financeiros_adaptados = 0 then
+    raise exception 'Nenhum item financeiro adaptável encontrado no fluxo da simulação' using errcode = '22023';
   end if;
 
   return jsonb_build_object(
     'ok', true,
     'fase', '20D_ADAPTADOR_HISTORICO_AGENDA_CANONICA',
+    'versao_adaptador', '20D.4.3',
     'visao', 'administrativa',
     'cliente_safe', false,
     'persistencia', false,
@@ -466,27 +496,36 @@ begin
       'unidade_estoque_id', v_sim.unidade_estoque_id,
       'origem', '20D_ADAPTADOR_HISTORICO_AGENDA_CANONICA',
       'adaptador', true,
-      'versao_adaptador', '20D.4.2',
-      'fonte', 'mesa_fluxo_pagamentos'
+      'versao_adaptador', '20D.4.3',
+      'fonte', 'mesa_fluxo_pagamentos',
+      'fonte_data_preferencial', 'data_prevista_tabela_importada',
+      'tipo_nao_derivado_de_quantidade', true
     ),
     'diagnostico', jsonb_build_object(
-      'qtd_itens_origem', v_qtd_origem,
-      'qtd_itens_adaptados', v_qtd_adaptados,
+      'qtd_itens_origem_total', v_qtd_origem_total,
+      'qtd_itens_financeiros_adaptados', v_qtd_financeiros_adaptados,
+      'qtd_itens_observacao_ignorados', v_qtd_observacao_ignorados,
       'qtd_itens_bloqueados', 0,
       'warnings', v_warnings,
       'mapeamentos_aplicados', jsonb_build_object(
         'curto_prazo_para_entrada', v_curto_prazo_para_entrada,
         'periodica_para_mensais', v_periodica_para_mensais,
-        'primeira_mensal_inferida_pos_complemento', v_primeira_mensal_inferida_pos_complemento,
+        'primeira_mensal_fallback_pos_complemento', v_primeira_mensal_fallback_pos_complemento,
         'intermediaria_para_intermediarias', v_intermediaria_para_intermediarias,
         'quitacao_historica_para_parcela_unica_obra', v_quitacao_historica_para_parcela_unica_obra,
         'financiamento_para_financiamento', v_financiamento_para_financiamento
       ),
-      'datas_inferidas', v_datas_inferidas,
+      'datas_fallback', v_datas_fallback,
       'itens', v_diagnostico_itens,
+      'itens_observacao', v_itens_observacao,
       'observacoes_modelo', jsonb_build_array(
+        'tabela_importada_e_fonte_soberana_dos_dados',
+        'data_prevista_preenchida_prevalece_sobre_fallback',
+        'tipo_de_parcela_nao_e_derivado_por_quantidade',
+        'quantidade_define_repeticao_nao_natureza_financeira',
         'mensais_iniciam_apos_ultimo_complemento_entrada',
-        'intermediarias_anuais_ou_semestrais_podem_coincidir_com_mensal_do_mes_sem_deduplicacao'
+        'intermediarias_anuais_ou_semestrais_podem_coincidir_com_mensal_do_mes_sem_deduplicacao',
+        'observacao_final_periodicidade_simbolica_nao_entra_no_fluxo_financeiro'
       )
     )
   );
@@ -494,7 +533,7 @@ end;
 $$;
 
 comment on function public.mesa_cliente_montar_payload_agenda_canonica(uuid) is
-  'MesaCliente 20D.4.2: adaptador read-only do fluxo histórico para payload canônico. Mensais iniciam após complemento de entrada; intermediárias podem coincidir com mensal; diferencia parcela única/chaves de obra de quitação/saldo devedor real. Não executa DML financeiro e não chama 4A/4B.';
+  'MesaCliente 20D.4.3: adaptador read-only do fluxo histórico para payload canônico. Prioriza dados/datas da tabela importada, não deriva tipo por quantidade, ignora observações não financeiras e usa regras apenas como fallback/validação. Não executa DML financeiro e não chama 4A/4B.';
 
 revoke all on function public.mesa_cliente_montar_payload_agenda_canonica(uuid) from public;
 revoke all on function public.mesa_cliente_montar_payload_agenda_canonica(uuid) from anon;
