@@ -14,6 +14,13 @@ begin;
 --   - ATO + curto_prazo compõem complemento de entrada/obra.
 --   - curto_prazo sem data_prevista aceita +30/+60/+90/+120... desde que
 --     o número seja múltiplo de 30 e convertido por mês comercial.
+--   - A primeira mensal deve iniciar depois do último complemento de entrada:
+--       ATO +30/+60/+90       => primeira mensal em +120;
+--       ATO +30/+60/+90/+120  => primeira mensal em +150.
+--   - Quando a mensal já possui data_prevista oficial, a data é respeitada,
+--     mas deve ser posterior ao último complemento de entrada.
+--   - Intermediárias anuais/semestrais podem coincidir com a mensal do mesmo
+--     mês/data. Isso não é erro e não deve gerar deduplicação.
 --   - Parcela única/chaves pertence ao ciclo de obra e não deve ser tratada
 --     como quitação do saldo devedor.
 --   - O enum histórico tipo=quitacao só pode virar parcela_unica quando a
@@ -89,16 +96,19 @@ declare
   v_qtd_origem integer := 0;
   v_qtd_adaptados integer := 0;
   v_data_ato date;
+  v_max_complemento_data date;
   v_fluxo_json jsonb := '[]'::jsonb;
   v_diagnostico_itens jsonb := '[]'::jsonb;
   v_datas_inferidas jsonb := '[]'::jsonb;
   v_warnings jsonb := '[]'::jsonb;
   v_curto_prazo_para_entrada integer := 0;
   v_periodica_para_mensais integer := 0;
+  v_primeira_mensal_inferida_pos_complemento integer := 0;
   v_intermediaria_para_intermediarias integer := 0;
   v_quitacao_historica_para_parcela_unica_obra integer := 0;
   v_financiamento_para_financiamento integer := 0;
   v_row record;
+  v_pre_row record;
   v_tipo text;
   v_grupo text;
   v_semantica text;
@@ -110,6 +120,11 @@ declare
   v_meses_offset integer;
   v_dias_complemento integer;
   v_match text[];
+  v_pre_descricao text;
+  v_pre_data date;
+  v_pre_match text[];
+  v_pre_dias integer;
+  v_pre_meses integer;
   v_tem_empresa_divergente boolean := false;
 begin
   v_uid := public.mesa_cliente_assert_auth();
@@ -212,6 +227,50 @@ begin
   if v_data_ato is null then
     raise exception 'data_ato impossível de determinar' using errcode = '22023';
   end if;
+
+  v_max_complemento_data := v_data_ato;
+
+  -- Pré-cálculo do último complemento de entrada.
+  -- Usado para inferir a primeira mensal quando o item periodica/mensais vier
+  -- sem data_prevista. Se houver +30/+60/+90/+120, a mensal deve iniciar no
+  -- mês comercial seguinte ao último complemento.
+  for v_pre_row in
+    select f.*
+    from public.mesa_fluxo_pagamentos f
+    where f.simulacao_id = p_simulacao_id
+      and f.empresa_id = v_sim.empresa_id
+      and f.tipo::text = 'curto_prazo'
+    order by f.ordem, f.created_at
+  loop
+    v_pre_data := v_pre_row.data_prevista;
+    v_pre_descricao := nullif(trim(coalesce(v_pre_row.descricao, '')), '');
+    v_pre_match := null;
+    v_pre_dias := null;
+    v_pre_meses := null;
+
+    if v_pre_data is null then
+      v_pre_match := regexp_match(coalesce(v_pre_descricao, ''), '\+\s*([0-9]{2,4})', 'i');
+
+      if v_pre_match is null then
+        raise exception 'Complemento de entrada sem data_prevista e sem +N dias reconhecível. descricao=%, fluxo_pagamento_id=%', v_pre_descricao, v_pre_row.id
+          using errcode = '22023';
+      end if;
+
+      v_pre_dias := v_pre_match[1]::integer;
+
+      if v_pre_dias < 30 or v_pre_dias > 360 or mod(v_pre_dias, 30) <> 0 then
+        raise exception 'Complemento de entrada inválido no pré-cálculo. Esperado +N dias com N múltiplo de 30 entre 30 e 360. descricao=%, dias=%, fluxo_pagamento_id=%', v_pre_descricao, v_pre_dias, v_pre_row.id
+          using errcode = '22023';
+      end if;
+
+      v_pre_meses := v_pre_dias / 30;
+      v_pre_data := (v_data_ato + make_interval(months => v_pre_meses))::date;
+    end if;
+
+    if v_pre_data > v_max_complemento_data then
+      v_max_complemento_data := v_pre_data;
+    end if;
+  end loop;
 
   for v_row in
     select f.*
@@ -323,8 +382,29 @@ begin
       ));
     end if;
 
+    if v_data_vencimento is null and v_tipo = 'periodica' then
+      v_data_vencimento := (v_max_complemento_data + interval '1 month')::date;
+      v_regra_data := 'primeira_mensal_apos_ultimo_complemento_entrada';
+      v_primeira_mensal_inferida_pos_complemento := v_primeira_mensal_inferida_pos_complemento + 1;
+
+      v_datas_inferidas := v_datas_inferidas || jsonb_build_array(jsonb_build_object(
+        'fluxo_pagamento_id', v_row.id,
+        'ordem', v_row.ordem,
+        'tipo', v_tipo,
+        'descricao', v_descricao,
+        'ultimo_complemento_entrada', v_max_complemento_data,
+        'data_vencimento', v_data_vencimento,
+        'regra', v_regra_data
+      ));
+    end if;
+
     if v_data_vencimento is null then
       raise exception 'data_vencimento impossível de determinar. tipo=%, descricao=%, fluxo_pagamento_id=%', v_tipo, v_descricao, v_row.id using errcode = '22023';
+    end if;
+
+    if v_tipo = 'periodica' and v_data_vencimento <= v_max_complemento_data then
+      raise exception 'Mensais devem iniciar depois do último complemento de entrada. data_mensal=%, ultimo_complemento=%, fluxo_pagamento_id=%', v_data_vencimento, v_max_complemento_data, v_row.id
+        using errcode = '22023';
     end if;
 
     v_curto_prazo_para_entrada := v_curto_prazo_para_entrada + case when v_tipo = 'curto_prazo' then 1 else 0 end;
@@ -378,6 +458,7 @@ begin
     'empreendimento_id', v_sim.empreendimento_id,
     'unidade_estoque_id', v_sim.unidade_estoque_id,
     'data_ato', v_data_ato,
+    'ultimo_complemento_entrada', v_max_complemento_data,
     'fluxo_json', v_fluxo_json,
     'payload_tabela', jsonb_build_object(
       'empresa_id', v_sim.empresa_id,
@@ -385,7 +466,7 @@ begin
       'unidade_estoque_id', v_sim.unidade_estoque_id,
       'origem', '20D_ADAPTADOR_HISTORICO_AGENDA_CANONICA',
       'adaptador', true,
-      'versao_adaptador', '20D.4.1',
+      'versao_adaptador', '20D.4.2',
       'fonte', 'mesa_fluxo_pagamentos'
     ),
     'diagnostico', jsonb_build_object(
@@ -396,19 +477,24 @@ begin
       'mapeamentos_aplicados', jsonb_build_object(
         'curto_prazo_para_entrada', v_curto_prazo_para_entrada,
         'periodica_para_mensais', v_periodica_para_mensais,
+        'primeira_mensal_inferida_pos_complemento', v_primeira_mensal_inferida_pos_complemento,
         'intermediaria_para_intermediarias', v_intermediaria_para_intermediarias,
         'quitacao_historica_para_parcela_unica_obra', v_quitacao_historica_para_parcela_unica_obra,
         'financiamento_para_financiamento', v_financiamento_para_financiamento
       ),
       'datas_inferidas', v_datas_inferidas,
-      'itens', v_diagnostico_itens
+      'itens', v_diagnostico_itens,
+      'observacoes_modelo', jsonb_build_array(
+        'mensais_iniciam_apos_ultimo_complemento_entrada',
+        'intermediarias_anuais_ou_semestrais_podem_coincidir_com_mensal_do_mes_sem_deduplicacao'
+      )
     )
   );
 end;
 $$;
 
 comment on function public.mesa_cliente_montar_payload_agenda_canonica(uuid) is
-  'MesaCliente 20D.4.1: adaptador read-only do fluxo histórico para payload canônico. Diferencia parcela única/chaves de obra de quitação/saldo devedor real. Não executa DML financeiro e não chama 4A/4B.';
+  'MesaCliente 20D.4.2: adaptador read-only do fluxo histórico para payload canônico. Mensais iniciam após complemento de entrada; intermediárias podem coincidir com mensal; diferencia parcela única/chaves de obra de quitação/saldo devedor real. Não executa DML financeiro e não chama 4A/4B.';
 
 revoke all on function public.mesa_cliente_montar_payload_agenda_canonica(uuid) from public;
 revoke all on function public.mesa_cliente_montar_payload_agenda_canonica(uuid) from anon;
