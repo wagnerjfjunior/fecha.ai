@@ -10,6 +10,17 @@ begin;
 --   public.mesa_fluxo_pagamentos, sem aceitar valores financeiros vindos do
 --   frontend e sem executar DML financeiro.
 --
+-- Correções semânticas incorporadas nesta versão:
+--   - ATO + curto_prazo compõem complemento de entrada/obra.
+--   - curto_prazo sem data_prevista aceita +30/+60/+90/+120... desde que
+--     o número seja múltiplo de 30 e convertido por mês comercial.
+--   - Parcela única/chaves pertence ao ciclo de obra e não deve ser tratada
+--     como quitação do saldo devedor.
+--   - O enum histórico tipo=quitacao só pode virar parcela_unica quando a
+--     descrição indicar compatibilidade histórica com parcela única/chaves.
+--   - tipo=quitacao com semântica de saldo/repasse/quitação real é bloqueado
+--     para evitar classificação financeira incorreta.
+--
 -- Fora do escopo:
 --   - INSERT/UPDATE/DELETE em agenda/parcela/operação financeira.
 --   - Chamada automática da 4A ou 4B.
@@ -85,17 +96,20 @@ declare
   v_curto_prazo_para_entrada integer := 0;
   v_periodica_para_mensais integer := 0;
   v_intermediaria_para_intermediarias integer := 0;
-  v_quitacao_para_parcela_unica integer := 0;
+  v_quitacao_historica_para_parcela_unica_obra integer := 0;
   v_financiamento_para_financiamento integer := 0;
   v_row record;
   v_tipo text;
   v_grupo text;
+  v_semantica text;
   v_descricao text;
   v_valor numeric;
   v_quantidade integer;
   v_data_vencimento date;
   v_regra_data text;
   v_meses_offset integer;
+  v_dias_complemento integer;
+  v_match text[];
   v_tem_empresa_divergente boolean := false;
 begin
   v_uid := public.mesa_cliente_assert_auth();
@@ -213,24 +227,47 @@ begin
     v_data_vencimento := v_row.data_prevista;
     v_regra_data := case when v_row.data_prevista is not null then 'data_prevista_historica' else null end;
     v_meses_offset := null;
+    v_dias_complemento := null;
+    v_match := null;
+    v_semantica := null;
 
     if v_tipo is null or trim(v_tipo) = '' then
       raise exception 'Item de fluxo sem tipo. fluxo_pagamento_id=%', v_row.id using errcode = '22023';
     end if;
 
-    v_grupo := case v_tipo
-      when 'entrada' then 'entrada'
-      when 'curto_prazo' then 'entrada'
-      when 'periodica' then 'mensais'
-      when 'intermediaria' then 'intermediarias'
-      when 'quitacao' then 'parcela_unica'
-      when 'financiamento' then 'financiamento'
-      when 'observacao' then null
-      else null
-    end;
-
     if v_tipo = 'observacao' then
       raise exception 'Tipo observacao não pode entrar como item financeiro. fluxo_pagamento_id=%', v_row.id using errcode = '22023';
+    end if;
+
+    if v_tipo = 'quitacao' then
+      if coalesce(v_descricao, '') ~* '(parcela\s*(u|ú)nica|\b(unica|única)\b|chaves?|entrega)' then
+        v_grupo := 'parcela_unica';
+        v_semantica := 'parcela_unica_obra_compatibilidade_historica_tipo_quitacao';
+      elsif coalesce(v_descricao, '') ~* '(saldo|quita(c|ç)(a|ã)o|quitacao|repasse|financiamento)' then
+        raise exception 'Tipo histórico quitacao indica saldo devedor/quitação real e não pode ser classificado como parcela única/chaves de obra. descricao=%, fluxo_pagamento_id=%', v_descricao, v_row.id
+          using errcode = '22023';
+      else
+        raise exception 'Tipo histórico quitacao ambíguo. Informe descrição de parcela única/chaves ou trate saldo devedor em tipo financeiro próprio. descricao=%, fluxo_pagamento_id=%', v_descricao, v_row.id
+          using errcode = '22023';
+      end if;
+    else
+      v_grupo := case v_tipo
+        when 'entrada' then 'entrada'
+        when 'curto_prazo' then 'entrada'
+        when 'periodica' then 'mensais'
+        when 'intermediaria' then 'intermediarias'
+        when 'financiamento' then 'financiamento'
+        else null
+      end;
+
+      v_semantica := case v_tipo
+        when 'entrada' then 'ato_entrada_obra'
+        when 'curto_prazo' then 'complemento_entrada_obra'
+        when 'periodica' then 'mensais_obra'
+        when 'intermediaria' then 'intermediarias_obra'
+        when 'financiamento' then 'saldo_devedor_financiamento'
+        else null
+      end;
     end if;
 
     if v_grupo is null then
@@ -254,25 +291,33 @@ begin
     end if;
 
     if v_data_vencimento is null and v_tipo = 'curto_prazo' then
-      v_meses_offset := case
-        when coalesce(v_descricao, '') ~* '\+\s*30' then 1
-        when coalesce(v_descricao, '') ~* '\+\s*60' then 2
-        when coalesce(v_descricao, '') ~* '\+\s*90' then 3
-        else null
-      end;
+      v_match := regexp_match(coalesce(v_descricao, ''), '\+\s*([0-9]{2,4})', 'i');
 
-      if v_meses_offset is null then
-        raise exception 'Data de curto_prazo impossível de inferir. descricao=%, fluxo_pagamento_id=%', v_descricao, v_row.id using errcode = '22023';
+      if v_match is not null then
+        v_dias_complemento := v_match[1]::integer;
       end if;
 
+      if v_dias_complemento is null then
+        raise exception 'Data de complemento de entrada impossível de inferir. descricao=%, fluxo_pagamento_id=%', v_descricao, v_row.id
+          using errcode = '22023';
+      end if;
+
+      if v_dias_complemento < 30 or v_dias_complemento > 360 or mod(v_dias_complemento, 30) <> 0 then
+        raise exception 'Complemento de entrada inválido. Esperado +N dias com N múltiplo de 30 entre 30 e 360. descricao=%, dias=%, fluxo_pagamento_id=%', v_descricao, v_dias_complemento, v_row.id
+          using errcode = '22023';
+      end if;
+
+      v_meses_offset := v_dias_complemento / 30;
       v_data_vencimento := (v_data_ato + make_interval(months => v_meses_offset))::date;
-      v_regra_data := 'mes_comercial_' || v_meses_offset::text;
+      v_regra_data := 'mes_comercial_+' || v_dias_complemento::text;
 
       v_datas_inferidas := v_datas_inferidas || jsonb_build_array(jsonb_build_object(
         'fluxo_pagamento_id', v_row.id,
         'ordem', v_row.ordem,
         'tipo', v_tipo,
         'descricao', v_descricao,
+        'dias_complemento_entrada', v_dias_complemento,
+        'meses_offset', v_meses_offset,
         'data_vencimento', v_data_vencimento,
         'regra', v_regra_data
       ));
@@ -285,7 +330,7 @@ begin
     v_curto_prazo_para_entrada := v_curto_prazo_para_entrada + case when v_tipo = 'curto_prazo' then 1 else 0 end;
     v_periodica_para_mensais := v_periodica_para_mensais + case when v_tipo = 'periodica' then 1 else 0 end;
     v_intermediaria_para_intermediarias := v_intermediaria_para_intermediarias + case when v_tipo = 'intermediaria' then 1 else 0 end;
-    v_quitacao_para_parcela_unica := v_quitacao_para_parcela_unica + case when v_tipo = 'quitacao' then 1 else 0 end;
+    v_quitacao_historica_para_parcela_unica_obra := v_quitacao_historica_para_parcela_unica_obra + case when v_tipo = 'quitacao' and v_grupo = 'parcela_unica' then 1 else 0 end;
     v_financiamento_para_financiamento := v_financiamento_para_financiamento + case when v_tipo = 'financiamento' then 1 else 0 end;
 
     v_fluxo_json := v_fluxo_json || jsonb_build_array(jsonb_build_object(
@@ -303,6 +348,7 @@ begin
       'ordem', v_row.ordem,
       'tipo_original', v_tipo,
       'grupo_canonico', v_grupo,
+      'semantica', v_semantica,
       'descricao', v_descricao,
       'valor', round(v_valor, 2),
       'quantidade', v_quantidade,
@@ -339,7 +385,7 @@ begin
       'unidade_estoque_id', v_sim.unidade_estoque_id,
       'origem', '20D_ADAPTADOR_HISTORICO_AGENDA_CANONICA',
       'adaptador', true,
-      'versao_adaptador', '20D.4',
+      'versao_adaptador', '20D.4.1',
       'fonte', 'mesa_fluxo_pagamentos'
     ),
     'diagnostico', jsonb_build_object(
@@ -351,7 +397,7 @@ begin
         'curto_prazo_para_entrada', v_curto_prazo_para_entrada,
         'periodica_para_mensais', v_periodica_para_mensais,
         'intermediaria_para_intermediarias', v_intermediaria_para_intermediarias,
-        'quitacao_para_parcela_unica', v_quitacao_para_parcela_unica,
+        'quitacao_historica_para_parcela_unica_obra', v_quitacao_historica_para_parcela_unica_obra,
         'financiamento_para_financiamento', v_financiamento_para_financiamento
       ),
       'datas_inferidas', v_datas_inferidas,
@@ -362,7 +408,7 @@ end;
 $$;
 
 comment on function public.mesa_cliente_montar_payload_agenda_canonica(uuid) is
-  'MesaCliente 20D.4: adaptador read-only do fluxo histórico para payload canônico de agenda financeira. Não executa DML financeiro e não chama 4A/4B.';
+  'MesaCliente 20D.4.1: adaptador read-only do fluxo histórico para payload canônico. Diferencia parcela única/chaves de obra de quitação/saldo devedor real. Não executa DML financeiro e não chama 4A/4B.';
 
 revoke all on function public.mesa_cliente_montar_payload_agenda_canonica(uuid) from public;
 revoke all on function public.mesa_cliente_montar_payload_agenda_canonica(uuid) from anon;
