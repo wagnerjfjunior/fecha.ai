@@ -13,17 +13,26 @@ const queryClient = new QueryClient({
   },
 })
 
-function loadPmeCallAssistantBeta() {
+function loadPublicScript(id, src) {
   if (typeof window === 'undefined') return
-  if (document.getElementById('fechai-pme-call-assistant-beta-loader')) return
+  if (document.getElementById(id)) return
   const script = document.createElement('script')
-  script.id = 'fechai-pme-call-assistant-beta-loader'
-  script.src = '/pme-call-assistant-beta.js'
+  script.id = id
+  script.src = src
   script.defer = true
   document.body.appendChild(script)
 }
 
+function loadPmeCallAssistantBeta() {
+  loadPublicScript('fechai-pme-call-assistant-beta-loader', '/pme-call-assistant-beta.js')
+}
+
+function loadPmeEmpreendimentosAddon() {
+  loadPublicScript('fechai-pme-empreendimentos-addon-loader', '/pme-empreendimentos-addon.js')
+}
+
 loadPmeCallAssistantBeta()
+loadPmeEmpreendimentosAddon()
 
 const RootComponent = window.location.hash === '#tenant-provisioning'
   ? TenantProvisioningStandalone
