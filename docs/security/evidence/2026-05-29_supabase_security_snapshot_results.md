@@ -18,8 +18,25 @@ If any query returns sensitive values, redact the values and keep only the struc
 
 ## A. Table/view grants for anon, authenticated, service_role, public
 
+Status captured during audit.
+
+Summary of relevant validated state:
+
 ```text
-PENDING — paste result here.
+public.vw_lotes_estado_oficial      authenticated SELECT
+public.vw_lotes_pendentes_avaliacao authenticated SELECT
+public.audit_trail                  authenticated SELECT
+public.root_audit_logs              authenticated SELECT
+public.mesa_cliente_desconto_politicas authenticated SELECT
+
+No anon grants detected on the validated sensitive public tables/views after hardening.
+service_role retains broad privileges, as expected for Supabase backend/service context.
+```
+
+Notes:
+
+```text
+Full raw output was collected during the audit session. Storage/realtime managed schemas showed broad Supabase-managed grants and must be reviewed separately under storage/realtime policy audit. They are intentionally outside the current public-table hardening scope.
 ```
 
 ---
@@ -27,7 +44,19 @@ PENDING — paste result here.
 ## B. Direct writes still open for authenticated
 
 ```text
-PENDING — paste result here.
+PENDING — paste result here from query B.
+```
+
+Known from prior diagnostic and still pending detailed review:
+
+```text
+P1 — public.corretores UPDATE
+P1 — public.leads INSERT, UPDATE
+P1 — public.lotes UPDATE
+P1 — public.times UPDATE
+P1 — public.lista_visibilidade DELETE, INSERT, UPDATE
+P1 — public.mesa_cliente_unidade_enriquecimentos DELETE, INSERT, UPDATE
+P2 — pme_* INSERT/UPDATE review
 ```
 
 ---
@@ -43,7 +72,13 @@ No rows returned.
 Actual:
 
 ```text
-PENDING — paste result here.
+Success. No rows returned.
+```
+
+Interpretation:
+
+```text
+APPROVED — anon/authenticated do not have TRUNCATE, TRIGGER, or REFERENCES on public objects covered by this diagnostic.
 ```
 
 ---
@@ -59,7 +94,13 @@ No rows returned.
 Actual:
 
 ```text
-PENDING — paste result here.
+Success. No rows returned.
+```
+
+Interpretation:
+
+```text
+APPROVED — anon/authenticated/public do not have direct table grants on auth/vault in the tested scope.
 ```
 
 ---
@@ -90,8 +131,64 @@ PENDING — paste result here.
 
 ## H. Views and security_invoker configuration
 
+Actual:
+
+```json
+[
+  {
+    "schema_name": "public",
+    "view_name": "vw_lotes_estado_oficial",
+    "relkind": "v",
+    "owner": "postgres",
+    "reloptions": [
+      "security_invoker=true"
+    ]
+  },
+  {
+    "schema_name": "public",
+    "view_name": "vw_lotes_pendentes_avaliacao",
+    "relkind": "v",
+    "owner": "postgres",
+    "reloptions": [
+      "security_invoker=true"
+    ]
+  }
+]
+```
+
+Interpretation:
+
 ```text
-PENDING — paste result here.
+APPROVED — both validated lot views are configured with security_invoker=true.
+```
+
+---
+
+## H.1 Lot views grants validation
+
+Actual:
+
+```json
+[
+  {
+    "table_schema": "public",
+    "table_name": "vw_lotes_estado_oficial",
+    "grantee": "authenticated",
+    "privilege_type": "SELECT"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "vw_lotes_pendentes_avaliacao",
+    "grantee": "authenticated",
+    "privilege_type": "SELECT"
+  }
+]
+```
+
+Interpretation:
+
+```text
+APPROVED — validated lot views expose SELECT only to authenticated and no anon grant was returned.
 ```
 
 ---
@@ -124,6 +221,34 @@ PENDING — paste result here.
 
 ```text
 PENDING — paste result here.
+```
+
+---
+
+## Migration / Hardening Block Reapplied Manually
+
+The migration-equivalent hardening block was reapplied manually in the Supabase SQL Editor.
+
+Result:
+
+```text
+Success. No rows returned.
+```
+
+Interpretation:
+
+```text
+The DCL/DDL hardening block executed successfully. Because it contains REVOKE, ALTER VIEW, GRANT, and COMMIT statements, no tabular result was expected.
+```
+
+Scope executed:
+
+```text
+- Revoked anon access from sensitive operational tables/views.
+- Ensured lot views use security_invoker=true.
+- Restricted lot views for authenticated to SELECT only.
+- Removed REFERENCES, TRIGGER, and TRUNCATE from authenticated.
+- Removed INSERT, UPDATE, and DELETE from audit_trail, root_audit_logs, and mesa_cliente_desconto_politicas.
 ```
 
 ---
