@@ -4,15 +4,22 @@
 ## 1. Status
 
 ```text
-Status: MIGRATION CRIADA NO GITHUB / NÃO APLICADA NO SUPABASE
-Data: 2026-05-28
+Status: MIGRATION APLICADA NO SUPABASE / TESTES SHADOW EXECUTADOS
+Data de criação: 2026-05-28
+Data de aplicação/validação: 2026-05-29
 Branch: feature/mesa-cliente-20d-adaptador-agenda-canonica
 Migration criada: SIM
-Migration executada no Supabase: NÃO
-DML executado: NÃO
+Migration executada no Supabase: SIM
+DML executado: SIM — simulações piloto de validação
 Frontend alterado: NÃO
 Parser/Worker/Make alterado: NÃO
 Motor financeiro alterado: NÃO
+```
+
+Evidências detalhadas dos testes:
+
+```text
+docs/mesa-cliente/fase-20d5-evidencias-testes-shadow.md
 ```
 
 ## 2. Arquivo criado
@@ -21,7 +28,7 @@ Motor financeiro alterado: NÃO
 supabase/migrations/20260528013000_mesa_cliente_20d5_fluxo_canonico_shadow.sql
 ```
 
-Commit:
+Commit original da criação da migration:
 
 ```text
 dd57e1970430dd7763e83cbc1d7a4a885f260379
@@ -37,7 +44,7 @@ A tabela legada continua existindo:
 public.mesa_fluxo_pagamentos
 ```
 
-A nova tabela shadow será:
+A nova tabela shadow é:
 
 ```text
 public.mesa_fluxo_pagamentos_canonico
@@ -196,6 +203,16 @@ service_role com DML
 
 O acesso operacional deve ocorrer por RPC `SECURITY DEFINER`, não por CRUD direto do frontend.
 
+Validação pós-aplicação:
+
+```text
+PASS: RLS ativo.
+PASS: anon sem acesso direto.
+PASS: authenticated sem acesso direto.
+PASS: service_role com DML.
+PASS: criar_mesa_simulacao continua SECURITY DEFINER.
+```
+
 ## 10. Não altera
 
 ```text
@@ -207,104 +224,49 @@ motor financeiro
 propostas antigas
 ```
 
-## 11. Pontos de atenção antes de aplicar
+## 11. Resultado da validação
 
-Antes de executar no Supabase, revisar:
-
-```text
-1. Se gen_random_uuid() está disponível.
-2. Se enum mesa_fluxo_tipo possui observacao.
-3. Se mesa_fluxo_pagamentos aceita tipo observacao.
-4. Se grupo p ainda não é enviado pelo frontend — esperado.
-5. Se financiamento residual é aceito como shadow canônico, sem impactar legado.
-```
-
-## 12. Queries de validação após aplicar
-
-### 12.1 Verificar tabela
-
-```sql
-select
-  table_schema,
-  table_name
-from information_schema.tables
-where table_schema = 'public'
-  and table_name = 'mesa_fluxo_pagamentos_canonico';
-```
-
-### 12.2 Verificar RLS
-
-```sql
-select
-  schemaname,
-  tablename,
-  rowsecurity
-from pg_tables
-where schemaname = 'public'
-  and tablename = 'mesa_fluxo_pagamentos_canonico';
-```
-
-### 12.3 Verificar grants
-
-```sql
-select
-  grantee,
-  privilege_type
-from information_schema.role_table_grants
-where table_schema = 'public'
-  and table_name = 'mesa_fluxo_pagamentos_canonico'
-order by grantee, privilege_type;
-```
-
-Esperado:
+A validação forte foi executada com:
 
 ```text
-service_role com DML
-authenticated sem SELECT/INSERT/UPDATE/DELETE direto
-anon ausente
+usuário real autenticado
+corretor ativo
+empresa real
+empreendimento real
+unidade real 501 do Chateau Jardin
+valor real de tabela
+PostgREST real
+RPC real
+escrita real no legado
+escrita real no canônico shadow
 ```
 
-### 12.4 Verificar função `criar_mesa_simulacao`
-
-```sql
-select
-  n.nspname as schema_name,
-  p.proname as function_name,
-  pg_get_function_identity_arguments(p.oid) as args,
-  p.prosecdef as security_definer,
-  pg_get_userbyid(p.proowner) as owner,
-  obj_description(p.oid, 'pg_proc') as comentario
-from pg_proc p
-join pg_namespace n on n.oid = p.pronamespace
-where n.nspname = 'public'
-  and p.proname = 'criar_mesa_simulacao';
-```
-
-Comentário esperado conter:
+Simulação E2E criada por curl:
 
 ```text
-MesaCliente 20D.5
+0e8ed676-50e6-4401-b767-0532c2481209
 ```
 
-## 13. Teste funcional obrigatório após aplicar
-
-Criar uma nova simulação real/piloto e validar:
+Resultado resumido:
 
 ```text
-1. mesa_fluxo_pagamentos legado ainda gravou linhas.
-2. mesa_fluxo_pagamentos_canonico gravou linhas canônicas.
-3. grupo u virou parcela_unica_obra no canônico.
-4. financiamento residual virou financiamento_saldo no canônico.
-5. quantidade não foi usada para inferir tipo.
-6. periodicidade só aparece se grupo p for enviado.
-7. tabela canônica preserva empresa_id/simulacao_id.
+20D.5 migration aplicada: PASS
+20D.5 estrutura/RLS/grants: PASS
+20D.5 piloto SQL controlado: PASS
+20D.5 curl/API E2E com unidade real 501: PASS
+20D.5 escrita no legado: PASS
+20D.5 escrita no canônico shadow: PASS
+20D.5 u -> parcela_unica_obra: PASS
+20D.5 f_residual -> financiamento_saldo: PASS
+20D.5 p -> periodicidade_obra: PASS
+20D.5 bloqueio direto anon/authenticated por grants/RLS/role SQL: PASS
 ```
 
-## 14. Estado final desta entrega
+## 12. Próximos passos
 
 ```text
-Migration criada no GitHub.
-Aguardando pull no Codespace.
-Aguardando revisão/aplicação manual no Supabase pelo usuário.
-Sem PASS funcional ainda.
+1. Manter a PR como draft até decisão explícita sobre promoção do canônico para leitura operacional.
+2. Não promover mesa_fluxo_pagamentos_canonico como fonte oficial do frontend sem nova fase, novo diff e autorização explícita.
+3. Executar evidência HTTP/curl adicional para bloqueio direto da tabela shadow com token válido, se desejado.
+4. Preparar fase posterior para leitura canônica/controlada, sem quebrar legado.
 ```
