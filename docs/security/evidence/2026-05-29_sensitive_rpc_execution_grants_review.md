@@ -327,19 +327,16 @@ Actual result:
 Interpretation:
 
 ```text
-PARTIALLY APPROVED — all five sensitive SECURITY DEFINER functions have an explicit search_path instead of NULL.
-OPEN HARDENING NOTE — current search_path is `public`. A stricter pattern is `public, pg_temp` after confirming non-owner roles cannot CREATE objects in schema public.
+APPROVED — all five sensitive SECURITY DEFINER functions have an explicit search_path instead of NULL.
+CONTROLLED RISK — current search_path is `public`, and non-owner client roles do not have CREATE on schema public.
+HARDENING NOTE — a stricter pattern remains `public, pg_temp`; consider applying it in a later low-risk migration after validating dependencies.
 ```
 
-Required follow-up:
+---
 
-```text
-Validate schema CREATE privileges for public/authenticated/anon.
-If non-owner roles cannot CREATE in public, current risk is controlled.
-Consider a follow-up migration to set `search_path = public, pg_temp` for these functions.
-```
+## 6. Schema CREATE privilege validation
 
-Recommended validation query:
+Validation queries:
 
 ```sql
 select
@@ -350,13 +347,58 @@ select
 from pg_namespace n
 cross join pg_roles r
 where n.nspname = 'public'
-  and r.rolname in ('anon', 'authenticated', 'public')
+  and r.rolname in ('anon', 'authenticated')
 order by r.rolname;
+```
+
+```sql
+select
+  'public' as schema_name,
+  'PUBLIC' as grantee,
+  has_schema_privilege('public', 'public', 'USAGE') as has_usage,
+  has_schema_privilege('public', 'public', 'CREATE') as has_create;
+```
+
+Actual result:
+
+```json
+[
+  {
+    "schema_name": "public",
+    "grantee": "anon",
+    "has_usage": true,
+    "has_create": false
+  },
+  {
+    "schema_name": "public",
+    "grantee": "authenticated",
+    "has_usage": true,
+    "has_create": false
+  }
+]
+```
+
+```json
+[
+  {
+    "schema_name": "public",
+    "grantee": "PUBLIC",
+    "has_usage": true,
+    "has_create": false
+  }
+]
+```
+
+Interpretation:
+
+```text
+APPROVED — anon, authenticated, and PUBLIC have USAGE but do not have CREATE on schema public.
+APPROVED — search_path hijacking risk through client-created objects in public is controlled for these roles.
 ```
 
 ---
 
-## 6. Functional negative tests required
+## 7. Functional negative tests required
 
 Run as a common broker session:
 
@@ -376,12 +418,13 @@ Run as root session:
 
 ---
 
-## 7. Final status for RPC EXECUTE hardening
+## 8. Final status for RPC EXECUTE hardening
 
 ```text
 APPROVED — execution grants are hardened and validated.
-PARTIALLY APPROVED — search_path is explicit, but stricter `public, pg_temp` hardening remains recommended.
-PENDING — schema CREATE privilege validation for public/authenticated/anon.
+APPROVED — search_path is explicit on sensitive SECURITY DEFINER functions.
+APPROVED — anon/authenticated/PUBLIC do not have CREATE on schema public.
+CONTROLLED RISK — search_path is currently `public`; future hardening to `public, pg_temp` is recommended but not blocking.
 PENDING — functional negative tests with common broker.
 PENDING — root positive tests.
 ```
