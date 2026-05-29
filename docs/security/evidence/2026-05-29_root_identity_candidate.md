@@ -24,7 +24,7 @@
 
 ---
 
-## Interpretation
+## Initial interpretation
 
 ```text
 Candidate root identity found: [REDACTED_ROOT_IDENTITY].
@@ -33,9 +33,39 @@ Role value is admin_global, not literal root; public.is_root() must be validated
 
 ---
 
-## Next validation
+## Root validation result
+
+A simulated authenticated session was configured with:
 
 ```text
-Simulate authenticated JWT subject [REDACTED_ROOT_USER_ID] and confirm public.is_root() returns true.
-If true, run positive tests for listar_empresas_root() and registrar_root_audit(...).
+request.jwt.claim.sub = [REDACTED_ROOT_USER_ID]
+```
+
+Actual result:
+
+```json
+[
+  {
+    "uid_simulado": "[REDACTED_ROOT_USER_ID]",
+    "is_root": true,
+    "is_admin_local": true,
+    "is_gestor": true
+  }
+]
+```
+
+Interpretation:
+
+```text
+APPROVED — [REDACTED_ROOT_IDENTITY] is a valid root/admin_global identity according to public.is_root().
+It can be used for positive root RPC tests.
+```
+
+---
+
+## Remaining validation
+
+```text
+Run positive tests for listar_empresas_root() and registrar_root_audit(...).
+Capture total_empresas_visiveis_root and confirm registrar_root_audit executes without error inside a rollback transaction.
 ```
