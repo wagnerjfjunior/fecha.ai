@@ -258,9 +258,9 @@ APPROVED — only authenticated EXECUTE remains for the four functions required 
 
 ---
 
-## 5. Remaining validation queries
+## 5. Function configuration/search_path validation
 
-Function configuration/search_path review:
+Validation query:
 
 ```sql
 select
@@ -280,6 +280,78 @@ where n.nspname = 'public'
     'registrar_root_audit'
   )
 order by p.proname;
+```
+
+Actual result:
+
+```json
+[
+  {
+    "schema_name": "public",
+    "function_name": "get_corretores_time",
+    "security_definer": true,
+    "function_config": ["search_path=public"],
+    "args": "p_time_id uuid"
+  },
+  {
+    "schema_name": "public",
+    "function_name": "importar_leads_batch",
+    "security_definer": true,
+    "function_config": ["search_path=public"],
+    "args": "p_lista_id uuid, p_leads jsonb, p_sessao_id text"
+  },
+  {
+    "schema_name": "public",
+    "function_name": "listar_empresas_root",
+    "security_definer": true,
+    "function_config": ["search_path=public"],
+    "args": ""
+  },
+  {
+    "schema_name": "public",
+    "function_name": "redefinir_senha_corretor",
+    "security_definer": true,
+    "function_config": ["search_path=public"],
+    "args": "p_corretor_id uuid, p_nova_senha text"
+  },
+  {
+    "schema_name": "public",
+    "function_name": "registrar_root_audit",
+    "security_definer": true,
+    "function_config": ["search_path=public"],
+    "args": "p_action text, p_target_empresa_id uuid, p_payload jsonb"
+  }
+]
+```
+
+Interpretation:
+
+```text
+PARTIALLY APPROVED — all five sensitive SECURITY DEFINER functions have an explicit search_path instead of NULL.
+OPEN HARDENING NOTE — current search_path is `public`. A stricter pattern is `public, pg_temp` after confirming non-owner roles cannot CREATE objects in schema public.
+```
+
+Required follow-up:
+
+```text
+Validate schema CREATE privileges for public/authenticated/anon.
+If non-owner roles cannot CREATE in public, current risk is controlled.
+Consider a follow-up migration to set `search_path = public, pg_temp` for these functions.
+```
+
+Recommended validation query:
+
+```sql
+select
+  n.nspname as schema_name,
+  r.rolname as grantee,
+  has_schema_privilege(r.rolname, n.oid, 'USAGE') as has_usage,
+  has_schema_privilege(r.rolname, n.oid, 'CREATE') as has_create
+from pg_namespace n
+cross join pg_roles r
+where n.nspname = 'public'
+  and r.rolname in ('anon', 'authenticated', 'public')
+order by r.rolname;
 ```
 
 ---
@@ -307,8 +379,9 @@ Run as root session:
 ## 7. Final status for RPC EXECUTE hardening
 
 ```text
-PARTIALLY APPROVED — execution grants are hardened and validated.
-PENDING — function search_path/config review.
+APPROVED — execution grants are hardened and validated.
+PARTIALLY APPROVED — search_path is explicit, but stricter `public, pg_temp` hardening remains recommended.
+PENDING — schema CREATE privilege validation for public/authenticated/anon.
 PENDING — functional negative tests with common broker.
 PENDING — root positive tests.
 ```
