@@ -24,7 +24,7 @@
 
 ---
 
-## Interpretation
+## Initial interpretation
 
 ```text
 Candidate root identity found: root@fech.ai.
@@ -33,9 +33,39 @@ Role value is admin_global, not literal root; public.is_root() must be validated
 
 ---
 
-## Next validation
+## Root validation result
+
+A simulated authenticated session was configured with:
 
 ```text
-Simulate authenticated JWT subject 82373656-1f76-4411-a78a-3588531163e7 and confirm public.is_root() returns true.
-If true, run positive tests for listar_empresas_root() and registrar_root_audit(...).
+request.jwt.claim.sub = 82373656-1f76-4411-a78a-3588531163e7
+```
+
+Actual result:
+
+```json
+[
+  {
+    "uid_simulado": "82373656-1f76-4411-a78a-3588531163e7",
+    "is_root": true,
+    "is_admin_local": true,
+    "is_gestor": true
+  }
+]
+```
+
+Interpretation:
+
+```text
+APPROVED — root@fech.ai is a valid root/admin_global identity according to public.is_root().
+It can be used for positive root RPC tests.
+```
+
+---
+
+## Remaining validation
+
+```text
+Run positive tests for listar_empresas_root() and registrar_root_audit(...).
+Capture total_empresas_visiveis_root and confirm registrar_root_audit executes without error inside a rollback transaction.
 ```
