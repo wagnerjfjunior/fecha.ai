@@ -43,11 +43,47 @@ Full raw output was collected during the audit session. Storage/realtime managed
 
 ## B. Direct writes still open for authenticated
 
-```text
-PENDING — paste result here from query B.
+Actual:
+
+```json
+[
+  { "table_schema": "public", "table_name": "audit_logs", "grantee": "authenticated", "privilege_type": "INSERT" },
+  { "table_schema": "public", "table_name": "corretores", "grantee": "authenticated", "privilege_type": "UPDATE" },
+  { "table_schema": "public", "table_name": "funil_movimentacoes", "grantee": "authenticated", "privilege_type": "INSERT" },
+  { "table_schema": "public", "table_name": "leads", "grantee": "authenticated", "privilege_type": "INSERT" },
+  { "table_schema": "public", "table_name": "leads", "grantee": "authenticated", "privilege_type": "UPDATE" },
+  { "table_schema": "public", "table_name": "lista_avaliacoes", "grantee": "authenticated", "privilege_type": "INSERT" },
+  { "table_schema": "public", "table_name": "lista_avaliacoes", "grantee": "authenticated", "privilege_type": "UPDATE" },
+  { "table_schema": "public", "table_name": "lista_visibilidade", "grantee": "authenticated", "privilege_type": "DELETE" },
+  { "table_schema": "public", "table_name": "lista_visibilidade", "grantee": "authenticated", "privilege_type": "INSERT" },
+  { "table_schema": "public", "table_name": "lista_visibilidade", "grantee": "authenticated", "privilege_type": "UPDATE" },
+  { "table_schema": "public", "table_name": "logs", "grantee": "authenticated", "privilege_type": "INSERT" },
+  { "table_schema": "public", "table_name": "lotes", "grantee": "authenticated", "privilege_type": "UPDATE" },
+  { "table_schema": "public", "table_name": "mesa_cliente_unidade_enriquecimentos", "grantee": "authenticated", "privilege_type": "DELETE" },
+  { "table_schema": "public", "table_name": "mesa_cliente_unidade_enriquecimentos", "grantee": "authenticated", "privilege_type": "INSERT" },
+  { "table_schema": "public", "table_name": "mesa_cliente_unidade_enriquecimentos", "grantee": "authenticated", "privilege_type": "UPDATE" },
+  { "table_schema": "public", "table_name": "pme_cadence_steps", "grantee": "authenticated", "privilege_type": "INSERT" },
+  { "table_schema": "public", "table_name": "pme_cadence_steps", "grantee": "authenticated", "privilege_type": "UPDATE" },
+  { "table_schema": "public", "table_name": "pme_cadences", "grantee": "authenticated", "privilege_type": "INSERT" },
+  { "table_schema": "public", "table_name": "pme_cadences", "grantee": "authenticated", "privilege_type": "UPDATE" },
+  { "table_schema": "public", "table_name": "pme_call_scripts", "grantee": "authenticated", "privilege_type": "INSERT" },
+  { "table_schema": "public", "table_name": "pme_call_scripts", "grantee": "authenticated", "privilege_type": "UPDATE" },
+  { "table_schema": "public", "table_name": "pme_lead_message_state", "grantee": "authenticated", "privilege_type": "INSERT" },
+  { "table_schema": "public", "table_name": "pme_lead_message_state", "grantee": "authenticated", "privilege_type": "UPDATE" },
+  { "table_schema": "public", "table_name": "pme_message_templates", "grantee": "authenticated", "privilege_type": "INSERT" },
+  { "table_schema": "public", "table_name": "pme_message_templates", "grantee": "authenticated", "privilege_type": "UPDATE" },
+  { "table_schema": "public", "table_name": "pme_message_usage", "grantee": "authenticated", "privilege_type": "INSERT" },
+  { "table_schema": "public", "table_name": "times", "grantee": "authenticated", "privilege_type": "UPDATE" }
+]
 ```
 
-Known from prior diagnostic and still pending detailed review:
+Interpretation:
+
+```text
+OPEN — direct write surface still exists and must be reviewed in the next hardening phase.
+```
+
+Priority classification:
 
 ```text
 P1 — public.corretores UPDATE
@@ -56,6 +92,10 @@ P1 — public.lotes UPDATE
 P1 — public.times UPDATE
 P1 — public.lista_visibilidade DELETE, INSERT, UPDATE
 P1 — public.mesa_cliente_unidade_enriquecimentos DELETE, INSERT, UPDATE
+P2 — public.audit_logs INSERT
+P2 — public.logs INSERT
+P2 — public.funil_movimentacoes INSERT
+P2 — public.lista_avaliacoes INSERT, UPDATE
 P2 — pme_* INSERT/UPDATE review
 ```
 
@@ -107,16 +147,52 @@ APPROVED — anon/authenticated/public do not have direct table grants on auth/v
 
 ## E. RLS enabled/forced overview
 
+Summary:
+
 ```text
-PENDING — paste result here.
+Most core operational public tables are RLS enabled and FORCE RLS enabled.
+The uploaded full overview confirms FORCE RLS true for critical operational tables such as admins, audit_logs, audit_trail, corretores, empresas, leads, lista_avaliacoes, lista_visibilidade, listas, logs, lotes, times, and multiple MesaCliente operational tables.
+Views show rls_enabled=false and rls_forced=false, which is expected for views; view safety must be handled via grants and security_invoker.
 ```
+
+Objects still RLS-enabled but not FORCE RLS-enabled are listed in section F.
 
 ---
 
 ## F. Tables with RLS enabled but FORCE RLS disabled
 
+Actual:
+
+```json
+[
+  { "schema_name": "public", "table_name": "mesa_cliente_desconto_politicas", "rls_enabled": true, "rls_forced": false },
+  { "schema_name": "public", "table_name": "mesa_cliente_fluxo_operacoes", "rls_enabled": true, "rls_forced": false },
+  { "schema_name": "public", "table_name": "mesa_cliente_fluxo_parcelas", "rls_enabled": true, "rls_forced": false },
+  { "schema_name": "public", "table_name": "mesa_cliente_politica_premio_faixas", "rls_enabled": true, "rls_forced": false },
+  { "schema_name": "public", "table_name": "mesa_cliente_politicas_financeiras", "rls_enabled": true, "rls_forced": false },
+  { "schema_name": "public", "table_name": "mesa_cliente_unidade_enriquecimentos", "rls_enabled": true, "rls_forced": false },
+  { "schema_name": "public", "table_name": "mesa_fluxo_pagamentos_canonico", "rls_enabled": true, "rls_forced": false },
+  { "schema_name": "public", "table_name": "pme_cadence_steps", "rls_enabled": true, "rls_forced": false },
+  { "schema_name": "public", "table_name": "pme_cadences", "rls_enabled": true, "rls_forced": false },
+  { "schema_name": "public", "table_name": "pme_call_scripts", "rls_enabled": true, "rls_forced": false },
+  { "schema_name": "public", "table_name": "pme_lead_message_state", "rls_enabled": true, "rls_forced": false },
+  { "schema_name": "public", "table_name": "pme_message_templates", "rls_enabled": true, "rls_forced": false },
+  { "schema_name": "public", "table_name": "pme_message_usage", "rls_enabled": true, "rls_forced": false },
+  { "schema_name": "public", "table_name": "root_audit_logs", "rls_enabled": true, "rls_forced": false }
+]
+```
+
+Interpretation:
+
 ```text
-PENDING — paste result here.
+OPEN — these tables remain candidates for FORCE RLS after reviewing SECURITY DEFINER functions, service flows, and MesaCliente/PME write paths.
+```
+
+Recommended next action:
+
+```text
+Do not enable FORCE RLS in bulk yet.
+Review policies and functions first, then apply FORCE RLS in small validated batches.
 ```
 
 ---
