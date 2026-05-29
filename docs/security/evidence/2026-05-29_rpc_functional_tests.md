@@ -43,19 +43,58 @@ The function internal root guard blocked the call as expected.
 
 ---
 
-## 2. Remaining common broker negative tests
+## 2. Common broker negative test — `registrar_root_audit(text, uuid, jsonb)`
+
+### Test context
+
+A common broker session was simulated using an authenticated non-root user.
+
+Expected role state:
+
+```text
+is_root = false
+is_admin_local = false
+is_gestor = false
+```
+
+### RPC tested
+
+```sql
+select public.registrar_root_audit(
+  'TESTE_NEGATIVO_CORRETOR_COMUM',
+  'a0000000-0000-0000-0000-000000000001'::uuid,
+  '{"origem":"security_negative_test"}'::jsonb
+);
+```
+
+### Actual result
+
+```text
+Failed to run sql query: ERROR: P0001: Acesso negado. Apenas root pode registrar auditoria root.
+CONTEXT: PL/pgSQL function registrar_root_audit(text,uuid,jsonb) line 8 at RAISE
+```
+
+### Interpretation
+
+```text
+APPROVED — common broker cannot register root audit entries.
+The function internal root guard blocked the call as expected.
+```
+
+---
+
+## 3. Remaining common broker negative tests
 
 Pending:
 
 ```text
-registrar_root_audit(...) must fail with access denied.
 get_corretores_time(...) must return forbidden unless the user is gestor/admin/root.
 redefinir_senha_corretor(...) must not be executable by authenticated client roles.
 ```
 
 ---
 
-## 3. Remaining root positive tests
+## 4. Remaining root positive tests
 
 Pending:
 
