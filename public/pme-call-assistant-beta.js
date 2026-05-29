@@ -1,22 +1,25 @@
 /*
  * FECH.AI — Discador Flow AI / PME Beta
- * Version: 0.2.6
+ * Version: 0.3.0
  * Purpose: fluxo assistido do corretor no discador, mobile-first, com fallback manual e IA opcional.
  * Safety: sem envio automático, sem alteração de feedback/RPC/RLS, sem service_role, sem segredo sensível no frontend.
  */
 (function () {
   'use strict';
 
-  const VERSION = '0.2.6';
+  const VERSION = '0.3.0';
   const ROOT_ID = 'fechai-pme-call-assistant';
   const TOP_ID = 'fechai-pme-page-title';
   const STYLE_ID = 'fechai-pme-call-assistant-style';
   const MODAL_ID = 'fechai-pme-flow-modal';
-  const SUPABASE_URL = 'https://uobxxgzshrmbtjfdolxd.supabase.co';
 
   let suspendAutoRenderUntil = 0;
   let lastPointerHandledAt = 0;
-  let aiAttempt = 0;
+
+  const MESSAGE_GROUPS = {
+    geral: { label: 'Geral / Base atual', icon: '🧭', hint: 'Fluxo atual por origem do lead, preservado para não quebrar a operação existente.' },
+    empreendimentos: { label: 'Empreendimentos', icon: '🏛️', hint: 'Mensagens por empreendimento, canal e situação comercial do lead.' },
+  };
 
   const CONTEXTS = {
     carteira: { label: 'Carteira', icon: '📒', hint: 'Lead inserido ou acompanhado pelo próprio corretor. Use abordagem mais consultiva e com histórico.' },
@@ -27,6 +30,10 @@
     argumentacoes: { label: 'Argumentações', icon: '💬', hint: 'Banco rápido de argumentos para sustentar a conversa.' },
   };
 
+  const DEVELOPMENTS = {
+    chateau_jardin: { label: 'Château Jardin', icon: '🏛️', address: 'Rua Ministro Nelson Hungria, 400', hint: 'Alto padrão no novo eixo Cidade Jardim, com inspiração nos jardins franceses.' },
+  };
+
   const CHANNELS = {
     ligacao: { label: 'Ligação', icon: '📞', powerKey: 'power_dial', powerLabel: 'Power Dial' },
     whatsapp: { label: 'WhatsApp', icon: '💬', powerKey: 'power_zap', powerLabel: 'Power Zap' },
@@ -34,706 +41,180 @@
   };
 
   const APPROACHES = {
-    primeira_abordagem: 'Primeira abordagem',
-    retorno: 'Retorno',
-    pos_ligacao: 'Pós-ligação',
-    convite: 'Convite para visita',
-    objecao_preco: 'Objeção de preço',
-    objecao_entrada: 'Objeção de entrada',
-    sem_resposta: 'Cliente sem resposta',
-    fim_contato: 'Fim de contato',
+    primeira_abordagem: 'Primeira abordagem', retorno: 'Retorno', pos_ligacao: 'Pós-ligação', convite: 'Convite para visita', objecao_preco: 'Objeção de preço', objecao_entrada: 'Objeção de entrada', sem_resposta: 'Cliente sem resposta', fim_contato: 'Fim de contato',
   };
 
-  const AI_STRATEGIES = [
-    'abertura consultiva com pergunta curta de avanço',
-    'tom humano e menos formal, parecendo mensagem real de corretor experiente',
-    'condução objetiva com validação de interesse antes do próximo passo',
-    'contorno de objeção com empatia, sem insistência e sem promessa comercial',
-    'fechamento leve com alternativa clara: seguir, pausar ou agendar',
-    'estrutura totalmente diferente do texto base, evitando repetir abertura e fechamento',
-  ];
+  const DEVELOPMENT_APPROACHES = {
+    primeiro_contato: 'Primeiro contato', convite_lancamento: 'Convite para lançamento', pediu_plantas: 'Pediu plantas', pediu_valores: 'Pediu valores', pediu_material: 'Pediu material', ja_conhece_projeto: 'Já conhece o projeto', visitou_plantao: 'Visitou plantão', pos_visita: 'Pós-visita', quer_levar_familia: 'Quer levar família', comparando: 'Está comparando', sem_resposta: 'Sem resposta',
+  };
 
-  const TEMPLATES = {
+  const BASE_TEMPLATES = {
     carteira: {
-      ligacao: {
-        primeira_abordagem: ['Oi, {{nome}}, tudo bem? Aqui é {{corretor}}, da {{empresa}}. Estou retomando seu atendimento para entender se ainda faz sentido avaliarmos uma oportunidade com calma e de forma objetiva.'],
-        retorno: ['{{nome}}, estou retornando para organizar seu próximo passo. Hoje sua prioridade é preço, localização, planta, entrada ou prazo de decisão?'],
-        pos_ligacao: ['{{nome}}, conforme falamos, vou te passar um resumo claro para você decidir sem pressão e sem perder tempo.'],
-        convite: ['{{nome}}, podemos marcar uma visita objetiva para comparar unidade, fluxo e oportunidade real. Qual dia fica melhor para você?'],
-        objecao_preco: ['Entendo, {{nome}}. Vamos olhar o conjunto: unidade, andar, vaga, posição, fluxo e liquidez. O valor sozinho não conta a história inteira.'],
-        objecao_entrada: ['Se a entrada ficou pesada, o caminho é redesenhar o fluxo. Posso avaliar uma composição mais leve para você comparar?'],
-        sem_resposta: ['Tentativa curta e educada. Se não houver retorno, registrar corretamente e evitar insistência sem estratégia.'],
-        fim_contato: ['Última tentativa elegante: confirmar se ainda existe interesse e deixar o canal aberto sem pressão.'],
-      },
-      whatsapp: {
-        primeira_abordagem: ['Oi, {{nome}}. Sou {{corretor}}, da {{empresa}}. Tudo bem?\n\nEstou retomando seu atendimento de forma bem objetiva. Você ainda está avaliando imóvel ou prefere que eu pause esse contato por enquanto?'],
-        retorno: ['{{nome}}, passando para retomar seu atendimento. Quer que eu te mande uma opção mais filtrada ou prefere primeiro ajustar o fluxo de pagamento?'],
-        pos_ligacao: ['Oi, {{nome}}. Conforme nossa conversa, deixo aqui um resumo objetivo para você avaliar no seu tempo. Se fizer sentido, sigo com uma simulação mais ajustada.'],
-        convite: ['{{nome}}, podemos organizar uma visita rápida e objetiva para olhar unidade, condição e fluxo. Qual melhor dia para você?'],
-        objecao_preco: ['{{nome}}, entendo o ponto do valor. Para comparar direito, precisamos olhar produto, andar, vaga, posição, fluxo e liquidez. Às vezes a melhor oportunidade não é só o menor preço.'],
-        objecao_entrada: ['{{nome}}, se a entrada pesou, podemos estudar uma composição mais leve. Me diga qual parte apertou mais: sinal, parcelas curtas ou intermediárias.'],
-        sem_resposta: ['{{nome}}, só confirmando se imóvel ainda faz sentido para você. Se não for o momento, eu pauso o contato sem problema.'],
-        fim_contato: ['{{nome}}, vou pausar meu contato por aqui para não ser inconveniente. Se futuramente fizer sentido, fico à disposição.'],
-      },
-      email: {
-        primeira_abordagem: ['Assunto: {{nome}}, continuidade do seu atendimento\n\nOlá, {{nome}}. Sou {{corretor}}, da {{empresa}}. Estou retomando seu atendimento para entender se a busca por imóvel ainda faz sentido e se posso te ajudar com uma seleção mais objetiva.'],
-        retorno: ['Assunto: Retomando seu atendimento\n\nOlá, {{nome}}. Estou retomando nosso contato para entender qual ponto é prioridade agora: planta, valor, entrada, localização ou prazo de decisão.'],
-      },
+      ligacao: { primeira_abordagem: ['Oi, {{nome}}, tudo bem? Aqui é {{corretor}}, da {{empresa}}. Estou retomando seu atendimento para entender se ainda faz sentido avaliarmos uma oportunidade com calma e de forma objetiva.'], retorno: ['{{nome}}, estou retornando para organizar seu próximo passo. Hoje sua prioridade é preço, localização, planta, entrada ou prazo de decisão?'], pos_ligacao: ['{{nome}}, conforme falamos, vou te passar um resumo claro para você decidir sem pressão e sem perder tempo.'], convite: ['{{nome}}, podemos marcar uma visita objetiva para comparar unidade, fluxo e oportunidade real. Qual dia fica melhor para você?'], objecao_preco: ['Entendo, {{nome}}. Vamos olhar o conjunto: unidade, andar, vaga, posição, fluxo e liquidez. O valor sozinho não conta a história inteira.'], objecao_entrada: ['Se a entrada ficou pesada, o caminho é redesenhar o fluxo. Posso avaliar uma composição mais leve para você comparar?'], sem_resposta: ['Tentativa curta e educada. Se não houver retorno, registrar corretamente e evitar insistência sem estratégia.'], fim_contato: ['Última tentativa elegante: confirmar se ainda existe interesse e deixar o canal aberto sem pressão.'] },
+      whatsapp: { primeira_abordagem: ['Oi, {{nome}}. Sou {{corretor}}, da {{empresa}}. Tudo bem?\n\nEstou retomando seu atendimento de forma bem objetiva. Você ainda está avaliando imóvel ou prefere que eu pause esse contato por enquanto?'], retorno: ['{{nome}}, passando para retomar seu atendimento. Quer que eu te mande uma opção mais filtrada ou prefere primeiro ajustar o fluxo de pagamento?'], pos_ligacao: ['Oi, {{nome}}. Conforme nossa conversa, deixo aqui um resumo objetivo para você avaliar no seu tempo. Se fizer sentido, sigo com uma simulação mais ajustada.'], convite: ['{{nome}}, podemos organizar uma visita rápida e objetiva para olhar unidade, condição e fluxo. Qual melhor dia para você?'], objecao_preco: ['{{nome}}, entendo o ponto do valor. Para comparar direito, precisamos olhar produto, andar, vaga, posição, fluxo e liquidez. Às vezes a melhor oportunidade não é só o menor preço.'], objecao_entrada: ['{{nome}}, se a entrada pesou, podemos estudar uma composição mais leve. Me diga qual parte apertou mais: sinal, parcelas curtas ou intermediárias.'], sem_resposta: ['{{nome}}, só confirmando se imóvel ainda faz sentido para você. Se não for o momento, eu pauso o contato sem problema.'], fim_contato: ['{{nome}}, vou pausar meu contato por aqui para não ser inconveniente. Se futuramente fizer sentido, fico à disposição.'] },
+      email: { primeira_abordagem: ['Assunto: {{nome}}, continuidade do seu atendimento\n\nOlá, {{nome}}. Sou {{corretor}}, da {{empresa}}. Estou retomando seu atendimento para entender se a busca por imóvel ainda faz sentido e se posso te ajudar com uma seleção mais objetiva.'], retorno: ['Assunto: Retomando seu atendimento\n\nOlá, {{nome}}. Estou retomando nosso contato para entender qual ponto é prioridade agora: planta, valor, entrada, localização ou prazo de decisão.'] },
     },
     lista_fria: {
-      ligacao: {
-        primeira_abordagem: ['Oi, {{nome}}, tudo bem? Aqui é {{corretor}}, da {{empresa}}. Prometo ser breve: imóvel é um assunto aberto para você hoje ou prefere que eu não siga com esse contato?', 'Olá, {{nome}}. Estou falando com algumas pessoas que avaliam imóveis em São Paulo. Posso te fazer uma pergunta rápida para entender se faz sentido te mandar algo ou pausar por aqui?'],
-        retorno: ['{{nome}}, combinei de te retornar. Para eu ser objetivo: você está olhando imóvel para morar, investir ou só acompanhando oportunidades?'],
-        pos_ligacao: ['{{nome}}, conforme falamos, o ideal é eu te mandar um resumo objetivo e você me diz se faz sentido seguir ou pausar o contato.'],
-        convite: ['{{nome}}, se fizer sentido, podemos marcar uma visita rápida para você comparar unidade, fluxo e oportunidade real sem compromisso.'],
-        objecao_preco: ['Entendo, {{nome}}. Só separaria preço de oportunidade: menor valor nem sempre significa melhor escolha. O que pesa mais para você hoje: valor total, entrada ou parcela?'],
-        objecao_entrada: ['Entrada é engenharia financeira, não só obstáculo. Se o produto fizer sentido, podemos avaliar um fluxo menos pesado no início.'],
-        sem_resposta: ['Tentativa curta. Se não atender, não insistir demais. Registrar feedback e tentar outro canal com mensagem objetiva.'],
-        fim_contato: ['Última tentativa elegante: confirmar se o tema ainda faz sentido e deixar canal aberto sem pressão.'],
-      },
-      whatsapp: {
-        primeira_abordagem: ['Oi, {{nome}}. Sou {{corretor}}, da {{empresa}}. Tudo bem?\n\nEstou entrando em contato de forma bem objetiva para entender se imóvel ainda é um assunto aberto para você. Se fizer sentido, posso te mandar opções filtradas; se não fizer, eu pauso por aqui sem problema.', 'Oi, {{nome}}. Aqui é {{corretor}}, da {{empresa}}.\n\nVi seu contato na nossa base comercial e queria confirmar se você está avaliando imóvel para morar, investir ou apenas acompanhando o mercado. Me responde com uma dessas opções que eu direciono sem te encher de mensagem.'],
-        retorno: ['{{nome}}, passando para retomar seu atendimento. Você ainda está avaliando imóvel ou prefere que eu pause esse contato por enquanto?'],
-        pos_ligacao: ['Oi, {{nome}}. Falamos agora há pouco. Conforme combinado, deixo aqui um resumo objetivo para você avaliar no seu tempo. Se fizer sentido, sigo com opções mais aderentes ao seu perfil.'],
-        convite: ['{{nome}}, podemos organizar uma visita objetiva para você comparar unidade, localização e fluxo. Qual melhor dia para você?'],
-        objecao_preco: ['{{nome}}, entendo sua percepção sobre valor. Para analisarmos corretamente, vale separar valor total, entrada, parcelas e condição real. Às vezes o ajuste está mais no fluxo do que no imóvel.'],
-        objecao_entrada: ['{{nome}}, como a entrada ficou pesada, faz sentido avaliarmos uma composição mais leve. Posso simular um fluxo com menor impacto inicial para você comparar com calma.'],
-        sem_resposta: ['{{nome}}, só passando uma última vez para não te incomodar. Se imóvel ainda fizer sentido, me chama por aqui. Se não for momento, eu pauso o contato sem problema.'],
-        fim_contato: ['{{nome}}, sem problema. Vou pausar o contato por aqui para não te incomodar. Se futuramente fizer sentido falar sobre imóvel, fico à disposição.'],
-      },
-      email: {
-        primeira_abordagem: ['Assunto: {{nome}}, sobre seu interesse em imóveis\n\nOlá, {{nome}}. Sou {{corretor}}, da {{empresa}}. Estou entrando em contato para entender se a busca por imóvel ainda faz sentido para você. Posso te ajudar com uma seleção objetiva conforme perfil, região e momento de compra.'],
-        retorno: ['Assunto: Retomando seu atendimento\n\nOlá, {{nome}}. Estou retomando seu atendimento para entender se imóvel ainda está no seu radar e se posso te mandar opções mais filtradas.'],
-        fim_contato: ['Assunto: Encerrando meu contato por enquanto\n\nOlá, {{nome}}. Como não consegui retorno, vou pausar meu contato por aqui para não ser inconveniente. Caso volte a fazer sentido, fico à disposição.'],
-      },
+      ligacao: { primeira_abordagem: ['Oi, {{nome}}, tudo bem? Aqui é {{corretor}}, da {{empresa}}. Prometo ser breve: imóvel é um assunto aberto para você hoje ou prefere que eu não siga com esse contato?'], retorno: ['{{nome}}, combinei de te retornar. Para eu ser objetivo: você está olhando imóvel para morar, investir ou só acompanhando oportunidades?'], convite: ['{{nome}}, se fizer sentido, podemos marcar uma visita rápida para você comparar unidade, localização e fluxo sem compromisso.'], sem_resposta: ['Tentativa curta. Se não atender, não insistir demais. Registrar feedback e tentar outro canal com mensagem objetiva.'], fim_contato: ['Última tentativa elegante: confirmar se o tema ainda faz sentido e deixar canal aberto sem pressão.'] },
+      whatsapp: { primeira_abordagem: ['Oi, {{nome}}. Sou {{corretor}}, da {{empresa}}. Tudo bem?\n\nEstou entrando em contato de forma objetiva para entender se imóvel ainda é um assunto aberto para você. Se fizer sentido, posso te mandar opções filtradas; se não fizer, eu pauso por aqui sem problema.'], retorno: ['{{nome}}, passando para retomar seu atendimento. Você ainda está avaliando imóvel ou prefere que eu pause esse contato por enquanto?'], convite: ['{{nome}}, podemos organizar uma visita objetiva para você comparar unidade, localização e fluxo. Qual melhor dia para você?'], sem_resposta: ['{{nome}}, só passando uma última vez para não te incomodar. Se imóvel ainda fizer sentido, me chama por aqui. Se não for momento, eu pauso o contato sem problema.'], fim_contato: ['{{nome}}, sem problema. Vou pausar o contato por aqui para não te incomodar. Se futuramente fizer sentido falar sobre imóvel, fico à disposição.'] },
+      email: { primeira_abordagem: ['Assunto: {{nome}}, sobre seu interesse em imóveis\n\nOlá, {{nome}}. Sou {{corretor}}, da {{empresa}}. Estou entrando em contato para entender se a busca por imóvel ainda faz sentido para você. Posso te ajudar com uma seleção objetiva conforme perfil, região e momento de compra.'], retorno: ['Assunto: Retomando seu atendimento\n\nOlá, {{nome}}. Estou retomando seu atendimento para entender se imóvel ainda está no seu radar e se posso te mandar opções mais filtradas.'], fim_contato: ['Assunto: Encerrando meu contato por enquanto\n\nOlá, {{nome}}. Como não consegui retorno, vou pausar meu contato por aqui para não ser inconveniente. Caso volte a fazer sentido, fico à disposição.'] },
     },
     visitou: {
-      ligacao: {
-        retorno: ['Oi, {{nome}}, tudo bem? Aqui é {{corretor}}, da {{empresa}}. Estou retomando seu atendimento depois da visita. O projeto ainda está no seu radar ou perdeu prioridade?'],
-        pos_ligacao: ['{{nome}}, como você já conhece o projeto, faz sentido a gente ser objetivo: o que ficou pendente foi preço, fluxo, planta ou decisão familiar?'],
-        objecao_preco: ['Entendo, {{nome}}. Só separaria preço de valor: caro é quando não faz sentido. O ponto que pesou mais foi valor total, entrada ou fluxo de pagamento?'],
-        objecao_entrada: ['Esse ponto é comum. Então talvez o problema não seja o imóvel, mas a engenharia do fluxo. Posso avaliar uma composição com menor impacto inicial?'],
-        convite: ['Como você já conhece o projeto, uma segunda visita pode ser mais estratégica: olhar unidade, fluxo e dúvidas finais. Faz sentido agendarmos?'],
-      },
-      whatsapp: {
-        retorno: ['{{nome}}, retomando sua visita. Para eu ser objetivo: o que ainda está travando sua decisão hoje — valor, entrada, planta, localização ou timing?'],
-        pos_ligacao: ['Oi, {{nome}}. Conforme nossa conversa, o próximo passo mais inteligente é validar uma simulação objetiva e tirar as últimas dúvidas. Assim você decide com segurança, sem pressão e sem achismo.'],
-        objecao_preco: ['{{nome}}, entendo sua percepção sobre valor. Para analisarmos corretamente, vale separar valor total, entrada, parcelas e condição real. Às vezes o ajuste está mais no fluxo do que no imóvel.'],
-        objecao_entrada: ['{{nome}}, como a entrada ficou pesada, faz sentido avaliarmos uma composição mais leve. Posso simular um fluxo com menor impacto inicial para você comparar com calma.'],
-        convite: ['{{nome}}, podemos organizar uma nova visita mais focada nos pontos que ficaram em dúvida: planta, unidade, fluxo e condição. Qual melhor dia para você?'],
-      },
+      ligacao: { retorno: ['Oi, {{nome}}, tudo bem? Aqui é {{corretor}}, da {{empresa}}. Estou retomando seu atendimento depois da visita. O projeto ainda está no seu radar ou perdeu prioridade?'], pos_ligacao: ['{{nome}}, como você já conhece o projeto, faz sentido a gente ser objetivo: o que ficou pendente foi preço, fluxo, planta ou decisão familiar?'], convite: ['Como você já conhece o projeto, uma segunda visita pode ser mais estratégica: olhar unidade, fluxo e dúvidas finais. Faz sentido agendarmos?'] },
+      whatsapp: { retorno: ['{{nome}}, retomando sua visita. Para eu ser objetivo: o que ainda está travando sua decisão hoje — valor, entrada, planta, localização ou timing?'], pos_ligacao: ['Oi, {{nome}}. Conforme nossa conversa, o próximo passo mais inteligente é validar uma simulação objetiva e tirar as últimas dúvidas. Assim você decide com segurança, sem pressão e sem achismo.'], convite: ['{{nome}}, podemos organizar uma nova visita mais focada nos pontos que ficaram em dúvida: planta, unidade, fluxo e condição. Qual melhor dia para você?'] },
       email: { retorno: ['Assunto: {{nome}}, continuidade da sua visita\n\nOlá, {{nome}}. Foi um prazer te receber. Estou retomando seu atendimento para entender se ficou alguma dúvida sobre planta, valor, fluxo de pagamento ou disponibilidade. Posso preparar uma simulação mais ajustada ao seu perfil.'] },
     },
-    redes_sociais: {
-      whatsapp: { primeira_abordagem: ['Oi, {{nome}}. Sou {{corretor}}, da {{empresa}}. Vi seu interesse pelo anúncio e queria te ajudar de forma objetiva: você busca mais informações de valores, plantas ou disponibilidade?'], retorno: ['{{nome}}, passando para retomar seu interesse pelo anúncio. Quer que eu te mande uma opção objetiva ou prefere que eu explique rapidamente por áudio/mensagem?'] },
-      ligacao: { primeira_abordagem: ['Oi, {{nome}}, aqui é {{corretor}}, da {{empresa}}. Você demonstrou interesse pelo anúncio e eu queria entender se procura para morar, investir ou comparar oportunidades.'] },
-      email: { primeira_abordagem: ['Assunto: Informações do imóvel anunciado\n\nOlá, {{nome}}. Vi seu interesse pelo anúncio e posso te enviar informações objetivas de valores, plantas e disponibilidade conforme seu perfil.'] },
-    },
-    problemas: {
-      ligacao: { objecao_preco: ['Preço isolado engana. Vamos olhar valor por metro, fluxo, entrega, padrão e liquidez. O que realmente pesou na sua análise?'], objecao_entrada: ['Entrada pesada não significa negócio inviável. Pode ser caso de redesenhar o fluxo. Qual parcela inicial ficaria confortável para você avaliar?'], sem_resposta: ['Se não atende, o problema pode ser canal ou timing. Teste WhatsApp curto e registre corretamente para não sujar a análise comercial.'] },
-      whatsapp: { objecao_preco: ['Entendo o ponto do valor. Para comparar com justiça, precisamos olhar produto, localização, fluxo, entrega e valor final — não só o preço de chamada.'], objecao_entrada: ['Sobre entrada, dá para avaliar alternativas de composição. Me diga qual ponto apertou mais: sinal, parcelas curtas, intermediárias ou financiamento.'], sem_resposta: ['{{nome}}, só confirmando se posso te ajudar com alguma informação objetiva ou se prefere que eu pause o contato por aqui.'] },
-    },
-    argumentacoes: {
-      ligacao: { primeira_abordagem: ['A melhor oportunidade não é só o menor valor. É a combinação entre unidade, andar, vaga, posição, fluxo e timing. O barato errado vira caro com vista bonita para o problema.'], objecao_preco: ['Às vezes existe preço bom com unidade ruim, vaga ruim ou fluxo ruim. O ponto é comparar o conjunto, não só o metro quadrado.'], objecao_entrada: ['Entrada é parte da estratégia, não o único número. O que importa é entender se o fluxo completo cabe e se o imóvel sustenta valor.'] },
-      whatsapp: { primeira_abordagem: ['Um ponto importante: nem sempre o melhor valor é a melhor oportunidade. É preciso olhar unidade, andar, vaga, posição e momento de tabela. É aí que uma escolha estratégica faz diferença.'], objecao_preco: ['Preço baixo sozinho não garante bom negócio. Às vezes você ganha no valor e perde na vaga, andar, posição ou liquidez. O conjunto é que decide.'] },
-    },
+    redes_sociais: { whatsapp: { primeira_abordagem: ['Oi, {{nome}}. Sou {{corretor}}, da {{empresa}}. Vi seu interesse pelo anúncio e queria te ajudar de forma objetiva: você busca mais informações de valores, plantas ou disponibilidade?'] }, ligacao: { primeira_abordagem: ['Oi, {{nome}}, aqui é {{corretor}}, da {{empresa}}. Você demonstrou interesse pelo anúncio e eu queria entender rapidamente se busca valores, plantas ou agendamento.'] }, email: { primeira_abordagem: ['Assunto: Informações do imóvel anunciado\n\nOlá, {{nome}}. Vi seu interesse pelo anúncio e posso te enviar informações objetivas de valores, plantas e disponibilidade conforme seu perfil.'] } },
+    problemas: { ligacao: { objecao_preco: ['Preço isolado engana. Vamos olhar valor por metro, fluxo, entrega, padrão e liquidez. O que realmente pesou na sua análise?'] }, whatsapp: { objecao_preco: ['Entendo o ponto do valor. Para comparar com justiça, precisamos olhar produto, localização, fluxo, entrega e valor final — não só o preço de chamada.'], sem_resposta: ['{{nome}}, só confirmando se posso te ajudar com alguma informação objetiva ou se prefere que eu pause o contato por aqui.'] } },
+    argumentacoes: { ligacao: { primeira_abordagem: ['A melhor oportunidade não é só o menor valor. É a combinação entre unidade, andar, vaga, posição, fluxo e timing. O barato errado vira caro com vista bonita para o problema.'] }, whatsapp: { primeira_abordagem: ['Um ponto importante: nem sempre o melhor valor é a melhor oportunidade. É preciso olhar unidade, andar, vaga, posição e momento de tabela. É aí que uma escolha estratégica faz diferença.'] } },
   };
 
+  const CHATEAU_SIGNATURE = '\n\n{{corretor}}\n{{telefone_corretor}}\nWhatsApp: {{link_whatsapp_corretor}}\n\nAo chegar, por gentileza, solicite por {{corretor}} na recepção para que eu possa te receber pessoalmente.';
+  const CHATEAU_CALL_CLOSE = '\n\nO evento será na Rua Ministro Nelson Hungria, 400. Quando chegar, por gentileza, solicite por {{corretor}} na recepção para que eu possa te receber pessoalmente e apresentar o projeto com calma.';
+
+  const waConvite = [
+    'Olá, {{nome}}, tudo bem?\n\nAmanhã será o lançamento do Château Jardin, na Rua Ministro Nelson Hungria, 400.\n\nÉ um projeto Tegra e Exto no novo eixo Cidade Jardim, inspirado na elegância dos jardins franceses, com plantas de 185 m², 215 m², 248 m² e 355 m².\n\nPosso te enviar o material com plantas e detalhes do evento?',
+    '{{nome}}, tudo bem?\n\nAmanhã acontece o lançamento do Château Jardin, um projeto de alto padrão no novo eixo Cidade Jardim.\n\nO empreendimento une arquitetura clássica com olhar contemporâneo, paisagismo internacional EDSA e metragens amplas de 185 m² a 355 m².\n\nQuer que eu te envie as plantas para avaliar com calma?',
+    'Olá, {{nome}}.\n\nAmanhã será o lançamento do Château Jardin, na Rua Ministro Nelson Hungria, 400. 📍\n\nÉ um projeto Tegra e Exto, com inspiração nos jardins franceses, lazer de alto padrão e opções de 185 m², 215 m², 248 m² e 355 m². 📐\n\nPosso te mandar um resumo com as plantas?',
+    '{{nome}}, amanhã teremos o lançamento do Château Jardin.\n\nÉ um projeto inspirado no clássico, nos jardins franceses e em uma forma mais elegante de viver, no novo eixo Cidade Jardim.\n\nAs opções contemplam 185 m², 215 m², 248 m² e 355 m².\n\nFaz sentido eu te enviar o material agora?',
+    'Olá, {{nome}}, tudo bem?\n\nAmanhã será apresentado o Château Jardin, realização Tegra e Exto no novo eixo Cidade Jardim.\n\nO projeto reúne arquitetura clássica, paisagismo internacional EDSA, lazer de perfil private club e plantas generosas de 185 m² a 355 m².\n\nQuer receber as informações iniciais?',
+    '{{nome}}, estou organizando os atendimentos do lançamento do Château Jardin, que acontece amanhã na Rua Ministro Nelson Hungria, 400. 🗓️\n\nO empreendimento tem inspiração na elegância dos jardins franceses e plantas de 185 m², 215 m², 248 m² e 355 m². 🌿\n\nPosso te mandar as opções?',
+    'Olá, {{nome}}.\n\nAmanhã é o lançamento do Château Jardin, projeto Tegra e Exto no novo eixo Cidade Jardim.\n\nUm refúgio urbano com arquitetura clássica, paisagismo internacional EDSA, quadra de tênis de saibro, padel, piscina coberta e metragens de 185 m² a 355 m².\n\nPosso te enviar o material?',
+    '{{nome}}, tudo bem?\n\nAmanhã teremos o evento de lançamento do Château Jardin.\n\nO projeto foi pensado para quem busca alto padrão, elegância atemporal e plantas amplas, com opções de 185 m², 215 m², 248 m² e 355 m².\n\nO evento será na Rua Ministro Nelson Hungria, 400.\n\nQuer que eu te envie os detalhes?',
+    'Olá, {{nome}}.\n\nO Château Jardin será lançado amanhã no novo eixo Cidade Jardim.\n\nÉ um projeto com inspiração clássica, atmosfera de jardins franceses, lazer sofisticado e assinatura Tegra e Exto. 🏛️\n\nAs plantas contemplam 185 m², 215 m², 248 m² e 355 m². 📐\n\nPosso te mandar o material?',
+    '{{nome}}, passando rapidamente para te apresentar o Château Jardin, que terá evento de lançamento amanhã.\n\nÉ um projeto de alto padrão na Rua Ministro Nelson Hungria, 400, com arquitetura clássica, paisagismo internacional e metragens amplas de 185 m² a 355 m².\n\nPosso te enviar as plantas?',
+    'Olá, {{nome}}, tudo bem?\n\nAmanhã será o lançamento do Château Jardin, um projeto que une o clássico e o contemporâneo no novo eixo Cidade Jardim.\n\nInspirado na elegância dos jardins franceses, traz plantas de 185 m², 215 m², 248 m² e 355 m².\n\nQuer conhecer o material?',
+    '{{nome}}, amanhã teremos a apresentação do Château Jardin, empreendimento Tegra e Exto com projeto internacional EDSA.\n\nA proposta combina jardins, lazer de alto padrão, arquitetura clássica e unidades amplas de 185 m² a 355 m². 🌿\n\nPosso te enviar as informações pelo WhatsApp?',
+    'Olá, {{nome}}.\n\nO lançamento do Château Jardin será amanhã, na Rua Ministro Nelson Hungria, 400.\n\nÉ um projeto no novo eixo Cidade Jardim, com inspiração clássica, paisagismo sofisticado e opções de 185 m², 215 m², 248 m² e 355 m².\n\nPosso te mandar as plantas e diferenciais?',
+    '{{nome}}, tudo bem?\n\nEstou te chamando porque amanhã será o lançamento do Château Jardin.\n\nO projeto tem uma proposta elegante, inspirada no clássico e nos jardins franceses, com lazer completo e metragens de 185 m² a 355 m².\n\nFaz sentido eu te enviar o material?',
+    'Olá, {{nome}}.\n\nAmanhã acontece o evento de lançamento do Château Jardin, realização Tegra e Exto.\n\nO empreendimento fica no novo eixo Cidade Jardim e traz opções de 185 m², 215 m², 248 m² e 355 m².\n\nQuer que eu te envie os detalhes?',
+    '{{nome}}, amanhã será o lançamento do Château Jardin, um projeto residencial de alto padrão na Rua Ministro Nelson Hungria, 400. 📍\n\nEle combina arquitetura clássica, inspiração nos jardins franceses, paisagismo internacional e lazer com tênis, padel, piscina coberta e wellness.\n\nPosso te mandar o material?',
+    'Olá, {{nome}}, tudo bem?\n\nO Château Jardin será lançado amanhã e estou organizando os atendimentos por horário.\n\nO projeto tem plantas de 185 m², 215 m², 248 m² e 355 m², com lazer sofisticado e proposta de refúgio urbano no novo eixo Cidade Jardim.\n\nPosso te enviar as plantas?',
+    '{{nome}}, passando para te avisar sobre o lançamento do Château Jardin amanhã.\n\nÉ um projeto Tegra e Exto, com paisagismo internacional EDSA, inspiração nos jardins franceses e uma estrutura de lazer diferenciada: tênis de saibro, padel, piscina coberta e wellness. 🌿\n\nPosso te enviar um resumo?',
+    'Olá, {{nome}}.\n\nAmanhã teremos o lançamento do Château Jardin, um projeto que nasce como um novo marco residencial no eixo Cidade Jardim.\n\nSão plantas amplas de 185 m², 215 m², 248 m² e 355 m², com arquitetura clássica e lazer de alto padrão.\n\nQuer receber o material?',
+    '{{nome}}, tudo bem?\n\nAmanhã será o evento de lançamento do Château Jardin, na Rua Ministro Nelson Hungria, 400.\n\nUm projeto de alto padrão inspirado no clássico, nos jardins franceses e em uma experiência residencial mais reservada.\n\nTemos opções de 185 m² a 355 m².\n\nPosso te mandar as informações?'
+  ].map((text) => text + CHATEAU_SIGNATURE);
+
+  const callConvite = [
+    'Oi, {{nome}}, tudo bem? Aqui é {{corretor}}. Estou te ligando rapidamente porque amanhã será o lançamento do Château Jardin, na Rua Ministro Nelson Hungria, 400. É um projeto Tegra e Exto no novo eixo Cidade Jardim, inspirado no clássico e nos jardins franceses, com plantas de 185 m², 215 m², 248 m² e 355 m². Faz sentido eu te enviar o material e verificar um horário para você conhecer?',
+    '{{nome}}, tudo bem? Aqui é {{corretor}}. Amanhã teremos o lançamento do Château Jardin, um empreendimento de alto padrão no novo eixo Cidade Jardim. O projeto une arquitetura clássica com olhar contemporâneo, paisagismo internacional EDSA e lazer com tênis de saibro, padel, piscina coberta e wellness. Posso te mandar as plantas e entender se alguma metragem faz sentido para você?',
+    'Oi, {{nome}}, aqui é {{corretor}}. Vou ser breve: amanhã acontece o lançamento do Château Jardin, na Rua Ministro Nelson Hungria, 400. É um projeto sofisticado, com inspiração nos jardins franceses, plantas amplas de 185 m² a 355 m² e uma proposta residencial reservada. Você busca algo nesse perfil ou prefere apenas receber o material para avaliar?',
+    '{{nome}}, tudo bem? Estou entrando em contato porque amanhã será o evento de lançamento do Château Jardin. O projeto tem realização Tegra e Exto, fica no novo eixo Cidade Jardim e traz opções de 185 m², 215 m², 248 m² e 355 m². Posso te enviar um resumo com plantas e principais diferenciais?',
+    'Oi, {{nome}}, tudo bem? Aqui é {{corretor}}. Amanhã vamos apresentar o Château Jardin, um projeto com arquitetura clássica, inspiração nos jardins franceses e paisagismo internacional. É um produto para quem busca alto padrão, conforto e plantas generosas. Você gostaria de conhecer as opções ou prefere que eu envie primeiro pelo WhatsApp?',
+    '{{nome}}, tudo bem? Estou te ligando porque amanhã teremos o lançamento do Château Jardin, um projeto no novo eixo Cidade Jardim com lazer de perfil private club: tênis de saibro, padel, piscina coberta, wellness e áreas sociais completas. As metragens vão de 185 m² a 355 m². Posso te passar o material?',
+    'Oi, {{nome}}, aqui é {{corretor}}. Amanhã será o lançamento do Château Jardin, na Rua Ministro Nelson Hungria, 400. O projeto tem uma proposta elegante: arquitetura clássica, jardins, serviços de alto padrão e plantas amplas. Queria entender se você está buscando imóvel para morar, investir ou apenas avaliando oportunidades nesse perfil.',
+    '{{nome}}, tudo bem? Vou falar rapidinho. Amanhã teremos o lançamento do Château Jardin, realização Tegra e Exto. O empreendimento foi pensado como um refúgio urbano no novo eixo Cidade Jardim, com metragens de 185 m², 215 m², 248 m² e 355 m². Posso te enviar as plantas para você avaliar com calma?',
+    'Oi, {{nome}}, aqui é {{corretor}}. Amanhã acontece o evento de lançamento do Château Jardin. É um projeto com inspiração clássica, atmosfera de jardins franceses, paisagismo EDSA e uma estrutura de lazer diferenciada. Se fizer sentido para você, posso te mandar o material e verificar um horário de apresentação.',
+    '{{nome}}, tudo bem? Estou te ligando sobre o Château Jardin, que será lançado amanhã na Rua Ministro Nelson Hungria, 400. É um projeto de alto padrão com opções de 185 m² a 355 m², lazer completo e proposta residencial sofisticada. Você teria interesse em receber as informações iniciais ou prefere agendar para conhecer presencialmente?'
+  ].map((text) => text + CHATEAU_CALL_CLOSE);
+
+  const emailConvite = [
+    'Assunto: Château Jardin | Lançamento amanhã\n\nOlá, {{nome}}, tudo bem?\n\nAmanhã será o lançamento do Château Jardin, projeto de alto padrão no novo eixo Cidade Jardim, com realização Tegra e Exto.\n\nInspirado na arquitetura clássica e na elegância dos jardins franceses, o empreendimento reúne paisagismo internacional EDSA, lazer sofisticado e plantas amplas de 185 m², 215 m², 248 m² e 355 m².\n\nO evento será na Rua Ministro Nelson Hungria, 400.\n\nPosso te enviar as plantas e verificar um horário de apresentação?',
+    'Assunto: Château Jardin | Novo marco no eixo Cidade Jardim\n\nOlá, {{nome}}.\n\nEstou compartilhando o Château Jardin, lançamento que será apresentado amanhã na Rua Ministro Nelson Hungria, 400.\n\nO projeto une arquitetura clássica, olhar contemporâneo, inspiração nos jardins franceses e paisagismo internacional assinado pela EDSA.\n\nAs opções contemplam plantas de 185 m², 215 m², 248 m² e 355 m².\n\nCaso faça sentido para você, posso encaminhar o material completo e organizar uma visita.',
+    'Assunto: Amanhã | Evento de lançamento Château Jardin\n\nOlá, {{nome}}, tudo bem?\n\nAmanhã acontece o evento de lançamento do Château Jardin, empreendimento Tegra e Exto no novo eixo Cidade Jardim.\n\nO projeto foi pensado como um refúgio urbano sofisticado, com inspiração clássica, atmosfera de jardins franceses, lazer de alto padrão, quadra de tênis de saibro, quadra de padel, piscina coberta e wellness.\n\nHá opções de 185 m², 215 m², 248 m² e 355 m².\n\nPosso te enviar plantas e detalhes do evento?',
+    'Assunto: Château Jardin | Plantas de 185 m² a 355 m²\n\nOlá, {{nome}}.\n\nAmanhã será o lançamento do Château Jardin, na Rua Ministro Nelson Hungria, 400.\n\nO empreendimento traz uma proposta residencial elegante, com arquitetura clássica, paisagismo internacional EDSA e inspiração nos jardins franceses.\n\nAs plantas incluem opções de 185 m², 215 m², 248 m² e 355 m², voltadas a quem busca alto padrão, conforto e localização estratégica no eixo Cidade Jardim.\n\nPosso te enviar o material?',
+    'Assunto: Convite | Château Jardin\n\nOlá, {{nome}}, tudo bem?\n\nGostaria de te apresentar o Château Jardin, lançamento de alto padrão que será apresentado amanhã no novo eixo Cidade Jardim.\n\nCom realização Tegra e Exto, o projeto combina arquitetura clássica, inspiração nos jardins franceses, paisagismo internacional e uma estrutura de lazer com perfil de private club.\n\nO evento será na Rua Ministro Nelson Hungria, 400.\n\nSe fizer sentido, posso te enviar as plantas e detalhes das metragens.',
+    'Assunto: Château Jardin | Evento na Rua Ministro Nelson Hungria, 400\n\nOlá, {{nome}}.\n\nAmanhã teremos o lançamento do Château Jardin, um empreendimento de alto padrão na Rua Ministro Nelson Hungria, 400.\n\nO projeto reúne a assinatura Tegra e Exto, paisagismo internacional EDSA, inspiração clássica e metragens amplas de 185 m² a 355 m².\n\nA proposta é oferecer uma experiência residencial sofisticada, com lazer completo e serviços pensados para o dia a dia.\n\nPosso te enviar o material?',
+    'Assunto: Château Jardin | Alto padrão no novo eixo Cidade Jardim\n\nOlá, {{nome}}, tudo bem?\n\nO Château Jardin será lançado amanhã e nasce como uma proposta residencial sofisticada no novo eixo Cidade Jardim.\n\nInspirado no clássico e na elegância dos jardins franceses, o projeto conta com paisagismo internacional, quadra de tênis de saibro, padel, piscina coberta, wellness e plantas de 185 m², 215 m², 248 m² e 355 m².\n\nCaso queira, posso encaminhar as plantas e principais diferenciais.',
+    'Assunto: Conheça o Château Jardin\n\nOlá, {{nome}}.\n\nAmanhã será apresentado o Château Jardin, realização Tegra e Exto no novo eixo Cidade Jardim.\n\nO empreendimento foi concebido com arquitetura clássica, leitura contemporânea e inspiração nos jardins franceses, trazendo metragens amplas e lazer completo para uma experiência residencial reservada.\n\nO evento ocorrerá na Rua Ministro Nelson Hungria, 400.\n\nPosso te enviar o material completo com plantas e diferenciais?',
+    'Assunto: Château Jardin | Lançamento de alto padrão\n\nOlá, {{nome}}, tudo bem?\n\nEstou te enviando o Château Jardin, lançamento que será apresentado amanhã.\n\nO projeto une sofisticação, inspiração clássica, paisagismo internacional EDSA e lazer de alto padrão, com quadra de tênis de saibro, quadra de padel, piscina coberta e wellness.\n\nAs plantas contemplam metragens de 185 m², 215 m², 248 m² e 355 m².\n\nFico à disposição para te enviar o material e organizar uma apresentação.',
+    'Assunto: Château Jardin | Apresentação amanhã\n\nOlá, {{nome}}.\n\nAmanhã teremos o evento de lançamento do Château Jardin, na Rua Ministro Nelson Hungria, 400.\n\nÉ um projeto Tegra e Exto, no novo eixo Cidade Jardim, inspirado na elegância clássica e nos jardins franceses, com paisagismo internacional e plantas amplas de 185 m² a 355 m².\n\nSe fizer sentido para você, posso enviar o material com plantas, metragens e detalhes do empreendimento.'
+  ].map((text) => text + CHATEAU_SIGNATURE);
+
+  const DEVELOPMENT_MESSAGES = {
+    chateau_jardin: {
+      whatsapp: { convite_lancamento: waConvite, primeiro_contato: waConvite, pediu_plantas: waConvite, pediu_valores: waConvite, pediu_material: waConvite, ja_conhece_projeto: waConvite, visitou_plantao: waConvite, pos_visita: waConvite, quer_levar_familia: waConvite, comparando: waConvite, sem_resposta: waConvite },
+      ligacao: { convite_lancamento: callConvite, primeiro_contato: callConvite, pediu_plantas: callConvite, pediu_valores: callConvite, pediu_material: callConvite, ja_conhece_projeto: callConvite, visitou_plantao: callConvite, pos_visita: callConvite, quer_levar_familia: callConvite, comparando: callConvite, sem_resposta: callConvite },
+      email: { convite_lancamento: emailConvite, primeiro_contato: emailConvite, pediu_plantas: emailConvite, pediu_valores: emailConvite, pediu_material: emailConvite, ja_conhece_projeto: emailConvite, visitou_plantao: emailConvite, pos_visita: emailConvite, quer_levar_familia: emailConvite, comparando: emailConvite, sem_resposta: emailConvite },
+    }
+  };
+
+  const BLOCKED_TERMS = ['últimas unidades', 'condição exclusiva', 'desconto de lançamento', 'tabela especial garantida', 'diretoria liberou', 'reserva garantida', 'preço fechado', 'melhor condição só amanhã'];
+
   const state = {
+    group: safeGet('fechai_pme_group', 'geral'),
     context: safeGet('fechai_pme_context', 'lista_fria'),
+    development: safeGet('fechai_pme_development', 'chateau_jardin'),
     channel: safeGet('fechai_pme_channel', 'ligacao'),
     approach: safeGet('fechai_pme_approach', 'primeira_abordagem'),
+    developmentApproach: safeGet('fechai_pme_development_approach', 'convite_lancamento'),
     variant: Number(safeGet('fechai_pme_variant', '0')) || 0,
-    power: {
-      power_dial: safeGet('fechai_pme_power_dial', 'off'),
-      power_zap: safeGet('fechai_pme_power_zap', 'off'),
-      power_mail: safeGet('fechai_pme_power_mail', 'off'),
-    },
+    power: { power_dial: safeGet('fechai_pme_power_dial', 'off'), power_zap: safeGet('fechai_pme_power_zap', 'off'), power_mail: safeGet('fechai_pme_power_mail', 'off') },
   };
 
   function safeGet(key, fallback) { try { return localStorage.getItem(key) || fallback; } catch (_) { return fallback; } }
   function safeSet(key, value) { try { localStorage.setItem(key, String(value)); } catch (_) {} }
   function saveState() {
-    safeSet('fechai_pme_context', state.context);
-    safeSet('fechai_pme_channel', state.channel);
-    safeSet('fechai_pme_approach', state.approach);
-    safeSet('fechai_pme_variant', state.variant);
-    safeSet('fechai_pme_power_dial', state.power.power_dial);
-    safeSet('fechai_pme_power_zap', state.power.power_zap);
-    safeSet('fechai_pme_power_mail', state.power.power_mail);
+    safeSet('fechai_pme_group', state.group); safeSet('fechai_pme_context', state.context); safeSet('fechai_pme_development', state.development); safeSet('fechai_pme_channel', state.channel); safeSet('fechai_pme_approach', state.approach); safeSet('fechai_pme_development_approach', state.developmentApproach); safeSet('fechai_pme_variant', state.variant); safeSet('fechai_pme_power_dial', state.power.power_dial); safeSet('fechai_pme_power_zap', state.power.power_zap); safeSet('fechai_pme_power_mail', state.power.power_mail);
   }
 
   function ensureStyle() {
     if (document.getElementById(STYLE_ID)) return;
     const style = document.createElement('style');
     style.id = STYLE_ID;
-    style.textContent = `
-      #${TOP_ID}{font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:linear-gradient(135deg,#0f172a,#1d4ed8);color:#fff;border-radius:20px;padding:14px 16px;box-shadow:0 10px 28px rgba(15,23,42,.14);margin:0 0 12px;}
-      #${TOP_ID} .pme-top-title{font-size:21px;font-weight:950;line-height:1.1;}
-      #${TOP_ID} .pme-top-sub{font-size:13px;opacity:.88;margin-top:5px;line-height:1.35;}
-      #${ROOT_ID}{font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:#fff;border:1px solid #e5e7eb;border-radius:22px;padding:18px;box-shadow:0 10px 28px rgba(15,23,42,.08);margin:14px 0;max-width:100%;overflow:hidden;box-sizing:border-box;}
-      #${ROOT_ID} *{box-sizing:border-box;}
-      #${ROOT_ID} button,#${ROOT_ID} a,#${ROOT_ID} select,#${MODAL_ID} button,#${MODAL_ID} a{touch-action:manipulation;-webkit-tap-highlight-color:transparent;user-select:none;}
-      #${ROOT_ID} .pme-header{display:flex;justify-content:space-between;gap:12px;align-items:flex-start;margin-bottom:14px;}
-      #${ROOT_ID} .pme-title{font-size:22px;font-weight:950;color:#111827;line-height:1.15;}
-      #${ROOT_ID} .pme-sub{font-size:14px;color:#475569;margin-top:5px;line-height:1.4;}
-      #${ROOT_ID} .pme-chip{font-size:12px;font-weight:900;color:#1d4ed8;background:#eff6ff;border:1px solid #bfdbfe;padding:7px 10px;border-radius:999px;white-space:nowrap;}
-      #${ROOT_ID} .pme-step-title{font-size:17px;color:#0f172a;font-weight:950;margin:18px 0 6px;text-align:center;line-height:1.25;}
-      #${ROOT_ID} .pme-step-help{font-size:13px;color:#64748b;font-weight:700;text-align:center;margin:-1px 0 10px;line-height:1.35;}
-      #${ROOT_ID} .pme-origin-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(142px,1fr));gap:10px;align-items:stretch;margin:10px auto;max-width:980px;}
-      #${ROOT_ID} .pme-channel-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;align-items:stretch;margin:10px auto;max-width:820px;}
-      #${ROOT_ID} .pme-channel-card{display:flex;flex-direction:column;gap:8px;align-items:stretch;justify-content:flex-start;min-width:0;}
-      #${ROOT_ID} .pme-pill{border:1px solid #dbeafe;background:#f8fafc;color:#334155;border-radius:18px;padding:13px 14px;font-size:15px;font-weight:950;white-space:normal;cursor:pointer;min-height:50px;line-height:1.15;width:100%;}
-      #${ROOT_ID} .pme-pill:active,#${ROOT_ID} .pme-action:active,#${MODAL_ID} button:active{transform:scale(.985);}
-      #${ROOT_ID} .pme-pill.active{background:#2563eb;color:white;border-color:#2563eb;box-shadow:0 8px 18px rgba(37,99,235,.24);}
-      #${ROOT_ID} .pme-power{background:#e5e7eb;color:#374151;border:1px solid #d1d5db;border-radius:999px;padding:9px 8px;font-size:12px;font-weight:950;cursor:pointer;min-height:36px;}
-      #${ROOT_ID} .pme-power.on{background:#dcfce7;color:#166534;border-color:#86efac;}
-      #${ROOT_ID} .pme-channel{border-radius:18px;padding:14px 8px;font-size:15px;min-height:52px;}
-      #${ROOT_ID} .pme-select-wrap{max-width:680px;margin:10px auto 0;background:#f8fafc;border:1px solid #dbeafe;border-radius:18px;padding:10px;}
-      #${ROOT_ID} .pme-select{width:100%;display:block;border:1px solid #93c5fd;border-radius:14px;padding:14px 42px 14px 14px;font-size:16px;font-weight:900;background:#fff;color:#0f172a;text-align:center;min-height:54px;appearance:auto;user-select:auto;}
-      #${ROOT_ID} .pme-box{background:#f8fafc;border:1px solid #e2e8f0;border-radius:18px;padding:14px;margin-top:16px;max-width:100%;overflow:hidden;}
-      #${ROOT_ID} .pme-box-title{font-size:15px;color:#0f172a;font-weight:950;margin-bottom:7px;}
-      #${ROOT_ID} .pme-text{font-size:16px;line-height:1.55;color:#111827;white-space:pre-line;overflow-wrap:anywhere;word-break:normal;user-select:text;}
-      #${ROOT_ID} .pme-exec{background:#f8fafc;border:1px solid #e2e8f0;border-radius:18px;padding:14px;margin-top:14px;}
-      #${ROOT_ID} .pme-exec-title{text-align:center;font-size:15px;color:#0f172a;font-weight:950;margin-bottom:10px;}
-      #${ROOT_ID} .pme-actions{display:grid;grid-template-columns:1.4fr .8fr .8fr 1.1fr;gap:10px;}
-      #${ROOT_ID} .pme-action{border:1px solid #dbeafe;background:#eff6ff;color:#1d4ed8;border-radius:999px;padding:12px 10px;font-size:14px;font-weight:950;text-decoration:none;cursor:pointer;text-align:center;line-height:1.2;min-height:46px;}
-      #${ROOT_ID} .pme-action.primary{background:#2563eb;color:#fff;border-color:#2563eb;}
-      #${ROOT_ID} .pme-action.ai{background:#fff7ed;color:#9a3412;border-color:#fed7aa;}
-      #${ROOT_ID} .pme-status{font-size:13px;color:#64748b;margin-top:10px;line-height:1.4;text-align:center;}
-      #${MODAL_ID}{position:fixed;inset:0;background:rgba(15,23,42,.55);z-index:99999;display:none;align-items:end;justify-content:center;padding:12px;}
-      #${MODAL_ID}.open{display:flex;}
-      #${MODAL_ID} .pme-modal-card{background:#fff;border-radius:22px;padding:16px;width:100%;max-width:620px;max-height:86vh;overflow:auto;box-shadow:0 24px 70px rgba(15,23,42,.35);font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;}
-      #${MODAL_ID} .pme-modal-head{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;margin-bottom:10px;}
-      #${MODAL_ID} .pme-title{font-size:18px;font-weight:950;color:#111827;line-height:1.15;}
-      #${MODAL_ID} .pme-sub{font-size:13px;color:#64748b;margin-top:3px;line-height:1.35;}
-      #${MODAL_ID} .pme-modal-channel{font-size:13px;font-weight:900;color:#1d4ed8;background:#eff6ff;border:1px solid #bfdbfe;border-radius:999px;padding:8px 10px;text-align:center;margin:8px 0 10px;}
-      #${MODAL_ID} textarea{width:100%;min-height:180px;border:1px solid #cbd5e1;border-radius:16px;padding:12px;font-size:16px;line-height:1.45;resize:vertical;user-select:text;}
-      #${MODAL_ID} input{width:100%;border:1px solid #cbd5e1;border-radius:14px;padding:13px;font-size:15px;margin-top:8px;user-select:text;}
-      #${MODAL_ID} .pme-modal-actions{display:grid;grid-template-columns:1.3fr 1fr .75fr;gap:8px;margin-top:10px;}
-      #${MODAL_ID} .pme-modal-actions button,#${MODAL_ID} .pme-close{border:0;border-radius:14px;padding:13px 10px;font-size:14px;font-weight:900;text-decoration:none;cursor:pointer;text-align:center;line-height:1.2;}
-      #${MODAL_ID} .pme-primary{background:#2563eb;color:#fff;}
-      #${MODAL_ID} .pme-muted{background:#e5e7eb;color:#374151;}
-      #${MODAL_ID} .pme-warn{background:#fff7ed;color:#9a3412;border:1px solid #fed7aa;}
-      #${MODAL_ID} .pme-note{font-size:13px;color:#64748b;margin-top:8px;line-height:1.35;}
-      @media(max-width:700px){#${ROOT_ID} .pme-origin-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;}#${ROOT_ID} .pme-channel-grid{gap:7px;}#${ROOT_ID} .pme-pill{font-size:13px;padding:12px 8px;}#${ROOT_ID} .pme-power{font-size:10px;padding:8px 4px;}#${ROOT_ID} .pme-channel{font-size:12px;padding:12px 3px;}#${ROOT_ID} .pme-step-title{font-size:16px;}#${ROOT_ID} .pme-step-help{font-size:12px;}#${ROOT_ID} .pme-actions{grid-template-columns:repeat(2,minmax(0,1fr));}#${ROOT_ID} .pme-action.primary{grid-column:1/-1;}#${ROOT_ID} .pme-action{font-size:13px;}#${MODAL_ID}{align-items:end;}#${MODAL_ID} .pme-modal-actions{grid-template-columns:1fr;}#${MODAL_ID} .pme-modal-actions button{min-height:48px;}}
-      @media(max-width:420px){#${TOP_ID}{border-radius:16px;padding:13px 14px;}#${TOP_ID} .pme-top-title{font-size:19px;}#${ROOT_ID}{border-radius:16px;padding:13px;margin:12px 0;}#${ROOT_ID} .pme-header{flex-direction:column;align-items:stretch;}#${ROOT_ID} .pme-chip{text-align:center;white-space:normal;}#${ROOT_ID} .pme-origin-grid{grid-template-columns:1fr 1fr;}#${ROOT_ID} .pme-select{font-size:16px;min-height:56px;}#${ROOT_ID} .pme-text{font-size:15px;} }
-    `;
+    style.textContent = `#${TOP_ID}{font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:linear-gradient(135deg,#0f172a,#1d4ed8);color:#fff;border-radius:20px;padding:14px 16px;box-shadow:0 10px 28px rgba(15,23,42,.14);margin:0 0 12px;}#${TOP_ID} .pme-top-title{font-size:21px;font-weight:950;line-height:1.1;}#${TOP_ID} .pme-top-sub{font-size:13px;opacity:.88;margin-top:5px;line-height:1.35;}#${ROOT_ID}{font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:#fff;border:1px solid #e5e7eb;border-radius:22px;padding:18px;box-shadow:0 10px 28px rgba(15,23,42,.08);margin:14px 0;max-width:100%;overflow:hidden;box-sizing:border-box;}#${ROOT_ID} *{box-sizing:border-box;}#${ROOT_ID} button,#${ROOT_ID} a,#${ROOT_ID} select,#${MODAL_ID} button,#${MODAL_ID} a{touch-action:manipulation;-webkit-tap-highlight-color:transparent;user-select:none;}#${ROOT_ID} .pme-header{display:flex;justify-content:space-between;gap:12px;align-items:flex-start;margin-bottom:14px;}#${ROOT_ID} .pme-title{font-size:22px;font-weight:950;color:#111827;line-height:1.15;}#${ROOT_ID} .pme-sub{font-size:14px;color:#475569;margin-top:5px;line-height:1.4;}#${ROOT_ID} .pme-chip{font-size:12px;font-weight:900;color:#1d4ed8;background:#eff6ff;border:1px solid #bfdbfe;padding:7px 10px;border-radius:999px;white-space:nowrap;}#${ROOT_ID} .pme-step-title{font-size:17px;color:#0f172a;font-weight:950;margin:18px 0 6px;text-align:center;line-height:1.25;}#${ROOT_ID} .pme-step-help{font-size:13px;color:#64748b;font-weight:700;text-align:center;margin:-1px 0 10px;line-height:1.35;}#${ROOT_ID} .pme-origin-grid,#${ROOT_ID} .pme-group-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(142px,1fr));gap:10px;align-items:stretch;margin:10px auto;max-width:980px;}#${ROOT_ID} .pme-channel-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;align-items:stretch;margin:10px auto;max-width:820px;}#${ROOT_ID} .pme-channel-card{display:flex;flex-direction:column;gap:8px;align-items:stretch;justify-content:flex-start;min-width:0;}#${ROOT_ID} .pme-pill{border:1px solid #dbeafe;background:#f8fafc;color:#334155;border-radius:18px;padding:13px 14px;font-size:15px;font-weight:950;white-space:normal;cursor:pointer;min-height:50px;line-height:1.15;width:100%;}#${ROOT_ID} .pme-pill:active,#${ROOT_ID} .pme-action:active,#${MODAL_ID} button:active{transform:scale(.985);}#${ROOT_ID} .pme-pill.active{background:#2563eb;color:white;border-color:#2563eb;box-shadow:0 8px 18px rgba(37,99,235,.24);}#${ROOT_ID} .pme-power{background:#e5e7eb;color:#374151;border:1px solid #d1d5db;border-radius:999px;padding:9px 8px;font-size:12px;font-weight:950;cursor:pointer;min-height:36px;}#${ROOT_ID} .pme-power.on{background:#dcfce7;color:#166534;border-color:#86efac;}#${ROOT_ID} .pme-channel{border-radius:18px;padding:14px 8px;font-size:15px;min-height:52px;}#${ROOT_ID} .pme-select-wrap{max-width:680px;margin:10px auto 0;background:#f8fafc;border:1px solid #dbeafe;border-radius:18px;padding:10px;}#${ROOT_ID} .pme-select{width:100%;display:block;border:1px solid #93c5fd;border-radius:14px;padding:14px 42px 14px 14px;font-size:16px;font-weight:900;background:#fff;color:#0f172a;text-align:center;min-height:54px;appearance:auto;user-select:auto;}#${ROOT_ID} .pme-box{background:#f8fafc;border:1px solid #e2e8f0;border-radius:18px;padding:14px;margin-top:16px;max-width:100%;overflow:hidden;}#${ROOT_ID} .pme-box-title{font-size:15px;color:#0f172a;font-weight:950;margin-bottom:7px;}#${ROOT_ID} .pme-text{font-size:16px;line-height:1.55;color:#111827;white-space:pre-line;overflow-wrap:anywhere;word-break:normal;user-select:text;}#${ROOT_ID} .pme-exec{background:#f8fafc;border:1px solid #e2e8f0;border-radius:18px;padding:14px;margin-top:14px;}#${ROOT_ID} .pme-exec-title{text-align:center;font-size:15px;color:#0f172a;font-weight:950;margin-bottom:10px;}#${ROOT_ID} .pme-actions{display:grid;grid-template-columns:1.4fr .8fr .8fr 1.1fr;gap:10px;}#${ROOT_ID} .pme-action{border:1px solid #dbeafe;background:#eff6ff;color:#1d4ed8;border-radius:999px;padding:12px 10px;font-size:14px;font-weight:950;text-decoration:none;cursor:pointer;text-align:center;line-height:1.2;min-height:46px;}#${ROOT_ID} .pme-action.primary{background:#2563eb;color:#fff;border-color:#2563eb;}#${ROOT_ID} .pme-action.ai{background:#fff7ed;color:#9a3412;border-color:#fed7aa;}#${ROOT_ID} .pme-status{font-size:13px;color:#64748b;margin-top:10px;line-height:1.4;text-align:center;}#${MODAL_ID}{position:fixed;inset:0;background:rgba(15,23,42,.55);z-index:99999;display:none;align-items:end;justify-content:center;padding:12px;}#${MODAL_ID}.open{display:flex;}#${MODAL_ID} .pme-modal-card{background:#fff;border-radius:22px;padding:16px;width:100%;max-width:620px;max-height:86vh;overflow:auto;box-shadow:0 24px 70px rgba(15,23,42,.35);font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;}#${MODAL_ID} .pme-modal-head{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;margin-bottom:10px;}#${MODAL_ID} .pme-title{font-size:18px;font-weight:950;color:#111827;line-height:1.15;}#${MODAL_ID} .pme-sub{font-size:13px;color:#64748b;margin-top:3px;line-height:1.35;}#${MODAL_ID} .pme-modal-channel{font-size:13px;font-weight:900;color:#1d4ed8;background:#eff6ff;border:1px solid #bfdbfe;border-radius:999px;padding:8px 10px;text-align:center;margin:8px 0 10px;}#${MODAL_ID} textarea{width:100%;min-height:180px;border:1px solid #cbd5e1;border-radius:16px;padding:12px;font-size:16px;line-height:1.45;resize:vertical;user-select:text;}#${MODAL_ID} input{width:100%;border:1px solid #cbd5e1;border-radius:14px;padding:13px;font-size:15px;margin-top:8px;user-select:text;}#${MODAL_ID} .pme-modal-actions{display:grid;grid-template-columns:1.3fr 1fr .75fr;gap:8px;margin-top:10px;}#${MODAL_ID} .pme-modal-actions button,#${MODAL_ID} .pme-close{border:0;border-radius:14px;padding:13px 10px;font-size:14px;font-weight:900;text-decoration:none;cursor:pointer;text-align:center;line-height:1.2;}#${MODAL_ID} .pme-primary{background:#2563eb;color:#fff;}#${MODAL_ID} .pme-muted{background:#e5e7eb;color:#374151;}#${MODAL_ID} .pme-warn{background:#fff7ed;color:#9a3412;border:1px solid #fed7aa;}#${MODAL_ID} .pme-note{font-size:13px;color:#64748b;margin-top:8px;line-height:1.35;}@media(max-width:700px){#${ROOT_ID} .pme-origin-grid,#${ROOT_ID} .pme-group-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;}#${ROOT_ID} .pme-channel-grid{gap:7px;}#${ROOT_ID} .pme-pill{font-size:13px;padding:12px 8px;}#${ROOT_ID} .pme-power{font-size:10px;padding:8px 4px;}#${ROOT_ID} .pme-channel{font-size:12px;padding:12px 3px;}#${ROOT_ID} .pme-actions{grid-template-columns:repeat(2,minmax(0,1fr));}#${ROOT_ID} .pme-action.primary{grid-column:1/-1;}#${MODAL_ID} .pme-modal-actions{grid-template-columns:1fr;}}`;
     document.head.appendChild(style);
   }
 
   function markInteraction(ms) { suspendAutoRenderUntil = Date.now() + (ms || 1200); }
   function firstWord(text) { return String(text || '').trim().split(/\s+/)[0] || 'cliente'; }
+  function normalizePhone(value) { return String(value || '').replace(/\D/g, ''); }
+  function getLeadPhone() { const tel = document.querySelector('a[href^="tel:"]'); if (tel) return normalizePhone(tel.getAttribute('href')); const m = (document.body?.innerText || '').match(/(?:\+?55\s*)?(?:\(?\d{2}\)?\s*)?9?\d{4}[-\s]?\d{4}/); return m ? normalizePhone(m[0]) : ''; }
+  function getLeadEmail() { const mail = document.querySelector('a[href^="mailto:"]'); if (mail) return String(mail.getAttribute('href') || '').replace(/^mailto:/, '').trim(); const m = (document.body?.innerText || '').match(/[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/i); return m ? m[0] : ''; }
+  function getLeadName() { const tel = document.querySelector('a[href^="tel:"]'); const card = tel ? tel.closest('.bg-white') || tel.closest('[class*="card"]') || tel.parentElement : null; const lines = String(card?.innerText || document.body?.innerText || '').split('\n').map((s) => s.trim()).filter(Boolean); return lines.find((line) => /^[A-Za-zÀ-ÿ]+(?:\s+[A-Za-zÀ-ÿ]+){0,3}$/.test(line) && !/whatsapp|telefone|email|lead|status/i.test(line)) || 'Cliente'; }
+  function getCorretorName() { const stored = safeGet('fechai_pme_corretor_nome', ''); return stored || 'Corretor responsável'; }
+  function getCorretorPhone() { return safeGet('fechai_pme_corretor_telefone', ''); }
+  function getEmpresa() { return safeGet('fechai_pme_empresa', 'FECH.AI'); }
+  function getWhatsappLinkCorretor(phone) { const stored = safeGet('fechai_pme_link_whatsapp_corretor', ''); if (stored) return stored; const normalized = normalizePhone(phone || getCorretorPhone()); return normalized ? `https://wa.me/${normalized}` : '{{link_whatsapp_corretor}}'; }
+  function escapeHtml(value) { return String(value || '').replace(/[&<>"']/g, (char) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[char])); }
+  function fillTemplate(text) { const nome = firstWord(getLeadName()); const corretor = getCorretorName(); const telCorretor = getCorretorPhone() || '{{telefone_corretor}}'; const linkCorretor = getWhatsappLinkCorretor(telCorretor); const development = DEVELOPMENTS[state.development] || DEVELOPMENTS.chateau_jardin; return String(text || '').replaceAll('{{nome}}', nome).replaceAll('{{nome_lead}}', nome).replaceAll('{{corretor}}', corretor).replaceAll('{{nome_corretor}}', corretor).replaceAll('{{empresa}}', getEmpresa()).replaceAll('{{empreendimento}}', development.label).replaceAll('{{telefone_corretor}}', telCorretor).replaceAll('{{link_whatsapp_corretor}}', linkCorretor).replaceAll('{{link_whatsapp}}', linkCorretor); }
+  function splitEmailTemplate(text) { const match = String(text || '').match(/^Assunto:\s*(.+?)\n\n([\s\S]*)$/i); return match ? { subject: match[1].trim(), body: match[2].trim() } : { subject: 'Contato imobiliário', body: String(text || '') }; }
+  function currentTemplatePool() { if (state.group === 'empreendimentos') { const byDevelopment = DEVELOPMENT_MESSAGES[state.development] || DEVELOPMENT_MESSAGES.chateau_jardin; const byChannel = byDevelopment[state.channel] || {}; return byChannel[state.developmentApproach] || byChannel.convite_lancamento || []; } const byContext = BASE_TEMPLATES[state.context] || BASE_TEMPLATES.lista_fria; const byChannel = byContext[state.channel] || {}; return byChannel[state.approach] || byChannel.primeira_abordagem || []; }
+  function currentTextRaw() { const pool = currentTemplatePool(); return pool.length ? pool[Math.abs(state.variant) % pool.length] : 'Selecione um contexto válido para gerar a mensagem.'; }
+  function currentText() { return fillTemplate(currentTextRaw()); }
+  function hasBlockedTerm(text) { const lowered = String(text || '').toLowerCase(); return BLOCKED_TERMS.some((term) => lowered.includes(term.toLowerCase())); }
+  function renderPills(items, activeKey, dataAttr) { return Object.keys(items).map((key) => { const item = items[key]; const active = key === activeKey ? ' active' : ''; return `<button type="button" class="pme-pill${active}" data-${dataAttr}="${escapeHtml(key)}">${item.icon ? item.icon + ' ' : ''}${escapeHtml(item.label || item)}</button>`; }).join(''); }
+  function renderSelect(items, activeKey, dataAttr) { return `<div class="pme-select-wrap"><select class="pme-select" data-${dataAttr}-select="1">${Object.keys(items).map((key) => `<option value="${escapeHtml(key)}"${key === activeKey ? ' selected' : ''}>${escapeHtml(items[key].label || items[key])}</option>`).join('')}</select></div>`; }
+  function renderChannelGrid() { return `<div class="pme-channel-grid">${Object.keys(CHANNELS).map((key) => { const channel = CHANNELS[key]; const active = key === state.channel ? ' active' : ''; const powerState = state.power[channel.powerKey] === 'on' ? ' on' : ''; return `<div class="pme-channel-card"><button type="button" class="pme-pill pme-channel${active}" data-channel="${key}">${channel.icon} ${channel.label}</button><button type="button" class="pme-power${powerState}" data-power="${channel.powerKey}">${channel.powerLabel}: ${state.power[channel.powerKey] === 'on' ? 'ON' : 'OFF'}</button></div>`; }).join('')}</div>`; }
 
-  function getLeadName() {
-    const tel = document.querySelector('a[href^="tel:"]');
-    const card = tel ? tel.closest('.bg-white') || tel.closest('[class*="bg-white"]') : null;
-    const title = card ? card.querySelector('h1,h2,h3,[class*="text-xl"],[class*="text-lg"],[class*="font-bold"]') : null;
-    return title && title.textContent.trim() ? title.textContent.trim() : 'cliente';
-  }
-  function getPhoneE164() {
-    const tel = document.querySelector('a[href^="tel:"]');
-    return tel ? String(tel.getAttribute('href') || '').replace(/^tel:/, '').replace(/\s+/g, '') : '';
-  }
-  function getEmail() {
-    const mail = document.querySelector('a[href^="mailto:"]');
-    if (mail) return (mail.textContent || '').trim() || mail.href.replace(/^mailto:/, '');
-    const txt = document.body.innerText || '';
-    const match = txt.match(/[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/i);
-    return match ? match[0] : '';
-  }
-  function getBairro() {
-    const body = document.body.innerText || '';
-    const match = body.match(/Bairro:\s*([^\n]+)/i) || body.match(/📍\s*([^\n]+)/i);
-    return match && match[1] ? match[1].trim() : 'região';
-  }
-  function getCorretor() {
-    const header = document.querySelector('header, [style*="position: sticky"]');
-    const raw = header ? header.textContent.replace(/Gestor|Corretor|v\d+(\.\d+)*/g, '').trim() : '';
-    const nome = raw.split(/\s{2,}|Sair|Início|Dashboard/)[0]?.trim();
-    return nome || 'consultor';
-  }
-  function getEmpresa() { return 'Tegra Incorporadora'; }
+  function ensureContainers() { let root = document.getElementById(ROOT_ID); if (root) return root; const anchor = document.querySelector('[data-pme-call-assistant]') || document.getElementById(TOP_ID) || document.querySelector('main') || document.body; if (!anchor || !document.body) return null; root = document.createElement('div'); root.id = ROOT_ID; if (anchor === document.body) { if (!/oferta|aceleracao|discador|pme/i.test(String(location.hash || ''))) return null; document.body.prepend(root); } else if (anchor.id === TOP_ID) { anchor.insertAdjacentElement('afterend', root); } else { anchor.prepend(root); } return root; }
+  function ensureTopTitle() { if (document.getElementById(TOP_ID)) return; const root = document.getElementById(ROOT_ID); if (!root?.parentElement) return; const top = document.createElement('div'); top.id = TOP_ID; top.innerHTML = '<div class="pme-top-title">Discador Flow AI</div><div class="pme-top-sub">PME assistida: mensagem, ligação e e-mail com revisão humana antes da ação.</div>'; root.parentElement.insertBefore(top, root); }
 
-  function renderTemplate(text) {
-    const leadName = getLeadName();
-    return String(text || '')
-      .replaceAll('{{nome}}', firstWord(leadName))
-      .replaceAll('{{nome_completo}}', leadName)
-      .replaceAll('{{bairro}}', getBairro())
-      .replaceAll('{{corretor}}', getCorretor())
-      .replaceAll('{{empresa}}', getEmpresa());
-  }
-  function getTemplateList() {
-    const byContext = TEMPLATES[state.context] || TEMPLATES.lista_fria;
-    const byChannel = byContext[state.channel] || byContext.ligacao || byContext.whatsapp || byContext.email || {};
-    return byChannel[state.approach] || byChannel.primeira_abordagem || byChannel.retorno || ['Conduza a conversa com objetividade, valide interesse e registre o próximo passo.'];
-  }
-  function getCurrentText() {
-    const list = getTemplateList();
-    const len = Math.max(list.length, 1);
-    const index = ((state.variant % len) + len) % len;
-    return renderTemplate(list[index]);
-  }
-  function getExecuteLabel() {
-    if (state.channel === 'ligacao') return 'Efetuar ligação';
-    if (state.channel === 'whatsapp') return 'Abrir WhatsApp';
-    if (state.channel === 'email') return 'Preparar e-mail';
-    return 'Executar';
-  }
-  function buildWhatsappUrl(text) {
-    const phone = getPhoneE164().replace('+', '').replace(/\D/g, '');
-    if (!phone) return '';
-    return 'https://wa.me/' + phone + '?text=' + encodeURIComponent(text || getCurrentText());
-  }
-  function parseEmailParts(text) {
-    const raw = String(text || '');
-    const match = raw.match(/^\s*Assunto:\s*([^\n]+)\n+/i);
-    if (!match) return { subject: 'Contato sobre imóvel', body: raw };
-    return { subject: match[1].trim(), body: raw.slice(match[0].length).trim() };
-  }
-  function buildMailtoUrl(text) {
-    const email = getEmail();
-    if (!email) return '';
-    const parts = parseEmailParts(text || getCurrentText());
-    return 'mailto:' + encodeURIComponent(email) + '?subject=' + encodeURIComponent(parts.subject) + '&body=' + encodeURIComponent(parts.body);
-  }
-  async function copyText(text, label, statusFn) {
-    const fn = typeof statusFn === 'function' ? statusFn : setStatus;
-    try { await navigator.clipboard.writeText(text); fn(label || 'Copiado.'); return true; }
-    catch (_) { window.prompt('Copie o texto:', text); fn('Copie manualmente pela janela aberta.'); return false; }
-  }
-  function setStatus(text) {
-    const root = document.getElementById(ROOT_ID);
-    const el = root ? root.querySelector('[data-pme-status]') : null;
-    if (el) el.textContent = text || '';
-  }
-  function hasDiscadorLead() { return !!document.querySelector('a[href^="tel:"]') && /Feedback/i.test(document.body.innerText || ''); }
-
-  function findMountPoint() {
-    const feedbackLabel = Array.from(document.querySelectorAll('p,div,h2,h3')).find((el) => el.textContent && el.textContent.trim() === 'Feedback');
-    if (feedbackLabel) {
-      const feedbackBlock = feedbackLabel.closest('div');
-      const parent = feedbackBlock && feedbackBlock.parentElement;
-      if (parent) return { parent, before: feedbackBlock };
-    }
-    const tel = document.querySelector('a[href^="tel:"]');
-    const card = tel ? tel.closest('.bg-white') || tel.closest('[class*="bg-white"]') : null;
-    if (card && card.parentElement) return { parent: card.parentElement, before: card.nextSibling };
-    return null;
-  }
-  function findDiscadorContainer() {
-    const tel = document.querySelector('a[href^="tel:"]');
-    const card = tel ? tel.closest('.bg-white') || tel.closest('[class*="bg-white"]') : null;
-    return card ? card.parentElement : null;
-  }
-  function ensureTopTitle() {
-    const container = findDiscadorContainer();
-    if (!container) return;
-    let top = document.getElementById(TOP_ID);
-    if (!top) { top = document.createElement('div'); top.id = TOP_ID; }
-    top.innerHTML = '<div class="pme-top-title">⚡ Discador Flow AI</div><div class="pme-top-sub">Atendimento guiado: lead → origem → canal → abordagem → execução → feedback</div>';
-    if (top.parentElement !== container || container.firstElementChild !== top) container.insertBefore(top, container.firstElementChild || null);
-  }
-  function hideOriginalTopPowerDial() {
-    const buttons = Array.from(document.querySelectorAll('button'));
-    const btn = buttons.find((b) => !document.getElementById(ROOT_ID)?.contains(b) && /Power\s*Dial/i.test(b.textContent || ''));
-    if (!btn) return;
-    const row = btn.parentElement;
-    if (row && !row.dataset.pmeOriginalPowerHidden) { row.dataset.pmeOriginalPowerHidden = '1'; row.style.display = 'none'; }
-  }
-  function hideOriginalContactButtons() {
-    const tel = document.querySelector('a[href^="tel:"]');
-    if (!tel || document.getElementById(ROOT_ID)?.contains(tel)) return;
-    const card = tel.closest('.bg-white') || tel.closest('[class*="bg-white"]');
-    if (!card) return;
-    const rows = Array.from(card.querySelectorAll('div'));
-    const row = rows.find((r) => r.querySelector('a[href^="tel:"]') && /Mensagens/i.test(r.textContent || ''));
-    if (row && !row.dataset.pmeOriginalContactHidden) { row.dataset.pmeOriginalContactHidden = '1'; row.style.display = 'none'; }
-  }
-  function getExternalPowerDialButton() {
-    const root = document.getElementById(ROOT_ID);
-    return Array.from(document.querySelectorAll('button')).find((b) => (!root || !root.contains(b)) && /Power\s*Dial/i.test(b.textContent || '')) || null;
-  }
-  function syncPowerDialFromApp() {
-    const btn = getExternalPowerDialButton();
-    const txt = btn ? (btn.textContent || '') : '';
-    const byText = /ON/i.test(txt) ? 'on' : (/OFF/i.test(txt) ? 'off' : '');
-    const byStorage = safeGet('powerDial', '') === 'true' ? 'on' : 'off';
-    state.power.power_dial = byText || byStorage;
-    safeSet('fechai_pme_power_dial', state.power.power_dial);
-  }
-  function togglePower(key) {
-    if (key === 'power_dial') {
-      const btn = getExternalPowerDialButton();
-      if (btn) btn.click();
-      else { const next = state.power.power_dial === 'on' ? 'off' : 'on'; state.power.power_dial = next; safeSet('powerDial', next === 'on' ? 'true' : 'false'); }
-      setTimeout(() => { syncPowerDialFromApp(); render(true); }, 80);
-      return;
-    }
-    state.power[key] = state.power[key] === 'on' ? 'off' : 'on';
-    saveState(); render(true);
-    setTimeout(() => setStatus(`${powerLabel(key)} ${state.power[key].toUpperCase()}. No MVP isso não executa automação sozinho.`), 0);
-  }
-  function renderPills(items, active, attr) {
-    return Object.entries(items).map(([key, item]) => {
-      const label = typeof item === 'string' ? item : `${item.icon || ''} ${item.label}`;
-      return `<button type="button" class="pme-pill ${key === active ? 'active' : ''}" data-pme-${attr}="${escapeHtml(key)}">${escapeHtml(label)}</button>`;
-    }).join('');
-  }
-  function renderChannelGrid() {
-    syncPowerDialFromApp();
-    return `<div class="pme-channel-grid">${Object.entries(CHANNELS).map(([key, item]) => {
-      const currentPower = state.power[item.powerKey] === 'on' ? 'on' : 'off';
-      return `<div class="pme-channel-card"><button type="button" class="pme-power ${currentPower === 'on' ? 'on' : ''}" data-pme-power="${escapeHtml(item.powerKey)}">${escapeHtml(item.powerLabel)} ${currentPower === 'on' ? 'ON' : 'OFF'}</button><button type="button" class="pme-pill pme-channel ${key === state.channel ? 'active' : ''}" data-pme-channel="${escapeHtml(key)}">${escapeHtml(item.icon + ' ' + item.label)}</button></div>`;
-    }).join('')}</div>`;
-  }
-  function renderApproachSelect() {
-    return `<div class="pme-select-wrap"><select class="pme-select" data-pme="approach" aria-label="Escolha em qual situação o cliente está">${Object.entries(APPROACHES).map(([key, label]) => `<option value="${key}" ${key === state.approach ? 'selected' : ''}>${escapeHtml(label)}</option>`).join('')}</select></div>`;
+  function render() {
+    if (Date.now() < suspendAutoRenderUntil) return;
+    ensureStyle();
+    const root = ensureContainers();
+    if (!root) return;
+    ensureTopTitle();
+    if (state.group === 'empreendimentos' && !DEVELOPMENTS[state.development]) state.development = 'chateau_jardin';
+    if (state.group === 'empreendimentos' && !DEVELOPMENT_APPROACHES[state.developmentApproach]) state.developmentApproach = 'convite_lancamento';
+    if (state.group !== 'empreendimentos' && !APPROACHES[state.approach]) state.approach = 'primeira_abordagem';
+    const text = currentText();
+    const compliance = hasBlockedTerm(text) ? '<div class="pme-status" style="color:#b91c1c;font-weight:900;">Atenção: termo bloqueado detectado. Revise antes de usar.</div>' : '<div class="pme-status">Modo assistido: nada é enviado automaticamente. O corretor revisa antes de executar.</div>';
+    root.innerHTML = `<div class="pme-header"><div><div class="pme-title">PME — Assistente do Discador</div><div class="pme-sub">Escolha grupo, contexto, canal e situação para gerar uma abordagem pronta para revisão.</div></div><div class="pme-chip">v${VERSION} • R2 frontend</div></div><div class="pme-step-title">1. Grupo de mensagens</div><div class="pme-step-help">Use "Geral" para preservar o fluxo atual ou "Empreendimentos" para mensagens por produto.</div><div class="pme-group-grid">${renderPills(MESSAGE_GROUPS, state.group, 'group')}</div>${state.group === 'empreendimentos' ? `<div class="pme-step-title">2. Empreendimento</div><div class="pme-step-help">${escapeHtml(DEVELOPMENTS[state.development]?.hint || '')}</div><div class="pme-origin-grid">${renderPills(DEVELOPMENTS, state.development, 'development')}</div>` : `<div class="pme-step-title">2. Origem do lead</div><div class="pme-step-help">${escapeHtml(CONTEXTS[state.context]?.hint || '')}</div><div class="pme-origin-grid">${renderPills(CONTEXTS, state.context, 'context')}</div>`}<div class="pme-step-title">3. Canal</div><div class="pme-step-help">A execução continua manual: WhatsApp, ligação ou e-mail com revisão.</div>${renderChannelGrid()}<div class="pme-step-title">4. Situação do lead</div><div class="pme-step-help">${state.group === 'empreendimentos' ? 'Situações específicas, como convite para lançamento, ficam aqui.' : 'Escolha a melhor abordagem para o momento do lead.'}</div>${state.group === 'empreendimentos' ? renderSelect(DEVELOPMENT_APPROACHES, state.developmentApproach, 'development-approach') : renderSelect(APPROACHES, state.approach, 'approach')}<div class="pme-box"><div class="pme-box-title">Mensagem sugerida • Variação ${currentTemplatePool().length ? (Math.abs(state.variant) % currentTemplatePool().length) + 1 : 1}/${Math.max(currentTemplatePool().length, 1)}</div><div class="pme-text">${escapeHtml(text)}</div></div><div class="pme-exec"><div class="pme-exec-title">5. Executar contato assistido</div><div class="pme-actions"><button type="button" class="pme-action primary" data-execute="1">${CHANNELS[state.channel].icon} Revisar e executar</button><button type="button" class="pme-action" data-copy="1">Copiar</button><button type="button" class="pme-action" data-next="1">Próxima</button><button type="button" class="pme-action ai" data-reset="1">Resetar</button></div>${compliance}</div>`;
+    bindRootEvents(root); ensureModal();
   }
 
-  function render(force) {
-    ensureStyle(); ensureModal();
-    if (!hasDiscadorLead()) {
-      const old = document.getElementById(ROOT_ID); const top = document.getElementById(TOP_ID);
-      if (old) old.remove(); if (top) top.remove(); return;
-    }
-    if (!force && shouldSkipAutoRender()) return;
-    const mount = findMountPoint(); if (!mount) return;
-    ensureTopTitle(); hideOriginalTopPowerDial(); hideOriginalContactButtons();
-
-    let root = document.getElementById(ROOT_ID);
-    if (!root) { root = document.createElement('div'); root.id = ROOT_ID; mount.parent.insertBefore(root, mount.before || null); bindRootOnce(root); }
-    else if (root.parentElement !== mount.parent) { mount.parent.insertBefore(root, mount.before || null); bindRootOnce(root); }
-
-    normalizeState();
-    const text = getCurrentText();
-    const ctx = CONTEXTS[state.context];
-    const channel = CHANNELS[state.channel];
-
-    root.innerHTML = `
-      <div class="pme-header">
-        <div>
-          <div class="pme-title">Fluxo de atendimento</div>
-          <div class="pme-sub">Siga os passos abaixo. Primeiro escolha a origem, depois o canal, a situação e por fim execute o contato.</div>
-        </div>
-        <div class="pme-chip">${escapeHtml(ctx.label)} · ${escapeHtml(channel.label)}</div>
-      </div>
-      <div class="pme-step-title">1. Escolha a origem do lead</div>
-      <div class="pme-step-help">De onde veio esse cliente?</div>
-      <div class="pme-origin-grid">${renderPills(CONTEXTS, state.context, 'context')}</div>
-      <div class="pme-step-title">2. Escolha o canal para contato com o cliente</div>
-      <div class="pme-step-help">Defina se vai ligar, chamar no WhatsApp ou preparar um e-mail.</div>
-      ${renderChannelGrid()}
-      <div class="pme-step-title">3. Escolha em qual situação o cliente está</div>
-      <div class="pme-step-help">Isso muda a mensagem sugerida para o corretor usar agora.</div>
-      ${renderApproachSelect()}
-      <div class="pme-box"><div class="pme-box-title">Mensagem sugerida</div><div class="pme-text">${escapeHtml(text)}</div></div>
-      <div class="pme-exec"><div class="pme-exec-title">4. Executar contato</div><div class="pme-actions"><button class="pme-action primary" data-pme-action="use">${escapeHtml(getExecuteLabel())}</button><button class="pme-action" data-pme-action="prev">Voltar</button><button class="pme-action" data-pme-action="next">Próximo</button><button class="pme-action ai" data-pme-action="ai">Melhorar com IA</button></div></div>
-      <div class="pme-status" data-pme-status>${escapeHtml(ctx.hint)} A PME não envia mensagem sozinha e não registra feedback automaticamente.</div>`;
+  function bindRootEvents(root) {
+    root.querySelectorAll('[data-group]').forEach((btn) => btn.onclick = () => { markInteraction(); state.group = btn.getAttribute('data-group') || 'geral'; state.variant = 0; saveState(); render(); });
+    root.querySelectorAll('[data-context]').forEach((btn) => btn.onclick = () => { markInteraction(); state.context = btn.getAttribute('data-context') || 'lista_fria'; state.variant = 0; saveState(); render(); });
+    root.querySelectorAll('[data-development]').forEach((btn) => btn.onclick = () => { markInteraction(); state.development = btn.getAttribute('data-development') || 'chateau_jardin'; state.variant = 0; saveState(); render(); });
+    root.querySelectorAll('[data-channel]').forEach((btn) => btn.onclick = () => { markInteraction(); state.channel = btn.getAttribute('data-channel') || 'ligacao'; state.variant = 0; saveState(); render(); });
+    root.querySelectorAll('[data-power]').forEach((btn) => btn.onclick = () => { markInteraction(); const key = btn.getAttribute('data-power'); state.power[key] = state.power[key] === 'on' ? 'off' : 'on'; saveState(); render(); });
+    const approachSelect = root.querySelector('[data-approach-select]'); if (approachSelect) approachSelect.onchange = () => { markInteraction(); state.approach = approachSelect.value; state.variant = 0; saveState(); render(); };
+    const devApproachSelect = root.querySelector('[data-development-approach-select]'); if (devApproachSelect) devApproachSelect.onchange = () => { markInteraction(); state.developmentApproach = devApproachSelect.value; state.variant = 0; saveState(); render(); };
+    const copyBtn = root.querySelector('[data-copy]'); if (copyBtn) copyBtn.onclick = () => copyText(currentText());
+    const nextBtn = root.querySelector('[data-next]'); if (nextBtn) nextBtn.onclick = () => { markInteraction(); state.variant += 1; saveState(); render(); };
+    const resetBtn = root.querySelector('[data-reset]'); if (resetBtn) resetBtn.onclick = () => { markInteraction(); state.variant = 0; saveState(); render(); };
+    const execBtn = root.querySelector('[data-execute]'); if (execBtn) execBtn.onclick = () => openModal();
   }
 
-  function normalizeState() {
-    if (!CONTEXTS[state.context]) state.context = 'lista_fria';
-    if (!CHANNELS[state.channel]) state.channel = 'ligacao';
-    if (!APPROACHES[state.approach]) state.approach = 'primeira_abordagem';
-    saveState();
-  }
-  function shouldSkipAutoRender() {
-    if (Date.now() < suspendAutoRenderUntil) return true;
-    const active = document.activeElement;
-    const root = document.getElementById(ROOT_ID);
-    const modal = document.getElementById(MODAL_ID);
-    if (root && active && root.contains(active) && active.tagName === 'SELECT') return true;
-    if (modal && active && modal.contains(active)) return true;
-    return false;
-  }
-  function bindRootOnce(root) {
-    if (root.__pmeBound) return;
-    root.__pmeBound = true;
-    root.addEventListener('pointerdown', handleRootPointerDown, true);
-    root.addEventListener('pointerup', handleRootActivation, true);
-    root.addEventListener('click', handleRootActivation, true);
-    root.addEventListener('focusin', handleRootFocusIn, true);
-    root.addEventListener('change', handleRootChange, true);
-  }
-  function handleRootPointerDown(e) {
-    if (e.target.closest('[data-pme="approach"]')) markInteraction(2500);
-    if (e.target.closest('[data-pme-context],[data-pme-channel],[data-pme-power],[data-pme-action]')) markInteraction(450);
-  }
-  function handleRootFocusIn(e) { if (e.target.closest('[data-pme="approach"]')) markInteraction(2500); }
-  function handleRootActivation(e) {
-    if (e.target.closest('[data-pme="approach"]')) return;
-    const target = e.target.closest('[data-pme-context],[data-pme-channel],[data-pme-power],[data-pme-action]');
-    if (!target || !document.getElementById(ROOT_ID)?.contains(target)) return;
-
-    if (e.type === 'click' && Date.now() - lastPointerHandledAt < 650) {
-      e.preventDefault(); e.stopPropagation();
-      return;
-    }
-    if (e.type === 'pointerup') lastPointerHandledAt = Date.now();
-
-    e.preventDefault(); e.stopPropagation();
-
-    const context = target.getAttribute('data-pme-context');
-    if (context) { state.context = context; state.variant = 0; saveState(); render(true); return; }
-    const channel = target.getAttribute('data-pme-channel');
-    if (channel) { state.channel = channel; state.variant = 0; saveState(); render(true); return; }
-    const power = target.getAttribute('data-pme-power');
-    if (power) { togglePower(power); return; }
-    const action = target.getAttribute('data-pme-action');
-    if (action === 'next') { state.variant += 1; saveState(); render(true); return; }
-    if (action === 'prev') { state.variant -= 1; saveState(); render(true); return; }
-    if (action === 'use') { executeText(getCurrentText(), setStatus); return; }
-    if (action === 'ai') openModal(getCurrentText(), false);
-  }
-  function handleRootChange(e) {
-    const el = e.target.closest('[data-pme="approach"]');
-    if (!el) return;
-    suspendAutoRenderUntil = 0;
-    state.approach = el.value;
-    state.variant = 0;
-    saveState();
-    render(true);
-  }
-  function powerLabel(key) { const found = Object.values(CHANNELS).find((c) => c.powerKey === key); return found ? found.powerLabel : key; }
-
-  async function executeText(text, statusFn) {
-    const fn = typeof statusFn === 'function' ? statusFn : setStatus;
-    if (state.channel === 'whatsapp') {
-      const url = buildWhatsappUrl(text);
-      if (!url) { await copyText(text, 'Telefone não identificado. Texto copiado para uso manual.', fn); return; }
-      window.open(url, '_blank', 'noopener,noreferrer');
-      fn('WhatsApp aberto com a mensagem pronta. Confirme manualmente antes de enviar.');
-      return;
-    }
-    if (state.channel === 'email') {
-      const mailto = buildMailtoUrl(text);
-      if (mailto) { window.location.href = mailto; fn('E-mail preparado no cliente de e-mail. Revise antes de enviar.'); return; }
-      await copyText(text, 'E-mail não identificado. Texto copiado para uso manual.', fn);
-      return;
-    }
-    await copyText(text, 'Fala de ligação copiada. A ligação será iniciada se o dispositivo permitir.', fn);
-    const phone = getPhoneE164();
-    if (phone) { window.location.href = 'tel:' + phone; fn('Ligação acionada e fala copiada como apoio.'); }
-  }
-
-  function ensureModal() {
-    if (document.getElementById(MODAL_ID)) return;
-    const modal = document.createElement('div');
-    modal.id = MODAL_ID;
-    modal.innerHTML = `<div class="pme-modal-card"><div class="pme-modal-head"><div><div class="pme-title">Melhorar com IA</div><div class="pme-sub">Escreva uma dica opcional e gere uma versão melhor. Depois execute pelo canal já escolhido no fluxo.</div></div><button class="pme-close pme-muted" data-modal-action="close">Fechar</button></div><div class="pme-modal-channel" data-modal="channel"></div><textarea data-modal="text"></textarea><input data-modal="tip" placeholder="Dica para IA: cliente achou caro, quer entrada menor, já visitou..." /><div class="pme-note" data-modal="status"></div><div class="pme-modal-actions"><button class="pme-primary" data-modal-action="execute"></button><button class="pme-warn" data-modal-action="ai">Gerar nova versão</button><button class="pme-muted" data-modal-action="close">Fechar</button></div></div>`;
-    document.body.appendChild(modal);
-    modal.addEventListener('pointerdown', handleModalPointerDown, true);
-    modal.addEventListener('pointerup', handleModalActivation, true);
-    modal.addEventListener('click', handleModalActivation, true);
-    modal.addEventListener('input', handleModalInput, true);
-  }
-  function handleModalPointerDown(e) {
-    if (e.target.closest('[data-modal-action]')) markInteraction(450);
-  }
-  function handleModalInput(e) {
-    if (e.target && e.target.matches && e.target.matches('[data-modal="tip"]')) refreshModalExecution();
-  }
-  function handleModalActivation(e) {
-    const modal = document.getElementById(MODAL_ID); if (!modal) return;
-    if (e.target === modal) { closeModal(); return; }
-    const target = e.target.closest('[data-modal-action]'); if (!target || !modal.contains(target)) return;
-
-    if (e.type === 'click' && Date.now() - lastPointerHandledAt < 650) {
-      e.preventDefault(); e.stopPropagation();
-      return;
-    }
-    if (e.type === 'pointerup') lastPointerHandledAt = Date.now();
-
-    e.preventDefault(); e.stopPropagation();
-    const action = target.getAttribute('data-modal-action');
-    if (action === 'close') closeModal();
-    if (action === 'execute') executeModalText();
-    if (action === 'ai') improveModalText(true);
-  }
-  function openModal(text, runAi) {
-    const modal = document.getElementById(MODAL_ID); if (!modal) return;
-    modal.querySelector('[data-modal="text"]').value = text || getCurrentText();
-    modal.querySelector('[data-modal="tip"]').value = '';
-    refreshModalExecution();
-    setModalStatus('Revise o texto, adicione uma dica se quiser e clique em Gerar nova versão. Se a IA falhar, use o texto base.');
-    modal.classList.add('open');
-    if (runAi) improveModalText(false);
-  }
-  function refreshModalExecution() {
-    const modal = document.getElementById(MODAL_ID); if (!modal) return;
-    const channel = CHANNELS[state.channel] || CHANNELS.ligacao;
-    const channelEl = modal.querySelector('[data-modal="channel"]');
-    const executeBtn = modal.querySelector('[data-modal-action="execute"]');
-    const aiBtn = modal.querySelector('[data-modal-action="ai"]');
-    const tip = modal.querySelector('[data-modal="tip"]')?.value.trim();
-    if (channelEl) channelEl.textContent = `Canal escolhido: ${channel.icon} ${channel.label}`;
-    if (executeBtn) executeBtn.textContent = getExecuteLabel();
-    if (aiBtn) aiBtn.textContent = tip ? 'Gerar com esta dica' : 'Gerar nova versão';
-  }
-  function closeModal() { document.getElementById(MODAL_ID)?.classList.remove('open'); }
-  function setModalStatus(text) { const el = document.querySelector(`#${MODAL_ID} [data-modal="status"]`); if (el) el.textContent = text || ''; }
-  async function executeModalText() {
-    const modal = document.getElementById(MODAL_ID); if (!modal) return;
-    const text = modal.querySelector('[data-modal="text"]').value;
-    await executeText(text, setModalStatus);
-  }
-
-  function getSupabaseAccessToken() {
-    const candidates = [];
-    try {
-      for (let i = 0; i < localStorage.length; i += 1) {
-        const key = localStorage.key(i); const raw = localStorage.getItem(key);
-        if (!raw) continue;
-        if (key && key.includes('auth-token')) candidates.push(raw);
-        if (raw.includes('access_token') || raw.includes('currentSession')) candidates.push(raw);
-      }
-    } catch (_) {}
-    for (const raw of candidates) { const token = findTokenInValue(raw); if (token) return { token, expired: isJwtExpired(token) }; }
-    return { token: '', expired: false };
-  }
-  function findTokenInValue(raw) {
-    try { return findAccessToken(JSON.parse(raw)); }
-    catch (_) { const match = String(raw).match(/eyJ[a-zA-Z0-9_-]+\.[a-zA-Z0-9_-]+\.[a-zA-Z0-9_-]+/); return match ? match[0] : ''; }
-  }
-  function findAccessToken(value) {
-    if (!value) return '';
-    if (typeof value === 'string') return value.startsWith('eyJ') && value.split('.').length === 3 ? value : '';
-    if (Array.isArray(value)) { for (const item of value) { const found = findAccessToken(item); if (found) return found; } return ''; }
-    if (typeof value === 'object') {
-      if (typeof value.access_token === 'string') return value.access_token;
-      if (value.currentSession) { const found = findAccessToken(value.currentSession); if (found) return found; }
-      if (value.session) { const found = findAccessToken(value.session); if (found) return found; }
-      for (const key of Object.keys(value)) { const found = findAccessToken(value[key]); if (found) return found; }
-    }
-    return '';
-  }
-  function isJwtExpired(token) {
-    try { const payload = JSON.parse(atob(token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/'))); return payload.exp ? Date.now() >= payload.exp * 1000 : false; }
-    catch (_) { return false; }
-  }
-  async function improveModalText(forceRetry) {
-    const modal = document.getElementById(MODAL_ID); if (!modal) return;
-    refreshModalExecution();
-    const textarea = modal.querySelector('[data-modal="text"]');
-    const tip = modal.querySelector('[data-modal="tip"]').value.trim();
-    const session = getSupabaseAccessToken();
-    if (!session.token) { setModalStatus('IA indisponível: token da sessão não encontrado. Faça login novamente e use o texto base por enquanto.'); return; }
-    if (session.expired) { setModalStatus('IA indisponível: sessão expirada. Faça login novamente. O texto base continua disponível.'); return; }
-    aiAttempt += 1;
-    setModalStatus(tip ? 'Gerando versão com a dica informada...' : 'Gerando nova versão com IA...');
-    try {
-      const prompt = buildAiPrompt(textarea.value, tip, forceRetry, aiAttempt);
-      const res = await fetch(`${SUPABASE_URL}/functions/v1/assistente-ai`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${session.token}` }, body: JSON.stringify({ messages: [{ role: 'user', content: prompt }], context: { module: 'discador_flow_ai', version: VERSION, situacao: state.context, canal: state.channel, abordagem: state.approach, ai_attempt: aiAttempt } }) });
-      const data = await safeJson(res);
-      if (!res.ok) throw new Error(data?.error || data?.message || `Erro ${res.status}`);
-      const improved = extractAiText(data);
-      if (!improved) throw new Error('A IA não retornou texto utilizável.');
-      textarea.value = improved; setModalStatus('IA gerou uma versão. Revise e execute pelo canal escolhido.'); refreshModalExecution();
-    } catch (err) { setModalStatus(`IA indisponível: ${err.message || 'falha não identificada'}. Use o texto base e registre o feedback normalmente.`); }
-  }
-  function getAiStrategy(attempt) {
-    const index = Math.max(0, (Number(attempt) || 1) - 1) % AI_STRATEGIES.length;
-    return AI_STRATEGIES[index];
-  }
-  function getChannelPromptRules() {
-    if (state.channel === 'whatsapp') {
-      return [
-        'Formato: WhatsApp curto, natural e direto.',
-        'Use no máximo 4 blocos pequenos.',
-        'Não escreva como e-mail e não faça textão.',
-        'Termine com uma pergunta simples para aumentar chance de resposta.',
-      ];
-    }
-    if (state.channel === 'email') {
-      return [
-        'Formato: e-mail objetivo.',
-        'Comece com uma linha "Assunto:" e depois o corpo do e-mail.',
-        'Use parágrafos curtos e próximo passo claro.',
-        'Evite tom de panfleto ou mensagem genérica.',
-      ];
-    }
-    return [
-      'Formato: roteiro falado de ligação.',
-      'Escreva como uma fala natural que o corretor consiga dizer em voz alta.',
-      'Use frases curtas, uma pergunta de diagnóstico e um próximo passo.',
-      'Não escreva como WhatsApp nem como e-mail.',
-    ];
-  }
-  function getSituationPromptRules() {
-    if (state.approach === 'objecao_entrada') return ['Foque em fluxo, composição de pagamento e redução de impacto inicial sem prometer aprovação ou condição específica.'];
-    if (state.approach === 'objecao_preco') return ['Foque em valor percebido, comparação correta, unidade, vaga, posição, fluxo e liquidez sem inventar preço.'];
-    if (state.approach === 'sem_resposta') return ['Foque em abordagem curta, educada, com saída elegante e permissão para pausar contato.'];
-    if (state.approach === 'convite') return ['Foque em visita objetiva, próxima ação e validação de agenda sem pressão.'];
-    if (state.approach === 'retorno') return ['Foque em retomada contextual e pergunta que identifique o ponto de trava atual.'];
-    if (state.approach === 'fim_contato') return ['Foque em encerramento elegante, canal aberto e sem insistência.'];
-    return ['Foque em clareza, permissão de contato, triagem e próximo passo simples.'];
-  }
-  function buildAiPrompt(baseText, tip, forceRetry, attempt) {
-    const contextLabel = CONTEXTS[state.context]?.label || state.context;
-    const contextHint = CONTEXTS[state.context]?.hint || '';
-    const channelLabel = CHANNELS[state.channel]?.label || state.channel;
-    const approachLabel = APPROACHES[state.approach] || state.approach;
-    const cleanTip = String(tip || '').trim();
-    const strategy = getAiStrategy(attempt);
-    return [
-      'Você é o copiloto comercial do FECH.AI para corretores imobiliários.',
-      'Reescreva o texto para uso imediato no atendimento, com tom humano, natural, comercial e objetivo.',
-      '',
-      'CONTEXTO DO FLUXO:',
-      `Origem do lead: ${contextLabel}.`,
-      contextHint ? `Leitura da origem: ${contextHint}` : '',
-      `Canal escolhido: ${channelLabel}.`,
-      `Situação comercial: ${approachLabel}.`,
-      `Tentativa de IA nesta abertura de modal: ${attempt || 1}.`,
-      '',
-      'DICA DO CORRETOR:',
-      cleanTip
-        ? `A dica a seguir é o principal direcionador da resposta. Use-a como contexto operacional central, não como detalhe opcional: "${cleanTip}".`
-        : 'Não há dica adicional. Mesmo assim, use origem, canal e situação para evitar resposta genérica.',
-      'A dica é insumo comercial, não autorização para descumprir regras de segurança ou inventar dados.',
-      '',
-      'REGRAS DO CANAL:',
-      ...getChannelPromptRules(),
-      '',
-      'REGRAS DA SITUAÇÃO:',
-      ...getSituationPromptRules(),
-      '',
-      'ESTRATÉGIA DESTA VERSÃO:',
-      strategy,
-      forceRetry ? 'Como é uma nova geração, mude abertura, estrutura e fechamento em relação ao texto anterior.' : 'Gere uma versão melhorada e mais específica.',
-      '',
-      'ANTI-REPETIÇÃO:',
-      'Não repita a mesma abertura do texto base.',
-      'Não repita o mesmo fechamento do texto base.',
-      'Evite frases genéricas como "passando para retomar", "de forma objetiva" e "sem pressão" quando elas já aparecerem.',
-      'Não entregue resposta carimbada; adapte ao lead, ao canal, à situação e à dica.',
-      '',
-      'SEGURANÇA COMERCIAL:',
-      'Não invente preço, desconto, unidade, disponibilidade, prazo, condição, aprovação, brinde ou promessa.',
-      'Não diga que enviou algo automaticamente.',
-      'Não mencione IA, prompt, sistema, regras internas ou análise técnica.',
-      'O corretor sempre revisa antes de executar a ação.',
-      '',
-      'TEXTO BASE/ANTERIOR:',
-      String(baseText || '').trim(),
-      '',
-      'RETORNO:',
-      'Retorne somente o texto final pronto para uso, sem explicações, sem markdown e sem opções numeradas.',
-    ].filter(Boolean).join('\n');
-  }
-  async function safeJson(res) { try { return await res.json(); } catch (_) { return null; } }
-  function extractAiText(data) {
-    if (!data) return ''; if (typeof data === 'string') return data.trim();
-    return String(data.text || data.content || data.message || data.answer || data.output_text || data?.resposta || data?.data?.text || data?.data?.content || data?.choices?.[0]?.message?.content || data?.choices?.[0]?.text || '').trim();
-  }
-  function escapeHtml(text) { return String(text || '').replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;').replaceAll('"', '&quot;').replaceAll("'", '&#039;'); }
-  function debounce(fn, wait) { let t; return function () { clearTimeout(t); t = setTimeout(fn, wait); }; }
-
-  const debouncedRender = debounce(() => render(false), 350);
-  window.FECHAI_PME_CALL_ASSISTANT = { version: VERSION, render: () => render(true), data: { CONTEXTS, CHANNELS, APPROACHES, TEMPLATES } };
-  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', () => render(true)); else render(true);
-  const observer = new MutationObserver(debouncedRender);
-  observer.observe(document.body, { childList: true, subtree: true });
+  function ensureModal() { if (!document.getElementById(MODAL_ID)) { const modal = document.createElement('div'); modal.id = MODAL_ID; document.body.appendChild(modal); } }
+  async function copyText(text) { try { await navigator.clipboard.writeText(text); flashStatus('Texto copiado.'); } catch (_) { const ta = document.createElement('textarea'); ta.value = text; document.body.appendChild(ta); ta.select(); document.execCommand('copy'); ta.remove(); flashStatus('Texto copiado.'); } }
+  function flashStatus(message) { const status = document.getElementById(ROOT_ID)?.querySelector('.pme-status'); if (status) status.textContent = message; }
+  function openModal() { ensureModal(); const modal = document.getElementById(MODAL_ID); const text = currentText(); const leadPhone = getLeadPhone(); const leadEmail = getLeadEmail(); const channel = CHANNELS[state.channel]; modal.innerHTML = `<div class="pme-modal-card"><div class="pme-modal-head"><div><div class="pme-title">Revisar antes de executar</div><div class="pme-sub">Ação manual. Edite o texto se necessário.</div></div><button type="button" class="pme-close pme-muted" data-close-modal="1">Fechar</button></div><div class="pme-modal-channel">${channel.icon} ${escapeHtml(channel.label)} • ${escapeHtml(state.group === 'empreendimentos' ? DEVELOPMENTS[state.development].label : CONTEXTS[state.context].label)}</div><textarea data-modal-text>${escapeHtml(text)}</textarea>${state.channel === 'whatsapp' ? `<input data-modal-target value="${escapeHtml(leadPhone)}" placeholder="Telefone do lead com DDD" />` : ''}${state.channel === 'email' ? `<input data-modal-target value="${escapeHtml(leadEmail)}" placeholder="E-mail do lead" />` : ''}${state.channel === 'ligacao' ? `<input data-modal-target value="${escapeHtml(leadPhone)}" placeholder="Telefone do lead com DDD" />` : ''}<div class="pme-modal-actions"><button type="button" class="pme-primary" data-modal-run="1">${state.channel === 'whatsapp' ? 'Abrir WhatsApp' : state.channel === 'email' ? 'Abrir e-mail' : 'Copiar e ligar'}</button><button type="button" class="pme-muted" data-modal-copy="1">Copiar texto</button><button type="button" class="pme-warn" data-close-modal="1">Cancelar</button></div><div class="pme-note">A PME não dispara automaticamente. O corretor revisa, copia ou abre o aplicativo externo.</div></div>`; modal.classList.add('open'); modal.querySelectorAll('[data-close-modal]').forEach((btn) => btn.onclick = () => modal.classList.remove('open')); modal.querySelector('[data-modal-copy]').onclick = () => copyText(modal.querySelector('[data-modal-text]').value); modal.querySelector('[data-modal-run]').onclick = () => runManualAction(modal); }
+  function runManualAction(modal) { const text = modal.querySelector('[data-modal-text]').value; const target = modal.querySelector('[data-modal-target]') ? modal.querySelector('[data-modal-target]').value : ''; if (state.channel === 'whatsapp') { const phone = normalizePhone(target); window.open(phone ? `https://wa.me/${phone}?text=${encodeURIComponent(text)}` : `https://wa.me/?text=${encodeURIComponent(text)}`, '_blank', 'noopener,noreferrer'); return; } if (state.channel === 'email') { const parsed = splitEmailTemplate(text); window.location.href = `mailto:${encodeURIComponent(String(target || '').trim())}?subject=${encodeURIComponent(parsed.subject)}&body=${encodeURIComponent(parsed.body)}`; return; } copyText(text); const phone = normalizePhone(target); if (phone) window.location.href = `tel:${phone}`; }
+  function boot() { render(); setInterval(() => { if (Date.now() < suspendAutoRenderUntil) return; if (Date.now() - lastPointerHandledAt < 500) return; render(); }, 2500); }
+  document.addEventListener('pointerdown', () => { lastPointerHandledAt = Date.now(); }, true);
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot); else boot();
 })();
