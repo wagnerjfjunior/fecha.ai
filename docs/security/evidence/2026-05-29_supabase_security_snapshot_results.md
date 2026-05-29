@@ -279,8 +279,39 @@ No rows returned.
 
 Actual:
 
+```json
+[
+  { "schema_name": "public", "function_name": "get_corretores_time", "security_definer": true },
+  { "schema_name": "public", "function_name": "importar_leads_batch", "security_definer": true },
+  { "schema_name": "public", "function_name": "listar_empresas_root", "security_definer": true },
+  { "schema_name": "public", "function_name": "redefinir_senha_corretor", "security_definer": true },
+  { "schema_name": "public", "function_name": "registrar_root_audit", "security_definer": true }
+]
+```
+
+Interpretation:
+
 ```text
-PENDING — paste result here.
+OPEN — five SECURITY DEFINER functions matched sensitive patterns. This is not automatically a vulnerability, but it requires source review, execution grants review, fixed search_path validation, and role/tenant guard validation.
+```
+
+Priority classification:
+
+```text
+P0/P1 — public.redefinir_senha_corretor: must prove it does not store plaintext password and can only be executed by allowed admin/root flows.
+P1 — public.importar_leads_batch: must validate tenant/company ownership, import boundaries, and no service role exposure.
+P1 — public.listar_empresas_root: must validate root-only access.
+P1 — public.registrar_root_audit: must validate audit integrity and root/admin-only semantics as applicable.
+P2 — public.get_corretores_time: review why it matched sensitive patterns and validate tenant/team boundary.
+```
+
+Required next checks:
+
+```text
+- Routine execution grants for these functions.
+- Function definitions for source review.
+- SECURITY DEFINER search_path hardening.
+- Functional negative tests with common broker user.
 ```
 
 ---
