@@ -6,7 +6,7 @@
 
 ---
 
-## 1. Routine privileges returned by Supabase
+## 1. Initial routine privileges returned by Supabase
 
 ```json
 [
@@ -49,6 +49,12 @@
 ]
 ```
 
+Initial interpretation:
+
+```text
+OPEN — anon had EXECUTE on root/audit SECURITY DEFINER RPCs. This was unnecessary attack surface and required hardening.
+```
+
 ---
 
 ## 2. Classification
@@ -88,7 +94,7 @@ Keep it locked down. Do not grant authenticated EXECUTE.
 Finding:
 
 ```text
-The function contains an internal `public.is_root()` guard, but EXECUTE is currently granted to both anon and authenticated.
+The function contains an internal `public.is_root()` guard, but EXECUTE was initially granted to both anon and authenticated.
 ```
 
 Risk:
@@ -109,7 +115,7 @@ Keep authenticated only if the logged root panel calls the RPC through an authen
 Finding:
 
 ```text
-The function contains an internal `public.is_root()` guard and writes root audit logs server-side, but EXECUTE is currently granted to anon and authenticated.
+The function contains an internal `public.is_root()` guard and writes root audit logs server-side, but EXECUTE was initially granted to anon and authenticated.
 ```
 
 Risk:
@@ -170,27 +176,27 @@ Run functional negative test as common broker: expected `{"error":"forbidden"}`.
 
 ---
 
-## 3. Recommended migration candidate
+## 3. Migration applied
 
-Migration file created:
+Migration file:
 
 ```text
 supabase/migrations/20260529163000_security_rpc_execute_hardening.sql
 ```
 
-Expected post-migration validation:
+Purpose:
 
 ```text
-listar_empresas_root       => authenticated EXECUTE only
-registrar_root_audit       => authenticated EXECUTE only
-get_corretores_time        => authenticated EXECUTE only
-importar_leads_batch       => authenticated EXECUTE only
-redefinir_senha_corretor   => no anon/authenticated/PUBLIC EXECUTE
+- Remove anon/PUBLIC EXECUTE from sensitive SECURITY DEFINER RPCs.
+- Keep authenticated EXECUTE only where needed for logged-in app flows.
+- Keep redefinir_senha_corretor unavailable to client roles.
 ```
 
 ---
 
-## 4. Validation queries after applying migration
+## 4. Post-migration validation
+
+Validation query:
 
 ```sql
 select
@@ -210,6 +216,51 @@ where routine_schema = 'public'
   and grantee in ('anon', 'authenticated', 'public', 'PUBLIC')
 order by routine_name, grantee, privilege_type;
 ```
+
+Actual post-migration result:
+
+```json
+[
+  {
+    "routine_schema": "public",
+    "routine_name": "get_corretores_time",
+    "grantee": "authenticated",
+    "privilege_type": "EXECUTE"
+  },
+  {
+    "routine_schema": "public",
+    "routine_name": "importar_leads_batch",
+    "grantee": "authenticated",
+    "privilege_type": "EXECUTE"
+  },
+  {
+    "routine_schema": "public",
+    "routine_name": "listar_empresas_root",
+    "grantee": "authenticated",
+    "privilege_type": "EXECUTE"
+  },
+  {
+    "routine_schema": "public",
+    "routine_name": "registrar_root_audit",
+    "grantee": "authenticated",
+    "privilege_type": "EXECUTE"
+  }
+]
+```
+
+Interpretation:
+
+```text
+APPROVED — anon/PUBLIC EXECUTE was removed from the sensitive RPC set.
+APPROVED — redefinir_senha_corretor has no anon/authenticated/PUBLIC EXECUTE in the validated output.
+APPROVED — only authenticated EXECUTE remains for the four functions required by logged-in flows.
+```
+
+---
+
+## 5. Remaining validation queries
+
+Function configuration/search_path review:
 
 ```sql
 select
@@ -233,7 +284,7 @@ order by p.proname;
 
 ---
 
-## 5. Functional negative tests required
+## 6. Functional negative tests required
 
 Run as a common broker session:
 
@@ -249,4 +300,15 @@ Run as root session:
 ```text
 - listar_empresas_root() must work.
 - registrar_root_audit(...) must work.
+```
+
+---
+
+## 7. Final status for RPC EXECUTE hardening
+
+```text
+PARTIALLY APPROVED — execution grants are hardened and validated.
+PENDING — function search_path/config review.
+PENDING — functional negative tests with common broker.
+PENDING — root positive tests.
 ```
