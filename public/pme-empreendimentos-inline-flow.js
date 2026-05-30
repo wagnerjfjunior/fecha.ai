@@ -1,6 +1,6 @@
 /*
  * FECH.AI — PME Empreendimentos Inline Flow
- * Version: 0.1.2
+ * Version: 0.1.3
  * Scope: frontend-only enhancer for the existing PME atendimento flow.
  * Safety: no automatic sending, no Supabase/RPC/RLS/Auth/DB changes.
  */
@@ -11,14 +11,13 @@
   const STYLE_ID = 'fechai-pme-empreendimentos-inline-style';
   const MODE_KEY = 'fechai_pme_flow_mode';
   const DEVELOPMENT_KEY = 'fechai_pme_development';
-  const SITUATION_KEY = 'fechai_pme_development_situation';
   const VARIANT_KEY = 'fechai_pme_development_variant';
 
-  let runtimeMode = safeGet(MODE_KEY, 'origem');
+  let runtimeMode = normalizeMode(safeGet(MODE_KEY, 'origem'));
   let runtimeDevelopment = safeGet(DEVELOPMENT_KEY, 'chateau_jardin');
-  let runtimeSituation = safeGet(SITUATION_KEY, 'convite_lancamento');
   let runtimeVariant = Number(safeGet(VARIANT_KEY, '0')) || 0;
-  let lastInlineHandledAt = 0;
+  let lastRenderSignature = '';
+  let renderScheduled = false;
 
   const BLOCKED_TERMS = [
     'últimas unidades',
@@ -38,20 +37,6 @@
       address: 'Rua Ministro Nelson Hungria, 400',
       hint: 'Alto padrão no novo eixo Cidade Jardim, inspirado nos jardins franceses.'
     }
-  };
-
-  const SITUATIONS = {
-    convite_lancamento: 'Convite para lançamento',
-    primeiro_contato: 'Primeiro contato',
-    pediu_plantas: 'Pediu plantas',
-    pediu_valores: 'Pediu valores',
-    pediu_material: 'Pediu material',
-    ja_conhece_projeto: 'Já conhece o projeto',
-    visitou_plantao: 'Visitou plantão',
-    pos_visita: 'Pós-visita',
-    quer_levar_familia: 'Quer levar família',
-    comparando: 'Está comparando',
-    sem_resposta: 'Sem resposta'
   };
 
   const signature = '\n\n{{corretor}} — {{telefone_corretor}}\nWhatsApp: {{link_whatsapp_corretor}}\n\nAo chegar, por gentileza, solicite por {{corretor}} na recepção para que eu possa te receber pessoalmente.';
@@ -110,14 +95,15 @@
 
   function safeGet(key, fallback) { try { const value = localStorage.getItem(key); return value == null || value === '' ? fallback : value; } catch (_) { return fallback; } }
   function safeSet(key, value) { try { localStorage.setItem(key, String(value)); } catch (_) {} }
+  function normalizeMode(value) { return value === 'empreendimento' || value === 'empreendimentos' ? 'empreendimentos' : 'origem'; }
   function bodyText() { return document.body ? document.body.innerText || '' : ''; }
   function firstWord(value) { return String(value || '').trim().split(/\s+/)[0] || ''; }
   function normalizePhone(value) { const d = String(value || '').replace(/\D/g, ''); if (!d) return ''; if (d.length === 10 || d.length === 11) return `55${d}`; return d; }
-  function getVariant() { return Number(runtimeVariant || safeGet(VARIANT_KEY, '0')) || 0; }
   function currentChannel() {
-    const t = bodyText().toLowerCase();
-    if (t.includes('whatsapp')) return 'whatsapp';
-    if (t.includes('e-mail') || t.includes('email')) return 'email';
+    const active = document.querySelector('[data-pme-channel].active');
+    const txt = String(active?.textContent || bodyText()).toLowerCase();
+    if (txt.includes('whatsapp')) return 'whatsapp';
+    if (txt.includes('e-mail') || txt.includes('email')) return 'email';
     return 'ligacao';
   }
   function getLeadName() {
@@ -142,20 +128,11 @@
   }
   function getProfileFromBridge() {
     if (window.FECHAI_PME_CORRETOR_PROFILE) return window.FECHAI_PME_CORRETOR_PROFILE;
-    try {
-      const stored = JSON.parse(safeGet('fechai_pme_corretor_profile', 'null'));
-      if (stored) return stored;
-    } catch (_) {}
+    try { const stored = JSON.parse(safeGet('fechai_pme_corretor_profile', 'null')); if (stored) return stored; } catch (_) {}
     return {};
   }
-  function getCorretor() {
-    const p = getProfileFromBridge();
-    return p.nome || safeGet('fechai_corretor_nome', safeGet('fechai_pme_corretor_nome', 'Corretor responsável'));
-  }
-  function getCorretorPhone() {
-    const p = getProfileFromBridge();
-    return p.telefone || safeGet('fechai_corretor_telefone', safeGet('fechai_pme_corretor_telefone', 'telefone não configurado'));
-  }
+  function getCorretor() { const p = getProfileFromBridge(); return p.nome || safeGet('fechai_corretor_nome', safeGet('fechai_pme_corretor_nome', 'Corretor responsável')); }
+  function getCorretorPhone() { const p = getProfileFromBridge(); return p.telefone || safeGet('fechai_corretor_telefone', safeGet('fechai_pme_corretor_telefone', 'telefone não configurado')); }
   function getCorretorWhatsapp() {
     const p = getProfileFromBridge();
     if (p.whatsapp) return p.whatsapp;
@@ -164,7 +141,6 @@
     const phone = normalizePhone(getCorretorPhone());
     return phone ? `https://wa.me/${phone}` : 'WhatsApp não configurado';
   }
-
   function fill(text) {
     return String(text || '')
       .replaceAll('{{nome}}', getLeadName())
@@ -175,7 +151,7 @@
   function pool() { return TEMPLATES[currentChannel()] || TEMPLATES.ligacao; }
   function currentText() {
     const list = pool();
-    const index = ((getVariant() % list.length) + list.length) % list.length;
+    const index = ((runtimeVariant % list.length) + list.length) % list.length;
     return fill(list[index]);
   }
   function parseEmail(text) {
@@ -200,7 +176,13 @@
     const phone = getPhone();
     if (phone) window.location.href = `tel:${phone}`;
   }
-
+  function escapeHtml(value) {
+    return String(value || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#039;');
+  }
+  function validateNoBlockedTerms(text) {
+    const low = String(text || '').toLowerCase();
+    return BLOCKED_TERMS.filter((term) => low.includes(term));
+  }
   function ensureStyle() {
     if (document.getElementById(STYLE_ID)) return;
     const style = document.createElement('style');
@@ -210,27 +192,27 @@
       #${ROOT_ID} .pme-inline-mode-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;align-items:stretch;margin:10px auto 8px;max-width:620px;}
       #${ROOT_ID} .pme-inline-hidden{display:none!important;}
       #${ROOT_ID} .pme-inline-dev-note{grid-column:1/-1;font-size:12px;color:#64748b;font-weight:800;text-align:center;margin:0 auto;line-height:1.35;max-width:680px;}
-      #${ROOT_ID} [data-pme-inline-mode],#${ROOT_ID} [data-pme-inline-development]{touch-action:manipulation;}
+      #${ROOT_ID} [data-pme-inline-mode],#${ROOT_ID} [data-pme-inline-development],#${ROOT_ID} [data-pme-execute-empreendimento],#${ROOT_ID} [data-pme-variant]{touch-action:manipulation;}
       @media(max-width:700px){#${ROOT_ID} .pme-text{max-height:calc(1.55em * 5);}#${ROOT_ID} .pme-inline-mode-grid{grid-template-columns:1fr 1fr;gap:8px;}}
     `;
     document.head.appendChild(style);
   }
-
   function findAssistantRoot() {
     return document.getElementById(ROOT_ID) || Array.from(document.querySelectorAll('div')).find((el) => /Mensagem sugerida|Executar contato|Origem do lead/i.test(el.innerText || ''));
   }
-
-  function validateNoBlockedTerms(text) {
-    const low = String(text || '').toLowerCase();
-    const found = BLOCKED_TERMS.filter((term) => low.includes(term));
-    return found;
-  }
-
   function render() {
+    renderScheduled = false;
     ensureStyle();
     const root = findAssistantRoot();
     if (!root) return;
     root.id = ROOT_ID;
+
+    const dev = DEVELOPMENTS[runtimeDevelopment] || DEVELOPMENTS.chateau_jardin;
+    const text = currentText();
+    const blocked = validateNoBlockedTerms(text);
+    const signature = `${runtimeMode}|${runtimeDevelopment}|${runtimeVariant}|${currentChannel()}|${getCorretor()}|${getCorretorPhone()}|${text.length}|${text.slice(0,80)}`;
+    if (signature === lastRenderSignature && root.querySelector('[data-pme-empreendimentos-inline="1"]')) return;
+    lastRenderSignature = signature;
 
     let box = root.querySelector('[data-pme-empreendimentos-inline="1"]');
     if (!box) {
@@ -239,62 +221,53 @@
       root.insertBefore(box, root.firstChild);
     }
 
-    const dev = DEVELOPMENTS[runtimeDevelopment] || DEVELOPMENTS.chateau_jardin;
-    const text = currentText();
-    const blocked = validateNoBlockedTerms(text);
-
     box.innerHTML = `
       <div class="pme-inline-mode-grid">
-        <button type="button" data-pme-inline-mode="origem" class="${runtimeMode === 'origem' ? '' : 'pme-inline-hidden'}" style="padding:10px 12px;border-radius:14px;border:1px solid #dbeafe;background:#eff6ff;color:#1d4ed8;font-weight:800;">Origem do lead</button>
-        <button type="button" data-pme-inline-mode="empreendimento" style="padding:10px 12px;border-radius:14px;border:1px solid ${runtimeMode === 'empreendimento' ? '#7c3aed' : '#e5e7eb'};background:${runtimeMode === 'empreendimento' ? '#f5f3ff' : '#fff'};color:${runtimeMode === 'empreendimento' ? '#6d28d9' : '#374151'};font-weight:800;">Empreendimentos</button>
-        ${runtimeMode === 'empreendimento' ? `<button type="button" data-pme-inline-development="chateau_jardin" style="padding:10px 12px;border-radius:14px;border:1px solid #c4b5fd;background:#f5f3ff;color:#5b21b6;font-weight:900;">${dev.icon} ${dev.label}</button><div class="pme-inline-dev-note">${SITUATIONS[runtimeSituation]} · ${dev.hint}</div>` : ''}
+        <button type="button" data-pme-inline-mode="origem" style="padding:10px 12px;border-radius:14px;border:1px solid ${runtimeMode === 'origem' ? '#93c5fd' : '#e5e7eb'};background:${runtimeMode === 'origem' ? '#eff6ff' : '#fff'};color:${runtimeMode === 'origem' ? '#1d4ed8' : '#374151'};font-weight:800;">🎯 Origem do lead</button>
+        <button type="button" data-pme-inline-mode="empreendimentos" style="padding:10px 12px;border-radius:14px;border:1px solid ${runtimeMode === 'empreendimentos' ? '#7c3aed' : '#e5e7eb'};background:${runtimeMode === 'empreendimentos' ? '#f5f3ff' : '#fff'};color:${runtimeMode === 'empreendimentos' ? '#6d28d9' : '#374151'};font-weight:800;">🏛️ Empreendimentos</button>
+        ${runtimeMode === 'empreendimentos' ? `<button type="button" data-pme-inline-development="chateau_jardin" style="padding:10px 12px;border-radius:14px;border:1px solid #c4b5fd;background:#f5f3ff;color:#5b21b6;font-weight:900;">${dev.icon} ${dev.label}</button><div class="pme-inline-dev-note">${dev.hint} Endereço: ${dev.address}</div>` : ''}
       </div>
-      ${runtimeMode === 'empreendimento' ? `<div style="margin:8px 0 12px;padding:12px;border:1px solid #e9d5ff;background:#faf5ff;border-radius:14px;">
+      ${runtimeMode === 'empreendimentos' ? `<div style="margin:8px 0 12px;padding:12px;border:1px solid #e9d5ff;background:#faf5ff;border-radius:14px;">
         <div style="font-size:12px;color:#7e22ce;font-weight:900;margin-bottom:4px;">Mensagem sugerida — ${dev.label}</div>
         <div class="pme-text" style="font-size:13px;color:#374151;white-space:pre-line;line-height:1.55;">${escapeHtml(text)}</div>
         ${blocked.length ? `<div style="margin-top:8px;color:#b91c1c;font-size:12px;font-weight:800;">⚠ Termos bloqueados detectados: ${blocked.map(escapeHtml).join(', ')}</div>` : ''}
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px;">
+          <button type="button" data-pme-variant="prev" style="padding:10px;border-radius:12px;border:1px solid #ddd6fe;background:#fff;color:#6d28d9;font-weight:900;">← Variação</button>
+          <button type="button" data-pme-variant="next" style="padding:10px;border-radius:12px;border:1px solid #ddd6fe;background:#fff;color:#6d28d9;font-weight:900;">Variação →</button>
+        </div>
         <button type="button" data-pme-execute-empreendimento="1" style="margin-top:10px;width:100%;padding:11px 12px;border-radius:14px;border:none;background:#7c3aed;color:#fff;font-weight:900;">Executar contato</button>
       </div>` : ''}
     `;
-
-    root.querySelectorAll('[data-pme-inline-mode]').forEach((btn) => {
-      btn.onclick = () => {
-        runtimeMode = btn.getAttribute('data-pme-inline-mode');
-        safeSet(MODE_KEY, runtimeMode);
-        render();
-      };
-    });
-    root.querySelectorAll('[data-pme-inline-development]').forEach((btn) => {
-      btn.onclick = () => {
-        runtimeMode = 'empreendimento';
-        runtimeDevelopment = btn.getAttribute('data-pme-inline-development') || 'chateau_jardin';
-        safeSet(MODE_KEY, runtimeMode);
-        safeSet(DEVELOPMENT_KEY, runtimeDevelopment);
-        render();
-      };
-    });
-    const executeBtn = root.querySelector('[data-pme-execute-empreendimento]');
-    if (executeBtn) executeBtn.onclick = () => execute(currentText());
   }
-
-  function escapeHtml(value) {
-    return String(value || '')
-      .replace(/&/g, '&amp;')
-      .replace(/</g, '&lt;')
-      .replace(/>/g, '&gt;')
-      .replace(/"/g, '&quot;')
-      .replace(/'/g, '&#039;');
+  function scheduleRender() {
+    if (renderScheduled) return;
+    renderScheduled = true;
+    window.requestAnimationFrame(render);
   }
-
-  function boot() {
-    const now = Date.now();
-    if (now - lastInlineHandledAt < 150) return;
-    lastInlineHandledAt = now;
-    render();
+  function bind() {
+    document.addEventListener('click', function (event) {
+      const modeBtn = event.target.closest && event.target.closest('[data-pme-inline-mode]');
+      const devBtn = event.target.closest && event.target.closest('[data-pme-inline-development]');
+      const execBtn = event.target.closest && event.target.closest('[data-pme-execute-empreendimento]');
+      const variantBtn = event.target.closest && event.target.closest('[data-pme-variant]');
+      if (!modeBtn && !devBtn && !execBtn && !variantBtn) return;
+      const root = findAssistantRoot();
+      if (!root || !root.contains(event.target)) return;
+      event.preventDefault();
+      event.stopPropagation();
+      if (typeof event.stopImmediatePropagation === 'function') event.stopImmediatePropagation();
+      if (modeBtn) { runtimeMode = normalizeMode(modeBtn.getAttribute('data-pme-inline-mode')); safeSet(MODE_KEY, runtimeMode); }
+      if (devBtn) { runtimeMode = 'empreendimentos'; runtimeDevelopment = devBtn.getAttribute('data-pme-inline-development') || 'chateau_jardin'; safeSet(MODE_KEY, runtimeMode); safeSet(DEVELOPMENT_KEY, runtimeDevelopment); }
+      if (variantBtn) { runtimeVariant += variantBtn.getAttribute('data-pme-variant') === 'prev' ? -1 : 1; safeSet(VARIANT_KEY, runtimeVariant); }
+      if (execBtn) execute(currentText());
+      scheduleRender();
+    }, true);
   }
+  function boot() { scheduleRender(); }
 
+  bind();
   window.addEventListener('fechai:pme-corretor-profile-ready', boot);
-  setInterval(boot, 1000);
+  window.addEventListener('focus', boot);
   setTimeout(boot, 250);
   setTimeout(boot, 1000);
 })();
