@@ -1,6 +1,6 @@
 /*
  * FECH.AI — PME Empreendimentos Inline Flow
- * Version: 0.1.1
+ * Version: 0.1.2
  * Scope: frontend-only enhancer for the existing PME atendimento flow.
  * Safety: no automatic sending, no Supabase/RPC/RLS/Auth/DB changes.
  */
@@ -90,42 +90,36 @@
     'Oi, {{nome}}, aqui é {{corretor}}. Amanhã será o lançamento do Château Jardin, na Rua Ministro Nelson Hungria, 400. O projeto tem uma proposta elegante: arquitetura clássica, jardins, serviços de alto padrão e plantas amplas. Queria entender se você está buscando imóvel para morar, investir ou apenas avaliando oportunidades nesse perfil.',
     '{{nome}}, tudo bem? Vou falar rapidinho. Amanhã teremos o lançamento do Château Jardin, realização Tegra e Exto. O empreendimento foi pensado como um refúgio urbano no novo eixo Cidade Jardim, com metragens de 185 m², 215 m², 248 m² e 355 m². Posso te enviar as plantas para você avaliar com calma?',
     'Oi, {{nome}}, aqui é {{corretor}}. Amanhã acontece o evento de lançamento do Château Jardin. É um projeto com inspiração clássica, atmosfera de jardins franceses, paisagismo EDSA e uma estrutura de lazer diferenciada. Se fizer sentido para você, posso te mandar o material e verificar um horário de apresentação.',
-    '{{nome}}, tudo bem? Estou te ligando sobre o Château Jardin, que será lançado amanhã na Rua Ministro Nelson Hungria, 400. É um projeto de alto padrão com opções de 185 m² a 355 m², lazer completo e proposta residencial sofisticada. Você teria interesse em receber as informações iniciais ou prefere agendar para conhecer presencialmente?'
+    '{{nome}}, tudo bem? Estou te ligando sobre o Château Jardin, empreendimento de alto padrão que será apresentado amanhã na Rua Ministro Nelson Hungria, 400. As opções são de 185 m², 215 m², 248 m² e 355 m². Posso te enviar o material e depois conversamos com mais calma?'
   ].map((text) => text + callClose);
 
   const EMAIL = [
-    'Assunto: Château Jardin | Lançamento amanhã\n\nOlá, {{nome}}, tudo bem?\n\nAmanhã será o lançamento do Château Jardin, projeto de alto padrão no novo eixo Cidade Jardim, com realização Tegra e Exto.\n\nInspirado na arquitetura clássica e na elegância dos jardins franceses, o empreendimento reúne paisagismo internacional EDSA, lazer sofisticado e plantas amplas de 185 m², 215 m², 248 m² e 355 m².\n\nO evento será na Rua Ministro Nelson Hungria, 400.\n\nPosso te enviar as plantas e verificar um horário de apresentação?',
-    'Assunto: Château Jardin | Novo marco no eixo Cidade Jardim\n\nOlá, {{nome}}.\n\nEstou compartilhando o Château Jardin, lançamento que será apresentado amanhã na Rua Ministro Nelson Hungria, 400.\n\nO projeto une arquitetura clássica, olhar contemporâneo, inspiração nos jardins franceses e paisagismo internacional assinado pela EDSA.\n\nAs opções contemplam plantas de 185 m², 215 m², 248 m² e 355 m².\n\nCaso faça sentido para você, posso encaminhar o material completo e organizar uma visita.',
-    'Assunto: Amanhã | Evento de lançamento Château Jardin\n\nOlá, {{nome}}, tudo bem?\n\nAmanhã acontece o evento de lançamento do Château Jardin, empreendimento Tegra e Exto no novo eixo Cidade Jardim.\n\nO projeto foi pensado como um refúgio urbano sofisticado, com inspiração clássica, atmosfera de jardins franceses, lazer de alto padrão, quadra de tênis de saibro, quadra de padel, piscina coberta e wellness.\n\nHá opções de 185 m², 215 m², 248 m² e 355 m².\n\nPosso te enviar plantas e detalhes do evento?',
-    'Assunto: Château Jardin | Plantas de 185 m² a 355 m²\n\nOlá, {{nome}}.\n\nAmanhã será o lançamento do Château Jardin, na Rua Ministro Nelson Hungria, 400.\n\nO empreendimento traz uma proposta residencial elegante, com arquitetura clássica, paisagismo internacional EDSA e inspiração nos jardins franceses.\n\nAs plantas incluem opções de 185 m², 215 m², 248 m² e 355 m², voltadas a quem busca alto padrão, conforto e localização estratégica no eixo Cidade Jardim.\n\nPosso te enviar o material?',
-    'Assunto: Convite | Château Jardin\n\nOlá, {{nome}}, tudo bem?\n\nGostaria de te apresentar o Château Jardin, lançamento de alto padrão que será apresentado amanhã no novo eixo Cidade Jardim.\n\nCom realização Tegra e Exto, o projeto combina arquitetura clássica, inspiração nos jardins franceses, paisagismo internacional e uma estrutura de lazer com perfil de private club.\n\nO evento será na Rua Ministro Nelson Hungria, 400.\n\nSe fizer sentido, posso te enviar as plantas e detalhes das metragens.',
-    'Assunto: Château Jardin | Evento na Rua Ministro Nelson Hungria, 400\n\nOlá, {{nome}}.\n\nAmanhã teremos o lançamento do Château Jardin, um empreendimento de alto padrão na Rua Ministro Nelson Hungria, 400.\n\nO projeto reúne a assinatura Tegra e Exto, paisagismo internacional EDSA, inspiração clássica e metragens amplas de 185 m² a 355 m².\n\nA proposta é oferecer uma experiência residencial sofisticada, com lazer completo e serviços pensados para o dia a dia.\n\nPosso te enviar o material?',
-    'Assunto: Château Jardin | Alto padrão no novo eixo Cidade Jardim\n\nOlá, {{nome}}, tudo bem?\n\nO Château Jardin será lançado amanhã e nasce como uma proposta residencial sofisticada no novo eixo Cidade Jardim.\n\nInspirado no clássico e na elegância dos jardins franceses, o projeto conta com paisagismo internacional, quadra de tênis de saibro, padel, piscina coberta, wellness e plantas de 185 m², 215 m², 248 m² e 355 m².\n\nCaso queira, posso encaminhar as plantas e principais diferenciais.',
-    'Assunto: Conheça o Château Jardin\n\nOlá, {{nome}}.\n\nAmanhã será apresentado o Château Jardin, realização Tegra e Exto no novo eixo Cidade Jardim.\n\nO empreendimento foi concebido com arquitetura clássica, leitura contemporânea e inspiração nos jardins franceses, trazendo metragens amplas e lazer completo para uma experiência residencial reservada.\n\nO evento ocorrerá na Rua Ministro Nelson Hungria, 400.\n\nPosso te enviar o material completo com plantas e diferenciais?',
-    'Assunto: Château Jardin | Lançamento de alto padrão\n\nOlá, {{nome}}, tudo bem?\n\nEstou te enviando o Château Jardin, lançamento que será apresentado amanhã.\n\nO projeto une sofisticação, inspiração clássica, paisagismo internacional EDSA e lazer de alto padrão, com quadra de tênis de saibro, quadra de padel, piscina coberta e wellness.\n\nAs plantas contemplam metragens de 185 m², 215 m², 248 m² e 355 m².\n\nFico à disposição para te enviar o material e organizar uma apresentação.',
-    'Assunto: Château Jardin | Apresentação amanhã\n\nOlá, {{nome}}.\n\nAmanhã teremos o evento de lançamento do Château Jardin, na Rua Ministro Nelson Hungria, 400.\n\nÉ um projeto Tegra e Exto, no novo eixo Cidade Jardim, inspirado na elegância clássica e nos jardins franceses, com paisagismo internacional e plantas amplas de 185 m² a 355 m².\n\nSe fizer sentido para você, posso enviar o material com plantas, metragens e detalhes do empreendimento.'
-  ].map((text) => text + signature);
+    { subject: 'Château Jardin | Lançamento amanhã', body: 'Olá, {{nome}}, tudo bem?\n\nAmanhã será o lançamento do Château Jardin, projeto de alto padrão no novo eixo Cidade Jardim, com realização Tegra e Exto.\n\nInspirado na arquitetura clássica e na elegância dos jardins franceses, o empreendimento reúne paisagismo internacional EDSA, lazer sofisticado e plantas amplas de 185 m², 215 m², 248 m² e 355 m².\n\nPosso te enviar as plantas e verificar um horário de apresentação?\n\nO evento será na Rua Ministro Nelson Hungria, 400.' },
+    { subject: 'Convite para conhecer o Château Jardin', body: '{{nome}},\n\nEstou passando para te apresentar o Château Jardin, lançamento Tegra e Exto no novo eixo Cidade Jardim.\n\nO projeto combina inspiração clássica, jardins franceses, lazer de perfil private club e metragens generosas de 185 m² a 355 m².\n\nO evento acontece amanhã, na Rua Ministro Nelson Hungria, 400.\n\nPosso te encaminhar o material completo?' },
+    { subject: 'Château Jardin — plantas de 185 m² a 355 m²', body: 'Olá, {{nome}}.\n\nO Château Jardin será apresentado amanhã e traz uma proposta residencial de alto padrão, com arquitetura clássica, paisagismo internacional e plantas de 185 m², 215 m², 248 m² e 355 m².\n\nÉ um projeto para quem valoriza amplitude, privacidade, lazer sofisticado e localização estratégica no eixo Cidade Jardim.\n\nQuer que eu te envie as plantas?' },
+    { subject: 'Amanhã: apresentação do Château Jardin', body: '{{nome}}, tudo bem?\n\nAmanhã acontece a apresentação do Château Jardin, projeto Tegra e Exto inspirado na elegância dos jardins franceses.\n\nO empreendimento reúne áreas de lazer sofisticadas, paisagismo EDSA, tênis, padel, piscina coberta e opções amplas de 185 m² a 355 m².\n\nO evento será na Rua Ministro Nelson Hungria, 400.\n\nPosso verificar um horário para você?' },
+    { subject: 'Château Jardin | Novo eixo Cidade Jardim', body: 'Olá, {{nome}}.\n\nEstou organizando os atendimentos do Château Jardin, lançamento no novo eixo Cidade Jardim.\n\nO projeto tem inspiração clássica, atmosfera de jardins franceses e plantas de 185 m², 215 m², 248 m² e 355 m².\n\nPosso te enviar os detalhes e entender qual metragem faz mais sentido para você?' },
+    { subject: 'Conheça o Château Jardin', body: '{{nome}},\n\nO Château Jardin será lançado amanhã na Rua Ministro Nelson Hungria, 400.\n\nÉ um projeto Tegra e Exto de alto padrão, com proposta elegante, lazer completo e plantas amplas de 185 m² a 355 m².\n\nPosso te mandar as plantas e um resumo dos principais diferenciais?' },
+    { subject: 'Château Jardin — convite de apresentação', body: 'Olá, {{nome}}, tudo bem?\n\nQuero te convidar para conhecer o Château Jardin, lançamento de alto padrão com inspiração nos jardins franceses, paisagismo internacional e metragens de 185 m², 215 m², 248 m² e 355 m².\n\nO evento será amanhã, na Rua Ministro Nelson Hungria, 400.\n\nFaz sentido eu te enviar o material?' },
+    { subject: 'Um novo projeto no eixo Cidade Jardim', body: '{{nome}},\n\nAmanhã será apresentado o Château Jardin, um projeto residencial de alto padrão no eixo Cidade Jardim.\n\nCom realização Tegra e Exto, o empreendimento traz arquitetura clássica, jardins, lazer sofisticado e plantas de 185 m² a 355 m².\n\nPosso te enviar mais detalhes?' },
+    { subject: 'Château Jardin | Plantas amplas e lazer sofisticado', body: 'Olá, {{nome}}.\n\nO Château Jardin foi pensado para um público que busca amplitude, privacidade e sofisticação.\n\nAs plantas contemplam 185 m², 215 m², 248 m² e 355 m², com lazer de alto padrão e inspiração nos jardins franceses.\n\nO evento de apresentação será amanhã, na Rua Ministro Nelson Hungria, 400.\n\nQuer receber as plantas?' },
+    { subject: 'Apresentação Château Jardin', body: '{{nome}}, tudo bem?\n\nAmanhã teremos a apresentação do Château Jardin, projeto Tegra e Exto com plantas de 185 m² a 355 m², arquitetura clássica e paisagismo internacional.\n\nPosso te enviar o material e verificar o melhor horário para você conhecer?' }
+  ].map((item) => ({ subject: item.subject, body: item.body + signature }));
 
-  const TEMPLATES = { whatsapp: WHATSAPP, ligacao: LIGACAO, email: EMAIL };
+  const TEMPLATES = { whatsapp: WHATSAPP, ligacao: LIGACAO, email: EMAIL.map((e) => `Assunto: ${e.subject}\n\n${e.body}`) };
 
-  function safeGet(key, fallback) { try { return localStorage.getItem(key) || fallback; } catch (_) { return fallback; } }
+  function safeGet(key, fallback) { try { const value = localStorage.getItem(key); return value == null || value === '' ? fallback : value; } catch (_) { return fallback; } }
   function safeSet(key, value) { try { localStorage.setItem(key, String(value)); } catch (_) {} }
-  function getMode() { return runtimeMode === 'empreendimentos' ? 'empreendimentos' : 'origem'; }
-  function setMode(mode) { runtimeMode = mode === 'empreendimentos' ? 'empreendimentos' : 'origem'; safeSet(MODE_KEY, runtimeMode); runtimeVariant = 0; safeSet(VARIANT_KEY, '0'); }
-  function getSituation() { return SITUATIONS[runtimeSituation] ? runtimeSituation : 'convite_lancamento'; }
-  function setSituation(value) { runtimeSituation = SITUATIONS[value] ? value : 'convite_lancamento'; safeSet(SITUATION_KEY, runtimeSituation); runtimeVariant = 0; safeSet(VARIANT_KEY, '0'); }
-  function getVariant() { return Number(runtimeVariant) || 0; }
-  function setVariant(value) { runtimeVariant = Number(value) || 0; safeSet(VARIANT_KEY, String(runtimeVariant)); }
-  function getDevelopment() { return DEVELOPMENTS[runtimeDevelopment] ? runtimeDevelopment : 'chateau_jardin'; }
-  function setDevelopment(value) { runtimeDevelopment = DEVELOPMENTS[value] ? value : 'chateau_jardin'; safeSet(DEVELOPMENT_KEY, runtimeDevelopment); runtimeVariant = 0; safeSet(VARIANT_KEY, '0'); }
-  function escapeHtml(text) { return String(text || '').replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;').replaceAll('"', '&quot;').replaceAll("'", '&#039;'); }
-  function normalizePhone(value) { return String(value || '').replace(/\D/g, ''); }
-  function firstWord(text) { return String(text || 'Cliente').trim().split(/\s+/)[0] || 'Cliente'; }
-  function bodyText() { return String(document.body?.innerText || ''); }
-  function root() { return document.getElementById(ROOT_ID); }
-  function targetClosest(event, selector) { const target = event && event.target; return target && typeof target.closest === 'function' ? target.closest(selector) : null; }
-  function currentChannel() { return root()?.querySelector('[data-pme-channel].active')?.getAttribute('data-pme-channel') || safeGet('fechai_pme_channel', 'ligacao'); }
-
+  function bodyText() { return document.body ? document.body.innerText || '' : ''; }
+  function firstWord(value) { return String(value || '').trim().split(/\s+/)[0] || ''; }
+  function normalizePhone(value) { const d = String(value || '').replace(/\D/g, ''); if (!d) return ''; if (d.length === 10 || d.length === 11) return `55${d}`; return d; }
+  function getVariant() { return Number(runtimeVariant || safeGet(VARIANT_KEY, '0')) || 0; }
+  function currentChannel() {
+    const t = bodyText().toLowerCase();
+    if (t.includes('whatsapp')) return 'whatsapp';
+    if (t.includes('e-mail') || t.includes('email')) return 'email';
+    return 'ligacao';
+  }
   function getLeadName() {
     const tel = document.querySelector('a[href^="tel:"]');
     const card = tel ? tel.closest('.bg-white') || tel.closest('[class*="bg-white"]') : null;
@@ -146,13 +140,29 @@
     const m = bodyText().match(/[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/i);
     return m ? m[0] : '';
   }
-  function getCorretor() { return safeGet('fechai_corretor_nome', safeGet('fechai_pme_corretor_nome', 'Corretor responsável')); }
-  function getCorretorPhone() { return safeGet('fechai_corretor_telefone', safeGet('fechai_pme_corretor_telefone', '{{telefone_corretor}}')); }
+  function getProfileFromBridge() {
+    if (window.FECHAI_PME_CORRETOR_PROFILE) return window.FECHAI_PME_CORRETOR_PROFILE;
+    try {
+      const stored = JSON.parse(safeGet('fechai_pme_corretor_profile', 'null'));
+      if (stored) return stored;
+    } catch (_) {}
+    return {};
+  }
+  function getCorretor() {
+    const p = getProfileFromBridge();
+    return p.nome || safeGet('fechai_corretor_nome', safeGet('fechai_pme_corretor_nome', 'Corretor responsável'));
+  }
+  function getCorretorPhone() {
+    const p = getProfileFromBridge();
+    return p.telefone || safeGet('fechai_corretor_telefone', safeGet('fechai_pme_corretor_telefone', 'telefone não configurado'));
+  }
   function getCorretorWhatsapp() {
+    const p = getProfileFromBridge();
+    if (p.whatsapp) return p.whatsapp;
     const stored = safeGet('fechai_corretor_whatsapp', safeGet('fechai_pme_link_whatsapp_corretor', ''));
     if (stored) return stored;
     const phone = normalizePhone(getCorretorPhone());
-    return phone ? `https://wa.me/${phone}` : '{{link_whatsapp_corretor}}';
+    return phone ? `https://wa.me/${phone}` : 'WhatsApp não configurado';
   }
 
   function fill(text) {
@@ -173,10 +183,7 @@
     if (!match) return { subject: 'Château Jardin', body: String(text || '') };
     return { subject: match[1].trim(), body: String(text || '').slice(match[0].length).trim() };
   }
-  async function copy(text) {
-    try { await navigator.clipboard.writeText(text); return true; }
-    catch (_) { window.prompt('Copie o texto:', text); return false; }
-  }
+  async function copy(text) { try { await navigator.clipboard.writeText(text); return true; } catch (_) { window.prompt('Copie o texto:', text); return false; } }
   async function execute(text) {
     await copy(text);
     const channel = currentChannel();
@@ -209,179 +216,85 @@
     document.head.appendChild(style);
   }
 
-  function findStepTitleContaining(text) {
-    const r = root();
-    if (!r) return null;
-    return Array.from(r.querySelectorAll('.pme-step-title')).find((el) => String(el.textContent || '').includes(text)) || null;
-  }
-  function sectionBetween(startTitle, endTitle) {
-    if (!startTitle) return [];
-    const out = [];
-    let node = startTitle.nextElementSibling;
-    while (node && node !== endTitle) { out.push(node); node = node.nextElementSibling; }
-    return out;
-  }
-  function createModeGrid(mode) {
-    const div = document.createElement('div');
-    div.className = 'pme-inline-mode-grid';
-    div.setAttribute('data-pme-inline-mode-grid', '1');
-    div.innerHTML = `<button type="button" class="pme-pill ${mode === 'origem' ? 'active' : ''}" data-pme-inline-mode="origem">🎯 Origem do lead</button><button type="button" class="pme-pill ${mode === 'empreendimentos' ? 'active' : ''}" data-pme-inline-mode="empreendimentos">🏛️ Empreendimentos</button>`;
-    return div;
-  }
-  function createDevelopmentGrid() {
-    const active = getDevelopment();
-    const div = document.createElement('div');
-    div.className = 'pme-origin-grid';
-    div.setAttribute('data-pme-inline-development-grid', '1');
-    div.innerHTML = Object.entries(DEVELOPMENTS).map(([key, item]) => `<button type="button" class="pme-pill ${key === active ? 'active' : ''}" data-pme-inline-development="${escapeHtml(key)}">${escapeHtml(item.icon + ' ' + item.label)}</button>`).join('') + `<div class="pme-inline-dev-note">${escapeHtml(DEVELOPMENTS[active]?.hint || '')} Endereço: ${escapeHtml(DEVELOPMENTS[active]?.address || '')}</div>`;
-    return div;
-  }
-  function createSituationSelect() {
-    const wrap = document.createElement('div');
-    wrap.className = 'pme-select-wrap';
-    wrap.setAttribute('data-pme-inline-situation-wrap', '1');
-    wrap.innerHTML = `<select class="pme-select" data-pme-inline-situation aria-label="Escolha em qual situação o cliente está">${Object.entries(SITUATIONS).map(([key, label]) => `<option value="${escapeHtml(key)}" ${key === getSituation() ? 'selected' : ''}>${escapeHtml(label)}</option>`).join('')}</select>`;
-    return wrap;
+  function findAssistantRoot() {
+    return document.getElementById(ROOT_ID) || Array.from(document.querySelectorAll('div')).find((el) => /Mensagem sugerida|Executar contato|Origem do lead/i.test(el.innerText || ''));
   }
 
-  function renderReplacementRows(r, originTitle, channelTitle, mode) {
-    const existingDev = r.querySelector('[data-pme-inline-development-grid]');
-    if (existingDev) existingDev.remove();
-
-    const sectionNodes = sectionBetween(originTitle, channelTitle);
-    sectionNodes.forEach((el) => {
-      if (el.matches('[data-pme-inline-mode-grid]')) return;
-      if (el.classList.contains('pme-step-help')) return;
-      if (mode === 'empreendimentos') el.classList.add('pme-inline-hidden');
-      else el.classList.remove('pme-inline-hidden');
-    });
-
-    if (mode === 'empreendimentos') {
-      channelTitle.insertAdjacentElement('beforebegin', createDevelopmentGrid());
-    }
+  function validateNoBlockedTerms(text) {
+    const low = String(text || '').toLowerCase();
+    const found = BLOCKED_TERMS.filter((term) => low.includes(term));
+    return found;
   }
 
-  function patch() {
-    const r = root();
-    if (!r) return;
+  function render() {
     ensureStyle();
+    const root = findAssistantRoot();
+    if (!root) return;
+    root.id = ROOT_ID;
 
-    const mode = getMode();
-    const originTitle = findStepTitleContaining('Escolha a origem');
-    const channelTitle = findStepTitleContaining('Escolha o canal');
-    const situationTitle = findStepTitleContaining('Escolha em qual situação');
-    if (!originTitle || !channelTitle || !situationTitle) return;
-
-    const headerTitle = r.querySelector('.pme-title');
-    const headerSub = r.querySelector('.pme-sub');
-    const chip = r.querySelector('.pme-chip');
-    if (headerTitle) headerTitle.textContent = 'Fluxo de atendimento';
-    if (headerSub) headerSub.textContent = 'Siga os passos abaixo. Primeiro escolha a origem ou empreendimento, depois o canal, a situação e por fim execute o contato.';
-
-    originTitle.textContent = '1. Escolha a origem ou empreendimento';
-    let modeGrid = r.querySelector('[data-pme-inline-mode-grid]');
-    if (modeGrid) modeGrid.remove();
-    originTitle.insertAdjacentElement('afterend', createModeGrid(mode));
-
-    const originHelp = sectionBetween(originTitle, channelTitle).find((el) => el.classList && el.classList.contains('pme-step-help'));
-    if (originHelp) originHelp.textContent = mode === 'empreendimentos'
-      ? 'Escolha qual empreendimento será trabalhado neste atendimento.'
-      : 'Use Origem do lead para o fluxo padrão ou Empreendimentos para mensagens por projeto.';
-
-    renderReplacementRows(r, originTitle, channelTitle, mode);
-
-    channelTitle.textContent = '2. Escolha o canal para contato com o cliente';
-    situationTitle.textContent = '3. Escolha em qual situação o cliente está';
-
-    const oldSituation = r.querySelector('[data-pme="approach"]')?.closest('.pme-select-wrap');
-    const inlineSituation = r.querySelector('[data-pme-inline-situation-wrap]');
-    if (mode === 'empreendimentos') {
-      if (oldSituation) oldSituation.classList.add('pme-inline-hidden');
-      if (!inlineSituation && oldSituation) oldSituation.insertAdjacentElement('afterend', createSituationSelect());
-    } else {
-      if (oldSituation) oldSituation.classList.remove('pme-inline-hidden');
-      if (inlineSituation) inlineSituation.remove();
+    let box = root.querySelector('[data-pme-empreendimentos-inline="1"]');
+    if (!box) {
+      box = document.createElement('div');
+      box.setAttribute('data-pme-empreendimentos-inline', '1');
+      root.insertBefore(box, root.firstChild);
     }
 
-    const boxTitle = r.querySelector('.pme-box-title');
-    const textEl = r.querySelector('.pme-text');
-    if (boxTitle) boxTitle.textContent = 'Mensagem sugerida';
-    if (mode === 'empreendimentos' && textEl) textEl.textContent = currentText();
+    const dev = DEVELOPMENTS[runtimeDevelopment] || DEVELOPMENTS.chateau_jardin;
+    const text = currentText();
+    const blocked = validateNoBlockedTerms(text);
 
-    const channelLabel = r.querySelector('[data-pme-channel].active')?.textContent?.replace(/^[^A-Za-zÀ-ÿ0-9]+\s*/u, '').trim() || 'Canal';
-    if (chip && mode === 'empreendimentos') chip.textContent = `${DEVELOPMENTS[getDevelopment()]?.label || 'Empreendimento'} · ${channelLabel}`;
+    box.innerHTML = `
+      <div class="pme-inline-mode-grid">
+        <button type="button" data-pme-inline-mode="origem" class="${runtimeMode === 'origem' ? '' : 'pme-inline-hidden'}" style="padding:10px 12px;border-radius:14px;border:1px solid #dbeafe;background:#eff6ff;color:#1d4ed8;font-weight:800;">Origem do lead</button>
+        <button type="button" data-pme-inline-mode="empreendimento" style="padding:10px 12px;border-radius:14px;border:1px solid ${runtimeMode === 'empreendimento' ? '#7c3aed' : '#e5e7eb'};background:${runtimeMode === 'empreendimento' ? '#f5f3ff' : '#fff'};color:${runtimeMode === 'empreendimento' ? '#6d28d9' : '#374151'};font-weight:800;">Empreendimentos</button>
+        ${runtimeMode === 'empreendimento' ? `<button type="button" data-pme-inline-development="chateau_jardin" style="padding:10px 12px;border-radius:14px;border:1px solid #c4b5fd;background:#f5f3ff;color:#5b21b6;font-weight:900;">${dev.icon} ${dev.label}</button><div class="pme-inline-dev-note">${SITUATIONS[runtimeSituation]} · ${dev.hint}</div>` : ''}
+      </div>
+      ${runtimeMode === 'empreendimento' ? `<div style="margin:8px 0 12px;padding:12px;border:1px solid #e9d5ff;background:#faf5ff;border-radius:14px;">
+        <div style="font-size:12px;color:#7e22ce;font-weight:900;margin-bottom:4px;">Mensagem sugerida — ${dev.label}</div>
+        <div class="pme-text" style="font-size:13px;color:#374151;white-space:pre-line;line-height:1.55;">${escapeHtml(text)}</div>
+        ${blocked.length ? `<div style="margin-top:8px;color:#b91c1c;font-size:12px;font-weight:800;">⚠ Termos bloqueados detectados: ${blocked.map(escapeHtml).join(', ')}</div>` : ''}
+        <button type="button" data-pme-execute-empreendimento="1" style="margin-top:10px;width:100%;padding:11px 12px;border-radius:14px;border:none;background:#7c3aed;color:#fff;font-weight:900;">Executar contato</button>
+      </div>` : ''}
+    `;
 
-    const status = r.querySelector('[data-pme-status]');
-    if (status && mode === 'empreendimentos') {
-      const blocked = BLOCKED_TERMS.some((term) => currentText().toLowerCase().includes(term.toLowerCase()));
-      status.textContent = blocked
-        ? 'Atenção: termo bloqueado detectado na mensagem. Revise antes de usar.'
-        : 'Mensagem de empreendimento carregada. A PME não envia mensagem sozinha e não registra feedback automaticamente.';
-    }
-  }
-
-  function stop(event) {
-    event.preventDefault();
-    event.stopPropagation();
-    if (typeof event.stopImmediatePropagation === 'function') event.stopImmediatePropagation();
-  }
-  function schedulePatch() {
-    window.requestAnimationFrame(patch);
-    window.setTimeout(patch, 30);
-    window.setTimeout(patch, 150);
-  }
-  function handleInlineModeEvent(event) {
-    const modeBtn = targetClosest(event, '[data-pme-inline-mode]');
-    const devBtn = targetClosest(event, '[data-pme-inline-development]');
-    if (!modeBtn && !devBtn) return false;
-    stop(event);
-    if (Date.now() - lastInlineHandledAt < 80 && event.type === 'click') return true;
-    lastInlineHandledAt = Date.now();
-    if (modeBtn) setMode(modeBtn.getAttribute('data-pme-inline-mode'));
-    if (devBtn) setDevelopment(devBtn.getAttribute('data-pme-inline-development'));
-    schedulePatch();
-    return true;
-  }
-  function handleInlineActionEvent(event) {
-    if (getMode() !== 'empreendimentos') return false;
-    const actionBtn = targetClosest(event, '[data-pme-action]');
-    if (!actionBtn || !root()?.contains(actionBtn)) return false;
-    if (event.type === 'pointerdown') { stop(event); return true; }
-    stop(event);
-    const type = actionBtn.getAttribute('data-pme-action');
-    if (type === 'next') setVariant(getVariant() + 1);
-    if (type === 'prev') setVariant(getVariant() - 1);
-    if (type === 'use') execute(currentText());
-    if (type === 'ai') copy(currentText());
-    schedulePatch();
-    return true;
-  }
-
-  function bind() {
-    ['pointerdown', 'pointerup', 'click'].forEach((eventName) => {
-      document.addEventListener(eventName, function (event) {
-        if (handleInlineModeEvent(event)) return;
-        if (eventName !== 'pointerdown') handleInlineActionEvent(event);
-        else if (getMode() === 'empreendimentos' && targetClosest(event, '[data-pme-action]')) handleInlineActionEvent(event);
-      }, true);
+    root.querySelectorAll('[data-pme-inline-mode]').forEach((btn) => {
+      btn.onclick = () => {
+        runtimeMode = btn.getAttribute('data-pme-inline-mode');
+        safeSet(MODE_KEY, runtimeMode);
+        render();
+      };
     });
-    document.addEventListener('change', function (event) {
-      const select = targetClosest(event, '[data-pme-inline-situation]');
-      if (!select) return;
-      stop(event);
-      setSituation(select.value);
-      schedulePatch();
-    }, true);
+    root.querySelectorAll('[data-pme-inline-development]').forEach((btn) => {
+      btn.onclick = () => {
+        runtimeMode = 'empreendimento';
+        runtimeDevelopment = btn.getAttribute('data-pme-inline-development') || 'chateau_jardin';
+        safeSet(MODE_KEY, runtimeMode);
+        safeSet(DEVELOPMENT_KEY, runtimeDevelopment);
+        render();
+      };
+    });
+    const executeBtn = root.querySelector('[data-pme-execute-empreendimento]');
+    if (executeBtn) executeBtn.onclick = () => execute(currentText());
   }
 
-  function start() {
-    bind();
-    patch();
-    const observer = new MutationObserver(() => window.requestAnimationFrame(patch));
-    observer.observe(document.body, { childList: true, subtree: true });
-    window.setInterval(patch, 1000);
+  function escapeHtml(value) {
+    return String(value || '')
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#039;');
   }
 
-  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', start);
-  else start();
+  function boot() {
+    const now = Date.now();
+    if (now - lastInlineHandledAt < 150) return;
+    lastInlineHandledAt = now;
+    render();
+  }
+
+  window.addEventListener('fechai:pme-corretor-profile-ready', boot);
+  setInterval(boot, 1000);
+  setTimeout(boot, 250);
+  setTimeout(boot, 1000);
 })();
