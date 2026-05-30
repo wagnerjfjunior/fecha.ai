@@ -1,6 +1,6 @@
 /*
  * FECH.AI — PME Corretor Profile Bridge
- * Version: 0.1.0
+ * Version: 0.1.1
  * Scope: frontend-only bridge for PME template variables.
  * Safety: read-only; no automatic sending; no Supabase/RPC/RLS/Auth/DB changes.
  */
@@ -65,13 +65,12 @@
 
   function pickProfile(raw) {
     const source = raw || {};
-    const nome = firstNonEmpty(source, ['nome_comercial', 'apelido', 'nome_exibicao', 'display_name', 'nome', 'name']);
-    const telefoneRaw = firstNonEmpty(source, ['telefone_prof', 'telefone_profissional', 'telefone', 'celular', 'whatsapp', 'phone']);
-    const whatsappRaw = firstNonEmpty(source, ['link_whatsapp_corretor', 'link_whatsapp', 'whatsapp_link', 'whatsapp_url']);
-    const empresa = firstNonEmpty(source, ['empresa_nome', 'nome_empresa', 'empresa_label', 'empresa']);
+    const nome = firstNonEmpty(source, ['apelido', 'nome', 'name']);
+    const telefoneRaw = firstNonEmpty(source, ['telefone_prof']);
+    const empresa = firstNonEmpty(source, ['empresa']);
     const telefone = formatPhone(telefoneRaw);
     const normalizedPhone = normalizePhone(telefoneRaw);
-    const whatsapp = whatsappRaw || (normalizedPhone ? `https://wa.me/${normalizedPhone}` : '');
+    const whatsapp = normalizedPhone ? `https://wa.me/${normalizedPhone}` : '';
 
     return {
       nome,
@@ -119,24 +118,9 @@
 
     if (!userId || !token || !supabaseUrl || !anonKey) return null;
 
-    const columns = [
-      'id',
-      'user_id',
-      'nome',
-      'email',
-      'empresa',
-      'telefone',
-      'celular',
-      'whatsapp',
-      'telefone_prof',
-      'telefone_profissional',
-      'nome_comercial',
-      'apelido',
-      'link_whatsapp',
-      'link_whatsapp_corretor',
-      'empresa_id'
-    ].join(',');
-
+    // Query intencionalmente mínima: somente colunas já usadas pela própria tela do corretor.
+    // Evita quebrar o preview quando uma coluna opcional ainda não existe no schema.
+    const columns = ['nome', 'apelido', 'telefone_prof', 'empresa'].join(',');
     const url = `${supabaseUrl}/rest/v1/corretores?user_id=eq.${encodeURIComponent(userId)}&select=${encodeURIComponent(columns)}&limit=1`;
 
     const response = await fetch(url, {
