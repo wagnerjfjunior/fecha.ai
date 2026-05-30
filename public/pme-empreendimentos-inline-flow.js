@@ -1,6 +1,6 @@
 /*
  * FECH.AI — PME Empreendimentos Inline Flow
- * Version: 0.1.1
+ * Version: 0.1.2
  * Scope: frontend-only enhancer for the existing PME atendimento flow.
  * Safety: no automatic sending, no Supabase/RPC/RLS/Auth/DB changes.
  */
@@ -54,59 +54,85 @@
     sem_resposta: 'Sem resposta'
   };
 
-  const signature = '\n\n{{corretor}} — {{telefone_corretor}}\nWhatsApp: {{link_whatsapp_corretor}}\n\nAo chegar, por gentileza, solicite por {{corretor}} na recepção para que eu possa te receber pessoalmente.';
-  const callClose = '\n\nO evento será na Rua Ministro Nelson Hungria, 400. Quando chegar, por gentileza, solicite por {{corretor}} na recepção para que eu possa te receber pessoalmente e apresentar o projeto com calma.';
+  const WA_BASES = [
+    ['Olá, {{nome_lead}}, tudo bem?', 'Amanhã será o lançamento do Château Jardin.', 'O projeto fica no novo eixo Cidade Jardim e foi inspirado na elegância dos jardins franceses.', 'Tem plantas de 185 m², 215 m², 248 m² e 355 m².', 'Posso te enviar o material com plantas e detalhes do evento?'],
+    ['{{nome_lead}}, tudo bem?', 'Amanhã acontece o lançamento do Château Jardin.', 'É um projeto Tegra e Exto com arquitetura clássica, leitura contemporânea e paisagismo internacional EDSA.', 'As metragens vão de 185 m² a 355 m².', 'Quer que eu te envie as plantas para avaliar com calma?'],
+    ['Olá, {{nome_lead}}.', 'Amanhã será apresentado o Château Jardin na Rua Ministro Nelson Hungria, 400.', 'O projeto combina inspiração nos jardins franceses, lazer de alto padrão e plantas generosas.', 'As opções são 185 m², 215 m², 248 m² e 355 m².', 'Posso te mandar um resumo com as plantas?'],
+    ['{{nome_lead}}, amanhã teremos o lançamento do Château Jardin.', 'É um projeto pensado para quem busca alto padrão, elegância atemporal e uma experiência residencial mais reservada.', 'As plantas contemplam 185 m², 215 m², 248 m² e 355 m².', 'Faz sentido eu te enviar o material agora?'],
+    ['Olá, {{nome_lead}}, tudo bem?', 'Amanhã será apresentado o Château Jardin, realização Tegra e Exto no novo eixo Cidade Jardim.', 'O projeto reúne arquitetura clássica, paisagismo internacional EDSA, lazer de perfil private club e plantas de 185 m² a 355 m².', 'Quer receber as informações iniciais?'],
+    ['{{nome_lead}}, estou organizando os atendimentos do lançamento do Château Jardin.', 'O evento será amanhã, na Rua Ministro Nelson Hungria, 400.', 'O empreendimento tem inspiração nos jardins franceses e metragens de 185 m², 215 m², 248 m² e 355 m².', 'Posso te mandar as opções?'],
+    ['Olá, {{nome_lead}}.', 'Amanhã é o lançamento do Château Jardin, projeto Tegra e Exto no novo eixo Cidade Jardim.', 'É um refúgio urbano com arquitetura clássica, paisagismo internacional EDSA, quadra de tênis de saibro, padel, piscina coberta e wellness.', 'Posso te enviar o material?'],
+    ['{{nome_lead}}, tudo bem?', 'Amanhã teremos o evento de lançamento do Château Jardin.', 'O projeto foi pensado para quem busca alto padrão, elegância e plantas amplas.', 'O evento será na Rua Ministro Nelson Hungria, 400.', 'Quer que eu te envie os detalhes?'],
+    ['Olá, {{nome_lead}}.', 'O Château Jardin será lançado amanhã no novo eixo Cidade Jardim.', 'É um projeto com inspiração clássica, atmosfera de jardins franceses, lazer sofisticado e assinatura Tegra e Exto.', 'As plantas contemplam 185 m², 215 m², 248 m² e 355 m².', 'Posso te mandar o material?'],
+    ['{{nome_lead}}, passando rapidamente para te apresentar o Château Jardin.', 'O lançamento será amanhã.', 'É um projeto de alto padrão com arquitetura clássica, paisagismo internacional e metragens amplas de 185 m² a 355 m².', 'Posso te enviar as plantas?'],
+    ['Olá, {{nome_lead}}, tudo bem?', 'Amanhã será o lançamento do Château Jardin, um projeto que une o clássico e o contemporâneo no novo eixo Cidade Jardim.', 'Inspirado na elegância dos jardins franceses, traz plantas de 185 m², 215 m², 248 m² e 355 m².', 'Quer conhecer o material?'],
+    ['{{nome_lead}}, amanhã teremos a apresentação do Château Jardin.', 'A proposta combina jardins, lazer de alto padrão, arquitetura clássica e unidades amplas de 185 m² a 355 m².', 'Posso te enviar as informações pelo WhatsApp?'],
+    ['Olá, {{nome_lead}}.', 'O lançamento do Château Jardin será amanhã, na Rua Ministro Nelson Hungria, 400.', 'É um projeto no novo eixo Cidade Jardim, com inspiração clássica, paisagismo sofisticado e opções de 185 m² a 355 m².', 'Posso te mandar as plantas e diferenciais?'],
+    ['{{nome_lead}}, tudo bem?', 'Estou te chamando porque amanhã será o lançamento do Château Jardin.', 'O projeto tem uma proposta elegante, inspirada no clássico e nos jardins franceses, com lazer completo e metragens de 185 m² a 355 m².', 'Faz sentido eu te enviar o material?'],
+    ['Olá, {{nome_lead}}.', 'Amanhã acontece o evento de lançamento do Château Jardin, realização Tegra e Exto.', 'O empreendimento fica no novo eixo Cidade Jardim e traz opções de 185 m², 215 m², 248 m² e 355 m².', 'Quer que eu te envie os detalhes?'],
+    ['{{nome_lead}}, amanhã será o lançamento do Château Jardin.', 'É um projeto residencial de alto padrão na Rua Ministro Nelson Hungria, 400.', 'Ele combina arquitetura clássica, inspiração nos jardins franceses, paisagismo internacional, tênis, padel, piscina coberta e wellness.', 'Posso te mandar o material?'],
+    ['Olá, {{nome_lead}}, tudo bem?', 'O Château Jardin será lançado amanhã e estou organizando os atendimentos por horário.', 'O projeto tem plantas de 185 m², 215 m², 248 m² e 355 m², com lazer sofisticado e proposta de refúgio urbano.', 'Posso te enviar as plantas?'],
+    ['{{nome_lead}}, passando para te avisar sobre o lançamento do Château Jardin amanhã.', 'É um projeto Tegra e Exto, com paisagismo internacional EDSA, inspiração nos jardins franceses e uma estrutura de lazer diferenciada.', 'Posso te enviar um resumo?'],
+    ['Olá, {{nome_lead}}.', 'Amanhã teremos o lançamento do Château Jardin, um projeto que nasce como um novo marco residencial no eixo Cidade Jardim.', 'São plantas amplas de 185 m², 215 m², 248 m² e 355 m², com arquitetura clássica e lazer de alto padrão.', 'Quer receber o material?'],
+    ['{{nome_lead}}, tudo bem?', 'Amanhã será o evento de lançamento do Château Jardin, na Rua Ministro Nelson Hungria, 400.', 'É um projeto de alto padrão inspirado no clássico, nos jardins franceses e em uma experiência residencial mais reservada.', 'Temos opções de 185 m² a 355 m².', 'Posso te mandar as informações?']
+  ];
 
-  const WHATSAPP = [
-    'Olá, {{nome}}, tudo bem?\n\nAmanhã será o lançamento do Château Jardin, na Rua Ministro Nelson Hungria, 400.\n\nÉ um projeto Tegra e Exto no novo eixo Cidade Jardim, inspirado na elegância dos jardins franceses, com plantas de 185 m², 215 m², 248 m² e 355 m².\n\nPosso te enviar o material com plantas e detalhes do evento?',
-    '{{nome}}, tudo bem?\n\nAmanhã acontece o lançamento do Château Jardin, um projeto de alto padrão no novo eixo Cidade Jardim.\n\nO empreendimento une arquitetura clássica com olhar contemporâneo, paisagismo internacional EDSA e metragens amplas de 185 m² a 355 m².\n\nQuer que eu te envie as plantas para avaliar com calma?',
-    'Olá, {{nome}}.\n\nAmanhã será o lançamento do Château Jardin, na Rua Ministro Nelson Hungria, 400. 📍\n\nÉ um projeto Tegra e Exto, com inspiração nos jardins franceses, lazer de alto padrão e opções de 185 m², 215 m², 248 m² e 355 m². 📐\n\nPosso te mandar um resumo com as plantas?',
-    '{{nome}}, amanhã teremos o lançamento do Château Jardin.\n\nÉ um projeto inspirado no clássico, nos jardins franceses e em uma forma mais elegante de viver, no novo eixo Cidade Jardim.\n\nAs opções contemplam 185 m², 215 m², 248 m² e 355 m².\n\nFaz sentido eu te enviar o material agora?',
-    'Olá, {{nome}}, tudo bem?\n\nAmanhã será apresentado o Château Jardin, realização Tegra e Exto no novo eixo Cidade Jardim.\n\nO projeto reúne arquitetura clássica, paisagismo internacional EDSA, lazer de perfil private club e plantas generosas de 185 m² a 355 m².\n\nQuer receber as informações iniciais?',
-    '{{nome}}, estou organizando os atendimentos do lançamento do Château Jardin, que acontece amanhã na Rua Ministro Nelson Hungria, 400. 🗓️\n\nO empreendimento tem inspiração na elegância dos jardins franceses e plantas de 185 m², 215 m², 248 m² e 355 m². 🌿\n\nPosso te mandar as opções?',
-    'Olá, {{nome}}.\n\nAmanhã é o lançamento do Château Jardin, projeto Tegra e Exto no novo eixo Cidade Jardim.\n\nUm refúgio urbano com arquitetura clássica, paisagismo internacional EDSA, quadra de tênis de saibro, padel, piscina coberta e metragens de 185 m² a 355 m².\n\nPosso te enviar o material?',
-    '{{nome}}, tudo bem?\n\nAmanhã teremos o evento de lançamento do Château Jardin.\n\nO projeto foi pensado para quem busca alto padrão, elegância atemporal e plantas amplas, com opções de 185 m², 215 m², 248 m² e 355 m².\n\nO evento será na Rua Ministro Nelson Hungria, 400.\n\nQuer que eu te envie os detalhes?',
-    'Olá, {{nome}}.\n\nO Château Jardin será lançado amanhã no novo eixo Cidade Jardim.\n\nÉ um projeto com inspiração clássica, atmosfera de jardins franceses, lazer sofisticado e assinatura Tegra e Exto. 🏛️\n\nAs plantas contemplam 185 m², 215 m², 248 m² e 355 m². 📐\n\nPosso te mandar o material?',
-    '{{nome}}, passando rapidamente para te apresentar o Château Jardin, que terá evento de lançamento amanhã.\n\nÉ um projeto de alto padrão na Rua Ministro Nelson Hungria, 400, com arquitetura clássica, paisagismo internacional e metragens amplas de 185 m² a 355 m².\n\nPosso te enviar as plantas?',
-    'Olá, {{nome}}, tudo bem?\n\nAmanhã será o lançamento do Château Jardin, um projeto que une o clássico e o contemporâneo no novo eixo Cidade Jardim.\n\nInspirado na elegância dos jardins franceses, traz plantas de 185 m², 215 m², 248 m² e 355 m².\n\nQuer conhecer o material?',
-    '{{nome}}, amanhã teremos a apresentação do Château Jardin, empreendimento Tegra e Exto com projeto internacional EDSA.\n\nA proposta combina jardins, lazer de alto padrão, arquitetura clássica e unidades amplas de 185 m² a 355 m². 🌿\n\nPosso te enviar as informações pelo WhatsApp?',
-    'Olá, {{nome}}.\n\nO lançamento do Château Jardin será amanhã, na Rua Ministro Nelson Hungria, 400.\n\nÉ um projeto no novo eixo Cidade Jardim, com inspiração clássica, paisagismo sofisticado e opções de 185 m², 215 m², 248 m² e 355 m².\n\nPosso te mandar as plantas e diferenciais?',
-    '{{nome}}, tudo bem?\n\nEstou te chamando porque amanhã será o lançamento do Château Jardin.\n\nO projeto tem uma proposta elegante, inspirada no clássico e nos jardins franceses, com lazer completo e metragens de 185 m² a 355 m².\n\nFaz sentido eu te enviar o material?',
-    'Olá, {{nome}}.\n\nAmanhã acontece o evento de lançamento do Château Jardin, realização Tegra e Exto.\n\nO empreendimento fica no novo eixo Cidade Jardim e traz opções de 185 m², 215 m², 248 m² e 355 m².\n\nQuer que eu te envie os detalhes?',
-    '{{nome}}, amanhã será o lançamento do Château Jardin, um projeto residencial de alto padrão na Rua Ministro Nelson Hungria, 400. 📍\n\nEle combina arquitetura clássica, inspiração nos jardins franceses, paisagismo internacional e lazer com tênis, padel, piscina coberta e wellness.\n\nPosso te mandar o material?',
-    'Olá, {{nome}}, tudo bem?\n\nO Château Jardin será lançado amanhã e estou organizando os atendimentos por horário.\n\nO projeto tem plantas de 185 m², 215 m², 248 m² e 355 m², com lazer sofisticado e proposta de refúgio urbano no novo eixo Cidade Jardim.\n\nPosso te enviar as plantas?',
-    '{{nome}}, passando para te avisar sobre o lançamento do Château Jardin amanhã.\n\nÉ um projeto Tegra e Exto, com paisagismo internacional EDSA, inspiração nos jardins franceses e uma estrutura de lazer diferenciada: tênis de saibro, padel, piscina coberta e wellness. 🌿\n\nPosso te enviar um resumo?',
-    'Olá, {{nome}}.\n\nAmanhã teremos o lançamento do Château Jardin, um projeto que nasce como um novo marco residencial no eixo Cidade Jardim.\n\nSão plantas amplas de 185 m², 215 m², 248 m² e 355 m², com arquitetura clássica e lazer de alto padrão.\n\nQuer receber o material?',
-    '{{nome}}, tudo bem?\n\nAmanhã será o evento de lançamento do Château Jardin, na Rua Ministro Nelson Hungria, 400.\n\nUm projeto de alto padrão inspirado no clássico, nos jardins franceses e em uma experiência residencial mais reservada.\n\nTemos opções de 185 m² a 355 m².\n\nPosso te mandar as informações?'
-  ].map((text) => text + signature);
+  const CALL_BASES = [
+    ['Oi, {{nome_lead}}, tudo bem?', 'Aqui é {{nome_corretor}} da Tegra.', 'Estou te ligando rapidamente porque amanhã será o lançamento do Château Jardin.', 'É um projeto Tegra e Exto no novo eixo Cidade Jardim, inspirado no clássico e nos jardins franceses, com plantas de 185 m², 215 m², 248 m² e 355 m².', 'Faz sentido eu te enviar o material e verificar um horário para você conhecer?'],
+    ['{{nome_lead}}, tudo bem?', 'Aqui é {{nome_corretor}} da Tegra.', 'Amanhã teremos o lançamento do Château Jardin.', 'O projeto une arquitetura clássica, olhar contemporâneo, paisagismo internacional EDSA, tênis de saibro, padel, piscina coberta e wellness.', 'Posso te mandar as plantas e entender se alguma metragem faz sentido para você?'],
+    ['Oi, {{nome_lead}}, aqui é {{nome_corretor}} da Tegra.', 'Vou ser breve.', 'Amanhã acontece o lançamento do Château Jardin, na Rua Ministro Nelson Hungria, 400.', 'É um projeto sofisticado, com inspiração nos jardins franceses, plantas amplas de 185 m² a 355 m² e uma proposta residencial reservada.', 'Você busca algo nesse perfil ou prefere apenas receber o material para avaliar?'],
+    ['{{nome_lead}}, tudo bem?', 'Estou entrando em contato pela Tegra porque amanhã será o evento de lançamento do Château Jardin.', 'O projeto fica no novo eixo Cidade Jardim e traz opções de 185 m², 215 m², 248 m² e 355 m².', 'Posso te enviar um resumo com plantas e principais diferenciais?'],
+    ['Oi, {{nome_lead}}, tudo bem?', 'Aqui é {{nome_corretor}} da Tegra.', 'Amanhã vamos apresentar o Château Jardin.', 'É um produto para quem busca alto padrão, conforto, arquitetura clássica e plantas generosas.', 'Você gostaria de conhecer as opções ou prefere que eu envie primeiro pelo WhatsApp?'],
+    ['{{nome_lead}}, tudo bem?', 'Estou te ligando porque amanhã teremos o lançamento do Château Jardin.', 'O projeto tem lazer de perfil private club, com tênis de saibro, padel, piscina coberta, wellness e áreas sociais completas.', 'As metragens vão de 185 m² a 355 m².', 'Posso te passar o material?'],
+    ['Oi, {{nome_lead}}, aqui é {{nome_corretor}} da Tegra.', 'Amanhã será o lançamento do Château Jardin.', 'O projeto tem uma proposta elegante: arquitetura clássica, jardins, serviços de alto padrão e plantas amplas.', 'Você está buscando imóvel para morar, investir ou apenas avaliando oportunidades nesse perfil?'],
+    ['{{nome_lead}}, tudo bem?', 'Vou falar rapidinho.', 'Amanhã teremos o lançamento do Château Jardin, realização Tegra e Exto.', 'O empreendimento foi pensado como um refúgio urbano no novo eixo Cidade Jardim, com metragens de 185 m² a 355 m².', 'Posso te enviar as plantas para você avaliar com calma?'],
+    ['Oi, {{nome_lead}}, aqui é {{nome_corretor}} da Tegra.', 'Amanhã acontece o evento de lançamento do Château Jardin.', 'É um projeto com inspiração clássica, atmosfera de jardins franceses, paisagismo EDSA e uma estrutura de lazer diferenciada.', 'Se fizer sentido para você, posso te mandar o material e verificar um horário de apresentação.'],
+    ['{{nome_lead}}, tudo bem?', 'Estou te ligando sobre o Château Jardin, que será lançado amanhã.', 'É um projeto de alto padrão com opções de 185 m² a 355 m², lazer completo e proposta residencial sofisticada.', 'Você teria interesse em receber as informações iniciais ou prefere agendar para conhecer presencialmente?']
+  ];
 
-  const LIGACAO = [
-    'Oi, {{nome}}, tudo bem? Aqui é {{corretor}}. Estou te ligando rapidamente porque amanhã será o lançamento do Château Jardin, na Rua Ministro Nelson Hungria, 400. É um projeto Tegra e Exto no novo eixo Cidade Jardim, inspirado no clássico e nos jardins franceses, com plantas de 185 m², 215 m², 248 m² e 355 m². Faz sentido eu te enviar o material e verificar um horário para você conhecer?',
-    '{{nome}}, tudo bem? Aqui é {{corretor}}. Amanhã teremos o lançamento do Château Jardin, um empreendimento de alto padrão no novo eixo Cidade Jardim. O projeto une arquitetura clássica com olhar contemporâneo, paisagismo internacional EDSA e lazer com tênis de saibro, padel, piscina coberta e wellness. Posso te mandar as plantas e entender se alguma metragem faz sentido para você?',
-    'Oi, {{nome}}, aqui é {{corretor}}. Vou ser breve: amanhã acontece o lançamento do Château Jardin, na Rua Ministro Nelson Hungria, 400. É um projeto sofisticado, com inspiração nos jardins franceses, plantas amplas de 185 m² a 355 m² e uma proposta residencial reservada. Você busca algo nesse perfil ou prefere apenas receber o material para avaliar?',
-    '{{nome}}, tudo bem? Estou entrando em contato porque amanhã será o evento de lançamento do Château Jardin. O projeto tem realização Tegra e Exto, fica no novo eixo Cidade Jardim e traz opções de 185 m², 215 m², 248 m² e 355 m². Posso te enviar um resumo com plantas e principais diferenciais?',
-    'Oi, {{nome}}, tudo bem? Aqui é {{corretor}}. Amanhã vamos apresentar o Château Jardin, um projeto com arquitetura clássica, inspiração nos jardins franceses e paisagismo internacional. É um produto para quem busca alto padrão, conforto e plantas generosas. Você gostaria de conhecer as opções ou prefere que eu envie primeiro pelo WhatsApp?',
-    '{{nome}}, tudo bem? Estou te ligando porque amanhã teremos o lançamento do Château Jardin, um projeto no novo eixo Cidade Jardim com lazer de perfil private club: tênis de saibro, padel, piscina coberta, wellness e áreas sociais completas. As metragens vão de 185 m² a 355 m². Posso te passar o material?',
-    'Oi, {{nome}}, aqui é {{corretor}}. Amanhã será o lançamento do Château Jardin, na Rua Ministro Nelson Hungria, 400. O projeto tem uma proposta elegante: arquitetura clássica, jardins, serviços de alto padrão e plantas amplas. Queria entender se você está buscando imóvel para morar, investir ou apenas avaliando oportunidades nesse perfil.',
-    '{{nome}}, tudo bem? Vou falar rapidinho. Amanhã teremos o lançamento do Château Jardin, realização Tegra e Exto. O empreendimento foi pensado como um refúgio urbano no novo eixo Cidade Jardim, com metragens de 185 m², 215 m², 248 m² e 355 m². Posso te enviar as plantas para você avaliar com calma?',
-    'Oi, {{nome}}, aqui é {{corretor}}. Amanhã acontece o evento de lançamento do Château Jardin. É um projeto com inspiração clássica, atmosfera de jardins franceses, paisagismo EDSA e uma estrutura de lazer diferenciada. Se fizer sentido para você, posso te mandar o material e verificar um horário de apresentação.',
-    '{{nome}}, tudo bem? Estou te ligando sobre o Château Jardin, que será lançado amanhã na Rua Ministro Nelson Hungria, 400. É um projeto de alto padrão com opções de 185 m² a 355 m², lazer completo e proposta residencial sofisticada. Você teria interesse em receber as informações iniciais ou prefere agendar para conhecer presencialmente?'
-  ].map((text) => text + callClose);
+  const EMAIL_BASES = [
+    ['Château Jardin | Lançamento amanhã', ['Olá, {{nome_lead}}, tudo bem?', 'Amanhã será o lançamento do Château Jardin, projeto de alto padrão no novo eixo Cidade Jardim, com realização Tegra e Exto.', 'Inspirado na arquitetura clássica e na elegância dos jardins franceses, o empreendimento reúne paisagismo internacional EDSA, lazer sofisticado e plantas amplas de 185 m², 215 m², 248 m² e 355 m².', 'Posso te enviar as plantas e verificar um horário de apresentação?']],
+    ['Château Jardin | Novo marco no eixo Cidade Jardim', ['Olá, {{nome_lead}}.', 'Estou compartilhando o Château Jardin, lançamento que será apresentado amanhã.', 'O projeto une arquitetura clássica, olhar contemporâneo, inspiração nos jardins franceses e paisagismo internacional assinado pela EDSA.', 'As opções contemplam plantas de 185 m², 215 m², 248 m² e 355 m².', 'Caso faça sentido para você, posso encaminhar o material completo e organizar uma visita.']],
+    ['Amanhã | Evento de lançamento Château Jardin', ['Olá, {{nome_lead}}, tudo bem?', 'Amanhã acontece o evento de lançamento do Château Jardin, empreendimento Tegra e Exto no novo eixo Cidade Jardim.', 'O projeto foi pensado como um refúgio urbano sofisticado, com inspiração clássica, atmosfera de jardins franceses, lazer de alto padrão, quadra de tênis de saibro, quadra de padel, piscina coberta e wellness.', 'Posso te enviar plantas e detalhes do evento?']],
+    ['Château Jardin | Plantas de 185 m² a 355 m²', ['Olá, {{nome_lead}}.', 'Amanhã será o lançamento do Château Jardin.', 'O empreendimento traz uma proposta residencial elegante, com arquitetura clássica, paisagismo internacional EDSA e inspiração nos jardins franceses.', 'As plantas incluem opções de 185 m², 215 m², 248 m² e 355 m².', 'Posso te enviar o material?']],
+    ['Convite | Château Jardin', ['Olá, {{nome_lead}}, tudo bem?', 'Gostaria de te apresentar o Château Jardin, lançamento de alto padrão que será apresentado amanhã no novo eixo Cidade Jardim.', 'Com realização Tegra e Exto, o projeto combina arquitetura clássica, inspiração nos jardins franceses, paisagismo internacional e uma estrutura de lazer com perfil de private club.', 'Se fizer sentido, posso te enviar as plantas e detalhes das metragens.']],
+    ['Château Jardin | Alto padrão no Cidade Jardim', ['Olá, {{nome_lead}}.', 'Amanhã teremos o lançamento do Château Jardin, um empreendimento de alto padrão.', 'O projeto reúne a assinatura Tegra e Exto, paisagismo internacional EDSA, inspiração clássica e metragens amplas de 185 m² a 355 m².', 'A proposta é oferecer uma experiência residencial sofisticada, com lazer completo e serviços pensados para o dia a dia.', 'Posso te enviar o material?']],
+    ['Château Jardin | Alto padrão no novo eixo Cidade Jardim', ['Olá, {{nome_lead}}, tudo bem?', 'O Château Jardin será lançado amanhã e nasce como uma proposta residencial sofisticada no novo eixo Cidade Jardim.', 'Inspirado no clássico e na elegância dos jardins franceses, o projeto conta com paisagismo internacional, quadra de tênis de saibro, padel, piscina coberta, wellness e plantas de 185 m², 215 m², 248 m² e 355 m².', 'Caso queira, posso encaminhar as plantas e principais diferenciais.']],
+    ['Conheça o Château Jardin', ['Olá, {{nome_lead}}.', 'Amanhã será apresentado o Château Jardin, realização Tegra e Exto no novo eixo Cidade Jardim.', 'O empreendimento foi concebido com arquitetura clássica, leitura contemporânea e inspiração nos jardins franceses, trazendo metragens amplas e lazer completo para uma experiência residencial reservada.', 'Posso te enviar o material completo com plantas e diferenciais?']],
+    ['Château Jardin | Lançamento de alto padrão', ['Olá, {{nome_lead}}, tudo bem?', 'Estou te enviando o Château Jardin, lançamento que será apresentado amanhã.', 'O projeto une sofisticação, inspiração clássica, paisagismo internacional EDSA e lazer de alto padrão, com quadra de tênis de saibro, quadra de padel, piscina coberta e wellness.', 'As plantas contemplam metragens de 185 m², 215 m², 248 m² e 355 m².', 'Fico à disposição para te enviar o material e organizar uma apresentação.']],
+    ['Château Jardin | Apresentação amanhã', ['Olá, {{nome_lead}}.', 'Amanhã teremos o evento de lançamento do Château Jardin.', 'É um projeto Tegra e Exto, no novo eixo Cidade Jardim, inspirado na elegância clássica e nos jardins franceses, com paisagismo internacional e plantas amplas de 185 m² a 355 m².', 'Se fizer sentido para você, posso enviar o material com plantas, metragens e detalhes do empreendimento.']]
+  ];
 
-  const EMAIL = [
-    'Assunto: Château Jardin | Lançamento amanhã\n\nOlá, {{nome}}, tudo bem?\n\nAmanhã será o lançamento do Château Jardin, projeto de alto padrão no novo eixo Cidade Jardim, com realização Tegra e Exto.\n\nInspirado na arquitetura clássica e na elegância dos jardins franceses, o empreendimento reúne paisagismo internacional EDSA, lazer sofisticado e plantas amplas de 185 m², 215 m², 248 m² e 355 m².\n\nO evento será na Rua Ministro Nelson Hungria, 400.\n\nPosso te enviar as plantas e verificar um horário de apresentação?',
-    'Assunto: Château Jardin | Novo marco no eixo Cidade Jardim\n\nOlá, {{nome}}.\n\nEstou compartilhando o Château Jardin, lançamento que será apresentado amanhã na Rua Ministro Nelson Hungria, 400.\n\nO projeto une arquitetura clássica, olhar contemporâneo, inspiração nos jardins franceses e paisagismo internacional assinado pela EDSA.\n\nAs opções contemplam plantas de 185 m², 215 m², 248 m² e 355 m².\n\nCaso faça sentido para você, posso encaminhar o material completo e organizar uma visita.',
-    'Assunto: Amanhã | Evento de lançamento Château Jardin\n\nOlá, {{nome}}, tudo bem?\n\nAmanhã acontece o evento de lançamento do Château Jardin, empreendimento Tegra e Exto no novo eixo Cidade Jardim.\n\nO projeto foi pensado como um refúgio urbano sofisticado, com inspiração clássica, atmosfera de jardins franceses, lazer de alto padrão, quadra de tênis de saibro, quadra de padel, piscina coberta e wellness.\n\nHá opções de 185 m², 215 m², 248 m² e 355 m².\n\nPosso te enviar plantas e detalhes do evento?',
-    'Assunto: Château Jardin | Plantas de 185 m² a 355 m²\n\nOlá, {{nome}}.\n\nAmanhã será o lançamento do Château Jardin, na Rua Ministro Nelson Hungria, 400.\n\nO empreendimento traz uma proposta residencial elegante, com arquitetura clássica, paisagismo internacional EDSA e inspiração nos jardins franceses.\n\nAs plantas incluem opções de 185 m², 215 m², 248 m² e 355 m², voltadas a quem busca alto padrão, conforto e localização estratégica no eixo Cidade Jardim.\n\nPosso te enviar o material?',
-    'Assunto: Convite | Château Jardin\n\nOlá, {{nome}}, tudo bem?\n\nGostaria de te apresentar o Château Jardin, lançamento de alto padrão que será apresentado amanhã no novo eixo Cidade Jardim.\n\nCom realização Tegra e Exto, o projeto combina arquitetura clássica, inspiração nos jardins franceses, paisagismo internacional e uma estrutura de lazer com perfil de private club.\n\nO evento será na Rua Ministro Nelson Hungria, 400.\n\nSe fizer sentido, posso te enviar as plantas e detalhes das metragens.',
-    'Assunto: Château Jardin | Evento na Rua Ministro Nelson Hungria, 400\n\nOlá, {{nome}}.\n\nAmanhã teremos o lançamento do Château Jardin, um empreendimento de alto padrão na Rua Ministro Nelson Hungria, 400.\n\nO projeto reúne a assinatura Tegra e Exto, paisagismo internacional EDSA, inspiração clássica e metragens amplas de 185 m² a 355 m².\n\nA proposta é oferecer uma experiência residencial sofisticada, com lazer completo e serviços pensados para o dia a dia.\n\nPosso te enviar o material?',
-    'Assunto: Château Jardin | Alto padrão no novo eixo Cidade Jardim\n\nOlá, {{nome}}, tudo bem?\n\nO Château Jardin será lançado amanhã e nasce como uma proposta residencial sofisticada no novo eixo Cidade Jardim.\n\nInspirado no clássico e na elegância dos jardins franceses, o projeto conta com paisagismo internacional, quadra de tênis de saibro, padel, piscina coberta, wellness e plantas de 185 m², 215 m², 248 m² e 355 m².\n\nCaso queira, posso encaminhar as plantas e principais diferenciais.',
-    'Assunto: Conheça o Château Jardin\n\nOlá, {{nome}}.\n\nAmanhã será apresentado o Château Jardin, realização Tegra e Exto no novo eixo Cidade Jardim.\n\nO empreendimento foi concebido com arquitetura clássica, leitura contemporânea e inspiração nos jardins franceses, trazendo metragens amplas e lazer completo para uma experiência residencial reservada.\n\nO evento ocorrerá na Rua Ministro Nelson Hungria, 400.\n\nPosso te enviar o material completo com plantas e diferenciais?',
-    'Assunto: Château Jardin | Lançamento de alto padrão\n\nOlá, {{nome}}, tudo bem?\n\nEstou te enviando o Château Jardin, lançamento que será apresentado amanhã.\n\nO projeto une sofisticação, inspiração clássica, paisagismo internacional EDSA e lazer de alto padrão, com quadra de tênis de saibro, quadra de padel, piscina coberta e wellness.\n\nAs plantas contemplam metragens de 185 m², 215 m², 248 m² e 355 m².\n\nFico à disposição para te enviar o material e organizar uma apresentação.',
-    'Assunto: Château Jardin | Apresentação amanhã\n\nOlá, {{nome}}.\n\nAmanhã teremos o evento de lançamento do Château Jardin, na Rua Ministro Nelson Hungria, 400.\n\nÉ um projeto Tegra e Exto, no novo eixo Cidade Jardim, inspirado na elegância clássica e nos jardins franceses, com paisagismo internacional e plantas amplas de 185 m² a 355 m².\n\nSe fizer sentido para você, posso enviar o material com plantas, metragens e detalhes do empreendimento.'
-  ].map((text) => text + signature);
-
+  const WHATSAPP = WA_BASES.map((parts) => composeWhatsApp(parts));
+  const LIGACAO = CALL_BASES.map((parts) => composeCallScript(parts));
+  const EMAIL = EMAIL_BASES.map(([subject, parts]) => composeEmail(subject, parts));
   const TEMPLATES = { whatsapp: WHATSAPP, ligacao: LIGACAO, email: EMAIL };
+
+  function composeWhatsApp(parts) {
+    return [...parts, receptionBlock()].join('\n\n');
+  }
+  function composeEmail(subject, parts) {
+    return `Assunto: ${subject}\n\n${[...parts, 'O evento será na Rua Ministro Nelson Hungria, 400.', receptionBlock(), contactBlock()].join('\n\n')}`;
+  }
+  function composeCallScript(parts) {
+    const [opening, identification, context, value, question] = parts;
+    return [
+      'SCRIPT DE LIGAÇÃO — Château Jardin',
+      'Objetivo: abrir conversa, apresentar o lançamento e conduzir para envio de material ou visita presencial.',
+      `Abertura: ${opening || ''}`,
+      `Identificação: ${identification || 'Aqui é {{nome_corretor}} da Tegra.'}`,
+      `Contexto: ${context || ''}`,
+      `Valor percebido: ${value || ''}`,
+      `Pergunta de avanço: ${question || 'Posso te enviar o material e verificar o melhor horário para apresentação?'}`,
+      `Fechamento: O evento será na Rua Ministro Nelson Hungria, 400. Ao chegar, solicite por {{nome_corretor}} na recepção.`
+    ].join('\n\n');
+  }
+  function receptionBlock() {
+    return 'Ao chegar, solicite por {{nome_corretor}} da Tegra na recepção.';
+  }
+  function contactBlock() {
+    return 'Contato: {{telefone_corretor}}\nWhatsApp: {{link_whatsapp}}';
+  }
 
   function safeGet(key, fallback) { try { return localStorage.getItem(key) || fallback; } catch (_) { return fallback; } }
   function safeSet(key, value) { try { localStorage.setItem(key, String(value)); } catch (_) {} }
@@ -146,21 +172,58 @@
     const m = bodyText().match(/[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/i);
     return m ? m[0] : '';
   }
-  function getCorretor() { return safeGet('fechai_corretor_nome', safeGet('fechai_pme_corretor_nome', 'Corretor responsável')); }
-  function getCorretorPhone() { return safeGet('fechai_corretor_telefone', safeGet('fechai_pme_corretor_telefone', '{{telefone_corretor}}')); }
+  function getHeaderUserName() {
+    const names = Array.from(document.querySelectorAll('h1,h2,h3,strong,[class*="font-bold"]')).map((el) => String(el.textContent || '').trim()).filter(Boolean);
+    const candidate = names.find((text) => /\bCorretor\b/i.test(text)) || names.find((text) => /^Wagner\b/i.test(text));
+    return candidate ? candidate.replace(/\bCorretor\b/ig, '').trim() : '';
+  }
+  function getCorretor() {
+    return safeGet('fechai_corretor_nome',
+      safeGet('fechai_pme_corretor_nome',
+        safeGet('nome_corretor',
+          safeGet('corretor_nome', getHeaderUserName() || 'Corretor responsável'))));
+  }
+  function getCorretorPhone() {
+    return safeGet('fechai_corretor_telefone',
+      safeGet('fechai_pme_corretor_telefone',
+        safeGet('telefone_corretor',
+          safeGet('corretor_telefone', 'telefone não configurado'))));
+  }
   function getCorretorWhatsapp() {
-    const stored = safeGet('fechai_corretor_whatsapp', safeGet('fechai_pme_link_whatsapp_corretor', ''));
+    const stored = safeGet('fechai_corretor_whatsapp', safeGet('fechai_pme_link_whatsapp_corretor', safeGet('link_whatsapp', '')));
     if (stored) return stored;
     const phone = normalizePhone(getCorretorPhone());
-    return phone ? `https://wa.me/${phone}` : '{{link_whatsapp_corretor}}';
+    return phone ? `https://wa.me/${phone}` : 'WhatsApp não configurado';
   }
 
   function fill(text) {
-    return String(text || '')
-      .replaceAll('{{nome}}', getLeadName())
-      .replaceAll('{{corretor}}', getCorretor())
-      .replaceAll('{{telefone_corretor}}', getCorretorPhone())
-      .replaceAll('{{link_whatsapp_corretor}}', getCorretorWhatsapp());
+    const data = {
+      nome_lead: getLeadName(),
+      nome_corretor: getCorretor(),
+      corretor: getCorretor(),
+      telefone_corretor: getCorretorPhone(),
+      link_whatsapp: getCorretorWhatsapp(),
+      link_whatsapp_corretor: getCorretorWhatsapp(),
+      empreendimento: DEVELOPMENTS[getDevelopment()]?.label || 'Château Jardin'
+    };
+    return formatReadable(String(text || '').replace(/{{\s*([^}]+)\s*}}/g, (_, key) => data[String(key).trim()] || ''));
+  }
+  function formatReadable(text) {
+    const lines = String(text || '').split('\n');
+    const out = [];
+    lines.forEach((line) => {
+      const trimmed = line.trim();
+      if (!trimmed) return;
+      if (/^(Assunto:|SCRIPT DE LIGAÇÃO|Objetivo:|Abertura:|Identificação:|Contexto:|Valor percebido:|Pergunta de avanço:|Fechamento:|Contato:|WhatsApp:)/i.test(trimmed)) {
+        out.push(trimmed);
+        return;
+      }
+      trimmed.split(/(?<=[.!?])\s+(?=[A-ZÀ-Ú0-9])/g).forEach((part) => {
+        const p = part.trim();
+        if (p) out.push(p);
+      });
+    });
+    return out.join('\n\n').replace(/\n{3,}/g, '\n\n').trim();
   }
   function pool() { return TEMPLATES[currentChannel()] || TEMPLATES.ligacao; }
   function currentText() {
@@ -199,7 +262,7 @@
     const style = document.createElement('style');
     style.id = STYLE_ID;
     style.textContent = `
-      #${ROOT_ID} .pme-text{max-height:calc(1.55em * 3);overflow-y:auto;padding-right:6px;scrollbar-width:thin;}
+      #${ROOT_ID} .pme-text{max-height:calc(1.55em * 3);overflow-y:auto;padding-right:6px;scrollbar-width:thin;white-space:pre-line;}
       #${ROOT_ID} .pme-inline-mode-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;align-items:stretch;margin:10px auto 8px;max-width:620px;}
       #${ROOT_ID} .pme-inline-hidden{display:none!important;}
       #${ROOT_ID} .pme-inline-dev-note{grid-column:1/-1;font-size:12px;color:#64748b;font-weight:800;text-align:center;margin:0 auto;line-height:1.35;max-width:680px;}
@@ -247,7 +310,6 @@
   function renderReplacementRows(r, originTitle, channelTitle, mode) {
     const existingDev = r.querySelector('[data-pme-inline-development-grid]');
     if (existingDev) existingDev.remove();
-
     const sectionNodes = sectionBetween(originTitle, channelTitle);
     sectionNodes.forEach((el) => {
       if (el.matches('[data-pme-inline-mode-grid]')) return;
@@ -255,44 +317,32 @@
       if (mode === 'empreendimentos') el.classList.add('pme-inline-hidden');
       else el.classList.remove('pme-inline-hidden');
     });
-
-    if (mode === 'empreendimentos') {
-      channelTitle.insertAdjacentElement('beforebegin', createDevelopmentGrid());
-    }
+    if (mode === 'empreendimentos') channelTitle.insertAdjacentElement('beforebegin', createDevelopmentGrid());
   }
 
   function patch() {
     const r = root();
     if (!r) return;
     ensureStyle();
-
     const mode = getMode();
     const originTitle = findStepTitleContaining('Escolha a origem');
     const channelTitle = findStepTitleContaining('Escolha o canal');
     const situationTitle = findStepTitleContaining('Escolha em qual situação');
     if (!originTitle || !channelTitle || !situationTitle) return;
-
     const headerTitle = r.querySelector('.pme-title');
     const headerSub = r.querySelector('.pme-sub');
     const chip = r.querySelector('.pme-chip');
     if (headerTitle) headerTitle.textContent = 'Fluxo de atendimento';
     if (headerSub) headerSub.textContent = 'Siga os passos abaixo. Primeiro escolha a origem ou empreendimento, depois o canal, a situação e por fim execute o contato.';
-
     originTitle.textContent = '1. Escolha a origem ou empreendimento';
     let modeGrid = r.querySelector('[data-pme-inline-mode-grid]');
     if (modeGrid) modeGrid.remove();
     originTitle.insertAdjacentElement('afterend', createModeGrid(mode));
-
     const originHelp = sectionBetween(originTitle, channelTitle).find((el) => el.classList && el.classList.contains('pme-step-help'));
-    if (originHelp) originHelp.textContent = mode === 'empreendimentos'
-      ? 'Escolha qual empreendimento será trabalhado neste atendimento.'
-      : 'Use Origem do lead para o fluxo padrão ou Empreendimentos para mensagens por projeto.';
-
+    if (originHelp) originHelp.textContent = mode === 'empreendimentos' ? 'Escolha qual empreendimento será trabalhado neste atendimento.' : 'Use Origem do lead para o fluxo padrão ou Empreendimentos para mensagens por projeto.';
     renderReplacementRows(r, originTitle, channelTitle, mode);
-
     channelTitle.textContent = '2. Escolha o canal para contato com o cliente';
     situationTitle.textContent = '3. Escolha em qual situação o cliente está';
-
     const oldSituation = r.querySelector('[data-pme="approach"]')?.closest('.pme-select-wrap');
     const inlineSituation = r.querySelector('[data-pme-inline-situation-wrap]');
     if (mode === 'empreendimentos') {
@@ -302,34 +352,21 @@
       if (oldSituation) oldSituation.classList.remove('pme-inline-hidden');
       if (inlineSituation) inlineSituation.remove();
     }
-
     const boxTitle = r.querySelector('.pme-box-title');
     const textEl = r.querySelector('.pme-text');
     if (boxTitle) boxTitle.textContent = 'Mensagem sugerida';
     if (mode === 'empreendimentos' && textEl) textEl.textContent = currentText();
-
     const channelLabel = r.querySelector('[data-pme-channel].active')?.textContent?.replace(/^[^A-Za-zÀ-ÿ0-9]+\s*/u, '').trim() || 'Canal';
     if (chip && mode === 'empreendimentos') chip.textContent = `${DEVELOPMENTS[getDevelopment()]?.label || 'Empreendimento'} · ${channelLabel}`;
-
     const status = r.querySelector('[data-pme-status]');
     if (status && mode === 'empreendimentos') {
       const blocked = BLOCKED_TERMS.some((term) => currentText().toLowerCase().includes(term.toLowerCase()));
-      status.textContent = blocked
-        ? 'Atenção: termo bloqueado detectado na mensagem. Revise antes de usar.'
-        : 'Mensagem de empreendimento carregada. A PME não envia mensagem sozinha e não registra feedback automaticamente.';
+      status.textContent = blocked ? 'Atenção: termo bloqueado detectado na mensagem. Revise antes de usar.' : 'Mensagem de empreendimento carregada. A PME não envia mensagem sozinha e não registra feedback automaticamente.';
     }
   }
 
-  function stop(event) {
-    event.preventDefault();
-    event.stopPropagation();
-    if (typeof event.stopImmediatePropagation === 'function') event.stopImmediatePropagation();
-  }
-  function schedulePatch() {
-    window.requestAnimationFrame(patch);
-    window.setTimeout(patch, 30);
-    window.setTimeout(patch, 150);
-  }
+  function stop(event) { event.preventDefault(); event.stopPropagation(); if (typeof event.stopImmediatePropagation === 'function') event.stopImmediatePropagation(); }
+  function schedulePatch() { window.requestAnimationFrame(patch); window.setTimeout(patch, 30); window.setTimeout(patch, 150); }
   function handleInlineModeEvent(event) {
     const modeBtn = targetClosest(event, '[data-pme-inline-mode]');
     const devBtn = targetClosest(event, '[data-pme-inline-development]');
@@ -356,7 +393,6 @@
     schedulePatch();
     return true;
   }
-
   function bind() {
     ['pointerdown', 'pointerup', 'click'].forEach((eventName) => {
       document.addEventListener(eventName, function (event) {
@@ -381,7 +417,6 @@
     observer.observe(document.body, { childList: true, subtree: true });
     window.setInterval(patch, 1000);
   }
-
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', start);
   else start();
 })();
