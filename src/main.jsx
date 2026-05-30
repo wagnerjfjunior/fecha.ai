@@ -13,6 +13,11 @@ const queryClient = new QueryClient({
   },
 })
 
+if (typeof window !== 'undefined') {
+  window.FECHAI_SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL
+  window.FECHAI_SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY
+}
+
 function appendScript(id, src) {
   if (typeof window === 'undefined') return
   if (document.getElementById(id)) return
@@ -25,6 +30,7 @@ function appendScript(id, src) {
 
 function loadPmeCallAssistantBeta() {
   appendScript('fechai-pme-call-assistant-beta-loader', '/pme-call-assistant-beta.js')
+  appendScript('fechai-pme-corretor-profile-bridge-loader', '/pme-corretor-profile-bridge.js')
   appendScript('fechai-pme-empreendimentos-inline-flow-loader', '/pme-empreendimentos-inline-flow.js')
 }
 
