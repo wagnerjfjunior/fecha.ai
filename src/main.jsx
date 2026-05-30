@@ -13,14 +13,19 @@ const queryClient = new QueryClient({
   },
 })
 
-function loadPmeCallAssistantBeta() {
+function appendScriptOnce(id, src) {
   if (typeof window === 'undefined') return
-  if (document.getElementById('fechai-pme-call-assistant-beta-loader')) return
+  if (document.getElementById(id)) return
   const script = document.createElement('script')
-  script.id = 'fechai-pme-call-assistant-beta-loader'
-  script.src = '/pme-call-assistant-beta.js'
+  script.id = id
+  script.src = src
   script.defer = true
   document.body.appendChild(script)
+}
+
+function loadPmeCallAssistantBeta() {
+  appendScriptOnce('fechai-pme-call-assistant-beta-loader', '/pme-call-assistant-beta.js')
+  appendScriptOnce('fechai-pme-call-assistant-inline-layout-fix-loader', '/pme-call-assistant-inline-layout-fix.js')
 }
 
 loadPmeCallAssistantBeta()
