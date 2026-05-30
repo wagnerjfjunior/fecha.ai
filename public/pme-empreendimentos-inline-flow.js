@@ -1,6 +1,6 @@
 /*
  * FECH.AI — PME Empreendimentos Inline Flow
- * Version: 0.1.0
+ * Version: 0.1.1
  * Scope: frontend-only enhancer for the existing PME atendimento flow.
  * Safety: no automatic sending, no Supabase/RPC/RLS/Auth/DB changes.
  */
@@ -13,6 +13,12 @@
   const DEVELOPMENT_KEY = 'fechai_pme_development';
   const SITUATION_KEY = 'fechai_pme_development_situation';
   const VARIANT_KEY = 'fechai_pme_development_variant';
+
+  let runtimeMode = safeGet(MODE_KEY, 'origem');
+  let runtimeDevelopment = safeGet(DEVELOPMENT_KEY, 'chateau_jardin');
+  let runtimeSituation = safeGet(SITUATION_KEY, 'convite_lancamento');
+  let runtimeVariant = Number(safeGet(VARIANT_KEY, '0')) || 0;
+  let lastInlineHandledAt = 0;
 
   const BLOCKED_TERMS = [
     'últimas unidades',
@@ -104,19 +110,20 @@
 
   function safeGet(key, fallback) { try { return localStorage.getItem(key) || fallback; } catch (_) { return fallback; } }
   function safeSet(key, value) { try { localStorage.setItem(key, String(value)); } catch (_) {} }
-  function getMode() { return safeGet(MODE_KEY, 'origem'); }
-  function setMode(mode) { safeSet(MODE_KEY, mode === 'empreendimentos' ? 'empreendimentos' : 'origem'); safeSet(VARIANT_KEY, '0'); }
-  function getSituation() { return safeGet(SITUATION_KEY, 'convite_lancamento'); }
-  function setSituation(value) { safeSet(SITUATION_KEY, SITUATIONS[value] ? value : 'convite_lancamento'); safeSet(VARIANT_KEY, '0'); }
-  function getVariant() { return Number(safeGet(VARIANT_KEY, '0')) || 0; }
-  function setVariant(value) { safeSet(VARIANT_KEY, String(Number(value) || 0)); }
-  function getDevelopment() { return safeGet(DEVELOPMENT_KEY, 'chateau_jardin'); }
-  function setDevelopment(value) { safeSet(DEVELOPMENT_KEY, DEVELOPMENTS[value] ? value : 'chateau_jardin'); safeSet(VARIANT_KEY, '0'); }
+  function getMode() { return runtimeMode === 'empreendimentos' ? 'empreendimentos' : 'origem'; }
+  function setMode(mode) { runtimeMode = mode === 'empreendimentos' ? 'empreendimentos' : 'origem'; safeSet(MODE_KEY, runtimeMode); runtimeVariant = 0; safeSet(VARIANT_KEY, '0'); }
+  function getSituation() { return SITUATIONS[runtimeSituation] ? runtimeSituation : 'convite_lancamento'; }
+  function setSituation(value) { runtimeSituation = SITUATIONS[value] ? value : 'convite_lancamento'; safeSet(SITUATION_KEY, runtimeSituation); runtimeVariant = 0; safeSet(VARIANT_KEY, '0'); }
+  function getVariant() { return Number(runtimeVariant) || 0; }
+  function setVariant(value) { runtimeVariant = Number(value) || 0; safeSet(VARIANT_KEY, String(runtimeVariant)); }
+  function getDevelopment() { return DEVELOPMENTS[runtimeDevelopment] ? runtimeDevelopment : 'chateau_jardin'; }
+  function setDevelopment(value) { runtimeDevelopment = DEVELOPMENTS[value] ? value : 'chateau_jardin'; safeSet(DEVELOPMENT_KEY, runtimeDevelopment); runtimeVariant = 0; safeSet(VARIANT_KEY, '0'); }
   function escapeHtml(text) { return String(text || '').replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;').replaceAll('"', '&quot;').replaceAll("'", '&#039;'); }
   function normalizePhone(value) { return String(value || '').replace(/\D/g, ''); }
   function firstWord(text) { return String(text || 'Cliente').trim().split(/\s+/)[0] || 'Cliente'; }
   function bodyText() { return String(document.body?.innerText || ''); }
   function root() { return document.getElementById(ROOT_ID); }
+  function targetClosest(event, selector) { const target = event && event.target; return target && typeof target.closest === 'function' ? target.closest(selector) : null; }
   function currentChannel() { return root()?.querySelector('[data-pme-channel].active')?.getAttribute('data-pme-channel') || safeGet('fechai_pme_channel', 'ligacao'); }
 
   function getLeadName() {
@@ -195,7 +202,8 @@
       #${ROOT_ID} .pme-text{max-height:calc(1.55em * 3);overflow-y:auto;padding-right:6px;scrollbar-width:thin;}
       #${ROOT_ID} .pme-inline-mode-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;align-items:stretch;margin:10px auto 8px;max-width:620px;}
       #${ROOT_ID} .pme-inline-hidden{display:none!important;}
-      #${ROOT_ID} .pme-inline-dev-note{font-size:12px;color:#64748b;font-weight:800;text-align:center;margin:7px auto 0;line-height:1.35;max-width:680px;}
+      #${ROOT_ID} .pme-inline-dev-note{grid-column:1/-1;font-size:12px;color:#64748b;font-weight:800;text-align:center;margin:0 auto;line-height:1.35;max-width:680px;}
+      #${ROOT_ID} [data-pme-inline-mode],#${ROOT_ID} [data-pme-inline-development]{touch-action:manipulation;}
       @media(max-width:700px){#${ROOT_ID} .pme-text{max-height:calc(1.55em * 5);}#${ROOT_ID} .pme-inline-mode-grid{grid-template-columns:1fr 1fr;gap:8px;}}
     `;
     document.head.appendChild(style);
@@ -236,6 +244,23 @@
     return wrap;
   }
 
+  function renderReplacementRows(r, originTitle, channelTitle, mode) {
+    const existingDev = r.querySelector('[data-pme-inline-development-grid]');
+    if (existingDev) existingDev.remove();
+
+    const sectionNodes = sectionBetween(originTitle, channelTitle);
+    sectionNodes.forEach((el) => {
+      if (el.matches('[data-pme-inline-mode-grid]')) return;
+      if (el.classList.contains('pme-step-help')) return;
+      if (mode === 'empreendimentos') el.classList.add('pme-inline-hidden');
+      else el.classList.remove('pme-inline-hidden');
+    });
+
+    if (mode === 'empreendimentos') {
+      channelTitle.insertAdjacentElement('beforebegin', createDevelopmentGrid());
+    }
+  }
+
   function patch() {
     const r = root();
     if (!r) return;
@@ -254,24 +279,16 @@
     if (headerSub) headerSub.textContent = 'Siga os passos abaixo. Primeiro escolha a origem ou empreendimento, depois o canal, a situação e por fim execute o contato.';
 
     originTitle.textContent = '1. Escolha a origem ou empreendimento';
-    const originHelp = originTitle.nextElementSibling?.classList?.contains('pme-step-help') ? originTitle.nextElementSibling : null;
-    if (originHelp) originHelp.textContent = 'Use Origem do lead para o fluxo padrão ou Empreendimentos para mensagens por projeto.';
-
     let modeGrid = r.querySelector('[data-pme-inline-mode-grid]');
     if (modeGrid) modeGrid.remove();
     originTitle.insertAdjacentElement('afterend', createModeGrid(mode));
 
-    const originSectionNodes = sectionBetween(originTitle, channelTitle);
-    originSectionNodes.forEach((el) => {
-      if (el.matches('[data-pme-inline-mode-grid]')) return;
-      if (el.classList.contains('pme-step-help')) return;
-      if (el.matches('[data-pme-inline-development-grid]')) el.remove();
-      else if (mode === 'empreendimentos') el.classList.add('pme-inline-hidden');
-      else el.classList.remove('pme-inline-hidden');
-    });
-    if (mode === 'empreendimentos' && !r.querySelector('[data-pme-inline-development-grid]')) {
-      channelTitle.insertAdjacentElement('beforebegin', createDevelopmentGrid());
-    }
+    const originHelp = sectionBetween(originTitle, channelTitle).find((el) => el.classList && el.classList.contains('pme-step-help'));
+    if (originHelp) originHelp.textContent = mode === 'empreendimentos'
+      ? 'Escolha qual empreendimento será trabalhado neste atendimento.'
+      : 'Use Origem do lead para o fluxo padrão ou Empreendimentos para mensagens por projeto.';
+
+    renderReplacementRows(r, originTitle, channelTitle, mode);
 
     channelTitle.textContent = '2. Escolha o canal para contato com o cliente';
     situationTitle.textContent = '3. Escolha em qual situação o cliente está';
@@ -280,9 +297,7 @@
     const inlineSituation = r.querySelector('[data-pme-inline-situation-wrap]');
     if (mode === 'empreendimentos') {
       if (oldSituation) oldSituation.classList.add('pme-inline-hidden');
-      if (!inlineSituation) {
-        oldSituation?.insertAdjacentElement('afterend', createSituationSelect());
-      }
+      if (!inlineSituation && oldSituation) oldSituation.insertAdjacentElement('afterend', createSituationSelect());
     } else {
       if (oldSituation) oldSituation.classList.remove('pme-inline-hidden');
       if (inlineSituation) inlineSituation.remove();
@@ -305,31 +320,57 @@
     }
   }
 
+  function stop(event) {
+    event.preventDefault();
+    event.stopPropagation();
+    if (typeof event.stopImmediatePropagation === 'function') event.stopImmediatePropagation();
+  }
+  function schedulePatch() {
+    window.requestAnimationFrame(patch);
+    window.setTimeout(patch, 30);
+    window.setTimeout(patch, 150);
+  }
+  function handleInlineModeEvent(event) {
+    const modeBtn = targetClosest(event, '[data-pme-inline-mode]');
+    const devBtn = targetClosest(event, '[data-pme-inline-development]');
+    if (!modeBtn && !devBtn) return false;
+    stop(event);
+    if (Date.now() - lastInlineHandledAt < 80 && event.type === 'click') return true;
+    lastInlineHandledAt = Date.now();
+    if (modeBtn) setMode(modeBtn.getAttribute('data-pme-inline-mode'));
+    if (devBtn) setDevelopment(devBtn.getAttribute('data-pme-inline-development'));
+    schedulePatch();
+    return true;
+  }
+  function handleInlineActionEvent(event) {
+    if (getMode() !== 'empreendimentos') return false;
+    const actionBtn = targetClosest(event, '[data-pme-action]');
+    if (!actionBtn || !root()?.contains(actionBtn)) return false;
+    if (event.type === 'pointerdown') { stop(event); return true; }
+    stop(event);
+    const type = actionBtn.getAttribute('data-pme-action');
+    if (type === 'next') setVariant(getVariant() + 1);
+    if (type === 'prev') setVariant(getVariant() - 1);
+    if (type === 'use') execute(currentText());
+    if (type === 'ai') copy(currentText());
+    schedulePatch();
+    return true;
+  }
+
   function bind() {
-    document.addEventListener('click', function (event) {
-      const modeBtn = event.target.closest('[data-pme-inline-mode]');
-      if (modeBtn) { event.preventDefault(); event.stopPropagation(); setMode(modeBtn.getAttribute('data-pme-inline-mode')); window.requestAnimationFrame(patch); return; }
-      const devBtn = event.target.closest('[data-pme-inline-development]');
-      if (devBtn) { event.preventDefault(); event.stopPropagation(); setDevelopment(devBtn.getAttribute('data-pme-inline-development')); window.requestAnimationFrame(patch); return; }
-      if (getMode() !== 'empreendimentos') return;
-      const action = event.target.closest('[data-pme-action]');
-      if (!action || !root()?.contains(action)) return;
-      const type = action.getAttribute('data-pme-action');
-      if (type === 'next' || type === 'prev' || type === 'use' || type === 'ai') {
-        event.preventDefault(); event.stopPropagation();
-        if (type === 'next') setVariant(getVariant() + 1);
-        if (type === 'prev') setVariant(getVariant() - 1);
-        if (type === 'use') execute(currentText());
-        if (type === 'ai') copy(currentText());
-        window.requestAnimationFrame(patch);
-      }
-    }, true);
+    ['pointerdown', 'pointerup', 'click'].forEach((eventName) => {
+      document.addEventListener(eventName, function (event) {
+        if (handleInlineModeEvent(event)) return;
+        if (eventName !== 'pointerdown') handleInlineActionEvent(event);
+        else if (getMode() === 'empreendimentos' && targetClosest(event, '[data-pme-action]')) handleInlineActionEvent(event);
+      }, true);
+    });
     document.addEventListener('change', function (event) {
-      const select = event.target.closest('[data-pme-inline-situation]');
+      const select = targetClosest(event, '[data-pme-inline-situation]');
       if (!select) return;
-      event.preventDefault(); event.stopPropagation();
+      stop(event);
       setSituation(select.value);
-      window.requestAnimationFrame(patch);
+      schedulePatch();
     }, true);
   }
 
@@ -338,7 +379,7 @@
     patch();
     const observer = new MutationObserver(() => window.requestAnimationFrame(patch));
     observer.observe(document.body, { childList: true, subtree: true });
-    window.setInterval(patch, 1500);
+    window.setInterval(patch, 1000);
   }
 
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', start);
