@@ -1,6 +1,6 @@
 # FECH.AI — Registro Oficial de GPTs Especialistas
 
-**Status:** v1.1 — registro operacional atualizado  
+**Status:** v1.2 — registro operacional atualizado com nomes reais do Builder  
 **Escopo:** organização dos GPTs auxiliares do FECH.AI.  
 **Fonte central:** FECH.AI — Projeto Principal / Master Project.
 
@@ -18,18 +18,22 @@ O GPT 1 — Arquiteto SaaS coordena as decisões críticas e consolida conflitos
 
 ## 2. Ordem oficial dos GPTs
 
+Os nomes abaixo devem refletir exatamente os nomes criados no Builder do ChatGPT.
+
 ```text
-GPT 1: FECH.AI — Arquiteto SaaS
+GPT 1: FECH.AI Arquiteto SaaS
 GPT 2: FECH.AI — UX/UI APP Specialist
 GPT 3: FECH.AI — Supabase Security Specialist
 GPT 4: FECH.AI — Vercel/GitHub CI-CD Specialist
-GPT 5: FECH.AI — SRE/DevSecOps Observability Specialist
-GPT 6: FECH.AI — ADS, Pixel, CAPI e SEO
+GPT 5: FECH.AI-SRE-DevSecOps Observ Specialist
+GPT 6: FECH.AI ADS-Pixel-CAPI-SEO-CRMtoMeta
 ```
 
 ---
 
 ## 3. GPT 1 — FECH.AI Arquiteto SaaS
+
+**Nome criado no Builder:** `FECH.AI Arquiteto SaaS`
 
 Responsável por:
 
@@ -69,7 +73,9 @@ docs/skills/fechai-gpt1-architect-saas.md
 
 ---
 
-## 4. GPT 2 — FECH.AI UX/UI APP Specialist
+## 4. GPT 2 — FECH.AI — UX/UI APP Specialist
+
+**Nome criado no Builder:** `FECH.AI — UX/UI APP Specialist`
 
 Responsável por:
 
@@ -109,7 +115,9 @@ docs/skills/fechai-gpt2-ux-ui-app-specialist.md
 
 ---
 
-## 5. GPT 3 — FECH.AI Supabase Security Specialist
+## 5. GPT 3 — FECH.AI — Supabase Security Specialist
+
+**Nome criado no Builder:** `FECH.AI — Supabase Security Specialist`
 
 Responsável por:
 
@@ -138,7 +146,9 @@ docs/skills/fechai-gpt3-supabase-security-specialist.md
 
 ---
 
-## 6. GPT 4 — FECH.AI Vercel/GitHub CI-CD Specialist
+## 6. GPT 4 — FECH.AI — Vercel/GitHub CI-CD Specialist
+
+**Nome criado no Builder:** `FECH.AI — Vercel/GitHub CI-CD Specialist`
 
 Responsável por:
 
@@ -168,7 +178,9 @@ docs/skills/fechai-gpt4-vercel-github-cicd-specialist.md
 
 ---
 
-## 7. GPT 5 — FECH.AI SRE/DevSecOps Observability Specialist
+## 7. GPT 5 — FECH.AI-SRE-DevSecOps Observ Specialist
+
+**Nome criado no Builder:** `FECH.AI-SRE-DevSecOps Observ Specialist`
 
 Responsável por:
 
@@ -199,7 +211,9 @@ docs/skills/fechai-gpt5-sre-devsecops-observability-specialist.md
 
 ---
 
-## 8. GPT 6 — FECH.AI ADS, Pixel, CAPI e SEO
+## 8. GPT 6 — FECH.AI ADS-Pixel-CAPI-SEO-CRMtoMeta
+
+**Nome criado no Builder:** `FECH.AI ADS-Pixel-CAPI-SEO-CRMtoMeta`
 
 Responsável por:
 
@@ -209,6 +223,7 @@ Responsável por:
 - Meta Conversions API;
 - Stape/GTM Server como caminho inicial;
 - CRM-to-Ads;
+- CRM-to-Meta;
 - Google Offline Conversions;
 - Enhanced Conversions for Leads;
 - UTMs;
@@ -221,7 +236,7 @@ Responsável por:
 - diagnóstico de maturidade digital do corretor;
 - tradução de melhoria técnica em valor comercial.
 
-Deve ser acionado quando a demanda envolver campanha, captação, conversão, atribuição, tráfego pago, SEO, Meta, Google, Pixel, CAPI, Stape/GTM Server, Google Offline Conversions, Enhanced Conversions, CRM-to-Ads, UTMs ou landing page.
+Deve ser acionado quando a demanda envolver campanha, captação, conversão, atribuição, tráfego pago, SEO, Meta, Google, Pixel, CAPI, Stape/GTM Server, Google Offline Conversions, Enhanced Conversions, CRM-to-Ads, CRM-to-Meta, UTMs ou landing page.
 
 Documento base:
 
