@@ -1,6 +1,6 @@
 /*
  * FECH.AI — PME Empreendimentos Inline Flow
- * Version: 0.1.4
+ * Version: 0.1.3
  * Scope: frontend-only enhancer for the existing PME atendimento flow.
  * Safety: no automatic sending, no Supabase/RPC/RLS/Auth/DB changes.
  */
@@ -20,8 +20,6 @@
   let runtimeSituation = safeGet(SITUATION_KEY, 'convite_lancamento');
   let runtimeVariant = Number(safeGet(VARIANT_KEY, '0')) || 0;
   let lastInlineHandledAt = 0;
-  let lastActionHandledAt = 0;
-  let patchQueued = false;
   let profileCache = readStoredProfile();
 
   const BLOCKED_TERMS = [
@@ -135,16 +133,80 @@
   function getDevelopment() { return DEVELOPMENTS[runtimeDevelopment] ? runtimeDevelopment : 'chateau_jardin'; }
   function setDevelopment(value) { runtimeDevelopment = DEVELOPMENTS[value] ? value : 'chateau_jardin'; safeSet(DEVELOPMENT_KEY, runtimeDevelopment); setVariant(0); }
   function escapeHtml(text) { return String(text || '').replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;').replaceAll('"', '&quot;').replaceAll("'", '&#039;'); }
-  function setText(el, value) { if (!el) return; const next = String(value || ''); if (el.textContent !== next) el.textContent = next; }
 
-  function readStoredProfile() { try { return JSON.parse(localStorage.getItem(PROFILE_KEY) || 'null') || null; } catch (_) { return null; } }
-  function buildWhatsappProfileLink(phone) { const digits = normalizePhone(phone); return digits ? `https://api.whatsapp.com/send?phone=${digits}` : ''; }
-  function extractProfileEmail(row) { return clean(row?.email_prof || row?.email_profissional || row?.email_corretor || row?.email || row?.login_email); }
-  function inferGmailAuthUser() { const explicit = clean(profileCache?.email) || safeGet('fechai_corretor_email', safeGet('fechai_pme_corretor_email', safeGet('fechai_pme_gmail_authuser', ''))); if (explicit) return explicit; const corretor = getCorretor().toLowerCase(); const empresa = getEmpresa().toLowerCase(); if (corretor.includes('wagner') && empresa.includes('tegra')) return 'wagner@tegravendas.com.br'; return ''; }
+  function readStoredProfile() {
+    try { return JSON.parse(localStorage.getItem(PROFILE_KEY) || 'null') || null; } catch (_) { return null; }
+  }
 
-  function publishProfile(row) { const nome = clean(row?.apelido || row?.nome); const telefoneSource = row?.telefone_prof || row?.telefone; const telefone = formatPhone(telefoneSource); const whatsapp = buildWhatsappProfileLink(telefoneSource); const empresa = clean(row?.empresa || row?.empresa_nome || row?.imobiliaria || 'Tegra Incorporadora'); const email = extractProfileEmail(row); const profile = { nome, telefone, whatsapp, empresa, email }; profileCache = profile; safeSet(PROFILE_KEY, JSON.stringify(profile)); if (nome) { safeSet('fechai_corretor_nome', nome); safeSet('fechai_pme_corretor_nome', nome); } if (telefone) { safeSet('fechai_corretor_telefone', telefone); safeSet('fechai_pme_corretor_telefone', telefone); } if (whatsapp) { safeSet('fechai_corretor_whatsapp', whatsapp); safeSet('fechai_pme_link_whatsapp_corretor', whatsapp); } if (empresa) { safeSet('fechai_corretor_empresa', empresa); safeSet('fechai_pme_corretor_empresa', empresa); } if (email) { safeSet('fechai_corretor_email', email); safeSet('fechai_pme_corretor_email', email); safeSet('fechai_pme_gmail_authuser', email); } return profile; }
-  function installProfileFetchBridge() { if (window.__fechaiPmeProfileFetchBridgeInstalled) return; window.__fechaiPmeProfileFetchBridgeInstalled = true; const originalFetch = window.fetch; if (typeof originalFetch !== 'function') return; window.fetch = function () { const args = arguments; return originalFetch.apply(this, args).then((response) => { try { const url = String(args[0]?.url || args[0] || ''); if (url.includes('/rest/v1/corretores')) { response.clone().json().then((rows) => { const row = Array.isArray(rows) ? rows[0] : rows; if (row && (row.apelido || row.nome || row.telefone_prof || row.email)) { publishProfile(row); schedulePatch(); } }).catch(() => {}); } } catch (_) {} return response; }); }; }
-  function getLeadName() { const tel = document.querySelector('a[href^="tel:"]'); const card = tel ? tel.closest('.bg-white') || tel.closest('[class*="bg-white"]') : null; const title = card ? card.querySelector('h1,h2,h3,[class*="text-xl"],[class*="text-lg"],[class*="font-bold"]') : null; if (title && title.textContent.trim()) return firstWord(title.textContent.trim()); const match = bodyText().match(/Mensagem sugerida\s+Oi,\s*([^,\n]+),/i); return firstWord(match ? match[1] : 'Cliente'); }
+  function buildWhatsappProfileLink(phone) {
+    const digits = normalizePhone(phone);
+    return digits ? `https://api.whatsapp.com/send?phone=${digits}` : '';
+  }
+
+  function extractProfileEmail(row) {
+    return clean(row?.email_prof || row?.email_profissional || row?.email_corretor || row?.email || row?.login_email);
+  }
+
+  function inferGmailAuthUser() {
+    const explicit = clean(profileCache?.email) || safeGet('fechai_corretor_email', safeGet('fechai_pme_corretor_email', safeGet('fechai_pme_gmail_authuser', '')));
+    if (explicit) return explicit;
+    const corretor = getCorretor().toLowerCase();
+    const empresa = getEmpresa().toLowerCase();
+    if (corretor.includes('wagner') && empresa.includes('tegra')) return 'wagner@tegravendas.com.br';
+    return '';
+  }
+
+  function publishProfile(row) {
+    const nome = clean(row?.apelido || row?.nome);
+    const telefoneSource = row?.telefone_prof || row?.telefone;
+    const telefone = formatPhone(telefoneSource);
+    const whatsapp = buildWhatsappProfileLink(telefoneSource);
+    const empresa = clean(row?.empresa || row?.empresa_nome || row?.imobiliaria || 'Tegra Incorporadora');
+    const email = extractProfileEmail(row);
+    const profile = { nome, telefone, whatsapp, empresa, email };
+    profileCache = profile;
+    safeSet(PROFILE_KEY, JSON.stringify(profile));
+    if (nome) { safeSet('fechai_corretor_nome', nome); safeSet('fechai_pme_corretor_nome', nome); }
+    if (telefone) { safeSet('fechai_corretor_telefone', telefone); safeSet('fechai_pme_corretor_telefone', telefone); }
+    if (whatsapp) { safeSet('fechai_corretor_whatsapp', whatsapp); safeSet('fechai_pme_link_whatsapp_corretor', whatsapp); }
+    if (empresa) { safeSet('fechai_corretor_empresa', empresa); safeSet('fechai_pme_corretor_empresa', empresa); }
+    if (email) { safeSet('fechai_corretor_email', email); safeSet('fechai_pme_corretor_email', email); safeSet('fechai_pme_gmail_authuser', email); }
+    return profile;
+  }
+
+  function installProfileFetchBridge() {
+    if (window.__fechaiPmeProfileFetchBridgeInstalled) return;
+    window.__fechaiPmeProfileFetchBridgeInstalled = true;
+    const originalFetch = window.fetch;
+    if (typeof originalFetch !== 'function') return;
+    window.fetch = function () {
+      const args = arguments;
+      return originalFetch.apply(this, args).then((response) => {
+        try {
+          const url = String(args[0]?.url || args[0] || '');
+          if (url.includes('/rest/v1/corretores')) {
+            response.clone().json().then((rows) => {
+              const row = Array.isArray(rows) ? rows[0] : rows;
+              if (row && (row.apelido || row.nome || row.telefone_prof || row.email)) {
+                publishProfile(row);
+                schedulePatch();
+              }
+            }).catch(() => {});
+          }
+        } catch (_) {}
+        return response;
+      });
+    };
+  }
+
+  function getLeadName() {
+    const tel = document.querySelector('a[href^="tel:"]');
+    const card = tel ? tel.closest('.bg-white') || tel.closest('[class*="bg-white"]') : null;
+    const title = card ? card.querySelector('h1,h2,h3,[class*="text-xl"],[class*="text-lg"],[class*="font-bold"]') : null;
+    if (title && title.textContent.trim()) return firstWord(title.textContent.trim());
+    const match = bodyText().match(/Mensagem sugerida\s+Oi,\s*([^,\n]+),/i);
+    return firstWord(match ? match[1] : 'Cliente');
+  }
   function getPhone() { const tel = document.querySelector('a[href^="tel:"]'); if (tel) return normalizePhone(tel.getAttribute('href')); const m = bodyText().match(/(?:\+?55\s*)?(?:\(?\d{2}\)?\s*)?9?\d{4}[-\s]?\d{4}/); return m ? normalizePhone(m[0]) : ''; }
   function getEmail() { const mail = document.querySelector('a[href^="mailto:"]'); if (mail) return String(mail.getAttribute('href') || '').replace(/^mailto:/, '').trim(); const m = bodyText().match(/[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/i); return m ? m[0] : ''; }
   function getCorretor() { return clean(profileCache?.nome) || safeGet('fechai_corretor_nome', safeGet('fechai_pme_corretor_nome', 'Corretor responsável')); }
@@ -155,26 +217,43 @@
   function pool() { return TEMPLATES[currentChannel()] || TEMPLATES.ligacao; }
   function currentText() { const list = pool(); const index = ((getVariant() % list.length) + list.length) % list.length; return fill(list[index]); }
   function parseEmail(text) { const match = String(text || '').match(/^\s*Assunto:\s*([^\n]+)\n+/i); if (!match) return { subject: 'Château Jardin', body: String(text || '') }; return { subject: match[1].trim(), body: String(text || '').slice(match[0].length).trim() }; }
-  function gmailLink(to, subject, body) { const authUser = inferGmailAuthUser(); const auth = authUser ? `authuser=${encodeURIComponent(authUser)}&` : ''; return `https://mail.google.com/mail/?${auth}view=cm&fs=1&to=${encodeURIComponent(to || '')}&su=${encodeURIComponent(subject || '')}&body=${encodeURIComponent(body || '')}`; }
+  function gmailLink(to, subject, body) {
+    const authUser = inferGmailAuthUser();
+    const auth = authUser ? `authuser=${encodeURIComponent(authUser)}&` : '';
+    return `https://mail.google.com/mail/?${auth}view=cm&fs=1&to=${encodeURIComponent(to || '')}&su=${encodeURIComponent(subject || '')}&body=${encodeURIComponent(body || '')}`;
+  }
   async function copy(text) { try { await navigator.clipboard.writeText(text); return true; } catch (_) { window.prompt('Copie o texto:', text); return false; } }
-  async function execute(text) { await copy(text); const channel = currentChannel(); if (channel === 'whatsapp') { const phone = getPhone(); window.open(phone ? `https://api.whatsapp.com/send?phone=${phone}&text=${encodeURIComponent(text)}` : `https://api.whatsapp.com/send?text=${encodeURIComponent(text)}`, '_blank', 'noopener,noreferrer'); return; } if (channel === 'email') { const parts = parseEmail(text); window.open(gmailLink(getEmail(), parts.subject, parts.body), '_blank', 'noopener,noreferrer'); return; } const phone = getPhone(); if (phone) window.location.href = `tel:${phone}`; }
+  async function execute(text) {
+    await copy(text);
+    const channel = currentChannel();
+    if (channel === 'whatsapp') {
+      const phone = getPhone();
+      window.open(phone ? `https://api.whatsapp.com/send?phone=${phone}&text=${encodeURIComponent(text)}` : `https://api.whatsapp.com/send?text=${encodeURIComponent(text)}`, '_blank', 'noopener,noreferrer');
+      return;
+    }
+    if (channel === 'email') {
+      const parts = parseEmail(text);
+      window.open(gmailLink(getEmail(), parts.subject, parts.body), '_blank', 'noopener,noreferrer');
+      return;
+    }
+    const phone = getPhone();
+    if (phone) window.location.href = `tel:${phone}`;
+  }
+
   function ensureStyle() { if (document.getElementById(STYLE_ID)) return; const style = document.createElement('style'); style.id = STYLE_ID; style.textContent = `#${ROOT_ID} .pme-text{max-height:calc(1.55em * 3);overflow-y:auto;padding-right:6px;scrollbar-width:thin;}#${ROOT_ID} .pme-inline-mode-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;align-items:stretch;margin:10px auto 8px;max-width:620px;}#${ROOT_ID} .pme-inline-hidden{display:none!important;}#${ROOT_ID} .pme-inline-dev-note{grid-column:1/-1;font-size:12px;color:#64748b;font-weight:800;text-align:center;margin:0 auto;line-height:1.35;max-width:680px;}#${ROOT_ID} [data-pme-inline-mode],#${ROOT_ID} [data-pme-inline-development]{touch-action:manipulation;}@media(max-width:700px){#${ROOT_ID} .pme-text{max-height:calc(1.55em * 5);}#${ROOT_ID} .pme-inline-mode-grid{grid-template-columns:1fr 1fr;gap:8px;}}`; document.head.appendChild(style); }
   function findStepTitleContaining(text) { const r = root(); if (!r) return null; return Array.from(r.querySelectorAll('.pme-step-title')).find((el) => String(el.textContent || '').includes(text)) || null; }
   function sectionBetween(startTitle, endTitle) { if (!startTitle) return []; const out = []; let node = startTitle.nextElementSibling; while (node && node !== endTitle) { out.push(node); node = node.nextElementSibling; } return out; }
   function createModeGrid(mode) { const div = document.createElement('div'); div.className = 'pme-inline-mode-grid'; div.setAttribute('data-pme-inline-mode-grid', '1'); div.innerHTML = `<button type="button" class="pme-pill ${mode === 'origem' ? 'active' : ''}" data-pme-inline-mode="origem">🎯 Origem do lead</button><button type="button" class="pme-pill ${mode === 'empreendimentos' ? 'active' : ''}" data-pme-inline-mode="empreendimentos">🏛️ Empreendimentos</button>`; return div; }
-  function updateModeGrid(grid, mode) { grid.querySelectorAll('[data-pme-inline-mode]').forEach((btn) => { btn.classList.toggle('active', btn.getAttribute('data-pme-inline-mode') === mode); }); }
   function createDevelopmentGrid() { const active = getDevelopment(); const div = document.createElement('div'); div.className = 'pme-origin-grid'; div.setAttribute('data-pme-inline-development-grid', '1'); div.innerHTML = Object.entries(DEVELOPMENTS).map(([key, item]) => `<button type="button" class="pme-pill ${key === active ? 'active' : ''}" data-pme-inline-development="${escapeHtml(key)}">${escapeHtml(item.icon + ' ' + item.label)}</button>`).join('') + `<div class="pme-inline-dev-note">${escapeHtml(DEVELOPMENTS[active]?.hint || '')} Endereço: ${escapeHtml(DEVELOPMENTS[active]?.address || '')}</div>`; return div; }
-  function updateDevelopmentGrid(grid) { const active = getDevelopment(); grid.querySelectorAll('[data-pme-inline-development]').forEach((btn) => { btn.classList.toggle('active', btn.getAttribute('data-pme-inline-development') === active); }); setText(grid.querySelector('.pme-inline-dev-note'), `${DEVELOPMENTS[active]?.hint || ''} Endereço: ${DEVELOPMENTS[active]?.address || ''}`); }
   function createSituationSelect() { const wrap = document.createElement('div'); wrap.className = 'pme-select-wrap'; wrap.setAttribute('data-pme-inline-situation-wrap', '1'); wrap.innerHTML = `<select class="pme-select" data-pme-inline-situation aria-label="Escolha em qual situação o cliente está">${Object.entries(SITUATIONS).map(([key, label]) => `<option value="${escapeHtml(key)}" ${key === getSituation() ? 'selected' : ''}>${escapeHtml(label)}</option>`).join('')}</select>`; return wrap; }
-  function updateSituationSelect(wrap) { const select = wrap?.querySelector('[data-pme-inline-situation]'); if (select && select.value !== getSituation()) select.value = getSituation(); }
-  function renderReplacementRows(r, originTitle, channelTitle, mode) { const sectionNodes = sectionBetween(originTitle, channelTitle); sectionNodes.forEach((el) => { if (el.matches('[data-pme-inline-mode-grid]')) return; if (el.classList.contains('pme-step-help')) return; el.classList.toggle('pme-inline-hidden', mode === 'empreendimentos'); }); const existingDev = r.querySelector('[data-pme-inline-development-grid]'); if (mode === 'empreendimentos') { if (existingDev) updateDevelopmentGrid(existingDev); else channelTitle.insertAdjacentElement('beforebegin', createDevelopmentGrid()); return; } if (existingDev) existingDev.remove(); }
-  function patch() { const r = root(); if (!r) return; ensureStyle(); const mode = getMode(); const originTitle = findStepTitleContaining('Escolha a origem'); const channelTitle = findStepTitleContaining('Escolha o canal'); const situationTitle = findStepTitleContaining('Escolha em qual situação'); if (!originTitle || !channelTitle || !situationTitle) return; const headerTitle = r.querySelector('.pme-title'); const headerSub = r.querySelector('.pme-sub'); const chip = r.querySelector('.pme-chip'); setText(headerTitle, 'Fluxo de atendimento'); setText(headerSub, 'Siga os passos abaixo. Primeiro escolha a origem ou empreendimento, depois o canal, a situação e por fim execute o contato.'); setText(originTitle, '1. Escolha a origem ou empreendimento'); let modeGrid = r.querySelector('[data-pme-inline-mode-grid]'); if (!modeGrid) originTitle.insertAdjacentElement('afterend', createModeGrid(mode)); else updateModeGrid(modeGrid, mode); const originHelp = sectionBetween(originTitle, channelTitle).find((el) => el.classList && el.classList.contains('pme-step-help')); setText(originHelp, mode === 'empreendimentos' ? 'Escolha qual empreendimento será trabalhado neste atendimento.' : 'Use Origem do lead para o fluxo padrão ou Empreendimentos para mensagens por projeto.'); renderReplacementRows(r, originTitle, channelTitle, mode); setText(channelTitle, '2. Escolha o canal para contato com o cliente'); setText(situationTitle, '3. Escolha em qual situação o cliente está'); const oldSituation = r.querySelector('[data-pme="approach"]')?.closest('.pme-select-wrap'); const inlineSituation = r.querySelector('[data-pme-inline-situation-wrap]'); if (mode === 'empreendimentos') { if (oldSituation) oldSituation.classList.add('pme-inline-hidden'); if (!inlineSituation && oldSituation) oldSituation.insertAdjacentElement('afterend', createSituationSelect()); else updateSituationSelect(inlineSituation); } else { if (oldSituation) oldSituation.classList.remove('pme-inline-hidden'); if (inlineSituation) inlineSituation.remove(); } const boxTitle = r.querySelector('.pme-box-title'); const textEl = r.querySelector('.pme-text'); setText(boxTitle, 'Mensagem sugerida'); if (mode === 'empreendimentos' && textEl) setText(textEl, currentText()); const channelLabel = r.querySelector('[data-pme-channel].active')?.textContent?.replace(/^[^A-Za-zÀ-ÿ0-9]+\s*/u, '').trim() || 'Canal'; if (chip && mode === 'empreendimentos') setText(chip, `${DEVELOPMENTS[getDevelopment()]?.label || 'Empreendimento'} · ${channelLabel}`); const status = r.querySelector('[data-pme-status]'); if (status && mode === 'empreendimentos') { const blocked = BLOCKED_TERMS.some((term) => currentText().toLowerCase().includes(term.toLowerCase())); setText(status, blocked ? 'Atenção: termo bloqueado detectado na mensagem. Revise antes de usar.' : 'Mensagem de empreendimento carregada. A PME não envia mensagem sozinha e não registra feedback automaticamente.'); } }
+  function renderReplacementRows(r, originTitle, channelTitle, mode) { const existingDev = r.querySelector('[data-pme-inline-development-grid]'); if (existingDev) existingDev.remove(); const sectionNodes = sectionBetween(originTitle, channelTitle); sectionNodes.forEach((el) => { if (el.matches('[data-pme-inline-mode-grid]')) return; if (el.classList.contains('pme-step-help')) return; if (mode === 'empreendimentos') el.classList.add('pme-inline-hidden'); else el.classList.remove('pme-inline-hidden'); }); if (mode === 'empreendimentos') channelTitle.insertAdjacentElement('beforebegin', createDevelopmentGrid()); }
+  function patch() { const r = root(); if (!r) return; ensureStyle(); const mode = getMode(); const originTitle = findStepTitleContaining('Escolha a origem'); const channelTitle = findStepTitleContaining('Escolha o canal'); const situationTitle = findStepTitleContaining('Escolha em qual situação'); if (!originTitle || !channelTitle || !situationTitle) return; const headerTitle = r.querySelector('.pme-title'); const headerSub = r.querySelector('.pme-sub'); const chip = r.querySelector('.pme-chip'); if (headerTitle) headerTitle.textContent = 'Fluxo de atendimento'; if (headerSub) headerSub.textContent = 'Siga os passos abaixo. Primeiro escolha a origem ou empreendimento, depois o canal, a situação e por fim execute o contato.'; originTitle.textContent = '1. Escolha a origem ou empreendimento'; let modeGrid = r.querySelector('[data-pme-inline-mode-grid]'); if (modeGrid) modeGrid.remove(); originTitle.insertAdjacentElement('afterend', createModeGrid(mode)); const originHelp = sectionBetween(originTitle, channelTitle).find((el) => el.classList && el.classList.contains('pme-step-help')); if (originHelp) originHelp.textContent = mode === 'empreendimentos' ? 'Escolha qual empreendimento será trabalhado neste atendimento.' : 'Use Origem do lead para o fluxo padrão ou Empreendimentos para mensagens por projeto.'; renderReplacementRows(r, originTitle, channelTitle, mode); channelTitle.textContent = '2. Escolha o canal para contato com o cliente'; situationTitle.textContent = '3. Escolha em qual situação o cliente está'; const oldSituation = r.querySelector('[data-pme="approach"]')?.closest('.pme-select-wrap'); const inlineSituation = r.querySelector('[data-pme-inline-situation-wrap]'); if (mode === 'empreendimentos') { if (oldSituation) oldSituation.classList.add('pme-inline-hidden'); if (!inlineSituation && oldSituation) oldSituation.insertAdjacentElement('afterend', createSituationSelect()); } else { if (oldSituation) oldSituation.classList.remove('pme-inline-hidden'); if (inlineSituation) inlineSituation.remove(); } const boxTitle = r.querySelector('.pme-box-title'); const textEl = r.querySelector('.pme-text'); if (boxTitle) boxTitle.textContent = 'Mensagem sugerida'; if (mode === 'empreendimentos' && textEl) textEl.textContent = currentText(); const channelLabel = r.querySelector('[data-pme-channel].active')?.textContent?.replace(/^[^A-Za-zÀ-ÿ0-9]+\s*/u, '').trim() || 'Canal'; if (chip && mode === 'empreendimentos') chip.textContent = `${DEVELOPMENTS[getDevelopment()]?.label || 'Empreendimento'} · ${channelLabel}`; const status = r.querySelector('[data-pme-status]'); if (status && mode === 'empreendimentos') { const blocked = BLOCKED_TERMS.some((term) => currentText().toLowerCase().includes(term.toLowerCase())); status.textContent = blocked ? 'Atenção: termo bloqueado detectado na mensagem. Revise antes de usar.' : 'Mensagem de empreendimento carregada. A PME não envia mensagem sozinha e não registra feedback automaticamente.'; } }
   function stop(event) { event.preventDefault(); event.stopPropagation(); if (typeof event.stopImmediatePropagation === 'function') event.stopImmediatePropagation(); }
-  function schedulePatch() { if (patchQueued) return; patchQueued = true; window.requestAnimationFrame(() => { patchQueued = false; patch(); }); }
+  function schedulePatch() { window.requestAnimationFrame(patch); window.setTimeout(patch, 30); window.setTimeout(patch, 150); }
   function handleInlineModeEvent(event) { const modeBtn = targetClosest(event, '[data-pme-inline-mode]'); const devBtn = targetClosest(event, '[data-pme-inline-development]'); if (!modeBtn && !devBtn) return false; stop(event); if (Date.now() - lastInlineHandledAt < 80 && event.type === 'click') return true; lastInlineHandledAt = Date.now(); if (modeBtn) setMode(modeBtn.getAttribute('data-pme-inline-mode')); if (devBtn) setDevelopment(devBtn.getAttribute('data-pme-inline-development')); schedulePatch(); return true; }
-  function handleInlineActionEvent(event) { if (getMode() !== 'empreendimentos') return false; if (event.type === 'pointerdown') return false; const actionBtn = targetClosest(event, '[data-pme-action]'); if (!actionBtn || !root()?.contains(actionBtn)) return false; const type = actionBtn.getAttribute('data-pme-action'); if (!['next', 'prev', 'use', 'ai'].includes(type)) return false; stop(event); if (event.type === 'click' && Date.now() - lastActionHandledAt < 180) return true; lastActionHandledAt = Date.now(); if (type === 'next') setVariant(getVariant() + 1); if (type === 'prev') setVariant(getVariant() - 1); if (type === 'use') execute(currentText()); if (type === 'ai') copy(currentText()); schedulePatch(); return true; }
-  function bind() { if (window.__fechaiPmeEmpreendimentosInlineBound) return; window.__fechaiPmeEmpreendimentosInlineBound = true; ['pointerdown', 'pointerup', 'click'].forEach((eventName) => { document.addEventListener(eventName, function (event) { if (handleInlineModeEvent(event)) return; if (eventName !== 'pointerdown') handleInlineActionEvent(event); }, true); }); document.addEventListener('change', function (event) { const select = targetClosest(event, '[data-pme-inline-situation]'); if (!select) return; stop(event); setSituation(select.value); schedulePatch(); }, true); }
-  function start() { installProfileFetchBridge(); bind(); patch(); const observer = new MutationObserver(() => schedulePatch()); observer.observe(document.body, { childList: true, subtree: true }); }
+  function handleInlineActionEvent(event) { if (getMode() !== 'empreendimentos') return false; const actionBtn = targetClosest(event, '[data-pme-action]'); if (!actionBtn || !root()?.contains(actionBtn)) return false; if (event.type === 'pointerdown') { stop(event); return true; } stop(event); const type = actionBtn.getAttribute('data-pme-action'); if (type === 'next') setVariant(getVariant() + 1); if (type === 'prev') setVariant(getVariant() - 1); if (type === 'use') execute(currentText()); if (type === 'ai') copy(currentText()); schedulePatch(); return true; }
+  function bind() { ['pointerdown', 'pointerup', 'click'].forEach((eventName) => { document.addEventListener(eventName, function (event) { if (handleInlineModeEvent(event)) return; if (eventName !== 'pointerdown') handleInlineActionEvent(event); else if (getMode() === 'empreendimentos' && targetClosest(event, '[data-pme-action]')) handleInlineActionEvent(event); }, true); }); document.addEventListener('change', function (event) { const select = targetClosest(event, '[data-pme-inline-situation]'); if (!select) return; stop(event); setSituation(select.value); schedulePatch(); }, true); }
+  function start() { installProfileFetchBridge(); bind(); patch(); const observer = new MutationObserver(() => window.requestAnimationFrame(patch)); observer.observe(document.body, { childList: true, subtree: true }); window.setInterval(patch, 1000); }
 
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', start);
   else start();
