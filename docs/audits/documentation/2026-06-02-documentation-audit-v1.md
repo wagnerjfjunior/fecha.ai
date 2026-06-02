@@ -165,10 +165,15 @@ order by table_schema, table_name, ordinal_position;
 ### 6.3 RLS por tabela
 
 ```sql
-select schemaname, tablename, rowsecurity, forcerowsecurity
-from pg_tables
-where schemaname not in ('pg_catalog', 'information_schema')
-order by schemaname, tablename;
+select n.nspname as schemaname,
+       c.relname as tablename,
+       c.relrowsecurity as rowsecurity,
+       c.relforcerowsecurity as forcerowsecurity
+from pg_class c
+join pg_namespace n on n.oid = c.relnamespace
+where c.relkind in ('r', 'p')
+  and n.nspname not in ('pg_catalog', 'information_schema')
+order by n.nspname, c.relname;
 ```
 
 ### 6.4 Policies
