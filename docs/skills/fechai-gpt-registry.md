@@ -1,6 +1,6 @@
 # FECH.AI — Registro Oficial de GPTs Especialistas
 
-**Status:** v1.0 — registro operacional  
+**Status:** v1.2 — registro operacional atualizado com nomes reais do Builder  
 **Escopo:** organização dos GPTs auxiliares do FECH.AI.  
 **Fonte central:** FECH.AI — Projeto Principal / Master Project.
 
@@ -12,20 +12,28 @@ O projeto principal do ChatGPT continua sendo a fonte central de contexto, decis
 
 Os GPTs especialistas são auxiliares. Eles não substituem o Master Project, não decidem isoladamente alterações sensíveis e não devem contradizer a documentação oficial vigente, o banco real/Supabase aplicado ou decisões diretas do Wagner.
 
+O GPT 1 — Arquiteto SaaS coordena as decisões críticas e consolida conflitos entre especialistas.
+
 ---
 
 ## 2. Ordem oficial dos GPTs
 
+Os nomes abaixo devem refletir exatamente os nomes criados no Builder do ChatGPT.
+
 ```text
-GPT 1: FECH.AI — Arquiteto SaaS
+GPT 1: FECH.AI Arquiteto SaaS
 GPT 2: FECH.AI — UX/UI APP Specialist
-GPT 3: FECH.AI — DevSecOps Stack Specialist
-GPT 4: FECH.AI — ADS, Pixel, CAPI e SEO
+GPT 3: FECH.AI — Supabase Security Specialist
+GPT 4: FECH.AI — Vercel/GitHub CI-CD Specialist
+GPT 5: FECH.AI-SRE-DevSecOps Observ Specialist
+GPT 6: FECH.AI ADS-Pixel-CAPI-SEO-CRMtoMeta
 ```
 
 ---
 
 ## 3. GPT 1 — FECH.AI Arquiteto SaaS
+
+**Nome criado no Builder:** `FECH.AI Arquiteto SaaS`
 
 Responsável por:
 
@@ -57,9 +65,17 @@ Deve ser acionado quando houver impacto em:
 - arquitetura multi-tenant;
 - fluxo crítico do SaaS.
 
+Documento base:
+
+```text
+docs/skills/fechai-gpt1-architect-saas.md
+```
+
 ---
 
-## 4. GPT 2 — FECH.AI UX/UI APP Specialist
+## 4. GPT 2 — FECH.AI — UX/UI APP Specialist
+
+**Nome criado no Builder:** `FECH.AI — UX/UI APP Specialist`
 
 Responsável por:
 
@@ -99,36 +115,117 @@ docs/skills/fechai-gpt2-ux-ui-app-specialist.md
 
 ---
 
-## 5. GPT 3 — FECH.AI DevSecOps Stack Specialist
+## 5. GPT 3 — FECH.AI — Supabase Security Specialist
+
+**Nome criado no Builder:** `FECH.AI — Supabase Security Specialist`
 
 Responsável por:
 
 - Supabase;
-- Vercel;
-- GitHub;
-- CI/CD;
-- segurança;
-- observabilidade;
-- SLA, SLI e SLO;
-- RTO e RPO;
-- backup e restore;
-- runbooks;
-- incidentes;
-- deploy seguro;
-- rollback operacional.
+- PostgreSQL;
+- Auth;
+- RLS;
+- policies;
+- RPCs/functions;
+- migrations;
+- grants;
+- storage;
+- Edge Functions;
+- performance;
+- auditoria;
+- LGPD;
+- segurança multi-tenant.
 
-Deve ser acionado quando houver alteração ou falha envolvendo infraestrutura, banco, autenticação, produção, deploy, logs, alertas, secrets ou continuidade de negócio.
+Deve ser acionado quando houver alteração ou falha envolvendo banco, Auth, RLS, policies, RPCs, migrations, grants, dados sensíveis, isolamento por tenant/empresa/perfil ou segurança Supabase.
+
+Documento base:
+
+```text
+docs/skills/fechai-gpt3-supabase-security-specialist.md
+```
 
 ---
 
-## 6. GPT 4 — FECH.AI ADS, Pixel, CAPI e SEO
+## 6. GPT 4 — FECH.AI — Vercel/GitHub CI-CD Specialist
+
+**Nome criado no Builder:** `FECH.AI — Vercel/GitHub CI-CD Specialist`
+
+Responsável por:
+
+- Vercel;
+- GitHub;
+- branches;
+- Pull Requests;
+- Actions;
+- CI/CD;
+- preview;
+- production;
+- env vars;
+- secrets;
+- deploy;
+- rollback;
+- releases;
+- changelog;
+- governança de release.
+
+Deve ser acionado quando houver alteração ou falha envolvendo branch, PR, merge, preview Vercel, deploy, build, env vars, secrets, production, releases, rollback ou changelog operacional.
+
+Documento base:
+
+```text
+docs/skills/fechai-gpt4-vercel-github-cicd-specialist.md
+```
+
+---
+
+## 7. GPT 5 — FECH.AI-SRE-DevSecOps Observ Specialist
+
+**Nome criado no Builder:** `FECH.AI-SRE-DevSecOps Observ Specialist`
+
+Responsável por:
+
+- SRE;
+- observabilidade;
+- SLA, SLI e SLO;
+- error budget;
+- incidentes;
+- logs;
+- métricas;
+- alertas;
+- uptime;
+- backup;
+- restore;
+- RTO e RPO;
+- runbooks;
+- suporte N1/N2/N3;
+- custos;
+- continuidade operacional.
+
+Deve ser acionado quando houver erro, incidente, indisponibilidade, lentidão, alerta, falha recorrente, necessidade de monitoramento, definição de SLA/SLO/SLI, backup, restore, RTO/RPO, runbook ou continuidade de negócio.
+
+Documento base:
+
+```text
+docs/skills/fechai-gpt5-sre-devsecops-observability-specialist.md
+```
+
+---
+
+## 8. GPT 6 — FECH.AI ADS-Pixel-CAPI-SEO-CRMtoMeta
+
+**Nome criado no Builder:** `FECH.AI ADS-Pixel-CAPI-SEO-CRMtoMeta`
 
 Responsável por:
 
 - Meta Ads;
 - Google Ads;
 - Pixel;
-- API de Conversões;
+- Meta Conversions API;
+- Stape/GTM Server como caminho inicial;
+- CRM-to-Ads;
+- CRM-to-Meta;
+- Google Offline Conversions;
+- Enhanced Conversions for Leads;
 - UTMs;
 - deduplicação com event_id;
 - origem do lead;
@@ -139,24 +236,32 @@ Responsável por:
 - diagnóstico de maturidade digital do corretor;
 - tradução de melhoria técnica em valor comercial.
 
-Deve ser acionado quando a demanda envolver campanha, captação, conversão, atribuição, tráfego pago, SEO, Meta, Google ou landing page.
+Deve ser acionado quando a demanda envolver campanha, captação, conversão, atribuição, tráfego pago, SEO, Meta, Google, Pixel, CAPI, Stape/GTM Server, Google Offline Conversions, Enhanced Conversions, CRM-to-Ads, CRM-to-Meta, UTMs ou landing page.
+
+Documento base:
+
+```text
+docs/skills/fechai-gpt6-ads-pixel-capi-seo.md
+```
 
 ---
 
-## 7. Relação com Codex, GitHub e deploy
+## 9. Relação com Codex, GitHub e deploy
 
 A análise e decisão acontecem no projeto principal e nos GPTs especialistas.
 
 A implementação real deve seguir:
 
 ```text
-análise → plano → Codex → branch GitHub → Pull Request → preview Vercel → validação → merge → deploy → changelog
+análise → plano → Codex → branch GitHub → Pull Request → preview Vercel → validação → merge → deploy → smoke test → monitoramento → changelog → rollback documentado
 ```
 
 Produção não deve ser tratada como laboratório.
 
 ---
 
-## 8. Regra de atualização
+## 10. Regra de atualização
 
 Sempre que a ordem, função ou escopo de um GPT mudar, atualizar este arquivo e, quando necessário, os documentos individuais em `docs/skills/`.
+
+Alterações de documentação oficial, skills, arquitetura, Supabase, Vercel, GitHub, MesaCliente, engine ou regras centrais devem seguir branch, PR, revisão e changelog.
