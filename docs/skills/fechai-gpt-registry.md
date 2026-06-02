@@ -1,6 +1,6 @@
 # FECH.AI — Registro Oficial de GPTs Especialistas
 
-**Status:** v1.2 — registro operacional atualizado com nomes reais do Builder  
+**Status:** v1.3 — registro operacional com camada horizontal e vertical  
 **Escopo:** organização dos GPTs auxiliares do FECH.AI.  
 **Fonte central:** FECH.AI — Projeto Principal / Master Project.
 
@@ -18,7 +18,9 @@ O GPT 1 — Arquiteto SaaS coordena as decisões críticas e consolida conflitos
 
 ## 2. Ordem oficial dos GPTs
 
-Os nomes abaixo devem refletir exatamente os nomes criados no Builder do ChatGPT.
+Os nomes abaixo devem refletir exatamente os nomes criados ou propostos para criação no Builder do ChatGPT.
+
+### Camada horizontal — governança, tecnologia e tracking
 
 ```text
 GPT 1: FECH.AI Arquiteto SaaS
@@ -27,6 +29,15 @@ GPT 3: FECH.AI — Supabase Security Specialist
 GPT 4: FECH.AI — Vercel/GitHub CI-CD Specialist
 GPT 5: FECH.AI-SRE-DevSecOps Observ Specialist
 GPT 6: FECH.AI ADS-Pixel-CAPI-SEO-CRMtoMeta
+```
+
+### Camada vertical — aplicação e negócio
+
+```text
+GPT 7: FECH.AI — LeadOps CRM Discador Specialist
+GPT 8: FECH.AI — MesaCliente Tabelas Propostas Specialist
+GPT 9: FECH.AI — Integrações Portais Mensageria Specialist
+GPT 10: FECH.AI — Monetização Startup GTM Specialist
 ```
 
 ---
@@ -77,35 +88,7 @@ docs/skills/fechai-gpt1-architect-saas.md
 
 **Nome criado no Builder:** `FECH.AI — UX/UI APP Specialist`
 
-Responsável por:
-
-- UX/UI do APP FECH.AI;
-- jornada do corretor;
-- jornada do gestor;
-- jornada do admin;
-- jornada do suporte;
-- experiência do cliente final via MesaCliente/proposta;
-- design system;
-- fluxos;
-- responsividade;
-- acessibilidade;
-- microcopy;
-- estados de erro/loading/vazio/sucesso;
-- critérios de aceite UX.
-
-Deve respeitar integralmente:
-
-- regras multi-tenant;
-- permissões;
-- segurança;
-- LGPD;
-- motor do app;
-- MesaCliente;
-- parser;
-- motor financeiro;
-- regras comerciais;
-- rollback visual;
-- validação pelo GPT 1 quando houver impacto estrutural.
+Responsável por UX/UI do APP FECH.AI, jornadas do corretor/gestor/admin/suporte, design system, responsividade, acessibilidade, microcopy, estados de erro/loading/vazio/sucesso e critérios de aceite UX.
 
 Documento base:
 
@@ -119,24 +102,7 @@ docs/skills/fechai-gpt2-ux-ui-app-specialist.md
 
 **Nome criado no Builder:** `FECH.AI — Supabase Security Specialist`
 
-Responsável por:
-
-- Supabase;
-- PostgreSQL;
-- Auth;
-- RLS;
-- policies;
-- RPCs/functions;
-- migrations;
-- grants;
-- storage;
-- Edge Functions;
-- performance;
-- auditoria;
-- LGPD;
-- segurança multi-tenant.
-
-Deve ser acionado quando houver alteração ou falha envolvendo banco, Auth, RLS, policies, RPCs, migrations, grants, dados sensíveis, isolamento por tenant/empresa/perfil ou segurança Supabase.
+Responsável por Supabase, PostgreSQL, Auth, RLS, policies, RPCs/functions, migrations, grants, storage, Edge Functions, performance, auditoria, LGPD e segurança multi-tenant.
 
 Documento base:
 
@@ -150,25 +116,7 @@ docs/skills/fechai-gpt3-supabase-security-specialist.md
 
 **Nome criado no Builder:** `FECH.AI — Vercel/GitHub CI-CD Specialist`
 
-Responsável por:
-
-- Vercel;
-- GitHub;
-- branches;
-- Pull Requests;
-- Actions;
-- CI/CD;
-- preview;
-- production;
-- env vars;
-- secrets;
-- deploy;
-- rollback;
-- releases;
-- changelog;
-- governança de release.
-
-Deve ser acionado quando houver alteração ou falha envolvendo branch, PR, merge, preview Vercel, deploy, build, env vars, secrets, production, releases, rollback ou changelog operacional.
+Responsável por Vercel, GitHub, branches, PRs, Actions, CI/CD, preview, production, env vars, secrets, deploy, rollback, releases, changelog e governança de release.
 
 Documento base:
 
@@ -182,26 +130,7 @@ docs/skills/fechai-gpt4-vercel-github-cicd-specialist.md
 
 **Nome criado no Builder:** `FECH.AI-SRE-DevSecOps Observ Specialist`
 
-Responsável por:
-
-- SRE;
-- observabilidade;
-- SLA, SLI e SLO;
-- error budget;
-- incidentes;
-- logs;
-- métricas;
-- alertas;
-- uptime;
-- backup;
-- restore;
-- RTO e RPO;
-- runbooks;
-- suporte N1/N2/N3;
-- custos;
-- continuidade operacional.
-
-Deve ser acionado quando houver erro, incidente, indisponibilidade, lentidão, alerta, falha recorrente, necessidade de monitoramento, definição de SLA/SLO/SLI, backup, restore, RTO/RPO, runbook ou continuidade de negócio.
+Responsável por SRE, observabilidade, SLA/SLI/SLO, error budget, incidentes, logs, métricas, alertas, uptime, backup, restore, RTO/RPO, runbooks, suporte N1/N2/N3, custos e continuidade operacional.
 
 Documento base:
 
@@ -215,28 +144,7 @@ docs/skills/fechai-gpt5-sre-devsecops-observability-specialist.md
 
 **Nome criado no Builder:** `FECH.AI ADS-Pixel-CAPI-SEO-CRMtoMeta`
 
-Responsável por:
-
-- Meta Ads;
-- Google Ads;
-- Pixel;
-- Meta Conversions API;
-- Stape/GTM Server como caminho inicial;
-- CRM-to-Ads;
-- CRM-to-Meta;
-- Google Offline Conversions;
-- Enhanced Conversions for Leads;
-- UTMs;
-- deduplicação com event_id;
-- origem do lead;
-- tracking server-side;
-- SEO técnico;
-- landing pages;
-- atribuição;
-- diagnóstico de maturidade digital do corretor;
-- tradução de melhoria técnica em valor comercial.
-
-Deve ser acionado quando a demanda envolver campanha, captação, conversão, atribuição, tráfego pago, SEO, Meta, Google, Pixel, CAPI, Stape/GTM Server, Google Offline Conversions, Enhanced Conversions, CRM-to-Ads, CRM-to-Meta, UTMs ou landing page.
+Responsável por Meta Ads, Google Ads, Pixel, Meta CAPI, Stape/GTM Server como caminho inicial, CRM-to-Ads, CRM-to-Meta, Google Offline Conversions, Enhanced Conversions for Leads, UTMs, deduplicação, SEO, landing pages, atribuição e maturidade digital do corretor.
 
 Documento base:
 
@@ -246,7 +154,63 @@ docs/skills/fechai-gpt6-ads-pixel-capi-seo.md
 
 ---
 
-## 9. Relação com Codex, GitHub e deploy
+## 9. GPT 7 — FECH.AI — LeadOps CRM Discador Specialist
+
+**Nome proposto para o Builder:** `FECH.AI — LeadOps CRM Discador Specialist`
+
+Responsável por carregamento de listas/leads, importação CSV/XLSX/PDF/texto/imagem, OCR de lista de papel, compartilhamento mobile/WhatsApp, deduplicação, higienização de telefone, funil CRM, Discador, WhatsApp/manual, Power Mode, produtividade, taxa de conversão e dashboard de agendamentos para o fim de semana.
+
+Documento base:
+
+```text
+docs/skills/fechai-gpt7-leadops-crm-discador-specialist.md
+```
+
+---
+
+## 10. GPT 8 — FECH.AI — MesaCliente Tabelas Propostas Specialist
+
+**Nome proposto para o Builder:** `FECH.AI — MesaCliente Tabelas Propostas Specialist`
+
+Responsável por MesaCliente, importação de tabelas de valores, parser/OCR/PDF/CSV/XLSX, cadastro de empreendimentos, unidades, fotos, plantas, preços, fluxo de pagamento, simulações, propostas, histórico, 2ª via e segurança comercial contra proposta inválida.
+
+Documento base:
+
+```text
+docs/skills/fechai-gpt8-mesacliente-tabelas-propostas-specialist.md
+```
+
+---
+
+## 11. GPT 9 — FECH.AI — Integrações Portais Mensageria Specialist
+
+**Nome proposto para o Builder:** `FECH.AI — Integrações Portais Mensageria Specialist`
+
+Responsável por ZAP Imóveis, VivaReal, Imovelweb, outros portais imobiliários, Meta Leads, Google Leads, webhooks, Make/n8n, WhatsApp oficial, WhatsApp não oficial como risco controlado, mensagens automáticas futuras, compartilhamento mobile, normalização de payloads, roteamento por corretor e logs de integração.
+
+Documento base:
+
+```text
+docs/skills/fechai-gpt9-integracoes-portais-mensageria-specialist.md
+```
+
+---
+
+## 12. GPT 10 — FECH.AI — Monetização Startup GTM Specialist
+
+**Nome proposto para o Builder:** `FECH.AI — Monetização Startup GTM Specialist`
+
+Responsável por monetização SaaS, planos, pricing, MRR, ARR, CAC, LTV, churn, payback, margem, módulos premium, validação de mercado, pilotos, ICP, posicionamento, pitch, investimento e venda para corretores, imobiliárias e incorporadoras.
+
+Documento base:
+
+```text
+docs/skills/fechai-gpt10-monetizacao-startup-gtm-specialist.md
+```
+
+---
+
+## 13. Relação com Codex, GitHub e deploy
 
 A análise e decisão acontecem no projeto principal e nos GPTs especialistas.
 
@@ -260,7 +224,7 @@ Produção não deve ser tratada como laboratório.
 
 ---
 
-## 10. Regra de atualização
+## 14. Regra de atualização
 
 Sempre que a ordem, função ou escopo de um GPT mudar, atualizar este arquivo e, quando necessário, os documentos individuais em `docs/skills/`.
 
