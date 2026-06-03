@@ -88,6 +88,7 @@ Validação pública pontual realizada antes desta revisão:
 - Diretórios públicos observados: docs/mesa-cliente/, docs/protocolos/, docs/checkpoints/, docs/protocolo/mesa-cliente/ e docs/audits/documentation/.
 - Caminho confirmado publicamente para o arquivo alvo da PR #52: docs/audits/documentation/.
 - Nome confirmado publicamente: docs/mesa-cliente/fase-20d4-fonte-soberana-tabela-importada.md.
+- Pendência Codex da PR #52 identificou arquivos adicionais da Fase 8 em `docs/mesa-cliente/`; esta revisão inclui os caminhos conhecidos de 8C, 8E, 8F, 8G, 8H, 8I, 8J e 8K sem declarar vigência oficial.
 ```
 
 Limite desta validação:
@@ -143,6 +144,7 @@ Classificação inicial por nome, localização e relação documental. Esta tab
 | `docs/mesa-cliente/adr/ADR-0001-fase-4a-json-first-sem-persistencia.md` | ADR / CHECKPOINT / PENDENTE_RECONCILIACAO | P1 | Registra decisão JSON-first sem persistência; pode conflitar com fases posteriores de persistência. |
 | `docs/mesa-cliente/importacoes/chateau-jardin/2026-05/` | EVIDENCIA / OPERACIONAL / PENDENTE_RECONCILIACAO | P1 | Importação específica; não generalizar como contrato do MesaCliente. |
 | `docs/mesa-cliente/importacoes/chateau-jardin/2026-05/README.md` | EVIDENCIA / OPERACIONAL / PENDENTE_RECONCILIACAO | P1 | Evidência de importação; validar origem, payload, tabelas e ambiente. |
+| `docs/mesa-cliente/importacoes/chateau-jardin/2026-05/MANIFEST.local-files.md` | MANIFEST / OPERACIONAL / PENDENTE_RECONCILIACAO | P1 | Manifest de arquivos locais da importação; validar presença, origem, payloads e vínculo com importação real. |
 | `docs/mesa-cliente/rascunhos-sql/` | RASCUNHO / NAO_CANONICO / PENDENTE_RECONCILIACAO | P0/P1 | Não usar para implementar ou aplicar SQL sem comparação com migrations e Supabase real. |
 | `docs/mesa-cliente/engenharia-financeira-arquitetura.md` | OFICIAL_CANDIDATO / PENDENTE_RECONCILIACAO | P0/P1 | Possível base arquitetural; depende de reconciliação com código, Supabase e decisões mais recentes. |
 | `docs/mesa-cliente/engenharia-financeira-plano-implementacao.md` | PROPOSTA / PLANO / PENDENTE_RECONCILIACAO | P1 | Plano não prova implementação. |
@@ -150,6 +152,7 @@ Classificação inicial por nome, localização e relação documental. Esta tab
 | `docs/mesa-cliente/engenharia-financeira-roadmap-execucao-ate-mesa-cliente.md` | PROPOSTA / OFICIAL_CANDIDATO / PENDENTE_RECONCILIACAO | P1 | Roadmap orienta, não prova estado aplicado. |
 | `docs/mesa-cliente/espelho-intelligence-layer.md` | OFICIAL_CANDIDATO / PROPOSTA / PENDENTE_RECONCILIACAO | P1 | Camada de inteligência precisa validação de escopo, IA, payload e privacidade. |
 | `docs/mesa-cliente/espelho-vendas-engine-v1.md` | OFICIAL_CANDIDATO / PENDENTE_RECONCILIACAO | P0/P1 | Possível contrato de engine; validar contra motor financeiro real. |
+| `docs/mesa-cliente/frontend-preview-rpc-integration.md` | OFICIAL_CANDIDATO / INTEGRACAO_FRONT_RPC / PENDENTE_RECONCILIACAO | P1 | Documento de integração Frontend RPC Preview; validar contra código real, Supabase, payload e ausência de autoridade do frontend. |
 | `docs/mesa-cliente/fase-20a-contrato-reabrir-fluxo-historico.md` | CONTRATO / OFICIAL_CANDIDATO / PENDENTE_RECONCILIACAO | P0/P1 | Reabertura de fluxo/histórico é sensível; validar RPC/RLS/ownership. |
 | `docs/mesa-cliente/fase-20a-validacao-rpc-reabrir-fluxo-historico.md` | VALIDACAO / EVIDENCIA_A_VALIDAR | P1 | Evidência precisa de ambiente, data, commit, usuário e resultados negativos. |
 | `docs/mesa-cliente/fase-20a1-validacao-hardening-acesso-fluxo-historico.md` | VALIDACAO / SEGURANCA / EVIDENCIA_A_VALIDAR | P0/P1 | Acesso a histórico pode causar vazamento; exigir testes cross-tenant. |
@@ -242,9 +245,25 @@ Classificação inicial por nome, localização e relação documental. Esta tab
 | `docs/mesa-cliente/fase-8-chateau-jardin-importacao-json-admin.md` | EVIDENCIA / IMPORTACAO / A_VALIDAR | P1 | Admin importação JSON exige validação de payload e acesso. |
 | `docs/mesa-cliente/fase-8-contrato-integracao-front-bff-operacoes-financeiras.md` | CONTRATO / POSSIVEL_CANONICO_UI_BFF / PENDENTE_RECONCILIACAO | P0/P1 | Candidato canônico de integração front/BFF; validar código. |
 | `docs/mesa-cliente/fase-8a-preflight-integracao-front-bff-operacoes-financeiras.md` | PREFLIGHT / EVIDENCIA_A_VALIDAR / NAO_AUTORIZA_IMPLEMENTACAO | P1 | Mapeia front e RPCs, mas nesta auditoria não autoriza 8B. |
-| `docs/mesa-cliente/fase-8b-adapter-front-operacoes-financeiras.md` | OFICIAL_CANDIDATO / PENDENTE_RECONCILIACAO | P1 | Identificado no inventário anterior; não visto no diretório paginado atual, validar existência por git ls-tree. |
-| `docs/mesa-cliente/fase-8b-fechamento-tecnico.md` | CHECKPOINT / EVIDENCIA_A_VALIDAR | P1 | Identificado no inventário anterior; validar existência e conteúdo. |
-| `docs/mesa-cliente/fase-8e-validacao-18a-integracao-visual-operacoes-financeiras-panel.md` | VALIDACAO / EVIDENCIA_A_VALIDAR | P1 | Identificado no inventário anterior; validar existência, PR e código. |
+| `docs/mesa-cliente/fase-8b-adapter-front-operacoes-financeiras.md` | OFICIAL_CANDIDATO / PENDENTE_RECONCILIACAO | P1 | Adapter/Front BFF de operações financeiras; validar contra service/hook real e PRs da fase. |
+| `docs/mesa-cliente/fase-8b-teste-17b-validacao-estatica-front-bff-operacoes-financeiras.md` | VALIDACAO / EVIDENCIA_A_VALIDAR | P1 | Validação estática 17B do Front/BFF; exige confirmação de commit, branch, logs e código atual. |
+| `docs/mesa-cliente/fase-8b-fechamento-tecnico.md` | CHECKPOINT / EVIDENCIA_A_VALIDAR | P1 | Fechamento técnico da fase 8B; validar existência, PR, commit e aderência ao código atual. |
+| `docs/mesa-cliente/fase-8c-contrato-operacoes-financeiras-panel.md` | CONTRATO / POSSIVEL_CANONICO_UI_PANEL / PENDENTE_RECONCILIACAO | P1 | Contrato do OperacoesFinanceirasPanel; validar contra componente real e fronteira admin/cliente-safe. |
+| `docs/mesa-cliente/fase-8c-validacao-17c-operacoes-financeiras-panel.md` | VALIDACAO / EVIDENCIA_A_VALIDAR | P1 | Validação estática 17C do painel; exige rastreabilidade de branch, commit e resultado. |
+| `docs/mesa-cliente/fase-8c-validacao-17d-build-operacoes-financeiras-panel.md` | VALIDACAO_BUILD / EVIDENCIA_A_VALIDAR | P1 | Build validation 17D do painel; validar artifact, commit e escopo sem alteração financeira. |
+| `docs/mesa-cliente/fase-8e-contrato-integracao-visual-operacoes-financeiras-panel.md` | CONTRATO / INTEGRACAO_VISUAL / PENDENTE_RECONCILIACAO | P1 | Contrato de integração visual do painel na navegação; não autoriza motor, parser, RPCs, migrations, agenda ou parcelas. |
+| `docs/mesa-cliente/fase-8e-validacao-18a-integracao-visual-operacoes-financeiras-panel.md` | VALIDACAO / EVIDENCIA_A_VALIDAR | P1 | Validação 18A da integração visual; validar PR, código e ausência de alterações proibidas. |
+| `docs/mesa-cliente/fase-8e-validacao-18b-build-pos-integracao-visual.md` | VALIDACAO_BUILD / EVIDENCIA_A_VALIDAR | P1 | Build pós-integração visual 18B; comprova compilação, não comprova fluxo funcional com simulação real. |
+| `docs/mesa-cliente/fase-8f-contrato-selecao-segura-simulacao-operacoes-financeiras.md` | CONTRATO / SELECAO_SEGURA / PENDENTE_RECONCILIACAO | P0/P1 | Seleção segura de simulação para operações financeiras; validar origem confiável de simulacaoId e proibição de derivação indevida. |
+| `docs/mesa-cliente/fase-8f-validacao-18c-selecao-segura-simulacao-operacoes-financeiras.md` | VALIDACAO / EVIDENCIA_A_VALIDAR | P1 | Validação 18C da seleção segura; exige PR/commit, testes e aderência ao contrato. |
+| `docs/mesa-cliente/fase-8f-validacao-18d-build-pos-selecao-segura.md` | VALIDACAO_BUILD / EVIDENCIA_A_VALIDAR | P1 | Build 18D pós-seleção segura; validar artifact, branch e ausência de mutação financeira indevida. |
+| `docs/mesa-cliente/fase-8g-contrato-fix-rpc-criar-mesa-simulacao-status-enum.md` | CONTRATO_FIX_RPC / PENDENTE_SUPABASE_REAL | P0/P1 | Fix relacionado a RPC/status enum; não comprova aplicação sem Supabase real, migration e grants. |
+| `docs/mesa-cliente/fase-8h-contrato-fix-rpc-criar-mesa-corretor-audit.md` | CONTRATO_FIX_RPC / AUDIT / PENDENTE_SUPABASE_REAL | P0/P1 | Fix de RPC/auditoria de corretor; validar auth.uid(), tenant, empresa, perfil, logs e grants reais. |
+| `docs/mesa-cliente/fase-8i-contrato-fix-rpc-criar-mesa-fluxo-tipo-enum.md` | CONTRATO_FIX_RPC / PENDENTE_SUPABASE_REAL | P0/P1 | Fix de RPC/enum de tipo de fluxo; validar schema real, constraints e testes negativos. |
+| `docs/mesa-cliente/fase-8j-contrato-validacao-payload-completo-fluxo.md` | CONTRATO_VALIDACAO_PAYLOAD / PENDENTE_RECONCILIACAO | P0/P1 | Contrato de payload completo do fluxo; validar parser, motor financeiro, payload cliente-safe e Supabase. |
+| `docs/mesa-cliente/fase-8j-validacao-19d-payload-completo-fluxo.md` | VALIDACAO / EVIDENCIA_A_VALIDAR | P1 | Validação 19D do payload completo; exige reprodução, commit, logs e comparação com payload real. |
+| `docs/mesa-cliente/fase-8k-contrato-smoke-runtime-19e-payload-completo-fluxo.md` | CONTRATO_SMOKE_RUNTIME / PENDENTE_RECONCILIACAO | P0/P1 | Contrato de smoke runtime 19E; não substitui validação de produção/Supabase/código real. |
+| `docs/mesa-cliente/fase-8k-validacao-19e-smoke-runtime-payload-completo-fluxo.md` | SMOKE_TEST / EVIDENCIA_A_VALIDAR | P0/P1 | Smoke runtime 19E do payload completo; validar ambiente, commit, logs e ausência de alteração proibida. |
 | `docs/checkpoints/mesa-mirror-engine-garden-design-v1.0.0.md` | CHECKPOINT / HISTORICO / PENDENTE_RECONCILIACAO | P1 | Referência histórica/layout/engine; não fonte final sozinha. |
 | `docs/checkpoints/mesa-layout-engine-v1.1.0.md` | CHECKPOINT / HISTORICO / PENDENTE_RECONCILIACAO | P1 | Referência histórica/layout/engine; reconciliar com MesaCliente atual. |
 | `docs/protocolos/protocolo-mestre-fechai-mesacliente-v1.1.md` | CONTRATO / POSSIVEL_OBSOLETO_OU_CHECKPOINT / PENDENTE_RECONCILIACAO | P1 | Pode estar superado pela v1.2; não assumir sem diff. |
@@ -299,6 +318,10 @@ Nenhum documento foi marcado como `OFICIAL_VIGENTE` nesta auditoria. Os candidat
 | `docs/mesa-cliente/fase-5b-contrato-registro-operacao-financeira.md` | Registro de operação financeira. | Validar idempotência, status, tabela e RLS. |
 | `docs/mesa-cliente/fase-7-contrato-aplicacao-operacao-financeira.md` | Aplicação financeira. | Validar status `aplicada`, constraint, RPC e logs. |
 | `docs/mesa-cliente/fase-8-contrato-integracao-front-bff-operacoes-financeiras.md` | Integração Front/BFF. | Validar service/hook/componentes reais e ausência de autoridade no frontend. |
+| `docs/mesa-cliente/fase-8e-contrato-integracao-visual-operacoes-financeiras-panel.md` | Integração visual controlada do painel de operações. | Validar contra navegação real, gating visual e ausência de chamada financeira sem `simulacaoId`. |
+| `docs/mesa-cliente/fase-8f-contrato-selecao-segura-simulacao-operacoes-financeiras.md` | Seleção segura de simulação para operações. | Validar origem confiável de `simulacaoId`, histórico e ausência de derivação indevida. |
+| `docs/mesa-cliente/fase-8j-contrato-validacao-payload-completo-fluxo.md` | Payload completo do fluxo financeiro. | Validar parser, motor financeiro, cliente-safe, Supabase e testes de regressão. |
+| `docs/mesa-cliente/fase-8k-contrato-smoke-runtime-19e-payload-completo-fluxo.md` | Smoke runtime de payload completo. | Validar ambiente, commit, artifact, logs e ausência de mutação indevida. |
 | `docs/mesa-cliente/adr/ADR-0001-fase-4a-json-first-sem-persistencia.md` | Decisão arquitetural histórica. | Verificar se foi supersedida por persistência. |
 | `docs/04-banco-de-dados/mapa-tabelas.md` | Mapa transversal de tabelas. | Só oficial após Supabase real. |
 | `docs/04-banco-de-dados/rpcs-e-functions.md` | Mapa transversal de RPCs. | Só oficial após Supabase real. |
@@ -346,6 +369,9 @@ Documento de preflight não autoriza implementação.
 | Admin read-only vs DML zero | P0/P1 | Fase 5D inclui leitura admin e zero DML rígido. | Validar function bodies e logs. |
 | Front/BFF vs chamadas diretas Supabase no frontend | P0/P1 | Fase 8A cita API/hook/service e regra de não chamar direto do componente. | Verificar código AS-IS. |
 | Tabela importada como fonte soberana vs payload adaptado piloto | P0/P1 | Fases 20C/20D sugerem evolução de origem do fluxo. | Validar parser/importação/agenda real. |
+| Integração visual do painel vs seleção segura de simulação | P0/P1 | Fases 8E e 8F se complementam, mas não provam fluxo real completo. | Validar sequência 18A/18B/18C/18D e origem de `simulacaoId`. |
+| Fixes RPC 8G/8H/8I vs Supabase real | P0/P1 | Contratos de fix RPC/enum/audit não provam função aplicada. | Reconciliar com migrations, function body, grants e testes negativos. |
+| Payload completo 8J/8K vs motor financeiro/parser | P0/P1 | Payload completo pode afetar fluxo, proposta e cliente-safe. | Validar contra parser, motor financeiro, Supabase e UI real. |
 
 ---
 
@@ -482,7 +508,6 @@ Checklist code AS-IS:
 - Verificar se existe service de operações financeiras.
 - Verificar se cliente-safe renderiza allowlist.
 - Verificar FluxoBuilder, TabHistorico e eventuais painéis financeiros.
-- Verificar testes automatizados, fixtures e regressões.
 ```
 
 Resultado atual:
