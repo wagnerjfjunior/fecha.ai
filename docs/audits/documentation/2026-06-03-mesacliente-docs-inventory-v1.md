@@ -89,6 +89,7 @@ Validação pública pontual realizada antes desta revisão:
 - Caminho confirmado publicamente para o arquivo alvo da PR #52: docs/audits/documentation/.
 - Nome confirmado publicamente: docs/mesa-cliente/fase-20d4-fonte-soberana-tabela-importada.md.
 - Pendência Codex da PR #52 identificou arquivos adicionais da Fase 8 em `docs/mesa-cliente/`; esta revisão inclui os caminhos conhecidos de 8C, 8E, 8F, 8G, 8H, 8I, 8J e 8K sem declarar vigência oficial.
+- Pendência posterior Codex da PR #52 identificou `docs/mesa-cliente/tabela-oficial-disponibilidade-v1.md` e `docs/mesa-cliente/pre-20c-reconciliacao-github-supabase.md`; esta revisão inclui ambos como pendentes de reconciliação, sem tratá-los como fonte final.
 ```
 
 Limite desta validação:
@@ -153,6 +154,8 @@ Classificação inicial por nome, localização e relação documental. Esta tab
 | `docs/mesa-cliente/espelho-intelligence-layer.md` | OFICIAL_CANDIDATO / PROPOSTA / PENDENTE_RECONCILIACAO | P1 | Camada de inteligência precisa validação de escopo, IA, payload e privacidade. |
 | `docs/mesa-cliente/espelho-vendas-engine-v1.md` | OFICIAL_CANDIDATO / PENDENTE_RECONCILIACAO | P0/P1 | Possível contrato de engine; validar contra motor financeiro real. |
 | `docs/mesa-cliente/frontend-preview-rpc-integration.md` | OFICIAL_CANDIDATO / INTEGRACAO_FRONT_RPC / PENDENTE_RECONCILIACAO | P1 | Documento de integração Frontend RPC Preview; validar contra código real, Supabase, payload e ausência de autoridade do frontend. |
+| `docs/mesa-cliente/pre-20c-reconciliacao-github-supabase.md` | PREFLIGHT / RECONCILIACAO_GITHUB_SUPABASE / EVIDENCIA_A_VALIDAR | P0/P1 | Reconciliação pré-20C entre GitHub e Supabase; validar leitura integral, PRs, commits e Supabase real antes de usar como fonte final. |
+| `docs/mesa-cliente/tabela-oficial-disponibilidade-v1.md` | TABELA_DISPONIBILIDADE / OFICIAL_CANDIDATO / PENDENTE_RECONCILIACAO | P0/P1 | Tabela oficial de disponibilidade pode impactar oferta, proposta, estoque e simulação; validar fonte, freshness, importação e Supabase real. |
 | `docs/mesa-cliente/fase-20a-contrato-reabrir-fluxo-historico.md` | CONTRATO / OFICIAL_CANDIDATO / PENDENTE_RECONCILIACAO | P0/P1 | Reabertura de fluxo/histórico é sensível; validar RPC/RLS/ownership. |
 | `docs/mesa-cliente/fase-20a-validacao-rpc-reabrir-fluxo-historico.md` | VALIDACAO / EVIDENCIA_A_VALIDAR | P1 | Evidência precisa de ambiente, data, commit, usuário e resultados negativos. |
 | `docs/mesa-cliente/fase-20a1-validacao-hardening-acesso-fluxo-historico.md` | VALIDACAO / SEGURANCA / EVIDENCIA_A_VALIDAR | P0/P1 | Acesso a histórico pode causar vazamento; exigir testes cross-tenant. |
@@ -289,6 +292,7 @@ Classificação inicial por nome, localização e relação documental. Esta tab
 | Aplicar migration documentada sem Supabase real | P0 | Pode alterar schema/constraint/RPC e perder dados. | Bloqueia qualquer SQL. |
 | RPC financeira com grants/permissões incorretos | P0 | RPCs podem executar escrita, aplicação, cancelamento ou leitura admin. | Bloqueia chamada e deploy. |
 | Frontend como autoridade de empresa/perfil/regra financeira | P0/P1 | Contraria princípio arquitetural de autoridade no banco/RPC. | Bloqueia implementação sensível. |
+| Tabela de disponibilidade divergente da fonte importada ou Supabase | P0/P1 | Pode afetar estoque, oferta, proposta e simulação comercial. | Bloqueia uso como fonte final. |
 | Duplicidade `docs/protocolo/` vs `docs/protocolos/` | P1 | Pode orientar por protocolo errado ou incompleto. | Exige diff documental. |
 | Versões de protocolo MesaCliente v1.1 vs v1.2 | P1 | Pode haver contrato substituído ou conflito de escopo. | Exige comparação. |
 | Fases históricas JSON-first vs fases persistidas/canônicas | P1 | Fase 4A pode estar superada por 4B/5/20D. | Exige linha do tempo. |
@@ -311,6 +315,8 @@ Nenhum documento foi marcado como `OFICIAL_VIGENTE` nesta auditoria. Os candidat
 | `docs/protocolos/protocolo-mestre-fechai-mesacliente-v1.2.md` | Maior versão do protocolo mestre identificado. | Diff contra v1.1, validação com decisão do Wagner, código e Supabase. |
 | `docs/mesa-cliente/engenharia-financeira-arquitetura.md` | Documento arquitetural de base. | Confirmar aderência a fases 20D/8 e código atual. |
 | `docs/mesa-cliente/espelho-vendas-engine-v1.md` | Pode descrever engine comercial/financeira. | Validar motor real, testes de cálculo e payload. |
+| `docs/mesa-cliente/tabela-oficial-disponibilidade-v1.md` | Pode orientar disponibilidade/estoque oficial. | Validar fonte, data, importação, Supabase real e aderência ao fluxo de proposta. |
+| `docs/mesa-cliente/pre-20c-reconciliacao-github-supabase.md` | Pode conter reconciliação relevante entre documentação, GitHub e Supabase. | Validar leitura integral, data, commit, queries read-only e Supabase real. |
 | `docs/mesa-cliente/fase-20d4-contrato-canonico-fluxo-financeiro.md` | Nomeia contrato canônico do fluxo financeiro. | Validar contra schema, RPCs, migrations e testes. |
 | `docs/mesa-cliente/fase-20d4-fonte-soberana-tabela-importada.md` | Define soberania de tabela importada. | Nome confirmado publicamente no GitHub web; ainda requer parser, importação e Supabase real. |
 | `docs/mesa-cliente/fase-20d-contrato-adaptador-historico-agenda-canonica.md` | Pode consolidar histórico + agenda canônica. | Validar com histórico/2ª via e RPCs read-only. |
@@ -337,6 +343,8 @@ Não usar como fonte final para implementação:
 - docs/mesa-cliente/rascunhos-sql/*
 - docs/mesa-cliente/fase-20d5-migration-fluxo-canonico-shadow.md
 - docs/mesa-cliente/fase-20d4-status-migration-adaptador-readonly.md
+- docs/mesa-cliente/pre-20c-reconciliacao-github-supabase.md sem reconciliação atual com Supabase real.
+- docs/mesa-cliente/tabela-oficial-disponibilidade-v1.md sem validação de fonte, data e estado aplicado.
 - docs/protocolos/protocolo-mestre-fechai-mesacliente-v1.1.md sem diff contra v1.2.
 - docs/protocolo/mesa-cliente/* sem reconciliação com docs/protocolos/ e docs/mesa-cliente/.
 - docs/checkpoints/* como se fossem vigentes.
@@ -351,6 +359,7 @@ Documento com "migration" não prova migration aplicada.
 Documento com "PASS" não prova estado atual.
 Documento de protocolo antigo pode ser histórico.
 Documento de preflight não autoriza implementação.
+Documento de disponibilidade não prova estoque atual sem fonte validada.
 ```
 
 ---
@@ -368,10 +377,12 @@ Documento de preflight não autoriza implementação.
 | Smoke pós-produção duplicado | P1 | Há múltiplos smokes/execuções por fase. | Vincular cada smoke a ambiente, data e commit. |
 | Admin read-only vs DML zero | P0/P1 | Fase 5D inclui leitura admin e zero DML rígido. | Validar function bodies e logs. |
 | Front/BFF vs chamadas diretas Supabase no frontend | P0/P1 | Fase 8A cita API/hook/service e regra de não chamar direto do componente. | Verificar código AS-IS. |
+| Tabela importada como fonte soberana vs tabela oficial de disponibilidade | P0/P1 | Fase 20D.4 e tabela oficial podem ser interpretadas como fontes de verdade distintas. | Definir fonte soberana por contexto: importação, estoque, disponibilidade e proposta. |
 | Tabela importada como fonte soberana vs payload adaptado piloto | P0/P1 | Fases 20C/20D sugerem evolução de origem do fluxo. | Validar parser/importação/agenda real. |
 | Integração visual do painel vs seleção segura de simulação | P0/P1 | Fases 8E e 8F se complementam, mas não provam fluxo real completo. | Validar sequência 18A/18B/18C/18D e origem de `simulacaoId`. |
 | Fixes RPC 8G/8H/8I vs Supabase real | P0/P1 | Contratos de fix RPC/enum/audit não provam função aplicada. | Reconciliar com migrations, function body, grants e testes negativos. |
 | Payload completo 8J/8K vs motor financeiro/parser | P0/P1 | Payload completo pode afetar fluxo, proposta e cliente-safe. | Validar contra parser, motor financeiro, Supabase e UI real. |
+| PRE-20C reconciliação vs auditorias posteriores | P1 | PRE-20C pode conter evidências úteis, mas pode estar defasado. | Revalidar com queries read-only e PRs atuais. |
 
 ---
 
@@ -474,6 +485,7 @@ Verificar:
 - Normalização de chaves, complemento, entrada, mensais e intermediárias.
 - Fonte soberana da tabela importada.
 - Histórico da importação Chateau Jardin.
+- Relação entre tabela oficial de disponibilidade, importação e Supabase real.
 ```
 
 ### 9.6 Motor financeiro
@@ -640,6 +652,7 @@ Bloqueios P0/P1:
 - Haver migration documentada mas não comprovada como aplicada.
 - Haver smoke/preflight sem data, commit, ambiente e resultado.
 - Haver parser/fonte de tabela importada não reconciliado.
+- Haver dúvida sobre tabela oficial de disponibilidade, estoque ou fonte soberana.
 ```
 
 Regra operacional:
@@ -659,6 +672,8 @@ PENDENTE_RECONCILIACAO ou DRIFT_A_VALIDAR em item P0/P1.
 git ls-tree -r --name-only main docs/ > docs-audit-tree-main-2026-06-03.txt
 grep -Fx "docs/audits/documentation/2026-06-03-mesacliente-docs-inventory-v1.md" docs-audit-tree-main-2026-06-03.txt || true
 grep -Fx "docs/mesa-cliente/fase-20d4-fonte-soberana-tabela-importada.md" docs-audit-tree-main-2026-06-03.txt
+grep -Fx "docs/mesa-cliente/tabela-oficial-disponibilidade-v1.md" docs-audit-tree-main-2026-06-03.txt
+grep -Fx "docs/mesa-cliente/pre-20c-reconciliacao-github-supabase.md" docs-audit-tree-main-2026-06-03.txt
 ```
 
 Observação: o primeiro `grep` deve retornar vazio antes do commit, porque o arquivo da PR #52 ainda não existe em `main`; depois do commit na branch, o caminho deve aparecer no `git status`/diff da PR.
@@ -695,6 +710,8 @@ fase-7-contrato-aplicacao-operacao-financeira.md
 fase-8-contrato-integracao-front-bff-operacoes-financeiras.md
 engenharia-financeira-arquitetura.md
 espelho-vendas-engine-v1.md
+tabela-oficial-disponibilidade-v1.md
+pre-20c-reconciliacao-github-supabase.md
 ```
 
 5. Abrir auditorias posteriores, sem implementação:
