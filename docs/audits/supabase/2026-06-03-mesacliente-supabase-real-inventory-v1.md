@@ -6,6 +6,8 @@
 **Project ref:** `uobxxgzshrmbtjfdolxd`
 **Tipo:** documentacao-only / read-only evidence.
 
+Nota editorial: arquivo normalizado em ASCII para remover risco de caracteres ocultos ou bidirecionais no Markdown.
+
 ---
 
 ## 1. Objetivo
@@ -115,7 +117,7 @@ PENDENTE: conferir se todas as tabelas com grants DML para authenticated tambem 
 
 ## 6. Resultado - grants de routines
 
-A consulta agregada de grants de routines revelou duas classes:
+A consulta agregada de grants de routines revelou duas classes.
 
 ### 6.1 RPCs sem EXECUTE para anon
 
@@ -333,7 +335,7 @@ SENSIVEL / CLIENTE_SAFE_RESTRITO / R4
 
 ```text
 - Projeto correto identificado e saudavel.
-- RLS habilitado em todas as tabelas retornadas pela consulta MesaCliente.
+- RLS habilitado nas tabelas retornadas.
 - FORCE RLS habilitado em mesa_simulacoes, mesa_arquivos, mesa_eventos, mesa_fluxo_pagamentos e mesa_cliente_agendas_financeiras.
 - Tabelas financeiras criticas possuem policies de SELECT tenant e bloqueio de DML direto via policies false.
 - Principais RPCs administrativas/financeiras criticas nao aparecem com anon EXECUTE.
@@ -393,6 +395,15 @@ valida tenant/empresa?
 pode expor cliente-safe?
 risco P0/P1/P2
 status: OK / DRIFT / BLOQUEADO / REQUER_BODY_REVIEW
+```
+
+Tambem deve incluir colunas de impacto MesaCliente:
+
+```text
+impacta proposta?
+impacta cliente-safe?
+impacta regra financeira?
+impacta disponibilidade oficial?
 ```
 
 ---
