@@ -61,9 +61,9 @@ ALTER POLICY
 ALTER TABLE
 migration
 payload real de cliente
-token
-JWT
-service_role key
+credenciais
+segredos
+chaves privilegiadas
 prints de producao
 ```
 
@@ -97,8 +97,8 @@ A execucao futura dos testes deve ocorrer preferencialmente em staging, clone ou
 | Staging/clone | GO se possuir snapshot, dataset sintetico e tenant A/B. |
 | Dataset | Deve usar prefixos como `TEST_PR58_*`. |
 | Dados reais | Proibido usar CPF, telefone, e-mail, lead, cliente ou proposta real. |
-| Service role | Proibido em teste manual. |
-| Evidencia | Sem JWT, token, cookie, Authorization header, PII ou segredo. |
+| Chave privilegiada | Proibida em teste manual. |
+| Evidencia | Sem credenciais, cookies, headers sensiveis, PII ou segredos. |
 | Rollback | Snapshot/backup e plano de limpeza obrigatorios antes de qualquer teste com escrita autorizada futura. |
 
 ### 4.2 Massa minima de teste futura
@@ -134,8 +134,8 @@ Esta matriz deve ser aplicada a cada uma das 7 RPCs, ajustando o payload conform
 
 | ID | Cenario | Papel usado | Pre-condicao | Resultado esperado | Evidencia esperada | Bloqueante |
 |---|---|---|---|---|---|---|
-| N01 | anon sem JWT | Sem sessao / anon key | Chamada sem `Authorization: Bearer <jwt>` | RPC deve falhar por ausencia de autenticacao/autorizacao | Erro esperado; diff zero | Sim |
-| N02 | authenticated sem corretor | Usuario Auth valido sem vinculo operacional | JWT valido sem linha em corretores/equivalente | RPC deve falhar | Erro esperado; diff zero | Sim |
+| N01 | anon sem sessao valida | Sem sessao / anon key | Chamada sem credencial de usuario autenticado | RPC deve falhar por ausencia de autenticacao/autorizacao | Erro esperado; diff zero | Sim |
+| N02 | authenticated sem corretor | Usuario Auth valido sem vinculo operacional | Sessao valida sem linha em corretores/equivalente | RPC deve falhar | Erro esperado; diff zero | Sim |
 | N03 | corretor inativo | Usuario com vinculo inativo | Registro existe com ativo=false/status equivalente | RPC deve falhar | Erro esperado; diff zero | Sim |
 | N04 | authenticated sem empresa | Usuario ativo sem empresa/tenant valido | Sem vinculo empresarial valido | RPC deve falhar | Erro esperado; diff zero | Sim |
 | N05 | outra empresa/tenant | Usuario Empresa B operando recurso da Empresa A | IDs reais sinteticos de tenants distintos | RPC deve falhar | Nenhuma alteracao na Empresa A | Sim |
@@ -161,10 +161,10 @@ Esta matriz deve ser aplicada a cada uma das 7 RPCs, ajustando o payload conform
 | Objetivo | Garantir que aprovacao/rejeicao so ocorra por papel autorizado da empresa/tenant correto. |
 | Cenarios | N01 a N15 obrigatorios. Prioridade maxima: N01, N05, N06, N10, N12, N13. |
 | Papeis | anon, authenticated sem corretor, corretor inativo, sem empresa, outro tenant, sem permissao, gestor/admin correto, root se formal. |
-| Pre-condicao | Mesa/proposta sintetica com status conhecido; usuarios A/B; snapshot antes/depois. |
-| Payload minimo | `{ mesa_id, acao: "aprovar" }` ou `{ mesa_id, acao: "rejeitar" }` conforme assinatura real. |
-| Resultado esperado | Negativos falham sem alteracao; positivo autorizado altera apenas mesa da empresa correta. |
-| Evidencia | Status/erro, status antes/depois, diff zero cross-tenant, audit log de decisao quando permitido. |
+| Pre-condicao | Simulacao/proposta sintetica com status conhecido; usuarios A/B; snapshot antes/depois de `mesa_simulacoes`. |
+| Payload minimo | `{ p_simulacao_id, p_acao: "aprovar", p_justificativa? }` ou `{ p_simulacao_id, p_acao: "rejeitar", p_justificativa? }` conforme assinatura real auditada na PR #57. |
+| Resultado esperado | Negativos falham sem alteracao; positivo autorizado altera apenas `mesa_simulacoes` da empresa correta. |
+| Evidencia | Status/erro, status da simulacao antes/depois, diff zero cross-tenant em `mesa_simulacoes`, audit log de decisao quando permitido. |
 | Risco se falhar | Aprovacao/rejeicao indevida, fraude comercial, alteracao cross-tenant, dano financeiro. |
 | Severidade | R4 critico. |
 | Bloqueante | Sim. |
@@ -172,13 +172,13 @@ Esta matriz deve ser aplicada a cada uma das 7 RPCs, ajustando o payload conform
 Testes especificos:
 
 ```text
-anon tenta aprovar -> falha; status igual; nenhum audit log de sucesso
-authenticated comum tenta aprovar -> falha; status igual
+anon tenta aprovar com p_simulacao_id -> falha; status igual; nenhum audit log de sucesso
+authenticated comum tenta aprovar com p_simulacao_id -> falha; status igual
 gestor de outra empresa -> falha cross-tenant
 gestor correto -> sucesso controlado no proprio tenant
-acao invalida -> falha sem write
-simulacao inexistente -> falha segura
-simulacao de outra empresa com ID valido -> falha sem revelar existencia sensivel
+p_acao invalida -> falha sem write
+p_simulacao_id inexistente -> falha segura
+p_simulacao_id de outra empresa com ID valido -> falha sem revelar existencia sensivel
 payload com empresa_id falso -> servidor ignora/bloqueia
 proposta ja aprovada/rejeitada -> falha ou idempotencia documentada; sem duplicar log
 ```
@@ -311,7 +311,7 @@ unidade indisponivel -> falha
 | Payload minimo | `{ empresa_id?, mesa_id?, empreendimento_id?, unidade_id?, campos }` conforme assinatura real. |
 | Resultado esperado | Negativos falham; campos fora de allowlist nao persistem; cross-tenant nao altera. |
 | Evidencia | Diff por campo; erro esperado; nenhum campo sensivel indevido; audit log. |
-| Risco se falhar | Ficha/proposta contaminada, exposicao de payload sensivel, alteracao cross-tenant. |
+| Risco se falhar | Ficha/proposta contaminada, exposao de payload sensivel, alteracao cross-tenant. |
 | Severidade | R4. |
 | Bloqueante | Sim. |
 
@@ -364,7 +364,7 @@ Cliente-safe deve ser montado por allowlist explicita. Qualquer campo novo nasce
 |---|---|
 | Identificacao | RPC, cenario Nxx, data, ambiente, executor, branch/commit. |
 | Papel usado | anon, sem corretor, inativo, sem empresa, cross-tenant, sem permissao, gestor/admin, root/global. |
-| Payload sanitizado | Sem tokens, sem PII, sem secrets, sem dado real. |
+| Payload sanitizado | Sem credenciais, sem PII, sem segredos, sem dado real. |
 | Snapshot antes | Contagem/hash/consulta read-only das tabelas afetaveis. |
 | Resultado | Status, erro esperado ou sucesso controlado. |
 | Snapshot depois | Prova de diff zero nos negativos. |
@@ -447,7 +447,7 @@ faltar distincao entre authenticated e autorizado
 confiar em empresa_id/tenant_id vindo do frontend
 nao classificar risco como R4
 nao tratar aprovar_rejeitar_mesa como R4 critico
-expor dado real, token, JWT, service_role, payload sensivel ou print de producao
+expor dado real, credenciais, chaves privilegiadas, payload sensivel ou print de producao
 passar falsa impressao de seguranca ja validada
 ```
 
