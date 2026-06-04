@@ -7,7 +7,7 @@
 **Project ref:** `uobxxgzshrmbtjfdolxd`
 **Tipo:** documentacao-only / read-only evidence.
 
-Nota editorial: arquivo em ASCII para evitar caracteres ocultos ou bidirecionais.
+Nota editorial: arquivo normalizado em ASCII para remover risco de caracteres ocultos ou bidirecionais no Markdown.
 
 ---
 
@@ -87,7 +87,29 @@ teste de rollback
 
 ---
 
-## 4. Sumario executivo
+## 4. Rastreabilidade dos bodies revisados
+
+Hashes md5 coletados via `md5(pg_get_functiondef(oid))` no Supabase real, apenas para rastreabilidade documental da versao do body revisada.
+
+| RPC | Hash md5 do body |
+|---|---|
+| `aprovar_rejeitar_mesa` | `286f9e6aea5ec792eb45a337db742bd1` |
+| `importar_mesa_cliente_disponibilidade_oficial` | `292d981623bb6e63c7d0dc954fa282bb` |
+| `mesa_cliente_upsert_faixas_premio` | `8251e49fad7d4dc960f33dce255886e8` |
+| `mesa_cliente_upsert_politica_financeira` | `acbe4ee582decc5837743e3e6db78bd0` |
+| `registrar_upload_arquivo_mesa` | `525ac1f3013e5f6b5d7abc53261d1a13` |
+| `salvar_mesa_cliente_desconto_politica` | `6f05f717e8fa7002c3dbe960d8d347fe` |
+| `salvar_mesa_cliente_enriquecimento` | `b79e891045c4c0718f949b2ddecfab15` |
+
+Observacao:
+
+```text
+Se qualquer hash mudar antes dos testes negativos, os resultados dos testes devem ser vinculados ao novo body/hash e esta auditoria deve ser revalidada.
+```
+
+---
+
+## 5. Sumario executivo
 
 | RPC | Exposicao | Guarda observada | Escrita | Impacto | Decisao |
 |---|---|---|---:|---|---|
@@ -107,9 +129,9 @@ Os bodies apresentam guardas relevantes em varias RPCs, mas a combinacao de anon
 
 ---
 
-## 5. Body review por RPC
+## 6. Body review por RPC
 
-### 5.1 `aprovar_rejeitar_mesa`
+### 6.1 `aprovar_rejeitar_mesa`
 
 Metadados:
 
@@ -122,6 +144,7 @@ usa auth.uid(): sim
 usa is_gestor(): sim
 escreve: sim, UPDATE em mesa_simulacoes e INSERT em audit_logs
 impacto: proposta/aprovacao/rejeicao
+hash md5: 286f9e6aea5ec792eb45a337db742bd1
 ```
 
 Guarda observada:
@@ -160,7 +183,7 @@ simulacao inexistente deve nao alterar nada
 
 ---
 
-### 5.2 `importar_mesa_cliente_disponibilidade_oficial`
+### 6.2 `importar_mesa_cliente_disponibilidade_oficial`
 
 Metadados:
 
@@ -174,6 +197,7 @@ usa is_root(): sim
 toca corretores/empresa/empreendimento: sim
 escreve: sim, INSERT em estoque_arquivos, UPDATE em unidades_estoque e estoque_snapshots
 impacto: disponibilidade oficial, tabela de unidades, proposta
+hash md5: 292d981623bb6e63c7d0dc954fa282bb
 ```
 
 Guardas observadas:
@@ -217,7 +241,7 @@ usuario autorizado deve alterar somente empreendimento/empresa correta
 
 ---
 
-### 5.3 `mesa_cliente_upsert_faixas_premio`
+### 6.3 `mesa_cliente_upsert_faixas_premio`
 
 Metadados:
 
@@ -231,6 +255,7 @@ usa mesa_cliente_assert_auth(): sim
 usa mesa_cliente_can_admin_empresa(): sim
 escreve: sim, DELETE/INSERT em mesa_cliente_politica_premio_faixas
 impacto: premio/regra financeira
+hash md5: 8251e49fad7d4dc960f33dce255886e8
 ```
 
 Guardas observadas:
@@ -259,7 +284,7 @@ P0/R4 - BLOQUEADO_GRANT_REVIEW_E_TESTES
 
 ---
 
-### 5.4 `mesa_cliente_upsert_politica_financeira`
+### 6.4 `mesa_cliente_upsert_politica_financeira`
 
 Metadados:
 
@@ -273,6 +298,7 @@ usa mesa_cliente_assert_auth(): sim
 usa mesa_cliente_can_admin_empresa(): sim
 escreve: sim, INSERT/UPDATE em mesa_cliente_politicas_financeiras
 impacto: VPL, taxas, politica financeira, regra comercial
+hash md5: acbe4ee582decc5837743e3e6db78bd0
 ```
 
 Guardas observadas:
@@ -300,7 +326,7 @@ P0/R4 - BLOQUEADO_GRANT_REVIEW_E_TESTES
 
 ---
 
-### 5.5 `registrar_upload_arquivo_mesa`
+### 6.5 `registrar_upload_arquivo_mesa`
 
 Metadados:
 
@@ -314,6 +340,7 @@ usa is_root(): sim
 toca corretores: sim
 escreve: sim, INSERT de registro de arquivo/upload
 impacto: importacao, trilha de arquivo, MesaCliente
+hash md5: 525ac1f3013e5f6b5d7abc53261d1a13
 ```
 
 Guardas observadas:
@@ -340,7 +367,7 @@ P0/P1 - BLOQUEADO_GRANT_REVIEW_E_TESTES
 
 ---
 
-### 5.6 `salvar_mesa_cliente_desconto_politica`
+### 6.6 `salvar_mesa_cliente_desconto_politica`
 
 Metadados:
 
@@ -354,6 +381,7 @@ usa is_root(): sim
 toca corretores/empresa/tenant: sim
 escreve: sim, INSERT/UPDATE em mesa_cliente_desconto_politicas
 impacto: desconto, regra comercial, proposta
+hash md5: 6f05f717e8fa7002c3dbe960d8d347fe
 ```
 
 Guardas observadas:
@@ -380,7 +408,7 @@ P0/R4 - BLOQUEADO_GRANT_REVIEW_E_TESTES
 
 ---
 
-### 5.7 `salvar_mesa_cliente_enriquecimento`
+### 6.7 `salvar_mesa_cliente_enriquecimento`
 
 Metadados:
 
@@ -394,6 +422,7 @@ usa is_root(): sim
 toca corretores/empresa: sim
 escreve: sim, INSERT/UPDATE em mesa_cliente_unidade_enriquecimentos
 impacto: ficha de unidade, apresentacao, proposta
+hash md5: b79e891045c4c0718f949b2ddecfab15
 ```
 
 Guardas observadas:
@@ -420,30 +449,30 @@ P1/R3-R4 - BLOQUEADO_GRANT_REVIEW_E_TESTES
 
 ---
 
-## 6. Achados transversais
+## 7. Achados transversais
 
-### 6.1 anon/PUBLIC EXECUTE
+### 7.1 anon/PUBLIC EXECUTE
 
 ```text
 Todas as RPCs revisadas possuem anon EXECUTE; aprovar_rejeitar_mesa tambem possui PUBLIC EXECUTE.
 Mesmo quando o body possui guardas, a exposicao externa continua pendente de grant review e testes negativos.
 ```
 
-### 6.2 SECURITY DEFINER
+### 7.2 SECURITY DEFINER
 
 ```text
 Todas as RPCs revisadas sao SECURITY DEFINER com owner postgres e search_path=public.
 Isso exige revisao de search_path, chamadas auxiliares e parametros para reduzir risco de bypass.
 ```
 
-### 6.3 Helpers de autorizacao
+### 7.3 Helpers de autorizacao
 
 ```text
 Algumas RPCs dependem de helpers como is_gestor(), is_root(), mesa_cliente_assert_auth() e mesa_cliente_can_admin_empresa().
 Esses helpers precisam entrar na reconciliacao de PR futura, porque a seguranca efetiva depende deles.
 ```
 
-### 6.4 Escrita e impacto comercial
+### 7.4 Escrita e impacto comercial
 
 ```text
 As 7 RPCs revisadas apresentam indicio de escrita.
@@ -452,7 +481,7 @@ Os impactos cobrem aprovacao/rejeicao de proposta, disponibilidade oficial, uplo
 
 ---
 
-## 7. Bloqueios antes de qualquer correcao/implementacao
+## 8. Bloqueios antes de qualquer correcao/implementacao
 
 ```text
 1. Teste anon para cada RPC revisada.
@@ -469,7 +498,7 @@ Os impactos cobrem aprovacao/rejeicao de proposta, disponibilidade oficial, uplo
 
 ---
 
-## 8. Proxima etapa recomendada
+## 9. Proxima etapa recomendada
 
 ```text
 PR #58 - Plano de testes negativos Supabase MesaCliente
@@ -491,7 +520,7 @@ cliente-safe payload
 
 ---
 
-## 9. Parecer final
+## 10. Parecer final
 
 ```text
 Status: BODY_REVIEW_READONLY / PENDENTE_TESTES_NEGATIVOS
