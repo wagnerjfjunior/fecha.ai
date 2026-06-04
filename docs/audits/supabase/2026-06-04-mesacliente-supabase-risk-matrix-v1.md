@@ -7,7 +7,7 @@
 **Project ref:** `uobxxgzshrmbtjfdolxd`
 **Tipo:** documentacao-only / read-only evidence.
 
-Nota editorial: arquivo em ASCII para evitar caracteres ocultos ou bidirecionais.
+Nota editorial: arquivo normalizado em ASCII para remover risco de caracteres ocultos ou bidirecionais no Markdown.
 
 ---
 
@@ -78,14 +78,14 @@ revisao linha a linha completa de todos os function bodies
 
 ## 4. Matriz de risco - RPCs/functions com anon ou PUBLIC EXECUTE
 
-### 4.1 Critérios de classificacao
+### 4.1 Criterios de classificacao
 
 | Status | Significado |
 |---|---|
 | `BLOQUEADO_P0_BODY_REVIEW` | Nome/grant/indicio sugerem escrita, aprovacao, importacao, politica financeira ou impacto comercial. Nao implementar antes de body review e teste negativo. |
 | `REQUER_BODY_REVIEW_P1` | Pode ser leitura ou helper, mas tem anon/PUBLIC EXECUTE e precisa provar guard/tenant/escopo. |
 | `POSSIVEL_OK_HELPER_P2` | Function parece matematica/helper sem acesso a dados sensiveis, mas ainda precisa confirmacao formal. |
-| `OK_PARCIAL_COM_GUARD` | Tem auth.uid/guards por indício textual, mas ainda depende de teste negativo. |
+| `OK_PARCIAL_COM_GUARD` | Tem auth.uid/guards por indicio textual, mas ainda depende de teste negativo. |
 
 ### 4.2 Tabela de RPCs/functions criticas
 
@@ -145,7 +145,7 @@ revisao linha a linha completa de todos os function bodies
 ### 6.1 Proposta/aprovacao
 
 ```text
-BLOQUEADO: aprovar_rejeitar_mesa tem PUBLIC/anon EXECUTE, SECURITY DEFINER, indício de escrita e toca mesa_simulacoes.
+BLOQUEADO: aprovar_rejeitar_mesa tem PUBLIC/anon EXECUTE, SECURITY DEFINER, indicio de escrita e toca mesa_simulacoes.
 Exigir: body review linha a linha, teste anon, teste authenticated sem permissao, teste cross-tenant, teste role/perfil.
 ```
 
