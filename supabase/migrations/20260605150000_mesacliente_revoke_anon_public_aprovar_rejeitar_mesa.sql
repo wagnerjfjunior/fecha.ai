@@ -1,4 +1,5 @@
 -- FECH.AI / MesaCliente / PR #63
+-- Nota editorial: arquivo regravado em ASCII limpo para remover risco de caracteres ocultos ou bidirecionais.
 -- Classe A: grant-hardening single-rpc para public.aprovar_rejeitar_mesa.
 --
 -- Objetivo:
