@@ -7,7 +7,7 @@
 **Project ref:** `uobxxgzshrmbtjfdolxd`
 **Tipo:** documentacao-only / test-plan-only.
 
-Nota editorial: arquivo em ASCII para evitar caracteres ocultos ou bidirecionais.
+Nota editorial: arquivo reconstruido em ASCII limpo para remover risco de caracteres ocultos ou bidirecionais no Markdown.
 
 ---
 
@@ -148,7 +148,7 @@ Esta matriz deve ser aplicada a cada uma das 7 RPCs, ajustando o payload conform
 | N12 | escrita fora do escopo | Papel com permissao parcial | Tenta alterar recurso de outro empreendimento/proposta/politica/mesa | RPC deve falhar | Diff zero fora do escopo | Sim |
 | N13 | no-write-on-failure | Qualquer cenario negativo | Snapshot antes/depois planejado | Nenhuma tabela de negocio deve mudar | Hash/contagem/read-only antes/depois | Sim |
 | N14 | erro esperado | Qualquer cenario negativo | Contrato de erro definido | Erro previsivel, sem stack trace sensivel | Codigo/mensagem sanitizada | Sim |
-| N15 | audit log quando aplicavel | Tentativa sensivel | Audit/event log existe | Sucesso deve auditar; falha sensivel pode auditar sem payload sensivel | Actor, acao, recurso, tenant, resultado | Sim |
+| N15 | audit log para R4 | Tentativa sensivel | Audit/event log existe ou teste deve ficar BLOCKED | Escrita autorizada futura deve ter evidencia/auditoria; sem auditoria, teste R4 fica BLOCKED | Actor, acao, recurso, tenant, resultado | Sim |
 
 ---
 
@@ -213,7 +213,7 @@ usuario autorizado -> altera apenas empresa/empreendimento correto
 
 | Campo | Plano |
 |---|---|
-| Objetivo | Garantir que faixas de premio so sejam criadas/alteradas por perfil autorizado no tenant correto. |
+| Objetivo | Garantir que faixas de premio so sejam criadas/alteradas por admin/gestor financeiro autorizado no tenant correto. |
 | Cenarios | N01 a N15 obrigatorios. Prioridade maxima: N05, N06, N09, N10, N12, N13. |
 | Payload minimo | `{ politica_id, faixas: [{ de, ate, percentual }] }` conforme assinatura real. |
 | Resultado esperado | Negativos falham; payload invalido nao grava parcialmente; positivo autorizado restringe empresa correta. |
@@ -229,6 +229,8 @@ faixas negativas -> falha
 minimo maior que maximo -> falha
 faixas sobrepostas -> falha
 quantidade excessiva -> falha por limite documentado
+politica de outra empresa -> falha
+usuario sem admin/gestor financeiro autorizado -> falha
 payload tenta sobrescrever created_by/empresa_id/metadata -> falha
 ```
 
@@ -236,7 +238,7 @@ payload tenta sobrescrever created_by/empresa_id/metadata -> falha
 
 | Campo | Plano |
 |---|---|
-| Objetivo | Garantir que politica financeira so seja alterada por papel autorizado da empresa correta. |
+| Objetivo | Garantir que politica financeira so seja alterada por admin/gestor financeiro autorizado da empresa correta. |
 | Cenarios | N01 a N15 obrigatorios. Prioridade maxima: N05, N06, N09, N10, N12, N13, N15. |
 | Payload minimo | `{ empresa_id?, empreendimento_id?, politica_id?, regras_financeiras, vigencia?, status? }` conforme assinatura real. |
 | Resultado esperado | Negativos falham sem escrita; payload invalido nao grava politica parcial; positivo autorizado grava no escopo correto. |
@@ -248,6 +250,7 @@ payload tenta sobrescrever created_by/empresa_id/metadata -> falha
 Testes especificos:
 
 ```text
+usuario sem admin/gestor financeiro autorizado -> falha
 VPL null/texto/negativo/infinito/NaN/extremo -> falha
 taxa negativa ou acima do teto -> falha
 vigencia inicio apos fim -> falha
@@ -311,7 +314,7 @@ unidade indisponivel -> falha
 | Payload minimo | `{ empresa_id?, mesa_id?, empreendimento_id?, unidade_id?, campos }` conforme assinatura real. |
 | Resultado esperado | Negativos falham; campos fora de allowlist nao persistem; cross-tenant nao altera. |
 | Evidencia | Diff por campo; erro esperado; nenhum campo sensivel indevido; audit log. |
-| Risco se falhar | Ficha/proposta contaminada, exposao de payload sensivel, alteracao cross-tenant. |
+| Risco se falhar | Ficha/proposta contaminada, exposicao de payload sensivel, alteracao cross-tenant. |
 | Severidade | R4. |
 | Bloqueante | Sim. |
 
@@ -369,7 +372,7 @@ Cliente-safe deve ser montado por allowlist explicita. Qualquer campo novo nasce
 | Resultado | Status, erro esperado ou sucesso controlado. |
 | Snapshot depois | Prova de diff zero nos negativos. |
 | Cross-tenant | Prova de que tenant/empresa nao autorizado nao foi alterado. |
-| Audit log | Registro criado ou justificativa se ainda nao existir. |
+| Audit log | Para as 7 RPCs R4, toda escrita autorizada futura deve ter evidencia/auditoria; sem auditoria, teste fica BLOCKED. |
 | Classificacao | PASS / FAIL / BLOCKED. |
 | Observacao | Risco residual e link para issue/PR futura. |
 
@@ -421,7 +424,7 @@ A PR #58 pode ser aceita se contiver:
 6. Plano por RPC com objetivo, cenarios, payload minimo, resultado esperado, evidencia e risco.
 7. No-write-on-failure obrigatorio.
 8. Erro esperado/sanitizado.
-9. Audit log quando aplicavel.
+9. Audit log obrigatorio/BLOCKED para escrita R4 futura.
 10. Secao cliente-safe por allowlist.
 11. Dataset sintetico e tenant A/B.
 12. Evidencias antes/depois.
