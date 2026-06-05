@@ -1,11 +1,11 @@
 # FECH.AI - Especificacao de harness para testes negativos Supabase MesaCliente v1
 
-**Data:** 2026-06-05
-**Status:** `HARNESS_SPEC_ONLY / EXECUCAO_NAO_AUTORIZADA`
-**Base:** PR #58 - plano de testes negativos Supabase MesaCliente
-**Tipo:** documentation-only / harness-spec-only.
+Data: 2026-06-05
+Status: HARNESS_SPEC_ONLY / EXECUCAO_NAO_AUTORIZADA
+Base: PR #58 - plano de testes negativos Supabase MesaCliente
+Tipo: documentation-only / harness-spec-only
 
-Nota editorial: arquivo em ASCII limpo para evitar caracteres ocultos ou bidirecionais.
+Nota editorial: arquivo regravado em texto simples para reduzir risco de caracteres ocultos ou bidirecionais no Markdown.
 
 ---
 
@@ -13,10 +13,12 @@ Nota editorial: arquivo em ASCII limpo para evitar caracteres ocultos ou bidirec
 
 Especificar o ambiente, o dataset sintetico, os papeis, as evidencias, a observabilidade, o rollback, a limpeza e os criterios GO/NO-GO para uma futura execucao controlada dos testes negativos planejados na PR #58.
 
-Esta PR nao executa testes, nao valida seguranca final e nao prova que o ambiente esta protegido. Ela apenas desenha o laboratorio controlado para uma futura PR/etapa de execucao.
+Esta PR nao executa testes, nao valida seguranca final e nao prova que o ambiente esta protegido. Ela apenas especifica o laboratorio controlado para uma futura PR ou etapa de execucao.
+
+Status da PR:
 
 ```text
-Status: HARNESS_SPEC_ONLY / EXECUCAO_NAO_AUTORIZADA
+HARNESS_SPEC_ONLY / EXECUCAO_NAO_AUTORIZADA
 Implementacao autorizada: NAO
 Correcao autorizada: NAO
 Execucao de testes autorizada: NAO
@@ -62,17 +64,17 @@ prints de producao
 
 ## 3. RPCs futuras no escopo
 
-As RPCs abaixo sao somente alvos de teste futuro. Esta PR nao executa chamadas contra elas.
+As RPCs abaixo sao apenas alvos de teste futuro. Esta PR nao executa chamadas contra elas.
 
 | RPC | Risco | Dominio MesaCliente |
 |---|---:|---|
-| `aprovar_rejeitar_mesa` | R4 critico | aprovacao/rejeicao de proposta/simulacao |
-| `importar_mesa_cliente_disponibilidade_oficial` | R4 | disponibilidade oficial, unidades e estoque sintetico |
-| `mesa_cliente_upsert_faixas_premio` | R4 | premio/faixas comerciais internas |
-| `mesa_cliente_upsert_politica_financeira` | R4 | politica financeira, VPL, taxas e vigencia |
-| `registrar_upload_arquivo_mesa` | R4 | upload/importacao e trilha de arquivo |
-| `salvar_mesa_cliente_desconto_politica` | R4 | desconto/regra comercial |
-| `salvar_mesa_cliente_enriquecimento` | R4 | enriquecimento de unidade/proposta |
+| aprovar_rejeitar_mesa | R4 critico | aprovacao/rejeicao de proposta/simulacao |
+| importar_mesa_cliente_disponibilidade_oficial | R4 | disponibilidade oficial, unidades e estoque sintetico |
+| mesa_cliente_upsert_faixas_premio | R4 | premio/faixas comerciais internas |
+| mesa_cliente_upsert_politica_financeira | R4 | politica financeira, VPL, taxas e vigencia |
+| registrar_upload_arquivo_mesa | R4 | upload/importacao e trilha de arquivo |
+| salvar_mesa_cliente_desconto_politica | R4 | desconto/regra comercial |
+| salvar_mesa_cliente_enriquecimento | R4 | enriquecimento de unidade/proposta |
 
 ---
 
@@ -87,8 +89,8 @@ As RPCs abaixo sao somente alvos de teste futuro. Esta PR nao executa chamadas c
 6. Todo teste negativo precisa provar erro esperado e diff zero.
 7. Toda escrita R4 futura precisa ter evidencia/auditoria; sem auditoria, o teste fica BLOCKED.
 8. Toda evidencia deve ser sanitizada.
-9. Todo teste futuro precisa de rollback/limpeza documentados.
-10. A execucao futura depende de aprovacao explicita em PR/etapa separada.
+9. Todo teste futuro precisa de rollback e limpeza documentados.
+10. A execucao futura depende de aprovacao explicita em PR ou etapa separada.
 ```
 
 ---
@@ -126,8 +128,8 @@ Entidades minimas:
 
 | Entidade | Exigencia |
 |---|---|
-| Tenant/empresa A | `TEST_PR59_TENANT_A` / `TEST_PR59_EMPRESA_A` |
-| Tenant/empresa B | `TEST_PR59_TENANT_B` / `TEST_PR59_EMPRESA_B` |
+| Tenant/empresa A | TEST_PR59_TENANT_A / TEST_PR59_EMPRESA_A |
+| Tenant/empresa B | TEST_PR59_TENANT_B / TEST_PR59_EMPRESA_B |
 | Empreendimento A/B | sintetico e isolado por tenant |
 | Unidade A/B | sintetica, sem estoque real |
 | Simulacao/proposta A/B | sintetica, sem proposta comercial real |
@@ -161,15 +163,15 @@ nenhum storage path real de tenant produtivo
 
 | Papel | Objetivo do teste futuro |
 |---|---|
-| `anon_sem_sessao` | validar bloqueio sem autenticacao |
-| `authenticated_sem_corretor` | validar que autenticacao nao basta |
-| `corretor_ativo_tenant_A` | validar autorizado no proprio tenant quando aplicavel |
-| `corretor_inativo_tenant_A` | validar bloqueio por status |
-| `corretor_ativo_tenant_B` | validar cross-tenant |
-| `authenticated_sem_empresa` | validar bloqueio sem empresa/tenant valido |
-| `corretor_sem_permissao` | validar permissao insuficiente |
-| `gestor_admin_local_tenant_A` | validar permissao administrativa local |
-| `root_admin_global` | somente se existir regra formal documentada no banco |
+| anon_sem_sessao | validar bloqueio sem autenticacao |
+| authenticated_sem_corretor | validar que autenticacao nao basta |
+| corretor_ativo_tenant_A | validar autorizado no proprio tenant quando aplicavel |
+| corretor_inativo_tenant_A | validar bloqueio por status |
+| corretor_ativo_tenant_B | validar cross-tenant |
+| authenticated_sem_empresa | validar bloqueio sem empresa/tenant valido |
+| corretor_sem_permissao | validar permissao insuficiente |
+| gestor_admin_local_tenant_A | validar permissao administrativa local |
+| root_admin_global | somente se existir regra formal documentada no banco |
 
 Regras:
 
@@ -188,15 +190,15 @@ A futura execucao deve possuir recursos equivalentes em A e B:
 
 | Recurso | Tenant A | Tenant B |
 |---|---|---|
-| Empresa | `TEST_PR59_EMPRESA_A` | `TEST_PR59_EMPRESA_B` |
-| Empreendimento | `TEST_PR59_EMPREENDIMENTO_A` | `TEST_PR59_EMPREENDIMENTO_B` |
-| Unidade | `TEST_PR59_UNIDADE_A` | `TEST_PR59_UNIDADE_B` |
-| Simulacao/proposta | `TEST_PR59_SIMULACAO_A` | `TEST_PR59_SIMULACAO_B` |
-| Politica financeira | `TEST_PR59_POLITICA_FIN_A` | `TEST_PR59_POLITICA_FIN_B` |
-| Desconto | `TEST_PR59_DESCONTO_A` | `TEST_PR59_DESCONTO_B` |
-| Faixas de premio | `TEST_PR59_PREMIO_A` | `TEST_PR59_PREMIO_B` |
-| Upload | `TEST_PR59_UPLOAD_A` | `TEST_PR59_UPLOAD_B` |
-| Enriquecimento | `TEST_PR59_ENRIQUECIMENTO_A` | `TEST_PR59_ENRIQUECIMENTO_B` |
+| Empresa | TEST_PR59_EMPRESA_A | TEST_PR59_EMPRESA_B |
+| Empreendimento | TEST_PR59_EMPREENDIMENTO_A | TEST_PR59_EMPREENDIMENTO_B |
+| Unidade | TEST_PR59_UNIDADE_A | TEST_PR59_UNIDADE_B |
+| Simulacao/proposta | TEST_PR59_SIMULACAO_A | TEST_PR59_SIMULACAO_B |
+| Politica financeira | TEST_PR59_POLITICA_FIN_A | TEST_PR59_POLITICA_FIN_B |
+| Desconto | TEST_PR59_DESCONTO_A | TEST_PR59_DESCONTO_B |
+| Faixas de premio | TEST_PR59_PREMIO_A | TEST_PR59_PREMIO_B |
+| Upload | TEST_PR59_UPLOAD_A | TEST_PR59_UPLOAD_B |
+| Enriquecimento | TEST_PR59_ENRIQUECIMENTO_A | TEST_PR59_ENRIQUECIMENTO_B |
 
 Criterio cross-tenant:
 
@@ -215,14 +217,14 @@ As tabelas abaixo devem ser tratadas como alvos de snapshot quando existirem no 
 
 | Dominio | Tabelas/estruturas esperadas | Evidencia futura |
 |---|---|---|
-| Proposta/aprovacao | `mesa_simulacoes` | status antes/depois, diff zero nos negativos |
+| Proposta/aprovacao | mesa_simulacoes | status antes/depois, diff zero nos negativos |
 | Disponibilidade | tabelas de estoque, unidades e snapshots comerciais | contagem/checksum antes/depois |
-| Politica financeira | `mesa_cliente_politicas_financeiras` | diff por politica/tenant |
-| Premio | `mesa_cliente_politica_premio_faixas` | diff por faixas/tenant |
-| Desconto | `mesa_cliente_desconto_politicas` | diff por regra/tenant |
-| Upload | `mesa_arquivos` ou registro equivalente | diff por arquivo/path/tenant |
-| Enriquecimento | `mesa_cliente_unidade_enriquecimentos` | diff por unidade/campo/tenant |
-| Auditoria | `audit_logs`, `event_logs` ou equivalente | actor, acao, recurso, tenant, resultado |
+| Politica financeira | mesa_cliente_politicas_financeiras | diff por politica/tenant |
+| Premio | mesa_cliente_politica_premio_faixas | diff por faixas/tenant |
+| Desconto | mesa_cliente_desconto_politicas | diff por regra/tenant |
+| Upload | mesa_arquivos ou registro equivalente | diff por arquivo/path/tenant |
+| Enriquecimento | mesa_cliente_unidade_enriquecimentos | diff por unidade/campo/tenant |
+| Auditoria | audit_logs, event_logs ou equivalente | actor, acao, recurso, tenant, resultado |
 
 Nota:
 
