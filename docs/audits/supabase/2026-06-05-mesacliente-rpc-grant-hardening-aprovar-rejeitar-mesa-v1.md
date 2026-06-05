@@ -3,10 +3,9 @@
 Data: 2026-06-05
 Status: HOLD / LOCAL_TESTS_PASS / NOT_APPLIED_TO_SUPABASE
 Type: Class A grant hardening, single RPC
+Target: public.aprovar_rejeitar_mesa
 
-Summary:
-- Local existing function path: PASS.
-- Local empty replay path: PASS.
-- Local overload abort path: PASS.
-- Supabase production was not changed by this document update.
-- No db push,
+Local evidence:
+- Existing function path: PASS.
+- Empty replay path: PASS.
+- Over
