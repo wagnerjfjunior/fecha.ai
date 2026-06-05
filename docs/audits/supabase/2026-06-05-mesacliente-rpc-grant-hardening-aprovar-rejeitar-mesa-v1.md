@@ -5,8 +5,4 @@ Nota editorial: arquivo em ASCII limpo.
 Data: 2026-06-05
 Status: CORRECAO_TECNICA_VERSIONADA / TESTES_LOCAIS_PASS / NAO_EXECUTADA_NO_SUPABASE
 Tipo: Classe A / grant-hardening / single-rpc
-RPC alvo: public.aprovar_rejeitar_mesa
-
-## Escopo
-
-A PR #63 remove expos
+RPC alvo: public.aprovar
