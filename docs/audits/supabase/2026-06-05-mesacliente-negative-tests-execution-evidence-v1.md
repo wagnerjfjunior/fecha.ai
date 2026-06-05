@@ -10,11 +10,11 @@ Nota editorial: documento preparado como template de evidencia e prontidao opera
 
 ---
 
-## 1. Objetivo da PR #59B
+## 1. Objetivo da PR #60
 
 Criar um documento de prontidao de execucao controlada e um template padronizado de evidencias para a futura execucao dos testes negativos Supabase MesaCliente.
 
-Esta PR #59B e exclusivamente documental e tem os seguintes objetivos permitidos:
+Esta PR #60 e exclusivamente documental e tem os seguintes objetivos permitidos:
 
 ```text
 documentar prontidao de execucao
@@ -27,7 +27,7 @@ registrar rollback/limpeza futura
 registrar proxima sequencia segura
 ```
 
-Esta PR #59B nao valida seguranca final, nao prova que o ambiente esta protegido e nao substitui a aprovacao formal para execucao futura.
+Esta PR #60 nao valida seguranca final, nao prova que o ambiente esta protegido e nao substitui a aprovacao formal para execucao futura.
 
 ---
 
@@ -37,14 +37,14 @@ Esta PR #59B nao valida seguranca final, nao prova que o ambiente esta protegido
 |---|---|---|
 | PR #58 | Plano de testes negativos Supabase MesaCliente | Define as 7 RPCs R4 no escopo e a matriz N01-N15 de cenarios negativos. |
 | PR #59A | Especificacao do harness/ambiente controlado | Define laboratorio, dataset TEST_PR59_, observabilidade, rollback, limpeza e criterios de seguranca para execucao futura. |
-| PR #59B | Readiness/template de evidencia | Consolida checklist GO/NO-GO, matriz de execucao por RPC/cenario e modelo de evidencia, mantendo TESTS_NOT_RUN. |
+| PR #60 | Readiness/template de evidencia | Consolida checklist GO/NO-GO, matriz de execucao por RPC/cenario e modelo de evidencia, mantendo TESTS_NOT_RUN. |
 
 Principio de continuidade:
 
 ```text
 PR #58 planejou o que testar.
 PR #59A especificou onde e sob quais controles testar.
-PR #59B documenta como registrar evidencias quando, e somente quando, houver GO formal futuro.
+PR #60 documenta como registrar evidencias quando, e somente quando, houver GO formal futuro.
 ```
 
 ---
@@ -103,7 +103,7 @@ acao em producao
 
 ## 5. Declaracao explicita de correcao tecnica nao autorizada
 
-Nenhuma correcao tecnica esta autorizada por esta PR #59B.
+Nenhuma correcao tecnica esta autorizada por esta PR #60.
 
 Esta PR nao autoriza:
 
@@ -172,7 +172,7 @@ autorizacao de correcao tecnica
 
 ## 7. Checklist GO/NO-GO antes de qualquer execucao futura
 
-### 7.1 GO minimo para uma futura etapa #59B-Execution
+### 7.1 GO minimo para uma futura etapa #60-Execution
 
 Todos os itens abaixo devem estar marcados antes de qualquer execucao futura:
 
@@ -544,7 +544,7 @@ status final: <concluido|pendente|blocked>
 
 ---
 
-## 17. Resultado final da PR #59B
+## 17. Resultado final da PR #60
 
 ```text
 TESTS_NOT_RUN
@@ -568,18 +568,18 @@ A execucao futura permanece bloqueada ate GO formal explicito.
 
 | Proxima etapa | Condicao | Escopo permitido |
 |---|---|---|
-| #59B-Execution | Somente apos aprovacao explicita e GO formal | Executar testes controlados em staging/clone/snapshot, registrar evidencias sanitizadas, parar em STOP condition. |
-| #60 | Apos evidencias ou bloqueios suficientes | Grant review e proposta de correcao, ainda sem aplicar correcao. |
+| #60-Execution | Somente apos aprovacao explicita e GO formal | Executar testes controlados em staging/clone/snapshot, registrar evidencias sanitizadas, parar em STOP condition. |
+| #61 | Apos evidencias ou bloqueios suficientes | Grant review e proposta de correcao, ainda sem aplicar. |
 | PRs futuras de correcao | Apos review e aprovacao | Correcoes pequenas por classe de risco, revisaveis e reversiveis. |
 | Reexecucao/validacao pos-correcao | Apos correcao aprovada e aplicada | Reexecutar matriz relevante, validar diff, auditabilidade e regressao. |
 
 Ordem segura:
 
 ```text
-1. Merge documental da PR #59B se criterios forem atendidos.
-2. Aguardar aprovacao explicita para #59B-Execution.
+1. Merge documental da PR #60 se criterios forem atendidos.
+2. Aguardar aprovacao explicita para #60-Execution.
 3. Executar somente em staging/clone/snapshot com TEST_PR59_ e evidencia sanitizada.
-4. Produzir #60 com grant review e proposta de correcao, sem aplicar.
+4. Produzir #61 com grant review e proposta de correcao, ainda sem aplicar.
 5. Abrir PRs futuras pequenas por classe de risco para correcoes aprovadas.
 6. Reexecutar/validar pos-correcao em ambiente controlado.
 ```
