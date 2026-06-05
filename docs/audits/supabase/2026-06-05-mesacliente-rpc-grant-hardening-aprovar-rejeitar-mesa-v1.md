@@ -1,8 +1,12 @@
-# FECH.AI - PR #63 - grant-hardening aprovar_rejeitar_mesa v1
-
-Nota editorial: arquivo em ASCII limpo.
+# FECH.AI - PR 63 - grant hardening evidence
 
 Data: 2026-06-05
-Status: CORRECAO_TECNICA_VERSIONADA / TESTES_LOCAIS_PASS / NAO_EXECUTADA_NO_SUPABASE
-Tipo: Classe A / grant-hardening / single-rpc
-RPC alvo: public.aprovar
+Status: HOLD / LOCAL_TESTS_PASS / NOT_APPLIED_TO_SUPABASE
+Type: Class A grant hardening, single RPC
+
+Summary:
+- Local existing function path: PASS.
+- Local empty replay path: PASS.
+- Local overload abort path: PASS.
+- Supabase production was not changed by this document update.
+- No db push,
