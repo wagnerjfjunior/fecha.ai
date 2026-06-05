@@ -5,7 +5,7 @@
 **Base:** PRs #55, #56, #57, #58, #59A e #60
 **Tipo:** documentation-only / grant-review / remediation-proposal-only / no-execution
 
-Nota editorial: este documento organiza uma proposta de correcao futura. A PR #62 nao corrige nada e nao autoriza nenhuma correcao tecnica.
+Nota editorial: arquivo regravado em texto simples/ASCII limpo para remover risco de caracteres ocultos ou bidirecionais no Markdown. Este documento organiza uma proposta de correcao futura. A PR #62 nao corrige nada e nao autoriza nenhuma correcao tecnica.
 
 ---
 
