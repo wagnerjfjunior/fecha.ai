@@ -22,11 +22,15 @@ A correcao esta limitada ao arquivo de migration `supabase/migrations/2026060515
 A migration deve:
 
 1. resolver `public.aprovar_rejeitar_mesa` por `pg_proc`, sem chutar tipos;
-2. abortar se encontrar 0 ou mais de 1 overload;
-3. revogar `EXECUTE` de `PUBLIC`;
-4. revogar `EXECUTE` de `anon`;
-5. garantir `EXECUTE` para `authenticated`;
-6. nao alterar nenhum outro objeto.
+2. ser replay-safe em banco limpo criado apenas pelas migrations do repositorio;
+3. fazer no-op com `RAISE NOTICE` quando `public.aprovar_rejeitar_mesa` nao existir neste banco/migration replay;
+4. abortar com `RAISE EXCEPTION` se encontrar mais de 1 overload;
+5. revogar `EXECUTE` de `PUBLIC` quando a function existir;
+6. revogar `EXECUTE` de `anon` quando a function existir;
+7. garantir `EXECUTE` para `authenticated` quando a function existir;
+8. nao alterar nenhum outro objeto.
+
+A correcao real so tera efeito em ambiente onde `public.aprovar_rejeitar_mesa` exista. Em banco limpo sem essa function, o comportamento esperado e no-op com aviso, preservando o replay das migrations versionadas.
 
 ## 4. Testes negativos obrigatorios antes de merge
 

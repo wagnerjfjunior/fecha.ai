@@ -12,8 +12,10 @@
 --
 -- Assinatura:
 --   A assinatura exata nao esta versionada no repo. Por isso, o bloco abaixo
---   resolve a function por schema + proname em pg_proc e aborta se houver 0
---   ou mais de 1 overload, evitando chutar tipos.
+--   resolve a function por schema + proname em pg_proc. Em banco limpo
+--   sem a function, faz no-op com RAISE NOTICE para permitir replay das
+--   migrations do repo. Se houver mais de 1 overload, aborta para evitar
+--   aplicar grants em alvo ambiguo, sem chutar tipos.
 --
 -- Rollback manual, se esta migration for aplicada indevidamente e houver GO
 -- operacional explicito para restaurar a exposicao anterior:
@@ -31,8 +33,13 @@
 --      where n.nspname = 'public'
 --        and p.proname = 'aprovar_rejeitar_mesa';
 --
---     if v_count <> 1 then
---       raise exception 'Rollback abortado: esperado 1 overload public.aprovar_rejeitar_mesa, encontrado %', v_count;
+--     if v_count = 0 then
+--       raise notice 'Rollback no-op: public.aprovar_rejeitar_mesa nao existe neste banco/migration replay';
+--       return;
+--     end if;
+--
+--     if v_count > 1 then
+--       raise exception 'Rollback abortado: esperado 0 ou 1 overload public.aprovar_rejeitar_mesa, encontrado %', v_count;
 --     end if;
 --
 --     v_function := v_oid::regprocedure;
@@ -57,8 +64,13 @@ begin
    where n.nspname = 'public'
      and p.proname = 'aprovar_rejeitar_mesa';
 
-  if v_count <> 1 then
-    raise exception 'Abortado: esperado 1 overload public.aprovar_rejeitar_mesa, encontrado %', v_count;
+  if v_count = 0 then
+    raise notice 'No-op: public.aprovar_rejeitar_mesa nao existe neste banco/migration replay';
+    return;
+  end if;
+
+  if v_count > 1 then
+    raise exception 'Abortado: esperado 0 ou 1 overload public.aprovar_rejeitar_mesa, encontrado %', v_count;
   end if;
 
   v_function := v_oid::regprocedure;
