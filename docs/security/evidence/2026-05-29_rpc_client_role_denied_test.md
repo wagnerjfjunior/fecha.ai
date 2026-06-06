@@ -1,8 +1,15 @@
-# FECH.AI / MesaCliente — Client Role Denied RPC Test
+# FECH.AI / MesaCliente - Client Role Denied RPC Test
 
-**Date:** 2026-05-29  
-**Branch:** `security/supabase-rls-grants-hardening`  
-**Scope:** Functional validation of a restricted sensitive RPC after EXECUTE hardening.
+Date: 2026-05-29
+Branch: security/supabase-rls-grants-hardening
+Scope: Functional validation of a restricted sensitive RPC after EXECUTE hardening.
+Status: SANITIZED PUBLIC EVIDENCE
+
+---
+
+## Sanitization rule
+
+This public evidence file intentionally does not expose raw email, user_id, broker id, company id, team id, audit id, token, password, secret, or customer data.
 
 ---
 
@@ -25,8 +32,8 @@ Error: Failed to run sql query: ERROR: 42501: permission denied for restricted a
 ## Interpretation
 
 ```text
-APPROVED — authenticated client role cannot execute the restricted account-control RPC.
-APPROVED — the sensitive RPC remains blocked from client roles after hardening.
+APPROVED - authenticated client role cannot execute the restricted account-control RPC.
+APPROVED - the sensitive RPC remains blocked from client roles after hardening.
 ```
 
 ---
