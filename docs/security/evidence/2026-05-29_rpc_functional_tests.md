@@ -1,12 +1,19 @@
-# FECH.AI / MesaCliente — RPC Functional Test Evidence
+# FECH.AI / MesaCliente - RPC Functional Test Evidence
 
-**Date:** 2026-05-29  
-**Branch:** `security/supabase-rls-grants-hardening`  
-**Scope:** Functional validation for sensitive SECURITY DEFINER RPCs after EXECUTE hardening.
+Date: 2026-05-29
+Branch: security/supabase-rls-grants-hardening
+Scope: Functional validation for sensitive SECURITY DEFINER RPCs after EXECUTE hardening.
+Status: SANITIZED PUBLIC EVIDENCE
 
 ---
 
-## 1. Common broker negative test — `listar_empresas_root()`
+## Sanitization rule
+
+This public evidence file intentionally does not expose raw email, user_id, broker id, company id, team id, audit id, token, password, secret, or customer data.
+
+---
+
+## 1. Common broker negative test - listar_empresas_root()
 
 ### Test context
 
@@ -30,20 +37,19 @@ from public.listar_empresas_root();
 ### Actual result
 
 ```text
-Failed to run sql query: ERROR: P0001: Acesso negado. Apenas root pode listar empresas.
-CONTEXT: PL/pgSQL function listar_empresas_root() line 4 at RAISE
+ERROR: P0001: access denied - only root can list companies.
 ```
 
 ### Interpretation
 
 ```text
-APPROVED — common broker cannot execute root-only company listing successfully.
+APPROVED - common broker cannot execute root-only company listing successfully.
 The function internal root guard blocked the call as expected.
 ```
 
 ---
 
-## 2. Common broker negative test — `registrar_root_audit(text, uuid, jsonb)`
+## 2. Common broker negative test - registrar_root_audit(text, uuid, jsonb)
 
 ### Test context
 
@@ -70,35 +76,62 @@ select public.registrar_root_audit(
 ### Actual result
 
 ```text
-Failed to run sql query: ERROR: P0001: Acesso negado. Apenas root pode registrar auditoria root.
-CONTEXT: PL/pgSQL function registrar_root_audit(text,uuid,jsonb) line 8 at RAISE
+ERROR: P0001: access denied - only root can register root audit entries.
 ```
 
 ### Interpretation
 
 ```text
-APPROVED — common broker cannot register root audit entries.
+APPROVED - common broker cannot register root audit entries.
 The function internal root guard blocked the call as expected.
 ```
 
 ---
 
-## 3. Remaining common broker negative tests
+## 3. get_corretores_time(...) negative test
 
-Pending:
+Detailed evidence is stored in:
 
 ```text
-get_corretores_time(...) must return forbidden unless the user is gestor/admin/root.
-redefinir_senha_corretor(...) must not be executable by authenticated client roles.
+docs/security/evidence/2026-05-29_get_corretores_time_negative_test.md
+```
+
+Summary:
+
+```text
+APPROVED - common broker receives forbidden for get_corretores_time(...).
 ```
 
 ---
 
-## 4. Remaining root positive tests
+## 4. Restricted account-control RPC client-role denied test
 
-Pending:
+Detailed evidence is stored in:
 
 ```text
-listar_empresas_root() must work for root.
-registrar_root_audit(...) must work for root.
+docs/security/evidence/2026-05-29_rpc_client_role_denied_test.md
+```
+
+Summary:
+
+```text
+APPROVED - authenticated client role cannot execute the restricted account-control RPC.
+```
+
+---
+
+## 5. Root positive tests
+
+Detailed evidence is stored in:
+
+```text
+docs/security/evidence/2026-05-29_root_positive_rpc_tests.md
+```
+
+Summary:
+
+```text
+APPROVED - root identity validated.
+APPROVED - listar_empresas_root() positive test passed.
+APPROVED - registrar_root_audit(...) positive test passed.
 ```
