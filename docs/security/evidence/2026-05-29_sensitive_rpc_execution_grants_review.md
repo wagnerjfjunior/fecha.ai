@@ -291,7 +291,7 @@ APPROVED - registrar_root_audit(...) works for root context.
 
 ## 9. Broad routine surface outside this phase
 
-The broad routine privilege snapshot shows many RPCs outside the PR #64 scope still exposing anon and/or PUBLIC EXECUTE.
+The broad routine privilege snapshot shows many RPCs outside the PR #65 / phase 1 scope still exposing anon and/or PUBLIC EXECUTE.
 
 This includes root-like, MesaCliente, lock, utility, and financial helper RPCs. They require separate classification and controlled remediation.
 
@@ -299,7 +299,7 @@ Interpretation:
 
 ```text
 OPEN - broad public routine surface remains a separate hardening backlog.
-APPROVED FOR THIS PHASE - the five sensitive RPCs covered by PR #64 are validated above.
+APPROVED FOR THIS PHASE - the five sensitive RPCs covered by PR #65 / phase 1 are validated above.
 ```
 
 ---
