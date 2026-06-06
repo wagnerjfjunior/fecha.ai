@@ -5,26 +5,70 @@
 --
 -- Purpose:
 -- Read-only snapshot of the real Supabase security state after manual hardening.
--- Run these queries in Supabase SQL Editor and paste the outputs into:
+-- Run these queries in Supabase SQL Editor and paste sanitized outputs into:
 -- docs/security/evidence/2026-05-29_supabase_security_snapshot_results.md
 --
 -- WARNING:
 -- These queries are read-only. Do not add REVOKE/GRANT/ALTER statements here.
+-- Do not paste raw passwords, tokens, service role keys, secrets, real emails,
+-- user ids, broker ids, company ids, team ids, audit ids, or customer data.
+--
+-- NOTE ABOUT PUBLIC:
+-- PostgreSQL PUBLIC is a pseudo-role. Different catalog surfaces may expose it
+-- as PUBLIC/public depending on view/case handling. Diagnostics below normalize
+-- grantee via lower(grantee) and also include explicit has_*_privilege checks.
 
 -- -----------------------------------------------------------------------------
--- A. Table/view grants for anon, authenticated, service_role, public
+-- A. Table/view grants for anon, authenticated, service_role, PUBLIC/public
 -- -----------------------------------------------------------------------------
 
 select
   table_schema,
   table_name,
   grantee,
+  lower(grantee) as grantee_normalized,
   string_agg(privilege_type, ', ' order by privilege_type) as privileges
 from information_schema.role_table_grants
 where table_schema not in ('pg_catalog', 'information_schema')
-  and grantee in ('anon', 'authenticated', 'service_role', 'public')
-group by table_schema, table_name, grantee
-order by table_schema, table_name, grantee;
+  and lower(grantee) in ('anon', 'authenticated', 'service_role', 'public')
+group by table_schema, table_name, grantee, lower(grantee)
+order by table_schema, table_name, grantee_normalized;
+
+-- -----------------------------------------------------------------------------
+-- A.1 PUBLIC effective privilege diagnostic for sensitive public tables/views
+-- Expected result after hardening: all public_* columns false.
+-- -----------------------------------------------------------------------------
+
+with sensitive_objects(schema_name, object_name) as (
+  values
+    ('public', 'audit_trail'),
+    ('public', 'lista_visibilidade'),
+    ('public', 'mesa_cliente_desconto_politicas'),
+    ('public', 'mesa_cliente_unidade_enriquecimentos'),
+    ('public', 'root_audit_logs'),
+    ('public', 'corretores'),
+    ('public', 'vw_lotes_estado_oficial'),
+    ('public', 'vw_lotes_pendentes_avaliacao')
+), resolved as (
+  select
+    s.schema_name,
+    s.object_name,
+    to_regclass(format('%I.%I', s.schema_name, s.object_name)) as object_regclass
+  from sensitive_objects s
+)
+select
+  schema_name,
+  object_name,
+  object_regclass is not null as object_exists,
+  case when object_regclass is null then null else has_table_privilege('PUBLIC', object_regclass, 'SELECT') end as public_select,
+  case when object_regclass is null then null else has_table_privilege('PUBLIC', object_regclass, 'INSERT') end as public_insert,
+  case when object_regclass is null then null else has_table_privilege('PUBLIC', object_regclass, 'UPDATE') end as public_update,
+  case when object_regclass is null then null else has_table_privilege('PUBLIC', object_regclass, 'DELETE') end as public_delete,
+  case when object_regclass is null then null else has_table_privilege('PUBLIC', object_regclass, 'TRUNCATE') end as public_truncate,
+  case when object_regclass is null then null else has_table_privilege('PUBLIC', object_regclass, 'REFERENCES') end as public_references,
+  case when object_regclass is null then null else has_table_privilege('PUBLIC', object_regclass, 'TRIGGER') end as public_trigger
+from resolved
+order by schema_name, object_name;
 
 -- -----------------------------------------------------------------------------
 -- B. Direct writes still open for authenticated
@@ -42,7 +86,7 @@ where table_schema = 'public'
 order by table_name, privilege_type;
 
 -- -----------------------------------------------------------------------------
--- C. Dangerous structural privileges for anon/authenticated
+-- C. Dangerous structural privileges for anon/authenticated/PUBLIC
 -- Expected result: No rows returned
 -- -----------------------------------------------------------------------------
 
@@ -53,24 +97,25 @@ select
   privilege_type
 from information_schema.role_table_grants
 where table_schema = 'public'
-  and grantee in ('anon', 'authenticated')
+  and lower(grantee) in ('anon', 'authenticated', 'public')
   and privilege_type in ('TRUNCATE', 'TRIGGER', 'REFERENCES')
-order by grantee, table_name, privilege_type;
+order by lower(grantee), table_name, privilege_type;
 
 -- -----------------------------------------------------------------------------
 -- D. Grants in sensitive auth/vault schemas
--- Expected result: No rows returned for anon/authenticated/public
+-- Expected result: No rows returned for anon/authenticated/PUBLIC/public
 -- -----------------------------------------------------------------------------
 
 select
   grantee,
+  lower(grantee) as grantee_normalized,
   table_schema,
   table_name,
   privilege_type
 from information_schema.role_table_grants
 where table_schema in ('auth', 'vault')
-  and grantee in ('anon', 'authenticated', 'public')
-order by table_schema, table_name, grantee, privilege_type;
+  and lower(grantee) in ('anon', 'authenticated', 'public')
+order by table_schema, table_name, grantee_normalized, privilege_type;
 
 -- -----------------------------------------------------------------------------
 -- E. RLS enabled/forced overview
@@ -143,7 +188,7 @@ where n.nspname = 'public'
 order by c.relname;
 
 -- -----------------------------------------------------------------------------
--- I. Public functions/RPC touching password/auth/vault/service role patterns
+-- I. Public functions/RPC touching password/auth/vault/service-role patterns
 -- Expected ideal result: No rows returned
 -- -----------------------------------------------------------------------------
 
@@ -174,11 +219,40 @@ select
   routine_schema,
   routine_name,
   grantee,
+  lower(grantee) as grantee_normalized,
   privilege_type
 from information_schema.routine_privileges
 where routine_schema = 'public'
-  and grantee in ('anon', 'authenticated', 'public')
-order by routine_name, grantee, privilege_type;
+  and lower(grantee) in ('anon', 'authenticated', 'public')
+order by routine_name, grantee_normalized, privilege_type;
+
+-- -----------------------------------------------------------------------------
+-- J.1 PUBLIC effective EXECUTE diagnostic for sensitive functions
+-- -----------------------------------------------------------------------------
+
+with sensitive_functions(schema_name, function_signature) as (
+  values
+    ('public', 'listar_empresas_root()'),
+    ('public', 'registrar_root_audit(text,uuid,jsonb)'),
+    ('public', 'get_corretores_time(uuid)'),
+    ('public', 'importar_leads_batch(uuid,jsonb,text)'),
+    ('public', 'redefinir_senha_corretor(uuid,text)')
+), resolved as (
+  select
+    schema_name,
+    function_signature,
+    to_regprocedure(schema_name || '.' || function_signature) as function_regprocedure
+  from sensitive_functions
+)
+select
+  schema_name,
+  function_signature,
+  function_regprocedure is not null as function_exists,
+  case when function_regprocedure is null then null else has_function_privilege('PUBLIC', function_regprocedure, 'EXECUTE') end as public_execute,
+  case when function_regprocedure is null then null else has_function_privilege('anon', function_regprocedure, 'EXECUTE') end as anon_execute,
+  case when function_regprocedure is null then null else has_function_privilege('authenticated', function_regprocedure, 'EXECUTE') end as authenticated_execute
+from resolved
+order by schema_name, function_signature;
 
 -- -----------------------------------------------------------------------------
 -- K. Critical operational table columns for next phase
