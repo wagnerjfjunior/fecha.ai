@@ -15,7 +15,7 @@ Do not paste passwords, tokens, service role keys, secrets, raw credentials, rea
 
 ---
 
-## A. Table/view grants for anon, authenticated, service_role, PUBLIC/public
+## A. Table/view grants for anon, authenticated, service_role
 
 Summary of relevant validated state:
 
@@ -31,8 +31,8 @@ Interpretation:
 
 ```text
 APPROVED - no anon grants detected on the validated sensitive public tables/views after hardening.
-APPROVED - no PUBLIC table/view grant row was returned for the validated sensitive public objects.
 SERVICE_ROLE NOTE - service_role retains broad Supabase backend/service privileges and is outside client-role hardening scope.
+PUBLIC NOTE - PUBLIC effective privileges are validated by ACL-based diagnostics in A.1, not by information_schema.role_table_grants.
 ```
 
 ---
@@ -42,27 +42,45 @@ SERVICE_ROLE NOTE - service_role retains broad Supabase backend/service privileg
 Diagnostic method:
 
 ```text
-PUBLIC pseudo-role was validated through aclexplode(...), where grantee = 0.
+PUBLIC pseudo-role must be validated through ACL inspection with aclexplode(...), where grantee = 0.
+Table-level ACLs are stored in pg_class.relacl.
+Column-level ACLs are stored in pg_attribute.attacl.
 The earlier has_table_privilege('PUBLIC', ...) approach is not used because the hosted environment returned role-not-found for PUBLIC.
 ```
 
-Actual sanitized result:
+Expected sanitized result after rerunning the updated query:
 
 ```text
-public.audit_trail                              object_exists=true | all public_* privileges=false
-public.corretores                               object_exists=true | all public_* privileges=false
-public.lista_visibilidade                       object_exists=true | all public_* privileges=false
-public.mesa_cliente_desconto_politicas          object_exists=true | all public_* privileges=false
-public.mesa_cliente_unidade_enriquecimentos     object_exists=true | all public_* privileges=false
-public.root_audit_logs                          object_exists=true | all public_* privileges=false
-public.vw_lotes_estado_oficial                  object_exists=true | all public_* privileges=false
-public.vw_lotes_pendentes_avaliacao             object_exists=true | all public_* privileges=false
+For each validated sensitive object:
+object_exists=true
+public_select=false
+public_insert=false
+public_update=false
+public_delete=false
+public_truncate=false
+public_references=false
+public_trigger=false
+public_column_acl_detected=false
+public_column_acl_details=''
 ```
 
-Interpretation:
+Validated sensitive objects:
 
 ```text
-APPROVED - PUBLIC has no effective SELECT, INSERT, UPDATE, DELETE, TRUNCATE, REFERENCES, or TRIGGER on the validated sensitive public tables/views.
+public.audit_trail
+public.corretores
+public.lista_visibilidade
+public.mesa_cliente_desconto_politicas
+public.mesa_cliente_unidade_enriquecimentos
+public.root_audit_logs
+public.vw_lotes_estado_oficial
+public.vw_lotes_pendentes_avaliacao
+```
+
+Current status:
+
+```text
+PENDING RERUN - the query has been upgraded to include column ACLs. Paste the new sanitized output here before declaring final APPROVED on PUBLIC effective table/view privileges.
 ```
 
 ---
@@ -118,32 +136,48 @@ P2 - pme_* INSERT/UPDATE review
 
 ## C. Dangerous structural privileges for anon/authenticated/PUBLIC
 
-Actual:
+Diagnostic method:
+
+```text
+This diagnostic is now ACL-based.
+It checks table-level TRUNCATE, TRIGGER, and REFERENCES for anon/authenticated/PUBLIC.
+It also checks column-level REFERENCES in pg_attribute.attacl.
+PUBLIC is detected through grantee = 0.
+```
+
+Expected result after rerunning the updated query:
 
 ```text
 Success. No rows returned.
 ```
 
-Interpretation:
+Current status:
 
 ```text
-APPROVED - anon/authenticated/PUBLIC do not have TRUNCATE, TRIGGER, or REFERENCES on public objects covered by this diagnostic.
+PENDING RERUN - previous information_schema-based evidence is superseded by the ACL-based query.
 ```
 
 ---
 
 ## D. Grants in sensitive auth/vault schemas
 
-Actual:
+Diagnostic method:
+
+```text
+This diagnostic is now ACL-based for table and column grants in auth/vault.
+PUBLIC is detected through grantee = 0.
+```
+
+Expected result after rerunning the updated query:
 
 ```text
 Success. No rows returned.
 ```
 
-Interpretation:
+Current status:
 
 ```text
-APPROVED - anon/authenticated/PUBLIC do not have direct table grants on auth/vault in the tested scope.
+PENDING RERUN - previous information_schema-based evidence is superseded by the ACL-based query.
 ```
 
 ---
@@ -243,7 +277,8 @@ public.vw_lotes_pendentes_avaliacao  authenticated SELECT
 Interpretation:
 
 ```text
-APPROVED - validated lot views expose SELECT only to authenticated and no anon/PUBLIC grant was returned.
+APPROVED - validated lot views expose SELECT only to authenticated and no anon grant was returned.
+PUBLIC effective privileges for these views are covered by section A.1 after rerun.
 ```
 
 ---
@@ -280,15 +315,13 @@ P2 - public.get_corretores_time: validate tenant/team boundary and role guard.
 
 ## J. Routine privileges for public functions/RPCs
 
-The broad routine privilege snapshot shows many RPCs outside the PR #64 scope still exposing anon and/or PUBLIC EXECUTE. This is not solved by phase 1 and becomes a follow-up RPC hardening track.
-
-Examples outside this phase include root-like, MesaCliente, lock, utility, and financial helper RPCs. They require separate classification and controlled remediation.
+The broad routine privilege snapshot is now ACL-based so it can report PUBLIC pseudo-role grants.
 
 Interpretation:
 
 ```text
 OPEN - broad public routine surface remains a separate hardening backlog.
-APPROVED FOR THIS PHASE - the five sensitive RPCs covered by PR #64 are validated in sections J.1 and J.2.
+APPROVED FOR THIS PHASE - the five sensitive RPCs covered by PR #65 are validated in sections J.1 and J.2.
 ```
 
 ---
