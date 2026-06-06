@@ -42,45 +42,30 @@ PUBLIC NOTE - PUBLIC effective privileges are validated by ACL-based diagnostics
 Diagnostic method:
 
 ```text
-PUBLIC pseudo-role must be validated through ACL inspection with aclexplode(...), where grantee = 0.
-Table-level ACLs are stored in pg_class.relacl.
-Column-level ACLs are stored in pg_attribute.attacl.
+PUBLIC pseudo-role was validated through ACL inspection with aclexplode(...), where grantee = 0.
+Table-level ACLs were inspected through pg_class.relacl.
+Column-level ACLs were inspected through pg_attribute.attacl.
 The earlier has_table_privilege('PUBLIC', ...) approach is not used because the hosted environment returned role-not-found for PUBLIC.
 ```
 
-Expected sanitized result after rerunning the updated query:
+Actual sanitized result after rerun:
 
 ```text
-For each validated sensitive object:
-object_exists=true
-public_select=false
-public_insert=false
-public_update=false
-public_delete=false
-public_truncate=false
-public_references=false
-public_trigger=false
-public_column_acl_detected=false
-public_column_acl_details=''
+public.audit_trail                              object_exists=true | all public_* privileges=false | public_column_acl_detected=false | public_column_acl_details=''
+public.corretores                               object_exists=true | all public_* privileges=false | public_column_acl_detected=false | public_column_acl_details=''
+public.lista_visibilidade                       object_exists=true | all public_* privileges=false | public_column_acl_detected=false | public_column_acl_details=''
+public.mesa_cliente_desconto_politicas          object_exists=true | all public_* privileges=false | public_column_acl_detected=false | public_column_acl_details=''
+public.mesa_cliente_unidade_enriquecimentos     object_exists=true | all public_* privileges=false | public_column_acl_detected=false | public_column_acl_details=''
+public.root_audit_logs                          object_exists=true | all public_* privileges=false | public_column_acl_detected=false | public_column_acl_details=''
+public.vw_lotes_estado_oficial                  object_exists=true | all public_* privileges=false | public_column_acl_detected=false | public_column_acl_details=''
+public.vw_lotes_pendentes_avaliacao             object_exists=true | all public_* privileges=false | public_column_acl_detected=false | public_column_acl_details=''
 ```
 
-Validated sensitive objects:
+Interpretation:
 
 ```text
-public.audit_trail
-public.corretores
-public.lista_visibilidade
-public.mesa_cliente_desconto_politicas
-public.mesa_cliente_unidade_enriquecimentos
-public.root_audit_logs
-public.vw_lotes_estado_oficial
-public.vw_lotes_pendentes_avaliacao
-```
-
-Current status:
-
-```text
-PENDING RERUN - the query has been upgraded to include column ACLs. Paste the new sanitized output here before declaring final APPROVED on PUBLIC effective table/view privileges.
+APPROVED - PUBLIC has no effective SELECT, INSERT, UPDATE, DELETE, TRUNCATE, REFERENCES, or TRIGGER on the validated sensitive public tables/views.
+APPROVED - no PUBLIC column-level ACL was detected on the validated sensitive public tables/views.
 ```
 
 ---
@@ -139,22 +124,23 @@ P2 - pme_* INSERT/UPDATE review
 Diagnostic method:
 
 ```text
-This diagnostic is now ACL-based.
+This diagnostic is ACL-based.
 It checks table-level TRUNCATE, TRIGGER, and REFERENCES for anon/authenticated/PUBLIC.
 It also checks column-level REFERENCES in pg_attribute.attacl.
 PUBLIC is detected through grantee = 0.
 ```
 
-Expected result after rerunning the updated query:
+Actual:
 
 ```text
 Success. No rows returned.
 ```
 
-Current status:
+Interpretation:
 
 ```text
-PENDING RERUN - previous information_schema-based evidence is superseded by the ACL-based query.
+APPROVED - anon/authenticated/PUBLIC do not have table-level TRUNCATE, TRIGGER, or REFERENCES on public objects covered by this diagnostic.
+APPROVED - anon/authenticated/PUBLIC do not have column-level REFERENCES on public objects covered by this diagnostic.
 ```
 
 ---
@@ -164,20 +150,21 @@ PENDING RERUN - previous information_schema-based evidence is superseded by the 
 Diagnostic method:
 
 ```text
-This diagnostic is now ACL-based for table and column grants in auth/vault.
+This diagnostic is ACL-based for table and column grants in auth/vault.
 PUBLIC is detected through grantee = 0.
 ```
 
-Expected result after rerunning the updated query:
+Actual:
 
 ```text
 Success. No rows returned.
 ```
 
-Current status:
+Interpretation:
 
 ```text
-PENDING RERUN - previous information_schema-based evidence is superseded by the ACL-based query.
+APPROVED - anon/authenticated/PUBLIC do not have table-level ACL grants on auth/vault in the tested scope.
+APPROVED - anon/authenticated/PUBLIC do not have column-level ACL grants on auth/vault in the tested scope.
 ```
 
 ---
@@ -278,7 +265,7 @@ Interpretation:
 
 ```text
 APPROVED - validated lot views expose SELECT only to authenticated and no anon grant was returned.
-PUBLIC effective privileges for these views are covered by section A.1 after rerun.
+APPROVED - PUBLIC effective privileges for these views are covered by section A.1.
 ```
 
 ---
@@ -315,7 +302,7 @@ P2 - public.get_corretores_time: validate tenant/team boundary and role guard.
 
 ## J. Routine privileges for public functions/RPCs
 
-The broad routine privilege snapshot is now ACL-based so it can report PUBLIC pseudo-role grants.
+The broad routine privilege snapshot is ACL-based so it can report PUBLIC pseudo-role grants.
 
 Interpretation:
 
