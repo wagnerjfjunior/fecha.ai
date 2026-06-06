@@ -1,64 +1,48 @@
-# FECH.AI / MesaCliente — Active Root Identity Candidate
+# FECH.AI / MesaCliente - Active Root Identity Candidate
 
-**Date:** 2026-05-29  
-**Branch:** `security/supabase-rls-grants-hardening`  
-**Scope:** Identify an active root-capable identity for positive RPC tests.
+Date: 2026-05-29
+Branch: security/supabase-rls-grants-hardening
+Scope: Identify an active root-capable identity for positive RPC tests.
+Status: SANITIZED PUBLIC EVIDENCE
+
+---
+
+## Sanitization rule
+
+This public evidence file intentionally does not expose raw email, user_id, admin id, company id, team id, broker id, audit id, token, password, secret, or customer data.
 
 ---
 
 ## Supabase admins result
 
-```json
-[
-  {
-    "id": "[REDACTED_ADMIN_ID]",
-    "user_id": "[REDACTED_ROOT_USER_ID]",
-    "email": "[REDACTED_ROOT_IDENTITY]",
-    "nome": "root",
-    "empresa_id": null,
-    "role": "admin_global",
-    "ativo": true
-  }
-]
-```
-
----
-
-## Initial interpretation
+Sanitized result:
 
 ```text
-Candidate root identity found: [REDACTED_ROOT_IDENTITY].
-Role value is admin_global, not literal root; public.is_root() must be validated with the candidate user_id before running positive root RPC tests.
+root_candidate = [REDACTED_ROOT_IDENTITY]
+role = admin_global
+ativo = true
+empresa_id = null
 ```
 
 ---
 
 ## Root validation result
 
-A simulated authenticated session was configured with:
+A simulated authenticated session was configured using a redacted root-capable auth subject.
+
+Actual sanitized result:
 
 ```text
-request.jwt.claim.sub = [REDACTED_ROOT_USER_ID]
-```
-
-Actual result:
-
-```json
-[
-  {
-    "uid_simulado": "[REDACTED_ROOT_USER_ID]",
-    "is_root": true,
-    "is_admin_local": true,
-    "is_gestor": true
-  }
-]
+uid_simulado = [REDACTED_ROOT_USER_ID]
+is_root = true
+is_admin_local = true
+is_gestor = true
 ```
 
 Interpretation:
 
 ```text
-APPROVED — [REDACTED_ROOT_IDENTITY] is a valid root/admin_global identity according to public.is_root().
-It can be used for positive root RPC tests.
+APPROVED - the redacted candidate identity is valid for root/admin_global positive RPC tests according to public.is_root().
 ```
 
 ---
@@ -66,6 +50,6 @@ It can be used for positive root RPC tests.
 ## Remaining validation
 
 ```text
-Run positive tests for listar_empresas_root() and registrar_root_audit(...).
-Capture total_empresas_visiveis_root and confirm registrar_root_audit executes without error inside a rollback transaction.
+Use the same redacted root-capable context for positive tests of listar_empresas_root() and registrar_root_audit(...).
+Do not commit raw identifiers or emails to GitHub.
 ```
