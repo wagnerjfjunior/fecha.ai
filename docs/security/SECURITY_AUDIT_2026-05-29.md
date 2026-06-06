@@ -20,6 +20,7 @@ The first validated block addressed:
 - View access model for lot-related views.
 - Read-only protection for audit/root/policy tables.
 - Functional tests using a real common broker user.
+- Full encrypted Supabase/PostgreSQL backup checkpoint before continuing the next hardening phase.
 
 This document intentionally does **not** claim that the entire platform is production-approved yet. The next critical phase is to review direct write permissions on operational tables such as `corretores`, `leads`, `lotes`, `times`, `lista_visibilidade`, `pme_*`, and selected MesaCliente tables.
 
@@ -34,6 +35,7 @@ The platform is multi-tenant and multi-company. Therefore:
 - Passwords must never be stored in public operational tables, logs, analytics, console output, or custom payloads.
 - Critical changes must be protected by RLS, `auth.uid()`, tenant/company validation, role checks, and preferably secure RPCs.
 - A common authenticated user must not be able to see or mutate data belonging to another company, tenant, broker, or administrative scope.
+- Backup files containing Auth, Storage metadata, Vault metadata/secrets, leads, logs, sessions, or operational data must never be committed to GitHub.
 
 ---
 
@@ -229,7 +231,48 @@ APPROVED.
 
 ---
 
-## 4. Migration Created
+## 4. Backup Checkpoint Before Continuing Hardening
+
+A full logical Supabase/PostgreSQL backup was created before continuing with the next security hardening phase.
+
+Checkpoint:
+
+```text
+Backup type: full logical PostgreSQL dump
+Tooling: DBeaver + pg_dump 18.4 from Postgres.app
+Source database version: PostgreSQL 17.6
+Original format: TAR
+Original validated file: dump-postgres-202606061412.tar
+Original size: 14 MB
+TOC entries: 1577
+Validation: pg_restore -l executed successfully
+Compression: gzip
+Encryption: OpenSSL AES-256-CBC + PBKDF2 + 200000 iterations
+Official preserved file: dump-postgres-202606061412.tar.gz.enc
+Hash file preserved: dump-postgres-202606061412.tar.gz.enc.sha256
+Decryption test: approved
+Gzip integrity test: approved
+Plaintext TAR/TAR.GZ copies: removed after encryption validation
+```
+
+Security handling:
+
+```text
+Backup storage path is local and outside the repository.
+The backup file contains sensitive operational data and must not be committed to GitHub.
+The backup may include Auth data, sessions/tokens, lead data, logs, Storage metadata, Realtime metadata, Supabase migrations, and Vault data.
+The encryption password must be stored only in an approved password vault or equivalent secure location.
+```
+
+Status:
+
+```text
+APPROVED — encrypted backup checkpoint completed before proceeding.
+```
+
+---
+
+## 5. Migration Created
 
 Migration file:
 
@@ -245,7 +288,7 @@ Purpose:
 
 ---
 
-## 5. Current Known Pending Items
+## 6. Current Known Pending Items
 
 The following are intentionally not solved by the current migration and must be handled in the next hardening phase:
 
@@ -268,7 +311,7 @@ P2 — Review routine privileges for anon/authenticated/public.
 
 ---
 
-## 6. Required Read-Only Snapshot Queries
+## 7. Required Read-Only Snapshot Queries
 
 The current repository also contains:
 
@@ -286,12 +329,12 @@ docs/security/evidence/2026-05-29_supabase_security_snapshot_results.md
 
 ---
 
-## 7. Production Approval Status
+## 8. Production Approval Status
 
 Current status:
 
 ```text
-PARTIALLY APPROVED — phase 1 hardening completed and documented.
+PARTIALLY APPROVED — phase 1 hardening completed, documented, and backed up.
 ```
 
 Not yet approved:
