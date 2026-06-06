@@ -2,80 +2,64 @@
 
 **Date:** 2026-05-29  
 **Branch:** `security/supabase-rls-grants-hardening`  
-**Source query file:** `docs/security/evidence/2026-05-29_supabase_security_snapshot.sql`
+**Source query file:** `docs/security/evidence/2026-05-29_supabase_security_snapshot.sql`  
+**Status:** Sanitized public evidence
 
 ---
 
 ## Instructions
 
-Paste the output of each read-only snapshot query below.
+This file stores sanitized structural/security evidence only.
 
-Do not paste passwords, tokens, service role keys, secrets, or raw credentials into this file.
-
-If any query returns sensitive values, redact the values and keep only the structural/security-relevant fields.
+Do not paste passwords, tokens, service role keys, secrets, raw credentials, real emails, real user ids, real broker ids, real company ids, real team ids, audit ids, or customer data into this file.
 
 ---
 
 ## A. Table/view grants for anon, authenticated, service_role, public
 
-Status captured during audit.
-
 Summary of relevant validated state:
 
 ```text
-public.vw_lotes_estado_oficial      authenticated SELECT
-public.vw_lotes_pendentes_avaliacao authenticated SELECT
-public.audit_trail                  authenticated SELECT
-public.root_audit_logs              authenticated SELECT
-public.mesa_cliente_desconto_politicas authenticated SELECT
-
-No anon grants detected on the validated sensitive public tables/views after hardening.
-service_role retains broad privileges, as expected for Supabase backend/service context.
+public.vw_lotes_estado_oficial             authenticated SELECT
+public.vw_lotes_pendentes_avaliacao        authenticated SELECT
+public.audit_trail                         authenticated SELECT
+public.root_audit_logs                     authenticated SELECT
+public.mesa_cliente_desconto_politicas     authenticated SELECT
 ```
 
-Notes:
+Interpretation:
 
 ```text
-Full raw output was collected during the audit session. Storage/realtime managed schemas showed broad Supabase-managed grants and must be reviewed separately under storage/realtime policy audit. They are intentionally outside the current public-table hardening scope.
+APPROVED — no anon grants detected on the validated sensitive public tables/views after hardening.
+SERVICE_ROLE NOTE — service_role retains broad Supabase backend/service privileges and is outside client-role hardening scope.
 ```
 
 ---
 
 ## B. Direct writes still open for authenticated
 
-Actual:
+Latest sanitized result summary:
 
-```json
-[
-  { "table_schema": "public", "table_name": "audit_logs", "grantee": "authenticated", "privilege_type": "INSERT" },
-  { "table_schema": "public", "table_name": "corretores", "grantee": "authenticated", "privilege_type": "UPDATE" },
-  { "table_schema": "public", "table_name": "funil_movimentacoes", "grantee": "authenticated", "privilege_type": "INSERT" },
-  { "table_schema": "public", "table_name": "leads", "grantee": "authenticated", "privilege_type": "INSERT" },
-  { "table_schema": "public", "table_name": "leads", "grantee": "authenticated", "privilege_type": "UPDATE" },
-  { "table_schema": "public", "table_name": "lista_avaliacoes", "grantee": "authenticated", "privilege_type": "INSERT" },
-  { "table_schema": "public", "table_name": "lista_avaliacoes", "grantee": "authenticated", "privilege_type": "UPDATE" },
-  { "table_schema": "public", "table_name": "lista_visibilidade", "grantee": "authenticated", "privilege_type": "DELETE" },
-  { "table_schema": "public", "table_name": "lista_visibilidade", "grantee": "authenticated", "privilege_type": "INSERT" },
-  { "table_schema": "public", "table_name": "lista_visibilidade", "grantee": "authenticated", "privilege_type": "UPDATE" },
-  { "table_schema": "public", "table_name": "logs", "grantee": "authenticated", "privilege_type": "INSERT" },
-  { "table_schema": "public", "table_name": "lotes", "grantee": "authenticated", "privilege_type": "UPDATE" },
-  { "table_schema": "public", "table_name": "mesa_cliente_unidade_enriquecimentos", "grantee": "authenticated", "privilege_type": "DELETE" },
-  { "table_schema": "public", "table_name": "mesa_cliente_unidade_enriquecimentos", "grantee": "authenticated", "privilege_type": "INSERT" },
-  { "table_schema": "public", "table_name": "mesa_cliente_unidade_enriquecimentos", "grantee": "authenticated", "privilege_type": "UPDATE" },
-  { "table_schema": "public", "table_name": "pme_cadence_steps", "grantee": "authenticated", "privilege_type": "INSERT" },
-  { "table_schema": "public", "table_name": "pme_cadence_steps", "grantee": "authenticated", "privilege_type": "UPDATE" },
-  { "table_schema": "public", "table_name": "pme_cadences", "grantee": "authenticated", "privilege_type": "INSERT" },
-  { "table_schema": "public", "table_name": "pme_cadences", "grantee": "authenticated", "privilege_type": "UPDATE" },
-  { "table_schema": "public", "table_name": "pme_call_scripts", "grantee": "authenticated", "privilege_type": "INSERT" },
-  { "table_schema": "public", "table_name": "pme_call_scripts", "grantee": "authenticated", "privilege_type": "UPDATE" },
-  { "table_schema": "public", "table_name": "pme_lead_message_state", "grantee": "authenticated", "privilege_type": "INSERT" },
-  { "table_schema": "public", "table_name": "pme_lead_message_state", "grantee": "authenticated", "privilege_type": "UPDATE" },
-  { "table_schema": "public", "table_name": "pme_message_templates", "grantee": "authenticated", "privilege_type": "INSERT" },
-  { "table_schema": "public", "table_name": "pme_message_templates", "grantee": "authenticated", "privilege_type": "UPDATE" },
-  { "table_schema": "public", "table_name": "pme_message_usage", "grantee": "authenticated", "privilege_type": "INSERT" },
-  { "table_schema": "public", "table_name": "times", "grantee": "authenticated", "privilege_type": "UPDATE" }
-]
+```text
+public.audit_logs                          INSERT
+public.corretores                          UPDATE
+public.funil_movimentacoes                 INSERT
+public.leads                               INSERT, UPDATE
+public.lista_avaliacoes                    INSERT, UPDATE
+public.lista_visibilidade                  DELETE, INSERT, UPDATE
+public.logs                                INSERT
+public.lotes                               UPDATE
+public.mesa_cliente_unidade_enriquecimentos DELETE, INSERT, UPDATE
+public.pme_cadence_steps                   INSERT, UPDATE
+public.pme_cadences                        INSERT, UPDATE
+public.pme_call_scripts                    INSERT, UPDATE
+public.pme_lead_message_state              INSERT, UPDATE
+public.pme_message_templates               INSERT, UPDATE
+public.pme_message_usage                   INSERT
+public.times                               UPDATE
 ```
+
+Expected read grants remain present for normal authenticated application reads, including selected operational, MesaCliente, PME, and lot-view objects.
 
 Interpretation:
 
@@ -103,12 +87,6 @@ P2 — pme_* INSERT/UPDATE review
 
 ## C. Dangerous structural privileges for anon/authenticated
 
-Expected:
-
-```text
-No rows returned.
-```
-
 Actual:
 
 ```text
@@ -124,12 +102,6 @@ APPROVED — anon/authenticated do not have TRUNCATE, TRIGGER, or REFERENCES on 
 ---
 
 ## D. Grants in sensitive auth/vault schemas
-
-Expected:
-
-```text
-No rows returned.
-```
 
 Actual:
 
@@ -151,7 +123,6 @@ Summary:
 
 ```text
 Most core operational public tables are RLS enabled and FORCE RLS enabled.
-The uploaded full overview confirms FORCE RLS true for critical operational tables such as admins, audit_logs, audit_trail, corretores, empresas, leads, lista_avaliacoes, lista_visibilidade, listas, logs, lotes, times, and multiple MesaCliente operational tables.
 Views show rls_enabled=false and rls_forced=false, which is expected for views; view safety must be handled via grants and security_invoker.
 ```
 
@@ -161,25 +132,23 @@ Objects still RLS-enabled but not FORCE RLS-enabled are listed in section F.
 
 ## F. Tables with RLS enabled but FORCE RLS disabled
 
-Actual:
+Actual sanitized list:
 
-```json
-[
-  { "schema_name": "public", "table_name": "mesa_cliente_desconto_politicas", "rls_enabled": true, "rls_forced": false },
-  { "schema_name": "public", "table_name": "mesa_cliente_fluxo_operacoes", "rls_enabled": true, "rls_forced": false },
-  { "schema_name": "public", "table_name": "mesa_cliente_fluxo_parcelas", "rls_enabled": true, "rls_forced": false },
-  { "schema_name": "public", "table_name": "mesa_cliente_politica_premio_faixas", "rls_enabled": true, "rls_forced": false },
-  { "schema_name": "public", "table_name": "mesa_cliente_politicas_financeiras", "rls_enabled": true, "rls_forced": false },
-  { "schema_name": "public", "table_name": "mesa_cliente_unidade_enriquecimentos", "rls_enabled": true, "rls_forced": false },
-  { "schema_name": "public", "table_name": "mesa_fluxo_pagamentos_canonico", "rls_enabled": true, "rls_forced": false },
-  { "schema_name": "public", "table_name": "pme_cadence_steps", "rls_enabled": true, "rls_forced": false },
-  { "schema_name": "public", "table_name": "pme_cadences", "rls_enabled": true, "rls_forced": false },
-  { "schema_name": "public", "table_name": "pme_call_scripts", "rls_enabled": true, "rls_forced": false },
-  { "schema_name": "public", "table_name": "pme_lead_message_state", "rls_enabled": true, "rls_forced": false },
-  { "schema_name": "public", "table_name": "pme_message_templates", "rls_enabled": true, "rls_forced": false },
-  { "schema_name": "public", "table_name": "pme_message_usage", "rls_enabled": true, "rls_forced": false },
-  { "schema_name": "public", "table_name": "root_audit_logs", "rls_enabled": true, "rls_forced": false }
-]
+```text
+public.mesa_cliente_desconto_politicas
+public.mesa_cliente_fluxo_operacoes
+public.mesa_cliente_fluxo_parcelas
+public.mesa_cliente_politica_premio_faixas
+public.mesa_cliente_politicas_financeiras
+public.mesa_cliente_unidade_enriquecimentos
+public.mesa_fluxo_pagamentos_canonico
+public.pme_cadence_steps
+public.pme_cadences
+public.pme_call_scripts
+public.pme_lead_message_state
+public.pme_message_templates
+public.pme_message_usage
+public.root_audit_logs
 ```
 
 Interpretation:
@@ -199,37 +168,28 @@ Review policies and functions first, then apply FORCE RLS in small validated bat
 
 ## G. RLS policies
 
+Actual:
+
 ```text
-PENDING — paste result here.
+Success. No rows returned.
+```
+
+Interpretation:
+
+```text
+ATTENTION — the policy query returned no rows in the supplied run. This must be treated as a signal to re-check query scope, permissions, or whether policies are represented differently than expected.
+Do not infer that RLS is safe only from this result. RLS enabled/forced and functional isolation tests remain the controlling evidence for this phase.
 ```
 
 ---
 
 ## H. Views and security_invoker configuration
 
-Actual:
+Actual sanitized result:
 
-```json
-[
-  {
-    "schema_name": "public",
-    "view_name": "vw_lotes_estado_oficial",
-    "relkind": "v",
-    "owner": "postgres",
-    "reloptions": [
-      "security_invoker=true"
-    ]
-  },
-  {
-    "schema_name": "public",
-    "view_name": "vw_lotes_pendentes_avaliacao",
-    "relkind": "v",
-    "owner": "postgres",
-    "reloptions": [
-      "security_invoker=true"
-    ]
-  }
-]
+```text
+public.vw_lotes_estado_oficial       relkind=v owner=postgres reloptions=[security_invoker=true]
+public.vw_lotes_pendentes_avaliacao  relkind=v owner=postgres reloptions=[security_invoker=true]
 ```
 
 Interpretation:
@@ -242,23 +202,11 @@ APPROVED — both validated lot views are configured with security_invoker=true.
 
 ## H.1 Lot views grants validation
 
-Actual:
+Actual sanitized result:
 
-```json
-[
-  {
-    "table_schema": "public",
-    "table_name": "vw_lotes_estado_oficial",
-    "grantee": "authenticated",
-    "privilege_type": "SELECT"
-  },
-  {
-    "table_schema": "public",
-    "table_name": "vw_lotes_pendentes_avaliacao",
-    "grantee": "authenticated",
-    "privilege_type": "SELECT"
-  }
-]
+```text
+public.vw_lotes_estado_oficial       authenticated SELECT
+public.vw_lotes_pendentes_avaliacao  authenticated SELECT
 ```
 
 Interpretation:
@@ -269,24 +217,16 @@ APPROVED — validated lot views expose SELECT only to authenticated and no anon
 
 ---
 
-## I. Public functions/RPC touching password/auth/vault/service role patterns
-
-Expected ideal:
-
-```text
-No rows returned.
-```
+## I. Public functions/RPC touching password/auth/vault/service-role patterns
 
 Actual:
 
-```json
-[
-  { "schema_name": "public", "function_name": "get_corretores_time", "security_definer": true },
-  { "schema_name": "public", "function_name": "importar_leads_batch", "security_definer": true },
-  { "schema_name": "public", "function_name": "listar_empresas_root", "security_definer": true },
-  { "schema_name": "public", "function_name": "redefinir_senha_corretor", "security_definer": true },
-  { "schema_name": "public", "function_name": "registrar_root_audit", "security_definer": true }
-]
+```text
+public.get_corretores_time           SECURITY DEFINER = true
+public.importar_leads_batch          SECURITY DEFINER = true
+public.listar_empresas_root          SECURITY DEFINER = true
+public.redefinir_senha_corretor      SECURITY DEFINER = true
+public.registrar_root_audit          SECURITY DEFINER = true
 ```
 
 Interpretation:
@@ -298,28 +238,29 @@ OPEN — five SECURITY DEFINER functions matched sensitive patterns. This is not
 Priority classification:
 
 ```text
-P0/P1 — public.redefinir_senha_corretor: must prove it does not store plaintext password and can only be executed by allowed admin/root flows.
-P1 — public.importar_leads_batch: must validate tenant/company ownership, import boundaries, and no service role exposure.
+P0/P1 — public.redefinir_senha_corretor: must not expose or process plaintext password through client SQL RPC flow.
+P1 — public.importar_leads_batch: must validate tenant/company ownership, import boundaries, deduplication semantics, and no service-role exposure.
 P1 — public.listar_empresas_root: must validate root-only access.
-P1 — public.registrar_root_audit: must validate audit integrity and root/admin-only semantics as applicable.
-P2 — public.get_corretores_time: review why it matched sensitive patterns and validate tenant/team boundary.
-```
-
-Required next checks:
-
-```text
-- Routine execution grants for these functions.
-- Function definitions for source review.
-- SECURITY DEFINER search_path hardening.
-- Functional negative tests with common broker user.
+P1 — public.registrar_root_audit: must validate audit integrity and root-only semantics.
+P2 — public.get_corretores_time: validate tenant/team boundary and role guard.
 ```
 
 ---
 
 ## J. Routine privileges for public functions/RPCs
 
+Latest validated sensitive-RPC execution-grant summary is documented in:
+
 ```text
-PENDING — paste result here.
+docs/security/evidence/2026-05-29_sensitive_rpc_execution_grants_review.md
+```
+
+Sanitized phase-1 conclusion:
+
+```text
+APPROVED — anon/PUBLIC EXECUTE removed from the sensitive RPC set covered by the migration.
+APPROVED — authenticated EXECUTE remains only where required for logged-in flows and protected by function-level guards.
+APPROVED — password-like RPC remains unavailable to client roles in the validated output.
 ```
 
 ---
@@ -327,7 +268,7 @@ PENDING — paste result here.
 ## K. Critical operational table columns for next phase
 
 ```text
-PENDING — paste result here.
+PENDING — column-level review remains required for corretores, leads, lotes, times, lista_visibilidade, mesa_cliente_unidade_enriquecimentos, and PME tables.
 ```
 
 ---
@@ -362,19 +303,10 @@ Scope executed:
 
 ## Manual Functional Test Evidence Already Collected
 
-### Common broker tested
+### Common broker context
 
 ```text
-email: [REDACTED_BROKER_IDENTITY]
-user_id: [REDACTED_COMMON_BROKER_USER_ID]
-corretor_id: [REDACTED_COMMON_BROKER_ID]
-empresa_id: [REDACTED_EMPRESA_ID]
-time_id: [REDACTED_TIME_ID]
-```
-
-### Role validation
-
-```text
+Identity values redacted.
 is_root = false
 is_admin_local = false
 is_gestor = false
@@ -402,4 +334,10 @@ linhas_de_outro_corretor = 0
 root_audit_logs visible rows = 0
 audit_trail visible rows = 0
 mesa_cliente_desconto_politicas linhas_de_outra_empresa = 0
+```
+
+Interpretation:
+
+```text
+APPROVED — no company/broker leakage detected in the validated view and audit/policy visibility checks.
 ```
