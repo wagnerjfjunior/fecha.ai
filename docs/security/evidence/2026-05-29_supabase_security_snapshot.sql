@@ -17,10 +17,14 @@
 -- PostgreSQL PUBLIC is a pseudo-role, not a normal role. Do not use
 -- has_table_privilege('PUBLIC', ...) or has_function_privilege('PUBLIC', ...)
 -- in this project because the hosted environment may raise role-not-found.
--- For PUBLIC diagnostics, use aclexplode(...) and grantee = 0.
+-- For PUBLIC diagnostics, use ACL inspection through aclexplode(...)
+-- and grantee = 0. Table-level ACLs are stored in pg_class.relacl.
+-- Column-level ACLs are stored in pg_attribute.attacl and must be checked
+-- separately for SELECT, INSERT, UPDATE, and REFERENCES.
 
 -- -----------------------------------------------------------------------------
--- A. Table/view grants for anon, authenticated, service_role, PUBLIC/public
+-- A. Table/view grants visible through information_schema for ordinary roles
+-- PUBLIC effective coverage is handled by A.1 using ACL diagnostics.
 -- -----------------------------------------------------------------------------
 
 select
@@ -31,14 +35,16 @@ select
   string_agg(privilege_type, ', ' order by privilege_type) as privileges
 from information_schema.role_table_grants
 where table_schema not in ('pg_catalog', 'information_schema')
-  and lower(grantee) in ('anon', 'authenticated', 'service_role', 'public')
+  and lower(grantee) in ('anon', 'authenticated', 'service_role')
 group by table_schema, table_name, grantee, lower(grantee)
 order by table_schema, table_name, grantee_normalized;
 
 -- -----------------------------------------------------------------------------
 -- A.1 PUBLIC effective privilege diagnostic for sensitive public tables/views.
--- Expected result after hardening: all public_* columns false.
+-- Expected result after hardening: all public_* columns false and
+-- public_column_acl_details empty.
 -- PUBLIC is detected through aclexplode(...), where grantee = 0.
+-- This diagnostic checks both table ACLs and column ACLs.
 -- -----------------------------------------------------------------------------
 
 with sensitive_objects(schema_name, object_name) as (
@@ -66,23 +72,64 @@ resolved as (
   left join pg_class c
     on c.relnamespace = n.oid
    and c.relname = s.object_name
+),
+table_acl as (
+  select
+    r.oid,
+    a.privilege_type
+  from resolved r
+  left join lateral aclexplode(coalesce(r.relacl, acldefault('r', r.relowner))) a
+    on r.oid is not null
+  where a.grantee = 0
+),
+column_acl as (
+  select
+    r.oid,
+    att.attname,
+    a.privilege_type
+  from resolved r
+  join pg_attribute att
+    on att.attrelid = r.oid
+   and att.attnum > 0
+   and att.attisdropped = false
+  join lateral aclexplode(att.attacl) a
+    on att.attacl is not null
+  where a.grantee = 0
 )
 select
-  schema_name,
-  object_name,
-  oid is not null as object_exists,
-  coalesce(bool_or(a.privilege_type = 'SELECT')     filter (where a.grantee = 0), false) as public_select,
-  coalesce(bool_or(a.privilege_type = 'INSERT')     filter (where a.grantee = 0), false) as public_insert,
-  coalesce(bool_or(a.privilege_type = 'UPDATE')     filter (where a.grantee = 0), false) as public_update,
-  coalesce(bool_or(a.privilege_type = 'DELETE')     filter (where a.grantee = 0), false) as public_delete,
-  coalesce(bool_or(a.privilege_type = 'TRUNCATE')   filter (where a.grantee = 0), false) as public_truncate,
-  coalesce(bool_or(a.privilege_type = 'REFERENCES') filter (where a.grantee = 0), false) as public_references,
-  coalesce(bool_or(a.privilege_type = 'TRIGGER')    filter (where a.grantee = 0), false) as public_trigger
+  r.schema_name,
+  r.object_name,
+  r.oid is not null as object_exists,
+  (
+    exists (select 1 from table_acl ta where ta.oid = r.oid and ta.privilege_type = 'SELECT')
+    or exists (select 1 from column_acl ca where ca.oid = r.oid and ca.privilege_type = 'SELECT')
+  ) as public_select,
+  (
+    exists (select 1 from table_acl ta where ta.oid = r.oid and ta.privilege_type = 'INSERT')
+    or exists (select 1 from column_acl ca where ca.oid = r.oid and ca.privilege_type = 'INSERT')
+  ) as public_insert,
+  (
+    exists (select 1 from table_acl ta where ta.oid = r.oid and ta.privilege_type = 'UPDATE')
+    or exists (select 1 from column_acl ca where ca.oid = r.oid and ca.privilege_type = 'UPDATE')
+  ) as public_update,
+  exists (select 1 from table_acl ta where ta.oid = r.oid and ta.privilege_type = 'DELETE') as public_delete,
+  exists (select 1 from table_acl ta where ta.oid = r.oid and ta.privilege_type = 'TRUNCATE') as public_truncate,
+  (
+    exists (select 1 from table_acl ta where ta.oid = r.oid and ta.privilege_type = 'REFERENCES')
+    or exists (select 1 from column_acl ca where ca.oid = r.oid and ca.privilege_type = 'REFERENCES')
+  ) as public_references,
+  exists (select 1 from table_acl ta where ta.oid = r.oid and ta.privilege_type = 'TRIGGER') as public_trigger,
+  exists (select 1 from column_acl ca where ca.oid = r.oid) as public_column_acl_detected,
+  coalesce((
+    select string_agg(detail, ', ' order by detail)
+    from (
+      select distinct ca.attname || ':' || ca.privilege_type as detail
+      from column_acl ca
+      where ca.oid = r.oid
+    ) d
+  ), '') as public_column_acl_details
 from resolved r
-left join lateral aclexplode(coalesce(r.relacl, acldefault('r', r.relowner))) a
-  on r.oid is not null
-group by schema_name, object_name, oid
-order by schema_name, object_name;
+order by r.schema_name, r.object_name;
 
 -- -----------------------------------------------------------------------------
 -- B. Direct writes still open for authenticated
@@ -100,36 +147,135 @@ where table_schema = 'public'
 order by table_name, privilege_type;
 
 -- -----------------------------------------------------------------------------
--- C. Dangerous structural privileges for anon/authenticated/PUBLIC
+-- C. Dangerous structural privileges for anon/authenticated/PUBLIC.
 -- Expected result: No rows returned.
+-- This diagnostic is ACL-based so it can report PUBLIC pseudo-role grants.
+-- It checks table-level TRUNCATE/TRIGGER/REFERENCES and column-level REFERENCES.
 -- -----------------------------------------------------------------------------
 
+with public_relations as (
+  select
+    n.nspname as table_schema,
+    c.relname as table_name,
+    c.oid,
+    c.relowner,
+    c.relacl
+  from pg_class c
+  join pg_namespace n on n.oid = c.relnamespace
+  where n.nspname = 'public'
+    and c.relkind in ('r', 'p', 'v', 'm')
+),
+table_acl as (
+  select
+    r.table_schema,
+    r.table_name,
+    null::text as column_name,
+    case when a.grantee = 0 then 'PUBLIC' else gr.rolname end as grantee,
+    a.privilege_type
+  from public_relations r
+  join lateral aclexplode(coalesce(r.relacl, acldefault('r', r.relowner))) a on true
+  left join pg_roles gr on gr.oid = a.grantee
+  where (a.grantee = 0 or gr.rolname in ('anon', 'authenticated'))
+    and a.privilege_type in ('TRUNCATE', 'TRIGGER', 'REFERENCES')
+),
+column_acl as (
+  select
+    r.table_schema,
+    r.table_name,
+    att.attname as column_name,
+    case when a.grantee = 0 then 'PUBLIC' else gr.rolname end as grantee,
+    a.privilege_type
+  from public_relations r
+  join pg_attribute att
+    on att.attrelid = r.oid
+   and att.attnum > 0
+   and att.attisdropped = false
+  join lateral aclexplode(att.attacl) a
+    on att.attacl is not null
+  left join pg_roles gr on gr.oid = a.grantee
+  where (a.grantee = 0 or gr.rolname in ('anon', 'authenticated'))
+    and a.privilege_type = 'REFERENCES'
+)
 select
   table_schema,
   table_name,
+  column_name,
   grantee,
   privilege_type
-from information_schema.role_table_grants
-where table_schema = 'public'
-  and lower(grantee) in ('anon', 'authenticated', 'public')
-  and privilege_type in ('TRUNCATE', 'TRIGGER', 'REFERENCES')
-order by lower(grantee), table_name, privilege_type;
-
--- -----------------------------------------------------------------------------
--- D. Grants in sensitive auth/vault schemas
--- Expected result: No rows returned for anon/authenticated/PUBLIC/public.
--- -----------------------------------------------------------------------------
-
+from table_acl
+union all
 select
-  grantee,
-  lower(grantee) as grantee_normalized,
   table_schema,
   table_name,
+  column_name,
+  grantee,
   privilege_type
-from information_schema.role_table_grants
-where table_schema in ('auth', 'vault')
-  and lower(grantee) in ('anon', 'authenticated', 'public')
-order by table_schema, table_name, grantee_normalized, privilege_type;
+from column_acl
+order by grantee, table_name, column_name nulls first, privilege_type;
+
+-- -----------------------------------------------------------------------------
+-- D. Grants in sensitive auth/vault schemas for anon/authenticated/PUBLIC.
+-- Expected result: No rows returned.
+-- This diagnostic is ACL-based so it can report PUBLIC pseudo-role grants.
+-- -----------------------------------------------------------------------------
+
+with sensitive_relations as (
+  select
+    n.nspname as table_schema,
+    c.relname as table_name,
+    c.oid,
+    c.relowner,
+    c.relacl
+  from pg_class c
+  join pg_namespace n on n.oid = c.relnamespace
+  where n.nspname in ('auth', 'vault')
+    and c.relkind in ('r', 'p', 'v', 'm')
+),
+table_acl as (
+  select
+    r.table_schema,
+    r.table_name,
+    null::text as column_name,
+    case when a.grantee = 0 then 'PUBLIC' else gr.rolname end as grantee,
+    a.privilege_type
+  from sensitive_relations r
+  join lateral aclexplode(coalesce(r.relacl, acldefault('r', r.relowner))) a on true
+  left join pg_roles gr on gr.oid = a.grantee
+  where a.grantee = 0 or gr.rolname in ('anon', 'authenticated')
+),
+column_acl as (
+  select
+    r.table_schema,
+    r.table_name,
+    att.attname as column_name,
+    case when a.grantee = 0 then 'PUBLIC' else gr.rolname end as grantee,
+    a.privilege_type
+  from sensitive_relations r
+  join pg_attribute att
+    on att.attrelid = r.oid
+   and att.attnum > 0
+   and att.attisdropped = false
+  join lateral aclexplode(att.attacl) a
+    on att.attacl is not null
+  left join pg_roles gr on gr.oid = a.grantee
+  where a.grantee = 0 or gr.rolname in ('anon', 'authenticated')
+)
+select
+  table_schema,
+  table_name,
+  column_name,
+  grantee,
+  privilege_type
+from table_acl
+union all
+select
+  table_schema,
+  table_name,
+  column_name,
+  grantee,
+  privilege_type
+from column_acl
+order by table_schema, table_name, column_name nulls first, grantee, privilege_type;
 
 -- -----------------------------------------------------------------------------
 -- E. RLS enabled/forced overview
@@ -226,19 +372,23 @@ where function_definition ~* '(senha|password|passwd|auth\.users|encrypted_passw
 order by schema_name, function_name;
 
 -- -----------------------------------------------------------------------------
--- J. Routine privileges for public functions/RPCs
+-- J. Routine privileges for public functions/RPCs.
+-- This diagnostic is ACL-based so it can report PUBLIC pseudo-role grants.
 -- -----------------------------------------------------------------------------
 
 select
-  routine_schema,
-  routine_name,
-  grantee,
-  lower(grantee) as grantee_normalized,
-  privilege_type
-from information_schema.routine_privileges
-where routine_schema = 'public'
-  and lower(grantee) in ('anon', 'authenticated', 'public')
-order by routine_name, grantee_normalized, privilege_type;
+  n.nspname as routine_schema,
+  p.proname as routine_name,
+  pg_get_function_identity_arguments(p.oid) as routine_args,
+  case when a.grantee = 0 then 'PUBLIC' else gr.rolname end as grantee,
+  a.privilege_type
+from pg_proc p
+join pg_namespace n on n.oid = p.pronamespace
+join lateral aclexplode(coalesce(p.proacl, acldefault('f', p.proowner))) a on true
+left join pg_roles gr on gr.oid = a.grantee
+where n.nspname = 'public'
+  and (a.grantee = 0 or gr.rolname in ('anon', 'authenticated'))
+order by routine_name, routine_args, grantee, privilege_type;
 
 -- -----------------------------------------------------------------------------
 -- J.1 PUBLIC effective EXECUTE diagnostic for sensitive functions.
@@ -297,22 +447,25 @@ order by schema_name, function_signature;
 -- -----------------------------------------------------------------------------
 
 select
-  routine_schema,
-  routine_name,
-  grantee,
-  lower(grantee) as grantee_normalized,
-  privilege_type
-from information_schema.routine_privileges
-where routine_schema = 'public'
-  and routine_name in (
+  n.nspname as routine_schema,
+  p.proname as routine_name,
+  pg_get_function_identity_arguments(p.oid) as routine_args,
+  case when a.grantee = 0 then 'PUBLIC' else gr.rolname end as grantee,
+  a.privilege_type
+from pg_proc p
+join pg_namespace n on n.oid = p.pronamespace
+join lateral aclexplode(coalesce(p.proacl, acldefault('f', p.proowner))) a on true
+left join pg_roles gr on gr.oid = a.grantee
+where n.nspname = 'public'
+  and p.proname in (
     'get_corretores_time',
     'importar_leads_batch',
     'listar_empresas_root',
     'redefinir_senha_corretor',
     'registrar_root_audit'
   )
-  and lower(grantee) in ('anon', 'authenticated', 'public')
-order by routine_name, grantee_normalized, privilege_type;
+  and (a.grantee = 0 or gr.rolname in ('anon', 'authenticated'))
+order by routine_name, routine_args, grantee, privilege_type;
 
 -- -----------------------------------------------------------------------------
 -- K. Critical operational table columns for next phase
