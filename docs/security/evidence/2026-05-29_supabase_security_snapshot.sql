@@ -14,9 +14,10 @@
 -- user ids, broker ids, company ids, team ids, audit ids, or customer data.
 --
 -- NOTE ABOUT PUBLIC:
--- PostgreSQL PUBLIC is a pseudo-role. Different catalog surfaces may expose it
--- as PUBLIC/public depending on view/case handling. Diagnostics below normalize
--- grantee via lower(grantee) and also include explicit has_*_privilege checks.
+-- PostgreSQL PUBLIC is a pseudo-role, not a normal role. Do not use
+-- has_table_privilege('PUBLIC', ...) or has_function_privilege('PUBLIC', ...)
+-- in this project because the hosted environment may raise role-not-found.
+-- For PUBLIC diagnostics, use aclexplode(...) and grantee = 0.
 
 -- -----------------------------------------------------------------------------
 -- A. Table/view grants for anon, authenticated, service_role, PUBLIC/public
@@ -35,8 +36,9 @@ group by table_schema, table_name, grantee, lower(grantee)
 order by table_schema, table_name, grantee_normalized;
 
 -- -----------------------------------------------------------------------------
--- A.1 PUBLIC effective privilege diagnostic for sensitive public tables/views
+-- A.1 PUBLIC effective privilege diagnostic for sensitive public tables/views.
 -- Expected result after hardening: all public_* columns false.
+-- PUBLIC is detected through aclexplode(...), where grantee = 0.
 -- -----------------------------------------------------------------------------
 
 with sensitive_objects(schema_name, object_name) as (
@@ -49,25 +51,37 @@ with sensitive_objects(schema_name, object_name) as (
     ('public', 'corretores'),
     ('public', 'vw_lotes_estado_oficial'),
     ('public', 'vw_lotes_pendentes_avaliacao')
-), resolved as (
+),
+resolved as (
   select
     s.schema_name,
     s.object_name,
-    to_regclass(format('%I.%I', s.schema_name, s.object_name)) as object_regclass
+    c.oid,
+    c.relowner,
+    c.relacl,
+    c.relkind
   from sensitive_objects s
+  left join pg_namespace n
+    on n.nspname = s.schema_name
+  left join pg_class c
+    on c.relnamespace = n.oid
+   and c.relname = s.object_name
 )
 select
   schema_name,
   object_name,
-  object_regclass is not null as object_exists,
-  case when object_regclass is null then null else has_table_privilege('PUBLIC', object_regclass, 'SELECT') end as public_select,
-  case when object_regclass is null then null else has_table_privilege('PUBLIC', object_regclass, 'INSERT') end as public_insert,
-  case when object_regclass is null then null else has_table_privilege('PUBLIC', object_regclass, 'UPDATE') end as public_update,
-  case when object_regclass is null then null else has_table_privilege('PUBLIC', object_regclass, 'DELETE') end as public_delete,
-  case when object_regclass is null then null else has_table_privilege('PUBLIC', object_regclass, 'TRUNCATE') end as public_truncate,
-  case when object_regclass is null then null else has_table_privilege('PUBLIC', object_regclass, 'REFERENCES') end as public_references,
-  case when object_regclass is null then null else has_table_privilege('PUBLIC', object_regclass, 'TRIGGER') end as public_trigger
-from resolved
+  oid is not null as object_exists,
+  coalesce(bool_or(a.privilege_type = 'SELECT')     filter (where a.grantee = 0), false) as public_select,
+  coalesce(bool_or(a.privilege_type = 'INSERT')     filter (where a.grantee = 0), false) as public_insert,
+  coalesce(bool_or(a.privilege_type = 'UPDATE')     filter (where a.grantee = 0), false) as public_update,
+  coalesce(bool_or(a.privilege_type = 'DELETE')     filter (where a.grantee = 0), false) as public_delete,
+  coalesce(bool_or(a.privilege_type = 'TRUNCATE')   filter (where a.grantee = 0), false) as public_truncate,
+  coalesce(bool_or(a.privilege_type = 'REFERENCES') filter (where a.grantee = 0), false) as public_references,
+  coalesce(bool_or(a.privilege_type = 'TRIGGER')    filter (where a.grantee = 0), false) as public_trigger
+from resolved r
+left join lateral aclexplode(coalesce(r.relacl, acldefault('r', r.relowner))) a
+  on r.oid is not null
+group by schema_name, object_name, oid
 order by schema_name, object_name;
 
 -- -----------------------------------------------------------------------------
@@ -87,7 +101,7 @@ order by table_name, privilege_type;
 
 -- -----------------------------------------------------------------------------
 -- C. Dangerous structural privileges for anon/authenticated/PUBLIC
--- Expected result: No rows returned
+-- Expected result: No rows returned.
 -- -----------------------------------------------------------------------------
 
 select
@@ -103,7 +117,7 @@ order by lower(grantee), table_name, privilege_type;
 
 -- -----------------------------------------------------------------------------
 -- D. Grants in sensitive auth/vault schemas
--- Expected result: No rows returned for anon/authenticated/PUBLIC/public
+-- Expected result: No rows returned for anon/authenticated/PUBLIC/public.
 -- -----------------------------------------------------------------------------
 
 select
@@ -189,7 +203,7 @@ order by c.relname;
 
 -- -----------------------------------------------------------------------------
 -- I. Public functions/RPC touching password/auth/vault/service-role patterns
--- Expected ideal result: No rows returned
+-- Expected ideal result: No rows returned.
 -- -----------------------------------------------------------------------------
 
 with funcs as materialized (
@@ -227,7 +241,8 @@ where routine_schema = 'public'
 order by routine_name, grantee_normalized, privilege_type;
 
 -- -----------------------------------------------------------------------------
--- J.1 PUBLIC effective EXECUTE diagnostic for sensitive functions
+-- J.1 PUBLIC effective EXECUTE diagnostic for sensitive functions.
+-- PUBLIC is detected through aclexplode(...), where grantee = 0.
 -- -----------------------------------------------------------------------------
 
 with sensitive_functions(schema_name, function_signature) as (
@@ -237,22 +252,67 @@ with sensitive_functions(schema_name, function_signature) as (
     ('public', 'get_corretores_time(uuid)'),
     ('public', 'importar_leads_batch(uuid,jsonb,text)'),
     ('public', 'redefinir_senha_corretor(uuid,text)')
-), resolved as (
+),
+resolved as (
   select
     schema_name,
     function_signature,
-    to_regprocedure(schema_name || '.' || function_signature) as function_regprocedure
+    to_regprocedure(format('%I.%s', schema_name, function_signature)) as function_regprocedure
   from sensitive_functions
+),
+acl as (
+  select
+    r.schema_name,
+    r.function_signature,
+    r.function_regprocedure,
+    p.proowner,
+    p.proacl,
+    a.grantee,
+    a.privilege_type
+  from resolved r
+  left join pg_proc p
+    on p.oid = r.function_regprocedure::oid
+  left join lateral aclexplode(coalesce(p.proacl, acldefault('f', p.proowner))) a
+    on p.oid is not null
 )
 select
   schema_name,
   function_signature,
   function_regprocedure is not null as function_exists,
-  case when function_regprocedure is null then null else has_function_privilege('PUBLIC', function_regprocedure, 'EXECUTE') end as public_execute,
-  case when function_regprocedure is null then null else has_function_privilege('anon', function_regprocedure, 'EXECUTE') end as anon_execute,
-  case when function_regprocedure is null then null else has_function_privilege('authenticated', function_regprocedure, 'EXECUTE') end as authenticated_execute
-from resolved
+  coalesce(bool_or(privilege_type = 'EXECUTE') filter (where grantee = 0), false) as public_execute,
+  case
+    when function_regprocedure is null then null
+    else has_function_privilege('anon', function_regprocedure, 'EXECUTE')
+  end as anon_execute,
+  case
+    when function_regprocedure is null then null
+    else has_function_privilege('authenticated', function_regprocedure, 'EXECUTE')
+  end as authenticated_execute
+from acl
+group by schema_name, function_signature, function_regprocedure
 order by schema_name, function_signature;
+
+-- -----------------------------------------------------------------------------
+-- J.2 Routine privileges for the five sensitive functions covered by this phase
+-- -----------------------------------------------------------------------------
+
+select
+  routine_schema,
+  routine_name,
+  grantee,
+  lower(grantee) as grantee_normalized,
+  privilege_type
+from information_schema.routine_privileges
+where routine_schema = 'public'
+  and routine_name in (
+    'get_corretores_time',
+    'importar_leads_batch',
+    'listar_empresas_root',
+    'redefinir_senha_corretor',
+    'registrar_root_audit'
+  )
+  and lower(grantee) in ('anon', 'authenticated', 'public')
+order by routine_name, grantee_normalized, privilege_type;
 
 -- -----------------------------------------------------------------------------
 -- K. Critical operational table columns for next phase
