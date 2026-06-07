@@ -1,8 +1,15 @@
-# FECH.AI / MesaCliente — get_corretores_time Negative Test
+# FECH.AI / MesaCliente - get_corretores_time Negative Test
 
-**Date:** 2026-05-29  
-**Branch:** `security/supabase-rls-grants-hardening`  
-**Scope:** Functional validation of `public.get_corretores_time(uuid)` with a common broker session.
+Date: 2026-05-29
+Branch: security/supabase-rls-grants-hardening
+Scope: Functional validation of public.get_corretores_time(uuid) with a common broker session.
+Status: SANITIZED PUBLIC EVIDENCE
+
+---
+
+## Sanitization rule
+
+This public evidence file intentionally does not expose raw email, user_id, broker id, company id, team id, token, password, secret, or customer data.
 
 ---
 
@@ -33,14 +40,8 @@ from public.get_corretores_time(
 
 ## Actual result
 
-```json
-[
-  {
-    "get_corretores_time": {
-      "error": "forbidden"
-    }
-  }
-]
+```text
+get_corretores_time.error = forbidden
 ```
 
 ---
@@ -48,6 +49,6 @@ from public.get_corretores_time(
 ## Interpretation
 
 ```text
-APPROVED — common broker cannot list team brokers through get_corretores_time.
+APPROVED - common broker cannot list team brokers through get_corretores_time.
 The function returned forbidden as expected for non-gestor/non-admin/non-root.
 ```

@@ -1,100 +1,77 @@
-# FECH.AI / MesaCliente — Sensitive RPC Execution Grants Review
+# FECH.AI / MesaCliente - Sensitive RPC Execution Grants Review
 
-**Date:** 2026-05-29  
-**Branch:** `security/supabase-rls-grants-hardening`  
-**Scope:** public SECURITY DEFINER functions matching sensitive patterns: password/auth/vault/service role/root audit.
+Date: 2026-05-29
+Branch: security/supabase-rls-grants-hardening
+Scope: public SECURITY DEFINER functions matching sensitive patterns: password/auth/vault/service role/root audit
+Status: SANITIZED PUBLIC EVIDENCE
+
+---
+
+## Sanitization rule
+
+This public evidence file intentionally does not expose raw email, user_id, broker id, company id, team id, audit id, token, password, secret, or customer data.
 
 ---
 
 ## 1. Initial routine privileges returned by Supabase
 
-```json
-[
-  {
-    "routine_schema": "public",
-    "routine_name": "get_corretores_time",
-    "grantee": "authenticated",
-    "privilege_type": "EXECUTE"
-  },
-  {
-    "routine_schema": "public",
-    "routine_name": "importar_leads_batch",
-    "grantee": "authenticated",
-    "privilege_type": "EXECUTE"
-  },
-  {
-    "routine_schema": "public",
-    "routine_name": "listar_empresas_root",
-    "grantee": "anon",
-    "privilege_type": "EXECUTE"
-  },
-  {
-    "routine_schema": "public",
-    "routine_name": "listar_empresas_root",
-    "grantee": "authenticated",
-    "privilege_type": "EXECUTE"
-  },
-  {
-    "routine_schema": "public",
-    "routine_name": "registrar_root_audit",
-    "grantee": "anon",
-    "privilege_type": "EXECUTE"
-  },
-  {
-    "routine_schema": "public",
-    "routine_name": "registrar_root_audit",
-    "grantee": "authenticated",
-    "privilege_type": "EXECUTE"
-  }
-]
+Initial sanitized result before RPC execute hardening:
+
+```text
+public.get_corretores_time              authenticated EXECUTE
+public.importar_leads_batch             authenticated EXECUTE
+public.listar_empresas_root             anon EXECUTE
+public.listar_empresas_root             authenticated EXECUTE
+public.registrar_root_audit             anon EXECUTE
+public.registrar_root_audit             authenticated EXECUTE
 ```
 
 Initial interpretation:
 
 ```text
-OPEN — anon had EXECUTE on root/audit SECURITY DEFINER RPCs. This was unnecessary attack surface and required hardening.
+OPEN - anon had EXECUTE on root/audit SECURITY DEFINER RPCs. This was unnecessary attack surface and required hardening.
 ```
 
 ---
 
 ## 2. Classification
 
-### P0/P1 — `public.redefinir_senha_corretor(uuid, text)`
+### P0/P1 - public.redefinir_senha_corretor(uuid, text)
 
 Finding:
 
 ```text
-The function has a password-like argument (`p_nova_senha text`) but the function body does not update auth.users and does not store the password. It only sets `corretores.must_change_password = true` and returns the target `user_id`.
+The function has a password-like argument, but the function body does not update auth.users and does not store the password. It only sets corretores.must_change_password = true and returns the target user id.
 ```
 
 Risk:
 
 ```text
-Even if the password value is currently unused, accepting a plaintext password into a public RPC is not acceptable. The value may be sent through client payloads, network traces, API logs, function observability, browser dev tools, or incident snapshots.
+Even if the password-like value is currently unused, accepting a plaintext password-shaped input into a public SQL RPC is not acceptable. The value may be sent through client payloads, network traces, API logs, function observability, browser dev tools, or incident snapshots.
 ```
 
 Recommended action:
 
 ```text
-Do not expose this RPC to anon/authenticated.
-Move password reset/change flows to Supabase Auth / Edge Function with service role kept server-side only.
+Do not expose this RPC to anon/authenticated/PUBLIC.
+Move password reset/change flows to Supabase Auth or server-side Edge Function with service role kept server-side only.
 Remove the password parameter from any public SQL function API.
 Validate tenant/admin/root ownership before any user reset operation.
 ```
 
-Current execution grant state from the supplied snapshot:
+Current execution grant state:
 
 ```text
-No anon/authenticated EXECUTE row was returned for redefinir_senha_corretor.
+No anon/authenticated/PUBLIC EXECUTE row was returned for redefinir_senha_corretor.
 Keep it locked down. Do not grant authenticated EXECUTE.
 ```
 
-### P1 — `public.listar_empresas_root()`
+### P1 - public.listar_empresas_root()
 
 Finding:
 
 ```text
-The function contains an internal `public.is_root()` guard, but EXECUTE was initially granted to both anon and authenticated.
+The function contains an internal public.is_root() guard, but EXECUTE was initially granted to anon and authenticated.
 ```
 
 Risk:
@@ -110,12 +87,12 @@ Revoke EXECUTE from anon and PUBLIC.
 Keep authenticated only if the logged root panel calls the RPC through an authenticated user session.
 ```
 
-### P1 — `public.registrar_root_audit(text, uuid, jsonb)`
+### P1 - public.registrar_root_audit(text, uuid, jsonb)
 
 Finding:
 
 ```text
-The function contains an internal `public.is_root()` guard and writes root audit logs server-side, but EXECUTE was initially granted to anon and authenticated.
+The function contains an internal public.is_root() guard and writes root audit logs server-side, but EXECUTE was initially granted to anon and authenticated.
 ```
 
 Risk:
@@ -131,7 +108,7 @@ Revoke EXECUTE from anon and PUBLIC.
 Keep authenticated only if root actions call this RPC from an authenticated root session.
 ```
 
-### P1 — `public.importar_leads_batch(uuid, jsonb, text)`
+### P1 - public.importar_leads_batch(uuid, jsonb, text)
 
 Finding:
 
@@ -142,7 +119,7 @@ The function rejects unauthenticated calls, resolves empresa_id from auth.uid(),
 Risk:
 
 ```text
-The tenant boundary is directionally correct. Remaining review: p_sessao_id deduplication currently checks logs by sessao_id without empresa_id in the EXISTS clause; a global duplicate session id could suppress imports across tenants if session ids collide or are attacker-controlled.
+The tenant boundary is directionally correct. Remaining review: session deduplication must be assessed for tenant scoping and collision behavior in the next hardening phase.
 ```
 
 Recommended action:
@@ -153,7 +130,7 @@ Ensure deduplication includes empresa_id.
 Add payload size/rate controls outside SQL or in Edge/API layer.
 ```
 
-### P2 — `public.get_corretores_time(uuid)`
+### P2 - public.get_corretores_time(uuid)
 
 Finding:
 
@@ -164,14 +141,14 @@ The function requires authenticated user context, blocks users without broker/ro
 Risk:
 
 ```text
-Authenticated EXECUTE is probably acceptable because the function has role guards. Still validate with negative test using a common broker.
+Authenticated EXECUTE is probably acceptable because the function has role guards. Functional negative test using a common broker is still required.
 ```
 
 Recommended action:
 
 ```text
 Keep authenticated EXECUTE.
-Run functional negative test as common broker: expected `{"error":"forbidden"}`.
+Run functional negative test as common broker: expected forbidden.
 ```
 
 ---
@@ -196,235 +173,143 @@ Purpose:
 
 ## 4. Post-migration validation
 
-Validation query:
+Post-migration catalog result for the five sensitive functions:
 
-```sql
-select
-  routine_schema,
-  routine_name,
-  grantee,
-  privilege_type
-from information_schema.routine_privileges
-where routine_schema = 'public'
-  and routine_name in (
-    'get_corretores_time',
-    'importar_leads_batch',
-    'listar_empresas_root',
-    'redefinir_senha_corretor',
-    'registrar_root_audit'
-  )
-  and grantee in ('anon', 'authenticated', 'public', 'PUBLIC')
-order by routine_name, grantee, privilege_type;
+```text
+public.get_corretores_time              authenticated EXECUTE
+public.importar_leads_batch             authenticated EXECUTE
+public.listar_empresas_root             authenticated EXECUTE
+public.registrar_root_audit             authenticated EXECUTE
 ```
 
-Actual post-migration result:
+No row returned for:
 
-```json
-[
-  {
-    "routine_schema": "public",
-    "routine_name": "get_corretores_time",
-    "grantee": "authenticated",
-    "privilege_type": "EXECUTE"
-  },
-  {
-    "routine_schema": "public",
-    "routine_name": "importar_leads_batch",
-    "grantee": "authenticated",
-    "privilege_type": "EXECUTE"
-  },
-  {
-    "routine_schema": "public",
-    "routine_name": "listar_empresas_root",
-    "grantee": "authenticated",
-    "privilege_type": "EXECUTE"
-  },
-  {
-    "routine_schema": "public",
-    "routine_name": "registrar_root_audit",
-    "grantee": "authenticated",
-    "privilege_type": "EXECUTE"
-  }
-]
+```text
+anon
+PUBLIC/public
+public.redefinir_senha_corretor
 ```
 
 Interpretation:
 
 ```text
-APPROVED — anon/PUBLIC EXECUTE was removed from the sensitive RPC set.
-APPROVED — redefinir_senha_corretor has no anon/authenticated/PUBLIC EXECUTE in the validated output.
-APPROVED — only authenticated EXECUTE remains for the four functions required by logged-in flows.
+APPROVED - anon/PUBLIC EXECUTE was removed from the sensitive RPC set.
+APPROVED - redefinir_senha_corretor has no anon/authenticated/PUBLIC EXECUTE in the validated output.
+APPROVED - only authenticated EXECUTE remains for the four functions required by logged-in flows.
 ```
 
 ---
 
-## 5. Function configuration/search_path validation
+## 5. PUBLIC effective EXECUTE diagnostic
 
-Validation query:
+Diagnostic method:
 
-```sql
-select
-  n.nspname as schema_name,
-  p.proname as function_name,
-  p.prosecdef as security_definer,
-  p.proconfig as function_config,
-  pg_get_function_identity_arguments(p.oid) as args
-from pg_proc p
-join pg_namespace n on n.oid = p.pronamespace
-where n.nspname = 'public'
-  and p.proname in (
-    'get_corretores_time',
-    'importar_leads_batch',
-    'listar_empresas_root',
-    'redefinir_senha_corretor',
-    'registrar_root_audit'
-  )
-order by p.proname;
+```text
+PUBLIC pseudo-role was validated through aclexplode(...), where grantee = 0.
 ```
 
-Actual result:
+Actual sanitized result:
 
-```json
-[
-  {
-    "schema_name": "public",
-    "function_name": "get_corretores_time",
-    "security_definer": true,
-    "function_config": ["search_path=public"],
-    "args": "p_time_id uuid"
-  },
-  {
-    "schema_name": "public",
-    "function_name": "importar_leads_batch",
-    "security_definer": true,
-    "function_config": ["search_path=public"],
-    "args": "p_lista_id uuid, p_leads jsonb, p_sessao_id text"
-  },
-  {
-    "schema_name": "public",
-    "function_name": "listar_empresas_root",
-    "security_definer": true,
-    "function_config": ["search_path=public"],
-    "args": ""
-  },
-  {
-    "schema_name": "public",
-    "function_name": "redefinir_senha_corretor",
-    "security_definer": true,
-    "function_config": ["search_path=public"],
-    "args": "p_corretor_id uuid, p_nova_senha text"
-  },
-  {
-    "schema_name": "public",
-    "function_name": "registrar_root_audit",
-    "security_definer": true,
-    "function_config": ["search_path=public"],
-    "args": "p_action text, p_target_empresa_id uuid, p_payload jsonb"
-  }
-]
+```text
+public.get_corretores_time(uuid)                    exists=true | public_execute=false | anon_execute=false | authenticated_execute=true
+public.importar_leads_batch(uuid,jsonb,text)        exists=true | public_execute=false | anon_execute=false | authenticated_execute=true
+public.listar_empresas_root()                       exists=true | public_execute=false | anon_execute=false | authenticated_execute=true
+public.redefinir_senha_corretor(uuid,text)          exists=true | public_execute=false | anon_execute=false | authenticated_execute=false
+public.registrar_root_audit(text,uuid,jsonb)        exists=true | public_execute=false | anon_execute=false | authenticated_execute=true
 ```
 
 Interpretation:
 
 ```text
-APPROVED — all five sensitive SECURITY DEFINER functions have an explicit search_path instead of NULL.
-CONTROLLED RISK — current search_path is `public`, and non-owner client roles do not have CREATE on schema public.
-HARDENING NOTE — a stricter pattern remains `public, pg_temp`; consider applying it in a later low-risk migration after validating dependencies.
+APPROVED - PUBLIC and anon EXECUTE are false for all five sensitive functions covered by this phase.
+APPROVED - authenticated EXECUTE remains only for the expected four logged-in RPC flows.
+APPROVED - redefinir_senha_corretor remains unavailable to client roles.
 ```
 
 ---
 
-## 6. Schema CREATE privilege validation
+## 6. Function configuration/search_path validation
 
-Validation queries:
+Actual sanitized result:
 
-```sql
-select
-  n.nspname as schema_name,
-  r.rolname as grantee,
-  has_schema_privilege(r.rolname, n.oid, 'USAGE') as has_usage,
-  has_schema_privilege(r.rolname, n.oid, 'CREATE') as has_create
-from pg_namespace n
-cross join pg_roles r
-where n.nspname = 'public'
-  and r.rolname in ('anon', 'authenticated')
-order by r.rolname;
-```
-
-```sql
-select
-  'public' as schema_name,
-  'PUBLIC' as grantee,
-  has_schema_privilege('public', 'public', 'USAGE') as has_usage,
-  has_schema_privilege('public', 'public', 'CREATE') as has_create;
-```
-
-Actual result:
-
-```json
-[
-  {
-    "schema_name": "public",
-    "grantee": "anon",
-    "has_usage": true,
-    "has_create": false
-  },
-  {
-    "schema_name": "public",
-    "grantee": "authenticated",
-    "has_usage": true,
-    "has_create": false
-  }
-]
-```
-
-```json
-[
-  {
-    "schema_name": "public",
-    "grantee": "PUBLIC",
-    "has_usage": true,
-    "has_create": false
-  }
-]
+```text
+public.get_corretores_time              SECURITY DEFINER=true | search_path=public
+public.importar_leads_batch             SECURITY DEFINER=true | search_path=public
+public.listar_empresas_root             SECURITY DEFINER=true | search_path=public
+public.redefinir_senha_corretor         SECURITY DEFINER=true | search_path=public
+public.registrar_root_audit             SECURITY DEFINER=true | search_path=public
 ```
 
 Interpretation:
 
 ```text
-APPROVED — anon, authenticated, and PUBLIC have USAGE but do not have CREATE on schema public.
-APPROVED — search_path hijacking risk through client-created objects in public is controlled for these roles.
+APPROVED - all five sensitive SECURITY DEFINER functions have an explicit search_path instead of NULL.
+CONTROLLED RISK - current search_path is public, and non-owner client roles do not have CREATE on schema public.
+HARDENING NOTE - a stricter pattern remains public, pg_temp; consider applying it in a later low-risk migration after validating dependencies.
 ```
 
 ---
 
-## 7. Functional negative tests required
+## 7. Schema CREATE privilege validation
 
-Run as a common broker session:
+Actual sanitized result:
 
 ```text
-- listar_empresas_root() must fail with access denied.
-- registrar_root_audit(...) must fail with access denied.
-- get_corretores_time(...) must return forbidden unless the user is gestor/admin/root.
-- redefinir_senha_corretor(...) must not be executable.
+anon           USAGE=true | CREATE=false on schema public
+authenticated  USAGE=true | CREATE=false on schema public
+PUBLIC         USAGE=true | CREATE=false on schema public
 ```
 
-Run as root session:
+Interpretation:
 
 ```text
-- listar_empresas_root() must work.
-- registrar_root_audit(...) must work.
+APPROVED - anon, authenticated, and PUBLIC have USAGE but do not have CREATE on schema public.
+APPROVED - search_path hijacking risk through client-created objects in public is controlled for these roles.
 ```
 
 ---
 
-## 8. Final status for RPC EXECUTE hardening
+## 8. Functional tests
+
+Common broker negative tests:
 
 ```text
-APPROVED — execution grants are hardened and validated.
-APPROVED — search_path is explicit on sensitive SECURITY DEFINER functions.
-APPROVED — anon/authenticated/PUBLIC do not have CREATE on schema public.
-CONTROLLED RISK — search_path is currently `public`; future hardening to `public, pg_temp` is recommended but not blocking.
-PENDING — functional negative tests with common broker.
-PENDING — root positive tests.
+APPROVED - listar_empresas_root() fails with access denied for common broker.
+APPROVED - registrar_root_audit(...) fails with access denied for common broker.
+APPROVED - get_corretores_time(...) returns forbidden for common broker.
+APPROVED - redefinir_senha_corretor(...) is not executable by authenticated client roles.
+```
+
+Root positive tests:
+
+```text
+APPROVED - listar_empresas_root() works for root context.
+APPROVED - registrar_root_audit(...) works for root context.
+```
+
+---
+
+## 9. Broad routine surface outside this phase
+
+The broad routine privilege snapshot shows many RPCs outside the PR #65 / phase 1 scope still exposing anon and/or PUBLIC EXECUTE.
+
+This includes root-like, MesaCliente, lock, utility, and financial helper RPCs. They require separate classification and controlled remediation.
+
+Interpretation:
+
+```text
+OPEN - broad public routine surface remains a separate hardening backlog.
+APPROVED FOR THIS PHASE - the five sensitive RPCs covered by PR #65 / phase 1 are validated above.
+```
+
+---
+
+## 10. Final status for RPC EXECUTE hardening
+
+```text
+APPROVED - execution grants are hardened and validated for the five functions covered by this phase.
+APPROVED - search_path is explicit on sensitive SECURITY DEFINER functions.
+APPROVED - anon/authenticated/PUBLIC do not have CREATE on schema public.
+CONTROLLED RISK - search_path is currently public; future hardening to public, pg_temp is recommended but not blocking.
+OPEN - broad routine surface outside this phase must be reviewed in follow-up PRs.
 ```
