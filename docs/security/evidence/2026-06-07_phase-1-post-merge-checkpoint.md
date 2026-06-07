@@ -1,9 +1,9 @@
 # FECH.AI / MesaCliente - Security Phase 1 Post-Merge Checkpoint
 
-Date: 2026-06-07  
-Status: MERGED / DOCUMENTED / VERSIONED  
-Related PR: #65  
-Merge commit: 10cefb0fc49df515a47caf66823d4a512d2c43d9  
+Date: 2026-06-07
+Status: MERGED / DOCUMENTED / VERSIONED
+Related PR: #65
+Merge commit: 10cefb0fc49df515a47caf66823d4a512d2c43d9
 
 ---
 
@@ -83,10 +83,9 @@ Recommended type:
 
 Read-only inventory and risk mapping.
 
-No production change.  
-No db push.  
-No parser change.  
-No MesaCliente engine change.  
-No Worker/Make/n8n change.  
+No production change.
+No db push.
+No parser change.
+No MesaCliente engine change.
+No Worker/Make/n8n change.
 No frontend change.
-
