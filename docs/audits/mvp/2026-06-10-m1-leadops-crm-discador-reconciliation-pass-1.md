@@ -1,11 +1,11 @@
-# FECH.AI — M1 LeadOps / CRM / Discador Reconciliation Pass 1
+# FECH.AI - M1 LeadOps / CRM / Discador Reconciliation Pass 1
 
-**Date:** 2026-06-10  
-**Status:** RECONCILIATION_PASS_1 / DOCUMENTATION_ONLY / NO_RUNTIME_CHANGE  
-**Front:** M1 — LeadOps / CRM / Discador  
-**Risk:** R3/R4 — personal data, leads, broker operations, Supabase RPCs, RLS and tenant/company isolation.  
-**Base branch observed:** `main`  
-**Base commit observed:** `6805910816dfe127bc4a166a50d1fa0b5eae84a8`  
+Date: 2026-06-10
+Status: RECONCILIATION_PASS_1 / DOCUMENTATION_ONLY / NO_RUNTIME_CHANGE
+Front: M1 - LeadOps / CRM / Discador
+Risk: R3/R4 - personal data, leads, broker operations, Supabase RPCs, RLS and tenant/company isolation.
+Base branch observed: main
+Base commit observed: 6805910816dfe127bc4a166a50d1fa0b5eae84a8
 
 ---
 
@@ -15,7 +15,7 @@ Start the M1 MVP track with a documentation-only reconciliation pass before any 
 
 This file compares the documented M1 MVP scope with the current repository and existing security evidence.
 
-This document does **not** authorize code, SQL, migration, RPC, RLS, grant, Vercel, MesaCliente or production changes.
+This document does not authorize code, SQL, migration, RPC, RLS, grant, Vercel, MesaCliente or production changes.
 
 ---
 
@@ -59,7 +59,7 @@ The M1 MVP scope includes:
 lead/list import
 basic deduplication
 phone validation
-CRM/funnel minimum
+minimum CRM/funnel
 call action
 WhatsApp action
 quick status
@@ -79,12 +79,12 @@ LGPD/opt-out where applicable
 
 ## 5. Current code evidence
 
-### 5.1 `src/components/AceleracaoOperacional.jsx`
+### 5.1 src/components/AceleracaoOperacional.jsx
 
 Observed:
 
 ```text
-WhatsApp, call and e-mail channels
+WhatsApp, call and email channels
 first-contact and follow-up contexts
 quick feedback buttons
 load next lead flow
@@ -93,7 +93,7 @@ session stats
 weekend goal / missing visits cards
 ```
 
-### 5.2 `src/services/aceleracaoOperacionalService.js`
+### 5.2 src/services/aceleracaoOperacionalService.js
 
 Observed:
 
@@ -110,7 +110,7 @@ The service sends Authorization with token fallback to anon key.
 Future technical PRs must validate that sensitive RPCs fail closed for anon/no-session calls.
 ```
 
-### 5.3 `src/App.jsx`
+### 5.3 src/App.jsx
 
 Observed from current code/security evidence:
 
@@ -140,9 +140,9 @@ Existing security evidence says:
 
 | ID | Finding | Classification |
 |---|---|---|
-| D1 | Bootstrap references `docs/product/leadops-crm-discador/leadops-mvp-functional-spec-v1.md`, but this file was not found on `main`. | NEEDS_DOCUMENTATION_RECONCILIATION |
-| D2 | `aceleracaoOperacionalService.js` falls back to Bearer anon key when no session token is found. | SECURITY_REVIEW_REQUIRED |
-| D3 | Direct `corretores` DML remains known P1 candidate. | SECURITY_BACKLOG |
+| D1 | Bootstrap references docs/product/leadops-crm-discador/leadops-mvp-functional-spec-v1.md, but this file was not found on main. | NEEDS_DOCUMENTATION_RECONCILIATION |
+| D2 | aceleracaoOperacionalService.js falls back to Bearer anon key when no session token is found. | SECURITY_REVIEW_REQUIRED |
+| D3 | Direct corretores DML remains known P1 candidate. | SECURITY_BACKLOG |
 | D4 | AceleracaoOperacional metrics appear session-local. | NEEDS_PRODUCT_DECISION |
 | D5 | Persistent next-action/follow-up was not confirmed in this pass. | NEEDS_VALIDATION |
 
@@ -154,7 +154,7 @@ Existing security evidence says:
 |---|---|
 | Dialer actions | READY_FOR_MVP_VALIDATION |
 | WhatsApp action | READY_FOR_MVP_VALIDATION |
-| E-mail action | READY_FOR_MVP_VALIDATION |
+| Email action | READY_FOR_MVP_VALIDATION |
 | Power Mode | READY_FOR_MVP_VALIDATION |
 | Feedback registration | SECURITY_REVIEW_REQUIRED |
 | Weekend dashboard | NEEDS_PRODUCT_DECISION |
@@ -172,22 +172,22 @@ Existing security evidence says:
 Minimum validators:
 
 ```text
-GPT 0 — Documentation Auditor
-GPT 1 — Arquiteto SaaS
-GPT 3 — Supabase Security
-GPT 4 — Vercel/GitHub CI-CD
-GPT 7 — LeadOps CRM Discador
+GPT 0 - Documentation Auditor
+GPT 1 - SaaS Architect
+GPT 3 - Supabase Security
+GPT 4 - Vercel/GitHub CI-CD
+GPT 7 - LeadOps CRM Discador
 ```
 
 Conditional validators:
 
 ```text
-GPT 2 — UX/UI if UI/flow changes
-GPT 5 — SRE/observability if runtime ops changes
-GPT 6 — ADS/CAPI if tracking changes
-GPT 8 — MesaCliente if touched
-GPT 9 — integrations/messaging if touched
-GPT 10 — monetization/GTM if touched
+GPT 2 - UX/UI if UI/flow changes
+GPT 5 - SRE/observability if runtime ops changes
+GPT 6 - ADS/CAPI if tracking changes
+GPT 8 - MesaCliente if touched
+GPT 9 - integrations/messaging if touched
+GPT 10 - monetization/GTM if touched
 ```
 
 ---
@@ -214,7 +214,7 @@ new database schema without live reconciliation
 Next safe step:
 
 ```text
-M1 Reconciliation Pass 2 — exact UI/RPC mapping
+M1 Reconciliation Pass 2 - exact UI/RPC mapping
 ```
 
 Pass 2 should inspect:
