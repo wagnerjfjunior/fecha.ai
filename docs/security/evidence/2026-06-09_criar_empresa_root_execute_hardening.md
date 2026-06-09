@@ -70,12 +70,13 @@ This matches the body-review fingerprint recorded in PR #74.
 The migration performs a safety guard before changing grants:
 
 1. locates only `public.criar_empresa_root(text, text, uuid, integer)`;
-2. computes `md5(lower(pg_get_functiondef(oid)))`;
-3. aborts if the digest is not `b94e9ff1a640af22768ccdc9ba34f84f`;
-4. revokes EXECUTE from `PUBLIC`;
-5. revokes EXECUTE from `anon`;
-6. grants/preserves EXECUTE for `authenticated`;
-7. grants/preserves EXECUTE for `service_role`.
+2. If the function is absent in a clean replay database, the migration emits a NOTICE and returns without applying grant changes.
+3. computes `md5(lower(pg_get_functiondef(oid)))`;
+4. aborts if the digest is not `b94e9ff1a640af22768ccdc9ba34f84f`;
+5. revokes EXECUTE from `PUBLIC`;
+6. revokes EXECUTE from `anon`;
+7. grants/preserves EXECUTE for `authenticated`;
+8. grants/preserves EXECUTE for `service_role`.
 
 The migration does not change the function body.
 
