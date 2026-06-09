@@ -1,7 +1,7 @@
-# FECH.AI - M1 LeadOps / CRM / Discador Reconciliation Pass 2
+# FECH.AI - M1 LeadOps / CRM / Discador UI RPC Mapping Runbook
 
 Date: 2026-06-10
-Status: RECONCILIATION_PASS_2 / UI_RPC_MAPPING / DOCUMENTATION_ONLY / NO_RUNTIME_CHANGE
+Status: RECONCILIATION_PASS_2_RUNBOOK / UI_RPC_MAPPING_CONTRACT / DOCUMENTATION_ONLY / NO_RUNTIME_CHANGE
 Front: M1 - LeadOps / CRM / Discador
 Risk: R3/R4 - personal data, leads, broker operations, Supabase RPCs, RLS and tenant/company isolation.
 Base branch observed: main
@@ -11,7 +11,7 @@ Base commit observed: d422cee092a3ce5c8fe0cc472c4298ca0f1abf64
 
 ## 1. Objective
 
-Map the M1 UI/service/RPC surface before any implementation.
+Define the runbook and mandatory checklist for the M1 UI/service/RPC mapping before any implementation.
 
 This document is the next step after:
 
@@ -19,7 +19,13 @@ This document is the next step after:
 docs/audits/mvp/2026-06-10-m1-leadops-crm-discador-reconciliation-pass-1.md
 ```
 
-This pass prepares the exact technical map required before a first M1 runtime patch.
+Important scope clarification:
+
+```text
+This PR does not deliver the filled UI/RPC map.
+This PR defines the required contract/runbook that the real Pass 2 mapping must follow.
+The filled map must be produced in a follow-up documentation PR before any technical patch.
+```
 
 This document does not authorize code, SQL, migration, RPC, RLS, grant, Vercel, MesaCliente or production changes.
 
@@ -43,7 +49,7 @@ First contract. Then evidence. Then dry-run. Then rollback test. Then controlled
 
 ---
 
-## 3. Sources to inspect in this pass
+## 3. Sources to inspect when executing the real map
 
 Minimum source set:
 
@@ -63,9 +69,9 @@ docs/security/evidence/2026-06-09_supabase_live_reconciliation_p1_results.md
 
 ---
 
-## 4. Required UI to RPC map
+## 4. Required UI to RPC map format
 
-Pass 2 must produce an exact map in this format:
+The follow-up map PR must produce an exact map in this format:
 
 | UI / component | User action | Service/wrapper | RPC/direct path | Expected table impact | Auth source | Tenant/company source | Risk | Test requirement |
 |---|---|---|---|---|---|---|---|---|
@@ -125,7 +131,7 @@ Direct corretores DML remains a separate P1 security backlog item.
 
 ## 6. Required security questions per M1 RPC
 
-For every RPC mapped in this pass, answer:
+For every RPC mapped in the real Pass 2 map, answer:
 
 ```text
 1. Is anon EXECUTE false in current evidence?
@@ -144,7 +150,7 @@ For every RPC mapped in this pass, answer:
 
 ## 7. Required MVP acceptance mapping
 
-Map each MVP acceptance item to current implementation status:
+The follow-up map PR must map each MVP acceptance item to current implementation status:
 
 | MVP item | Current evidence | Status |
 |---|---|---|
@@ -154,6 +160,7 @@ Map each MVP acceptance item to current implementation status:
 | Register status/feedback | TBD | TBD |
 | Funnel shows leads by stage | TBD | TBD |
 | Weekend dashboard shows scheduled visits | TBD | TBD |
+| Persistent next action/follow-up | TBD | TBD |
 | Data respects tenant/company/broker | TBD | SECURITY_REVIEW_REQUIRED |
 | Minimum import/error logs | TBD | TBD |
 | Mobile and desktop flow | TBD | TBD |
@@ -171,11 +178,23 @@ OUT_OF_SCOPE
 NOT_CONFIRMED
 ```
 
+Persistent next action/follow-up must include, when validated:
+
+```text
+lead id
+responsible broker
+next action type
+next action date/time
+status/funnel relation
+tenant/company source of truth
+cross-tenant negative test
+```
+
 ---
 
 ## 8. Required direct DML review
 
-Pass 2 must list all direct DML candidates found in reviewed M1 paths.
+The follow-up map PR must list all direct DML candidates found in reviewed M1 paths.
 
 Minimum known candidate:
 
@@ -196,7 +215,7 @@ REPLACEMENT_RPC_REQUIRED
 
 ## 9. Required first technical PR candidate
 
-Pass 2 must end with exactly one recommended first technical PR candidate.
+The follow-up map PR must end with exactly one recommended first technical PR candidate.
 
 The candidate must include:
 
@@ -217,7 +236,7 @@ No candidate may include MesaCliente, ADS/CAPI, billing, Make/n8n or broad App.j
 
 ---
 
-## 10. Required validators for Pass 2
+## 10. Required validators for this runbook and the follow-up map
 
 Minimum validators before merge:
 
@@ -242,7 +261,7 @@ GPT 10 - monetization/GTM if pricing or packaging appears
 
 ---
 
-## 11. Out of scope for Pass 2
+## 11. Out of scope for this runbook PR
 
 ```text
 runtime code changes
@@ -255,6 +274,8 @@ WhatsApp official/non-official integration changes
 Make/n8n changes
 billing/pricing changes
 production changes
+filled final UI/RPC map
+first technical patch authorization
 ```
 
 ---
@@ -270,6 +291,7 @@ all UI paths have already been mapped
 Supabase live is current after 2026-06-09
 Vercel runtime has been validated
 first technical PR is already authorized
+this is the filled final Pass 2 map
 ```
 
 ---
@@ -288,4 +310,5 @@ no Vercel/GitHub Actions changes
 no MesaCliente changes
 no secrets or production payloads
 no implementation authorization
+clearly labeled as runbook/checklist, not filled final map
 ```
