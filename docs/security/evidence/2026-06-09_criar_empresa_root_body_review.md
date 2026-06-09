@@ -2,7 +2,7 @@
 
 Date: 2026-06-09
 Status: SANITIZED BODY REVIEW / NO PRODUCTION CHANGE
-Encoding note: UTF-8 plain text, LF line endings, ASCII-safe wording, no intentional hidden or bidirectional Unicode characters.
+Encoding note: ASCII-safe Markdown, LF line endings, no intentional hidden or bidirectional Unicode characters.
 Related checkpoints:
 - PR #72 - Supabase live reconciliation results P1
 - PR #73 - criar_empresa_root P0 hardening plan
@@ -82,7 +82,17 @@ Read-only catalog review returned the following sanitized metadata:
 | authenticated execute | true |
 | PUBLIC execute ACL | true |
 | execute grantees | `anon`, `authenticated`, `postgres`, `PUBLIC`, `service_role` |
-| body fingerprint | md5 fingerprint recorded, raw body not committed |
+| body fingerprint source | sanitized `lower(pg_get_functiondef(oid))` digest from read-only live catalog review |
+| body fingerprint algorithm | md5 |
+| body fingerprint digest | `b94e9ff1a640af22768ccdc9ba34f84f` |
+| raw body committed | no |
+
+Fingerprint interpretation:
+
+- The digest is a sanitized audit anchor for the reviewed function body.
+- The digest does not expose the function body.
+- The digest must be rechecked in the next technical PR before applying any migration.
+- If the digest changes before the next PR, the body review must be repeated.
 
 Interpretation:
 
