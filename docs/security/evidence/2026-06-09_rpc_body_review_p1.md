@@ -2,6 +2,7 @@
 
 Date: 2026-06-09
 Status: READ-ONLY BODY REVIEW / NO PRODUCTION CHANGE
+Encoding note: UTF-8 plain text, LF line endings, no intentional hidden or bidirectional Unicode characters.
 Related checkpoints:
 - PR #67 - authenticated write-surface P1 inventory
 - PR #68 - frontend direct-DML P1 inventory
@@ -88,7 +89,7 @@ For each RPC/function, PR #70 requires answering:
 
 Legend:
 
-- `BODY_FOUND_REVIEW_REQUIRED`: function body exists or is referenced enough for body review, but full safe/unsafe verdict still requires exact body + live metadata.
+- `BODY_FOUND_REVIEW_REQUIRED`: function body exists or is referenced enough for body review, but full safe/unsafe verdict still requires exact body plus live metadata.
 - `PENDING_BODY_SOURCE`: referenced path exists, but body/source must be fetched from the correct migration, Edge Function or Supabase live catalog.
 - `DIRECT_DML_REPLACEMENT_CANDIDATE`: frontend direct table DML that should be replaced only after RPC design and tests.
 - `PENDING_SUPABASE_REAL_RECONCILIATION`: live catalog/grants/body metadata not proven in this PR.
