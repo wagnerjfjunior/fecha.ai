@@ -132,17 +132,27 @@ Non-claims:
 
 ## 5. Expected contract
 
-The intended contract for `criar_empresa_root` must be validated before hardening:
+The intended contract for `criar_empresa_root` must be validated before hardening.
+
+Authority definition:
+
+```text
+Only a root actor with is_root = true may create companies through this RPC.
+The term admin must not be interpreted as a local tenant admin or company admin.
+If a future global-admin role exists, it must be explicitly proven equivalent to is_root = true before being accepted.
+```
+
+Expected behavior:
 
 1. Unauthenticated users must not create companies.
 2. `anon` must not create companies.
 3. Authenticated non-root users must not create companies.
-4. Inactive root/admin actors must not create companies.
+4. Inactive root actors must not create companies.
 5. Invalid plan references must be rejected safely.
 6. Duplicate slugs must be handled safely.
 7. Malformed slugs must be rejected.
 8. Missing required fields must be rejected.
-9. A valid root/admin path must remain functional.
+9. A valid root actor path must remain functional.
 10. Audit trail must be preserved.
 11. No customer, broker, tenant or billing state may be derived from frontend authority alone.
 
@@ -150,7 +160,7 @@ Expected authority model:
 
 ```text
 Caller identity must be derived server-side.
-Root/admin eligibility must be validated server-side.
+Root eligibility must be validated server-side with is_root = true.
 Tenant/company creation must be decided by database/RPC rules.
 Frontend input is request data, not authority.
 ```
@@ -166,7 +176,8 @@ Required checks:
 - whether `auth.uid()` is used;
 - whether actor lookup is server-side;
 - whether actor active status is checked;
-- whether root/admin eligibility is checked;
+- whether root eligibility is checked with `is_root = true`;
+- whether no local tenant admin can satisfy root eligibility;
 - whether plan existence is checked;
 - whether slug uniqueness is checked;
 - whether slug normalization/validation exists;
@@ -212,11 +223,11 @@ Potential future action:
 
 - remove `PUBLIC` EXECUTE from `criar_empresa_root`;
 - remove `anon` EXECUTE from `criar_empresa_root`;
-- preserve `authenticated` EXECUTE only if the body correctly validates root/admin authority internally.
+- preserve `authenticated` EXECUTE only if the body correctly validates root authority internally with `is_root = true`.
 
 When acceptable:
 
-- body review confirms authenticated root/admin guard is correct;
+- body review confirms authenticated root guard is correct;
 - negative tests prove anon and non-root cannot create tenant;
 - valid root path is preserved;
 - rollback is explicit.
@@ -247,7 +258,7 @@ Potential future action:
 When required:
 
 - unknown provisioning dependency exists;
-- frontend/admin flow depends unexpectedly on current execution path;
+- frontend provisioning flow depends unexpectedly on current execution path;
 - audit path is not yet verified.
 
 ---
@@ -261,12 +272,13 @@ Minimum required tests before or with technical hardening:
 | unauthenticated call | blocked | yes |
 | anon call | blocked | yes |
 | authenticated non-root call | blocked | yes |
-| inactive root/admin call | blocked | yes |
+| inactive root actor call | blocked | yes |
+| authenticated local tenant admin call | blocked | yes |
 | invalid plan id | blocked | yes |
 | duplicate slug | safe failure | yes |
 | malformed slug | blocked | yes |
 | missing required fields | blocked | yes |
-| valid root/admin request | succeeds | yes |
+| valid root actor request | succeeds | yes |
 | audit record/path | preserved | yes |
 | no unintended MesaCliente impact | unchanged | yes |
 | no direct DML corretores impact | unchanged | yes |
@@ -324,7 +336,8 @@ This PR is acceptable only if:
 - it does not mix MesaCliente with root provisioning hardening;
 - it does not mix direct DML `corretores` with root provisioning hardening;
 - it contains no secrets, tokens, raw payloads, production UUIDs, customer data or broker data;
-- it does not authorize hardening without validation.
+- it does not authorize hardening without validation;
+- it does not allow local tenant admin authority to be treated as root authority.
 
 ---
 
@@ -363,4 +376,4 @@ Use this if body review is still insufficient for a safe migration.
 
 This PR does not harden it.
 
-This PR narrows the next technical decision to a single RPC with explicit tests, rollback and non-goals.
+This PR narrows the next technical decision to a single RPC with explicit root-only authority, tests, rollback and non-goals.
