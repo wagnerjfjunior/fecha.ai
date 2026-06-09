@@ -4,8 +4,9 @@
 -- No data changes. No RLS/policy changes. No function body changes.
 
 -- Safety guard:
--- The migration must only run if the reviewed function body still matches
--- the sanitized body fingerprint recorded in PR #74.
+-- If the live-only RPC is absent in a clean replay database, this migration is a no-op.
+-- If the RPC exists, the migration only runs when the reviewed function body still
+-- matches the sanitized body fingerprint recorded in PR #74.
 do $$
 declare
 v_oid oid;
@@ -20,7 +21,8 @@ and p.proname = 'criar_empresa_root'
 and pg_get_function_identity_arguments(p.oid) = 'p_nome text, p_slug text, p_plano_id uuid, p_trial_dias integer';
 
 if v_oid is null then
-raise exception 'public.criar_empresa_root(text, text, uuid, integer) not found';
+raise notice 'public.criar_empresa_root(text, text, uuid, integer) not found; skipping live-only grant hardening.';
+return;
 end if;
 
 select md5(lower(pg_get_functiondef(v_oid)))
@@ -31,7 +33,6 @@ raise exception 'public.criar_empresa_root body fingerprint mismatch: expected %
 'b94e9ff1a640af22768ccdc9ba34f84f',
 v_digest;
 end if;
-end $$;
 
 -- Remove broad and unauthenticated EXECUTE exposure.
 revoke execute on function public.criar_empresa_root(text, text, uuid, integer) from PUBLIC;
@@ -43,6 +44,7 @@ grant execute on function public.criar_empresa_root(text, text, uuid, integer) t
 
 -- Preserve backend service_role execution path.
 grant execute on function public.criar_empresa_root(text, text, uuid, integer) to service_role;
+end $$;
 
 -- Rollback reference, do not run automatically:
 -- grant execute on function public.criar_empresa_root(text, text, uuid, integer) to PUBLIC;
