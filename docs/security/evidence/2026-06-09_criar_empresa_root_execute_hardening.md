@@ -2,11 +2,11 @@
 
 Date: 2026-06-09
 Status: TECHNICAL HARDENING / NARROW RPC GRANT CHANGE
+Encoding: ASCII-safe Markdown, LF line endings, no intentional hidden or bidirectional Unicode characters.
 Related PRs:
-
-* PR #73 - criar_empresa_root P0 hardening plan
-* PR #74 - criar_empresa_root sanitized body review
-  Current PR: PR #75 - criar_empresa_root execute hardening
+- PR #73 - criar_empresa_root P0 hardening plan
+- PR #74 - criar_empresa_root sanitized body review
+Current PR: PR #75 - criar_empresa_root execute hardening
 
 ---
 
@@ -16,15 +16,15 @@ This document records the technical hardening for `public.criar_empresa_root(tex
 
 The change is intentionally narrow:
 
-* one Supabase migration;
-* one RPC signature;
-* no function body change;
-* no RLS change;
-* no policy change;
-* no frontend change;
-* no Edge Function change;
-* no MesaCliente change;
-* no data migration.
+- one Supabase migration;
+- one RPC signature;
+- no function body change;
+- no RLS change;
+- no policy change;
+- no frontend change;
+- no Edge Function change;
+- no MesaCliente change;
+- no data migration.
 
 The goal is to remove broad and unauthenticated EXECUTE exposure from a P0 tenant/root creation RPC while preserving the authenticated caller path guarded by server-side `is_root` validation.
 
@@ -47,19 +47,19 @@ No other files should change.
 
 Read-only live catalog check before creating this PR returned:
 
-| attribute             | value                                                             |
-| --------------------- | ----------------------------------------------------------------- |
-| function              | `criar_empresa_root`                                              |
-| identity args         | `p_nome text, p_slug text, p_plano_id uuid, p_trial_dias integer` |
-| sanitized body digest | `b94e9ff1a640af22768ccdc9ba34f84f`                                |
-| security definer      | true                                                              |
-| function config       | `search_path=public`                                              |
-| volatility            | volatile                                                          |
-| anon execute          | true                                                              |
-| authenticated execute | true                                                              |
-| service_role execute  | true                                                              |
-| PUBLIC execute ACL    | true                                                              |
-| execute grantees      | `anon`, `authenticated`, `postgres`, `PUBLIC`, `service_role`     |
+| attribute | value |
+|---|---|
+| function | `criar_empresa_root` |
+| identity args | `p_nome text, p_slug text, p_plano_id uuid, p_trial_dias integer` |
+| sanitized body digest | `b94e9ff1a640af22768ccdc9ba34f84f` |
+| security definer | true |
+| function config | `search_path=public` |
+| volatility | volatile |
+| anon execute | true |
+| authenticated execute | true |
+| service_role execute | true |
+| PUBLIC execute ACL | true |
+| execute grantees | `anon`, `authenticated`, `postgres`, `PUBLIC`, `service_role` |
 
 This matches the body-review fingerprint recorded in PR #74.
 
@@ -70,13 +70,13 @@ This matches the body-review fingerprint recorded in PR #74.
 The migration performs a safety guard before changing grants:
 
 1. locates only `public.criar_empresa_root(text, text, uuid, integer)`;
-2. If the function is absent in a clean replay database, the migration emits a NOTICE and returns without applying grant changes.
+2. if the function is absent in a clean replay database, emits a NOTICE and returns without applying grant changes;
 3. computes `md5(lower(pg_get_functiondef(oid)))`;
 4. aborts if the digest is not `b94e9ff1a640af22768ccdc9ba34f84f`;
 5. revokes EXECUTE from `PUBLIC`;
 6. revokes EXECUTE from `anon`;
-7. grants/preserves EXECUTE for `authenticated`;
-8. grants/preserves EXECUTE for `service_role`.
+7. grants or preserves EXECUTE for `authenticated`;
+8. grants or preserves EXECUTE for `service_role`.
 
 The migration does not change the function body.
 
@@ -84,33 +84,35 @@ The migration does not change the function body.
 
 ## 5. Expected post-change state
 
-Expected catalog result after applying the migration:
+Expected catalog result after applying the migration in an environment where the RPC exists:
 
-| check                 |                           expected |
-| --------------------- | ---------------------------------: |
-| body digest           | `b94e9ff1a640af22768ccdc9ba34f84f` |
-| SECURITY DEFINER      |                               true |
-| `search_path=public`  |                               true |
-| anon execute          |                              false |
-| authenticated execute |                               true |
-| service_role execute  |                               true |
-| PUBLIC execute ACL    |                              false |
+| check | expected |
+|---|---:|
+| body digest | `b94e9ff1a640af22768ccdc9ba34f84f` |
+| SECURITY DEFINER | true |
+| `search_path=public` | true |
+| anon execute | false |
+| authenticated execute | true |
+| service_role execute | true |
+| PUBLIC execute ACL | false |
 
 Expected behavior:
 
-* unauthenticated calls cannot execute the RPC;
-* `anon` cannot execute the RPC;
-* authenticated callers can reach the RPC only if the body permits them;
-* non-root authenticated users remain blocked by server-side `is_root` validation;
-* local tenant/company admin must not be treated as root;
-* valid root actor path remains functional;
-* audit path remains preserved.
+- unauthenticated calls cannot execute the RPC;
+- `anon` cannot execute the RPC;
+- authenticated callers can reach the RPC only if the body permits them;
+- non-root authenticated users remain blocked by server-side `is_root` validation;
+- local tenant or company admin must not be treated as root;
+- valid root actor path remains functional;
+- audit path remains preserved.
+
+In clean replay databases where the RPC is absent, the migration is expected to emit a NOTICE and make no grant changes.
 
 ---
 
 ## 6. Required validation queries
 
-Post-migration validation query:
+Post-migration validation query for environments where the RPC exists:
 
 ```sql
 with f as (
@@ -167,23 +169,23 @@ public_execute_acl = false
 
 Required tests for validation reviewers:
 
-| test                                          | expected                                        |
-| --------------------------------------------- | ----------------------------------------------- |
-| unauthenticated client call                   | blocked before function body                    |
-| anon client call                              | blocked before function body                    |
-| authenticated non-root call                   | reaches function but blocked by `is_root` guard |
-| authenticated local tenant/company admin call | blocked by `is_root` guard                      |
-| valid root actor call                         | still succeeds                                  |
-| invalid plan id                               | blocked                                         |
-| duplicate slug                                | safe failure                                    |
-| malformed slug                                | blocked or normalized safely                    |
-| missing company name                          | blocked                                         |
-| missing slug                                  | blocked                                         |
-| audit path                                    | preserved                                       |
-| MesaCliente                                   | unchanged                                       |
-| direct DML in corretores                      | unchanged                                       |
+| test | expected |
+|---|---|
+| unauthenticated client call | blocked before function body |
+| anon client call | blocked before function body |
+| authenticated non-root call | reaches function but blocked by `is_root` guard |
+| authenticated local tenant or company admin call | blocked by `is_root` guard |
+| valid root actor call | still succeeds |
+| invalid plan id | blocked |
+| duplicate slug | safe failure |
+| malformed slug | blocked or normalized safely |
+| missing company name | blocked |
+| missing slug | blocked |
+| audit path | preserved |
+| MesaCliente | unchanged |
+| direct DML in corretores | unchanged |
 
-If a test cannot be executed safely in production, it must be executed in a staging/dev branch or documented as pending before merge.
+If a test cannot be executed safely in production, it must be executed in a staging or development branch, or documented as pending before merge.
 
 ---
 
@@ -192,7 +194,7 @@ If a test cannot be executed safely in production, it must be executed in a stag
 Rollback SQL:
 
 ```sql
-grant execute on function public.criar_empresa_root(text, text, uuid, integer) to public;
+grant execute on function public.criar_empresa_root(text, text, uuid, integer) to PUBLIC;
 grant execute on function public.criar_empresa_root(text, text, uuid, integer) to anon;
 grant execute on function public.criar_empresa_root(text, text, uuid, integer) to authenticated;
 grant execute on function public.criar_empresa_root(text, text, uuid, integer) to service_role;
@@ -200,11 +202,11 @@ grant execute on function public.criar_empresa_root(text, text, uuid, integer) t
 
 Rollback validation:
 
-* re-run the validation query;
-* confirm `anon_execute=true` if rollback intentionally restores previous exposure;
-* confirm `PUBLIC execute ACL=true` if rollback intentionally restores previous exposure;
-* confirm valid root actor path still works;
-* confirm audit path still works.
+- re-run the validation query;
+- confirm `anon_execute=true` if rollback intentionally restores previous exposure;
+- confirm `PUBLIC execute ACL=true` if rollback intentionally restores previous exposure;
+- confirm valid root actor path still works;
+- confirm audit path still works.
 
 ---
 
@@ -212,19 +214,19 @@ Rollback validation:
 
 This PR must not include:
 
-* MesaCliente changes;
-* `salvar_mesa_cliente_enriquecimento` changes;
-* direct DML replacement for `corretores`;
-* broad grants cleanup;
-* broad RLS changes;
-* broad FORCE RLS changes;
-* unrelated root/billing functions;
-* frontend changes;
-* Edge Function changes;
-* parser changes;
-* financial engine changes;
-* Worker/Make/n8n changes;
-* Vercel changes.
+- MesaCliente changes;
+- `salvar_mesa_cliente_enriquecimento` changes;
+- direct DML replacement for `corretores`;
+- broad grants cleanup;
+- broad RLS changes;
+- broad FORCE RLS changes;
+- unrelated root or billing functions;
+- frontend changes;
+- Edge Function changes;
+- parser changes;
+- financial engine changes;
+- Worker, Make, or n8n changes;
+- Vercel changes.
 
 ---
 
