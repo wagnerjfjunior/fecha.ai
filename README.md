@@ -2,6 +2,15 @@
 
 Sistema inteligente de distribuição e gestão de leads imobiliários.
 
+## Comece aqui
+
+Antes de iniciar qualquer conversa técnica, PR, tarefa Codex, auditoria ou alteração relevante, leia o bootstrap canônico do projeto:
+
+- [`docs/bootstrap/2026-06-10-fechai-saas-current-state-index.md`](docs/bootstrap/2026-06-10-fechai-saas-current-state-index.md)
+- [`docs/bootstrap/2026-06-10-fechai-gpt-specialists-private-index.md`](docs/bootstrap/2026-06-10-fechai-gpt-specialists-private-index.md)
+
+Esses documentos organizam a visão do FECH.AI como SaaS multi-tenant/multiempresa e indicam quais documentos, PRs e especialistas devem ser consultados por frente ativa.
+
 ## Stack
 
 - React 18 + Vite
