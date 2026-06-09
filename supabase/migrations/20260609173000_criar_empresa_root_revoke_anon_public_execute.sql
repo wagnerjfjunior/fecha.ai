@@ -1,13 +1,3 @@
--- FECH.AI / Supabase
--- Purpose: narrow EXECUTE exposure for public.criar_empresa_root only.
--- Scope: public.criar_empresa_root(text, text, uuid, integer)
--- No data changes. No RLS/policy changes. No function body changes.
--- Encoding: ASCII-safe text, LF line endings.
-
--- Safety guard:
--- If the live-only RPC is absent in a clean replay database, this migration is a no-op.
--- If the RPC exists, the migration only runs when the reviewed function body still
--- matches the sanitized body fingerprint recorded in PR #74.
 do $$
 declare
   v_oid oid;
@@ -35,20 +25,8 @@ begin
       v_digest;
   end if;
 
-  -- Remove broad and unauthenticated EXECUTE exposure.
-  revoke execute on function public.criar_empresa_root(text, text, uuid, integer) from PUBLIC;
-  revoke execute on function public.criar_empresa_root(text, text, uuid, integer) from anon;
-
-  -- Preserve authenticated caller path. The function body must still enforce root-only
-  -- authority through server-side is_root validation.
-  grant execute on function public.criar_empresa_root(text, text, uuid, integer) to authenticated;
-
-  -- Preserve backend service_role execution path.
-  grant execute on function public.criar_empresa_root(text, text, uuid, integer) to service_role;
+  execute 'revoke execute on function public.criar_empresa_root(text, text, uuid, integer) from PUBLIC';
+  execute 'revoke execute on function public.criar_empresa_root(text, text, uuid, integer) from anon';
+  execute 'grant execute on function public.criar_empresa_root(text, text, uuid, integer) to authenticated';
+  execute 'grant execute on function public.criar_empresa_root(text, text, uuid, integer) to service_role';
 end $$;
-
--- Rollback reference, do not run automatically:
--- grant execute on function public.criar_empresa_root(text, text, uuid, integer) to PUBLIC;
--- grant execute on function public.criar_empresa_root(text, text, uuid, integer) to anon;
--- grant execute on function public.criar_empresa_root(text, text, uuid, integer) to authenticated;
--- grant execute on function public.criar_empresa_root(text, text, uuid, integer) to service_role;
