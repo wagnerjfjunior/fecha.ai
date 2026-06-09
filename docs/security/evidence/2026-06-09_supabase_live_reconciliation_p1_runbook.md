@@ -2,7 +2,7 @@
 
 Date: 2026-06-09
 Status: READ-ONLY LIVE RECONCILIATION RUNBOOK / NO PRODUCTION CHANGE
-Encoding note: UTF-8 plain text, LF line endings, no intentional hidden or bidirectional Unicode characters.
+Encoding note: UTF-8 plain text, LF line endings, ASCII-safe wording, no intentional hidden or bidirectional Unicode characters.
 Related checkpoints:
 - PR #67 - authenticated write-surface P1 inventory
 - PR #68 - frontend direct-DML P1 inventory
@@ -375,6 +375,8 @@ Do not commit raw `pg_get_functiondef` output unless explicitly reviewed and san
 Purpose:
 
 - prepare future hardening context for P1 tables;
+- include the current known P1 table surfaces and the likely base lists table name if present;
+- expand the list after body indicators identify additional touched tables;
 - avoid changing RLS in this PR.
 
 ```sql
@@ -391,12 +393,15 @@ where n.nspname = 'public'
     'corretores',
     'leads',
     'lotes',
+    'listas',
     'times',
     'lista_visibilidade',
     'mesa_cliente_unidade_enriquecimentos'
   )
 order by c.relname;
 ```
+
+If the live project uses another base table name for lists, record the actual name in the sanitized results and expand this query in the results artifact.
 
 ---
 
@@ -405,6 +410,7 @@ order by c.relname;
 Purpose:
 
 - identify whether P1 touched tables have visible policies;
+- include the likely base lists table name if present;
 - support future negative-test planning.
 
 ```sql
@@ -419,6 +425,7 @@ where schemaname = 'public'
     'corretores',
     'leads',
     'lotes',
+    'listas',
     'times',
     'lista_visibilidade',
     'mesa_cliente_unidade_enriquecimentos'
@@ -445,7 +452,7 @@ reset_password
 Required evidence before hardening:
 
 - source location;
-- whether service role is used server-side only;
+- whether privileged server-side credentials are used server-side only;
 - whether secrets are excluded from frontend and logs;
 - actor validation;
 - target company/tenant validation;
@@ -486,7 +493,7 @@ Required evidence before hardening:
 
 Never commit:
 
-- service_role keys;
+- privileged server-side keys;
 - JWTs;
 - access tokens;
 - passwords;
