@@ -8,8 +8,9 @@ Antes de iniciar qualquer conversa técnica, PR, tarefa Codex, auditoria ou alte
 
 - [`docs/bootstrap/2026-06-10-fechai-saas-current-state-index.md`](docs/bootstrap/2026-06-10-fechai-saas-current-state-index.md)
 - [`docs/bootstrap/2026-06-10-fechai-gpt-specialists-private-index.md`](docs/bootstrap/2026-06-10-fechai-gpt-specialists-private-index.md)
+- [`docs/bootstrap/2026-06-10-fechai-edge-functions-layering-index.md`](docs/bootstrap/2026-06-10-fechai-edge-functions-layering-index.md)
 
-Esses documentos organizam a visão do FECH.AI como SaaS multi-tenant/multiempresa e indicam quais documentos, PRs e especialistas devem ser consultados por frente ativa.
+Esses documentos organizam a visão do FECH.AI como SaaS multi-tenant/multiempresa, registram as camadas atuais de frontend, Vercel, Supabase, Edge Functions, RPC/RLS e indicam quais documentos, PRs e especialistas devem ser consultados por frente ativa.
 
 ## Stack
 
