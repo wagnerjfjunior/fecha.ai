@@ -2,6 +2,7 @@
 
 Date: 2026-06-10
 Status: EXISTING_EVIDENCE_CONSOLIDATION / DOCUMENTATION_ONLY / NO_RUNTIME_CHANGE
+Encoding note: UTF-8 plain text, LF line endings, ASCII-safe wording, no intentional hidden or bidirectional Unicode characters.
 Front: M1 - LeadOps / CRM / Discador
 Risk: R3/R4 - personal data, leads, broker operations, Supabase RPCs, RLS and tenant/company isolation.
 Base branch observed: main
@@ -45,14 +46,14 @@ Only create new analysis where the existing documentation does not already answe
 
 | Source | Existing value for M1 |
 |---|---|
-| `docs/product/fechai-mvp-scope-v1.md` | Defines MVP objective, import, CRM/funnel, discador, Power Mode, dashboard, tracking, non-functional requirements and acceptance criteria. |
+| `docs/product/fechai-mvp-scope-v1.md` | Defines MVP objective, import, CRM/funnel, dialer, Power Mode, dashboard, tracking, non-functional requirements and acceptance criteria. |
 | `docs/product/fechai-modules-map-v1.md` | Defines M1 as LeadOps, Lists, CRM and Dialer. |
 | `docs/roadmap/fechai-roadmap-master-v1.md` | Defines Phase 1 as Operational MVP / LeadOps CRM Dialer and success criteria. |
 | `docs/security/evidence/2026-06-09_frontend_direct_dml_p1_inventory.md` | Maps frontend direct DML and observed RPC-driven flows. |
 | `docs/security/evidence/2026-06-09_rpc_grants_p1_inventory.md` | Maps P1 RPC/server-side paths, caller observations, business area and grant/body review status. |
 | `docs/security/evidence/2026-06-09_rpc_body_review_p1.md` | Defines body-review checklist and body-review status matrix. |
 | `docs/security/evidence/2026-06-09_supabase_live_reconciliation_p1_results.md` | Provides sanitized live Supabase metadata, EXECUTE matrix and body indicators. |
-| `docs/skills/fechai-gpt7-leadops-crm-discador.md` | Defines LeadOps/CRM/Discador specialist responsibilities. |
+| `docs/skills/fechai-gpt7-leadops-crm-discador.md` | Defines LeadOps/CRM/Dialer specialist responsibilities. |
 
 ---
 
@@ -117,9 +118,9 @@ This matrix consolidates what is already documented. Fields marked NOT_CONFIRMED
 
 | UI / component | User action | Service/wrapper | RPC/direct path | Expected table impact | Auth source | Tenant/company source | Risk | Test requirement | Evidence status |
 |---|---|---|---|---|---|---|---|---|---|
-| `src/components/AceleracaoOperacional.jsx` | Load next operational lead | `src/services/aceleracaoOperacionalService.js` / `buscarProximoLeadOperacional` | RPC `proximo_lead` | `leads`, `lotes` side effects possible | Session token, but bridge fallback risk exists | Must be derived server-side by RPC | P1 | anon/no-session, cross-tenant, unauthorized broker, no eligible lot | PARTIALLY_DOCUMENTED |
-| `src/components/AceleracaoOperacional.jsx` | Register quick feedback | `src/services/aceleracaoOperacionalService.js` / `registrarFeedbackOperacional` | RPC `registrar_feedback` | `leads`, CRM lifecycle/history | Session token, but bridge fallback risk exists | Must be derived server-side by RPC | P1 | invalid feedback, forged lead id, cross-tenant, no ownership | PARTIALLY_DOCUMENTED |
-| `src/App.jsx` | Next lead / dialer flow | custom `createSB.rpc` | RPC `proximo_lead` | `leads`, `lotes` side effects possible | Frontend token passed to RPC wrapper | Must be validated in RPC body | P1 | anon/no-session, cross-tenant, ineligible broker/list | DOCUMENTED_FROM_SECURITY_INVENTORY |
+| `src/components/AceleracaoOperacional.jsx` | Load next operational lead | `src/services/aceleracaoOperacionalService.js` / `buscarProximoLeadOperacional` | RPC `proximo_lead` | `leads`, `lotes` side effects possible | Session token expected; no-session fallback attempt must fail closed before RPC call | Must be derived server-side by RPC | P1 | no token, malformed token, controlled error, authenticated smoke, cross-tenant RPC-layer test later | PARTIALLY_DOCUMENTED |
+| `src/components/AceleracaoOperacional.jsx` | Register quick feedback | `src/services/aceleracaoOperacionalService.js` / `registrarFeedbackOperacional` | RPC `registrar_feedback` | `leads`, CRM lifecycle/history | Session token expected; no-session fallback attempt must fail closed before RPC call | Must be derived server-side by RPC | P1 | no token, malformed token, invalid feedback, forged lead id, authenticated smoke, cross-tenant RPC-layer test later | PARTIALLY_DOCUMENTED |
+| `src/App.jsx` | Next lead / dialer flow | custom `createSB.rpc` | RPC `proximo_lead` | `leads`, `lotes` side effects possible | Frontend token passed to RPC wrapper | Must be validated in RPC body | P1 | no-session behavior, cross-tenant, ineligible broker/list | DOCUMENTED_FROM_SECURITY_INVENTORY |
 | `src/App.jsx` | Feedback submission | custom `createSB.rpc` | RPC `registrar_feedback` / `atualizar_feedback` | `leads`, feedback/status/history | Frontend token passed to RPC wrapper | Must be validated in RPC body | P1 | forged lead id, invalid feedback, cross-tenant | DOCUMENTED_FROM_SECURITY_INVENTORY |
 | `src/App.jsx` | Funnel movement | custom `createSB.rpc` | RPC `mover_funil` | `leads`, funnel/stage/history | Frontend token passed to RPC wrapper | Must be validated in RPC body | P1 | invalid transition, forged lead id, cross-tenant | DOCUMENTED_FROM_SECURITY_INVENTORY |
 | `src/App.jsx` | Batch funnel movement | custom `createSB.rpc` | RPC `mover_funil_lote` | multiple `leads`, funnel/stage/history | Frontend token passed to RPC wrapper | Must validate every lead server-side | P1 high | mixed-company array, invalid stage, unauthorized broker | DOCUMENTED_FROM_SECURITY_INVENTORY |
@@ -158,6 +159,8 @@ Important non-conclusion:
 RPC-driven does not mean safe.
 Authenticated EXECUTE does not mean authorized.
 Body text mentioning auth.uid does not prove correct tenant isolation.
+No current evidence proves that proximo_lead or registrar_feedback can be executed by anon.
+Current live evidence indicates these M1 RPCs should be denied to anon; the candidate below is therefore about fail-closed session/error handling before any sensitive RPC attempt, not about confirmed anon execution.
 ```
 
 ---
@@ -168,7 +171,7 @@ Body text mentioning auth.uid does not prove correct tenant isolation.
 |---|---|---|
 | G1 | No single filled UI/service/RPC/table/auth/tenant/test map existed before this consolidation. | This PR provides consolidation but still marks unconfirmed fields clearly. |
 | G2 | Persistent next action/follow-up exists in product scope, but the exact UI/service/RPC/table persistence path is not confirmed. | Must be validated before claiming CRM continuity. |
-| G3 | Service bridge fallback to anon/no-session remains a risk for sensitive RPC calls. | Candidate for first technical PR if scoped narrowly and tested. |
+| G3 | Service bridge may attempt sensitive M1 RPC calls without a valid session token before failing at Supabase. | Candidate for first technical PR as session/error-handling robustness if scoped narrowly and tested. |
 | G4 | Direct DML on `corretores` remains separate P1 direct DML backlog. | Important but not necessarily first M1 technical PR unless blocking onboarding or broker eligibility. |
 | G5 | RPC bodies are not proven safe solely by current metadata/body indicators. | Technical hardening requires exact tests and rollback. |
 
@@ -179,15 +182,17 @@ Body text mentioning auth.uid does not prove correct tenant isolation.
 Recommended first technical PR candidate, based on existing evidence:
 
 ```text
-Candidate: fail-closed authentication handling for M1 LeadOps service bridge calls.
+Candidate: fail-closed session/error handling for M1 LeadOps service bridge calls.
 ```
 
 Rationale:
 
 ```text
 AceleracaoOperacional uses the service bridge for proximo_lead and registrar_feedback.
-The service bridge may fall back to the anon key when no session token is found.
-M1 sensitive RPCs should not be invoked from the frontend as anon/no-session calls.
+The service bridge may attempt to use the anon key when no session token is found.
+Current live evidence indicates proximo_lead and registrar_feedback are not confirmed as anon-executable.
+Therefore this candidate is not a grant/RPC hardening claim and not evidence of confirmed anon execution.
+The goal is to fail closed locally before calling sensitive M1 RPCs without a real session token, and to show a controlled user-facing error.
 This is narrower than replacing all corretores direct DML and safer than modifying RPC bodies before exact body review.
 ```
 
@@ -195,14 +200,14 @@ Proposed technical PR scope:
 
 | Item | Proposed scope |
 |---|---|
-| Objective | Prevent M1 operational service bridge from calling sensitive RPCs without a real session token. |
+| Objective | Prevent M1 operational service bridge from attempting sensitive RPC calls without a real session token, and provide controlled no-session error handling. |
 | Files likely affected | `src/services/aceleracaoOperacionalService.js`; possibly caller error handling in `src/components/AceleracaoOperacional.jsx`. |
 | RPCs involved | `proximo_lead`, `registrar_feedback` initially. |
 | Tables involved | None directly from frontend; RPC backend may touch `leads`/`lotes`. |
-| Security impact | Reduces accidental anon/no-session sensitive RPC invocation from M1 frontend service bridge. |
+| Security impact | Improves fail-closed session behavior and avoids confusing or silent anon-key fallback attempts for M1 sensitive service calls. |
 | Rollback | Revert service bridge change; no database rollback needed if no DB changes. |
-| Preview/smoke | Vercel preview; authenticated broker opens Power Mode, loads next lead, registers feedback; logged-out/no-session state fails with friendly error. |
-| Negative tests | no token, malformed token, expired token behavior if testable, anon key-only call path, cross-tenant remains RPC-level test requirement. |
+| Preview/smoke | Vercel preview; authenticated broker opens Power Mode, loads next lead, registers feedback; logged-out/no-session state fails with controlled error before RPC call. |
+| Negative tests | no token, malformed token, expired token if testable, anon-key-only path does not call sensitive RPC, friendly error, authenticated smoke. |
 | Required GPT validators | GPT 0, GPT 1, GPT 2 if UX error changes, GPT 3, GPT 4, GPT 7. |
 | Bootstrap update | Not required unless runtime behavior or state index changes materially. |
 
@@ -217,6 +222,7 @@ No ADS/CAPI.
 No Make/n8n.
 No broad App.jsx refactor.
 No direct corretores DML replacement in the same PR.
+No claim that anon currently executes proximo_lead or registrar_feedback.
 ```
 
 ---
@@ -285,4 +291,5 @@ The first technical PR is already implemented.
 Persistent next action/follow-up path is confirmed.
 Direct corretores DML is fixed.
 Supabase live state after 2026-06-09 has been revalidated.
+proximo_lead or registrar_feedback are executable by anon.
 ```
