@@ -5,6 +5,16 @@
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL
 const SUPABASE_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY
 
+const SESSION_REQUIRED_MESSAGE = 'Sessão expirada ou não encontrada. Faça login novamente.'
+const SENSITIVE_M1_RPCS = new Set(['proximo_lead', 'registrar_feedback'])
+
+function createSessionRequiredError(functionName) {
+  const error = new Error(SESSION_REQUIRED_MESSAGE)
+  error.code = 'SESSION_REQUIRED'
+  error.rpc = functionName
+  return error
+}
+
 function findAccessToken() {
   try {
     for (let i = 0; i < localStorage.length; i += 1) {
@@ -31,11 +41,16 @@ async function rpc(functionName, payload = {}) {
   }
 
   const token = findAccessToken()
+
+  if (SENSITIVE_M1_RPCS.has(functionName) && !token) {
+    throw createSessionRequiredError(functionName)
+  }
+
   const response = await fetch(`${SUPABASE_URL}/rest/v1/rpc/${functionName}`, {
     method: 'POST',
     headers: {
       apikey: SUPABASE_KEY,
-      Authorization: 'Bearer ' + (token || SUPABASE_KEY),
+      Authorization: 'Bearer ' + token,
       'Content-Type': 'application/json',
     },
     body: JSON.stringify(payload || {}),
