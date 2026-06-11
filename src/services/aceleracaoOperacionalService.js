@@ -1,4 +1,5 @@
 // Aceleracao Operacional - Service Bridge
+// ASCII/LF normalized file for sensitive LeadOps RPC bridge.
 // Usa o mesmo padrao REST/RPC do createSB() existente no App.jsx.
 // Nao depende de @supabase/supabase-js nem de client paralelo.
 
