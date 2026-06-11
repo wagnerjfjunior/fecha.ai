@@ -36,9 +36,17 @@ function isUsableAccessToken(token) {
   const payload = parseJwtPayload(token)
   if (!payload) return false
 
-  if (typeof payload.exp === 'number' && payload.exp * 1000 <= Date.now()) {
-    return false
-  }
+  if (typeof payload.exp !== 'number') return false
+  if (payload.exp * 1000 <= Date.now()) return false
+
+  if (typeof payload.sub !== 'string' || !payload.sub) return false
+  if (payload.role !== 'authenticated') return false
+
+  const validAud =
+    payload.aud === 'authenticated' ||
+    (Array.isArray(payload.aud) && payload.aud.includes('authenticated'))
+
+  if (!validAud) return false
 
   return true
 }
