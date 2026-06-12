@@ -4,12 +4,17 @@ Sistema inteligente de distribuição e gestão de leads imobiliários.
 
 ## Comece aqui
 
-Antes de iniciar qualquer conversa técnica, PR, tarefa Codex, auditoria ou alteração relevante, leia o bootstrap canônico do projeto:
+Antes de iniciar qualquer conversa técnica, PR, tarefa Codex, auditoria ou alteração relevante, leia primeiro os índices canônicos do projeto:
+
+- [`docs/bootstrap/INDEX.md`](docs/bootstrap/INDEX.md) — entrada operacional obrigatória, bootstrap, modus operandi e estado SaaS atual.
+- [`docs/audits/architecture/INDEX.md`](docs/audits/architecture/INDEX.md) — índice de arquitetura para Edge Functions, camadas SaaS, Vercel API/proxy, service bridges e RPC/RLS.
+
+Documentos de apoio ainda relevantes:
 
 - [`docs/bootstrap/2026-06-10-fechai-saas-current-state-index.md`](docs/bootstrap/2026-06-10-fechai-saas-current-state-index.md)
 - [`docs/bootstrap/2026-06-10-fechai-gpt-specialists-private-index.md`](docs/bootstrap/2026-06-10-fechai-gpt-specialists-private-index.md)
 
-Esses documentos organizam a visão do FECH.AI como SaaS multi-tenant/multiempresa e indicam quais documentos, PRs e especialistas devem ser consultados por frente ativa.
+Esses documentos organizam a visão do FECH.AI como Pilot Production SaaS multi-tenant/multiempresa e indicam quais documentos, PRs e especialistas devem ser consultados por frente ativa.
 
 ## Stack
 
