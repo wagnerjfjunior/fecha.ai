@@ -75,6 +75,22 @@ Use for:
 - avoiding broad repository scans when indexes or diffs are enough.
 ```
 
+### Bootstrap governance cycle handoff
+
+```text
+docs/bootstrap/2026-06-12-fechai-bootstrap-governance-cycle-handoff.md
+```
+
+Use for:
+
+```text
+- handoff after PRs #85-#90;
+- architecture / bootstrap / GreenOps / skills alignment chain;
+- consolidated GPT0-GPT10 status;
+- next-conversation startup context;
+- rollback order for the documentation governance cycle.
+```
+
 ---
 
 ## Operational rule
