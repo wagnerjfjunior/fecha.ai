@@ -58,6 +58,23 @@ Use for:
 - documentation, index and handoff rules.
 ```
 
+### Codex efficiency and GreenOps workflow
+
+```text
+docs/bootstrap/2026-06-12-fechai-codex-efficiency-greenops.md
+```
+
+Use for:
+
+```text
+- token and credit efficiency;
+- Codex task envelope;
+- ChatGPT / GitHub connector / Codex responsibility split;
+- PR size discipline;
+- GreenOps and reduced rework;
+- avoiding broad repository scans when indexes or diffs are enough.
+```
+
 ---
 
 ## Operational rule
@@ -73,4 +90,14 @@ Minimum required sequence:
 4. Classify risks.
 5. Define the next safe action.
 6. Leave handoff/index trail when needed.
+```
+
+Before expensive AI/Codex work, specialists must also ask:
+
+```text
+- Can README/index/bootstrap answer this first?
+- Can GitHub connector validate this without Codex?
+- Can Codex receive exact file scope instead of discovering it?
+- Can this PR be smaller?
+- Can rollback be one revert?
 ```
