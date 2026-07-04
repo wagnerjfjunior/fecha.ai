@@ -12,11 +12,10 @@ Read in this order:
 1. `2026-07-04-fechai-project-governance-dashboard-baseline-v1.md`  
    Full B0 governance model: scope, weights, acceptance, capacity, forecast, Health Score, confidence, heatmap, risks and update controls.
 
-2. `2026-07-04-fechai-project-governance-dashboard-baseline-v1.1-schedule-correction.md`  
-   Authoritative corrected dependency and schedule dates for the same B0 baseline.
+2. `2026-07-04-fechai-project-governance-dashboard-baseline-v1.3-consistency-correction.md`  
+   Authoritative pre-execution correction for activity count, dates, dependencies, federal-holiday capacity, forecast fallback, Health Score, owner allocation and transversal heatmap.
 
-3. `2026-07-04-fechai-project-governance-dashboard-baseline-v1.2-record-count-correction.md`  
-   Authoritative correction of the activity count: 23 activities totaling 300 WDP.
+The v1.1 and v1.2 files remain traceability records. Where they conflict with v1.3, v1.3 is authoritative.
 
 The B0 baseline is documentation-only. It does not authorize runtime, frontend, Supabase, migration, RLS, RPC, Vercel, integration or production changes.
 
