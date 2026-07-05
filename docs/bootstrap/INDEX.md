@@ -93,6 +93,27 @@ Use for:
 
 ---
 
+## Active delivery governance baseline
+
+### Project Governance Dashboard / Baseline B0
+
+```text
+docs/governance/INDEX.md
+```
+
+Use for:
+
+```text
+- current reading order for the immutable B0 execution baseline and its versioned schedule correction;
+- MVP 1 Família, MVP 2 Tegra/cliente real and MVP 3 Mercado delivery structure;
+- weighted delivery activities and acceptance criteria;
+- baseline versus actual, capacity, forecast, Health Score and M1-M6 heatmap;
+- blockers, risks, confidence and baseline-change control;
+- PR/evidence traceability without PR-count-driven progress.
+```
+
+---
+
 ## Operational rule
 
 Before sensitive work, specialists must not proceed directly to implementation, approval or merge/deploy recommendation.
