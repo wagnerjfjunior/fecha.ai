@@ -15,9 +15,20 @@ Read in this order:
 2. `2026-07-04-fechai-project-governance-dashboard-baseline-v1.3-consistency-correction.md`  
    Authoritative pre-execution correction for activity count, dates, dependencies, federal-holiday capacity, forecast fallback, Health Score, owner allocation and transversal heatmap.
 
-The v1.1 and v1.2 files remain traceability records. Where they conflict with v1.3, v1.3 is authoritative.
+3. `2026-07-05-fechai-b0-operational-activity-register-v1.md`  
+   Initial B0 operating ledger: exactly 23 activities / 300 WDP, v1.3 dates, explicit dependencies, owner-allocation plan, zero-credit initialization, risk register and the 2026-07-06 daily plan.
 
-The B0 baseline is documentation-only. It does not authorize runtime, frontend, Supabase, migration, RLS, RPC, Vercel, integration or production changes.
+4. `2026-07-05-fechai-b0-operational-activity-register-v1.1-m3-04-allocation-correction.md`  
+   Authoritative correction for the M3-04 owner-allocation row. It replaces the v1.0 14-WDP arithmetic defect with an exact 20-WDP allocation; all other register content remains unchanged.
+
+5. `2026-07-05-fechai-b0-operational-activity-register-v1.2-f1-07-date-correction.md`  
+   Authoritative correction for F1-07 planned dates. It restores the v1.3 window 2026-09-07 to 2026-09-11 while keeping 2026-09-07 at zero federal-holiday capacity.
+
+The v1.1 and v1.2 **baseline** files remain traceability records. Where they conflict with baseline v1.3, v1.3 is authoritative. The activity-register v1.1 and v1.2 correction files are authoritative only for their named rows.
+
+The activity register may add evidence, actual status and daily execution records, but it may not rewrite B0 scope, weights, baseline dates, dependencies or acceptance criteria without a separate Baseline Change Record.
+
+The B0 baseline and operating register are documentation-only. They do not authorize runtime, frontend, Supabase, migration, RLS, RPC, Vercel, integration or production changes.
 
 ## Core rule
 
