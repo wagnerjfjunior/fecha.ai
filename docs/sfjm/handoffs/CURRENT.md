@@ -21,8 +21,10 @@ SFJM is not a CRM module, product feature or business/security authority.
 - the seven SFJM files were created and `docs/bootstrap/INDEX.md` was minimally updated;
 - Draft PR #95 was opened without altering PR #94 or runtime;
 - the original implementation authorization was consumed when PR #95 and its publication head were reported;
-- an independent read-only audit of PR #95 at head `6ba8c487e6f251d48d54c365e11b2e851777a782` returned `FAIL` with exactly two `REQUIRED IN THIS PR` findings;
-- the correction scope was restricted to `docs/sfjm/AUTHORIZATIONS.md` and this handoff.
+- the first independent read-only audit of PR #95 at head `6ba8c487e6f251d48d54c365e11b2e851777a782` returned `FAIL` with exactly two `REQUIRED IN THIS PR` findings;
+- those two findings were corrected only in `docs/sfjm/AUTHORIZATIONS.md` and this handoff;
+- the first correction authorization was consumed when head `06d530b185558025eca4173a574b588729866941` was published and reported;
+- the re-audit of that head confirmed the first two findings were materially closed and identified one remaining lifecycle inconsistency.
 
 ## 3. Current GitHub anchors and lifecycle
 
@@ -36,8 +38,8 @@ PR #95 state at last verification: OPEN / DRAFT / NOT_MERGED
 PR #95 base: main
 PR #95 base SHA: e7584b6ce2a53a88fca9974bcc448ebe9aea83ab
 PR #95 head branch: docs/sfjm-fechai-operational-continuity-v1
-PR #95 independently audited head: 6ba8c487e6f251d48d54c365e11b2e851777a782
-First corrective commit: 914bbd2b688fd0bb5d00a22a0117a99fd5505b76
+First independently audited head: 6ba8c487e6f251d48d54c365e11b2e851777a782
+First reported correction head: 06d530b185558025eca4173a574b588729866941
 
 Active F1-01 pull request: #94
 PR #94 observed head: 140e92dd12c72eae5f90fa55b5b125bbedf6fbaa
@@ -45,15 +47,15 @@ PR #94 observed head: 140e92dd12c72eae5f90fa55b5b125bbedf6fbaa
 
 ### Freshness warning
 
-The PR #95 head cannot be treated as permanently current inside this file. Publishing this handoff creates a newer commit after the first corrective commit listed above.
+The current PR #95 head must always be resolved live from GitHub before audit, Ready-for-review or merge decisions.
 
-Therefore, every receiving conversation or auditor must read the **live PR #95 head from GitHub** before acting. Any head different from the independently audited head invalidates the prior audit and requires exact-head re-audit.
+Any head different from the most recently audited head invalidates the prior audit result and requires a new exact-head audit.
 
 The PR #94 head remains an observed target-specific evidence anchor only. It is not the SFJM base or the PR #95 head.
 
 ## 4. Authorization state
 
-### Consumed
+### Consumed — original SFJM creation
 
 The authorization to:
 
@@ -65,18 +67,36 @@ The authorization to:
 
 is `CONSUMED` and no longer authorizes new branch creation, scope expansion, Ready-for-review transition, merge or implementation.
 
-### Current correction authorization
+### Consumed — first audit correction
 
-Only the two audit findings may be corrected, in exactly:
+The authorization to correct the first two `REQUIRED IN THIS PR` findings in:
 
 ```text
 docs/sfjm/AUTHORIZATIONS.md
 docs/sfjm/handoffs/CURRENT.md
 ```
 
-This authorization expires when the new live PR #95 correction head is published and reported.
+is `CONSUMED`.
 
-After that, only a separate read-only exact-head re-audit is the next permitted operation.
+It expired when the correction head `06d530b185558025eca4173a574b588729866941` was published and reported.
+
+It no longer authorizes further edits, new commits, scope broadening, Ready transition or merge.
+
+### Active — exact-head read-only re-audit
+
+The only active operation is an independent read-only audit of the current live PR #95 head.
+
+The auditor must resolve the live head from GitHub and must not:
+
+- edit files;
+- publish commits;
+- change PR state or metadata;
+- mark Ready for review;
+- merge;
+- modify PR #94;
+- modify runtime, Supabase, Vercel, integrations or production.
+
+The read-only authorization expires when the audit result is produced or when the head changes before the result.
 
 ## 5. Active product-governance work
 
@@ -88,35 +108,48 @@ Operational state: EVIDENCE_INCOMPLETE
 
 PR #94 was not modified, approved, marked Ready or merged by the SFJM PR flow.
 
-## 6. PR #95 audit findings being closed
+## 6. Audit findings and closure state
 
-### Finding 1 — authorization lifecycle
+### First audit — authorization lifecycle
 
-The original authorization was incorrectly still labeled active after its expiration condition had occurred.
+Finding:
 
-Correction applied:
+- original creation authorization remained active after its expiration condition.
 
-- original authorization classified as `CONSUMED`;
-- PR #95 and audited publication head recorded;
-- correction authorization separately bounded and time-limited;
-- re-audit identified as read-only and non-authorizing.
+Closure:
 
-### Finding 2 — incomplete handoff anchors
+- original authorization is now `CONSUMED`;
+- PR #95 and the publication head were recorded;
+- no additional creation or implementation authority remains.
 
-The prior handoff omitted PR #95 number, state, base, head branch, audited head and consumed authorization state.
+### First audit — incomplete handoff anchors
 
-Correction applied in this file:
+Finding:
 
-- PR #95 identity and state recorded;
-- base and branch recorded;
-- independently audited head recorded;
-- correction sequence recorded;
-- consumed and current limited authorization states separated;
-- live-head verification made mandatory to avoid a false self-referential SHA claim.
+- prior handoff omitted PR #95 number, state, base, branch, head and consumed authorization state.
+
+Closure:
+
+- PR #95 identity, state, base, branch and historical heads are recorded;
+- live-head verification is mandatory;
+- the handoff no longer depends on rediscovery from conversation memory.
+
+### Second audit — correction authorization lifecycle
+
+Finding:
+
+- the first correction authorization remained labeled active after the corrected head had already been published and reported.
+
+Closure applied:
+
+- the first correction authorization is now `CONSUMED`;
+- its completion evidence is recorded in `docs/sfjm/AUTHORIZATIONS.md`;
+- only exact-head read-only re-audit remains active;
+- no new modification authority is implied by the audit flow.
 
 ## 7. Not completed
 
-- exact-head independent re-audit of the corrected PR #95;
+- exact-head independent re-audit of the current PR #95 head after this lifecycle correction;
 - authorization to mark PR #95 Ready for review;
 - fresh state verification immediately before any Ready transition;
 - authorization to merge PR #95;
@@ -152,11 +185,11 @@ Do not reconstruct FECH.AI from zero when the bootstrap, B0 and SFJM records are
 
 Do not repeat broad repository discovery when the current index, active PR metadata, exact diff or named evidence can answer the question.
 
-Do not restart the already consumed branch-creation authorization.
+Do not restart either consumed authorization.
 
 ## 10. What must not be altered from this handoff
 
-- any file outside the two-file correction scope before re-audit;
+- any file before a new explicit correction authorization;
 - runtime;
 - frontend;
 - Supabase;
@@ -179,9 +212,10 @@ Do not restart the already consumed branch-creation authorization.
 
 ## 11. Single next safe action
 
-Read the new live head of Draft PR #95 from GitHub and submit that exact head to an independent read-only re-audit limited to:
+Resolve the new live head of Draft PR #95 from GitHub and submit that exact head to an independent read-only re-audit limited to:
 
-- confirming the two `REQUIRED IN THIS PR` findings are closed;
+- confirming that both consumed authorizations are no longer presented as active;
+- confirming that only exact-head read-only audit authority remains active;
 - confirming no scope broadening;
 - reconfirming the complete eight-file PR boundary and non-claims.
 
@@ -194,7 +228,7 @@ The prior conversation may be retired only after the receiving conversation:
 1. reads the mandatory bootstrap, governance and SFJM records;
 2. validates live GitHub state, including the current PR #95 head;
 3. declares available and missing evidence;
-4. confirms the consumed authorization and the current read-only re-audit boundary;
+4. confirms both consumed authorizations and the current read-only audit boundary;
 5. confirms the single next safe action;
 6. does not silently broaden authorization.
 
