@@ -5,108 +5,96 @@
 
 ## Next single safe action
 
-Independently audit Draft PR #96 against its exact live head and the current canonical `main`.
+Independently audit the exact current head of FECH.AI PR #94 as the separate F1-01 product-governance artifact.
 
-The audit must verify:
+This action is read-only. It must not modify PR #94, infer F1-01 acceptance, start runtime implementation or begin work in `wagnerjfjunior/sfjm-workspace`.
 
-- the live PR #96 state;
-- that PR #96 remains open, Draft and not merged;
-- base branch and base SHA;
-- head branch and exact live head SHA;
-- mergeability;
-- commit count;
-- exact four-file scope;
-- the complete diff;
-- cross-document consistency between `CURRENT_STATE.md`, `AUTHORIZATIONS.md`, `NEXT_SAFE_ACTION.md` and `handoffs/CURRENT.md`;
-- that PR #95 is recorded as merged without presenting PR #96 reconciliation as already canonical;
-- that consumed PR #95 authorities are not presented as active;
-- that the current action remains limited to read-only audit of PR #96;
-- that PR #94, runtime, Supabase, Vercel configuration, production and `wagnerjfjunior/sfjm-workspace` were not modified;
-- that no new blocking review, thread or check exists.
+## Required bootstrap before audit
+
+Before any conclusion, confirm live from GitHub:
+
+- current `main` tip;
+- PR #94 state, title, base branch and base SHA;
+- head branch and exact current head SHA;
+- merge base and ahead/behind;
+- commit count and exact changed-file set;
+- complete diff;
+- checks and workflow runs;
+- reviews, requests for changes, threads and comments;
+- the applicable FECH.AI bootstrap, B0 governance and M1 acceptance records.
+
+The historical PR #94 head recorded elsewhere must not be assumed current.
 
 ## Authorized scope for the current action
 
 ```text
 READ ONLY
-INDEPENDENT AUDIT
-GITHUB AND VERSIONED EVIDENCE
-EXACT LIVE PR #96 HEAD REQUIRED
+INDEPENDENT CURRENT-HEAD AUDIT OF PR #94
+GITHUB AND VERSIONED EVIDENCE ONLY
 NO IMPLEMENTATION
 NO NEW COMMIT
+NO PR METADATA CHANGE
 NO READY TRANSITION
 NO MERGE
-NO PR METADATA MODIFICATION
 NO RUNTIME OR ENVIRONMENT CHANGE
+NO SUPABASE CHANGE
 NO SFJM-WORKSPACE CHANGE
 ```
 
-## Completion conditions
+## Audit objectives
 
-This action is complete only when the auditor records:
+The audit must determine:
 
-1. the exact live PR #96 head validated;
-2. the exact canonical `main` commit observed;
-3. confirmation that the total PR boundary remains exactly four documentation files;
-4. confirmation that `CURRENT_STATE.md` describes the reconciliation as proposed/in progress until merge;
-5. confirmation that this file identifies PR #96 exact-head audit as the current single safe action;
-6. confirmation that no `BLOCKING` or `REQUIRED IN THIS PR` finding remains;
-7. whether a Ready-for-review transition is eligible for a separate explicit authorization.
+- whether PR #94 remains the correct F1-01 evidence artifact;
+- whether its evidence map matches the current canonical B0/M1 requirements;
+- whether any evidence is stale, missing or overclaimed;
+- whether findings are `BLOCKING`, `REQUIRED IN THIS PR`, `ACCEPTABLE WITH RESIDUAL RISK`, `PLANNED FUTURE PR` or `NOT RELEVANT TO THIS SCOPE`;
+- whether PR #94 is eligible for a separately authorized next step.
 
-## Subsequent planned action — not currently authorized
+A PASS does not authorize Ready, merge, F1-01 acceptance, Security Go, WDP or implementation.
 
-After PR #96:
+## Separate planned action — not currently authorized
 
-1. passes exact-head independent audit;
-2. is separately authorized for Ready for review;
-3. passes a fresh pre-merge verification;
-4. is separately authorized and merged;
-5. has its merge reflected in canonical FECH.AI `main`;
+A future documentation-only registration contract for FECH.AI in `wagnerjfjunior/sfjm-workspace` remains:
 
-then a separate task may prepare a documentation-only registration contract for FECH.AI in `wagnerjfjunior/sfjm-workspace`.
+```text
+PLANNED / NOT_AUTHORIZED
+```
 
-That future task remains `PLANNED / NOT_AUTHORIZED`.
+It may be considered only in a separate task with:
 
-It must begin with a live bootstrap of both repositories and may define only how SFJM Workspace represents FECH.AI as an external project context.
-
-It must not implement:
-
-- GitHub API ingestion;
-- automatic synchronization;
-- backend or database integration;
-- Supabase integration;
-- runtime monitoring;
-- write-back to FECH.AI;
-- verified live-state claims without fresh evidence;
-- automatic approval, merge, Security Go, F1-01 acceptance or WDP decisions.
-
-## Separate product-governance action
-
-The independent current-head audit of FECH.AI PR #94 remains separate F1-01 governance work.
-
-Neither PR #96 nor the future SFJM Workspace task may modify, approve, merge or infer acceptance from PR #94.
+- live bootstrap of both repositories;
+- explicit repository, branch and file scope;
+- read-only/demonstrative external-project context boundaries;
+- no automatic synchronization;
+- no backend or database integration;
+- no write-back to FECH.AI;
+- no verified-state claims without fresh evidence;
+- a simple documentation-only rollback.
 
 ## Prohibited interpretations
 
 This record does not:
 
 - authorize a branch or PR in `sfjm-workspace`;
-- authorize automatic synchronization;
-- authorize Ready or merge of PR #96;
+- authorize modification of PR #94;
+- authorize Ready or merge of PR #94;
 - grant Security Go;
 - mark MVP Família ready;
 - accept F1-01;
 - award WDP;
 - authorize runtime implementation;
-- modify Supabase, Vercel configuration or production;
-- convert documentation presence into verified live state.
+- validate Supabase, production or tenant isolation;
+- convert merged SFJM documentation into verified product state.
 
 ## Expiration
 
 This action expires and must be re-evaluated if:
 
-- PR #96 head changes after the audited head is selected;
-- PR #96 is closed, merged, converted from Draft or superseded;
-- the exact four-file scope changes;
-- canonical `main` changes in a way that affects the audit basis;
+- PR #94 head changes after selection for audit;
+- PR #94 is closed, merged, converted to Draft or superseded;
+- canonical `main` changes materially;
+- the B0/M1 acceptance requirements change;
 - a new blocking review, thread or check appears;
-- the independent exact-head audit is completed and accepted.
+- the independent current-head audit is completed and accepted;
+- the user explicitly replaces the priority.
