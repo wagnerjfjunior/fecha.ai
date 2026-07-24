@@ -1,6 +1,6 @@
 # FECH.AI — SFJM Current Handoff
 
-**Status:** CURRENT_HANDOFF / PR_98_MERGED / F1_02_PLANNED  
+**Status:** CURRENT_HANDOFF / PR_99_MERGED / RECONCILIATION_LOOP_CLOSED / F1_02_PLANNED  
 **Observed on:** 2026-07-24  
 **Repository:** `wagnerjfjunior/fecha.ai`
 
@@ -8,7 +8,9 @@
 
 SFJM remains the FECH.AI transversal operational-continuity and state-control layer. It is not a CRM feature, business authority or security boundary.
 
-The F1-01 evidence map is merged into canonical `main`. PR #98 reconciled the post-PR #94 documentation state. Neither merge accepts F1-01, grants Security Go, validates runtime/Supabase or awards WDP.
+The F1-01 evidence map is merged into canonical `main`. PR #98 reconciled the post-PR #94 documentation state. PR #99 reconciled the post-PR #98 documentation state. None of these merges accepts F1-01, grants Security Go, validates runtime/Supabase or awards WDP.
+
+The bounded closure PR containing this handoff closes the post-PR #99 documentation cycle and prevents recursive reconciliation. Its own merge does not automatically require another reconciliation PR unless a material state, evidence, authorization, blocker, decision or next-action change occurs.
 
 ## 2. Completed cycles
 
@@ -21,23 +23,29 @@ The F1-01 evidence map is merged into canonical `main`. PR #98 reconciled the po
 - PR #98 reconciled the post-PR #94 state;
 - PR #98 passed audit and pre-merge verification with `PASS WITH RESIDUAL RISK`;
 - PR #98 was squash-merged with exact-head protection;
-- resulting `main` tip was confirmed.
+- PR #99 reconciled the post-PR #98 state;
+- PR #99 passed independent audit with `PASS WITH RESIDUAL RISK`;
+- PR #99 was marked Ready after exact-head validation;
+- two PR #99 review threads were answered and resolved without a head change;
+- PR #99 passed final pre-merge verification with `PASS WITH RESIDUAL RISK`;
+- PR #99 was squash-merged with expected-head protection;
+- resulting `main` tip was confirmed as `573ecebbafc2fb0ea4a065905e0f592b9db2a308`.
 
 ## 3. Canonical anchors
 
 ```text
 Repository: wagnerjfjunior/fecha.ai
-Canonical main after PR #98: 8a2eb00a9dcd46d7ee346741ca27c6081af52124
+Canonical main observed after PR #99: 573ecebbafc2fb0ea4a065905e0f592b9db2a308
 
-PR #98: CLOSED / MERGED
-PR #98 final head: e7e52ed9762ab92fd14f82e2437845421693ec81
-PR #98 squash commit: 8a2eb00a9dcd46d7ee346741ca27c6081af52124
-PR #98 audit: PASS WITH RESIDUAL RISK
-PR #98 pre-merge verification: PASS WITH RESIDUAL RISK
-PR #98 threads: 0 OPEN
+PR #99: CLOSED / MERGED
+PR #99 final head: 754e35406971e72ce29763bf145060868914b4d7
+PR #99 squash commit: 573ecebbafc2fb0ea4a065905e0f592b9db2a308
+PR #99 independent audit: PASS WITH RESIDUAL RISK
+PR #99 pre-merge verification: PASS WITH RESIDUAL RISK
+PR #99 threads: 2 RESOLVED / 0 OPEN
 ```
 
-These are historical anchors after a newer commit lands. Resolve live GitHub state before any later decision.
+These are historical anchors after a newer commit lands. Resolve live GitHub state before any later sensitive decision.
 
 ## 4. Product-governance state
 
@@ -57,9 +65,9 @@ Supabase live security state: NOT CONFIRMED
 F1-02 — read-only Supabase security evidence refresh and negative-test design
 ```
 
-F1-02 is selected but remains `PLANNED / NOT_AUTHORIZED`. A separate authorization must identify the exact Supabase project/environment and preserve read-only scope.
+F1-02 is selected but remains `PLANNED / NOT_AUTHORIZED`. The next safe action is to request a separate, narrowly scoped `ACTIVE_READ_ONLY` authorization that identifies the exact Supabase project/environment and the live canonical repository commit.
 
-The first phase must map current grants, RLS policies, RPC bodies/signatures and direct `corretores` DML exposure for all M1 paths recorded by F1-01. It must design, but not silently execute against production, the negative-test matrix.
+The first phase may map current grants, RLS policies, RPC bodies/signatures and direct `corretores` DML exposure for all M1 paths recorded by F1-01. It must design, but not silently execute against production, the negative-test matrix.
 
 ## 6. Authorization state
 
@@ -68,17 +76,18 @@ Consumed:
 - PR #95, #96 and #97 continuity actions;
 - PR #94 correction, thread resolution, reaudit, pre-merge verification and squash merge;
 - PR #98 creation, bounded corrections, Ready transition, pre-merge verification and squash merge;
-- post-PR #98 documentation reconciliation branch and Draft PR creation authority.
+- PR #99 Draft creation, Ready transition, read-only review, two thread responses/resolutions, pre-merge verification and squash merge;
+- creation of the bounded post-PR #99 closure branch, six documentation commits and Draft PR.
 
-The Draft PR containing this handoff consumes the post-PR #98 reconciliation authority at creation. No subsequent commit, Ready transition or merge is authorized by this record.
+The Draft PR containing this handoff consumes the post-PR #99 closure authority at creation. No subsequent commit, Ready transition or merge is authorized by this record.
 
 ```text
-PR #98 lifecycle authority: CONSUMED
-POST-PR #98 DRAFT CREATION AUTHORITY: CONSUMED AT DRAFT CREATION
+PR #99 lifecycle authority: CONSUMED
+POST-PR #99 CLOSURE DRAFT CREATION AUTHORITY: CONSUMED AT DRAFT CREATION
 NO ACTIVE WRITE AUTHORIZATION
 NO ACTIVE F1-02 AUTHORIZATION
 NO AUTHORITY FOR RUNTIME OR SUPABASE
-NO AUTHORITY FOR READY OR MERGE OF THE NEW RECONCILIATION PR
+NO AUTHORITY FOR READY OR MERGE OF THE CLOSURE PR
 F1-02: PLANNED / NOT_AUTHORIZED
 ```
 
@@ -90,6 +99,9 @@ F1-02: PLANNED / NOT_AUTHORIZED
 - corrected current M1 used-path inventory;
 - merged PR #98 metadata and exact final head;
 - PR #98 audit and pre-merge verification;
+- merged PR #99 metadata and exact final head;
+- PR #99 independent audit and pre-merge verification;
+- two resolved PR #99 review threads with documented disposition;
 - canonical bootstrap, B0 and SFJM records.
 
 ## 8. Evidence absent or requiring refresh
@@ -105,22 +117,24 @@ F1-02: PLANNED / NOT_AUTHORIZED
 
 ## 9. Risks retained
 
-- mistaking the F1-01 map or PR #98 merge for product acceptance;
+- mistaking the F1-01 map, PR #98 or PR #99 merge for product acceptance;
 - beginning F1-02 without exact project/environment provenance;
 - mutating Supabase during an evidence-only phase;
 - omitting direct Discador or direct `corretores` paths;
 - treating frontend containment as backend authorization;
 - presenting designed tests as executed tests;
-- reusing consumed authorization.
+- reusing consumed authorization;
+- creating recursive documentation-only reconciliation PRs without material change.
 
 ## 10. What must not be redone
 
 - do not reconstruct FECH.AI from zero;
-- do not reopen PR #94 findings without new evidence;
-- do not reclassify the map as Security Go or F1-01 acceptance;
+- do not reopen PR #94, #98 or #99 findings without new evidence;
+- do not reclassify the map or documentation merges as Security Go or F1-01 acceptance;
 - do not silently move `próxima ação` out of MVP1;
 - do not omit paths already made explicit by the corrected map;
-- do not begin automatic synchronization with SFJM Workspace.
+- do not begin automatic synchronization with SFJM Workspace;
+- do not create another closure-only PR merely to record the merge commit of the closure PR containing this handoff.
 
 ## 11. What must not be altered without separate authorization
 
@@ -145,11 +159,9 @@ F1-02: PLANNED / NOT_AUTHORIZED
 
 ## 12. Single next safe action
 
-Obtain a separate read-only audit authorization for the exact head of the new post-PR #98 reconciliation Draft PR. A PASS does not authorize Ready or merge.
+Request a narrowly scoped `ACTIVE_READ_ONLY` authorization for F1-02 with:
 
-After that PR is independently validated and separately merged, request a narrowly scoped `ACTIVE_READ_ONLY` authorization for F1-02 with:
-
-- exact canonical FECH.AI commit;
+- exact live canonical FECH.AI commit;
 - exact Supabase project/environment;
 - allowed read-only metadata and definitions;
 - prohibited mutations;
@@ -158,7 +170,7 @@ After that PR is independently validated and separately merged, request a narrow
 - acceptance criteria;
 - expiration condition.
 
-Until then, do not access or alter Supabase.
+Until that authorization exists, do not access or alter Supabase.
 
 ## 13. New-conversation startup
 
@@ -167,7 +179,8 @@ A receiving conversation must:
 1. read `docs/bootstrap/INDEX.md`;
 2. read `docs/governance/INDEX.md`;
 3. read `docs/sfjm/INDEX.md` and this handoff;
-4. confirm live `main`, the post-PR #98 reconciliation PR, branch and head;
+4. confirm live `main` and determine whether any material state change occurred after the anchors recorded here;
 5. preserve F1-01 as unaccepted, WDP at zero and Security Go ungranted;
 6. treat F1-02 as planned but not authorized;
-7. avoid runtime or Supabase action without separate explicit authority.
+7. avoid runtime or Supabase action without separate explicit authority;
+8. avoid recursive closure reconciliation when only the self-closing documentation merge changed `main`.

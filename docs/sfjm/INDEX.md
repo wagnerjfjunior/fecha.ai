@@ -110,18 +110,25 @@ An SFJM update must not silently expand into runtime, Supabase, Vercel, MesaClie
 - Evidence freshness: `docs/sfjm/EVIDENCE_FRESHNESS.md`
 - Current handoff: `docs/sfjm/handoffs/CURRENT.md`
 
-## 8. Update rule
+## 8. Material update rule
 
-Update SFJM records when any of the following changes:
+Update SFJM records when a change materially alters one or more of the following:
 
-- canonical `main`;
-- active PR or head SHA;
-- authorization scope;
-- evidence freshness;
+- current operational state;
+- active PR, branch or head relevant to the next decision;
+- authorization scope or lifecycle;
+- evidence freshness or validity;
 - audit decision;
 - active B0 activity;
 - blocker;
+- product or security decision;
 - next safe action;
 - handoff ownership or transition state.
 
-A stale SFJM record must be treated as evidence requiring reconciliation, not as current truth.
+A new commit on canonical `main` is an invalidating event for any record that claims an exact current tip. It does not, by itself, require a new reconciliation PR when the commit is solely the squash merge of a bounded documentation-only closure PR and does not materially change the operational state, evidence, authority, blocker, decision or next safe action already recorded by that closure PR.
+
+The merge of a documentation-only closure PR is therefore self-closing unless new material evidence or state appears. It must not create an infinite sequence of post-merge reconciliation PRs merely to record its own merge commit.
+
+Before any later sensitive action, resolve the live `main` tip and compare it with the material state recorded here. When only the closure commit changed and no material state changed, live GitHub validation is sufficient; record the newer tip in the next separately authorized substantive update rather than opening another closure-only PR.
+
+A stale or materially divergent SFJM record must be treated as evidence requiring reconciliation, not as current truth.

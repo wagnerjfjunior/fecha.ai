@@ -1,6 +1,6 @@
 # FECH.AI — SFJM Current State
 
-**Lifecycle state:** `PR_98_MERGED / F1_02_PLANNED_NOT_AUTHORIZED`  
+**Lifecycle state:** `PR_99_MERGED / RECONCILIATION_LOOP_CLOSED / F1_02_PLANNED_NOT_AUTHORIZED`  
 **Record type:** OPERATIONAL_STATE / DOCUMENTATION_ONLY  
 **Observed on:** 2026-07-24  
 **Repository:** `wagnerjfjunior/fecha.ai`
@@ -22,20 +22,22 @@ The family pilot remains the controlled first validation phase before broader cl
 ## 3. Canonical GitHub state
 
 ```text
-Canonical main: 8a2eb00a9dcd46d7ee346741ca27c6081af52124
-Commit: docs(sfjm): reconcile F1-01 state after PR 94 merge (#98)
+Canonical main observed after PR #99: 573ecebbafc2fb0ea4a065905e0f592b9db2a308
+Commit: docs(sfjm): reconcile state after PR 98 merge (#99)
 
-PR #98: CLOSED / MERGED
-PR #98 final head: e7e52ed9762ab92fd14f82e2437845421693ec81
-PR #98 squash commit: 8a2eb00a9dcd46d7ee346741ca27c6081af52124
-PR #98 independent audit: PASS WITH RESIDUAL RISK
-PR #98 pre-merge verification: PASS WITH RESIDUAL RISK
-PR #98 review threads: 0 OPEN
+PR #99: CLOSED / MERGED
+PR #99 final head: 754e35406971e72ce29763bf145060868914b4d7
+PR #99 squash commit: 573ecebbafc2fb0ea4a065905e0f592b9db2a308
+PR #99 independent audit: PASS WITH RESIDUAL RISK
+PR #99 pre-merge verification: PASS WITH RESIDUAL RISK
+PR #99 review threads: 2 RESOLVED / 0 OPEN
 ```
 
-PRs #95, #96 and #97 established and reconciled the SFJM continuity layer. PR #94 merged the corrected F1-01 M1 acceptance evidence map. PR #98 reconciled the post-PR #94 operational state and made F1-02 the selected next workstream without authorizing execution.
+PRs #95, #96 and #97 established and reconciled the SFJM continuity layer. PR #94 merged the corrected F1-01 M1 acceptance evidence map. PR #98 reconciled the post-PR #94 state. PR #99 reconciled the post-PR #98 state, preserved all security and product gates and was squash-merged with exact-head protection.
 
-All SHA values are historical anchors after a newer commit lands. Live GitHub state must be resolved before any later decision.
+The bounded documentation-only closure PR containing this record closes the post-PR #99 reconciliation cycle. Its own merge does not automatically require another reconciliation PR unless it introduces a material change to operational state, evidence, authorization, blocker, decision or next safe action.
+
+All SHA values are historical anchors after a newer commit lands. Live GitHub state must still be resolved before any later sensitive decision.
 
 ## 4. F1-01 product-governance state
 
@@ -54,17 +56,21 @@ The merged evidence map establishes the known M1 source paths and explicit evide
 The following authorities are `CONSUMED`:
 
 - PR #94 bounded documentation correction;
-- resolution of the six materially addressed review threads;
+- resolution of the six materially addressed PR #94 review threads;
 - PR #94 independent reaudit;
 - PR #94 pre-merge verification;
 - PR #94 squash merge with exact-head protection;
-- creation and bounded correction of PR #98;
-- transition of PR #98 to Ready;
-- PR #98 pre-merge verification;
-- PR #98 squash merge with exact-head protection.
+- creation, bounded correction, Ready transition, verification and squash merge of PR #98;
+- creation of Draft PR #99;
+- transition of PR #99 to Ready after exact-head validation;
+- response to and resolution of the two PR #99 review threads;
+- PR #99 pre-merge verification;
+- PR #99 squash merge with expected-head protection;
+- creation of the bounded post-PR #99 closure Draft PR containing this record.
 
 ```text
-PR #98 lifecycle authority: CONSUMED
+PR #99 lifecycle authority: CONSUMED
+POST-PR #99 CLOSURE DRAFT CREATION AUTHORITY: CONSUMED AT DRAFT CREATION
 NO ACTIVE WRITE AUTHORIZATION
 NO ACTIVE READ-ONLY F1-02 AUTHORIZATION
 NO AUTHORITY FOR ADDITIONAL COMMITS
@@ -75,7 +81,8 @@ F1-02: PLANNED / NOT_AUTHORIZED
 
 No standing authority exists for:
 
-- additional documentation commits after this bounded post-merge reconciliation;
+- additional documentation commits after creation of the bounded closure Draft PR;
+- Ready or merge of the closure PR;
 - runtime or frontend implementation;
 - Supabase reads or writes;
 - migrations, RLS, grants, policies or RPC changes;
@@ -90,7 +97,9 @@ No standing authority exists for:
 
 ```text
 SFJM continuity layer: MERGED
-PR #98 post-merge reconciliation: IN PROGRESS IN DOCUMENTATION-ONLY DRAFT PR
+PR #99: CLOSED / MERGED
+Post-PR #99 closure record: BOUNDED DOCUMENTATION-ONLY CLOSURE
+Recursive post-merge reconciliation: NOT REQUIRED WITHOUT MATERIAL STATE CHANGE
 F1-01 evidence map: MERGED
 F1-01 map reaudit: PASS WITH RESIDUAL RISK
 F1-01 checkpoint acceptance: NOT GRANTED
@@ -108,6 +117,7 @@ WDP: 0 / NOT AWARDED
 - six resolved PR #94 review threads with material corrections;
 - corrected M1 used-path inventory;
 - PR #98 final head, audit, pre-merge verification and merge metadata;
+- PR #99 final head, audit, review-thread disposition, pre-merge verification and merge metadata;
 - canonical FECH.AI bootstrap, B0, F1-01 and SFJM files;
 - explicit non-claims and evidence gaps recorded in the merged map.
 
@@ -122,13 +132,14 @@ WDP: 0 / NOT AWARDED
 
 ## 9. Main risks
 
-- treating the merged F1-01 map or PR #98 as F1-01 acceptance or Security Go;
+- treating the merged F1-01 map, PR #98 or PR #99 as F1-01 acceptance or Security Go;
 - beginning F1-02 without exact project/environment provenance and separate read-only authorization;
 - modifying Supabase while evidence collection is incomplete;
 - omitting direct `corretores` DML or direct Discador paths from F1-02;
 - treating frontend token use as authorization proof;
 - converting planned negative tests into claims of executed validation;
-- reusing consumed authorization as standing authority.
+- reusing consumed authorization as standing authority;
+- recreating recursive closure PRs without a material state change.
 
 ## 10. What must not be altered without separate scope
 
