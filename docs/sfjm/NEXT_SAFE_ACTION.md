@@ -1,19 +1,32 @@
 # FECH.AI — SFJM Next Safe Action
 
-**Status:** ACTIVE / SINGLE_ACTION / DOCUMENTATION_ONLY  
+**Status:** AWAITING_EXPLICIT_AUTHORIZATION / DOCUMENTATION_ONLY  
 **Observed on:** 2026-07-24
+
+## Current safe state
+
+The PR #95 and PR #96 SFJM continuity cycle is complete.
+
+There is no active write authority and no active read-only audit authority recorded by this file.
+
+No new repository, PR, runtime, Supabase or integration task may begin from this record alone.
 
 ## Next single safe action
 
-Independently audit the exact current head of FECH.AI PR #94 as the separate F1-01 product-governance artifact.
+Select one next workstream and grant a separate explicit authorization with exact repository, target, scope, acceptance criteria and rollback.
 
-This action is read-only. It must not modify PR #94, infer F1-01 acceptance, start runtime implementation or begin work in `wagnerjfjunior/sfjm-workspace`.
+The two currently documented candidates are:
 
-## Required bootstrap before audit
+1. independent read-only current-head audit of FECH.AI PR #94 as the separate F1-01 product-governance artifact; or
+2. documentation-only bootstrap and external-project context contract for FECH.AI in `wagnerjfjunior/sfjm-workspace`.
 
-Before any conclusion, confirm live from GitHub:
+Neither candidate is currently authorized.
 
-- current `main` tip;
+## Candidate A — PR #94 audit
+
+If explicitly authorized, the audit must begin by confirming live from GitHub:
+
+- current FECH.AI `main` tip;
 - PR #94 state, title, base branch and base SHA;
 - head branch and exact current head SHA;
 - merge base and ahead/behind;
@@ -21,64 +34,36 @@ Before any conclusion, confirm live from GitHub:
 - complete diff;
 - checks and workflow runs;
 - reviews, requests for changes, threads and comments;
-- the applicable FECH.AI bootstrap, B0 governance and M1 acceptance records.
+- applicable FECH.AI bootstrap, B0 governance and M1 acceptance records.
 
 The historical PR #94 head recorded elsewhere must not be assumed current.
 
-## Authorized scope for the current action
+A read-only audit would not authorize modification, Ready, merge, F1-01 acceptance, Security Go, WDP or implementation.
 
-```text
-READ ONLY
-INDEPENDENT CURRENT-HEAD AUDIT OF PR #94
-GITHUB AND VERSIONED EVIDENCE ONLY
-NO IMPLEMENTATION
-NO NEW COMMIT
-NO PR METADATA CHANGE
-NO READY TRANSITION
-NO MERGE
-NO RUNTIME OR ENVIRONMENT CHANGE
-NO SUPABASE CHANGE
-NO SFJM-WORKSPACE CHANGE
-```
+## Candidate B — SFJM Workspace contract
 
-## Audit objectives
+If explicitly authorized, the task must begin with live bootstrap of both repositories and must remain documentation-only.
 
-The audit must determine:
+It may define only how SFJM Workspace represents FECH.AI as an external project context.
 
-- whether PR #94 remains the correct F1-01 evidence artifact;
-- whether its evidence map matches the current canonical B0/M1 requirements;
-- whether any evidence is stale, missing or overclaimed;
-- whether findings are `BLOCKING`, `REQUIRED IN THIS PR`, `ACCEPTABLE WITH RESIDUAL RISK`, `PLANNED FUTURE PR` or `NOT RELEVANT TO THIS SCOPE`;
-- whether PR #94 is eligible for a separately authorized next step.
+It must not implement:
 
-A PASS does not authorize Ready, merge, F1-01 acceptance, Security Go, WDP or implementation.
-
-## Separate planned action — not currently authorized
-
-A future documentation-only registration contract for FECH.AI in `wagnerjfjunior/sfjm-workspace` remains:
-
-```text
-PLANNED / NOT_AUTHORIZED
-```
-
-It may be considered only in a separate task with:
-
-- live bootstrap of both repositories;
-- explicit repository, branch and file scope;
-- read-only/demonstrative external-project context boundaries;
-- no automatic synchronization;
-- no backend or database integration;
-- no write-back to FECH.AI;
-- no verified-state claims without fresh evidence;
-- a simple documentation-only rollback.
+- GitHub API ingestion as operational truth;
+- automatic synchronization;
+- backend or database integration;
+- Supabase integration;
+- runtime monitoring;
+- write-back to FECH.AI;
+- verified live-state claims without fresh evidence;
+- automatic approval, merge, Security Go, F1-01 acceptance or WDP decisions.
 
 ## Prohibited interpretations
 
 This record does not:
 
+- authorize an audit of PR #94;
 - authorize a branch or PR in `sfjm-workspace`;
-- authorize modification of PR #94;
-- authorize Ready or merge of PR #94;
+- authorize modification, Ready or merge of any PR;
 - grant Security Go;
 - mark MVP Família ready;
 - accept F1-01;
@@ -87,14 +72,16 @@ This record does not:
 - validate Supabase, production or tenant isolation;
 - convert merged SFJM documentation into verified product state.
 
-## Expiration
+## Required authorization record
 
-This action expires and must be re-evaluated if:
+Before either candidate begins, the authorization must state:
 
-- PR #94 head changes after selection for audit;
-- PR #94 is closed, merged, converted to Draft or superseded;
-- canonical `main` changes materially;
-- the B0/M1 acceptance requirements change;
-- a new blocking review, thread or check appears;
-- the independent current-head audit is completed and accepted;
-- the user explicitly replaces the priority.
+- repository;
+- target PR, branch, commit or files;
+- read-only or write scope;
+- prohibited areas;
+- acceptance criteria;
+- rollback expectation;
+- expiration condition.
+
+Until then, the safe action is to preserve the current canonical state without mutation.
