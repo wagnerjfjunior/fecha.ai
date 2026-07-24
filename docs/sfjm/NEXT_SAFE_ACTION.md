@@ -13,7 +13,15 @@ PR #94 is closed and squash-merged into canonical `main` at:
 
 The corrected F1-01 evidence map passed independent reaudit with residual risk and is now canonical documentation. This does not accept F1-01, grant Security Go, award WDP or validate runtime/Supabase.
 
-The present authorization covers only this post-merge documentation reconciliation branch and Draft PR. It does not authorize F1-02 execution or merge.
+The authority that created Draft PR #98 and permitted its bounded authorization-record correction is `CONSUMED`.
+
+```text
+NO ACTIVE WRITE AUTHORIZATION
+NO AUTHORITY FOR ADDITIONAL COMMITS
+NO AUTHORITY FOR READY
+NO AUTHORITY FOR MERGE
+F1-02: PLANNED / NOT_AUTHORIZED
+```
 
 ## Next single safe workstream
 
@@ -86,6 +94,10 @@ At minimum:
 
 This record does not authorize:
 
+- additional commits to PR #98;
+- marking PR #98 Ready;
+- merging PR #98;
+- Supabase reads without a separate F1-02 authorization;
 - Supabase writes;
 - migrations;
 - RLS, grants, policies or RPC changes;
@@ -96,8 +108,7 @@ This record does not authorize:
 - production changes;
 - Security Go;
 - F1-01 acceptance;
-- WDP assignment;
-- merge of this reconciliation PR.
+- WDP assignment.
 
 ## Required authorization record
 
