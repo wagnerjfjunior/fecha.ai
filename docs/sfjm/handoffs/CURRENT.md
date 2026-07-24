@@ -67,18 +67,15 @@ Consumed:
 
 - PR #95, #96 and #97 continuity actions;
 - PR #94 correction, thread resolution, reaudit, pre-merge verification and squash merge;
-- PR #98 creation, bounded corrections, Ready transition, pre-merge verification and squash merge.
+- PR #98 creation, bounded corrections, Ready transition, pre-merge verification and squash merge;
+- post-PR #98 documentation reconciliation branch and Draft PR creation authority.
 
-Current bounded authorization:
-
-- branch `docs/reconcile-post-pr98`;
-- exactly five SFJM documentation files;
-- post-merge reconciliation only;
-- Draft PR creation only;
-- expires when the Draft PR is created.
+The Draft PR containing this handoff consumes the post-PR #98 reconciliation authority at creation. No subsequent commit, Ready transition or merge is authorized by this record.
 
 ```text
 PR #98 lifecycle authority: CONSUMED
+POST-PR #98 DRAFT CREATION AUTHORITY: CONSUMED AT DRAFT CREATION
+NO ACTIVE WRITE AUTHORIZATION
 NO ACTIVE F1-02 AUTHORIZATION
 NO AUTHORITY FOR RUNTIME OR SUPABASE
 NO AUTHORITY FOR READY OR MERGE OF THE NEW RECONCILIATION PR
@@ -148,7 +145,9 @@ F1-02: PLANNED / NOT_AUTHORIZED
 
 ## 12. Single next safe action
 
-After this post-PR #98 reconciliation Draft PR is independently audited and separately merged, request a narrowly scoped `ACTIVE_READ_ONLY` authorization for F1-02 with:
+Obtain a separate read-only audit authorization for the exact head of the new post-PR #98 reconciliation Draft PR. A PASS does not authorize Ready or merge.
+
+After that PR is independently validated and separately merged, request a narrowly scoped `ACTIVE_READ_ONLY` authorization for F1-02 with:
 
 - exact canonical FECH.AI commit;
 - exact Supabase project/environment;
