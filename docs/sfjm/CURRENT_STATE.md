@@ -1,6 +1,6 @@
 # FECH.AI — SFJM Current State
 
-**Lifecycle state:** `F1_01_MAP_MERGED / POST_PR94_RECONCILIATION_PENDING`  
+**Lifecycle state:** `PR_98_MERGED / F1_02_PLANNED_NOT_AUTHORIZED`  
 **Record type:** OPERATIONAL_STATE / DOCUMENTATION_ONLY  
 **Observed on:** 2026-07-24  
 **Repository:** `wagnerjfjunior/fecha.ai`
@@ -22,17 +22,18 @@ The family pilot remains the controlled first validation phase before broader cl
 ## 3. Canonical GitHub state
 
 ```text
-Canonical main: 1caf90c60681771af6609b96ee840b190668fa0f
-Commit: docs(m1): add F1-01 acceptance evidence map (#94)
+Canonical main: 8a2eb00a9dcd46d7ee346741ca27c6081af52124
+Commit: docs(sfjm): reconcile F1-01 state after PR 94 merge (#98)
 
-PR #94: CLOSED / MERGED
-PR #94 final head: a7e64c6ed817c03c4dbce7e1b9642e20360b3010
-PR #94 squash commit: 1caf90c60681771af6609b96ee840b190668fa0f
-PR #94 independent reaudit: PASS WITH RESIDUAL RISK
-PR #94 review threads: 6 RESOLVED / 0 OPEN
+PR #98: CLOSED / MERGED
+PR #98 final head: e7e52ed9762ab92fd14f82e2437845421693ec81
+PR #98 squash commit: 8a2eb00a9dcd46d7ee346741ca27c6081af52124
+PR #98 independent audit: PASS WITH RESIDUAL RISK
+PR #98 pre-merge verification: PASS WITH RESIDUAL RISK
+PR #98 review threads: 0 OPEN
 ```
 
-PRs #95, #96 and #97 established and reconciled the SFJM continuity layer. PR #94 then merged the corrected F1-01 M1 acceptance evidence map into canonical `main`.
+PRs #95, #96 and #97 established and reconciled the SFJM continuity layer. PR #94 merged the corrected F1-01 M1 acceptance evidence map. PR #98 reconciled the post-PR #94 operational state and made F1-02 the selected next workstream without authorizing execution.
 
 All SHA values are historical anchors after a newer commit lands. Live GitHub state must be resolved before any later decision.
 
@@ -57,12 +58,15 @@ The following authorities are `CONSUMED`:
 - PR #94 independent reaudit;
 - PR #94 pre-merge verification;
 - PR #94 squash merge with exact-head protection;
-- creation of Draft PR #98 for post-PR #94 documentation reconciliation;
-- the bounded corrective commit that aligned the authorization record after Draft creation.
+- creation and bounded correction of PR #98;
+- transition of PR #98 to Ready;
+- PR #98 pre-merge verification;
+- PR #98 squash merge with exact-head protection.
 
 ```text
-PR #98 creation authority: CONSUMED
+PR #98 lifecycle authority: CONSUMED
 NO ACTIVE WRITE AUTHORIZATION
+NO ACTIVE READ-ONLY F1-02 AUTHORIZATION
 NO AUTHORITY FOR ADDITIONAL COMMITS
 NO AUTHORITY FOR READY
 NO AUTHORITY FOR MERGE
@@ -71,11 +75,11 @@ F1-02: PLANNED / NOT_AUTHORIZED
 
 No standing authority exists for:
 
-- additional commits to PR #98;
-- marking PR #98 Ready;
-- merging PR #98;
+- additional documentation commits after this bounded post-merge reconciliation;
 - runtime or frontend implementation;
-- Supabase, migrations, RLS, grants, policies or RPC changes;
+- Supabase reads or writes;
+- migrations, RLS, grants, policies or RPC changes;
+- negative-test execution;
 - Edge Functions, Vercel, GitHub Actions or production changes;
 - Security Go;
 - F1-01 acceptance;
@@ -86,6 +90,7 @@ No standing authority exists for:
 
 ```text
 SFJM continuity layer: MERGED
+PR #98 post-merge reconciliation: IN PROGRESS IN DOCUMENTATION-ONLY DRAFT PR
 F1-01 evidence map: MERGED
 F1-01 map reaudit: PASS WITH RESIDUAL RISK
 F1-01 checkpoint acceptance: NOT GRANTED
@@ -93,21 +98,23 @@ Security Go: NOT GRANTED
 MVP Família readiness: NOT CONFIRMED
 Runtime validation: NOT CONFIRMED
 Current live Supabase security state: NOT CONFIRMED
+F1-02: PLANNED / NOT_AUTHORIZED
 WDP: 0 / NOT AWARDED
 ```
 
 ## 7. Evidence available
 
 - PR #94 final head, diff, reviews and merge metadata;
-- six resolved review threads with material corrections;
+- six resolved PR #94 review threads with material corrections;
 - corrected M1 used-path inventory;
+- PR #98 final head, audit, pre-merge verification and merge metadata;
 - canonical FECH.AI bootstrap, B0, F1-01 and SFJM files;
 - explicit non-claims and evidence gaps recorded in the merged map.
 
 ## 8. Evidence missing or requiring refresh
 
+- exact live Supabase project/environment confirmation;
 - current live Supabase grants, RLS policies and relevant RPC bodies;
-- correct project/environment confirmation for the read-only security review;
 - negative no-session, invalid-token, manipulated-ID and cross-tenant test design/results;
 - persistent next-action/follow-up authority and storage path;
 - weekend/scheduled-visit dashboard semantics and zero-versus-unknown behavior;
@@ -115,8 +122,9 @@ WDP: 0 / NOT AWARDED
 
 ## 9. Main risks
 
-- treating the merged F1-01 map as F1-01 acceptance or Security Go;
-- modifying Supabase while evidence collection is still incomplete;
+- treating the merged F1-01 map or PR #98 as F1-01 acceptance or Security Go;
+- beginning F1-02 without exact project/environment provenance and separate read-only authorization;
+- modifying Supabase while evidence collection is incomplete;
 - omitting direct `corretores` DML or direct Discador paths from F1-02;
 - treating frontend token use as authorization proof;
 - converting planned negative tests into claims of executed validation;

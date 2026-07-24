@@ -5,18 +5,25 @@
 
 ## Current safe state
 
-PR #94 is closed and squash-merged into canonical `main` at:
+PR #98 is closed and squash-merged into canonical `main` at:
 
 ```text
-1caf90c60681771af6609b96ee840b190668fa0f
+8a2eb00a9dcd46d7ee346741ca27c6081af52124
 ```
 
-The corrected F1-01 evidence map passed independent reaudit with residual risk and is now canonical documentation. This does not accept F1-01, grant Security Go, award WDP or validate runtime/Supabase.
+Its final head was:
 
-The authority that created Draft PR #98 and permitted its bounded authorization-record correction is `CONSUMED`.
+```text
+e7e52ed9762ab92fd14f82e2437845421693ec81
+```
+
+PR #98 passed independent audit and pre-merge verification with `PASS WITH RESIDUAL RISK`. It reconciled the post-PR #94 documentation state only. It did not accept F1-01, grant Security Go, award WDP or validate runtime/Supabase.
+
+All PR #98 creation, correction, Ready, verification and merge authorities are `CONSUMED`.
 
 ```text
 NO ACTIVE WRITE AUTHORIZATION
+NO ACTIVE READ-ONLY F1-02 AUTHORIZATION
 NO AUTHORITY FOR ADDITIONAL COMMITS
 NO AUTHORITY FOR READY
 NO AUTHORITY FOR MERGE
@@ -29,7 +36,7 @@ F1-02: PLANNED / NOT_AUTHORIZED
 F1-02 — read-only Supabase security evidence refresh and negative-test design
 ```
 
-The workstream must remain fail-closed and must begin with a separate explicit authorization.
+The workstream must remain fail-closed and must begin with a separate explicit `ACTIVE_READ_ONLY` authorization.
 
 ## Required F1-02 bootstrap
 
@@ -94,9 +101,6 @@ At minimum:
 
 This record does not authorize:
 
-- additional commits to PR #98;
-- marking PR #98 Ready;
-- merging PR #98;
 - Supabase reads without a separate F1-02 authorization;
 - Supabase writes;
 - migrations;
@@ -108,6 +112,7 @@ This record does not authorize:
 - production changes;
 - Security Go;
 - F1-01 acceptance;
+- F1-02 execution;
 - WDP assignment.
 
 ## Required authorization record
