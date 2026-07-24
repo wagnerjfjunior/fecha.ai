@@ -60,10 +60,10 @@ It no longer authorizes:
 - merge;
 - runtime or environment implementation.
 
-## 3. Current limited authorization — correct audit findings in PR #95
+## 3. Consumed authorization — correct first audit findings in PR #95
 
-**Lifecycle state:** `ACTIVE_UNTIL_CORRECTION_HEAD_IS_PUBLISHED`  
-**Source:** user supplied the independent audit result and instructed continuation of the governed flow.  
+**Lifecycle state:** `CONSUMED`  
+**Source:** user supplied the first independent audit result and continued the governed correction flow.  
 **Target:** Draft PR #95 only.  
 **Permitted files:**
 
@@ -72,46 +72,68 @@ docs/sfjm/AUTHORIZATIONS.md
 docs/sfjm/handoffs/CURRENT.md
 ```
 
-**Permitted actions:**
+**Permitted actions completed:**
 
-- correct only the two findings classified `REQUIRED IN THIS PR`;
-- publish the resulting correction commit or commits to the existing PR #95 branch;
-- inspect and report the new live head and exact changed-file scope;
-- prepare the exact-head re-audit handoff.
+- corrected only the two findings classified `REQUIRED IN THIS PR`;
+- published the correction commits to the existing PR #95 branch;
+- inspected and reported the new live head;
+- prepared the exact-head re-audit handoff.
 
-**Explicitly prohibited:**
+**Completion evidence:**
 
-- modify any other file;
-- modify PR #94;
-- mark PR #95 Ready for review;
-- merge PR #95 or PR #94;
-- modify runtime, frontend, Supabase, migrations, RLS, grants, policies or RPC bodies;
-- modify Edge Functions, Vercel, GitHub Actions, MesaCliente, PME, ADS/CAPI, Make/n8n, integrations or production;
-- grant Security Go;
-- accept F1-01 or WDP.
+- first corrective commit: `914bbd2b688fd0bb5d00a22a0117a99fd5505b76`;
+- second corrective commit and reported correction head: `06d530b185558025eca4173a574b588729866941`;
+- re-audit confirmed the correction scope remained limited to the two authorized files.
 
-### Expiration
+### Expiration record
 
-This correction authorization expires when:
+This authorization expired when the corrected PR #95 head was published and reported.
 
-- the correction is published and its new live PR #95 head is reported; or
-- either permitted file scope is broadened; or
-- the user explicitly revokes or replaces the authorization.
+It no longer authorizes:
 
-After expiration, the only next permitted operation is a separate read-only independent re-audit of the exact new head, unless the user grants another explicit authorization.
+- any further modification of the two files;
+- any additional correction commit;
+- scope broadening;
+- Ready-for-review transition;
+- merge;
+- runtime, environment or product implementation.
 
-## 4. Planned read-only authorization — PR #95 re-audit
+## 4. Active read-only authorization — exact-head re-audit of PR #95
 
-A separate read-only independent re-audit of PR #95 is the next safe action after the correction head is published.
+**Lifecycle state:** `ACTIVE_READ_ONLY`  
+**Source:** the governed flow requires independent verification after each corrective head.  
+**Target:** current live head of Draft PR #95.  
+**Permitted operation:** independent read-only re-audit only.
 
 The re-audit must:
 
-- use the exact new live head;
-- verify only the current PR state and complete diff;
-- confirm that the two required findings were corrected without scope broadening;
+- resolve the exact live PR #95 head from GitHub before analysis;
+- verify the complete eight-file PR scope;
+- confirm that the prior authorization lifecycle inconsistency is closed;
+- confirm that no new scope broadening, overclaim or authorization ambiguity was introduced;
 - perform no GitHub mutation.
 
-This record does not authorize Ready-for-review transition, merge or any modification.
+This authorization does not permit:
+
+- editing files;
+- publishing commits;
+- modifying PR metadata;
+- marking Ready for review;
+- merge;
+- changing PR #94;
+- modifying runtime, frontend, Supabase, Vercel, production or integrations;
+- granting Security Go;
+- accepting F1-01 or WDP.
+
+### Expiration
+
+This read-only authorization expires when:
+
+- the independent audit result for the exact live head is produced; or
+- the PR #95 head changes before the audit result; or
+- the user explicitly revokes or replaces it.
+
+A `PASS` result does not itself authorize Ready-for-review transition or merge.
 
 ## 5. Separate planned action — PR #94 audit
 
@@ -131,4 +153,4 @@ Future authorizations must record:
 - acceptance criteria;
 - rollback expectation;
 - expiration condition;
-- lifecycle state: `PLANNED`, `ACTIVE`, `CONSUMED`, `EXPIRED`, `REVOKED` or `SUPERSEDED`.
+- lifecycle state: `PLANNED`, `ACTIVE`, `ACTIVE_READ_ONLY`, `CONSUMED`, `EXPIRED`, `REVOKED` or `SUPERSEDED`.
