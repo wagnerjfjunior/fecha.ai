@@ -1,6 +1,6 @@
 # FECH.AI — SFJM Current State
 
-**Lifecycle state:** `EVIDENCE_INCOMPLETE`  
+**Lifecycle state:** `PR_95_REAUDIT_REQUIRED`  
 **Record type:** OPERATIONAL_STATE / DOCUMENTATION_ONLY  
 **Observed on:** 2026-07-24  
 **Repository:** `wagnerjfjunior/fecha.ai`
@@ -25,7 +25,21 @@ The family pilot remains the controlled first validation phase before broader cl
 F1-01 — Final M1 evidence and acceptance map
 ```
 
-## 4. Active artifact observed
+## 4. Active continuity artifact
+
+```text
+PR: #95
+Title: docs(sfjm): add FECH.AI operational continuity layer v1
+State observed before this correction: OPEN / READY_FOR_REVIEW / NOT_MERGED / MERGEABLE
+Base branch: main
+Base SHA observed: e7584b6ce2a53a88fca9974bcc448ebe9aea83ab
+Head branch: docs/sfjm-fechai-operational-continuity-v1
+Previously audited head: ca50aa759c3a0554d02a2bc1ed61f213ac1aaac8
+```
+
+The head above is historical audit evidence. These corrections create a newer live head that must be resolved directly from GitHub before any further decision.
+
+## 5. Active product-governance artifact
 
 ```text
 PR: #94
@@ -37,9 +51,9 @@ Head branch: docs/f1-01-m1-evidence-map-20260705
 Head SHA observed: 140e92dd12c72eae5f90fa55b5b125bbedf6fbaa
 ```
 
-The head SHA above belongs to PR #94. It is not the canonical `main` commit and must not be used as the base of unrelated SFJM work.
+The PR #94 head belongs only to PR #94. It is not canonical `main`, the PR #95 head or authorization for unrelated work.
 
-## 5. Canonical main observed
+## 6. Canonical main observed
 
 ```text
 e7584b6ce2a53a88fca9974bcc448ebe9aea83ab
@@ -51,33 +65,51 @@ Commit message observed:
 revert: remove accidental F1-01 placeholder from main
 ```
 
-This state confirms that the incomplete placeholder was removed from canonical `main`.
+Any future action must re-check live `main` rather than treating this snapshot as permanently current.
 
-## 6. Current authorization
+## 7. Authorization state
 
-Authorized at this state:
+### Consumed write authorizations
 
-- GitHub read and versioned-document inspection;
-- documentary SFJM implementation in a separate branch and Draft PR;
-- independent audit of PR #94;
-- evidence freshness classification;
-- documentation-only handoff updates through reviewed PRs.
+The following authorizations are `CONSUMED` and confer no standing authority:
 
-Not authorized by this record:
+- creation of the SFJM branch;
+- creation of the eight-file documentation scope;
+- opening Draft PR #95;
+- the first correction of authorization and handoff findings;
+- the second correction of authorization-lifecycle findings;
+- transition of PR #95 from Draft to Ready for review.
 
-- runtime implementation;
-- frontend changes;
-- Supabase changes;
-- migrations, RLS, grants, policies or RPC body changes;
-- Edge Functions or Vercel changes;
-- GitHub Actions changes;
-- MesaCliente, PME, ADS/CAPI, Make/n8n or integration changes;
-- production changes;
-- merge of PR #94;
-- Security Go declaration;
-- WDP acceptance.
+They do not authorize:
 
-## 7. Current conclusions
+- new discretionary documentation commits;
+- scope expansion;
+- PR metadata changes;
+- merge;
+- runtime, Supabase, Vercel configuration or production changes.
+
+### One-time correction represented by this publication
+
+The user separately authorized correction of the two findings discovered during the live pre-merge verification, limited to:
+
+```text
+docs/sfjm/NEXT_SAFE_ACTION.md
+docs/sfjm/CURRENT_STATE.md
+```
+
+That write authority is consumed when these corrections are published to PR #95. It does not remain active after publication.
+
+### Only next permitted operation
+
+After publication, the only permitted operation recorded by this state is:
+
+```text
+EXACT-HEAD INDEPENDENT READ-ONLY RE-AUDIT OF PR #95
+```
+
+The re-audit does not authorize edits, thread resolution, Ready/Draft transitions or merge.
+
+## 8. Current conclusions
 
 ```text
 Security Go: NOT GRANTED
@@ -85,42 +117,47 @@ MVP Família readiness: NOT CONFIRMED
 F1-01 checkpoint acceptance: NOT CONFIRMED
 Runtime validation: NOT CONFIRMED
 Current live Supabase security state: NOT CONFIRMED
+PR #95 merge authorization: NOT GRANTED
 ```
 
-No WDP may be inferred from the existence, review or merge of PR #94 or from the SFJM documentation layer alone.
+No WDP may be inferred from the existence, review, Ready transition or future merge of PR #94 or PR #95.
 
-## 8. Evidence available
+## 9. Evidence available
 
-- current GitHub repository metadata;
-- canonical `main` commit observed above;
-- PR #94 metadata and current head observed above;
-- versioned FECH.AI bootstrap and B0 governance documents;
-- versioned source and historical evidence referenced by PR #94.
+- GitHub repository and PR metadata observed during the pre-merge verification;
+- canonical `main` snapshot recorded above;
+- exact eight-file PR #95 scope before this correction;
+- `PASS WITH RESIDUAL RISK` independent audit of PR #95 at historical head `ca50aa759c3a0554d02a2bc1ed61f213ac1aaac8`;
+- two new Codex review threads created after Ready transition;
+- versioned FECH.AI bootstrap, B0 governance and SFJM documents.
 
-## 9. Evidence missing or requiring refresh
+## 10. Evidence missing or requiring refresh
 
+- exact live PR #95 head after these two corrective commits;
+- independent audit of that exact new head;
+- confirmation that the two Codex findings are closed;
+- fresh reviews, threads, comments, checks and mergeability after correction;
+- separate explicit merge authorization;
 - independent audit decision for PR #94 at its current head;
 - current live Supabase metadata, grants, policies and relevant RPC body validation;
 - negative tenant/company isolation tests for used M1 paths;
 - current authenticated runtime smoke evidence;
-- confirmed import persistence and duplicate-detection path;
-- confirmed persistent next-action/follow-up path;
-- confirmed persisted weekend-dashboard data path;
-- current import/error audit evidence;
-- current rollback validation for applicable runtime/deployment flows.
+- remaining M1 persistence, duplicate-detection, follow-up, dashboard and audit evidence.
 
-## 10. Main risks
+## 11. Main risks
 
 - confusing source presence with product readiness;
-- treating PR creation or merge as accepted delivery value;
-- using stale live evidence as current authorization proof;
-- treating frontend token use as backend authorization proof;
-- mixing SFJM continuity work with LeadOps, MesaCliente or runtime implementation;
-- using PR #94 head as the base for unrelated work;
-- carrying an obsolete handoff into a new conversation without live reconciliation.
+- treating PR creation, Ready status or merge as accepted delivery value;
+- treating a consumed authorization as standing authority;
+- treating historical SHAs as live state;
+- treating Vercel preview success as runtime, security or production validation;
+- mixing PR #95 continuity completion with PR #94 or product implementation;
+- resolving review threads before exact-head correction validation;
+- registering FECH.AI in SFJM Workspace before PR #95 is merged and `main` is reconciled.
 
-## 11. What must not change in the current SFJM PR
+## 12. What must not change in the current correction
 
+- any file outside `docs/sfjm/NEXT_SAFE_ACTION.md` and `docs/sfjm/CURRENT_STATE.md`;
 - runtime;
 - frontend;
 - Supabase;
@@ -130,7 +167,7 @@ No WDP may be inferred from the existence, review or merge of PR #94 or from the
 - policies;
 - RPC bodies;
 - Edge Functions;
-- Vercel;
+- Vercel configuration;
 - GitHub Actions;
 - MesaCliente;
 - PME;
@@ -138,8 +175,8 @@ No WDP may be inferred from the existence, review or merge of PR #94 or from the
 - Make/n8n;
 - integrations;
 - production;
-- PR #94 content, metadata or state.
+- PR #94 content, metadata, state or head.
 
-## 12. Next safe action
+## 13. Next safe action
 
 See `docs/sfjm/NEXT_SAFE_ACTION.md`.
