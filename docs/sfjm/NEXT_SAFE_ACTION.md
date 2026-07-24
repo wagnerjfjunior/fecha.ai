@@ -5,25 +5,23 @@
 
 ## Next single safe action
 
-Independently audit PR #94 against its current head and the current canonical `main`.
+Independently re-audit PR #95 against its exact live head after the two Ready-review findings are corrected.
 
-The audit must verify:
+The re-audit must verify:
 
 - the live PR state;
+- that PR #95 remains open, Ready for review and not merged;
 - base branch and base SHA;
-- head branch and head SHA;
+- head branch and exact live head SHA;
 - mergeability;
 - commit count;
-- exact changed files;
-- full diff;
-- scope isolation;
-- cited source existence;
-- evidence freshness;
-- non-claims;
-- overclaims or unsupported conclusions;
-- checkpoint eligibility under B0;
-- remaining evidence gaps;
-- rollback simplicity.
+- exact eight-file scope;
+- the complete diff;
+- that `docs/sfjm/NEXT_SAFE_ACTION.md` now identifies PR #95 exact-head re-audit as the current single safe action;
+- that `docs/sfjm/CURRENT_STATE.md` no longer presents consumed SFJM write authority as active;
+- that no file outside the two-file corrective scope changed after head `ca50aa759c3a0554d02a2bc1ed61f213ac1aaac8`;
+- that PR #94, runtime, Supabase, Vercel configuration and production were not modified;
+- that no new blocking review, thread or check exists.
 
 ## Authorized scope for that action
 
@@ -31,9 +29,11 @@ The audit must verify:
 READ ONLY
 INDEPENDENT AUDIT
 GITHUB AND VERSIONED EVIDENCE
+EXACT LIVE PR #95 HEAD REQUIRED
 NO IMPLEMENTATION
+NO NEW COMMIT
 NO MERGE
-NO PR MODIFICATION
+NO PR METADATA MODIFICATION
 NO RUNTIME OR ENVIRONMENT CHANGE
 ```
 
@@ -41,32 +41,46 @@ NO RUNTIME OR ENVIRONMENT CHANGE
 
 This action is complete only when the auditor records:
 
-1. the exact PR #94 head validated;
+1. the exact live PR #95 head validated;
 2. the exact `main` commit observed;
-3. an evidence-backed classification of all findings;
-4. whether the F1-01 evidence-map artifact is acceptable, requires correction or is blocked;
-5. whether any checkpoint decision is eligible for a separate authorized governance action;
-6. all remaining evidence and freshness gaps;
-7. the next single safe action after the audit.
+3. confirmation that both Ready-review findings are closed;
+4. confirmation that the correction remained limited to:
+   - `docs/sfjm/NEXT_SAFE_ACTION.md`;
+   - `docs/sfjm/CURRENT_STATE.md`;
+5. confirmation that the total PR boundary remains exactly eight documentation files;
+6. confirmation that no `BLOCKING` or `REQUIRED IN THIS PR` finding remains;
+7. whether a fresh pre-merge verification is eligible for a separate authorized action.
+
+## Separate product-governance action
+
+The independent audit of PR #94 remains planned product-governance work for F1-01.
+
+It is not the current single safe action while PR #95 still requires exact-head validation and merge-cycle completion.
+
+PR #94 must not be modified, approved or merged through this PR #95 continuity flow.
 
 ## Prohibited interpretations
 
-The audit must not automatically:
+The PR #95 re-audit must not automatically:
 
+- authorize another documentation commit;
+- authorize merge;
 - grant Security Go;
 - mark MVP Família ready;
+- accept F1-01;
 - award WDP;
 - authorize runtime implementation;
-- merge PR #94;
-- modify Supabase, Vercel or production;
-- treat historical live evidence as current without freshness validation.
+- modify PR #94;
+- modify Supabase, Vercel configuration or production;
+- treat Vercel preview success as product, security or production validation.
 
 ## Expiration
 
-This action expires and must be rewritten if:
+This action expires and must be re-evaluated if:
 
-- PR #94 head changes;
-- PR #94 is closed, merged or superseded;
+- PR #95 head changes after the head submitted to audit;
+- PR #95 is closed, merged, converted to Draft or superseded;
+- the exact eight-file scope changes;
 - canonical `main` changes in a way that affects the audit basis;
-- a higher-priority canonical decision replaces F1-01;
-- the independent audit is completed and accepted.
+- a new blocking review, thread or check appears;
+- the independent exact-head re-audit is completed and accepted.
