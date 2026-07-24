@@ -47,24 +47,27 @@ Consumed actions include:
 
 This authorization did not accept F1-01, grant Security Go or award WDP.
 
-## 5. Active authorization — post-PR #94 documentation reconciliation
+## 5. Consumed authorization — post-PR #94 documentation reconciliation / PR #98
 
-**Lifecycle state:** `ACTIVE`  
+**Lifecycle state:** `CONSUMED`  
 **Source/date:** explicit user authorization, 2026-07-24  
 **Repository:** `wagnerjfjunior/fecha.ai`  
 **Base:** `1caf90c60681771af6609b96ee840b190668fa0f`  
 **Branch:** `agent/reconcile-f1-01-post-pr94`  
+**Result:** Draft PR #98 — `docs(sfjm): reconcile F1-01 state after PR 94 merge`  
+**Head at Draft creation:** `3b16c2d00ca23a6faf27df63af3ea3bf8c4b9f01`  
 **Environment:** GitHub documentation only
 
-### Allowed scope
+Consumed actions include:
 
-- reconcile F1-01/SFJM state after PR #94;
-- record PR #94 final head, squash commit and reaudit result;
-- remove obsolete PR #94 audit/merge next actions;
-- define F1-02 as the next read-only workstream;
-- create a Draft PR.
+- reconciliation of F1-01/SFJM state after PR #94;
+- recording of PR #94 final head, squash commit and reaudit result;
+- removal of obsolete PR #94 audit/merge next actions;
+- definition of F1-02 as the next planned read-only workstream;
+- creation of Draft PR #98 in exactly six authorized documentation files;
+- one bounded correction in this authorization register to mark the lifecycle as consumed after Draft creation.
 
-### Allowed files
+### Files covered
 
 ```text
 docs/audits/mvp/2026-07-05-f1-01-m1-acceptance-evidence-map.md
@@ -75,30 +78,24 @@ docs/sfjm/AUTHORIZATIONS.md
 docs/sfjm/handoffs/CURRENT.md
 ```
 
-### Prohibited
+### Result and remaining boundary
 
-- runtime or frontend changes;
-- Supabase access or modification;
-- migrations, RLS, grants, policies or RPC-body changes;
-- Edge Functions, Vercel, GitHub Actions or production changes;
-- Security Go;
-- F1-01 acceptance;
-- WDP assignment;
-- merge of the reconciliation PR;
-- changes in `wagnerjfjunior/sfjm-workspace`.
+The Draft PR was created, so the original write authority expired and is consumed. No standing authority remains to modify other files, change PR metadata, mark Ready or merge PR #98.
 
-### Acceptance criteria
+The reconciliation does not:
 
-- canonical PR #94 state is accurate;
-- obsolete audit/merge actions are removed;
-- F1-02 is documentation-only and read-only until separately authorized;
-- all security and product non-claims remain explicit;
-- exactly the authorized files are changed;
-- rollback is one revert of the reconciliation PR.
+- change runtime or frontend;
+- access or modify Supabase;
+- change migrations, RLS, grants, policies or RPC bodies;
+- change Edge Functions, Vercel, GitHub Actions or production;
+- grant Security Go;
+- accept F1-01;
+- award WDP;
+- authorize F1-02 execution;
+- authorize merge of PR #98;
+- authorize changes in `wagnerjfjunior/sfjm-workspace`.
 
-### Expiration
-
-This authority expires when the Draft reconciliation PR is created, or immediately if base, scope or repository changes.
+Rollback remains one revert of the documentation-only reconciliation PR if it is later merged.
 
 ## 6. Planned but not authorized — F1-02 execution
 
@@ -110,6 +107,8 @@ A future authorization must identify the exact Supabase project/environment and 
 
 No standing authority exists to:
 
+- modify PR #98 files or metadata beyond the consumed bounded correction recorded above;
+- mark PR #98 Ready or merge it;
 - modify runtime or frontend;
 - modify Supabase, migrations, RLS, grants, policies or RPC bodies;
 - modify Edge Functions, Vercel, GitHub Actions or production;
@@ -118,7 +117,7 @@ No standing authority exists to:
 - grant Security Go;
 - accept F1-01;
 - award WDP;
-- merge the current reconciliation PR.
+- execute F1-02.
 
 ## 8. Authorization evidence requirements
 
