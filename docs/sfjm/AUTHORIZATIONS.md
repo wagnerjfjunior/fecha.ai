@@ -64,16 +64,16 @@ Consumed actions include:
 
 The PR #98 authority is fully consumed. No authority remains for additional commits, Ready, merge, runtime, Supabase, Security Go, F1-01, F1-02 or WDP.
 
-## 6. Active authorization — post-PR #98 documentation reconciliation
+## 6. Consumed at Draft creation — post-PR #98 documentation reconciliation
 
-**Lifecycle state:** `ACTIVE`  
+**Lifecycle state:** `CONSUMED`  
 **Source/date:** explicit user authorization, 2026-07-24  
 **Repository:** `wagnerjfjunior/fecha.ai`  
 **Base:** `8a2eb00a9dcd46d7ee346741ca27c6081af52124`  
 **Branch:** `docs/reconcile-post-pr98`  
 **Environment:** GitHub documentation only
 
-### Allowed files
+### Files covered
 
 ```text
 docs/sfjm/CURRENT_STATE.md
@@ -83,14 +83,16 @@ docs/sfjm/AUTHORIZATIONS.md
 docs/sfjm/handoffs/CURRENT.md
 ```
 
-### Allowed actions
+### Consumed actions
 
 - record PR #98 as closed and merged;
 - record final head, squash commit and audit result;
 - record PR #98 Ready/merge authority as consumed;
 - preserve no active authority;
 - preserve F1-02 as `PLANNED / NOT_AUTHORIZED`;
-- create a Draft PR.
+- create the post-PR #98 Draft reconciliation PR.
+
+The creation of the Draft PR containing this record consumes the authorization. No subsequent commit is authorized merely to restate that consumption.
 
 ### Prohibited
 
@@ -104,10 +106,6 @@ docs/sfjm/handoffs/CURRENT.md
 - F1-01 acceptance;
 - F1-02 execution;
 - WDP assignment.
-
-### Expiration
-
-This authority expires when the Draft reconciliation PR is created, or immediately if repository, base, branch, file scope or purpose changes.
 
 ## 7. Planned but not authorized — F1-02 execution
 
@@ -128,7 +126,8 @@ No standing authority exists to:
 - grant Security Go;
 - accept F1-01;
 - award WDP;
-- execute F1-02.
+- execute F1-02;
+- mark the new reconciliation PR Ready or merge it.
 
 ## 9. Authorization evidence requirements
 
