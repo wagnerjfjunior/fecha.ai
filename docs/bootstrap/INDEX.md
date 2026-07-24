@@ -114,6 +114,30 @@ Use for:
 
 ---
 
+## Active operational continuity layer
+
+### SFJM Operational Continuity
+
+```text
+docs/sfjm/INDEX.md
+```
+
+Use after the bootstrap and B0 governance reading to determine:
+
+```text
+- current verified operational state;
+- active PR/head and evidence freshness;
+- next single safe action;
+- blocked actions;
+- authorization boundaries;
+- current continuity handoff;
+- what must not be altered or inferred.
+```
+
+SFJM does not replace the bootstrap or B0 baseline. Bootstrap reconstructs context, B0 defines delivery and acceptance, and SFJM preserves the current operational state between executions.
+
+---
+
 ## Operational rule
 
 Before sensitive work, specialists must not proceed directly to implementation, approval or merge/deploy recommendation.
@@ -122,17 +146,21 @@ Minimum required sequence:
 
 ```text
 1. Read the relevant bootstrap documents.
-2. Reconstruct context.
-3. Identify evidence and missing evidence.
-4. Classify risks.
-5. Define the next safe action.
-6. Leave handoff/index trail when needed.
+2. Read the B0 governance baseline when delivery or acceptance is involved.
+3. Read the SFJM current-state and continuity records.
+4. Reconstruct context.
+5. Validate live GitHub and required environment evidence.
+6. Identify evidence and missing evidence.
+7. Classify risks.
+8. Define the next safe action.
+9. Leave handoff/index trail when needed.
 ```
 
 Before expensive AI/Codex work, specialists must also ask:
 
 ```text
 - Can README/index/bootstrap answer this first?
+- Can SFJM identify the current state and next action first?
 - Can GitHub connector validate this without Codex?
 - Can Codex receive exact file scope instead of discovering it?
 - Can this PR be smaller?
