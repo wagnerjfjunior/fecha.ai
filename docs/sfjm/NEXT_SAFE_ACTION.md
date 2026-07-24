@@ -13,7 +13,7 @@ No new repository, PR, runtime, Supabase or integration task may begin from this
 
 ## Next single safe action
 
-Select one next workstream and grant a separate explicit authorization with exact repository, target, scope, acceptance criteria and rollback.
+Select one next workstream and grant a separate explicit authorization with source and date, repository, environment, target, scope, acceptance criteria, rollback and expiration.
 
 The two currently documented candidates are:
 
@@ -76,7 +76,9 @@ This record does not:
 
 Before either candidate begins, the authorization must state:
 
+- source and date;
 - repository;
+- environment;
 - target PR, branch, commit or files;
 - read-only or write scope;
 - prohibited areas;
