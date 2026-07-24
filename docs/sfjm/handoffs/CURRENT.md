@@ -1,44 +1,44 @@
 # FECH.AI — SFJM Current Handoff
 
-**Status:** CURRENT_HANDOFF / POST_MERGE_RECONCILIATION / DOCUMENTATION_ONLY  
+**Status:** CURRENT_HANDOFF / PR_96_CYCLE_COMPLETE / DOCUMENTATION_ONLY  
 **Observed on:** 2026-07-24  
 **Repository:** `wagnerjfjunior/fecha.ai`
 
 ## 1. Decision
 
-SFJM is now part of FECH.AI canonical `main` as a transversal operational-continuity and state-control layer.
+SFJM is part of FECH.AI canonical `main` as a transversal operational-continuity and state-control layer.
 
 It is not a CRM module, product feature, business authority or security boundary.
 
 ## 2. Completed continuity cycle
 
 - PR #95 created the FECH.AI SFJM documentation layer;
-- exact-head independent audits identified and closed authorization, handoff and cross-document consistency findings;
-- Ready transition was separately authorized;
-- two Codex review findings were corrected and their outdated threads were resolved;
-- final pre-merge verification passed with residual risk;
-- PR #95 was squash-merged using expected-head protection;
-- the SFJM files are now canonical in `main`;
-- PR #96 was opened as a separate Draft PR to reconcile the post-merge state without touching runtime or PR #94.
+- PR #95 passed governed corrections, independent exact-head audits, Ready transition and squash merge;
+- PR #96 reconciled the post-PR #95 state in exactly four SFJM documents;
+- PR #96 passed two independent exact-head audits with no remaining `BLOCKING` or `REQUIRED IN THIS PR` findings;
+- PR #96 description was corrected to distinguish proposed branch state from canonical `main`;
+- PR #96 was separately authorized for Ready;
+- PR #96 passed a fresh pre-merge verification;
+- PR #96 was separately authorized and squash-merged with expected-head protection;
+- the resulting `main` tip was confirmed;
+- this handoff closes the PR #96 lifecycle and removes its obsolete audit/Ready/merge actions from the current state.
 
 ## 3. Canonical anchors
 
 ```text
 Repository: wagnerjfjunior/fecha.ai
-Canonical main after PR #95: 4293f383e1e93f0cfd4a63f793024eb239bfafbb
-Merged PR: #95
-Merged head: 611faa5d7275d8f40386c41b2687fb5ef6f7b5b6
-Squash merge commit: 4293f383e1e93f0cfd4a63f793024eb239bfafbb
+Canonical main after PR #96: 4668cc1dde4b990791583c85f5b36a5d4b55d6a8
 
-Active reconciliation PR: #96
-PR #96 title: docs(sfjm): reconcile state after PR 95 merge
-PR #96 state at publication: OPEN / DRAFT / NOT_MERGED
-PR #96 base: main
-PR #96 base SHA: 4293f383e1e93f0cfd4a63f793024eb239bfafbb
-PR #96 branch: docs/sfjm-post-merge-reconciliation-95
+PR #95: CLOSED / MERGED
+PR #95 merged head: 611faa5d7275d8f40386c41b2687fb5ef6f7b5b6
+PR #95 squash commit: 4293f383e1e93f0cfd4a63f793024eb239bfafbb
+
+PR #96: CLOSED / MERGED
+PR #96 merged head: 91d27a4aa676f3e174ab000ca23992b69fc90a90
+PR #96 squash commit: 4668cc1dde4b990791583c85f5b36a5d4b55d6a8
 ```
 
-The exact live PR #96 head must be resolved from GitHub before audit, Ready or merge decisions. A self-recorded head inside this file must not be treated as permanently current.
+These are historical anchors. Resolve live GitHub state before any future decision.
 
 ## 4. Product-governance state
 
@@ -51,46 +51,44 @@ F1-01 state: EVIDENCE_INCOMPLETE / REQUIRES LIVE REVALIDATION
 
 PR #94 was not modified, approved or merged by the PR #95 or PR #96 continuity flows.
 
+Its recorded head is historical and must not be treated as current without live revalidation.
+
 ## 5. Authorization state
 
 Consumed:
 
-- SFJM v1 branch/file creation;
-- all bounded PR #95 corrections;
-- Ready transition;
-- Codex thread resolution;
-- squash merge of PR #95;
-- bounded four-file publication and Draft PR creation for PR #96.
+- PR #95 creation, corrections, Ready, thread resolution and squash merge;
+- PR #96 creation, bounded corrections, description correction, audits, Ready, pre-merge verification and squash merge.
 
-Active read-only:
+Current:
 
-- independent exact-head audit of Draft PR #96 only.
+```text
+NO ACTIVE WRITE AUTHORIZATION
+NO ACTIVE READ-ONLY AUDIT AUTHORIZATION
+```
+
+Planned but not authorized:
+
+- independent current-head audit of PR #94;
+- documentation-only FECH.AI external-project context contract in `wagnerjfjunior/sfjm-workspace`.
 
 Not authorized:
 
-- additional FECH.AI commits without a new correction authorization;
-- Ready or merge of PR #96;
-- changes to PR #94;
-- runtime, Supabase, Vercel, GitHub Actions or production changes;
+- modification, Ready or merge of PR #94;
+- new FECH.AI commits without separate explicit scope;
+- runtime, frontend, Supabase, Vercel, GitHub Actions or production changes;
 - changes in `wagnerjfjunior/sfjm-workspace`;
 - Security Go, F1-01 acceptance or WDP assignment.
 
-## 6. Files reconciled in PR #96
+## 6. Current conclusions
 
 ```text
-docs/sfjm/CURRENT_STATE.md
-docs/sfjm/NEXT_SAFE_ACTION.md
-docs/sfjm/AUTHORIZATIONS.md
-docs/sfjm/handoffs/CURRENT.md
-```
-
-No other file belongs to this reconciliation scope.
-
-## 7. Current conclusions
-
-```text
-SFJM v1: MERGED INTO FECH.AI MAIN
-Post-merge reconciliation: DRAFT PR #96 OPEN
+SFJM v1: MERGED INTO FECH.AI MAIN THROUGH PR #95
+Post-merge reconciliation: MERGED INTO FECH.AI MAIN THROUGH PR #96
+Canonical reconciliation state: COMPLETE
+PR #95 lifecycle: CLOSED
+PR #96 lifecycle: CLOSED
+Next workstream: NOT YET SELECTED OR AUTHORIZED
 Security Go: NOT GRANTED
 MVP Família readiness: NOT CONFIRMED
 F1-01 acceptance: NOT CONFIRMED
@@ -99,48 +97,47 @@ Supabase live security state: NOT CONFIRMED
 WDP: NOT AWARDED
 ```
 
-## 8. Evidence available
+## 7. Evidence available
 
-- merged PR #95 and merge commit;
-- final PR #95 head and eight-file scope;
-- independent audit results and pre-merge verification;
-- resolved Codex threads;
+- merged PR #95 and PR #96 metadata;
+- final heads and squash commits for both PRs;
+- exact documentation scopes;
+- independent exact-head audit results;
+- final pre-merge verifications;
 - canonical FECH.AI bootstrap, B0 and SFJM files;
-- Draft PR #96 identity, base, branch and four-file intended scope;
-- active PR #94 identity as separate product-governance evidence.
+- PR #94 identity as the separate F1-01 product-governance artifact.
 
-## 9. Evidence absent or requiring refresh
+## 8. Evidence absent or requiring refresh
 
-- exact live head and complete diff of PR #96;
-- independent audit of that exact head;
-- current PR #94 state and exact-head audit;
+- exact current PR #94 state, head and complete diff;
+- current PR #94 checks, workflows, reviews and threads;
+- F1-01 acceptance decision;
 - current live Supabase security reconciliation;
 - required negative tenant/company isolation tests;
 - authenticated runtime smoke evidence;
 - remaining M1 operational evidence;
 - canonical external-project registration contract in SFJM Workspace.
 
-## 10. Risks retained
+## 9. Risks retained
 
 - merged documentation being mistaken for product readiness;
 - stale PR #94 evidence being used as current;
 - Vercel preview success being mistaken for security or production validation;
 - consumed authorization being treated as standing authority;
-- PR #96 being marked Ready or merged without exact-head audit and separate authorization;
-- an external-project registration being expanded into automatic sync or backend integration;
-- a new conversation reopening the completed PR #95 cycle without new evidence.
+- a planned candidate being treated as already authorized;
+- external-project registration expanding into automatic synchronization or backend integration;
+- completed PR #95 or PR #96 cycles being reopened without new evidence.
 
-## 11. What must not be redone
+## 10. What must not be redone
 
 - do not reconstruct FECH.AI from zero when bootstrap, B0 and SFJM records are available;
 - do not reopen the decision that SFJM is a transversal documentation/governance layer;
-- do not restart consumed PR #95 authorizations;
-- do not treat PR #95 merge as Security Go, product acceptance or WDP;
+- do not restart consumed PR #95 or PR #96 authorities;
+- do not treat their merges as Security Go, product acceptance or WDP;
 - do not begin automatic synchronization with SFJM Workspace.
 
-## 12. What must not be altered without separate authorization
+## 11. What must not be altered without separate authorization
 
-- files outside the exact PR #96 correction scope;
 - runtime;
 - frontend;
 - Supabase;
@@ -161,31 +158,39 @@ WDP: NOT AWARDED
 - PR #94;
 - `wagnerjfjunior/sfjm-workspace`.
 
-## 13. Single next safe action
+## 12. Single next safe action
 
-Resolve the exact live head of Draft PR #96 and submit it to an independent read-only audit that verifies:
+Select one next workstream and grant a separate explicit authorization.
 
-- PR #95 is consistently recorded as merged;
-- all PR #95 write/Ready/thread/merge authorities are consumed;
-- PR #96 remains exactly four documentation files;
-- the future SFJM Workspace contract is planned but not authorized;
-- no PR #94, runtime, environment or `sfjm-workspace` change occurred.
+Current candidates:
 
-The audit must not mark Ready, merge, comment, resolve threads or modify files.
+1. read-only current-head audit of PR #94; or
+2. documentation-only FECH.AI external-project context contract in `wagnerjfjunior/sfjm-workspace`.
 
-## 14. Action after PR #96 completion
+Neither candidate may begin from this handoff alone.
 
-Only after PR #96 passes exact-head audit, receives separate Ready and merge authorizations, and is merged may a new conversation request explicit authorization to bootstrap `wagnerjfjunior/sfjm-workspace` and create a documentation-only FECH.AI external-project context contract.
+The authorization must define:
 
-That future task must remain read-only/demonstrative and must not add automatic synchronization, backend integration or verified-state claims without fresh evidence.
+- source and date;
+- repository;
+- environment;
+- target PR, branch, commit or files;
+- read-only or write scope;
+- prohibited areas;
+- acceptance criteria;
+- rollback expectation;
+- expiration condition.
 
-## 15. Retirement rule
+Until then, preserve the current canonical state without mutation.
 
-The prior PR #95 execution conversation may be retired after a receiving conversation:
+## 13. Retirement rule
+
+The PR #95 and PR #96 execution conversations may be retired after a receiving conversation:
 
 1. reads the FECH.AI bootstrap, B0 and SFJM indexes;
-2. confirms PR #95 is merged into `main`;
-3. validates PR #96 live state and exact head;
-4. confirms the four-file scope;
-5. distinguishes the planned SFJM Workspace contract from authorization to execute it;
-6. preserves all fail-closed boundaries.
+2. confirms PR #95 and PR #96 are merged;
+3. confirms live `main` at or after `4668cc1dde4b990791583c85f5b36a5d4b55d6a8`;
+4. preserves all fail-closed boundaries;
+5. treats PR #94 as separate and requiring live revalidation;
+6. distinguishes planned SFJM Workspace work from authorization to execute it;
+7. does not infer an active next-workstream authorization.
