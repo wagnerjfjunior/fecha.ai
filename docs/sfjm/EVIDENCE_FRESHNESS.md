@@ -44,25 +44,27 @@ NOT_APPLICABLE
 
 ## 4. Canonical main freshness record
 
-Observed after squash merge of PR #94:
+Observed after squash merge of PR #98:
 
 ```text
-Canonical main observed: 1caf90c60681771af6609b96ee840b190668fa0f
-Commit: docs(m1): add F1-01 acceptance evidence map (#94)
-PR #94 final head: a7e64c6ed817c03c4dbce7e1b9642e20360b3010
-PR #94 state: CLOSED / MERGED
-PR #94 reaudit result: PASS WITH RESIDUAL RISK
+Canonical main observed: 8a2eb00a9dcd46d7ee346741ca27c6081af52124
+Commit: docs(sfjm): reconcile F1-01 state after PR 94 merge (#98)
+PR #98 final head: e7e52ed9762ab92fd14f82e2437845421693ec81
+PR #98 state: CLOSED / MERGED
+PR #98 audit result: PASS WITH RESIDUAL RISK
+PR #98 pre-merge verification: PASS WITH RESIDUAL RISK
 ```
 
-This observation is `CURRENT` only until a newer commit lands on `main`. It proves repository state only. It does not validate runtime, Supabase, tenant isolation, Security Go, F1-01 acceptance or production.
+This observation is `CURRENT` only until a newer commit lands on `main`. It proves repository state only. It does not validate runtime, Supabase, tenant isolation, Security Go, F1-01 acceptance, F1-02 execution or production.
 
 ## 5. F1-01 evidence-map freshness
 
 ```text
 Merged artifact: docs/audits/mvp/2026-07-05-f1-01-m1-acceptance-evidence-map.md
-Corrected PR head: a7e64c6ed817c03c4dbce7e1b9642e20360b3010
-Squash commit: 1caf90c60681771af6609b96ee840b190668fa0f
-Classification for current source-path inventory: CURRENT at merge
+Corrected PR #94 head: a7e64c6ed817c03c4dbce7e1b9642e20360b3010
+PR #94 squash commit: 1caf90c60681771af6609b96ee840b190668fa0f
+Post-merge reconciliation commit: 8a2eb00a9dcd46d7ee346741ca27c6081af52124
+Classification for current source-path inventory: CURRENT at latest verified source state
 Classification for live Supabase/runtime claims: NOT_VERIFIED
 ```
 
