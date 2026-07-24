@@ -62,40 +62,40 @@ docs/sfjm/handoffs/CURRENT.md
 
 No PR #96 authority remains active merely because its records are present in `main`.
 
-## 4. Current read-only boundary — PR #94 audit
+## 4. Current authorization state
 
-**Lifecycle state:** `ACTIVE_READ_ONLY`
+**Lifecycle state:** `NO_ACTIVE_AUTHORIZATION`
 
-The only active operation recorded here is an independent read-only audit of the exact current head of PR #94.
+There is currently no active write authority and no active read-only audit authority recorded by this register.
 
-The auditor must:
+The following candidates are documented but remain `PLANNED / NOT_AUTHORIZED`:
 
-- resolve live `main` and PR #94 metadata from GitHub;
-- resolve the exact PR #94 head before analysis;
-- inspect the exact changed-file set and complete diff;
-- inspect checks, workflow runs, reviews, threads and comments;
-- compare the evidence map against current B0/M1 acceptance requirements;
-- classify findings without mutating GitHub.
+- independent read-only current-head audit of FECH.AI PR #94;
+- documentation-only FECH.AI external-project context contract in `wagnerjfjunior/sfjm-workspace`.
 
-This read-only boundary does not authorize:
+Neither candidate may begin without a separate explicit authorization.
 
-- editing PR #94 files or metadata;
-- marking PR #94 Ready;
-- merging PR #94;
-- accepting F1-01;
-- granting Security Go;
-- awarding WDP;
-- runtime or Supabase implementation.
+## 5. Candidate boundary — PR #94 audit
 
-A PASS does not itself authorize any write action.
+If separately authorized, a PR #94 audit must be read-only and must begin by resolving live GitHub evidence.
 
-## 5. Planned action — FECH.AI external-project contract in SFJM Workspace
+It must not:
 
-**Lifecycle state:** `PLANNED / NOT_AUTHORIZED`
+- edit PR #94 files or metadata;
+- mark PR #94 Ready;
+- merge PR #94;
+- accept F1-01;
+- grant Security Go;
+- award WDP;
+- start runtime or Supabase implementation.
 
-A future documentation-only task may register FECH.AI as an external project context in `wagnerjfjunior/sfjm-workspace` only under a separate explicit authorization.
+A PASS would not itself authorize any write action.
 
-That future task must begin with live bootstrap of both repositories and must not include:
+## 6. Candidate boundary — SFJM Workspace contract
+
+If separately authorized, a future documentation-only task may register FECH.AI as an external project context in `wagnerjfjunior/sfjm-workspace`.
+
+It must begin with live bootstrap of both repositories and must not include:
 
 - automatic synchronization;
 - GitHub API ingestion presented as operational truth;
@@ -105,7 +105,7 @@ That future task must begin with live bootstrap of both repositories and must no
 - verified live-state claims without fresh evidence;
 - automatic approval, merge, Security Go, F1-01 acceptance or WDP decisions.
 
-## 6. Explicit prohibitions that remain
+## 7. Explicit prohibitions that remain
 
 No standing authority exists to:
 
@@ -120,7 +120,7 @@ No standing authority exists to:
 - accept F1-01;
 - award WDP.
 
-## 7. Authorization evidence requirements
+## 8. Authorization evidence requirements
 
 Future authorizations must record:
 
