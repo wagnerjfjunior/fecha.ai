@@ -171,7 +171,9 @@ Neither candidate may begin from this handoff alone.
 
 The authorization must define:
 
+- source and date;
 - repository;
+- environment;
 - target PR, branch, commit or files;
 - read-only or write scope;
 - prohibited areas;
