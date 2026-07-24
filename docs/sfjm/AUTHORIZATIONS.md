@@ -41,12 +41,14 @@ The following separately granted actions were completed and are `CONSUMED`:
 
 None of these completed actions creates standing authority for another PR, merge or implementation.
 
-## 4. Consumed-by-publication authorization — post-merge reconciliation
+## 4. Consumed authorization — post-merge reconciliation publication
 
-**Lifecycle state:** `CONSUMED_BY_PUBLICATION`  
+**Lifecycle state:** `CONSUMED`  
 **Source:** explicit user instruction to perform FECH.AI post-merge documentation reconciliation in a separate PR.  
 **Base:** canonical `main` at `4293f383e1e93f0cfd4a63f793024eb239bfafbb`  
 **Branch:** `docs/sfjm-post-merge-reconciliation-95`  
+**Resulting pull request:** PR #96 — `docs(sfjm): reconcile state after PR 95 merge`  
+**State when consumed:** `OPEN / DRAFT / NOT_MERGED`  
 **Primary risk:** stale SFJM state continuing to describe PR #95 as open, under audit or awaiting merge.
 
 ### Permitted files
@@ -58,45 +60,63 @@ docs/sfjm/AUTHORIZATIONS.md
 docs/sfjm/handoffs/CURRENT.md
 ```
 
-### Permitted outcome
+### Completed outcome
 
-- record PR #95 as merged;
-- record the new canonical `main` anchor;
-- close all PR #95 authorization lifecycle states;
-- replace the obsolete PR #95 reaudit action;
-- record the separately gated future FECH.AI registration contract for `sfjm-workspace`;
-- open a Draft documentation-only reconciliation PR.
+- recorded PR #95 as merged;
+- recorded the new canonical `main` anchor;
+- closed PR #95 creation, correction, Ready, thread-resolution and merge lifecycle states;
+- replaced the obsolete PR #95 reaudit action;
+- recorded the future FECH.AI external-project context contract for `sfjm-workspace` as planned but not authorized;
+- opened Draft PR #96 with the four-file documentation-only scope.
 
-### Explicit prohibitions
+### Explicit prohibitions that remain
 
-- modify any other file;
+- modify any file outside the four-file reconciliation scope;
 - modify PR #94;
 - modify runtime, frontend, Supabase, migrations, RLS, grants, policies or RPC bodies;
 - modify Edge Functions, Vercel, GitHub Actions, MesaCliente, PME, ADS/CAPI, Make/n8n, integrations or production;
 - make any change in `wagnerjfjunior/sfjm-workspace`;
 - grant Security Go;
 - accept F1-01 or WDP;
-- mark the reconciliation PR Ready or merge it without separate authorization.
+- mark PR #96 Ready or merge it without separate authorization.
 
-This authority is consumed by publication of the bounded reconciliation content. It does not remain active merely because the Draft PR is still open.
+This publication authority is consumed. It does not remain active merely because PR #96 is open.
 
-## 5. Planned action — FECH.AI external-project contract in SFJM Workspace
+Any correction required by audit needs a new explicit, file-bounded authorization.
+
+## 5. Active read-only boundary — exact-head audit of PR #96
+
+**Lifecycle state:** `ACTIVE_READ_ONLY`
+
+The only current operation authorized by this record is an independent read-only audit of the exact live head of Draft PR #96.
+
+The auditor must:
+
+- resolve the live PR #96 head from GitHub;
+- verify exactly four changed files;
+- verify cross-document consistency for merged state, consumed authorization and next action;
+- verify that no runtime, PR #94 or `sfjm-workspace` change occurred;
+- perform no GitHub mutation.
+
+A PASS does not authorize Ready or merge.
+
+## 6. Planned action — FECH.AI external-project contract in SFJM Workspace
 
 **Lifecycle state:** `PLANNED / NOT_AUTHORIZED`
 
-A future documentation-only task may register FECH.AI as an external project context in `wagnerjfjunior/sfjm-workspace` after this reconciliation is independently audited and merged.
+A future documentation-only task may register FECH.AI as an external project context in `wagnerjfjunior/sfjm-workspace` only after PR #96 is independently audited, separately authorized and merged.
 
 That future task requires separate authorization and must begin with live bootstrap of both repositories.
 
 It must not include automatic synchronization, backend integration, database integration, write-back, verified live-state claims without evidence, or automatic governance decisions.
 
-## 6. Separate product-governance action — PR #94
+## 7. Separate product-governance action — PR #94
 
 The independent current-head audit of PR #94 remains separate F1-01 governance work.
 
 This register does not modify, approve, merge or infer acceptance from PR #94.
 
-## 7. Authorization evidence requirements
+## 8. Authorization evidence requirements
 
 Future authorizations must record:
 
@@ -108,4 +128,4 @@ Future authorizations must record:
 - acceptance criteria;
 - rollback expectation;
 - expiration condition;
-- lifecycle state: `PLANNED`, `ACTIVE`, `ACTIVE_READ_ONLY`, `CONSUMED`, `CONSUMED_BY_PUBLICATION`, `EXPIRED`, `REVOKED` or `SUPERSEDED`.
+- lifecycle state: `PLANNED`, `ACTIVE`, `ACTIVE_READ_ONLY`, `CONSUMED`, `EXPIRED`, `REVOKED` or `SUPERSEDED`.
