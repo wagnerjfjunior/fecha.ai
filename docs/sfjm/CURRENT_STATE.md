@@ -1,6 +1,6 @@
 # FECH.AI — SFJM Current State
 
-**Lifecycle state:** `PR_95_REAUDIT_REQUIRED`  
+**Lifecycle state:** `SFJM_V1_MERGED / POST_MERGE_RECONCILED`  
 **Record type:** OPERATIONAL_STATE / DOCUMENTATION_ONLY  
 **Observed on:** 2026-07-24  
 **Repository:** `wagnerjfjunior/fecha.ai`
@@ -9,7 +9,7 @@
 
 FECH.AI is a Pilot Production multi-tenant / multi-company platform with real users, sensitive lead/client data, active modules and security hardening in progress.
 
-SFJM is applied as a transversal continuity and operational-state layer. It is not a CRM module or product runtime component.
+SFJM is a transversal continuity and operational-state layer. It is not a CRM module, product runtime component, business authority or security boundary.
 
 ## 2. Active product phase
 
@@ -19,145 +19,102 @@ MVP 1 — Família
 
 The family pilot remains the controlled first validation phase before broader client or market exposure.
 
-## 3. Active governance activity
+## 3. Canonical GitHub state
 
 ```text
-F1-01 — Final M1 evidence and acceptance map
+Canonical main: 4293f383e1e93f0cfd4a63f793024eb239bfafbb
+Commit: docs(sfjm): add FECH.AI operational continuity layer v1 (#95)
+PR #95: MERGED
+Merge method: SQUASH
+Merged head: 611faa5d7275d8f40386c41b2687fb5ef6f7b5b6
 ```
 
-## 4. Active continuity artifact
+PR #95 is no longer an active continuity artifact. Its eight documentation files are now part of canonical `main`.
 
-```text
-PR: #95
-Title: docs(sfjm): add FECH.AI operational continuity layer v1
-State observed before this correction: OPEN / READY_FOR_REVIEW / NOT_MERGED / MERGEABLE
-Base branch: main
-Base SHA observed: e7584b6ce2a53a88fca9974bcc448ebe9aea83ab
-Head branch: docs/sfjm-fechai-operational-continuity-v1
-Previously audited head: ca50aa759c3a0554d02a2bc1ed61f213ac1aaac8
-```
+Any future decision must resolve live `main` rather than treating the SHA above as permanently current.
 
-The head above is historical audit evidence. These corrections create a newer live head that must be resolved directly from GitHub before any further decision.
-
-## 5. Active product-governance artifact
+## 4. Active product-governance artifact
 
 ```text
 PR: #94
 Title: docs(m1): add F1-01 acceptance evidence map
-State observed: OPEN / NOT DRAFT / NOT MERGED / MERGEABLE
-Base branch: main
-Base SHA observed: e7584b6ce2a53a88fca9974bcc448ebe9aea83ab
-Head branch: docs/f1-01-m1-evidence-map-20260705
-Head SHA observed: 140e92dd12c72eae5f90fa55b5b125bbedf6fbaa
+Last observed head: 140e92dd12c72eae5f90fa55b5b125bbedf6fbaa
+Operational state: EVIDENCE_INCOMPLETE / REQUIRES LIVE REVALIDATION
 ```
 
-The PR #94 head belongs only to PR #94. It is not canonical `main`, the PR #95 head or authorization for unrelated work.
+PR #94 was not modified, approved or merged by the PR #95 continuity flow.
 
-## 6. Canonical main observed
+Its recorded head is target-specific evidence only. It is not canonical `main` and does not authorize unrelated work.
 
-```text
-e7584b6ce2a53a88fca9974bcc448ebe9aea83ab
-```
+## 5. Authorization state
 
-Commit message observed:
+The following authorities are `CONSUMED`:
 
-```text
-revert: remove accidental F1-01 placeholder from main
-```
+- creation of the SFJM documentation branch and files;
+- corrective commits made during PR #95 review;
+- transition of PR #95 to Ready for review;
+- resolution of the two outdated Codex threads;
+- squash merge of PR #95 at the expected head;
+- this bounded post-merge documentation reconciliation.
 
-Any future action must re-check live `main` rather than treating this snapshot as permanently current.
+No standing authority remains for:
 
-## 7. Authorization state
+- new FECH.AI documentation commits;
+- runtime or frontend implementation;
+- Supabase, migrations, RLS, grants, policies or RPC changes;
+- Vercel, GitHub Actions or production changes;
+- modification or merge of PR #94;
+- registration of FECH.AI in `sfjm-workspace`;
+- Security Go, F1-01 acceptance or WDP assignment.
 
-### Consumed write authorizations
+Any next write action requires a separate explicit authorization, exact repository/branch/file scope and simple rollback.
 
-The following authorizations are `CONSUMED` and confer no standing authority:
-
-- creation of the SFJM branch;
-- creation of the eight-file documentation scope;
-- opening Draft PR #95;
-- the first correction of authorization and handoff findings;
-- the second correction of authorization-lifecycle findings;
-- transition of PR #95 from Draft to Ready for review.
-
-They do not authorize:
-
-- new discretionary documentation commits;
-- scope expansion;
-- PR metadata changes;
-- merge;
-- runtime, Supabase, Vercel configuration or production changes.
-
-### One-time correction represented by this publication
-
-The user separately authorized correction of the two findings discovered during the live pre-merge verification, limited to:
+## 6. Current conclusions
 
 ```text
-docs/sfjm/NEXT_SAFE_ACTION.md
-docs/sfjm/CURRENT_STATE.md
-```
-
-That write authority is consumed when these corrections are published to PR #95. It does not remain active after publication.
-
-### Only next permitted operation
-
-After publication, the only permitted operation recorded by this state is:
-
-```text
-EXACT-HEAD INDEPENDENT READ-ONLY RE-AUDIT OF PR #95
-```
-
-The re-audit does not authorize edits, thread resolution, Ready/Draft transitions or merge.
-
-## 8. Current conclusions
-
-```text
+SFJM documentation v1: MERGED INTO MAIN
+Post-merge SFJM state: RECONCILED BY THIS DOCUMENTATION CHANGE
 Security Go: NOT GRANTED
 MVP Família readiness: NOT CONFIRMED
 F1-01 checkpoint acceptance: NOT CONFIRMED
 Runtime validation: NOT CONFIRMED
 Current live Supabase security state: NOT CONFIRMED
-PR #95 merge authorization: NOT GRANTED
+WDP: NOT AWARDED
 ```
 
-No WDP may be inferred from the existence, review, Ready transition or future merge of PR #94 or PR #95.
+Merge of PR #95 confirms only that the documentation layer entered `main`. It does not prove product readiness, security, tenant isolation, runtime correctness or accepted delivery value.
 
-## 9. Evidence available
+## 7. Evidence available
 
-- GitHub repository and PR metadata observed during the pre-merge verification;
-- canonical `main` snapshot recorded above;
-- exact eight-file PR #95 scope before this correction;
-- `PASS WITH RESIDUAL RISK` independent audit of PR #95 at historical head `ca50aa759c3a0554d02a2bc1ed61f213ac1aaac8`;
-- two new Codex review threads created after Ready transition;
-- versioned FECH.AI bootstrap, B0 governance and SFJM documents.
+- merged PR #95 metadata and merge commit;
+- canonical SFJM files now present in `main`;
+- the exact eight-file documentation boundary of PR #95;
+- independent exact-head audits and the final pre-merge verification;
+- resolved Codex threads from the Ready review cycle;
+- FECH.AI bootstrap and B0 governance documents;
+- PR #94 as the active F1-01 evidence artifact, subject to live revalidation.
 
-## 10. Evidence missing or requiring refresh
+## 8. Evidence missing or requiring refresh
 
-- exact live PR #95 head after these two corrective commits;
-- independent audit of that exact new head;
-- confirmation that the two Codex findings are closed;
-- fresh reviews, threads, comments, checks and mergeability after correction;
-- separate explicit merge authorization;
-- independent audit decision for PR #94 at its current head;
-- current live Supabase metadata, grants, policies and relevant RPC body validation;
-- negative tenant/company isolation tests for used M1 paths;
+- independent current-head audit of PR #94;
+- F1-01 checkpoint decision through the authorized B0 process;
+- current live Supabase metadata, grants, policies and relevant RPC validation;
+- required negative tenant/company isolation tests;
 - current authenticated runtime smoke evidence;
-- remaining M1 persistence, duplicate-detection, follow-up, dashboard and audit evidence.
+- remaining M1 persistence, duplicate-detection, follow-up, dashboard and audit evidence;
+- a separately authorized and versioned FECH.AI external-project context contract in `wagnerjfjunior/sfjm-workspace`.
 
-## 11. Main risks
+## 9. Main risks
 
-- confusing source presence with product readiness;
-- treating PR creation, Ready status or merge as accepted delivery value;
-- treating a consumed authorization as standing authority;
-- treating historical SHAs as live state;
+- mistaking merged documentation for product readiness;
+- treating stale PR #94 evidence as current;
 - treating Vercel preview success as runtime, security or production validation;
-- mixing PR #95 continuity completion with PR #94 or product implementation;
-- resolving review threads before exact-head correction validation;
-- registering FECH.AI in SFJM Workspace before PR #95 is merged and `main` is reconciled.
+- using consumed authorization as standing authority;
+- registering FECH.AI in SFJM Workspace with automated sync or verified-state claims before a bounded contract exists;
+- reopening completed PR #95 decisions without new canonical evidence.
 
-## 12. What must not change in the current correction
+## 10. What must not be altered without separate scope
 
-- any file outside `docs/sfjm/NEXT_SAFE_ACTION.md` and `docs/sfjm/CURRENT_STATE.md`;
 - runtime;
 - frontend;
 - Supabase;
@@ -175,8 +132,9 @@ No WDP may be inferred from the existence, review, Ready transition or future me
 - Make/n8n;
 - integrations;
 - production;
-- PR #94 content, metadata, state or head.
+- PR #94 content, metadata, state or head;
+- `wagnerjfjunior/sfjm-workspace`.
 
-## 13. Next safe action
+## 11. Next safe action
 
 See `docs/sfjm/NEXT_SAFE_ACTION.md`.
