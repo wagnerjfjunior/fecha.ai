@@ -60,9 +60,17 @@ Consumed:
 - PR #95 creation, corrections, Ready, thread resolution and squash merge;
 - PR #96 creation, bounded corrections, description correction, audits, Ready, pre-merge verification and squash merge.
 
-Active read-only:
+Current:
 
-- independent current-head audit of PR #94 only.
+```text
+NO ACTIVE WRITE AUTHORIZATION
+NO ACTIVE READ-ONLY AUDIT AUTHORIZATION
+```
+
+Planned but not authorized:
+
+- independent current-head audit of PR #94;
+- documentation-only FECH.AI external-project context contract in `wagnerjfjunior/sfjm-workspace`.
 
 Not authorized:
 
@@ -80,6 +88,7 @@ Post-merge reconciliation: MERGED INTO FECH.AI MAIN THROUGH PR #96
 Canonical reconciliation state: COMPLETE
 PR #95 lifecycle: CLOSED
 PR #96 lifecycle: CLOSED
+Next workstream: NOT YET SELECTED OR AUTHORIZED
 Security Go: NOT GRANTED
 MVP Família readiness: NOT CONFIRMED
 F1-01 acceptance: NOT CONFIRMED
@@ -115,6 +124,7 @@ WDP: NOT AWARDED
 - stale PR #94 evidence being used as current;
 - Vercel preview success being mistaken for security or production validation;
 - consumed authorization being treated as standing authority;
+- a planned candidate being treated as already authorized;
 - external-project registration expanding into automatic synchronization or backend integration;
 - completed PR #95 or PR #96 cycles being reopened without new evidence.
 
@@ -150,26 +160,28 @@ WDP: NOT AWARDED
 
 ## 12. Single next safe action
 
-Resolve the exact current head of PR #94 and submit it to an independent read-only audit against the canonical FECH.AI B0/M1 acceptance requirements.
+Select one next workstream and grant a separate explicit authorization.
 
-The audit must verify:
+Current candidates:
 
-- live `main` and PR #94 metadata;
-- exact head, base, merge base and ahead/behind;
-- exact changed-file set and complete diff;
-- checks, workflow runs, reviews, threads and comments;
-- evidence freshness, gaps and overclaims;
-- whether any `BLOCKING` or `REQUIRED IN THIS PR` finding remains.
+1. read-only current-head audit of PR #94; or
+2. documentation-only FECH.AI external-project context contract in `wagnerjfjunior/sfjm-workspace`.
 
-The audit must not modify GitHub, mark Ready, merge, accept F1-01, grant Security Go or start implementation.
+Neither candidate may begin from this handoff alone.
 
-## 13. Separate future action
+The authorization must define:
 
-A documentation-only FECH.AI external-project context contract in `wagnerjfjunior/sfjm-workspace` remains planned but not authorized.
+- repository;
+- target PR, branch, commit or files;
+- read-only or write scope;
+- prohibited areas;
+- acceptance criteria;
+- rollback expectation;
+- expiration condition.
 
-It requires a separate live bootstrap, explicit scope, independent audit and simple rollback. It must not add automatic synchronization, backend integration, write-back or verified-state claims without fresh evidence.
+Until then, preserve the current canonical state without mutation.
 
-## 14. Retirement rule
+## 13. Retirement rule
 
 The PR #95 and PR #96 execution conversations may be retired after a receiving conversation:
 
@@ -178,4 +190,5 @@ The PR #95 and PR #96 execution conversations may be retired after a receiving c
 3. confirms live `main` at or after `4668cc1dde4b990791583c85f5b36a5d4b55d6a8`;
 4. preserves all fail-closed boundaries;
 5. treats PR #94 as separate and requiring live revalidation;
-6. distinguishes planned SFJM Workspace work from authorization to execute it.
+6. distinguishes planned SFJM Workspace work from authorization to execute it;
+7. does not infer an active next-workstream authorization.
