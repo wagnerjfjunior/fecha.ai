@@ -5,9 +5,7 @@
 
 ## 1. Purpose
 
-This document defines when evidence may be treated as current and when it must be revalidated.
-
-Evidence freshness does not prove correctness by itself. It only determines whether a previous observation may still support a current decision.
+This document defines when evidence may be treated as current and when it must be revalidated. Freshness does not prove correctness; it only determines whether a prior observation may still support a present decision.
 
 ## 2. Freshness classes
 
@@ -19,88 +17,71 @@ NOT_VERIFIED
 NOT_APPLICABLE
 ```
 
-### CURRENT
+- `CURRENT`: validated against the exact current target with no known invalidating event.
+- `STALE`: previously useful, but no longer sufficient for the present decision.
+- `SUPERSEDED`: explicitly replaced by newer canonical evidence.
+- `NOT_VERIFIED`: reported or inferred but not independently validated.
+- `NOT_APPLICABLE`: outside the current scope, module, environment or decision.
 
-The evidence was validated against the exact current target and no known invalidating event occurred.
-
-### STALE
-
-The evidence was once valid or useful, but a change or elapsed context makes it insufficient for the present decision.
-
-### SUPERSEDED
-
-A newer canonical record or applied state explicitly replaces the evidence.
-
-### NOT_VERIFIED
-
-The evidence was reported, inferred or referenced but not independently validated against the required source.
-
-### NOT_APPLICABLE
-
-The evidence does not apply to the current scope, module, environment or decision.
-
-## 3. Freshness rules by evidence type
+## 3. Rules by evidence type
 
 | Evidence | CURRENT condition | Invalidating event |
 |---|---|---|
-| PR head | Exact head SHA validated | Any new commit, force-push, rebase or branch update |
-| PR diff | Full diff validated at exact head | Head SHA changes |
-| PR mergeability | Live state checked | Base/head change, conflict change or repository state change |
-| PR reviews/threads | Read at exact head and current thread state | New review, comment, resolution or head change |
+| PR head | Exact head SHA validated | Commit, force-push, rebase or branch update |
+| PR diff | Full diff validated at exact head | Head change |
+| PR mergeability | Live state checked | Base/head/repository-state change |
+| Reviews/threads | Read at exact head and current thread state | New review/comment/resolution or head change |
 | Canonical `main` | Exact tip validated | New commit on `main` |
-| GitHub checks | Associated with exact commit and latest relevant run | New commit, rerun or workflow/configuration change |
-| Source file | Blob or commit validated | File changes on the relevant ref |
-| Supabase grants/policies/RPC bodies | Read from the correct live project and environment | Database migration, manual change, project/environment ambiguity or absent current reconciliation |
-| Tenant-isolation test | Executed against the current relevant backend state | Security/backend change or environment change |
-| Runtime smoke test | Executed against the exact build/configuration | Code, environment variable, backend, deployment or configuration change |
-| Vercel deployment | Exact deployment and alias validated | New deployment, promotion, rollback or alias change |
-| Screenshot | Source, timestamp and target state established | Target changes or provenance is incomplete |
-| Handoff | Matches current GitHub and environment evidence | Active PR/head, authorization, blocker, decision or next action changes |
-| Authorization | Scope and expiration remain valid | Expiration condition, revocation, target change or scope completion |
-| B0 checkpoint decision | Recorded through the authorized governance process | Baseline change, rejected evidence or superseding checkpoint decision |
+| GitHub checks | Exact commit and latest relevant run | New commit, rerun or workflow change |
+| Source file | Blob or commit validated | File changes on relevant ref |
+| Supabase grants/policies/RPC bodies | Read from exact live project/environment | Migration, manual change, environment ambiguity or absent reconciliation |
+| Tenant-isolation test | Executed against current backend state | Backend/security/environment change |
+| Runtime smoke | Exact build/configuration tested | Code, backend, env, deploy or config change |
+| Vercel deployment | Exact deployment and alias validated | Promotion, rollback, alias or deployment change |
+| Handoff | Matches live GitHub/environment evidence | PR/head/authorization/blocker/decision/next-action change |
+| Authorization | Scope and expiration remain valid | Completion, revocation, target or scope change |
+| B0 checkpoint | Recorded through authorized governance | Baseline change, rejected evidence or superseding decision |
 
 ## 4. Canonical main freshness record
 
-Observed after the squash merge of PR #96 on 2026-07-24:
+Observed after squash merge of PR #94:
 
 ```text
-Canonical main observed: 4668cc1dde4b990791583c85f5b36a5d4b55d6a8
-Commit: docs(sfjm): reconcile state after PR 95 merge (#96)
-PR #96 final head: 91d27a4aa676f3e174ab000ca23992b69fc90a90
-PR #96 state: CLOSED / MERGED
+Canonical main observed: 1caf90c60681771af6609b96ee840b190668fa0f
+Commit: docs(m1): add F1-01 acceptance evidence map (#94)
+PR #94 final head: a7e64c6ed817c03c4dbce7e1b9642e20360b3010
+PR #94 state: CLOSED / MERGED
+PR #94 reaudit result: PASS WITH RESIDUAL RISK
 ```
 
-This canonical-main observation is `CURRENT` only until a new commit lands on `main`.
+This observation is `CURRENT` only until a newer commit lands on `main`. It proves repository state only. It does not validate runtime, Supabase, tenant isolation, Security Go, F1-01 acceptance or production.
 
-It is evidence for the FECH.AI repository state after PR #96. It does not validate runtime, Supabase, tenant isolation, Security Go, F1-01 acceptance or production.
-
-## 5. PR #94 freshness record
-
-Observed on 2026-07-24 before PR #95 and PR #96 changed canonical `main`:
+## 5. F1-01 evidence-map freshness
 
 ```text
-PR #94 head: 140e92dd12c72eae5f90fa55b5b125bbedf6fbaa
-PR #94 base SHA: e7584b6ce2a53a88fca9974bcc448ebe9aea83ab
-Canonical main observed at that time: e7584b6ce2a53a88fca9974bcc448ebe9aea83ab
-Freshness classification: STALE
+Merged artifact: docs/audits/mvp/2026-07-05-f1-01-m1-acceptance-evidence-map.md
+Corrected PR head: a7e64c6ed817c03c4dbce7e1b9642e20360b3010
+Squash commit: 1caf90c60681771af6609b96ee840b190668fa0f
+Classification for current source-path inventory: CURRENT at merge
+Classification for live Supabase/runtime claims: NOT_VERIFIED
 ```
 
-The PR #94 head and base observations are historical evidence only. They must be revalidated live before any audit, decision or authorization involving PR #94.
+The source-path inventory remains current only while the referenced source blobs and relevant runtime paths are unchanged. Any source change affecting M1 calls invalidates the corresponding inventory rows.
 
-The PR #94 head is evidence about PR #94. It is not a canonical `main` commit and is `NOT_APPLICABLE` as the base for another branch or workstream.
+## 6. F1-02 freshness requirements
 
-## 6. Historical live evidence
+Any future read-only security evidence must record:
 
-Historical Supabase, runtime or deployment evidence must not be promoted to current authorization proof merely because it is versioned in GitHub.
+- exact Supabase project and environment;
+- observation date/time;
+- evidence collection method;
+- relevant schema, function, policy or grant identity;
+- sanitized output or reproducible query;
+- known limitations;
+- invalidating events;
+- expiration condition.
 
-A versioned historical result can establish:
-
-- what was tested;
-- when it was tested;
-- the observed result at that time;
-- the known method and limitations.
-
-It cannot establish the present live state after potentially invalidating changes.
+Historical Supabase records, even when versioned, remain `STALE` for current Security Go unless refreshed against the exact live target.
 
 ## 7. Fail-closed rule
 
@@ -109,7 +90,7 @@ When freshness cannot be established:
 ```text
 classification = NOT_VERIFIED or STALE
 security/merge/deploy conclusion = blocked
-next action = refresh the narrow evidence required
+next action = refresh only the narrow evidence required
 ```
 
-Do not replace missing freshness with memory, confidence, conversation continuity or repeated assertions.
+Do not replace missing freshness with memory, confidence, conversation continuity, preview success or repeated assertions.

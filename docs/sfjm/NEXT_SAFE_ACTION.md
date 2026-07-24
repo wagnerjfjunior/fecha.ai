@@ -1,89 +1,128 @@
 # FECH.AI — SFJM Next Safe Action
 
-**Status:** AWAITING_EXPLICIT_AUTHORIZATION / DOCUMENTATION_ONLY  
+**Status:** `F1_02_READ_ONLY_WORKSTREAM_SELECTED / EXECUTION_NOT_AUTHORIZED`  
 **Observed on:** 2026-07-24
 
 ## Current safe state
 
-The PR #95 and PR #96 SFJM continuity cycle is complete.
+PR #94 is closed and squash-merged into canonical `main` at:
 
-There is no active write authority and no active read-only audit authority recorded by this file.
+```text
+1caf90c60681771af6609b96ee840b190668fa0f
+```
 
-No new repository, PR, runtime, Supabase or integration task may begin from this record alone.
+The corrected F1-01 evidence map passed independent reaudit with residual risk and is now canonical documentation. This does not accept F1-01, grant Security Go, award WDP or validate runtime/Supabase.
 
-## Next single safe action
+The authority that created Draft PR #98 and permitted its bounded authorization-record correction is `CONSUMED`.
 
-Select one next workstream and grant a separate explicit authorization with source and date, repository, environment, target, scope, acceptance criteria, rollback and expiration.
+```text
+NO ACTIVE WRITE AUTHORIZATION
+NO AUTHORITY FOR ADDITIONAL COMMITS
+NO AUTHORITY FOR READY
+NO AUTHORITY FOR MERGE
+F1-02: PLANNED / NOT_AUTHORIZED
+```
 
-The two currently documented candidates are:
+## Next single safe workstream
 
-1. independent read-only current-head audit of FECH.AI PR #94 as the separate F1-01 product-governance artifact; or
-2. documentation-only bootstrap and external-project context contract for FECH.AI in `wagnerjfjunior/sfjm-workspace`.
+```text
+F1-02 — read-only Supabase security evidence refresh and negative-test design
+```
 
-Neither candidate is currently authorized.
+The workstream must remain fail-closed and must begin with a separate explicit authorization.
 
-## Candidate A — PR #94 audit
+## Required F1-02 bootstrap
 
-If explicitly authorized, the audit must begin by confirming live from GitHub:
+Before any Supabase read:
 
-- current FECH.AI `main` tip;
-- PR #94 state, title, base branch and base SHA;
-- head branch and exact current head SHA;
-- merge base and ahead/behind;
-- commit count and exact changed-file set;
-- complete diff;
-- checks and workflow runs;
-- reviews, requests for changes, threads and comments;
-- applicable FECH.AI bootstrap, B0 governance and M1 acceptance records.
+- confirm repository and canonical `main`;
+- identify the exact Supabase project and environment;
+- confirm access is read-only;
+- map every current M1 RPC and direct-DML path from the merged F1-01 inventory;
+- declare evidence available and missing;
+- prohibit all mutations;
+- define evidence capture, sanitization and expiration.
 
-The historical PR #94 head recorded elsewhere must not be assumed current.
+## Authorized read-only targets when separately approved
 
-A read-only audit would not authorize modification, Ready, merge, F1-01 acceptance, Security Go, WDP or implementation.
+The first F1-02 phase may inspect only the current state of:
 
-## Candidate B — SFJM Workspace contract
+- grants for used M1 RPCs and relevant tables;
+- RLS enablement and policies for affected tables;
+- bodies/signatures of used M1 RPCs;
+- direct PostgREST `PATCH corretores` exposure;
+- server-side tenant/company/user derivation;
+- actor, lead, list, stage and broker ownership checks;
+- current project/environment identifiers needed to establish provenance.
 
-If explicitly authorized, the task must begin with live bootstrap of both repositories and must remain documentation-only.
+## Required negative-test design
 
-It may define only how SFJM Workspace represents FECH.AI as an external project context.
+The read-only phase must produce, but not execute against production without separate approval, a matrix covering:
 
-It must not implement:
+- no session;
+- invalid or expired token;
+- wrong company/tenant;
+- forged lead ID;
+- forged list ID;
+- forged stage ID;
+- forged broker/corretor ID;
+- mixed-tenant batch IDs;
+- unauthorized visibility targets;
+- invalid feedback/channel/sequence payloads.
 
-- GitHub API ingestion as operational truth;
-- automatic synchronization;
-- backend or database integration;
-- Supabase integration;
-- runtime monitoring;
-- write-back to FECH.AI;
-- verified live-state claims without fresh evidence;
-- automatic approval, merge, Security Go, F1-01 acceptance or WDP decisions.
+## Paths that must not be omitted
 
-## Prohibited interpretations
+At minimum:
 
-This record does not:
+- `proximo_lead` via guarded Aceleração bridge;
+- direct `proximo_lead` in Discador;
+- `registrar_feedback` via guarded bridge;
+- direct `registrar_feedback` in Discador;
+- `atualizar_feedback`;
+- `mover_funil`;
+- `mover_funil_lote`;
+- `registrar_mensagem`;
+- `distribuir_lotes`;
+- `criar_lista`;
+- `gerenciar_visibilidade_lista`;
+- `importar_leads_batch`;
+- `get_dashboard_stats`;
+- `minha_producao`;
+- direct `PATCH corretores` call sites.
 
-- authorize an audit of PR #94;
-- authorize a branch or PR in `sfjm-workspace`;
-- authorize modification, Ready or merge of any PR;
-- grant Security Go;
-- mark MVP Família ready;
-- accept F1-01;
-- award WDP;
-- authorize runtime implementation;
-- validate Supabase, production or tenant isolation;
-- convert merged SFJM documentation into verified product state.
+## Explicitly prohibited
+
+This record does not authorize:
+
+- additional commits to PR #98;
+- marking PR #98 Ready;
+- merging PR #98;
+- Supabase reads without a separate F1-02 authorization;
+- Supabase writes;
+- migrations;
+- RLS, grants, policies or RPC changes;
+- negative tests against production;
+- runtime or frontend changes;
+- Edge Functions;
+- Vercel or GitHub Actions changes;
+- production changes;
+- Security Go;
+- F1-01 acceptance;
+- WDP assignment.
 
 ## Required authorization record
 
-Before either candidate begins, the authorization must state:
+Before F1-02 begins, the authorization must state:
 
 - source and date;
-- repository;
-- environment;
-- target PR, branch, commit or files;
-- read-only or write scope;
-- prohibited areas;
+- repository and canonical commit;
+- exact Supabase project/environment;
+- read-only scope;
+- allowed metadata, policies, grants, RPCs and tables;
+- prohibited mutations;
 - acceptance criteria;
-- rollback expectation;
+- evidence sanitization rules;
+- rollback expectation (`no mutation`; stop and revoke access if scope is uncertain);
 - expiration condition.
 
-Until then, the safe action is to preserve the current canonical state without mutation.
+Until that separate authorization exists, preserve the current state without mutation.
