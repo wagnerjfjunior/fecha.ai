@@ -28,7 +28,26 @@ The v1.1 and v1.2 **baseline** files remain traceability records. Where they con
 
 The activity register may add evidence, actual status and daily execution records, but it may not rewrite B0 scope, weights, baseline dates, dependencies or acceptance criteria without a separate Baseline Change Record.
 
-The B0 baseline and operating register are documentation-only. They do not authorize runtime, frontend, Supabase, migration, RLS, RPC, Vercel, integration or production changes.
+---
+
+## Current F1-01 evidence candidate
+
+`docs/audits/mvp/2026-07-05-f1-01-m1-acceptance-evidence-map.md`
+
+Use for:
+
+```text
+- M1/MVP1 acceptance-item map with current source anchors, evidence freshness and explicit gaps;
+- distinction between current code observation, historical documentation, stale live evidence and missing evidence;
+- F1-01 CP1 review only; it does not grant WDP, Security Go or MVP readiness;
+- required next evidence before F1-02 Security Go.
+```
+
+The F1-01 evidence map is an evidence candidate until independently reviewed against its final PR head. It must not be used to mark any MVP acceptance item ready or to change the B0 operating ledger without a separate accepted checkpoint record.
+
+---
+
+The B0 baseline, operating register and F1-01 evidence candidate are documentation-only. They do not authorize runtime, frontend, Supabase, migration, RLS, RPC, Vercel, integration or production changes.
 
 ## Core rule
 
