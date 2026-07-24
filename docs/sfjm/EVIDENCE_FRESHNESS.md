@@ -59,21 +59,37 @@ The evidence does not apply to the current scope, module, environment or decisio
 | Authorization | Scope and expiration remain valid | Expiration condition, revocation, target change or scope completion |
 | B0 checkpoint decision | Recorded through the authorized governance process | Baseline change, rejected evidence or superseding checkpoint decision |
 
-## 4. PR #94 freshness record
+## 4. Canonical main freshness record
 
-Observed on 2026-07-24:
+Observed after the squash merge of PR #96 on 2026-07-24:
+
+```text
+Canonical main observed: 4668cc1dde4b990791583c85f5b36a5d4b55d6a8
+Commit: docs(sfjm): reconcile state after PR 95 merge (#96)
+PR #96 final head: 91d27a4aa676f3e174ab000ca23992b69fc90a90
+PR #96 state: CLOSED / MERGED
+```
+
+This canonical-main observation is `CURRENT` only until a new commit lands on `main`.
+
+It is evidence for the FECH.AI repository state after PR #96. It does not validate runtime, Supabase, tenant isolation, Security Go, F1-01 acceptance or production.
+
+## 5. PR #94 freshness record
+
+Observed on 2026-07-24 before PR #95 and PR #96 changed canonical `main`:
 
 ```text
 PR #94 head: 140e92dd12c72eae5f90fa55b5b125bbedf6fbaa
 PR #94 base SHA: e7584b6ce2a53a88fca9974bcc448ebe9aea83ab
-Canonical main observed: e7584b6ce2a53a88fca9974bcc448ebe9aea83ab
+Canonical main observed at that time: e7584b6ce2a53a88fca9974bcc448ebe9aea83ab
+Freshness classification: STALE
 ```
 
-These observations are `CURRENT` only until an invalidating event occurs.
+The PR #94 head and base observations are historical evidence only. They must be revalidated live before any audit, decision or authorization involving PR #94.
 
-The PR #94 head is evidence about PR #94. It is not a canonical `main` commit and is `NOT_APPLICABLE` as the base for the independent SFJM documentation branch.
+The PR #94 head is evidence about PR #94. It is not a canonical `main` commit and is `NOT_APPLICABLE` as the base for another branch or workstream.
 
-## 5. Historical live evidence
+## 6. Historical live evidence
 
 Historical Supabase, runtime or deployment evidence must not be promoted to current authorization proof merely because it is versioned in GitHub.
 
@@ -86,7 +102,7 @@ A versioned historical result can establish:
 
 It cannot establish the present live state after potentially invalidating changes.
 
-## 6. Fail-closed rule
+## 7. Fail-closed rule
 
 When freshness cannot be established:
 
