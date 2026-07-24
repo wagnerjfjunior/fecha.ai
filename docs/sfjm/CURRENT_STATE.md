@@ -56,12 +56,24 @@ The following authorities are `CONSUMED`:
 - resolution of the six materially addressed review threads;
 - PR #94 independent reaudit;
 - PR #94 pre-merge verification;
-- PR #94 squash merge with exact-head protection.
+- PR #94 squash merge with exact-head protection;
+- creation of Draft PR #98 for post-PR #94 documentation reconciliation;
+- the bounded corrective commit that aligned the authorization record after Draft creation.
 
-The current authorization is limited to a documentation-only post-PR #94 reconciliation branch and Draft PR. It does not authorize merge of that reconciliation PR or any F1-02 execution.
+```text
+PR #98 creation authority: CONSUMED
+NO ACTIVE WRITE AUTHORIZATION
+NO AUTHORITY FOR ADDITIONAL COMMITS
+NO AUTHORITY FOR READY
+NO AUTHORITY FOR MERGE
+F1-02: PLANNED / NOT_AUTHORIZED
+```
 
 No standing authority exists for:
 
+- additional commits to PR #98;
+- marking PR #98 Ready;
+- merging PR #98;
 - runtime or frontend implementation;
 - Supabase, migrations, RLS, grants, policies or RPC changes;
 - Edge Functions, Vercel, GitHub Actions or production changes;
