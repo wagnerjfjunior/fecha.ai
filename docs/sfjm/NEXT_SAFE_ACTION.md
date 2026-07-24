@@ -5,82 +5,97 @@
 
 ## Next single safe action
 
-Independently re-audit PR #95 against its exact live head after the two Ready-review findings are corrected.
+Prepare a separately authorized, documentation-only registration contract for FECH.AI in `wagnerjfjunior/sfjm-workspace`.
 
-The re-audit must verify:
+The action must begin with a live bootstrap of both repositories and must define only how SFJM Workspace may represent FECH.AI as an external project context.
 
-- the live PR state;
-- that PR #95 remains open, Ready for review and not merged;
-- base branch and base SHA;
-- head branch and exact live head SHA;
-- mergeability;
-- commit count;
-- exact eight-file scope;
-- the complete diff;
-- that `docs/sfjm/NEXT_SAFE_ACTION.md` now identifies PR #95 exact-head re-audit as the current single safe action;
-- that `docs/sfjm/CURRENT_STATE.md` no longer presents consumed SFJM write authority as active;
-- that no file outside the two-file corrective scope changed after head `ca50aa759c3a0554d02a2bc1ed61f213ac1aaac8`;
-- that PR #94, runtime, Supabase, Vercel configuration and production were not modified;
-- that no new blocking review, thread or check exists.
+## Required gate before execution
 
-## Authorized scope for that action
+Before creating any branch or file in `sfjm-workspace`, confirm:
+
+- FECH.AI `main` contains the canonical SFJM files merged through PR #95;
+- the current FECH.AI `main` tip;
+- the current canonical state and authorization limits in `sfjm-workspace`;
+- the exact target branch and allowed documentation files;
+- that the change remains demonstrative/read-only and does not claim automatic synchronization;
+- that rollback is one documentation revert;
+- that the user has separately authorized the `sfjm-workspace` change.
+
+## Initial contract scope
+
+The first `sfjm-workspace` task may define:
+
+- FECH.AI repository identity;
+- canonical documentation entrypoints;
+- source-of-truth hierarchy;
+- external-project status vocabulary;
+- freshness and conflict rules;
+- read-only links or references to FECH.AI evidence;
+- explicit non-claims and blocked capabilities.
+
+It must not implement:
+
+- GitHub API ingestion;
+- automatic synchronization;
+- backend or database integration;
+- Supabase integration;
+- runtime monitoring;
+- write-back to FECH.AI;
+- verified live-state claims without fresh evidence;
+- automatic approval, merge, Security Go, F1-01 acceptance or WDP decisions.
+
+## Authorized scope of the current FECH.AI reconciliation
 
 ```text
-READ ONLY
-INDEPENDENT AUDIT
-GITHUB AND VERSIONED EVIDENCE
-EXACT LIVE PR #95 HEAD REQUIRED
-NO IMPLEMENTATION
-NO NEW COMMIT
-NO MERGE
-NO PR METADATA MODIFICATION
-NO RUNTIME OR ENVIRONMENT CHANGE
+DOCUMENTATION ONLY
+RECONCILE POST-MERGE STATE OF PR #95
+NO RUNTIME CHANGE
+NO SUPABASE CHANGE
+NO PR #94 CHANGE
+NO SFJM-WORKSPACE CHANGE
+NO MERGE AUTHORITY OUTSIDE THE SEPARATE PR FLOW
 ```
 
-## Completion conditions
+This reconciliation records the next action but does not authorize its execution.
 
-This action is complete only when the auditor records:
+## Completion conditions for this action
 
-1. the exact live PR #95 head validated;
-2. the exact `main` commit observed;
-3. confirmation that both Ready-review findings are closed;
-4. confirmation that the correction remained limited to:
-   - `docs/sfjm/NEXT_SAFE_ACTION.md`;
-   - `docs/sfjm/CURRENT_STATE.md`;
-5. confirmation that the total PR boundary remains exactly eight documentation files;
-6. confirmation that no `BLOCKING` or `REQUIRED IN THIS PR` finding remains;
-7. whether a fresh pre-merge verification is eligible for a separate authorized action.
+The future `sfjm-workspace` registration action is complete only when:
+
+1. its repository bootstrap is documented;
+2. its exact base and head are verified;
+3. the external-project contract is bounded and documentation-only;
+4. no automatic sync or backend integration is included;
+5. FECH.AI remains the canonical source for FECH.AI state;
+6. the change passes independent exact-head audit;
+7. Ready and merge remain separately authorized.
 
 ## Separate product-governance action
 
-The independent audit of PR #94 remains planned product-governance work for F1-01.
+The independent current-head audit of FECH.AI PR #94 remains separate F1-01 governance work.
 
-It is not the current single safe action while PR #95 still requires exact-head validation and merge-cycle completion.
-
-PR #94 must not be modified, approved or merged through this PR #95 continuity flow.
+Registration in SFJM Workspace must not modify, approve, merge or infer acceptance from PR #94.
 
 ## Prohibited interpretations
 
-The PR #95 re-audit must not automatically:
+This next-action record does not:
 
-- authorize another documentation commit;
-- authorize merge;
+- authorize a branch or PR in `sfjm-workspace`;
+- authorize automatic synchronization;
 - grant Security Go;
 - mark MVP Família ready;
 - accept F1-01;
 - award WDP;
 - authorize runtime implementation;
-- modify PR #94;
-- modify Supabase, Vercel configuration or production;
-- treat Vercel preview success as product, security or production validation.
+- modify Supabase, Vercel or production;
+- convert documentation presence into verified live state.
 
 ## Expiration
 
-This action expires and must be re-evaluated if:
+This action must be re-evaluated if:
 
-- PR #95 head changes after the head submitted to audit;
-- PR #95 is closed, merged, converted to Draft or superseded;
-- the exact eight-file scope changes;
-- canonical `main` changes in a way that affects the audit basis;
-- a new blocking review, thread or check appears;
-- the independent exact-head re-audit is completed and accepted.
+- FECH.AI `main` changes materially;
+- the canonical SFJM paths change;
+- `sfjm-workspace` governance or product boundaries change;
+- a higher-priority security or product blocker supersedes the registration task;
+- the user revokes or replaces the planned action.
