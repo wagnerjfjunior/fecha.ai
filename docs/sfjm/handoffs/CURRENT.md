@@ -20,7 +20,10 @@ The F1-01 evidence map is now merged into canonical `main`. Its merge closes the
 - PR #94 passed independent reaudit with `PASS WITH RESIDUAL RISK`;
 - PR #94 passed exact-head pre-merge verification;
 - PR #94 was squash-merged with head protection;
-- resulting `main` tip was confirmed.
+- resulting `main` tip was confirmed;
+- Draft PR #98 was created for post-PR #94 documentation reconciliation;
+- the bounded authorization-record correction was committed;
+- the PR #98 creation/correction authority is now `CONSUMED`.
 
 ## 3. Canonical anchors
 
@@ -55,7 +58,7 @@ Supabase live security state: NOT CONFIRMED
 F1-02 — read-only Supabase security evidence refresh and negative-test design
 ```
 
-F1-02 is selected but not yet authorized for execution. A separate authorization must identify the exact Supabase project/environment and preserve read-only scope.
+F1-02 is selected but remains `PLANNED / NOT_AUTHORIZED`. A separate authorization must identify the exact Supabase project/environment and preserve read-only scope.
 
 The first phase must map current grants, RLS policies, RPC bodies/signatures and direct `corretores` DML exposure for all M1 paths recorded by F1-01. It must also design, but not silently execute against production, the negative-test matrix.
 
@@ -63,18 +66,26 @@ The first phase must map current grants, RLS policies, RPC bodies/signatures and
 
 Consumed:
 
-- PR #95, #96, #97 continuity actions;
-- PR #94 correction, thread resolution, reaudit, pre-merge verification and squash merge.
+- PR #95, #96 and #97 continuity actions;
+- PR #94 correction, thread resolution, reaudit, pre-merge verification and squash merge;
+- creation of Draft PR #98 for documentation reconciliation;
+- bounded correction aligning `docs/sfjm/AUTHORIZATIONS.md` after Draft creation;
+- bounded correction aligning this handoff, `CURRENT_STATE.md` and `NEXT_SAFE_ACTION.md` with the consumed state.
 
-Active only for the current documentation reconciliation:
-
-- branch `agent/reconcile-f1-01-post-pr94`;
-- six authorized documentation files;
-- creation of a Draft PR;
-- no merge.
+```text
+PR #98 creation authority: CONSUMED
+NO ACTIVE WRITE AUTHORIZATION
+NO AUTHORITY FOR ADDITIONAL COMMITS
+NO AUTHORITY FOR READY
+NO AUTHORITY FOR MERGE
+F1-02: PLANNED / NOT_AUTHORIZED
+```
 
 Not authorized:
 
+- additional commits to PR #98;
+- marking PR #98 Ready;
+- merging PR #98;
 - F1-02 Supabase access;
 - negative-test execution;
 - runtime/frontend changes;
@@ -146,6 +157,8 @@ Not authorized:
 - `wagnerjfjunior/sfjm-workspace`.
 
 ## 12. Single next safe action
+
+Obtain a separate read-only authorization to re-audit the exact current head of PR #98. A PASS would not authorize Ready or merge.
 
 After this reconciliation PR is independently validated and separately merged, request a narrowly scoped `ACTIVE_READ_ONLY` authorization for F1-02 with:
 
