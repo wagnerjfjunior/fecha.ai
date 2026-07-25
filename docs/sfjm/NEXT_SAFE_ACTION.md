@@ -1,78 +1,128 @@
 # FECH.AI — SFJM Next Safe Action
 
-**Status:** `PR_102_CORRECTIVE_HEAD_REAUDIT`  
-**Observed on:** `2026-07-25`
+**Status:** `NEXT_SAFE_ACTION / PR_102_FINAL_HEAD_REAUDIT`  
+**Observed on:** `2026-07-25`  
+**Repository:** `wagnerjfjunior/fecha.ai`
 
-## 1. Current safe state
+## 1. Context
+
+PR #102 records the Product Authority decision to operate MVP 1 — Família as:
 
 ```text
-Canonical main: affbae1a598928010b0fa7db967734de522c13b4
-PR #101: CLOSED / MERGED
-PR #102: OPEN / DRAFT
-Branch: docs/f1-02-controlled-beta-primary-strategy
-Pre-correction head: fc83ed752217bfc39810dfba38e93405bc7382b8
-Final corrective head: resolve live from PR metadata/description
-Changed files after correction: 8 documentation files
-Security Go: DENIED
-F1-02: ACTIVE REMEDIATION / BLOCKED
-PR-01: NOT AUTHORIZED
-WDP: 0
+PILOT PRODUCTION / LIVE
+CONTROLLED FREE BETA
 ```
 
-## 2. Single next safe action
+It removes an isolated environment as a universal prerequisite, but does not turn the primary project into a laboratory and does not authorize any technical operation.
 
-Perform an independent re-audit of the exact final corrective head:
+The detailed F1-02 master plan has been restored to its canonical baseline. The strategy amendment remains the isolated lab-only supersession artifact.
 
-1. validate live PR state, base, branch and final head;
-2. validate exactly eight changed documentation files;
-3. read the complete diff and final files;
-4. run GPT0 documentary audit;
-5. run GPT1 architectural audit;
-6. run GPT3 Supabase-security contract audit;
-7. stop if the head changes;
-8. issue no write.
+## 2. Exact next action
 
-## 3. Required re-audit focus
+Perform an independent GPT0 documentation reauditing of the final live PR #102 head.
 
-- master-plan and amendment precedence;
-- Pilot Production / live classification;
-- accepted availability risk versus non-accepted security risk;
-- B1 self-escalation test prohibited on primary;
-- intentional named `admin_global` assignment separated from testing;
-- safe-live / isolated / deferred / prohibited categories;
-- integral synthetic graph and no real-object links;
-- fixture cleanup versus schema rollback;
-- separate implementation, PR lifecycle and live-operation authorities;
-- consumed correction authority and no further commit authority;
-- no implied PR-01, Supabase, Ready, merge, Security Go or WDP authority.
+Do not reuse the GPT0 verdict from `6b7d96fb26d6589641bc079146db9c3f429b9bd2`. That head is historical after the restoration commit.
 
-## 4. After successful re-audit
+## 3. Required live target
 
-A `PASS` or acceptable `PASS WITH RESIDUAL RISK` from GPT0/GPT1/GPT3 permits only a recommendation to request separate Ready authority.
+Resolve from GitHub immediately before audit:
 
-It does not authorize Ready automatically.
+```text
+Repository: wagnerjfjunior/fecha.ai
+PR: #102
+Expected state: OPEN / DRAFT
+Expected merged: false
+Base: main
+Base SHA: affbae1a598928010b0fa7db967734de522c13b4
+Branch: docs/f1-02-controlled-beta-primary-strategy
+Parent of final restoration commit:
+6b7d96fb26d6589641bc079146db9c3f429b9bd2
+Expected commits: 9
+Expected net changed files: 7
+```
 
-After Ready, merge requires a fresh exact-head gate and separate merge authority.
+Stop with `FAIL — HEAD CHANGED` if the head being audited is not the live final head recorded in PR metadata and description.
 
-## 5. Blocked until then
+## 4. Mandatory GPT0 checks
 
-- any additional commit;
+GPT0 must validate:
+
+1. one restoration commit directly follows `6b7d96fb...`;
+2. the restoration commit changes exactly six authorized paths;
+3. `F1-02_REMEDIATION_MASTER_PLAN.md` has blob:
+   `ea161050c535b848ff927133830984f543c1104d`;
+4. the final PR net diff contains exactly seven paths;
+5. the master plan no longer appears in the net diff because it matches `main`;
+6. the strategy amendment remains the sole lab-only supersession artifact;
+7. the original detailed contracts are preserved, including:
+   - table/RLS/grant matrix;
+   - RPC contract cards;
+   - call-site mapping;
+   - migration and rollback requirements;
+   - original PR-01 → PR-02 → PR-03 compatibility sequence;
+   - positive and negative tests;
+   - evidence schema;
+   - gate criteria;
+8. SFJM consistently records the restoration and consumed authority;
+9. no overclaim of Security Go, F1-02 acceptance, tests or Supabase authority exists;
+10. PR remains Draft.
+
+## 5. Sequencing after GPT0
+
+Only if GPT0 returns `PASS` or `PASS WITH RESIDUAL RISK` with:
+
+```text
+READY RECOMMENDATION: YES
+```
+
+then repeat GPT1 and GPT3 on the same exact head.
+
+If GPT0 returns `FAIL`, stop. Do not create another commit without new bounded Product Authority.
+
+If GPT0, GPT1 and GPT3 all recommend Ready, request a separate `TECHNICAL_PR_LIFECYCLE` authorization for Draft → Ready. Do not mark Ready automatically.
+
+## 6. Explicitly prohibited now
+
+- additional commits;
+- PR metadata changes;
+- comments or reviews;
+- reviewer requests;
 - Ready;
 - merge;
 - PR-01;
-- runtime/frontend;
-- Supabase read or mutation;
+- Supabase access or mutation;
+- SQL, migrations, RLS, grants, policies, RPCs or Auth;
+- runtime/frontend changes;
 - fixtures or tests;
-- intentional role assignment;
-- Security Go, F1-02 acceptance or WDP.
+- `admin_global` assignment;
+- Security Go;
+- F1-02 acceptance;
+- WDP.
 
-## 6. Failure path
+## 7. Stop conditions
 
-If any auditor returns a concrete in-scope finding:
+Stop fail-closed if:
+
+- PR/head/base differs;
+- commit parent is not exact;
+- corrective scope contains another file;
+- master-plan blob differs;
+- technical contracts remain removed or condensed;
+- net changed-file count differs without a documented Git explanation;
+- the PR is no longer Draft;
+- evidence is incomplete.
+
+## 8. Current state
 
 ```text
-STOP
-→ consolidate findings
-→ request one new bounded correction authority
-→ create no speculative or recursive documentation commit
+PR #102: OPEN / DRAFT
+Audit of final restoration head: PENDING
+Additional commits: NOT AUTHORIZED
+Ready: NOT AUTHORIZED
+Merge: NOT AUTHORIZED
+PR-01: NOT AUTHORIZED
+Supabase: NOT AUTHORIZED
+Security Go: DENIED
+F1-02: ACTIVE REMEDIATION / BLOCKED
+WDP: 0
 ```

@@ -1,136 +1,142 @@
 # FECH.AI — SFJM Evidence Freshness
 
-**Status:** `ACTIVE_FRESHNESS_RULES / PR_102_CORRECTED_DRAFT / FAIL_CLOSED`  
-**Observed on:** `2026-07-25`
+**Status:** `EVIDENCE_FRESHNESS_REGISTER / FAIL_CLOSED`  
+**Observed on:** `2026-07-25`  
+**Repository:** `wagnerjfjunior/fecha.ai`
 
-## 1. Purpose
+## 1. Freshness rule
 
-Freshness determines whether evidence may support a current decision. Fresh evidence is not automatically sufficient.
+Evidence is valid only for the exact repository, environment, branch, base, head, object set and lifecycle state it observed.
 
-## 2. Classes
+A new commit invalidates prior exact-head audit conclusions for Ready. Prior findings remain useful as historical input, but they are not approval of the new head.
 
-```text
-CURRENT
-STALE
-SUPERSEDED
-NOT_VERIFIED
-NOT_APPLICABLE
-```
+No designed test is treated as executed. No document is treated as live Supabase evidence.
 
-## 3. General invalidation rules
-
-| Evidence | CURRENT condition | Invalidating event |
-|---|---|---|
-| PR head/diff | exact live head and final files validated | commit, rebase, force-push or scope change |
-| Mergeability/reviews/checks | live at exact head | base/head/review/check change |
-| Canonical main | exact current tip | new main commit |
-| Source file | exact blob/commit | file change |
-| Supabase object state | read from exact project | migration/manual drift/config change |
-| Negative test | exact backend/fixtures | relevant change or fixture drift |
-| Runtime smoke | exact build/config/backend | deploy or backend/config change |
-| Authorization | exact scope active | completion, expiration, revocation or scope change |
-| Handoff | agrees with live evidence | material state/authority/decision change |
-
-## 4. Canonical GitHub evidence
+## 2. Canonical repository anchor
 
 ```text
-Canonical main: affbae1a598928010b0fa7db967734de522c13b4
+main: affbae1a598928010b0fa7db967734de522c13b4
 PR #101: CLOSED / MERGED
 PR #101 final head: 003850d012a299a947452fa5a8135cd454998f15
-PR #101 squash: affbae1a598928010b0fa7db967734de522c13b4
-Classification: CURRENT at PR #102 correction preflight
 ```
 
-## 5. PR #102 evidence
+The detailed F1-02 master plan canonical on `main` has blob:
 
 ```text
-PR: #102
-State expected: OPEN / DRAFT
-Branch: docs/f1-02-controlled-beta-primary-strategy
-Base: affbae1a598928010b0fa7db967734de522c13b4
-Pre-correction head: fc83ed752217bfc39810dfba38e93405bc7382b8
-Final corrective head: live PR metadata and updated PR description
-Expected changed files after correction: 8 documentation files
-Strategy canonicality: NOT_YET_CANONICAL
+ea161050c535b848ff927133830984f543c1104d
 ```
 
-The final corrective commit cannot embed its own SHA. Freshness is established by live GitHub validation, not a recursive follow-up commit.
+## 3. PR #102 head history
 
-Any head or scope change invalidates the GPT0/GPT1/GPT3 re-audits.
-
-## 6. Audit evidence
-
-Authenticated independent audits at `fc83ed752217bfc39810dfba38e93405bc7382b8` are `CURRENT` only as evidence of findings against that pre-correction head.
-
-They are not approval of the corrective head.
+### Initial Draft head
 
 ```text
-GPT0: FAIL / correction required
-GPT1: FAIL / correction required
-GPT3: FAIL / correction required
+fc83ed752217bfc39810dfba38e93405bc7382b8
+Commits: 7
+Changed files: 7
+Audit result: FAIL
 ```
 
-The in-Project `TOOL STALE STATE` result is evidence of tool limitation only and has no content verdict.
-
-## 7. Supabase evidence
-
-The 2026-07-24 read-only inspection remains the last recorded database evidence.
+### First corrective head
 
 ```text
-Project: Discador-MesaCliente
-Project ref: uobxxgzshrmbtjfdolxd
-Method: read-only metadata/definitions
-Mutations: ZERO
-Negative tests: ZERO
-Post-remediation state: NOT_VERIFIED
+6b7d96fb26d6589641bc079146db9c3f429b9bd2
+Commits: 8
+Changed files: 8
+GPT0: FAIL — master-plan normative regression
+GPT1: PASS WITH RESIDUAL RISK
+GPT3: PASS WITH RESIDUAL RISK
+Ready recommendation: NO
 ```
 
-Refresh affected objects after any migration, manual change, Auth/config change or source call-site change.
+GPT1/GPT3 approval at this head does not override the documentary blocker and does not apply to a later head.
 
-## 8. Validation evidence classes
-
-- structural proof may be `CURRENT` for exact grants/policies/functions;
-- designed tests are `NOT_VERIFIED` until executed;
-- safe-live tests require exact synthetic manifest and authority;
-- isolated tests require isolated-environment identity and parity evidence;
-- deferred tests remain `NOT_VERIFIED`;
-- prohibited tests never become evidence by execution on the primary project.
-
-B1 actual global self-escalation denial remains `NOT_VERIFIED` without isolation.
-
-## 9. Fixture freshness
-
-A fixture record is current only with:
-
-- versioned manifest;
-- exact synthetic IDs and relations;
-- proof of no links to real objects;
-- pre/post counts;
-- cleanup/deactivation result;
-- owner and timestamp;
-- no intervening relevant change.
-
-No fixture evidence currently exists.
-
-## 10. Authorization freshness
+### Detailed-baseline restoration head
 
 ```text
-Draft creation authority: CONSUMED
-Correction authority: CONSUMED
-Additional commit authority: NONE
-Ready authority: NONE
-Merge authority: NONE
-PR-01 authority: NONE
-Supabase authority: NONE
-Admin-role-change authority: NONE
+Parent: 6b7d96fb26d6589641bc079146db9c3f429b9bd2
+Commit count after restoration: expected 9
+Final head: authoritative in live PR metadata and PR description
+Audit state: NOT YET AUDITED
+Ready: NOT AUTHORIZED
 ```
 
-## 11. Fail-closed rule
+## 4. Corrective scope evidence
 
-When freshness cannot be established:
+The restoration commit is valid only if it changes exactly:
 
 ```text
-classification = STALE or NOT_VERIFIED
-approval/merge/deploy/security conclusion = BLOCKED
-next action = refresh only the narrow evidence required
+docs/security/evidence/F1-02_REMEDIATION_MASTER_PLAN.md
+docs/sfjm/AUTHORIZATIONS.md
+docs/sfjm/CURRENT_STATE.md
+docs/sfjm/EVIDENCE_FRESHNESS.md
+docs/sfjm/NEXT_SAFE_ACTION.md
+docs/sfjm/handoffs/CURRENT.md
+```
+
+The master plan must be restored to the exact baseline blob. Therefore it is changed by the corrective commit but is expected to disappear from the final PR net diff against `main`.
+
+Expected final PR net changed files:
+
+```text
+7
+```
+
+Any other corrective-commit path is invalidating evidence and blocks Ready.
+
+## 5. Documentary evidence state
+
+| Evidence | Exact target | State |
+|---|---|---|
+| PR #101 findings/master plan | `main@affbae1a...` | CANONICAL BASELINE |
+| Strategy amendment | PR #102 final head | DRAFT / NOT_YET_CANONICAL |
+| Detailed master-plan restoration | exact baseline blob | PRESENT ONLY AFTER LIVE VALIDATION |
+| GPT0 audit at `6b7d96fb...` | old head | HISTORICAL / FINDING INPUT |
+| GPT1 audit at `6b7d96fb...` | old head | INVALIDATED FOR READY BY NEW HEAD |
+| GPT3 audit at `6b7d96fb...` | old head | INVALIDATED FOR READY BY NEW HEAD |
+| GPT0 audit at restoration head | final head | MISSING |
+| GPT1/GPT3 reaudits | final head | MISSING |
+
+## 6. Supabase and runtime evidence
+
+No operation in PR #102 provides evidence that any F1-02 technical blocker is remediated.
+
+```text
+Supabase read under this correction: NONE
+Supabase mutation: NONE
+SQL/migration: NONE
+Fixture creation: NONE
+Negative tests: NONE
+Rollback/reapply: NONE
+Runtime/frontend change: NONE
+Production smoke: NONE
+Security Go: DENIED
+```
+
+The historical live read-only inspection remains evidence of the state observed on its date. It must be narrowly refreshed before a technical change affecting those objects.
+
+## 7. Invalidation events
+
+Revalidate narrowly when any of the following occurs:
+
+- PR #102 head changes;
+- main changes before Ready or merge;
+- the detailed master-plan blob differs from the baseline;
+- the strategy amendment changes;
+- changed-file scope changes;
+- a future migration, RLS, grant, policy, RPC, Auth or runtime change affects relevant evidence;
+- a new audit identifies a material inconsistency.
+
+## 8. Current evidence conclusion
+
+```text
+PR #102: OPEN / DRAFT
+Final restoration head: REQUIRES LIVE RESOLUTION
+Detailed baseline restoration: REQUIRES LIVE BLOB CHECK
+Independent final-head audit: MISSING
+Ready evidence: INCOMPLETE
+Merge evidence: INCOMPLETE
+Security Go evidence: INCOMPLETE / DENIED
+F1-02: ACTIVE REMEDIATION / BLOCKED
+WDP: 0
 ```
