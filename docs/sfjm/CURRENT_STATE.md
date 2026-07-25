@@ -1,182 +1,167 @@
 # FECH.AI — SFJM Current State
 
-**Lifecycle state:** `F1_02_READ_ONLY_COMPLETED / SECURITY_GO_DENIED / REMEDIATION_PROGRAM_IN_DRAFT`  
+**Lifecycle state:** `F1_02_CONTROLLED_BETA_PRIMARY_STRATEGY_IN_DRAFT / SECURITY_GO_DENIED`  
 **Record type:** `OPERATIONAL_STATE / DOCUMENTATION_ONLY`  
-**Observed on:** 2026-07-24  
+**Observed on:** `2026-07-25`  
 **Repository:** `wagnerjfjunior/fecha.ai`
 
 ## 1. Context understood
 
-FECH.AI remains Pilot Production, multi-tenant / multi-company, with real users, sensitive lead/customer data, active modules and security hardening in progress.
+FECH.AI is an MVP Família in controlled beta. It is not yet broadly commercialized or sold under a paid SLA.
 
 ```text
-Product phase: MVP 1 — Família
-Frontend requests and displays.
-Backend / RPC / Supabase validates and decides.
-AI assists, but is not authority.
+Real users: YES
+Multiple companies: YES
+Sensitive lead/customer data: YES
+Participants informed of beta/data-loss risk: YES
+Paid SLA: NO
+Security Go: DENIED
 ```
+
+Frontend requests and displays. Backend/RPC/Supabase validates and decides. AI assists, but is not authority.
 
 ## 2. Canonical GitHub state
 
 ```text
-Canonical main validated live: 0555bad889c6ab85970ee242a0e35ac6873508e8
-Commit: docs(sfjm): close PR99 cycle and prevent recursive reconciliation (#100)
-
-PR #100: CLOSED / MERGED
-PR #100 final head: defeda035c5e7f709e31707a84c9edd488c99799
-PR #100 squash commit: 0555bad889c6ab85970ee242a0e35ac6873508e8
-Open PRs observed before PR-00 creation: NONE
+Canonical main: affbae1a598928010b0fa7db967734de522c13b4
+Commit: docs(security): establish F1-02 remediation program (#101)
+PR #101: CLOSED / MERGED
+PR #101 final head: 003850d012a299a947452fa5a8135cd454998f15
+PR #101 squash: affbae1a598928010b0fa7db967734de522c13b4
 ```
 
-PR #100 closed the recursive documentation-only reconciliation loop. A later material operational change may still require one substantive update, but a documentation closure merge does not generate another PR solely to record itself.
+PR #101 established the F1-02 evidence and remediation baseline. It did not grant Security Go or authorize technical implementation.
 
-## 3. F1-01 state
+## 3. Material product-risk decision
+
+Wagner accepted the following operating risks for informed MVP Família participants:
+
+- service interruption and maintenance;
+- temporary unavailability;
+- manual recovery/support;
+- possible loss of beta data;
+- absence of a paid SLA.
+
+This does not accept:
+
+- privilege escalation;
+- cross-tenant access;
+- disclosure of sensitive data;
+- destructive testing against real records;
+- unbounded database changes;
+- false Security Go claims.
+
+## 4. Controlled Beta Primary strategy
+
+The authorized documentation branch is:
 
 ```text
-F1-01 evidence map: MERGED
-F1-01 map review: PASS WITH RESIDUAL RISK
-F1-01 checkpoint acceptance: NOT GRANTED
-Accepted WDP: 0
+Branch: docs/f1-02-controlled-beta-primary-strategy
+Base: affbae1a598928010b0fa7db967734de522c13b4
+Title: docs(security): adopt controlled beta primary remediation strategy
+Type: documentation-only Draft PR
 ```
 
-The evidence map remains a source-path and gap artifact. It does not prove runtime correctness, tenant isolation or Security Go.
+The strategy amendment permits the primary Supabase project to be used for future bounded remediation windows only after separate GitHub and environment authorizations.
 
-## 4. F1-02 read-only execution
+It supersedes only the isolated-lab prerequisite. All security, rollback, evidence and separation-of-duty controls remain active.
 
-The separately authorized read-only inspection was executed against:
+Canonical strategy artifact in this branch:
+
+```text
+docs/security/evidence/2026-07-25-f1-02-controlled-beta-primary-strategy.md
+```
+
+## 5. Security state
+
+```text
+Security Go: DENIED
+F1-02: ACTIVE REMEDIATION / BLOCKED
+MVP Família security readiness: NOT CONFIRMED
+Broad paid commercialization: BLOCKED
+WDP: 0
+```
+
+Confirmed blockers remain:
+
+1. direct broker self-update can alter authority-bearing fields;
+2. direct structural CRM writes remain exposed;
+3. direct funnel-history insertion can bypass controlled transitions;
+4. list ACL targets are not fully proven same-company;
+5. funnel-stage, import-session, feedback and Auth controls require remediation/evidence.
+
+## 6. Environment classification
 
 ```text
 Supabase project: Discador-MesaCliente
 Project ref: uobxxgzshrmbtjfdolxd
 Region: sa-east-1
-Status observed: ACTIVE_HEALTHY
-Repository commit correlated: 0555bad889c6ab85970ee242a0e35ac6873508e8
+Classification: CONTROLLED BETA PRIMARY
+Commercial production: NO
+Real users/data: YES
 ```
 
-Read-only targets included project provenance, grants, RLS/force-RLS, policies, function signatures and bodies, triggers, constraints, execution exposure, advisors and current source call-site evidence.
+The project is not an unrestricted laboratory. Real identifiers and records must not be used as negative-test fixtures.
 
-```text
-Supabase mutations: ZERO
-Lead/customer row reads: ZERO
-Negative tests in production: NOT EXECUTED
-```
+## 7. Current authority
 
-## 5. Security decision
+The user authorized only:
 
-```text
-Security Go: DENIED
-F1-02 status: ACTIVE REMEDIATION / BLOCKED BY CONFIRMED SECURITY FINDINGS
-MVP Família readiness: NOT CONFIRMED
-Runtime validation: NOT CONFIRMED
-WDP: 0 / NOT AWARDED
-```
+- creation of the exact documentation branch from `affbae1a...`;
+- documentation of the Controlled Beta Primary decision;
+- SFJM reconciliation;
+- one Draft documentation PR.
 
-### BLOCKING
+The authority does not permit:
 
-1. authenticated broker self-update can alter authority-bearing `corretores` fields and potentially obtain root/global authority;
-2. direct structural write exposure remains on CRM tables including `leads` and `lotes`;
-3. direct insertion can forge `funil_movimentacoes` history;
-4. list-visibility targets are not fully proven tenant-safe.
-
-### REQUIRED
-
-- tenant-safe funnel-stage listing;
-- company-scoped import-session deduplication;
-- strict feedback validation;
-- leaked-password protection decision;
-- isolated negative tests and rollback evidence;
-- final independent gate record.
-
-Canonical evidence candidates in the PR-00 branch:
-
-```text
-docs/security/evidence/2026-07-24-f1-02-live-readonly-findings.md
-docs/security/evidence/F1-02_REMEDIATION_MASTER_PLAN.md
-```
-
-These remain Draft evidence until independently audited at the exact PR head and merged.
-
-## 6. Program structure
-
-```text
-Windows: 5
-Planned PRs: 10
-Isolated Supabase security lab: 1, subject to explicit cost confirmation
-Formal gates: 2
-Recursive closure PRs: 0
-```
-
-Sequence:
-
-```text
-J0 — plan, evidence and lab strategy
-J1 — identity and self-escalation
-J2 — CRM direct writes and history
-J3 — ACL, tenant and payload integrity
-J4 — consolidated negative tests and final gate
-```
-
-## 7. Current PR-00 state
-
-```text
-Branch: docs/f1-02-security-remediation-program
-Base: 0555bad889c6ab85970ee242a0e35ac6873508e8
-Purpose: version the material F1-02 findings and remediation program
-Type: documentation-only
-```
-
-The user's instruction to begin the approved program authorizes creation of this bounded documentation branch, commits and one Draft PR. The authority is consumed when the Draft PR is created.
-
-It does not authorize:
-
-- additional commits after Draft creation;
-- Ready or merge;
-- Supabase Branch creation or cost;
 - runtime/frontend changes;
-- migrations, RLS, grants, policies, RPC or Auth changes;
+- migrations or SQL;
+- RLS, grants, policies, RPCs or Auth changes;
+- Supabase access or mutation;
 - negative tests;
-- production;
+- Ready or merge;
+- PR-01 implementation;
 - Security Go or WDP.
 
 ## 8. Evidence available
 
-- exact GitHub `main` and PR #100 merge state;
-- F1-01 used-path inventory;
-- exact Supabase project provenance;
-- live read-only grants, RLS, policies, RPC/function definitions, triggers, constraints and advisors;
-- confirmed direct frontend password-state patch dependency;
-- full remediation-program draft and sanitized finding draft.
+- PR #101 exact lifecycle and squash commit;
+- canonical F1-02 findings and master plan;
+- user decision accepting beta availability/data-loss risk;
+- exact Controlled Beta Primary strategy contract;
+- current known security blockers;
+- exact documentation branch and base.
 
 ## 9. Evidence missing
 
-- independent audit of PR-00 final head;
-- accepted isolated-lab strategy and cost confirmation;
-- synthetic two-company fixtures and actors;
-- executed negative tests;
-- migration and rollback evidence;
-- post-remediation grants/RLS/RPC evidence;
-- production application and smoke evidence;
+- independent audit of the strategy PR final head;
+- Ready and merge authorization for the strategy PR;
+- exact PR-01 implementation envelope;
+- current Supabase preflight at PR-01 execution time;
+- approved synthetic fixture manifest;
+- executed migration/rollback/smoke evidence;
+- post-remediation security evidence;
 - final Security Go decision.
 
 ## 10. Main risks
 
-- treating read-only discovery as completed Security Go;
-- performing security tests or mutations in production;
-- revoking grants before replacing the password-flow dependency;
-- mixing multiple primary risks in one technical PR;
-- using real production data in the lab or evidence;
-- counting PRs or planning as WDP;
-- creating a documentation PR after every technical merge;
-- allowing an executor to approve its own work.
+- confusing accepted availability/data-loss risk with accepted security failure;
+- using real users or data in security tests;
+- applying several security changes in one window;
+- treating the strategy document as Supabase mutation authority;
+- implementing PR-01 before this amendment is canonical;
+- broad commercialization before Security Go.
 
-## 11. Areas not to alter without separate scope
+## 11. Areas not to alter without separate authorization
 
 - runtime and frontend;
-- Supabase, migrations, RLS, grants, policies, RPC bodies and Auth;
-- Edge Functions, Vercel, GitHub Actions and production;
-- MesaCliente, PME, ADS/CAPI, Make/n8n and integrations;
-- real users, companies, teams, brokers, leads or customer data.
+- Supabase schema/data/migrations/RLS/grants/policies/RPCs/Auth;
+- Edge Functions, Vercel and GitHub Actions;
+- real users, companies, brokers, teams, leads or customers;
+- Security Go, F1-02 acceptance or WDP.
 
 ## 12. Next safe action
 
-Complete the bounded PR-00 Draft, validate its exact changed files and head, and send it to independent GPT0/GPT1/GPT3 audit. Do not create the Supabase security lab or begin PR-01 before PR-00 is accepted and separately authorized.
+Complete the bounded documentation commit set, open one Draft PR, validate its exact head/files/diff and route it to independent GPT0/GPT1/GPT3 review.
+
+Do not begin PR-01 or mutate the primary Supabase project until this strategy amendment is merged and a separate bounded implementation/environment authorization is granted.
