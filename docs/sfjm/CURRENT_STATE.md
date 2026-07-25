@@ -1,167 +1,182 @@
 # FECH.AI — SFJM Current State
 
-**Lifecycle state:** `PR_99_MERGED / RECONCILIATION_LOOP_CLOSED / F1_02_PLANNED_NOT_AUTHORIZED`  
-**Record type:** OPERATIONAL_STATE / DOCUMENTATION_ONLY  
+**Lifecycle state:** `F1_02_READ_ONLY_COMPLETED / SECURITY_GO_DENIED / REMEDIATION_PROGRAM_IN_DRAFT`  
+**Record type:** `OPERATIONAL_STATE / DOCUMENTATION_ONLY`  
 **Observed on:** 2026-07-24  
 **Repository:** `wagnerjfjunior/fecha.ai`
 
 ## 1. Context understood
 
-FECH.AI is a Pilot Production multi-tenant / multi-company platform with real users, sensitive lead/client data, active modules and security hardening in progress.
-
-SFJM is a transversal continuity and operational-state layer. It is not a CRM module, product runtime component, business authority or security boundary.
-
-## 2. Active product phase
+FECH.AI remains Pilot Production, multi-tenant / multi-company, with real users, sensitive lead/customer data, active modules and security hardening in progress.
 
 ```text
-MVP 1 — Família
+Product phase: MVP 1 — Família
+Frontend requests and displays.
+Backend / RPC / Supabase validates and decides.
+AI assists, but is not authority.
 ```
 
-The family pilot remains the controlled first validation phase before broader client or market exposure.
-
-## 3. Canonical GitHub state
+## 2. Canonical GitHub state
 
 ```text
-Canonical main observed after PR #99: 573ecebbafc2fb0ea4a065905e0f592b9db2a308
-Commit: docs(sfjm): reconcile state after PR 98 merge (#99)
+Canonical main validated live: 0555bad889c6ab85970ee242a0e35ac6873508e8
+Commit: docs(sfjm): close PR99 cycle and prevent recursive reconciliation (#100)
 
-PR #99: CLOSED / MERGED
-PR #99 final head: 754e35406971e72ce29763bf145060868914b4d7
-PR #99 squash commit: 573ecebbafc2fb0ea4a065905e0f592b9db2a308
-PR #99 independent audit: PASS WITH RESIDUAL RISK
-PR #99 pre-merge verification: PASS WITH RESIDUAL RISK
-PR #99 review threads: 2 RESOLVED / 0 OPEN
+PR #100: CLOSED / MERGED
+PR #100 final head: defeda035c5e7f709e31707a84c9edd488c99799
+PR #100 squash commit: 0555bad889c6ab85970ee242a0e35ac6873508e8
+Open PRs observed before PR-00 creation: NONE
 ```
 
-PRs #95, #96 and #97 established and reconciled the SFJM continuity layer. PR #94 merged the corrected F1-01 M1 acceptance evidence map. PR #98 reconciled the post-PR #94 state. PR #99 reconciled the post-PR #98 state, preserved all security and product gates and was squash-merged with exact-head protection.
+PR #100 closed the recursive documentation-only reconciliation loop. A later material operational change may still require one substantive update, but a documentation closure merge does not generate another PR solely to record itself.
 
-The bounded documentation-only closure PR containing this record closes the post-PR #99 reconciliation cycle. Its own merge does not automatically require another reconciliation PR unless it introduces a material change to operational state, evidence, authorization, blocker, decision or next safe action.
-
-All SHA values are historical anchors after a newer commit lands. Live GitHub state must still be resolved before any later sensitive decision.
-
-## 4. F1-01 product-governance state
+## 3. F1-01 state
 
 ```text
-F1-01 evidence map: MERGED INTO MAIN
-Map completeness review: PASSED WITH RESIDUAL RISK
+F1-01 evidence map: MERGED
+F1-01 map review: PASS WITH RESIDUAL RISK
 F1-01 checkpoint acceptance: NOT GRANTED
 Accepted WDP: 0
-Security Go: NOT GRANTED
 ```
 
-The merged evidence map establishes the known M1 source paths and explicit evidence gaps. It does not prove runtime correctness, Supabase security, tenant isolation, MVP readiness or accepted product value.
+The evidence map remains a source-path and gap artifact. It does not prove runtime correctness, tenant isolation or Security Go.
 
-## 5. Authorization state
+## 4. F1-02 read-only execution
 
-The following authorities are `CONSUMED`:
-
-- PR #94 bounded documentation correction;
-- resolution of the six materially addressed PR #94 review threads;
-- PR #94 independent reaudit;
-- PR #94 pre-merge verification;
-- PR #94 squash merge with exact-head protection;
-- creation, bounded correction, Ready transition, verification and squash merge of PR #98;
-- creation of Draft PR #99;
-- transition of PR #99 to Ready after exact-head validation;
-- response to and resolution of the two PR #99 review threads;
-- PR #99 pre-merge verification;
-- PR #99 squash merge with expected-head protection;
-- creation of the bounded post-PR #99 closure Draft PR containing this record.
+The separately authorized read-only inspection was executed against:
 
 ```text
-PR #99 lifecycle authority: CONSUMED
-POST-PR #99 CLOSURE DRAFT CREATION AUTHORITY: CONSUMED AT DRAFT CREATION
-NO ACTIVE WRITE AUTHORIZATION
-NO ACTIVE READ-ONLY F1-02 AUTHORIZATION
-NO AUTHORITY FOR ADDITIONAL COMMITS
-NO AUTHORITY FOR READY
-NO AUTHORITY FOR MERGE
-F1-02: PLANNED / NOT_AUTHORIZED
+Supabase project: Discador-MesaCliente
+Project ref: uobxxgzshrmbtjfdolxd
+Region: sa-east-1
+Status observed: ACTIVE_HEALTHY
+Repository commit correlated: 0555bad889c6ab85970ee242a0e35ac6873508e8
 ```
 
-No standing authority exists for:
-
-- additional documentation commits after creation of the bounded closure Draft PR;
-- Ready or merge of the closure PR;
-- runtime or frontend implementation;
-- Supabase reads or writes;
-- migrations, RLS, grants, policies or RPC changes;
-- negative-test execution;
-- Edge Functions, Vercel, GitHub Actions or production changes;
-- Security Go;
-- F1-01 acceptance;
-- WDP assignment;
-- changes in `wagnerjfjunior/sfjm-workspace`.
-
-## 6. Current conclusions
+Read-only targets included project provenance, grants, RLS/force-RLS, policies, function signatures and bodies, triggers, constraints, execution exposure, advisors and current source call-site evidence.
 
 ```text
-SFJM continuity layer: MERGED
-PR #99: CLOSED / MERGED
-Post-PR #99 closure record: BOUNDED DOCUMENTATION-ONLY CLOSURE
-Recursive post-merge reconciliation: NOT REQUIRED WITHOUT MATERIAL STATE CHANGE
-F1-01 evidence map: MERGED
-F1-01 map reaudit: PASS WITH RESIDUAL RISK
-F1-01 checkpoint acceptance: NOT GRANTED
-Security Go: NOT GRANTED
+Supabase mutations: ZERO
+Lead/customer row reads: ZERO
+Negative tests in production: NOT EXECUTED
+```
+
+## 5. Security decision
+
+```text
+Security Go: DENIED
+F1-02 status: ACTIVE REMEDIATION / BLOCKED BY CONFIRMED SECURITY FINDINGS
 MVP Família readiness: NOT CONFIRMED
 Runtime validation: NOT CONFIRMED
-Current live Supabase security state: NOT CONFIRMED
-F1-02: PLANNED / NOT_AUTHORIZED
 WDP: 0 / NOT AWARDED
 ```
 
-## 7. Evidence available
+### BLOCKING
 
-- PR #94 final head, diff, reviews and merge metadata;
-- six resolved PR #94 review threads with material corrections;
-- corrected M1 used-path inventory;
-- PR #98 final head, audit, pre-merge verification and merge metadata;
-- PR #99 final head, audit, review-thread disposition, pre-merge verification and merge metadata;
-- canonical FECH.AI bootstrap, B0, F1-01 and SFJM files;
-- explicit non-claims and evidence gaps recorded in the merged map.
+1. authenticated broker self-update can alter authority-bearing `corretores` fields and potentially obtain root/global authority;
+2. direct structural write exposure remains on CRM tables including `leads` and `lotes`;
+3. direct insertion can forge `funil_movimentacoes` history;
+4. list-visibility targets are not fully proven tenant-safe.
 
-## 8. Evidence missing or requiring refresh
+### REQUIRED
 
-- exact live Supabase project/environment confirmation;
-- current live Supabase grants, RLS policies and relevant RPC bodies;
-- negative no-session, invalid-token, manipulated-ID and cross-tenant test design/results;
-- persistent next-action/follow-up authority and storage path;
-- weekend/scheduled-visit dashboard semantics and zero-versus-unknown behavior;
-- deduplication, import audit, authenticated runtime smoke and rollback evidence.
+- tenant-safe funnel-stage listing;
+- company-scoped import-session deduplication;
+- strict feedback validation;
+- leaked-password protection decision;
+- isolated negative tests and rollback evidence;
+- final independent gate record.
 
-## 9. Main risks
+Canonical evidence candidates in the PR-00 branch:
 
-- treating the merged F1-01 map, PR #98 or PR #99 as F1-01 acceptance or Security Go;
-- beginning F1-02 without exact project/environment provenance and separate read-only authorization;
-- modifying Supabase while evidence collection is incomplete;
-- omitting direct `corretores` DML or direct Discador paths from F1-02;
-- treating frontend token use as authorization proof;
-- converting planned negative tests into claims of executed validation;
-- reusing consumed authorization as standing authority;
-- recreating recursive closure PRs without a material state change.
+```text
+docs/security/evidence/2026-07-24-f1-02-live-readonly-findings.md
+docs/security/evidence/F1-02_REMEDIATION_MASTER_PLAN.md
+```
 
-## 10. What must not be altered without separate scope
+These remain Draft evidence until independently audited at the exact PR head and merged.
 
-- runtime;
-- frontend;
-- Supabase;
-- migrations;
-- RLS;
-- grants;
-- policies;
-- RPC bodies;
-- Edge Functions;
-- Vercel configuration;
-- GitHub Actions;
-- MesaCliente;
-- PME;
-- ADS/CAPI;
-- Make/n8n;
-- integrations;
+## 6. Program structure
+
+```text
+Windows: 5
+Planned PRs: 10
+Isolated Supabase security lab: 1, subject to explicit cost confirmation
+Formal gates: 2
+Recursive closure PRs: 0
+```
+
+Sequence:
+
+```text
+J0 — plan, evidence and lab strategy
+J1 — identity and self-escalation
+J2 — CRM direct writes and history
+J3 — ACL, tenant and payload integrity
+J4 — consolidated negative tests and final gate
+```
+
+## 7. Current PR-00 state
+
+```text
+Branch: docs/f1-02-security-remediation-program
+Base: 0555bad889c6ab85970ee242a0e35ac6873508e8
+Purpose: version the material F1-02 findings and remediation program
+Type: documentation-only
+```
+
+The user's instruction to begin the approved program authorizes creation of this bounded documentation branch, commits and one Draft PR. The authority is consumed when the Draft PR is created.
+
+It does not authorize:
+
+- additional commits after Draft creation;
+- Ready or merge;
+- Supabase Branch creation or cost;
+- runtime/frontend changes;
+- migrations, RLS, grants, policies, RPC or Auth changes;
+- negative tests;
 - production;
-- `wagnerjfjunior/sfjm-workspace`.
+- Security Go or WDP.
 
-## 11. Next safe action
+## 8. Evidence available
 
-See `docs/sfjm/NEXT_SAFE_ACTION.md`.
+- exact GitHub `main` and PR #100 merge state;
+- F1-01 used-path inventory;
+- exact Supabase project provenance;
+- live read-only grants, RLS, policies, RPC/function definitions, triggers, constraints and advisors;
+- confirmed direct frontend password-state patch dependency;
+- full remediation-program draft and sanitized finding draft.
+
+## 9. Evidence missing
+
+- independent audit of PR-00 final head;
+- accepted isolated-lab strategy and cost confirmation;
+- synthetic two-company fixtures and actors;
+- executed negative tests;
+- migration and rollback evidence;
+- post-remediation grants/RLS/RPC evidence;
+- production application and smoke evidence;
+- final Security Go decision.
+
+## 10. Main risks
+
+- treating read-only discovery as completed Security Go;
+- performing security tests or mutations in production;
+- revoking grants before replacing the password-flow dependency;
+- mixing multiple primary risks in one technical PR;
+- using real production data in the lab or evidence;
+- counting PRs or planning as WDP;
+- creating a documentation PR after every technical merge;
+- allowing an executor to approve its own work.
+
+## 11. Areas not to alter without separate scope
+
+- runtime and frontend;
+- Supabase, migrations, RLS, grants, policies, RPC bodies and Auth;
+- Edge Functions, Vercel, GitHub Actions and production;
+- MesaCliente, PME, ADS/CAPI, Make/n8n and integrations;
+- real users, companies, teams, brokers, leads or customer data.
+
+## 12. Next safe action
+
+Complete the bounded PR-00 Draft, validate its exact changed files and head, and send it to independent GPT0/GPT1/GPT3 audit. Do not create the Supabase security lab or begin PR-01 before PR-00 is accepted and separately authorized.
