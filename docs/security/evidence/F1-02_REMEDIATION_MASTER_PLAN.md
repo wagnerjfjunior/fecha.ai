@@ -52,11 +52,11 @@ A new PR may be added only when new evidence reveals a technically independent r
 - Supabase Auth controls used by M1;
 - PostgreSQL grants and RLS for used M1 tables;
 - `corretores` authority and profile writes;
-- `leads`, `lotes` and `funil_movimentacoes` writes;
+- `leads`, `lotes`, `times` and `funil_movimentacoes` write surfaces;
 - list visibility and tenant-safe ACL behavior;
 - funnel stage visibility;
-- lead import session deduplication;
-- feedback payload validation;
+- lead import session deduplication and concurrency;
+- feedback payload validation and transactionality;
 - used M1 RPC signatures, bodies and execution grants;
 - negative security test design and execution in an isolated environment;
 - production preflight, controlled application, smoke and rollback evidence;
@@ -100,11 +100,12 @@ The read-only live inspection confirmed the exact project and reviewed live meta
 ### REQUIRED
 
 - tenant-safe `listar_funil_estagios`;
-- company-scoped import session deduplication;
-- strict feedback allowlist/enumeration;
+- company-scoped import session deduplication with concurrency-safe idempotency;
+- strict feedback allowlist/enumeration before the first write;
+- current disposition of the `times` write surface;
 - leaked-password protection decision;
-- repeatable negative tests;
-- tested rollback;
+- repeatable positive and negative tests;
+- tested rollback and reapply per migration;
 - independent final gate decision.
 
 ## 6. Roles and specialists
@@ -145,7 +146,7 @@ Region: sa-east-1
 Classification: Pilot Production
 ```
 
-Production must not be used for exploratory or offensive negative testing.
+Production must not be used for exploratory, destructive or offensive negative testing.
 
 ### Isolated security lab
 
@@ -155,23 +156,160 @@ Create one Supabase Branch only after explicit cost confirmation.
 Suggested name: f1-02-security-lab
 ```
 
-Use only synthetic data:
+Use only synthetic, versioned fixtures:
 
 - company A and company B;
-- admin global, admin local, manager and broker test actors;
-- inactive user and authenticated user without profile;
-- synthetic teams, lists, lots, leads and funnel stages;
-- valid, forged and mixed-tenant IDs.
+- admin-global synthetic actor;
+- admin-local actor for company A;
+- manager actor for company A;
+- broker A bound to company A and team A;
+- broker B bound to company B and team B;
+- inactive actor;
+- authenticated actor without a broker/profile row;
+- synthetic teams A and B;
+- synthetic lists A and B;
+- synthetic lots A and B;
+- synthetic leads A and B;
+- global funnel stages and company-specific stages A and B;
+- valid, nonexistent, forged and mixed-tenant IDs.
+
+The lab contract must include:
+
+1. a versioned fixture manifest with synthetic identifiers and expected relationships;
+2. a deterministic seed procedure;
+3. a deterministic reset procedure;
+4. one reset before each migration test cycle;
+5. rollback and reapply execution for each migration;
+6. sanitized evidence capture;
+7. confirmation that no production dump, production JWT, production password or production secret is reused;
+8. an owner role and deadline for branch destruction or deactivation after F1-02 closure;
+9. proof that branch/project isolation matches the intended environment before tests start.
 
 Never copy real production data, JWTs, passwords, customer names, phone numbers, e-mails or raw payloads into the lab or evidence.
 
-If the lab cannot be created:
+If the lab cannot be created or reliably reset:
 
 ```text
 STOP — LAB ENVIRONMENT UNAVAILABLE
 ```
 
-## 8. PR lifecycle
+Production is not an alternative laboratory.
+
+## 8. Mandatory security inventories before implementation
+
+The following inventories are mandatory deliverables. They are not optional narrative notes.
+
+### 8.1 Table/RLS/grant matrix
+
+The current live state must be revalidated at the exact implementation head for:
+
+```text
+public.corretores
+public.leads
+public.lotes
+public.funil_movimentacoes
+public.lista_visibilidade
+public.listas
+public.times
+public.funil_estagios
+```
+
+For each table and each operation, the audit artifact must record:
+
+| Required field | Required content |
+|---|---|
+| Table | Fully qualified identity |
+| RLS | enabled/disabled |
+| FORCE RLS | enabled/disabled/not applicable with rationale |
+| Operation | SELECT / INSERT / UPDATE / DELETE |
+| `anon` grant | current and target state |
+| `authenticated` grant | current and target state |
+| `service_role` grant | current and target state |
+| Other role grants | owner, custom roles and bypass roles |
+| Policy | exact policy identity |
+| `USING` | exact predicate or `NONE` |
+| `WITH CHECK` | exact predicate or `NONE` |
+| Helpers | functions invoked by policy |
+| Tenant derivation | server-side source of company/tenant |
+| Actor derivation | server-side source of user/broker/role |
+| Payload authority | fields that must never be trusted from frontend |
+| Call-site dependency | exact UI/service/job/integration dependency |
+| Target disposition | retain, restrict, revoke or replace |
+| Tests | positive and negative test IDs |
+| Rollback impact | security state restored by rollback |
+
+The matrix must not infer `UPDATE` safety from a `USING` predicate alone. It must inspect column authority, `WITH CHECK`, table grants and all direct call sites.
+
+### 8.2 Mandatory disposition for `times`
+
+Historical evidence identified `times` as part of an authenticated write surface. Before any Security Go decision, the current live state must be revalidated and one explicit disposition recorded:
+
+```text
+NO DIRECT WRITE PRESENT
+or
+DIRECT WRITE REQUIRED AND SAFELY CONSTRAINED
+or
+DIRECT WRITE REVOKED AND REPLACED BY CONTROLLED RPC
+```
+
+No historical finding may be treated as current without refresh. No `times` risk may be silently omitted.
+
+### 8.3 RPC contract inventory
+
+The following used M1 RPCs require an individual contract card:
+
+```text
+atualizar_perfil_corretor
+atualizar_status_corretor
+atualizar_time_corretor
+proximo_lead
+registrar_feedback
+atualizar_feedback
+mover_funil
+mover_funil_lote
+registrar_mensagem
+criar_lista
+gerenciar_visibilidade_lista
+importar_leads_batch
+distribuir_lotes
+get_dashboard_stats
+minha_producao
+listar_funil_estagios
+```
+
+Each card must record:
+
+| Required field | Required content |
+|---|---|
+| Function identity | schema, name and full signature |
+| Owner | exact database role |
+| Language | SQL, PL/pgSQL or other |
+| Execution mode | SECURITY INVOKER or SECURITY DEFINER |
+| Definer rationale | required only when definer is used |
+| `search_path` | fixed and non-user-controlled |
+| Dynamic SQL | absent, or bounded and justified |
+| `EXECUTE PUBLIC` | granted/revoked |
+| `EXECUTE anon` | granted/revoked |
+| `EXECUTE authenticated` | granted/revoked |
+| `EXECUTE service_role` | granted/revoked |
+| Authentication | `auth.uid()` handling |
+| Actor state | profile existence, uniqueness and active-state checks |
+| Tenant derivation | company derived server-side |
+| Authorization | role, team and ownership checks |
+| Payload contract | allowlisted arguments and rejected fields |
+| Tables touched | reads and writes |
+| Side effects | triggers, logs, history and dependent writes |
+| Transaction behavior | atomicity and failure behavior |
+| Return contract | exact shape without sensitive fields |
+| Positive tests | exact test IDs |
+| Negative tests | exact test IDs |
+| Rollback dependency | function/grant state restored |
+
+`SECURITY DEFINER` is not automatically a vulnerability, but it is never accepted without a fixed `search_path`, minimal grants, server-side identity/tenant checks and a documented owner.
+
+Any write RPC confirmed executable by `anon` is `BLOCKING` unless a separately approved public-use contract proves that the behavior is intentional and safe.
+
+## 9. PR lifecycle
 
 Every technical PR follows:
 
@@ -193,7 +331,7 @@ PLANNED
 
 A database PR is not operationally complete merely because GitHub shows it merged.
 
-## 9. Windows and PRs
+## 10. Windows and PRs
 
 | Window | Objective | Planned items |
 |---|---|---|
@@ -203,7 +341,7 @@ A database PR is not operationally complete merely because GitHub shows it merge
 | J3 | Tenant-safe ACL and payload integrity | PR-06, PR-07 |
 | J4 | Consolidated negative tests and gate | PR-08, operational Auth control, PR-09 |
 
-## 10. PR-00 — program baseline
+## 11. PR-00 — program baseline
 
 **Branch:** `docs/f1-02-security-remediation-program`  
 **Title:** `docs(security): establish F1-02 remediation program`
@@ -224,33 +362,78 @@ No runtime, frontend or Supabase change is permitted.
 Audit: GPT0 primary; GPT1 architecture; GPT3 security accuracy.  
 Rollback: one revert of the documentation-only PR.
 
-## 11. J1 — identity and self-escalation
+## 12. J1 — identity and self-escalation
+
+### 12.1 Mandatory compatibility sequence
+
+The operational sequence is mandatory and cannot be compressed:
+
+```text
+1. Implement PR-01.
+2. Apply PR-01 migration in the isolated lab.
+3. Pass positive, negative, rollback and reapply tests in the lab.
+4. Complete GPT3/GPT1/GPT4 audits at the exact PR-01 head.
+5. Merge PR-01 after separate lifecycle authorization.
+6. Apply the exact PR-01 migration/RPC to production after separate PRODUCTION_CHANGE authorization.
+7. Verify production function signature, owner, execution mode, search_path and grants.
+8. Execute a controlled positive production smoke with a synthetic authorized actor.
+9. Keep the legacy direct UPDATE temporarily available during the compatibility window.
+10. Implement and merge PR-02 frontend cutover.
+11. Deploy PR-02 and prove the new frontend uses the RPC.
+12. Re-scan all repository call sites and confirm no required direct password-state PATCH remains.
+13. Observe the cutover long enough to confirm no legitimate flow depends on direct UPDATE.
+14. Only then implement PR-03.
+15. Apply PR-03 revoke migration after separate production authorization.
+16. Verify direct UPDATE denial and controlled RPC continuity.
+```
+
+The following incompatible states are prohibited:
+
+```text
+frontend new + RPC absent
+frontend old + direct UPDATE revoked
+```
 
 ### PR-01 — narrow password-state RPC
 
 **Branch:** `security/f1-02-password-state-rpc`  
 **Title:** `security: add narrow password-state RPC`
 
-Create `marcar_senha_inicial_definida()`:
+Create `marcar_senha_inicial_definida()` with this deterministic contract:
 
-- requires `auth.uid()`;
-- resolves the active broker by authenticated user;
-- accepts no broker/company/role IDs;
+- requires a valid `auth.uid()`;
+- resolves exactly one active broker/profile by authenticated user;
+- fails if the profile is absent, inactive, duplicated or ambiguous;
+- accepts no broker, company, team, role or user identifiers;
 - updates only `must_change_password`;
-- fails closed;
-- fixed `search_path`;
-- no PII return;
-- `EXECUTE` denied to `PUBLIC` and `anon`, allowed only to required roles.
+- is idempotent when the target state is already satisfied;
+- returns a minimal documented result shape;
+- uses `SECURITY INVOKER` unless a documented privilege requirement proves `SECURITY DEFINER` is necessary;
+- if definer is used, has a safe owner, fixed `search_path` and fully qualified object references;
+- contains no unbounded dynamic SQL;
+- has no undocumented trigger or side effect;
+- revokes `EXECUTE` from `PUBLIC` and `anon`;
+- grants `EXECUTE` explicitly to `authenticated` only, plus `service_role` only when operationally required and documented;
+- returns no PII or authority-bearing profile fields;
+- fails closed before any write.
 
-Include a migration and explicit rollback. Do not revoke table update yet.
+Include one migration and its exact rollback. Do not revoke table update yet.
 
 Tests in lab:
 
-- no session, invalid token, no profile and inactive profile denied;
+- no session denied;
+- invalid token denied;
+- expired token denied;
+- no profile denied;
+- inactive profile denied;
+- duplicate/ambiguous profile denied;
 - valid broker succeeds;
+- repeated valid call remains idempotent;
 - only `must_change_password` changes;
-- grants match contract;
-- rollback and reapply pass.
+- no unrelated trigger or column change occurs;
+- grants match the contract;
+- rollback passes;
+- reapply passes.
 
 ### PR-02 — frontend cutover
 
@@ -259,37 +442,84 @@ Tests in lab:
 
 Replace the confirmed direct `PATCH corretores` password-completion path with the narrow RPC. Do not refactor unrelated frontend code.
 
+Precondition:
+
+```text
+PR-01 RPC is already applied and verified in production.
+```
+
 Tests:
 
 - `npm run build`;
-- exact direct patch removed;
-- success and fail-closed UI behavior;
+- exact direct patch removed from the intended path;
+- repository-wide call-site search performed at the exact head;
+- success UI behavior;
+- fail-closed UI behavior;
+- RPC unavailable does not produce false success;
 - no token or sensitive payload logging;
 - Vercel preview;
-- controlled production smoke after merge/deploy authorization.
+- controlled production smoke after merge/deploy authorization;
+- evidence confirms the new deployed frontend uses the RPC.
 
 ### PR-03 — revoke direct `corretores` update
 
 **Branch:** `security/f1-02-lock-corretores-update`  
 **Title:** `security: revoke direct corretor self-update`
 
+Preconditions:
+
+- PR-01 production RPC verified;
+- PR-02 deployed and smoke passed;
+- repository-wide search confirms no required direct update remains;
+- controlled RPCs are individually inventoried and tested.
+
+Required work:
+
 - revoke direct `UPDATE` from `authenticated`;
-- remove/replace permissive self-update policy;
-- preserve controlled RPCs for profile, status, team and password state;
-- verify execution grants;
-- keep audit trigger as detection, not enforcement;
-- include rollback.
+- remove or replace the permissive self-update policy;
+- inspect SELECT, INSERT, UPDATE and DELETE grants/policies for `corretores`;
+- revalidate `atualizar_perfil_corretor`;
+- revalidate `atualizar_status_corretor`;
+- revalidate `atualizar_time_corretor`;
+- revalidate `marcar_senha_inicial_definida`;
+- review `is_root()` and every function relying on authority-bearing broker fields;
+- preserve only controlled profile, status, team and password-state paths;
+- verify function owners, definer/invoker mode, fixed `search_path` and execution grants;
+- keep the audit trigger as detection, not enforcement;
+- include exact rollback and containment.
 
 Mandatory negative tests:
 
-- broker cannot change role, admin/manager flags, company, team, user ID, active state, receive eligibility or password state directly.
+- broker cannot change role;
+- broker cannot set admin-local flag;
+- broker cannot set manager flag;
+- broker cannot change company;
+- broker cannot change team;
+- broker cannot change user ID;
+- broker cannot change active state;
+- broker cannot change receive eligibility;
+- broker cannot change password state directly;
+- `anon` cannot update;
+- authenticated user without profile cannot update.
 
 Mandatory positive tests:
 
 - profile RPC works;
 - password-state RPC works;
-- authorized admin/manager RPCs continue working;
-- unauthorized actors remain denied.
+- status RPC works for authorized actor;
+- team RPC works for authorized actor;
+- unauthorized actors remain denied;
+- root behavior remains restricted to the approved server-side contract.
+
+Rollback containment:
+
+If rollback restores the vulnerable direct update grant or policy:
+
+```text
+SECURITY GO: DENIED
+PILOT: CONTAINED
+INCIDENT/ROLLBACK EVIDENCE: REQUIRED
+```
 
 ### Gate 1
 
@@ -297,129 +527,373 @@ Mandatory positive tests:
 SELF-ESCALATION: BLOCKED
 PASSWORD FLOW: FUNCTIONAL
 PROFILE/ADMIN RPCS: FUNCTIONAL
-ROLLBACK: TESTED
+RLS/GRANT MATRIX: COMPLETE
+RPC CONTRACT CARDS: COMPLETE
+ROLLBACK AND REAPPLY: TESTED
 PRODUCTION SMOKE: PASS
 ```
 
-## 12. J2 — CRM direct writes and funnel history
+## 13. J2 — CRM direct writes and funnel history
 
 ### PR-04 — restrict direct CRM writes
 
 **Branch:** `security/f1-02-lock-crm-direct-writes`  
 **Title:** `security: restrict direct CRM table writes`
 
-Reconfirm current call sites at the PR head, then restrict direct writes on `leads` and `lotes` only where RPC coverage is proven.
+Before any revoke, create a versioned operation/call-site map covering:
+
+- frontend components;
+- frontend services;
+- API routes;
+- Edge Functions, if any are confirmed in scope;
+- scheduled jobs;
+- repository scripts;
+- external integration call sites referenced by the code, without altering those integrations;
+- each direct table operation and its replacement RPC.
+
+The required mapping must distinguish:
+
+```text
+leads.INSERT
+leads.UPDATE
+leads.DELETE
+lotes.INSERT
+lotes.UPDATE
+lotes.DELETE
+times.INSERT
+times.UPDATE
+times.DELETE
+```
+
+For every operation record:
+
+- exact call site;
+- whether it is used by M1;
+- payload fields;
+- tenant/actor source;
+- approved RPC replacement;
+- migration dependency;
+- positive test IDs;
+- negative test IDs;
+- rollback impact.
+
+Restrict direct writes only where RPC coverage is proven. Do not revoke blindly.
 
 Negative tests:
 
-- direct insert/update denied;
-- company, broker, list, lot, team and status forgery denied;
-- wrong-owner and cross-tenant attempts denied.
+- direct insert/update/delete denied as applicable;
+- company forgery denied;
+- broker forgery denied;
+- list forgery denied;
+- lot forgery denied;
+- team forgery denied;
+- stage/funnel forgery denied;
+- status forgery denied;
+- wrong-owner attempts denied;
+- cross-tenant attempts denied;
+- mixed-tenant payload denied atomically.
 
 Positive tests:
 
-- import, next lead, feedback, funnel movement, messaging, lot allocation/distribution and dashboard paths continue through approved RPCs.
+- import;
+- next lead;
+- feedback;
+- funnel movement;
+- messaging;
+- lot allocation/distribution;
+- approved team-management path;
+- dashboard reads;
+- all used flows continue through approved RPCs.
+
+Rollback must identify exactly which direct grants are restored and whether restoring them reopens a blocker.
 
 ### PR-05 — enforce funnel history integrity
 
 **Branch:** `security/f1-02-protect-funnel-history`  
 **Title:** `security: enforce funnel history integrity`
 
-- revoke direct `INSERT` into `funil_movimentacoes`;
-- history created only by controlled RPCs;
-- derive actor/company/broker/lead/stage server-side;
-- ensure lead and stage tenant consistency;
+Required work:
+
+- inspect SELECT, INSERT, UPDATE and DELETE grants/policies for `funil_movimentacoes`;
+- revoke direct `INSERT` from untrusted application roles;
+- revoke or constrain direct UPDATE/DELETE when present;
+- create history only through controlled RPCs;
+- derive actor, company, broker, lead, stage and previous stage server-side;
+- require an active stage;
+- require stage membership in the approved global/company funnel semantics;
+- validate transition rules when the product contract defines them;
 - ensure lead update and movement record are one atomic operation;
-- reject mixed-tenant batches and forged IDs.
+- reject the complete batch if one ID is invalid or cross-tenant;
+- prevent history without corresponding state change;
+- prevent state change without corresponding history;
+- define concurrency behavior for simultaneous movements;
+- include exact rollback and reapply.
+
+Mandatory tests:
+
+- direct insert denied;
+- direct update denied or safely constrained;
+- direct delete denied or safely constrained;
+- forged company denied;
+- forged broker denied;
+- forged lead denied;
+- forged stage denied;
+- inactive stage denied;
+- invalid transition denied when transition rules exist;
+- mixed-tenant batch rolls back completely;
+- history-only mutation impossible;
+- state-only mutation impossible;
+- concurrent movement produces one deterministic accepted result or a controlled conflict;
+- authorized individual movement succeeds;
+- authorized batch movement succeeds;
+- rollback passes;
+- reapply passes.
 
 J2 exit:
 
 ```text
-DIRECT CRM MUTATION: DENIED
+DIRECT CRM MUTATION: DENIED OR EXPLICITLY CONSTRAINED
+TIMES DISPOSITION: RECORDED
 RPC OPERATIONAL FLOW: PASS
 FUNNEL HISTORY: CONSISTENT
 CROSS-TENANT TESTS: PASS
-ROLLBACK: TESTED
+ROLLBACK AND REAPPLY: TESTED
 ```
 
-## 13. J3 — ACL and payload integrity
+## 14. J3 — ACL and payload integrity
 
 ### PR-06 — tenant-safe list visibility
 
 **Branch:** `security/f1-02-tenant-list-acl`  
 **Title:** `security: enforce tenant-safe list visibility`
 
-- restrict direct ACL table DML;
-- validate target type, existence and company for every target;
-- validate executor role and managed-team boundary;
-- prevent manager company-wide or cross-tenant grants;
-- harden access helper to derive/verify company server-side;
-- use an atomic transaction;
-- preserve sanitized auditability.
+The authorization matrix must be finalized with GPT1, GPT3 and GPT7 before implementation. The conservative baseline is:
+
+| Actor | Broker target | Team target | Company target |
+|---|---|---|---|
+| Broker | denied | denied | denied |
+| Manager | only brokers within managed scope | only managed teams | denied |
+| Admin local | only same-company brokers | only same-company teams | own company only, and only if product explicitly approves company scope |
+| Root/admin global | explicit global rule only; never implicit | explicit global rule only; never implicit | explicit global rule only; never implicit |
+
+Universal rules:
+
+- no target may belong to another tenant unless an explicitly approved root-only global rule requires it;
+- company supplied by frontend is never authority;
+- target type and target ID must be mutually consistent;
+- target must exist and be active when the contract requires active state;
+- manager scope must be derived server-side;
+- admin-local scope must be derived server-side;
+- direct DML on `lista_visibilidade` is revoked or narrowly constrained;
+- `gerenciar_visibilidade_lista` has `PUBLIC` and `anon` execution revoked;
+- `corretor_tem_acesso_lista` becomes an internal helper when external execution is unnecessary;
+- owner, definer/invoker mode and fixed `search_path` are documented;
+- incompatible target rows are prevented by constraints or equivalent transaction checks;
+- the complete ACL update is atomic;
+- audit evidence is sanitized.
+
+Mandatory tests:
+
+- broker cannot manage ACL;
+- manager can grant only inside managed scope;
+- manager cannot grant company-wide access;
+- manager cannot target another company;
+- admin local cannot target another company;
+- root behavior follows the explicit approved rule;
+- nonexistent target denied;
+- invalid target type denied;
+- type/ID mismatch denied;
+- direct ACL DML denied;
+- cross-tenant target denied;
+- authorized same-company operation succeeds;
+- removal succeeds only for authorized actor;
+- rollback and reapply pass.
 
 ### PR-07 — tenant-safe reads and payload validation
 
 **Branch:** `security/f1-02-input-and-read-integrity`  
 **Title:** `security: harden funnel reads and CRM payloads`
 
-- authenticate and tenant-filter `listar_funil_estagios`;
-- scope import session deduplication by company and session;
-- validate list ownership;
-- reject unknown feedback values before any write;
-- avoid partial state changes;
-- validate other used channel/sequence payloads if confirmed at the PR head.
+#### `listar_funil_estagios`
+
+Before implementation, choose and document one unambiguous global-stage semantic:
+
+```text
+OPTION A: empresa_id IS NULL means global
+or
+OPTION B: explicit scope/is_global field with supporting constraints
+```
+
+The selected rule must be backed by constraints and tests. The RPC must:
+
+- require authentication;
+- resolve an active actor/profile;
+- derive company server-side;
+- accept no authoritative company parameter;
+- return only approved global stages plus stages belonging to the actor company;
+- exclude other-company stages;
+- exclude inactive stages when the product contract requires active only;
+- use deterministic ordering;
+- return a documented minimal shape.
+
+#### `importar_leads_batch`
+
+The contract must:
+
+- derive `empresa_id` server-side;
+- scope idempotency by `(empresa_id, sessao_id)`;
+- validate that the list exists and belongs to the same company;
+- allowlist payload fields and enforce size limits;
+- reject mixed-tenant payloads atomically;
+- ensure same session in the same company does not duplicate;
+- ensure the same session value in different companies does not collide;
+- protect concurrent identical submissions with a unique constraint, advisory lock, idempotency table or equivalent transaction-safe mechanism;
+- produce a deterministic result for replay;
+- write only sanitized audit data;
+- avoid partial import on validation failure unless an explicitly approved per-row contract says otherwise.
+
+#### `registrar_feedback`
+
+The contract must:
+
+- validate feedback against an explicit allowlist or enum before the first write;
+- reject empty, unknown or malformed feedback;
+- validate lead existence, company and ownership;
+- derive actor and company server-side;
+- define the exact effect on commercial status;
+- define the exact effect on funnel stage;
+- validate channel and sequence values when those fields are in the used path;
+- apply all effects in one transaction;
+- leave zero partial mutations on error;
+- return a documented minimal result.
+
+Mandatory PR-07 tests:
+
+- no session denied;
+- no profile denied;
+- inactive profile denied;
+- global stage returned according to selected semantics;
+- own-company stage returned;
+- other-company stage excluded;
+- deterministic stage ordering confirmed;
+- same company + same session is idempotent;
+- different companies + same session do not collide;
+- concurrent same-company submission produces one deterministic import result;
+- cross-tenant list denied;
+- mixed-tenant batch denied atomically;
+- feedback empty denied;
+- feedback unknown denied;
+- valid feedback succeeds;
+- invalid channel/sequence denied when applicable;
+- no partial status/funnel/history change on failure;
+- rollback and reapply pass.
 
 J3 exit:
 
 ```text
 LIST ACL CROSS-TENANT: BLOCKED
 FUNNEL STAGE LEAK: BLOCKED
+GLOBAL STAGE SEMANTICS: DOCUMENTED AND TESTED
 IMPORT SESSION COLLISION: FIXED
-INVALID FEEDBACK: REJECTED
-ROLLBACK: TESTED
+IMPORT CONCURRENCY: TESTED
+INVALID FEEDBACK: REJECTED BEFORE WRITE
+ROLLBACK AND REAPPLY: TESTED
 ```
 
-## 14. J4 — consolidated testing and gate
+## 15. J4 — consolidated testing and gate
 
-### PR-08 — repeatable negative test matrix
+### PR-08 — repeatable executable test matrix
 
 **Branch:** `test/f1-02-negative-security-matrix`  
 **Title:** `test(security): add F1-02 negative test matrix`
 
-Test categories:
+PR-08 must produce executable tests, not only category prose.
 
-- missing/invalid/expired session;
-- no profile and inactive profile;
-- self privilege escalation;
-- wrong company/tenant;
-- forged broker, lead, list, lot and stage IDs;
-- mixed-tenant arrays;
-- direct table mutations;
-- unauthorized visibility targets;
-- invalid feedback, channel and sequence payloads;
-- rollback and reapply.
+Each test record must contain:
 
-Every record must contain test ID, exact commit, project ref, environment, synthetic actor role, expected result, actual result, pass/fail and sanitized error code. Never store credentials, JWTs, PII or production UUIDs.
+```text
+test_id
+requirement_id
+exact application commit
+exact migration commit(s)
+Supabase project ref
+environment
+fixture version
+synthetic actor
+actor role
+actor company/team
+preconditions
+action/request
+sanitized payload description
+expected authorization result
+expected data mutation
+actual authorization result
+actual data mutation
+sanitized error code
+pass/fail
+timestamp
+evidence reference
+```
 
-Acceptance:
+Minimum catalog:
+
+| Test ID family | Required coverage |
+|---|---|
+| AUTH-001..005 | no session, invalid token, expired token, no profile, inactive profile |
+| COR-001..009 | role, admin-local, manager, company, team, user ID, active, receive eligibility, direct password-state mutation |
+| COR-010..013 | positive profile, password-state, status and team RPCs |
+| CRM-001..009 | direct lead insert/update/delete and structural company/broker/list/lot/team/stage/status forgery |
+| CRM-010..014 | wrong owner, cross-tenant lead, cross-tenant lot, mixed batch, approved positive CRM flow |
+| FUN-001..008 | direct history DML, forged stage, inactive stage, invalid transition, history/state consistency, concurrent movement |
+| ACL-001..010 | broker denied, manager scope, admin-local scope, root explicit rule, nonexistent target, invalid type, mismatch, direct DML, cross-tenant target, positive same-company operation |
+| STG-001..004 | global stage, own-company stage, other-company exclusion, deterministic ordering |
+| IMP-001..006 | same-company replay, different-company same session, concurrent replay, cross-tenant list, mixed tenant, positive import |
+| FDB-001..006 | empty, unknown, malformed, invalid channel/sequence, atomic failure, positive feedback |
+| ROL-001..N | rollback and reapply for every migration |
+| PRD-001..N | production metadata verification and separately authorized safe smoke |
+
+The executable suite must prove:
 
 ```text
 BLOCKING TESTS: 100% PASS
 REQUIRED TESTS: 100% PASS
 UNEXPECTED MUTATIONS: ZERO
 CROSS-TENANT SUCCESSES: ZERO
+ROLLBACK TESTS: 100% PASS
+REAPPLY TESTS: 100% PASS
 ```
 
-### Operational Auth control
+Never store credentials, JWTs, PII, production UUIDs or real customer payloads.
 
-Enable leaked-password protection only with explicit production authorization, previous-state capture, synthetic test account, smoke and reversal procedure.
+### Operational Auth control — OC-01
+
+Enable leaked-password protection only with explicit production authorization.
+
+Required contract:
+
+- capture the previous Auth configuration;
+- identify the exact project;
+- use a synthetic test account;
+- test password change separately;
+- test password recovery separately;
+- test the current `must_change_password` journey;
+- verify normal login remains functional;
+- verify the expected compromised-password rejection behavior;
+- sanitize all evidence;
+- disable/delete the synthetic account after validation;
+- document the exact reversal procedure;
+- record whether this control is:
+  - `BLOCKING FOR F1-02 / MVP1`, or
+  - `REQUIRED BEFORE EXTERNAL USERS`, with product and GPT3 approval.
+
+Activation alone is not evidence that Auth flows remain operational.
 
 ### PR-09 — final F1-02 gate decision
 
 **Branch:** `docs/f1-02-security-go-decision`  
 **Title:** `docs(security): record F1-02 gate decision`
 
-Consolidate exact PR heads/squash commits, lab applications, rollback tests, production applications, smoke evidence, negative matrix and residual risks. Record one decision:
+Consolidate exact PR heads/squash commits, lab applications, rollback/reapply tests, production applications, smoke evidence, executable matrix and residual risks. Record one decision:
 
 ```text
 SECURITY GO FOR TESTED M1 PATHS: GRANTED
@@ -435,7 +909,53 @@ Any grant applies only to the explicitly tested M1 paths, commit and environment
 
 The merge of PR-09 is self-closing. Do not create another PR merely to record its squash merge.
 
-## 15. Audit contract
+## 16. Mandatory rollback contract per migration
+
+Every migration PR must contain a migration-specific rollback section with:
+
+```text
+migration_id
+objects changed
+forward operation
+rollback SQL or exact rollback procedure
+rollback order
+dependencies
+data-preservation statement
+destructive-DDL statement
+lab test IDs
+reapply test IDs
+operational impact
+security state restored by rollback
+stop condition
+containment action
+owner role
+```
+
+Rules:
+
+1. rollback must be tested in the isolated lab;
+2. reapply must be tested after rollback;
+3. destructive DDL is prohibited unless separately justified and authorized;
+4. rollback may not silently discard real data;
+5. rollback that restores a vulnerable grant, policy or direct write surface immediately restores the blocker;
+6. technical rollback success does not equal risk acceptance;
+7. technical rollback success does not preserve Security Go.
+
+```text
+ROLLBACK TECHNICAL: PASS
+≠ RISK ACCEPTED
+≠ SECURITY GO MAINTAINED
+```
+
+If rollback restores a vulnerable boundary:
+
+```text
+SECURITY GO: DENIED
+PILOT: CONTAINED
+NEXT ACTION: INCIDENT/REMEDIATION DECISION
+```
+
+## 17. Audit contract
 
 Before Ready, an independent audit must output:
 
@@ -461,11 +981,13 @@ Rules:
 - audit exact head;
 - any head change invalidates the audit;
 - executor is not final auditor;
-- missing tenant, Auth, grant, RLS or rollback evidence blocks;
+- missing tenant, Auth, grant, RLS, RPC or rollback evidence blocks;
 - narrated tests do not count;
-- production application requires separate authorization.
+- production application requires separate authorization;
+- the table/RLS/grant matrix and RPC cards are mandatory audit inputs;
+- a Security Go recommendation cannot rely on frontend containment alone.
 
-## 16. Production process
+## 18. Production process
 
 For each migration:
 
@@ -481,15 +1003,44 @@ For each migration:
 9. separate production authorization
 10. production preflight
 11. apply exact migration
-12. verify objects/grants/policies
+12. verify objects/grants/policies/functions
 13. controlled smoke
 14. monitor
 15. sanitized evidence closure
 ```
 
+Production preflight must confirm:
+
+- exact project ref;
+- project health;
+- exact GitHub commit and migration identity;
+- current live object definitions;
+- migration not already applied;
+- rollback available;
+- no active incident;
+- no parallel change on the same objects;
+- synthetic smoke actor and records authorized.
+
+Safe production verification may include, under separate authorization:
+
+- read-only metadata inspection;
+- no-session rejection before any DML;
+- invalid/expired token rejection by Auth;
+- positive smoke with synthetic actor and synthetic records;
+- tenant-filtered read with authorized synthetic data.
+
+Do not execute in production:
+
+- fuzzing;
+- mixed-tenant offensive batches;
+- self-escalation against a real user;
+- writes to real leads or lots;
+- destructive ACL tests;
+- the complete negative matrix.
+
 Stop and rollback on login regression, unauthorized success, cross-tenant behavior, unexpected mutation, RPC-wide failure, material import/funnel regression or live object drift.
 
-## 17. SFJM process
+## 19. SFJM process
 
 Mandatory SFJM updates:
 
@@ -506,7 +1057,7 @@ Authorization types:
 - `PR_LIFECYCLE`: conditional Ready and exact-head squash merge;
 - `PRODUCTION_CHANGE`: exact Supabase/Vercel/Auth production operation and rollback.
 
-## 18. Junior analyst execution checklist
+## 20. Junior analyst execution checklist
 
 Before every PR:
 
@@ -514,42 +1065,57 @@ Before every PR:
 2. confirm live `main`;
 3. confirm predecessor and active window;
 4. confirm authorization, files, prohibitions and rollback;
-5. create exact branch from exact base;
-6. issue a bounded Codex task envelope;
-7. inspect changed files and diff;
-8. run `git diff --check` and relevant build/tests;
-9. confirm no secret or PII;
-10. open Draft PR;
-11. apply only in lab when database-related;
-12. run positive, unauthenticated, unauthorized, cross-tenant, invalid-payload and rollback tests;
-13. request GPT3/GPT7/GPT1/GPT4 audits as applicable;
-14. re-audit after any head change;
-15. obtain Ready authority;
-16. premerge validate exact head;
-17. obtain merge authority;
-18. squash merge with expected-head protection;
-19. obtain separate production authority;
-20. preflight, apply, smoke, monitor and close evidence.
+5. confirm required table/RLS/grant matrix rows;
+6. confirm required RPC contract cards;
+7. create exact branch from exact base;
+8. issue a bounded Codex task envelope;
+9. inspect changed files and diff;
+10. run `git diff --check` and relevant build/tests;
+11. confirm no secret or PII;
+12. open Draft PR;
+13. apply only in lab when database-related;
+14. reset fixtures before the test cycle;
+15. run positive, unauthenticated, unauthorized, cross-tenant, invalid-payload and concurrency tests;
+16. run rollback;
+17. run reapply;
+18. confirm expected and actual mutations;
+19. request GPT3/GPT7/GPT1/GPT4 audits as applicable;
+20. re-audit after any head change;
+21. obtain Ready authority;
+22. premerge validate exact head;
+23. obtain merge authority;
+24. squash merge with expected-head protection;
+25. obtain separate production authority;
+26. preflight, apply, verify, smoke, monitor and close evidence.
 
-## 19. Final acceptance
+The analyst must stop rather than make an architecture, tenant or authorization decision not defined in this plan.
+
+## 21. Final acceptance
 
 F1-02 can be accepted only when:
 
 - self-escalation is blocked;
-- direct unauthorized CRM and history writes are blocked;
+- direct unauthorized CRM and history writes are blocked or explicitly constrained by an accepted contract;
+- the `times` disposition is current and accepted;
 - list ACL and stage visibility are tenant-safe;
-- import and feedback contracts are hardened;
+- global-stage semantics are documented and tested;
+- import is tenant-safe, idempotent and concurrency-safe;
+- feedback is allowlisted and atomic;
+- all used RPCs have complete contract cards;
+- all relevant tables have complete RLS/grant matrices;
 - all used RPCs validate session and server-side authority;
 - grants, RLS and policies are current and documented;
-- negative tests and rollback pass;
+- executable positive and negative tests pass;
+- rollback and reapply pass for every migration;
 - production smoke passes;
+- OC-01 disposition is recorded and its required tests pass;
 - no BLOCKING finding remains;
 - GPT3 recommends the gate;
 - GPT1 agrees with architecture impact;
 - GPT0 confirms evidence and no overclaim;
 - Wagner records the final decision.
 
-## 20. Checkpoint candidates
+## 22. Checkpoint candidates
 
 ```text
 CP1: AS-IS, plan and lab strategy accepted — candidate 25%
@@ -560,6 +1126,6 @@ CP4: final tests, production evidence and gate accepted — candidate 100%
 
 No checkpoint or WDP is earned by this plan alone.
 
-## 21. Immediate next safe action
+## 23. Immediate next safe action
 
 Audit this PR-00 documentation baseline at its exact final head. After it passes and is merged, request cost confirmation for the single isolated Supabase Branch. Do not begin PR-01 or any Supabase mutation before the plan and lab strategy are accepted.
