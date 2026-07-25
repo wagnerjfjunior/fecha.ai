@@ -1,180 +1,207 @@
 # FECH.AI — SFJM Authorizations
 
-**Status:** AUTHORIZATION_REGISTER / FAIL_CLOSED  
+**Status:** `AUTHORIZATION_REGISTER / FAIL_CLOSED`  
 **Observed on:** 2026-07-24
 
 ## 1. Interpretation rule
 
-An authorization is valid only within its declared repository, target, environment, file scope, acceptance criteria and expiration condition.
+An authorization is valid only within its declared repository, target, environment, files/areas, acceptance criteria, prohibitions and expiration condition.
 
-General phrases such as `continue`, `proceed`, `next step` or `ótimo` must not be expanded into authority for runtime, security, Supabase, Vercel, production, Ready-for-review or merge actions.
+General phrases must be interpreted with the immediately preceding approved plan and next safe action. They never silently authorize runtime, Supabase, production, Ready or merge outside that exact context.
 
-When authorization is ambiguous, the posture is fail-closed.
+When material scope remains ambiguous, stop fail-closed.
 
-## 2. Consumed authorization — SFJM documentation v1 / PR #95
+## 2. Historical consumed authorities
 
-**Lifecycle state:** `CONSUMED`  
-**Result:** PR #95 — `docs(sfjm): add FECH.AI operational continuity layer v1`  
-**Merged head:** `611faa5d7275d8f40386c41b2687fb5ef6f7b5b6`  
-**Squash commit:** `4293f383e1e93f0cfd4a63f793024eb239bfafbb`
-
-No PR #95 authority remains active.
-
-## 3. Consumed authorization — post-PR #95 reconciliation / PR #96
-
-**Lifecycle state:** `CONSUMED`  
-**Result:** PR #96 — `docs(sfjm): reconcile state after PR 95 merge`  
-**Merged head:** `91d27a4aa676f3e174ab000ca23992b69fc90a90`  
-**Squash commit:** `4668cc1dde4b990791583c85f5b36a5d4b55d6a8`
-
-No PR #96 authority remains active.
-
-## 4. Consumed authorization — PR #94 correction, reaudit and merge
-
-**Lifecycle state:** `CONSUMED`  
-**Result:** PR #94 — `docs(m1): add F1-01 acceptance evidence map`  
-**Final head:** `a7e64c6ed817c03c4dbce7e1b9642e20360b3010`  
-**Squash commit:** `1caf90c60681771af6609b96ee840b190668fa0f`
-
-Consumed actions include bounded correction, six review-thread resolutions, independent reaudit, pre-merge verification, squash merge with expected-head protection and post-merge confirmation.
-
-This authorization did not accept F1-01, grant Security Go or award WDP.
-
-## 5. Consumed authorization — post-PR #94 documentation reconciliation / PR #98
-
-**Lifecycle state:** `CONSUMED`  
-**Source/date:** explicit user authorizations, 2026-07-24  
-**Repository:** `wagnerjfjunior/fecha.ai`  
-**Base:** `1caf90c60681771af6609b96ee840b190668fa0f`  
-**Branch:** `agent/reconcile-f1-01-post-pr94`  
-**Result:** PR #98 — `docs(sfjm): reconcile F1-01 state after PR 94 merge`  
-**Final head:** `e7e52ed9762ab92fd14f82e2437845421693ec81`  
-**Squash commit:** `8a2eb00a9dcd46d7ee346741ca27c6081af52124`  
-**Audit:** `PASS WITH RESIDUAL RISK`  
-**Pre-merge verification:** `PASS WITH RESIDUAL RISK`
-
-Consumed actions include:
-
-- creation of Draft PR #98 in exactly six authorized documentation files;
-- bounded authorization-state corrections;
-- transition to Ready after exact-head verification;
-- pre-merge verification;
-- squash merge with expected-head protection;
-- post-merge confirmation.
-
-The PR #98 authority is fully consumed. No authority remains for additional commits, Ready, merge, runtime, Supabase, Security Go, F1-01, F1-02 or WDP.
-
-## 6. Consumed authorization — post-PR #98 reconciliation / PR #99
-
-**Lifecycle state:** `CONSUMED`  
-**Source/date:** explicit user authorizations, 2026-07-24  
-**Repository:** `wagnerjfjunior/fecha.ai`  
-**Base:** `8a2eb00a9dcd46d7ee346741ca27c6081af52124`  
-**Branch:** `docs/reconcile-post-pr98`  
-**Result:** PR #99 — `docs(sfjm): reconcile state after PR 98 merge`  
-**Final head:** `754e35406971e72ce29763bf145060868914b4d7`  
-**Squash commit:** `573ecebbafc2fb0ea4a065905e0f592b9db2a308`  
-**Independent audit:** `PASS WITH RESIDUAL RISK`  
-**Pre-merge verification:** `PASS WITH RESIDUAL RISK`  
-**Review threads:** `2 RESOLVED / 0 OPEN`
-
-Consumed actions include:
-
-- creation of Draft PR #99 in exactly five authorized documentation files;
-- transition to Ready after exact-head verification;
-- read-only review of the exact head;
-- response to and resolution of the two review threads without changing the head;
-- final pre-merge verification;
-- squash merge with expected-head protection;
-- post-merge confirmation.
-
-The PR #99 authority is fully consumed. No authority remains for additional commits, Ready, merge, runtime, Supabase, Security Go, F1-01, F1-02 or WDP.
-
-## 7. Consumed at Draft creation — post-PR #99 closure reconciliation
-
-**Lifecycle state:** `CONSUMED AT DRAFT CREATION`  
-**Source/date:** explicit user authorization, 2026-07-24  
-**Repository:** `wagnerjfjunior/fecha.ai`  
-**Base:** `573ecebbafc2fb0ea4a065905e0f592b9db2a308`  
-**Branch:** `docs/close-pr99-reconciliation-loop`  
-**Environment:** GitHub documentation only
-
-### Files covered
+### PR #95 — SFJM documentation v1
 
 ```text
-docs/sfjm/INDEX.md
+State: CONSUMED
+Head: 611faa5d7275d8f40386c41b2687fb5ef6f7b5b6
+Squash: 4293f383e1e93f0cfd4a63f793024eb239bfafbb
+```
+
+### PR #96 — post-PR #95 reconciliation
+
+```text
+State: CONSUMED
+Head: 91d27a4aa676f3e174ab000ca23992b69fc90a90
+Squash: 4668cc1dde4b990791583c85f5b36a5d4b55d6a8
+```
+
+### PR #94 — F1-01 evidence map correction, audit and merge
+
+```text
+State: CONSUMED
+Final head: a7e64c6ed817c03c4dbce7e1b9642e20360b3010
+Squash: 1caf90c60681771af6609b96ee840b190668fa0f
+```
+
+This authority did not accept F1-01, grant Security Go or award WDP.
+
+### PR #98 — post-PR #94 reconciliation
+
+```text
+State: CONSUMED
+Branch: agent/reconcile-f1-01-post-pr94
+Final head: e7e52ed9762ab92fd14f82e2437845421693ec81
+Squash: 8a2eb00a9dcd46d7ee346741ca27c6081af52124
+Audit: PASS WITH RESIDUAL RISK
+```
+
+### PR #99 — post-PR #98 reconciliation
+
+```text
+State: CONSUMED
+Branch: docs/reconcile-post-pr98
+Final head: 754e35406971e72ce29763bf145060868914b4d7
+Squash: 573ecebbafc2fb0ea4a065905e0f592b9db2a308
+Audit: PASS WITH RESIDUAL RISK
+Threads: 2 RESOLVED / 0 OPEN
+```
+
+### PR #100 — close PR #99 cycle and prevent recursive reconciliation
+
+```text
+State: CONSUMED
+Branch: docs/close-pr99-reconciliation-loop
+Final head: defeda035c5e7f709e31707a84c9edd488c99799
+Squash: 0555bad889c6ab85970ee242a0e35ac6873508e8
+PR state: CLOSED / MERGED
+```
+
+PR #100 established that a bounded documentation-only closure merge does not require another PR solely to record its own squash commit.
+
+## 3. Consumed F1-02 read-only authority
+
+**Lifecycle state:** `CONSUMED`  
+**Source/date:** explicit user authorization and project identification, 2026-07-24  
+**Repository commit:** `0555bad889c6ab85970ee242a0e35ac6873508e8`  
+**Supabase project:** `uobxxgzshrmbtjfdolxd` (`Discador-MesaCliente`)  
+**Environment:** live project, read-only metadata/definition inspection
+
+Authorized actions executed:
+
+- identify and confirm exact project provenance;
+- read metadata, RLS/force-RLS state, policies and grants;
+- read relevant function/RPC signatures and bodies;
+- read constraints, triggers and security advisors;
+- correlate current GitHub source paths;
+- design but not execute negative tests;
+- produce sanitized findings and a remediation recommendation.
+
+Execution result:
+
+```text
+Read-only inspection: COMPLETED
+Mutations: ZERO
+Lead/customer row reads: ZERO
+Negative production tests: ZERO
+Security Go: DENIED
+```
+
+The read-only authority is consumed. It does not authorize further Supabase reads, writes, lab creation, migrations, negative tests or production actions.
+
+## 4. PR-00 Draft-creation authority
+
+**Lifecycle state:** `CONSUMED AT DRAFT CREATION`  
+**Source/date:** Wagner approved the detailed F1-02 master plan and instructed the project to begin, 2026-07-24  
+**Repository:** `wagnerjfjunior/fecha.ai`  
+**Base:** `0555bad889c6ab85970ee242a0e35ac6873508e8`  
+**Branch:** `docs/f1-02-security-remediation-program`  
+**Environment:** GitHub documentation only
+
+### Files authorized
+
+```text
+docs/security/evidence/F1-02_REMEDIATION_MASTER_PLAN.md
+docs/security/evidence/2026-07-24-f1-02-live-readonly-findings.md
 docs/sfjm/CURRENT_STATE.md
 docs/sfjm/NEXT_SAFE_ACTION.md
-docs/sfjm/EVIDENCE_FRESHNESS.md
+docs/sfjm/BLOCKED_ACTIONS.md
 docs/sfjm/AUTHORIZATIONS.md
+docs/sfjm/EVIDENCE_FRESHNESS.md
 docs/sfjm/handoffs/CURRENT.md
 ```
 
 ### Authorized actions
 
 - create the exact branch from the exact base;
-- update only the six authorized SFJM documents;
-- create no more than six commits;
-- record PR #99 as closed and merged;
-- record its final head, squash commit, audit, pre-merge verification and resolved threads;
-- remove obsolete PR #99 Draft, audit, Ready and merge next actions;
-- preserve all existing product and security gates;
-- prevent recursive documentation-only closure reconciliation;
-- define separate `ACTIVE_READ_ONLY` authorization as the prerequisite for F1-02;
-- create one Draft PR titled `docs(sfjm): close PR99 cycle and prevent recursive reconciliation`.
+- create/update only the eight listed documentation files;
+- version the complete remediation master plan;
+- version the sanitized live read-only findings;
+- reconcile material SFJM state, blockers, evidence, authority and handoff;
+- create one Draft PR titled `docs(security): establish F1-02 remediation program`.
 
-The creation of the Draft PR containing this record consumes the authorization. No subsequent commit is authorized merely to restate that consumption.
+### Acceptance constraints
+
+- documentation only;
+- no PII, credentials, JWTs, real passwords, customer payloads or raw production UUIDs;
+- Security Go remains denied;
+- F1-01 remains unaccepted;
+- F1-02 remains blocked pending remediation;
+- WDP remains 0;
+- no product/runtime claim;
+- no Supabase lab or production authority;
+- no recursive merge-record PR.
 
 ### Prohibited
 
-- any other file;
-- additional commits after Draft creation;
-- Ready or merge of the closure PR;
-- rebase or force-push;
+- files outside the exact list;
+- additional commits after Draft creation without a new bounded correction authority;
+- Ready or merge;
+- Supabase Branch creation or cost confirmation;
 - runtime or frontend changes;
-- Supabase access or modification;
-- migrations, RLS, grants, policies or RPC-body changes;
-- Edge Functions, Vercel, GitHub Actions or production changes;
-- Security Go;
-- F1-01 acceptance;
-- F1-02 execution;
-- WDP assignment.
+- migrations, RLS, grants, policies, functions/RPCs or Auth changes;
+- negative tests;
+- Edge Functions, Vercel, GitHub Actions or production;
+- Security Go, F1-01/F1-02 acceptance or WDP.
 
-Rollback remains one revert of the closure documentation PR if it is later merged.
+Rollback is one revert of the documentation-only PR if later merged.
 
-## 8. Planned but not authorized — F1-02 execution
+## 5. Planned future authorization types
 
-F1-02 is selected as the next workstream but remains `PLANNED / NOT_AUTHORIZED`.
+### `WINDOW_IMPLEMENTATION`
 
-A future authorization must identify the exact Supabase project/environment and canonical repository commit and must be read-only. A PASS from any documentation review does not authorize Supabase access, negative-test execution, remediation or Security Go.
+May authorize exact branches, files, commits and Draft PRs for one approved operational window. Does not authorize Ready, merge or production.
 
-## 9. Explicit prohibitions that remain
+### `PR_LIFECYCLE`
 
-No standing authority exists to:
+May conditionally authorize Ready and exact-head squash merge after audit and premerge gates. Does not authorize production application.
 
-- modify runtime or frontend;
-- access or modify Supabase;
-- modify migrations, RLS, grants, policies or RPC bodies;
-- modify Edge Functions, Vercel, GitHub Actions or production;
-- modify MesaCliente, PME, ADS/CAPI, Make/n8n or integrations;
-- modify `wagnerjfjunior/sfjm-workspace`;
-- grant Security Go;
-- accept F1-01;
-- award WDP;
-- execute F1-02;
-- mark the closure PR Ready or merge it;
-- create another documentation-only reconciliation solely to record the closure PR's own merge.
+### `PRODUCTION_CHANGE`
 
-## 10. Authorization evidence requirements
+May authorize one exact Supabase/Vercel/Auth production operation with project, migration/config identity, preflight, smoke, monitoring and rollback.
 
-Future authorizations must record:
+### `LAB_CREATE`
 
-- source and date;
-- repository and environment;
-- target PR, branch, commit or component;
-- exact allowed files or areas;
-- exact prohibited areas;
+Required before creating `f1-02-security-lab`. Must include exact project, cost confirmation, synthetic-data-only restriction, permitted operations and destruction/containment condition.
+
+## 6. Current authority state after PR-00 Draft creation
+
+```text
+PR-00 Draft creation authority: CONSUMED
+No authority for additional commits
+No authority for Ready
+No authority for merge
+No authority for Supabase lab creation
+No authority for PR-01 implementation
+No authority for runtime/frontend/Supabase/Auth/production
+No authority for Security Go or WDP
+```
+
+## 7. Evidence required for future authorities
+
+Every future authorization must identify:
+
+- source/date;
+- repository, base, branch and expected head when applicable;
+- exact environment/project;
+- exact files/objects/operations;
+- prohibited areas;
 - acceptance criteria;
-- rollback expectation;
+- test and audit requirements;
+- rollback/containment;
+- cost confirmation when applicable;
 - expiration condition;
-- lifecycle state: `PLANNED`, `ACTIVE`, `ACTIVE_READ_ONLY`, `CONSUMED`, `EXPIRED`, `REVOKED` or `SUPERSEDED`.
+- lifecycle state.
