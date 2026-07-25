@@ -1,197 +1,202 @@
 # FECH.AI — SFJM Current Handoff
 
-**Status:** `CURRENT_HANDOFF / F1_02_REMEDIATION_PROGRAM_IN_DRAFT`  
-**Observed on:** 2026-07-24  
+**Status:** `CURRENT_HANDOFF / CONTROLLED_BETA_PRIMARY_STRATEGY_IN_DRAFT`  
+**Observed on:** `2026-07-25`  
 **Repository:** `wagnerjfjunior/fecha.ai`
 
 ## 1. Decision
 
-F1-02 read-only discovery is complete. Security Go is denied because live evidence confirmed material authorization and tenant-isolation blockers. The project is entering a planned remediation program, not implementation-by-improvisation.
+PR #101 merged the canonical F1-02 findings and remediation program.
+
+Wagner then made a material product-risk decision:
+
+- MVP 1 — Família remains a free, informed controlled beta;
+- downtime, maintenance and possible beta data loss are accepted operating risks;
+- there is no paid SLA;
+- the primary Supabase project may be used for future bounded remediation windows;
+- an isolated Supabase Branch is no longer a mandatory prerequisite for every technical step.
+
+This decision does not accept privilege escalation, cross-tenant access, sensitive-data disclosure or destructive testing against real records.
 
 ```text
-MVP phase: MVP 1 — Família
-F1-01 acceptance: NOT GRANTED
-F1-02: ACTIVE REMEDIATION / BLOCKED
 Security Go: DENIED
+F1-02: ACTIVE REMEDIATION / BLOCKED
+Broad paid commercialization: BLOCKED
 WDP: 0
 ```
 
 ## 2. Canonical anchors
 
 ```text
-Canonical main: 0555bad889c6ab85970ee242a0e35ac6873508e8
-Commit: docs(sfjm): close PR99 cycle and prevent recursive reconciliation (#100)
-
-PR #100: CLOSED / MERGED
-PR #100 final head: defeda035c5e7f709e31707a84c9edd488c99799
-PR #100 squash: 0555bad889c6ab85970ee242a0e35ac6873508e8
+Canonical main: affbae1a598928010b0fa7db967734de522c13b4
+PR #101: CLOSED / MERGED
+PR #101 final head: 003850d012a299a947452fa5a8135cd454998f15
+PR #101 squash: affbae1a598928010b0fa7db967734de522c13b4
 ```
 
-Resolve live `main` again before any later sensitive action.
+Canonical F1-02 baseline:
 
-## 3. Live environment evidence
+```text
+docs/security/evidence/2026-07-24-f1-02-live-readonly-findings.md
+docs/security/evidence/F1-02_REMEDIATION_MASTER_PLAN.md
+```
+
+## 3. Active strategy branch
+
+```text
+Branch: docs/f1-02-controlled-beta-primary-strategy
+Base: affbae1a598928010b0fa7db967734de522c13b4
+Title: docs(security): adopt controlled beta primary remediation strategy
+Type: documentation-only Draft PR
+Primary risk: environment/remediation strategy
+Rollback: one revert
+```
+
+New strategy artifact:
+
+```text
+docs/security/evidence/2026-07-25-f1-02-controlled-beta-primary-strategy.md
+```
+
+The document supersedes only the mandatory isolated-lab prerequisite. It preserves all substantive security, rollback, evidence and approval controls.
+
+## 4. Environment classification
 
 ```text
 Supabase project: Discador-MesaCliente
 Project ref: uobxxgzshrmbtjfdolxd
 Region: sa-east-1
-Status observed: ACTIVE_HEALTHY
-Inspection type: read-only metadata/definition review
-Mutations: ZERO
-Negative production tests: ZERO
+Classification: CONTROLLED BETA PRIMARY
+Commercial production: NO
+Paid SLA: NO
+Real users: YES
+Real multi-company data: YES
+Sensitive data: YES
 ```
 
-No real lead/customer rows or production credentials were included in the evidence.
+The primary project is a live beta environment, not an unrestricted laboratory.
 
-## 4. Confirmed blockers
+## 5. Accepted and unaccepted risk
 
-### B1 — self privilege escalation
+### Accepted for informed beta participants
 
-A broker's direct self-row update surface in `corretores` includes authority-bearing columns. `is_root()` can recognize an `admin_global` broker. The critical-change trigger is monitoring, not enforcement.
+- downtime and maintenance;
+- temporary feature unavailability;
+- manual support/recovery;
+- possible loss of beta data;
+- no paid SLA.
 
-### B2 — direct CRM structural writes
+### Not accepted
 
-Direct `authenticated` write surface remains on `leads` and `lotes`, while used paths are expected to be RPC-controlled.
+- unauthorized admin/global authority;
+- company A reading/modifying company B;
+- disclosure of leads, contact data, tokens or credentials;
+- forged real CRM history;
+- offensive/destructive tests against real users or records;
+- unbounded migrations;
+- broad commercialization before Security Go.
 
-### B3 — funnel history integrity
+## 6. Confirmed blockers still open
 
-Direct insertion into `funil_movimentacoes` can bypass one authorized atomic transition.
+1. broker self privilege escalation through `corretores`;
+2. direct structural writes on `leads` and `lotes`;
+3. forgeable direct insertion into `funil_movimentacoes`;
+4. incomplete same-company validation for list ACL targets;
+5. tenant-safe funnel stages, import-session idempotency, feedback validation, `times` disposition and Auth control evidence.
 
-### B4 — list ACL tenant validation
+The strategy amendment does not remediate any blocker.
 
-Visibility targets and the access helper do not yet prove every relevant same-company relationship server-side.
+## 7. Future primary-environment rule
 
-Required additional hardening includes funnel-stage filtering, company-scoped import sessions, strict feedback validation and leaked-password protection decision.
-
-## 5. Selected program
+Every future primary-environment operation requires two separate authorities:
 
 ```text
-Program: F1-02 Security Remediation
-Windows: 5
-Planned PRs: 10
-Security lab: one isolated Supabase Branch after explicit cost confirmation
-Formal gates: 2
+1. WINDOW_IMPLEMENTATION
+   exact GitHub branch/files/change/tests/rollback
+
+2. CONTROLLED_BETA_PRIMARY_CHANGE
+   exact Supabase project/operation/preflight/smoke/rollback/expiration
 ```
 
-Canonical Draft artifacts:
+A merged technical PR alone does not authorize applying SQL or configuration.
 
-```text
-docs/security/evidence/F1-02_REMEDIATION_MASTER_PLAN.md
-docs/security/evidence/2026-07-24-f1-02-live-readonly-findings.md
-```
+## 8. Test rule
 
-Window sequence:
+Only synthetic, clearly identified fixtures may be used for security validation.
 
-```text
-J0 — program/evidence/lab strategy
-J1 — password dependency and self-escalation
-J2 — CRM direct writes and funnel history
-J3 — ACL, tenant reads and payload integrity
-J4 — repeatable negative tests and final gate
-```
+Required before testing:
 
-## 6. Active PR-00
+- two synthetic companies and actors;
+- exact manifest;
+- no real identifiers or payloads;
+- pre/post counts;
+- deterministic cleanup or deactivation;
+- stop conditions;
+- separate authorization.
 
-```text
-Branch: docs/f1-02-security-remediation-program
-Base: 0555bad889c6ab85970ee242a0e35ac6873508e8
-Title: docs(security): establish F1-02 remediation program
-Type: documentation-only Draft
-```
+Never test cross-tenant access or privilege escalation with real accounts/data.
 
-Expected changed files, exactly:
+## 9. Current authority and prohibitions
 
-```text
-docs/security/evidence/F1-02_REMEDIATION_MASTER_PLAN.md
-docs/security/evidence/2026-07-24-f1-02-live-readonly-findings.md
-docs/sfjm/CURRENT_STATE.md
-docs/sfjm/NEXT_SAFE_ACTION.md
-docs/sfjm/BLOCKED_ACTIONS.md
-docs/sfjm/AUTHORIZATIONS.md
-docs/sfjm/EVIDENCE_FRESHNESS.md
-docs/sfjm/handoffs/CURRENT.md
-```
+Authorized now:
 
-The authority covers branch/commits/Draft creation only and is consumed at Draft creation. It does not cover corrections, Ready, merge or technical execution.
+- exact documentation branch;
+- seven documentation files;
+- one Draft PR.
 
-## 7. Specialist routing
+Not authorized now:
 
-```text
-GPT0: evidence and documentation audit
-GPT1: architecture and sequencing audit
-GPT3: security finding and remediation-contract audit
-GPT4: PR/head/diff/check/merge lifecycle when later authorized
-GPT7: CRM/Discador behavior for technical PRs
-GPT2: password-flow UX only if user-facing states change
-GPT5: production monitoring/rollback/incident
-Codex: bounded implementation only after approved envelopes
-```
+- Ready or merge of the strategy PR;
+- PR-01 implementation;
+- runtime/frontend change;
+- migrations/SQL/RLS/grants/policies/RPCs/Auth;
+- Supabase access or mutation;
+- synthetic fixture creation;
+- negative tests;
+- Security Go, F1-02 acceptance or WDP.
 
-The executor must not be the final auditor.
+## 10. Evidence available
 
-## 8. Evidence available
+- canonical PR #101 lifecycle and commit;
+- canonical live read-only F1-02 findings;
+- canonical remediation master plan;
+- explicit user beta-risk decision;
+- exact strategy amendment contract;
+- exact branch/base/files authorization.
 
-- exact GitHub main and PR #100 closure;
-- F1-01 current path inventory;
-- exact live Supabase project provenance;
-- current grants, RLS/policies, functions, triggers, constraints and advisors;
-- direct frontend password-state patch dependency;
-- complete remediation program Draft;
-- sanitized finding record Draft.
+## 11. Evidence missing
 
-## 9. Evidence missing
+- final strategy-PR head/diff audit;
+- strategy Ready/merge lifecycle;
+- exact PR-01 scope;
+- current Supabase preflight for affected objects;
+- synthetic fixture manifest;
+- executed migration/rollback/smoke evidence;
+- final F1-02 Security Go gate.
 
-- independent PR-00 audit at final head;
-- PR-00 Ready/merge lifecycle;
-- isolated lab and explicit cost confirmation;
-- synthetic two-company fixtures;
-- executed negative tests;
-- migration and rollback tests;
-- production application/smoke;
-- final F1-02 gate.
+## 12. What must not be redone
 
-## 10. What must not be redone
+- do not reopen PR #101 without new evidence;
+- do not repeat broad read-only discovery unless an invalidating change requires a narrow refresh;
+- do not create an isolated Supabase Branch merely because the old plan required it;
+- do not interpret beta consent as a security waiver;
+- do not open a reconciliation PR after every technical merge;
+- do not treat PR count as product progress.
 
-- do not reconstruct the project from zero;
-- do not reopen PR #94–#100 without new evidence;
-- do not repeat the read-only discovery unless an invalidating event requires narrow refresh;
-- do not create an SFJM PR after every technical merge;
-- do not create a PR solely to record PR-00 or PR-09 squash merge;
-- do not count PRs as product value;
-- do not treat production as the lab.
+## 13. Single next safe action
 
-## 11. What must not be altered without separate authorization
+Complete the documentation-only Draft PR, validate exact head/files/diff and send it to independent GPT0/GPT1/GPT3 audit.
 
-- any file after PR-00 Draft creation;
-- PR-00 Ready or merge;
-- Supabase Branch/cost;
-- frontend/runtime;
-- migrations, RLS, grants, policies, RPCs/functions or Auth;
-- Edge Functions, Vercel, Actions or production;
-- MesaCliente, PME, ADS/CAPI, Make/n8n and integrations;
-- real users or data;
-- Security Go, F1-01/F1-02 acceptance or WDP.
+After that PR is merged under separate authority, define PR-01 as one bounded risk. Do not touch Supabase or runtime before both implementation and primary-environment authorities exist.
 
-## 12. Single next safe action
-
-Validate PR-00 exact final head, changed files and diff, then send it to independent GPT0/GPT1/GPT3 audit.
-
-After PR-00 is independently accepted and later merged under separate authority, request explicit cost confirmation and authorization for one isolated branch:
-
-```text
-f1-02-security-lab
-```
-
-Do not begin PR-01 before those gates.
-
-## 13. New-conversation startup
+## 14. New-conversation startup
 
 A receiving conversation must:
 
 1. read bootstrap, governance and SFJM indexes;
-2. validate live `main` and the active PR/head;
-3. read the two PR-00 evidence artifacts;
+2. validate live `main` and active strategy PR/head;
+3. read the strategy amendment and canonical F1-02 baseline;
 4. preserve Security Go denied and WDP 0;
-5. preserve the five-window/ten-PR sequence unless new evidence justifies change;
-6. keep production out of exploratory testing;
-7. require exact authority for every lifecycle and production transition.
+5. distinguish accepted availability risk from unaccepted security risk;
+6. require exact authority for every GitHub and Supabase transition;
+7. stop fail-closed when evidence is missing.
