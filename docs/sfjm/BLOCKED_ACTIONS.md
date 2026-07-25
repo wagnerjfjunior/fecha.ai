@@ -1,57 +1,110 @@
 # FECH.AI — SFJM Blocked Actions
 
-**Status:** ACTIVE_BLOCKS / FAIL_CLOSED  
+**Status:** `ACTIVE_BLOCKS / F1_02_REMEDIATION / FAIL_CLOSED`  
 **Observed on:** 2026-07-24
 
-The following actions are blocked until explicit canonical evidence and authorization remove the relevant block.
+The following actions remain blocked until exact evidence, audit and authorization remove the relevant block.
 
-## Product and delivery blocks
+## 1. Product and delivery blocks
 
-- Declare MVP Família ready.
-- Treat source-code presence as accepted product behavior.
-- Treat PR #94 creation, review or merge as earned WDP automatically.
-- Count the SFJM documentation PR as product delivery value.
-- Start F1-02 as though F1-01 were already accepted.
-- Convert a documentary map into implementation authorization.
+- declare MVP 1 — Família ready;
+- treat F1-01 documentation as accepted product behavior;
+- advance F1-03 or F1-04 before F1-02 acceptance;
+- start the family pilot while BLOCKING security findings remain;
+- count planning, commits, PRs or merges as WDP without an accepted checkpoint;
+- grant F1-01 acceptance, F1-02 acceptance or any WDP from PR-00 alone.
 
-## Security blocks
+## 2. Security blocks
 
-- Grant Security Go.
-- Treat frontend session/token use as proof of backend authorization.
-- Treat historical Supabase evidence as current without freshness validation.
-- Alter RLS, grants, policies, RPC bodies or tenant-isolation controls from documentary inference.
-- Approve used M1 paths without current live and negative-test evidence where required.
+- grant Security Go;
+- treat authenticated session as sufficient authorization;
+- treat the read-only finding record as executed negative-test evidence;
+- use production as the negative-test laboratory;
+- create real test users or mutate real companies, brokers, teams, leads or customers;
+- rely on the audit trigger as prevention of privilege escalation;
+- revoke current broker update access before the password-flow dependency is replaced and tested;
+- approve any M1 path without current Auth, tenant/company, permission, grant/RLS/RPC and negative-test evidence.
 
-## Repository and PR blocks
+## 3. Confirmed blockers to remediate
 
-- Use PR #94 head `140e92dd12c72eae5f90fa55b5b125bbedf6fbaa` as the base for unrelated work.
-- Modify PR #94 content, metadata, branch, state or head from the SFJM implementation PR.
-- Merge PR #94 without a current-head independent audit and explicit merge authorization.
-- Approve any PR after its validated head changes without revalidation.
-- Mix runtime changes into the SFJM documentation PR.
+### B1 — broker self privilege escalation
 
-## Runtime and environment blocks
+Direct `corretores` update exposure must be removed after a narrow password-state RPC and frontend cutover are proven.
 
-- Change frontend or runtime to close documentary gaps before a scoped implementation decision.
-- Change Supabase, migrations, RLS, grants, policies or RPC bodies.
-- Change Edge Functions, Vercel, GitHub Actions or production.
-- Change MesaCliente, PME, ADS/CAPI, Make/n8n or external integrations.
+### B2 — direct CRM structural writes
 
-## Continuity blocks
+Direct write exposure on `leads` and `lotes` must be restricted only after current RPC coverage is confirmed and tested.
 
-- Treat conversation memory, summaries, screenshots or pasted responses as canonical state.
-- Continue from a stale handoff without checking GitHub and required live evidence.
-- Reopen the decision to position SFJM as a CRM/product module without new canonical product evidence and explicit decision.
-- Replace the next single safe action with a broad implementation backlog.
+### B3 — forgeable funnel history
 
-## Removal rule
+Direct insert into `funil_movimentacoes` must be removed and history must be produced atomically by controlled backend paths.
+
+### B4 — list ACL tenant integrity
+
+Visibility targets and access helpers must prove same-company relationships server-side.
+
+## 4. PR-00 lifecycle blocks
+
+Until independent audit passes at the exact final head:
+
+- do not mark PR-00 Ready;
+- do not merge PR-00;
+- do not treat the plan or findings as accepted canonical evidence;
+- do not create the Supabase security lab;
+- do not begin PR-01.
+
+After Draft creation, no additional commit is authorized merely to restate that creation or its future merge.
+
+## 5. Runtime and environment blocks
+
+Without separate scope and authorization, do not change:
+
+- frontend or runtime;
+- Supabase schema, data, migrations, RLS, grants, policies, functions/RPCs or Auth;
+- Edge Functions;
+- Vercel configuration or production deployment;
+- GitHub Actions;
+- MesaCliente, PME, ADS/CAPI, Make/n8n or integrations.
+
+## 6. Laboratory blocks
+
+The isolated Supabase Branch is blocked until:
+
+- PR-00 is accepted and merged;
+- exact project and branch purpose are reconfirmed;
+- cost confirmation is presented and explicitly approved;
+- synthetic-data-only rules are accepted;
+- branch destruction/containment is defined.
+
+If the lab is unavailable, technical negative testing stops. Production is not the fallback.
+
+## 7. Audit and merge blocks
+
+- no audit without exact PR/head/diff/changed files;
+- no merge recommendation after a head change without re-audit;
+- no executor self-approval;
+- no migration approval without rollback and lab test evidence;
+- no production operation under a GitHub merge authorization;
+- no production change without a separate `PRODUCTION_CHANGE` authorization.
+
+## 8. Continuity blocks
+
+- do not reconstruct FECH.AI from memory when GitHub/live evidence is available;
+- do not open a reconciliation PR after every technical merge;
+- do not create a PR solely to record the squash merge of a bounded closure/gate PR;
+- do not expand a narrow PR to absorb future-window risks;
+- do not reopen settled PR #94–#100 history without new evidence.
+
+## 9. Removal rule
 
 A block may be removed only when the record identifies:
 
-- the canonical evidence supporting removal;
-- the exact authorization;
-- the affected module and environment;
-- the scope newly permitted;
-- remaining restrictions;
-- the expiration condition;
-- the next safe action.
+- canonical evidence;
+- exact repository/commit/environment;
+- responsible validator;
+- exact authorization;
+- scope newly permitted;
+- residual risk;
+- rollback/containment;
+- expiration condition;
+- next safe action.
