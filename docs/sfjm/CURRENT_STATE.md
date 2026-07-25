@@ -1,167 +1,151 @@
 # FECH.AI — SFJM Current State
 
-**Lifecycle state:** `F1_02_CONTROLLED_BETA_PRIMARY_STRATEGY_IN_DRAFT / SECURITY_GO_DENIED`  
+**Lifecycle state:** `PR_102_CORRECTED_DRAFT / REAUDIT_REQUIRED / SECURITY_GO_DENIED`  
 **Record type:** `OPERATIONAL_STATE / DOCUMENTATION_ONLY`  
 **Observed on:** `2026-07-25`  
 **Repository:** `wagnerjfjunior/fecha.ai`
 
 ## 1. Context understood
 
-FECH.AI is an MVP Família in controlled beta. It is not yet broadly commercialized or sold under a paid SLA.
-
 ```text
-Real users: YES
-Multiple companies: YES
-Sensitive lead/customer data: YES
-Participants informed of beta/data-loss risk: YES
+Product phase: MVP 1 — Família
+Operational status: PILOT PRODUCTION / LIVE
+Commercial model: CONTROLLED FREE BETA
+Broad paid commercialization: BLOCKED
 Paid SLA: NO
+Real users/data: YES
 Security Go: DENIED
 ```
 
-Frontend requests and displays. Backend/RPC/Supabase validates and decides. AI assists, but is not authority.
+Frontend requests/displays. Backend/RPC/Supabase validates/decides. AI assists but is not authority.
 
 ## 2. Canonical GitHub state
 
 ```text
 Canonical main: affbae1a598928010b0fa7db967734de522c13b4
-Commit: docs(security): establish F1-02 remediation program (#101)
 PR #101: CLOSED / MERGED
 PR #101 final head: 003850d012a299a947452fa5a8135cd454998f15
 PR #101 squash: affbae1a598928010b0fa7db967734de522c13b4
 ```
 
-PR #101 established the F1-02 evidence and remediation baseline. It did not grant Security Go or authorize technical implementation.
+PR #101 made the findings and master plan canonical without granting implementation or Security Go.
 
-## 3. Material product-risk decision
+## 3. Active PR #102
 
-Wagner accepted the following operating risks for informed MVP Família participants:
+```text
+PR: #102
+State: OPEN / DRAFT
+Base: main
+Base SHA: affbae1a598928010b0fa7db967734de522c13b4
+Branch: docs/f1-02-controlled-beta-primary-strategy
+Pre-correction head: fc83ed752217bfc39810dfba38e93405bc7382b8
+Final corrective head: authoritative in live PR metadata and updated PR description
+Changed files after correction: 8 documentation files
+Canonical status: NOT YET CANONICAL
+```
 
-- service interruption and maintenance;
+A commit cannot contain its own final SHA without changing that SHA. Live PR metadata is the final-head source of truth; no recursive documentation commit is permitted solely to embed it.
+
+## 4. Strategy decision
+
+Accepted operating risk:
+
+- downtime and maintenance;
 - temporary unavailability;
 - manual recovery/support;
-- possible loss of beta data;
-- absence of a paid SLA.
+- possible beta data loss;
+- no paid SLA.
 
-This does not accept:
+Not accepted:
 
 - privilege escalation;
-- cross-tenant access;
-- disclosure of sensitive data;
-- destructive testing against real records;
-- unbounded database changes;
-- false Security Go claims.
+- cross-tenant access/mutation;
+- sensitive-data disclosure;
+- destructive/offensive tests against real records;
+- unbounded changes;
+- broad paid commercialization before Security Go.
 
-## 4. Controlled Beta Primary strategy
-
-The authorized documentation branch is:
+## 5. F1-02 security state
 
 ```text
-Branch: docs/f1-02-controlled-beta-primary-strategy
-Base: affbae1a598928010b0fa7db967734de522c13b4
-Title: docs(security): adopt controlled beta primary remediation strategy
-Type: documentation-only Draft PR
-```
-
-The strategy amendment permits the primary Supabase project to be used for future bounded remediation windows only after separate GitHub and environment authorizations.
-
-It supersedes only the isolated-lab prerequisite. All security, rollback, evidence and separation-of-duty controls remain active.
-
-Canonical strategy artifact in this branch:
-
-```text
-docs/security/evidence/2026-07-25-f1-02-controlled-beta-primary-strategy.md
-```
-
-## 5. Security state
-
-```text
-Security Go: DENIED
 F1-02: ACTIVE REMEDIATION / BLOCKED
+Security Go: DENIED
 MVP Família security readiness: NOT CONFIRMED
-Broad paid commercialization: BLOCKED
+Runtime validation: NOT CONFIRMED
 WDP: 0
 ```
 
-Confirmed blockers remain:
+Confirmed blockers remain B1–B4 plus required funnel, import, feedback, times and Auth evidence.
 
-1. direct broker self-update can alter authority-bearing fields;
-2. direct structural CRM writes remain exposed;
-3. direct funnel-history insertion can bypass controlled transitions;
-4. list ACL targets are not fully proven same-company;
-5. funnel-stage, import-session, feedback and Auth controls require remediation/evidence.
-
-## 6. Environment classification
+## 6. Controlled validation boundary
 
 ```text
-Supabase project: Discador-MesaCliente
-Project ref: uobxxgzshrmbtjfdolxd
-Region: sa-east-1
-Classification: CONTROLLED BETA PRIMARY
-Commercial production: NO
-Real users/data: YES
+SAFE_LIVE: bounded, exact synthetic graph, no real authority/data impact
+ISOLATED: unexpected success can create authority/exposure/global impact
+DEFERRED: required but unsafe to execute now; remains NOT_VERIFIED
+PROHIBITED: real actors/data, broad discovery, destructive/offensive tests
 ```
 
-The project is not an unrestricted laboratory. Real identifiers and records must not be used as negative-test fixtures.
+Actual B1 self-promotion to `admin_global` is not permitted on the primary project and remains `NOT_VERIFIED` without isolation.
 
-## 7. Current authority
+An intentional named administrator assignment is a separate governance operation, not a test, and is not currently authorized.
 
-The user authorized only:
+## 7. Audit state
 
-- creation of the exact documentation branch from `affbae1a...`;
-- documentation of the Controlled Beta Primary decision;
-- SFJM reconciliation;
-- one Draft documentation PR.
+At the pre-correction head, authenticated independent GPT0/GPT1/GPT3 audits returned `FAIL` for Ready and required the corrections now contained in this Draft.
 
-The authority does not permit:
+The correction itself is not self-approved. The final head requires complete re-audit.
 
-- runtime/frontend changes;
-- migrations or SQL;
-- RLS, grants, policies, RPCs or Auth changes;
-- Supabase access or mutation;
-- negative tests;
-- Ready or merge;
-- PR-01 implementation;
-- Security Go or WDP.
+## 8. Authority state
 
-## 8. Evidence available
+```text
+Draft creation authority: CONSUMED
+Single corrective-commit authority: CONSUMED
+Additional commits: NOT AUTHORIZED
+Ready: NOT AUTHORIZED
+Merge: NOT AUTHORIZED
+PR-01: NOT AUTHORIZED
+Supabase: NOT AUTHORIZED
+Tests/fixtures: NOT AUTHORIZED
+Intentional admin_global assignment: NOT AUTHORIZED
+```
 
-- PR #101 exact lifecycle and squash commit;
-- canonical F1-02 findings and master plan;
-- user decision accepting beta availability/data-loss risk;
-- exact Controlled Beta Primary strategy contract;
-- current known security blockers;
-- exact documentation branch and base.
+## 9. Evidence available
 
-## 9. Evidence missing
+- exact PR #101 lifecycle;
+- canonical F1-02 findings/master plan;
+- product-authority controlled-beta decision;
+- authenticated audits at the pre-correction head;
+- one corrected eight-file Draft scope;
+- live GitHub metadata for the final corrective head.
 
-- independent audit of the strategy PR final head;
-- Ready and merge authorization for the strategy PR;
-- exact PR-01 implementation envelope;
-- current Supabase preflight at PR-01 execution time;
-- approved synthetic fixture manifest;
-- executed migration/rollback/smoke evidence;
-- post-remediation security evidence;
+## 10. Evidence missing
+
+- GPT0/GPT1/GPT3 re-audit at the final corrective head;
+- Ready/merge authority and lifecycle;
+- exact PR-01 envelope;
+- current Supabase preflight for affected objects;
+- synthetic fixture manifest;
+- migration, rollback, smoke and monitoring evidence;
+- high-blast-radius isolated evidence, especially B1;
 - final Security Go decision.
 
-## 10. Main risks
+## 11. Main risks
 
-- confusing accepted availability/data-loss risk with accepted security failure;
-- using real users or data in security tests;
-- applying several security changes in one window;
-- treating the strategy document as Supabase mutation authority;
-- implementing PR-01 before this amendment is canonical;
-- broad commercialization before Security Go.
+- treating the primary project as a sandbox;
+- confusing intentional admin assignment with self-escalation evidence;
+- allowing a synthetic actor to acquire real global authority;
+- linking synthetic objects to real objects;
+- treating fixture cleanup as migration rollback;
+- merging or applying without separate authorities;
+- overclaiming readiness from documentation.
 
-## 11. Areas not to alter without separate authorization
+## 12. Areas not to alter
 
-- runtime and frontend;
-- Supabase schema/data/migrations/RLS/grants/policies/RPCs/Auth;
-- Edge Functions, Vercel and GitHub Actions;
-- real users, companies, brokers, teams, leads or customers;
-- Security Go, F1-02 acceptance or WDP.
+Runtime, frontend, Supabase, data, migrations, RLS, grants, policies, RPCs, Auth, Edge Functions, Vercel, Actions, integrations, Security Go, F1-02 acceptance and WDP remain outside current authority.
 
-## 12. Next safe action
+## 13. Next safe action
 
-Complete the bounded documentation commit set, open one Draft PR, validate its exact head/files/diff and route it to independent GPT0/GPT1/GPT3 review.
+Validate the final corrective head and exact eight-file diff, then run independent GPT0/GPT1/GPT3 re-audits.
 
-Do not begin PR-01 or mutate the primary Supabase project until this strategy amendment is merged and a separate bounded implementation/environment authorization is granted.
+Do not create another commit, mark Ready, merge, start PR-01 or access Supabase without a new exact authority.

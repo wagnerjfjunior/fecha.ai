@@ -1,207 +1,233 @@
-# FECH.AI — F1-02 Controlled Beta Primary Strategy
+# FECH.AI — F1-02 Controlled Beta Primary Strategy Amendment
 
-**Status:** `APPROVED_STRATEGY_AMENDMENT / DOCUMENTATION_ONLY / SECURITY_GO_DENIED`  
+**Status:** `PRODUCT_AUTHORITY_DECISION_RECORDED / PR_DRAFT / NOT_YET_CANONICAL / DOCUMENTATION_ONLY / SECURITY_GO_DENIED`  
 **Date:** `2026-07-25`  
 **Repository:** `wagnerjfjunior/fecha.ai`  
-**Canonical base:** `affbae1a598928010b0fa7db967734de522c13b4`  
-**Product phase:** `MVP 1 — Família`  
-**Supabase project:** `Discador-MesaCliente`  
-**Project ref:** `uobxxgzshrmbtjfdolxd`
+**PR:** `#102`  
+**Base:** `affbae1a598928010b0fa7db967734de522c13b4`  
+**Branch:** `docs/f1-02-controlled-beta-primary-strategy`  
+**Pre-correction head:** `fc83ed752217bfc39810dfba38e93405bc7382b8`
 
 ## 1. Decision
 
-Wagner, as product authority, accepted a controlled-beta operating strategy for the current MVP Família.
-
-The FECH.AI SaaS is not yet broadly commercialized or sold under a paid SLA. Current participants use the beta without charge, know that the product is under validation and have accepted the possibility of service interruption and data loss.
-
-The primary Supabase project may therefore be used for **bounded, separately authorized remediation windows** under the classification:
+The product authority decided that MVP 1 — Família will continue as a controlled free beta on the primary Supabase project.
 
 ```text
-CONTROLLED BETA PRIMARY
-```
-
-This decision removes the isolated Supabase Branch as a mandatory prerequisite for every F1-02 technical step.
-
-It does **not** turn the primary database into an unrestricted laboratory and does not authorize any technical change by itself.
-
-## 2. Supersession boundary
-
-This document supersedes only the following parts of `F1-02_REMEDIATION_MASTER_PLAN.md`:
-
-- the requirement that one isolated Supabase Branch must exist before any remediation implementation;
-- the rule that unavailability of that branch necessarily stops all technical remediation;
-- the absolute prohibition on controlled remediation and synthetic validation in the primary beta environment.
-
-The following master-plan controls remain fully effective:
-
-- Security Go remains denied;
-- one PR equals one primary risk and one simple rollback;
-- frontend requests and displays; backend/RPC/Supabase validates and decides;
-- no evidence means no approval;
-- the executor does not approve its own work;
-- exact environment, branch, head, files and operations must be identified;
-- each migration requires preflight, rollback, smoke evidence and independent review;
-- broad commercial release remains blocked until Security Go;
-- real customer/lead data must not be used as test fixtures;
-- cross-tenant isolation remains a mandatory security boundary.
-
-## 3. Risk explicitly accepted for the beta
-
-The following risks are accepted for current informed beta participants:
-
-- planned or unplanned downtime;
-- maintenance windows;
-- temporary feature unavailability;
-- manual support and manual recovery;
-- loss of recent or non-critical beta data;
-- rollback to an earlier schema/application state;
-- absence of a paid availability or recovery SLA;
-- iterative corrections during MVP validation.
-
-This acceptance is an operating-risk decision. It is not a security waiver.
-
-## 4. Risk not accepted
-
-The following remain unacceptable and BLOCKING:
-
-- a broker obtaining local or global administrative authority without authorization;
-- one company reading or modifying another company's data;
-- disclosure of leads, customer contact data, credentials or tokens;
-- forged CRM or funnel history affecting real records;
-- destructive or offensive tests against real users, companies, brokers, teams, leads or customers;
-- intentional corruption of real records to validate rollback;
-- broad migrations without bounded scope and rollback;
-- silent changes to Supabase, Auth or production configuration;
-- claiming Security Go without executed and current evidence.
-
-A beta notice about possible data loss does not authorize privacy, tenant-isolation or privilege-boundary failures.
-
-## 5. Environment classification
-
-The primary project is classified as:
-
-```text
-Environment: CONTROLLED BETA PRIMARY
-Commercial production: NO
+Operational status: PILOT PRODUCTION / LIVE
+Commercial model: CONTROLLED FREE BETA
+Broad paid commercialization: BLOCKED
 Paid SLA: NO
-Real users: YES
-Real multi-company data: YES
-Sensitive lead/customer data: YES
+Real users and data: YES
 Security Go: DENIED
-Broad commercialization: BLOCKED
 ```
 
-Because real users and real data exist, every technical operation remains a live-environment change and requires explicit authorization.
+The decision accepts operating risk but does not reduce multi-company security requirements.
 
-## 6. Future changes permitted only under separate authority
+## 2. Accepted operating risk
 
-A future bounded authorization may permit one exact remediation operation in the primary project when all of the following are declared:
+- downtime and maintenance;
+- temporary unavailability;
+- manual support and recovery;
+- possible loss of beta data;
+- rollback to a previous application/schema state;
+- no paid SLA.
 
-- repository and exact base/head;
-- one primary security risk;
-- exact migration, RPC, policy, grant, Auth or frontend object;
-- exact Supabase project ref;
-- exact preflight queries;
-- maintenance/communication requirement;
-- backup or recovery preparation appropriate to the change;
-- deterministic rollback;
-- positive smoke checks;
-- bounded negative checks using synthetic fixtures only;
-- monitoring and stop conditions;
-- independent audit and lifecycle gates;
-- expiration of authority after completion.
+## 3. Risk not accepted
 
-No generic phrase such as "continue", "implement" or "use the main database" authorizes a mutation.
+- privilege escalation;
+- cross-tenant access or mutation;
+- disclosure of sensitive data, credentials or tokens;
+- unauthorized change of authority, company, team or user linkage;
+- forged real CRM history;
+- offensive or destructive tests against real users/data;
+- unbounded or silent database changes;
+- broad paid commercialization before Security Go.
 
-## 7. Synthetic validation in the primary project
+Possible data loss is not a security or privacy waiver.
 
-Security validation in the primary project may use only clearly identified synthetic fixtures created under a separate authorization.
+## 4. Supersession and precedence
 
-The minimum fixture model is:
+This amendment supersedes the original F1-02 master plan only where that plan makes an isolated Supabase environment a universal prerequisite.
 
-- synthetic company A and company B;
-- synthetic admin/local manager/broker actors;
-- synthetic teams, lists, lots, leads and funnel states;
-- identifiers that cannot be confused with real customer records;
-- a manifest of created objects;
-- deterministic cleanup or deactivation;
-- pre-test and post-test counts;
-- sanitized evidence without secrets or real payloads.
+After PR #102 is merged, this amendment prevails over conflicting lab-only clauses. The master plan is updated in the same PR to remove operational ambiguity.
 
-Permitted tests may include:
+### 4.1 Superseded rules
 
-- positive authorized flows using synthetic records;
-- denial of direct privilege changes by a synthetic broker;
-- denial of synthetic cross-company access;
-- denial of direct CRM/history writes after revocation;
-- RPC success and rollback checks against synthetic records.
+- mandatory isolated branch before every implementation;
+- absolute stop of all remediation when a lab is unavailable;
+- universal `LAB_VALIDATION_PASSED` state;
+- mandatory live-equivalent rollback/reapply rehearsal in a lab for every migration;
+- universal “apply only in lab” checklist language;
+- lab-cost confirmation as the mandatory next action before PR-01.
 
-Prohibited tests include:
+### 4.2 Preserved rules
 
-- targeting real company, broker, team, lead or customer identifiers;
-- attempting privilege escalation with a real account;
-- reading another real company's records;
-- destructive volume/load testing;
-- deliberate corruption of real data;
-- uncontrolled mixed-tenant arrays;
-- tests without cleanup, stop condition or evidence plan.
+- Pilot Production / live classification;
+- Security Go denied;
+- one PR / one risk / one rollback;
+- exact environment and GitHub authority;
+- current evidence and fail-closed behavior;
+- independent audit;
+- synthetic-only fixtures;
+- no real-data negative testing;
+- rollback design;
+- separate GitHub lifecycle and Supabase-operation authorities;
+- final Security Go gate;
+- broad commercialization blocked.
 
-## 8. Change-window contract
+## 5. Controlled validation categories
 
-Each remediation window in the primary project must be executed as follows:
+Every future test must be assigned one category before authorization.
+
+### `SAFE_LIVE`
+
+A bounded check on the primary project where unexpected success or failure cannot escape the synthetic graph or grant real authority.
+
+### `ISOLATED`
+
+Required when unexpected success can create admin/root authority, expose real data, change global controls, require reset, fuzzing or destructive rollback/reapply.
+
+### `DEFERRED`
+
+Required evidence that cannot currently be executed safely. It remains `NOT_VERIFIED` and may block Security Go.
+
+### `PROHIBITED`
+
+Never execute with real actors/data, broad discovery, real credentials, untrusted `service_role`, deliberate corruption or control disabling.
+
+The universal lifecycle gate becomes:
 
 ```text
-1. Validate live GitHub and Supabase state read-only.
-2. Confirm exact authority and one-risk scope.
-3. Prepare migration/change and rollback in the repository.
-4. Obtain independent specialist review.
-5. Authorize and merge the exact PR separately.
-6. Authorize the exact primary-environment application separately.
-7. Apply one bounded change.
-8. Run positive smoke checks first.
-9. Run only approved synthetic negative checks.
-10. Stop fail-closed on any unexpected result.
-11. Roll back when acceptance criteria fail.
-12. Capture sanitized evidence and update the gate state.
+CONTROLLED_VALIDATION_PASSED
 ```
 
-## 9. Rollback and incident posture
+The evidence record must list all tests by category.
 
-Before each primary-environment change, the rollback must state:
+## 6. B1 containment rule
 
-- exact reverse SQL/configuration or revert mechanism;
-- objects and grants restored;
-- expected data impact;
-- maximum tolerated maintenance window;
-- validation after rollback;
-- responsible operator;
-- incident trigger and escalation path.
+The primary project must not be used to attempt actual self-promotion to `admin_global`, root or equivalent authority.
 
-Possible beta data loss may be accepted, but an unknown or unbounded rollback is not accepted.
+A synthetic account is not sufficient containment: if the control fails, that account gains real authority over a live project containing real companies and data.
 
-## 10. Security and commercialization gates
+Allowed on the primary project for B1:
 
-This strategy does not change the current decisions:
+- read-only proof of grants/policies/functions;
+- proof that authority-bearing direct update exposure was removed;
+- review of the narrow RPC contract;
+- positive smoke of the controlled RPC with a synthetic actor;
+- rejection tests that cannot create authority or access real data.
+
+The actual adversarial self-promotion test remains:
 
 ```text
+B1 GLOBAL SELF-ESCALATION NEGATIVE TEST: NOT_VERIFIED WITHOUT ISOLATION
+```
+
+## 7. Intentional `admin_global` assignment
+
+An intentional decision to designate a named user as `admin_global` is not a negative test and does not prove that self-escalation is blocked.
+
+It may occur only under a separate administrative-governance authorization containing:
+
+- exact user identity;
+- verified need;
+- least-privilege rationale;
+- server-side controlled operation;
+- audit trail;
+- effective date and owner;
+- revocation/deactivation procedure;
+- post-operation verification.
+
+No such assignment is authorized by PR #102.
+
+## 8. Synthetic graph contract
+
+Safe-live fixtures must form a wholly synthetic graph.
+
+Required invariants:
+
+1. Synthetic companies, users, brokers, teams, lists, lots, leads and stages reference only synthetic objects.
+2. No synthetic object references a real company, user, broker, team, list, lead or customer.
+3. Real brokers never receive synthetic leads, tasks, lots or lists.
+4. Synthetic users never receive global authority capable of reaching real data.
+5. Tests use exact synthetic identifiers; no broad discovery query is allowed.
+6. Unexpected success remains contained to the synthetic graph.
+7. Cleanup failure blocks additional tests and starts containment.
+8. Fixture cleanup is distinct from schema/configuration rollback.
+
+Fixture creation requires separate `CONTROLLED_BETA_PRIMARY_CHANGE` authority.
+
+## 9. Explicitly prohibited primary-project tests
+
+- `role = admin_global` or equivalent self-elevation;
+- modification of authority-bearing fields as an adversarial test;
+- broad cross-company SELECTs;
+- use of IDs belonging to real companies or records;
+- fuzzing, load, volume or mixed-tenant offensive batches;
+- disabling RLS, policies, grants or Auth;
+- `service_role` in frontend/browser/untrusted clients;
+- reuse of real JWTs, passwords, emails, phones or payloads;
+- destructive data tests;
+- experimental schema rollback/reapply.
+
+## 10. Authorization separation
+
+```text
+WINDOW_IMPLEMENTATION
+→ creates/updates one technical PR
+
+TECHNICAL_PR_LIFECYCLE
+→ authorizes Ready and exact-head merge
+
+CONTROLLED_BETA_PRIMARY_CHANGE
+→ authorizes one exact live Supabase operation
+
+SECURITY_GATE
+→ authorizes only the final security decision
+```
+
+A merged PR does not authorize SQL or configuration application.
+
+## 11. Rollback distinction
+
+```text
+Synthetic fixture cleanup
+!=
+Schema/configuration rollback
+```
+
+Fixture cleanup affects only the authorized synthetic graph.
+
+Schema/configuration rollback affects the live environment and requires exact operation identity, impact analysis, ordering, monitoring, stop conditions and separate authority.
+
+## 12. Current lifecycle
+
+```text
+PR #102: OPEN / DRAFT
+Strategy decision: RECORDED BY PRODUCT AUTHORITY
+Repository acceptance: NOT YET GRANTED
+Pre-correction head: fc83ed752217bfc39810dfba38e93405bc7382b8
+Final corrective head: resolve live from PR metadata and updated PR description
+Changed files after correction: 8 documentation files
+Ready: NOT AUTHORIZED
+Merge: NOT AUTHORIZED
+PR-01: NOT AUTHORIZED
+Supabase: NOT AUTHORIZED
 Security Go: DENIED
 F1-02: ACTIVE REMEDIATION / BLOCKED
 WDP: 0
-Broad paid commercialization: BLOCKED
-PR-01 implementation: REQUIRES SEPARATE AUTHORIZATION
-Primary Supabase mutation: REQUIRES SEPARATE AUTHORIZATION
 ```
 
-The MVP Família may continue as a controlled beta with informed participants, but no document may describe it as security-approved or generally production-ready.
+The final commit cannot embed its own SHA without changing that SHA. Live GitHub metadata and the PR description are authoritative for the final corrective head.
 
-## 11. Next safe action
+## 13. Rollback of this amendment
 
-1. Audit and merge this strategy amendment through a documentation-only PR.
-2. After merge, define PR-01 as one bounded risk with exact files, migration/change objects, tests and rollback.
-3. Do not mutate Supabase, Auth, runtime or data until PR-01 and the exact primary-environment operation receive separate authorizations.
+One revert of PR #102 restores the prior universal isolated-lab strategy.
 
-## 12. Rollback of this decision
+That documentation revert does not revert any later migration or Supabase operation; technical rollbacks remain independent.
 
-Rollback is one revert of the documentation-only strategy PR.
+## 14. Next safe action
 
-Reverting this decision restores the isolated-lab prerequisite from the original F1-02 master plan. It does not roll back or authorize any technical database change.
+Validate the single corrective commit, the eight-file diff and the updated PR description. Then repeat independent GPT0/GPT1/GPT3 audits at the exact new head.
+
+No technical or Supabase action is authorized.

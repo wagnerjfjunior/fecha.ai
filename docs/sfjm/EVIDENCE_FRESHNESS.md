@@ -1,11 +1,11 @@
 # FECH.AI — SFJM Evidence Freshness
 
-**Status:** `ACTIVE_FRESHNESS_RULES / CONTROLLED_BETA_PRIMARY_STRATEGY_DRAFT / FAIL_CLOSED`  
+**Status:** `ACTIVE_FRESHNESS_RULES / PR_102_CORRECTED_DRAFT / FAIL_CLOSED`  
 **Observed on:** `2026-07-25`
 
 ## 1. Purpose
 
-Freshness determines whether an observation may support a current decision. Fresh evidence is not automatically correct or sufficient.
+Freshness determines whether evidence may support a current decision. Fresh evidence is not automatically sufficient.
 
 ## 2. Classes
 
@@ -21,146 +21,116 @@ NOT_APPLICABLE
 
 | Evidence | CURRENT condition | Invalidating event |
 |---|---|---|
-| PR head/diff | exact head validated | commit, rebase, force-push or branch change |
-| Mergeability/reviews/checks | live state at exact head | base/head/review/check change |
-| Canonical `main` | exact current tip | new commit on `main` |
-| Source file | exact blob/commit | relevant file change |
-| Supabase project identity | exact live project/ref | environment ambiguity or replacement |
-| Grants/RLS/policies/functions | read from exact project | migration, manual change or drift |
-| Auth configuration | exact live configuration | configuration change |
-| Synthetic fixture manifest | exact fixture version | create/update/delete or cleanup failure |
-| Negative tests | exact backend state and fixture version | relevant code/security/environment change |
-| Runtime smoke | exact build/config/backend | deploy, config or backend change |
-| Authorization | exact scope still active | completion, revocation, expiration or scope change |
-| Handoff | agrees with live evidence | material PR, authority, blocker, decision or next-action change |
+| PR head/diff | exact live head and final files validated | commit, rebase, force-push or scope change |
+| Mergeability/reviews/checks | live at exact head | base/head/review/check change |
+| Canonical main | exact current tip | new main commit |
+| Source file | exact blob/commit | file change |
+| Supabase object state | read from exact project | migration/manual drift/config change |
+| Negative test | exact backend/fixtures | relevant change or fixture drift |
+| Runtime smoke | exact build/config/backend | deploy or backend/config change |
+| Authorization | exact scope active | completion, expiration, revocation or scope change |
+| Handoff | agrees with live evidence | material state/authority/decision change |
 
-## 4. Canonical GitHub record
+## 4. Canonical GitHub evidence
 
 ```text
 Canonical main: affbae1a598928010b0fa7db967734de522c13b4
-Commit: docs(security): establish F1-02 remediation program (#101)
 PR #101: CLOSED / MERGED
 PR #101 final head: 003850d012a299a947452fa5a8135cd454998f15
 PR #101 squash: affbae1a598928010b0fa7db967734de522c13b4
-Classification: CURRENT at strategy branch creation
+Classification: CURRENT at PR #102 correction preflight
 ```
 
-A newer `main` commit invalidates this exact base for any later sensitive lifecycle or environment decision.
-
-## 5. Canonical F1-02 evidence
+## 5. PR #102 evidence
 
 ```text
-docs/security/evidence/2026-07-24-f1-02-live-readonly-findings.md
-docs/security/evidence/F1-02_REMEDIATION_MASTER_PLAN.md
-```
-
-These files became canonical through PR #101.
-
-Current classifications:
-
-| Evidence | Classification |
-|---|---|
-| live project provenance at 2026-07-24 | CURRENT until environment change |
-| grants/RLS/policies/functions at capture | CURRENT until relevant mutation/drift |
-| confirmed security findings | CURRENT until remediated and revalidated |
-| exploit execution against real data | NOT_VERIFIED and prohibited |
-| post-remediation state | NOT_VERIFIED |
-| Security Go | DENIED |
-
-## 6. Strategy-amendment evidence
-
-```text
+PR: #102
+State expected: OPEN / DRAFT
 Branch: docs/f1-02-controlled-beta-primary-strategy
 Base: affbae1a598928010b0fa7db967734de522c13b4
-Artifact: docs/security/evidence/2026-07-25-f1-02-controlled-beta-primary-strategy.md
-Classification before merge: DRAFT / NOT YET CANONICAL
+Pre-correction head: fc83ed752217bfc39810dfba38e93405bc7382b8
+Final corrective head: live PR metadata and updated PR description
+Expected changed files after correction: 8 documentation files
+Strategy canonicality: NOT_YET_CANONICAL
 ```
 
-The product-risk decision is recorded from explicit user authority, but the repository strategy becomes canonical only after exact-head audit and merge.
+The final corrective commit cannot embed its own SHA. Freshness is established by live GitHub validation, not a recursive follow-up commit.
 
-Any head change invalidates previous audit conclusions for this PR.
+Any head or scope change invalidates the GPT0/GPT1/GPT3 re-audits.
 
-## 7. Controlled Beta Primary evidence rules
+## 6. Audit evidence
 
-The environment classification does not make old database evidence permanently current.
+Authenticated independent audits at `fc83ed752217bfc39810dfba38e93405bc7382b8` are `CURRENT` only as evidence of findings against that pre-correction head.
 
-Before every technical PR and every primary-environment operation, refresh only the affected evidence:
+They are not approval of the corrective head.
 
-- current `main` and implementation head;
-- exact Supabase project ref/status;
-- current definitions/grants/policies for affected objects;
-- current frontend/backend call-site dependencies;
-- current actor/tenant derivation;
-- current rollback prerequisites.
+```text
+GPT0: FAIL / correction required
+GPT1: FAIL / correction required
+GPT3: FAIL / correction required
+```
 
-After any primary-environment mutation, previous evidence for affected objects becomes `STALE` until post-change verification is captured.
+The in-Project `TOOL STALE STATE` result is evidence of tool limitation only and has no content verdict.
 
-## 8. Synthetic fixture freshness
+## 7. Supabase evidence
 
-A synthetic fixture record is current only when it includes:
+The 2026-07-24 read-only inspection remains the last recorded database evidence.
 
-- exact project ref;
-- fixture manifest version;
-- clearly synthetic company/actor/object identities;
-- creation timestamp;
-- expected relationships;
-- pre-test counts;
-- cleanup/deactivation procedure;
-- post-test counts;
-- confirmation that no real identifier, credential or payload was used.
+```text
+Project: Discador-MesaCliente
+Project ref: uobxxgzshrmbtjfdolxd
+Method: read-only metadata/definitions
+Mutations: ZERO
+Negative tests: ZERO
+Post-remediation state: NOT_VERIFIED
+```
 
-A cleanup failure invalidates the test cycle and requires containment before further testing.
+Refresh affected objects after any migration, manual change, Auth/config change or source call-site change.
 
-## 9. Negative-test freshness
+## 8. Validation evidence classes
 
-A negative-test record is current only when it includes:
+- structural proof may be `CURRENT` for exact grants/policies/functions;
+- designed tests are `NOT_VERIFIED` until executed;
+- safe-live tests require exact synthetic manifest and authority;
+- isolated tests require isolated-environment identity and parity evidence;
+- deferred tests remain `NOT_VERIFIED`;
+- prohibited tests never become evidence by execution on the primary project.
 
-- exact repository commit;
-- exact project ref and environment classification;
-- exact affected database/Auth state;
-- synthetic fixture version;
-- test ID and actor role;
-- expected and actual result;
-- timestamp;
-- sanitized evidence;
+B1 actual global self-escalation denial remains `NOT_VERIFIED` without isolation.
+
+## 9. Fixture freshness
+
+A fixture record is current only with:
+
+- versioned manifest;
+- exact synthetic IDs and relations;
+- proof of no links to real objects;
+- pre/post counts;
+- cleanup/deactivation result;
+- owner and timestamp;
 - no intervening relevant change.
 
-Tests must not target real records. A test against real data is not acceptable evidence; it is a governance/security incident.
+No fixture evidence currently exists.
 
-## 10. Availability and data-loss acceptance evidence
+## 10. Authorization freshness
 
-The beta risk decision is current only while:
+```text
+Draft creation authority: CONSUMED
+Correction authority: CONSUMED
+Additional commit authority: NONE
+Ready authority: NONE
+Merge authority: NONE
+PR-01 authority: NONE
+Supabase authority: NONE
+Admin-role-change authority: NONE
+```
 
-- participation remains controlled and informed;
-- the service is not broadly sold with a paid SLA;
-- the participant notice remains applicable;
-- the environment remains MVP Família beta;
-- no legal/commercial commitment supersedes it.
-
-This evidence does not support any conclusion about tenant isolation, privacy or authorization safety.
-
-## 11. Invalidating events
-
-Refresh relevant evidence after:
-
-- any migration or manual database change;
-- grant, RLS, policy, trigger, constraint or function change;
-- Auth configuration change;
-- source call-site change;
-- environment/project replacement;
-- fixture creation/change/cleanup failure;
-- rollback or incident;
-- transition from free controlled beta to broader paid use;
-- new user/data sensitivity not covered by the current decision.
-
-## 12. Fail-closed rule
+## 11. Fail-closed rule
 
 When freshness cannot be established:
 
 ```text
-classification = NOT_VERIFIED or STALE
-security/merge/environment conclusion = BLOCKED
+classification = STALE or NOT_VERIFIED
+approval/merge/deploy/security conclusion = BLOCKED
 next action = refresh only the narrow evidence required
 ```
-
-Do not replace missing freshness with memory, beta consent, preview success or confidence.
