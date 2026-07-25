@@ -1,138 +1,89 @@
 # FECH.AI — SFJM Next Safe Action
 
-**Status:** `F1_02_ACTIVE_READ_ONLY_AUTHORIZATION_REQUIRED / EXECUTION_NOT_AUTHORIZED`  
+**Status:** `PR_00_DRAFT_COMPLETION_AND_INDEPENDENT_AUDIT`  
 **Observed on:** 2026-07-24
 
-## Current safe state
-
-PR #99 is closed and squash-merged into canonical `main` at:
+## 1. Current safe state
 
 ```text
-573ecebbafc2fb0ea4a065905e0f592b9db2a308
+Canonical main: 0555bad889c6ab85970ee242a0e35ac6873508e8
+PR #100: CLOSED / MERGED
+Open PRs before PR-00: NONE
+
+F1-01 acceptance: NOT GRANTED
+F1-02 read-only discovery: COMPLETED
+Security Go: DENIED
+F1-02: ACTIVE REMEDIATION / BLOCKED
+WDP: 0
 ```
 
-Its final head was:
+The live read-only F1-02 inspection confirmed material authorization and tenant-isolation risks. No mutation or negative production test was performed.
+
+## 2. Active bounded work
 
 ```text
-754e35406971e72ce29763bf145060868914b4d7
+Window: J0
+Branch: docs/f1-02-security-remediation-program
+Base: 0555bad889c6ab85970ee242a0e35ac6873508e8
+Type: documentation-only
 ```
 
-PR #99 passed independent audit and pre-merge verification with `PASS WITH RESIDUAL RISK`. Two post-Ready review threads were answered and resolved without changing the audited head. The PR reconciled the post-PR #98 documentation state only. It did not accept F1-01, grant Security Go, award WDP or validate runtime/Supabase.
+PR-00 must contain only:
 
-All PR #99 creation, Ready, thread-resolution, verification and merge authorities are `CONSUMED`.
+- the complete F1-02 remediation master plan;
+- the sanitized live read-only finding record;
+- material SFJM state, blocker, evidence, authorization and handoff updates.
 
-The bounded documentation-only closure PR containing this record is self-closing. Its own merge does not create another reconciliation requirement unless a material operational-state change occurs.
+## 3. Next single safe action
+
+Complete one Draft PR titled:
 
 ```text
-NO ACTIVE WRITE AUTHORIZATION
-NO ACTIVE READ-ONLY F1-02 AUTHORIZATION
-NO AUTHORITY FOR ADDITIONAL COMMITS
-NO AUTHORITY FOR READY
-NO AUTHORITY FOR MERGE
-F1-02: PLANNED / NOT_AUTHORIZED
+docs(security): establish F1-02 remediation program
 ```
 
-## Next single safe action
+Then:
 
-Request a separate, narrowly scoped `ACTIVE_READ_ONLY` authorization for:
+1. confirm exact base and final head;
+2. confirm changed files are documentation-only and within scope;
+3. confirm no PII, token, credential, production UUID or raw payload;
+4. confirm Security Go remains denied and WDP remains 0;
+5. request independent audit from GPT0, GPT1 and GPT3;
+6. perform no subsequent commit unless a concrete audit finding is separately authorized.
+
+## 4. Audit acceptance criteria
+
+The exact PR head must prove:
+
+- project/environment provenance is correct;
+- findings match live read-only evidence without exploit overclaim;
+- 5 windows / 10 planned PRs are coherent;
+- each technical PR has one primary risk and rollback;
+- production is not used as laboratory;
+- lab creation requires explicit cost confirmation;
+- specialists and separation of duties are explicit;
+- SFJM will not generate a PR after every merge;
+- no runtime, Supabase, Auth, Vercel or production authority is implied.
+
+## 5. Actions blocked until PR-00 acceptance
+
+- create the Supabase security lab;
+- confirm or incur Supabase Branch cost;
+- start PR-01;
+- create migrations or rollback SQL;
+- alter frontend password flow;
+- alter grants, RLS, policies, RPCs or Auth;
+- execute negative tests;
+- apply anything in production;
+- mark F1-02 accepted, grant Security Go or award WDP.
+
+## 6. Action after PR-00 lifecycle completion
+
+After independent audit, Ready, merge and post-merge confirmation under separate authority, the next safe action will be:
 
 ```text
-F1-02 — read-only Supabase security evidence refresh and negative-test design
+request explicit cost confirmation and authorization to create one isolated Supabase Branch:
+f1-02-security-lab
 ```
 
-The authorization must identify the exact Supabase project and environment and must remain fail-closed. No Supabase read may begin before that authorization exists.
-
-## Required F1-02 bootstrap
-
-Before any Supabase read:
-
-- confirm repository and live canonical `main`;
-- identify the exact Supabase project and environment;
-- confirm access is read-only;
-- map every current M1 RPC and direct-DML path from the merged F1-01 inventory;
-- declare evidence available and missing;
-- prohibit all mutations;
-- define evidence capture, sanitization and expiration.
-
-## Authorized read-only targets when separately approved
-
-The first F1-02 phase may inspect only the current state of:
-
-- grants for used M1 RPCs and relevant tables;
-- RLS enablement and policies for affected tables;
-- bodies/signatures of used M1 RPCs;
-- direct PostgREST `PATCH corretores` exposure;
-- server-side tenant/company/user derivation;
-- actor, lead, list, stage and broker ownership checks;
-- current project/environment identifiers needed to establish provenance.
-
-## Required negative-test design
-
-The read-only phase must produce, but not execute against production without separate approval, a matrix covering:
-
-- no session;
-- invalid or expired token;
-- wrong company/tenant;
-- forged lead ID;
-- forged list ID;
-- forged stage ID;
-- forged broker/corretor ID;
-- mixed-tenant batch IDs;
-- unauthorized visibility targets;
-- invalid feedback/channel/sequence payloads.
-
-## Paths that must not be omitted
-
-At minimum:
-
-- `proximo_lead` via guarded Aceleração bridge;
-- direct `proximo_lead` in Discador;
-- `registrar_feedback` via guarded bridge;
-- direct `registrar_feedback` in Discador;
-- `atualizar_feedback`;
-- `mover_funil`;
-- `mover_funil_lote`;
-- `registrar_mensagem`;
-- `distribuir_lotes`;
-- `criar_lista`;
-- `gerenciar_visibilidade_lista`;
-- `importar_leads_batch`;
-- `get_dashboard_stats`;
-- `minha_producao`;
-- direct `PATCH corretores` call sites.
-
-## Explicitly prohibited
-
-This record does not authorize:
-
-- Supabase reads without a separate F1-02 authorization;
-- Supabase writes;
-- migrations;
-- RLS, grants, policies or RPC changes;
-- negative tests against production;
-- runtime or frontend changes;
-- Edge Functions;
-- Vercel or GitHub Actions changes;
-- production changes;
-- Security Go;
-- F1-01 acceptance;
-- F1-02 execution;
-- WDP assignment;
-- another documentation-only reconciliation solely to record the closure PR's own merge.
-
-## Required authorization record
-
-Before F1-02 begins, the authorization must state:
-
-- source and date;
-- repository and live canonical commit;
-- exact Supabase project/environment;
-- read-only scope;
-- allowed metadata, policies, grants, RPCs and tables;
-- prohibited mutations;
-- acceptance criteria;
-- evidence sanitization rules;
-- rollback expectation (`no mutation`; stop and revoke access if scope is uncertain);
-- expiration condition.
-
-Until that separate authorization exists, preserve the current state without mutation.
+No documentation-only PR will be created solely to record the PR-00 merge.
