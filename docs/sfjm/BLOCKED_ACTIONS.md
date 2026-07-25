@@ -1,110 +1,135 @@
 # FECH.AI — SFJM Blocked Actions
 
-**Status:** `ACTIVE_BLOCKS / F1_02_REMEDIATION / FAIL_CLOSED`  
-**Observed on:** 2026-07-24
+**Status:** `ACTIVE_BLOCKS / CONTROLLED_BETA_PRIMARY_STRATEGY / FAIL_CLOSED`  
+**Observed on:** `2026-07-25`
 
 The following actions remain blocked until exact evidence, audit and authorization remove the relevant block.
 
-## 1. Product and delivery blocks
+## 1. Product and commercialization blocks
 
-- declare MVP 1 — Família ready;
-- treat F1-01 documentation as accepted product behavior;
-- advance F1-03 or F1-04 before F1-02 acceptance;
-- start the family pilot while BLOCKING security findings remain;
-- count planning, commits, PRs or merges as WDP without an accepted checkpoint;
-- grant F1-01 acceptance, F1-02 acceptance or any WDP from PR-00 alone.
+- declare Security Go;
+- describe the MVP as generally production-ready;
+- open broad paid commercialization;
+- promise a paid availability/recovery SLA;
+- treat accepted beta data-loss risk as acceptance of security defects;
+- award F1-02 acceptance or WDP without the formal gate.
 
-## 2. Security blocks
+The MVP Família may continue only as an informed, controlled beta.
 
-- grant Security Go;
-- treat authenticated session as sufficient authorization;
-- treat the read-only finding record as executed negative-test evidence;
-- use production as the negative-test laboratory;
-- create real test users or mutate real companies, brokers, teams, leads or customers;
-- rely on the audit trigger as prevention of privilege escalation;
-- revoke current broker update access before the password-flow dependency is replaced and tested;
-- approve any M1 path without current Auth, tenant/company, permission, grant/RLS/RPC and negative-test evidence.
-
-## 3. Confirmed blockers to remediate
+## 2. Confirmed security blockers
 
 ### B1 — broker self privilege escalation
 
-Direct `corretores` update exposure must be removed after a narrow password-state RPC and frontend cutover are proven.
+Direct `corretores` update exposure must be replaced/restricted so a broker cannot alter authority-bearing fields.
 
 ### B2 — direct CRM structural writes
 
-Direct write exposure on `leads` and `lotes` must be restricted only after current RPC coverage is confirmed and tested.
+Direct structural writes to `leads` and `lotes` must be constrained to approved backend/RPC paths.
 
 ### B3 — forgeable funnel history
 
-Direct insert into `funil_movimentacoes` must be removed and history must be produced atomically by controlled backend paths.
+Direct insertion into `funil_movimentacoes` must be removed or constrained so history is generated atomically by an authorized operation.
 
 ### B4 — list ACL tenant integrity
 
-Visibility targets and access helpers must prove same-company relationships server-side.
+List visibility targets and helpers must prove same-company relationships server-side.
 
-## 4. PR-00 lifecycle blocks
+### Required supporting controls
 
-Until independent audit passes at the exact final head:
+- tenant-safe funnel-stage visibility;
+- company-scoped import-session idempotency;
+- strict feedback validation;
+- current disposition of `times` writes;
+- Auth leaked-password decision;
+- repeatable evidence, rollback and final independent gate.
 
-- do not mark PR-00 Ready;
-- do not merge PR-00;
-- do not treat the plan or findings as accepted canonical evidence;
-- do not create the Supabase security lab;
-- do not begin PR-01.
+## 3. Strategy-PR lifecycle blocks
 
-After Draft creation, no additional commit is authorized merely to restate that creation or its future merge.
+Until the Controlled Beta Primary documentation PR is independently audited and merged:
 
-## 5. Runtime and environment blocks
+- do not begin PR-01;
+- do not create migrations or SQL;
+- do not alter frontend/runtime;
+- do not access or mutate Supabase/Auth;
+- do not create synthetic fixtures;
+- do not run negative tests;
+- do not mark the strategy canonical;
+- do not mark Ready or merge without separate authority.
 
-Without separate scope and authorization, do not change:
+## 4. Primary-environment mutation blocks
 
-- frontend or runtime;
-- Supabase schema, data, migrations, RLS, grants, policies, functions/RPCs or Auth;
+Even after the strategy PR is merged, no primary-environment change is allowed without a separate exact authorization.
+
+Blocked without that authorization:
+
+- apply a migration;
+- revoke or grant privileges;
+- create, alter or drop policies;
+- alter RLS/FORCE RLS;
+- create or replace functions/RPCs;
+- change Auth configuration;
+- change frontend call sites;
+- create test actors or fixtures;
+- execute cleanup/rollback SQL;
+- run manual production commands.
+
+A GitHub PR merge does not authorize a Supabase operation.
+
+## 5. Test blocks
+
+Always prohibited:
+
+- tests targeting real company, broker, team, lead or customer identifiers;
+- privilege-escalation attempts using a real account;
+- reading or writing another real company's records;
+- destructive volume, load or fuzz tests in the primary project;
+- deliberate corruption of real data;
+- use of real JWTs, passwords, payloads or customer contact data in evidence;
+- tests without a manifest, cleanup, stop condition and separate authority.
+
+Potentially permitted only after separate authorization:
+
+- synthetic positive flows;
+- synthetic denial tests;
+- synthetic cross-company isolation tests;
+- rollback/reapply against synthetic records;
+- bounded smoke tests after one exact change.
+
+## 6. Runtime and integration blocks
+
+Without explicit scope, do not alter:
+
+- MesaCliente;
+- PME;
+- ADS/CAPI/SEO;
+- Make/n8n;
+- external messaging/portal integrations;
 - Edge Functions;
-- Vercel configuration or production deployment;
-- GitHub Actions;
-- MesaCliente, PME, ADS/CAPI, Make/n8n or integrations.
+- Vercel configuration;
+- GitHub Actions.
 
-## 6. Laboratory blocks
+## 7. Governance blocks
 
-The isolated Supabase Branch is blocked until:
-
-- PR-00 is accepted and merged;
-- exact project and branch purpose are reconfirmed;
-- cost confirmation is presented and explicitly approved;
-- synthetic-data-only rules are accepted;
-- branch destruction/containment is defined.
-
-If the lab is unavailable, technical negative testing stops. Production is not the fallback.
-
-## 7. Audit and merge blocks
-
-- no audit without exact PR/head/diff/changed files;
-- no merge recommendation after a head change without re-audit;
+- no technical approval without exact branch/head/diff/files;
+- no merge after a head change without revalidation;
 - no executor self-approval;
-- no migration approval without rollback and lab test evidence;
-- no production operation under a GitHub merge authorization;
-- no production change without a separate `PRODUCTION_CHANGE` authorization.
+- no multi-risk technical PR;
+- no untested or undefined rollback;
+- no generic authorization such as "continue" for a live mutation;
+- no documentation-only PR after every technical merge;
+- no overclaim that beta consent removes LGPD, tenant-isolation or privilege obligations.
 
-## 8. Continuity blocks
-
-- do not reconstruct FECH.AI from memory when GitHub/live evidence is available;
-- do not open a reconciliation PR after every technical merge;
-- do not create a PR solely to record the squash merge of a bounded closure/gate PR;
-- do not expand a narrow PR to absorb future-window risks;
-- do not reopen settled PR #94–#100 history without new evidence.
-
-## 9. Removal rule
+## 8. Removal rule
 
 A block may be removed only when the record identifies:
 
-- canonical evidence;
-- exact repository/commit/environment;
+- exact repository/base/head;
+- exact environment/project;
+- exact objects and operations;
+- current evidence;
 - responsible validator;
-- exact authorization;
-- scope newly permitted;
-- residual risk;
+- acceptance criteria;
 - rollback/containment;
-- expiration condition;
+- residual risk;
+- explicit authority and expiration;
 - next safe action.
