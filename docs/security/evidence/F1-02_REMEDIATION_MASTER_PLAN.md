@@ -686,7 +686,11 @@ Universal rules:
 - admin-local scope must be derived server-side;
 - direct DML on `lista_visibilidade` is revoked or narrowly constrained;
 - `gerenciar_visibilidade_lista` has `PUBLIC` and `anon` execution revoked;
-- `corretor_tem_acesso_lista` becomes an internal helper when external execution is unnecessary;
+- `corretor_tem_acesso_lista` is `INTERNAL ONLY`;
+- revoke `EXECUTE` on `corretor_tem_acesso_lista` from `PUBLIC`, `anon` and `authenticated`;
+- no frontend, browser client, public API route or untrusted application role may invoke `corretor_tem_acesso_lista` directly;
+- the helper may be invoked only from an approved backend/RPC path whose contract card documents owner, execution mode, fixed `search_path`, server-side actor/company derivation and sanitized result handling;
+- any future need for external execution is a scope change: stop, create a dedicated contract card, obtain GPT1/GPT3/GPT7 approval and add explicit grants/tests before granting access;
 - owner, definer/invoker mode and fixed `search_path` are documented;
 - incompatible target rows are prevented by constraints or equivalent transaction checks;
 - the complete ACL update is atomic;
@@ -704,6 +708,9 @@ Mandatory tests:
 - invalid target type denied;
 - type/ID mismatch denied;
 - direct ACL DML denied;
+- direct execution of `corretor_tem_acesso_lista` by `PUBLIC`, `anon` and `authenticated` is denied;
+- approved controlled backend/RPC path can use the internal helper successfully for an authorized same-company case;
+- the controlled backend/RPC path using the helper denies cross-tenant access;
 - cross-tenant target denied;
 - authorized same-company operation succeeds;
 - removal succeeds only for authorized actor;
@@ -837,13 +844,26 @@ evidence reference
 
 Minimum catalog:
 
-| Test ID family | Required coverage |
+| Test ID | Required coverage |
 |---|---|
 | AUTH-001..005 | no session, invalid token, expired token, no profile, inactive profile |
 | COR-001..009 | role, admin-local, manager, company, team, user ID, active, receive eligibility, direct password-state mutation |
 | COR-010..013 | positive profile, password-state, status and team RPCs |
-| CRM-001..009 | direct lead insert/update/delete and structural company/broker/list/lot/team/stage/status forgery |
-| CRM-010..014 | wrong owner, cross-tenant lead, cross-tenant lot, mixed batch, approved positive CRM flow |
+| CRM-001 | direct `leads.INSERT` denied |
+| CRM-002 | direct `leads.UPDATE` denied |
+| CRM-003 | direct `leads.DELETE` denied |
+| CRM-004 | forged `empresa_id` denied |
+| CRM-005 | forged `corretor_id` denied |
+| CRM-006 | forged `lista_id` denied |
+| CRM-007 | forged `lote_id` denied |
+| CRM-008 | forged `time_id` denied |
+| CRM-009 | forged stage/funnel value denied |
+| CRM-010 | forged status denied |
+| CRM-011 | wrong-owner lead access/mutation denied |
+| CRM-012 | cross-tenant lead access/mutation denied |
+| CRM-013 | cross-tenant lot access/mutation denied |
+| CRM-014 | mixed-tenant batch rejected atomically |
+| CRM-015 | approved positive CRM flow succeeds through controlled RPCs |
 | FUN-001..008 | direct history DML, forged stage, inactive stage, invalid transition, history/state consistency, concurrent movement |
 | ACL-001..010 | broker denied, manager scope, admin-local scope, root explicit rule, nonexistent target, invalid type, mismatch, direct DML, cross-tenant target, positive same-company operation |
 | STG-001..004 | global stage, own-company stage, other-company exclusion, deterministic ordering |
