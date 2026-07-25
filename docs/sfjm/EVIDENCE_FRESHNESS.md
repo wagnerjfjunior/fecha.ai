@@ -6,67 +6,51 @@
 
 ## 1. Freshness rule
 
-Evidence is valid only for the exact repository, environment, branch, base, head, object set and lifecycle state it observed.
+Evidence is valid only for the exact repository, environment, branch, base, head, object set and lifecycle state observed.
 
-A new commit invalidates prior exact-head audit conclusions for Ready. Prior findings remain useful as historical input, but they are not approval of the new head.
+A new commit invalidates prior exact-head conclusions for Ready. Prior findings remain historical input, not approval of a later head.
 
-No designed test is treated as executed. No document is treated as live Supabase evidence.
+No designed test is treated as executed. No documentation-only change is treated as Supabase or runtime evidence.
 
-## 2. Canonical repository anchor
+## 2. Canonical anchors
 
 ```text
 main: affbae1a598928010b0fa7db967734de522c13b4
 PR #101: CLOSED / MERGED
 PR #101 final head: 003850d012a299a947452fa5a8135cd454998f15
+Master-plan blob: ea161050c535b848ff927133830984f543c1104d
 ```
 
-The detailed F1-02 master plan canonical on `main` has blob:
+## 3. PR #102 history
 
 ```text
-ea161050c535b848ff927133830984f543c1104d
-```
-
-## 3. PR #102 head history
-
-### Initial Draft head
-
-```text
+Initial Draft:
 fc83ed752217bfc39810dfba38e93405bc7382b8
-Commits: 7
-Changed files: 7
-Audit result: FAIL
-```
+7 commits / 7 net files / FAIL
 
-### First corrective head
-
-```text
+First correction:
 6b7d96fb26d6589641bc079146db9c3f429b9bd2
-Commits: 8
-Changed files: 8
-GPT0: FAIL — master-plan normative regression
-GPT1: PASS WITH RESIDUAL RISK
-GPT3: PASS WITH RESIDUAL RISK
-Ready recommendation: NO
+8 commits / 8 net files
+GPT0 FAIL; GPT1/GPT3 PASS WITH RESIDUAL RISK
+
+Master-plan restoration:
+7b8c23bd375d750e73d888f140c8c44a840280a5
+9 commits / 7 net files
+Master-plan blob restored: ea161050c535b848ff927133830984f543c1104d
+GPT0 FAIL only for stale lifecycle and authority-name mapping
+
+Final lifecycle-and-alias correction:
+parent 7b8c23bd375d750e73d888f140c8c44a840280a5
+final head resolved live
+expected 10 commits / 7 net files / 6 final-commit paths
 ```
 
-GPT1/GPT3 approval at this head does not override the documentary blocker and does not apply to a later head.
+## 4. Final corrective scope
 
-### Detailed-baseline restoration head
-
-```text
-Parent: 6b7d96fb26d6589641bc079146db9c3f429b9bd2
-Commit count after restoration: expected 9
-Final head: authoritative in live PR metadata and PR description
-Audit state: NOT YET AUDITED
-Ready: NOT AUTHORIZED
-```
-
-## 4. Corrective scope evidence
-
-The restoration commit is valid only if it changes exactly:
+Exactly these six paths may change:
 
 ```text
-docs/security/evidence/F1-02_REMEDIATION_MASTER_PLAN.md
+docs/security/evidence/2026-07-25-f1-02-controlled-beta-primary-strategy.md
 docs/sfjm/AUTHORIZATIONS.md
 docs/sfjm/CURRENT_STATE.md
 docs/sfjm/EVIDENCE_FRESHNESS.md
@@ -74,32 +58,37 @@ docs/sfjm/NEXT_SAFE_ACTION.md
 docs/sfjm/handoffs/CURRENT.md
 ```
 
-The master plan must be restored to the exact baseline blob. Therefore it is changed by the corrective commit but is expected to disappear from the final PR net diff against `main`.
-
-Expected final PR net changed files:
+These must remain unchanged:
 
 ```text
-7
+docs/security/evidence/F1-02_REMEDIATION_MASTER_PLAN.md
+docs/sfjm/BLOCKED_ACTIONS.md
 ```
 
-Any other corrective-commit path is invalidating evidence and blocks Ready.
+Any additional path blocks Ready.
 
-## 5. Documentary evidence state
+## 5. Evidence state
 
-| Evidence | Exact target | State |
+| Evidence | Target | State |
 |---|---|---|
-| PR #101 findings/master plan | `main@affbae1a...` | CANONICAL BASELINE |
-| Strategy amendment | PR #102 final head | DRAFT / NOT_YET_CANONICAL |
-| Detailed master-plan restoration | exact baseline blob | PRESENT ONLY AFTER LIVE VALIDATION |
-| GPT0 audit at `6b7d96fb...` | old head | HISTORICAL / FINDING INPUT |
-| GPT1 audit at `6b7d96fb...` | old head | INVALIDATED FOR READY BY NEW HEAD |
-| GPT3 audit at `6b7d96fb...` | old head | INVALIDATED FOR READY BY NEW HEAD |
-| GPT0 audit at restoration head | final head | MISSING |
-| GPT1/GPT3 reaudits | final head | MISSING |
+| F1-02 findings/master plan | `main@affbae1a...` | CANONICAL BASELINE |
+| Strategy amendment | final PR #102 head | DRAFT / NOT_YET_CANONICAL |
+| Master-plan restoration | blob `ea161050...` | MUST REMAIN UNCHANGED |
+| GPT0/GPT1/GPT3 at `6b7d96fb...` | historical head | FINDING INPUT / NOT READY EVIDENCE |
+| GPT0 at `7b8c23bd...` | pre-final head | HISTORICAL REQUIRED FINDINGS |
+| GPT0 at final head | final head | MISSING |
+| GPT1/GPT3 at final head | final head | MISSING |
 
-## 6. Supabase and runtime evidence
+## 6. Authority-name freshness
 
-No operation in PR #102 provides evidence that any F1-02 technical blocker is remediated.
+```text
+PR_LIFECYCLE = TECHNICAL_PR_LIFECYCLE
+PRODUCTION_CHANGE = CONTROLLED_BETA_PRIMARY_CHANGE
+```
+
+These are strict aliases only. They create no authority and cannot be used without a new exact authorization.
+
+## 7. Supabase and runtime evidence
 
 ```text
 Supabase read under this correction: NONE
@@ -113,30 +102,33 @@ Production smoke: NONE
 Security Go: DENIED
 ```
 
-The historical live read-only inspection remains evidence of the state observed on its date. It must be narrowly refreshed before a technical change affecting those objects.
+Historical read-only evidence remains valid only for the objects and date observed and must be refreshed narrowly before a future technical change.
 
-## 7. Invalidation events
+## 8. Invalidation events
 
-Revalidate narrowly when any of the following occurs:
+Revalidate after:
 
-- PR #102 head changes;
-- main changes before Ready or merge;
-- the detailed master-plan blob differs from the baseline;
-- the strategy amendment changes;
-- changed-file scope changes;
-- a future migration, RLS, grant, policy, RPC, Auth or runtime change affects relevant evidence;
-- a new audit identifies a material inconsistency.
+- any PR #102 head change;
+- a `main` change before Ready or merge;
+- master-plan or `BLOCKED_ACTIONS.md` drift;
+- changed-file scope drift;
+- amendment or alias-map changes;
+- any migration, RLS, grant, policy, RPC, Auth or runtime change;
+- a material audit finding.
 
-## 8. Current evidence conclusion
+## 9. Current conclusion
 
 ```text
 PR #102: OPEN / DRAFT
-Final restoration head: REQUIRES LIVE RESOLUTION
-Detailed baseline restoration: REQUIRES LIVE BLOB CHECK
-Independent final-head audit: MISSING
+Final head: REQUIRES LIVE RESOLUTION
+Expected commits: 10
+Expected net changed files: 7
+Independent final-head GPT0 audit: MISSING
 Ready evidence: INCOMPLETE
 Merge evidence: INCOMPLETE
-Security Go evidence: INCOMPLETE / DENIED
+Security Go: DENIED
 F1-02: ACTIVE REMEDIATION / BLOCKED
 WDP: 0
 ```
+
+When freshness cannot be established, classify as `NOT_VERIFIED` or `STALE`, block the decision and refresh only the narrow required evidence.

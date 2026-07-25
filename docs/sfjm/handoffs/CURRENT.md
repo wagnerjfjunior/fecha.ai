@@ -1,12 +1,10 @@
 # FECH.AI — SFJM Current Handoff
 
-**Status:** `CURRENT_HANDOFF / PR_102_DETAILED_BASELINE_RESTORED / REAUDIT_REQUIRED`  
+**Status:** `CURRENT_HANDOFF / PR_102_FINAL_DOCUMENTARY_CORRECTION / GPT0_REAUDIT_REQUIRED`  
 **Observed on:** `2026-07-25`  
 **Repository:** `wagnerjfjunior/fecha.ai`
 
 ## 1. Decision
-
-The Product Authority decided that MVP 1 — Família remains a live controlled free beta.
 
 ```text
 Operational status: PILOT PRODUCTION / LIVE
@@ -19,138 +17,110 @@ F1-02: ACTIVE REMEDIATION / BLOCKED
 WDP: 0
 ```
 
-Downtime and possible beta-data loss are accepted operating risks. Privilege escalation, cross-tenant access, sensitive-data disclosure, unauthorized authority changes and destructive testing are not accepted.
+Downtime and possible beta-data loss are accepted operating risks. Privilege escalation, cross-tenant access, disclosure, unauthorized authority changes and destructive testing are not accepted.
 
 ## 2. Canonical anchors
 
 ```text
-Canonical main: affbae1a598928010b0fa7db967734de522c13b4
+main: affbae1a598928010b0fa7db967734de522c13b4
 PR #101: CLOSED / MERGED
 PR #101 final head: 003850d012a299a947452fa5a8135cd454998f15
-Detailed master-plan blob:
-ea161050c535b848ff927133830984f543c1104d
-```
-
-Canonical F1-02 baseline:
-
-```text
-docs/security/evidence/2026-07-24-f1-02-live-readonly-findings.md
-docs/security/evidence/F1-02_REMEDIATION_MASTER_PLAN.md
+Master-plan blob: ea161050c535b848ff927133830984f543c1104d
 ```
 
 ## 3. Active PR
 
 ```text
 PR: #102
-Title: docs(security): adopt controlled beta primary remediation strategy
 State: OPEN / DRAFT
 Base: affbae1a598928010b0fa7db967734de522c13b4
 Branch: docs/f1-02-controlled-beta-primary-strategy
-Pre-restoration head:
-6b7d96fb26d6589641bc079146db9c3f429b9bd2
-Final restoration head:
+Pre-final correction head:
+7b8c23bd375d750e73d888f140c8c44a840280a5
+Final head:
 resolve from live PR metadata and PR description
-Expected commits: 9
+Expected commits: 10
 Expected net changed files: 7
 ```
 
-The strategy artifact is:
+Strategy artifact:
 
 ```text
 docs/security/evidence/2026-07-25-f1-02-controlled-beta-primary-strategy.md
+PR_DRAFT / NOT_YET_CANONICAL
 ```
 
-It is `PR_DRAFT / NOT_YET_CANONICAL`.
+## 4. Correction history
 
-## 4. Why the latest correction was required
+- Initial Draft: `fc83ed752217bfc39810dfba38e93405bc7382b8`.
+- First correction: `6b7d96fb26d6589641bc079146db9c3f429b9bd2`; GPT0 failed, GPT1/GPT3 passed with residual risk.
+- Master-plan restoration: `7b8c23bd375d750e73d888f140c8c44a840280a5`; master plan restored to `ea161050...`.
+- GPT0 confirmed the normative blocker was resolved and required lifecycle and authority-alias corrections.
+- Final correction parent: `7b8c23bd375d750e73d888f140c8c44a840280a5`.
 
-At head `6b7d96fb...`:
+The final correction changes six authorized documents, leaves the master plan and `BLOCKED_ACTIONS.md` unchanged, keeps PR #102 Draft and authorizes no technical action.
 
-```text
-GPT0: FAIL
-GPT1: PASS WITH RESIDUAL RISK
-GPT3: PASS WITH RESIDUAL RISK
-```
+## 5. Documentary architecture
 
-GPT0 correctly identified that the master plan had been condensed beyond the authorized lab-only supersession. Detailed RPC, RLS/grant, call-site, migration, rollback, test, evidence and PR sequencing contracts were removed or reduced.
+The detailed master plan remains the complete technical program: matrices, RPC cards, call sites, migrations, rollback, PR-01 → PR-02 → PR-03, tests, evidence, audits and gates.
 
-No majority rule applies. Ready remained blocked.
+The amendment supersedes only universal lab requirements.
 
-## 5. Restoration performed
-
-The corrective strategy is deliberately conservative:
-
-- restore the master plan to the exact detailed baseline blob;
-- do not rewrite or condense it;
-- leave the strategy amendment as the sole lab-only supersession artifact;
-- preserve all detailed non-lab contracts;
-- preserve the original PR-01 → PR-02 → PR-03 sequence;
-- update only authorized SFJM state;
-- keep PR #102 Draft.
-
-Because the restored master plan equals the file on `main`, it no longer belongs in the final PR net diff.
-
-## 6. Controlled Beta Primary boundary
-
-The primary project may receive a future bounded remediation only after separate authorities.
+## 6. Authority vocabulary
 
 ```text
 WINDOW_IMPLEMENTATION
-→ creates one technical PR
+→ one bounded technical PR
 
 TECHNICAL_PR_LIFECYCLE
-→ authorizes Ready and/or exact-head merge
+→ Ready and/or exact-head merge
 
 CONTROLLED_BETA_PRIMARY_CHANGE
-→ authorizes one exact live Supabase operation
+→ one exact live Supabase operation
 
 ADMINISTRATIVE_ROLE_CHANGE
-→ authorizes one named role assignment; not a security test
+→ one named role assignment; not a test
 
 SECURITY_GATE
-→ authorizes only a final evidence-based decision
+→ final evidence-based decision only
 ```
 
-A merged technical PR does not authorize Supabase application.
+Legacy aliases:
 
-## 7. B1 boundary
+```text
+PR_LIFECYCLE = TECHNICAL_PR_LIFECYCLE
+PRODUCTION_CHANGE = CONTROLLED_BETA_PRIMARY_CHANGE
+```
 
-Allowed on the primary project under future exact authority:
+Aliases create no authority and expand no scope. Implementation, Ready, merge, Supabase application, role assignment and Security Go remain separate.
 
-- read-only structural proof;
-- grants/policies/RPC contract review;
-- positive controlled smoke;
-- rejection paths that cannot create real authority.
+## 7. Controlled Beta Primary boundary
 
-Requires isolation:
+Allowed only under future exact authority: read-only proof, controlled positive smoke and exact synthetic operations whose unexpected success remains contained.
 
-- actual self-promotion to `admin_global`, root or equivalent;
-- adversarial mutation of authority-bearing broker fields;
-- any test whose unexpected success reaches real data or global controls.
+Requires isolation: actual self-promotion to admin/root, adversarial authority-field mutation, tests that can reach real data/global controls, fuzzing, broad discovery and destructive rollback/reapply.
 
-An intentional named `admin_global` assignment is not a B1 test and is not authorized now.
+A named `admin_global` assignment is not B1 evidence and is not authorized.
 
 ## 8. Current blockers
 
-### PR #102 lifecycle
+PR #102 lifecycle:
 
-- GPT0 reauditing at final restoration head;
-- GPT1/GPT3 reaudits only after GPT0 passes;
-- separate Ready authority;
-- separate merge authority.
+- GPT0 audit at final head;
+- GPT1/GPT3 only after GPT0 passes;
+- separate Ready and merge authorities.
 
-### F1-02
+F1-02:
 
 - B1–B4 remain open;
-- technical PRs remain unimplemented;
-- no fixtures or tests;
-- no migration/rollback/reapply evidence;
-- no runtime smoke;
+- technical PRs are unimplemented;
+- no fixtures, tests, migration, rollback/reapply or smoke;
 - no final Security Go gate.
 
 ## 9. Current prohibitions
 
 ```text
+Final correction authority: CONSUMED
 Additional commits: NOT AUTHORIZED
 Ready: NOT AUTHORIZED
 Merge: NOT AUTHORIZED
@@ -164,63 +134,38 @@ F1-02 acceptance: NOT AUTHORIZED
 WDP: 0
 ```
 
-## 10. Evidence available
+## 10. Evidence
 
-- live main/PR #101 anchors;
-- exact baseline master-plan blob;
-- PR #102 history;
-- authenticated GPT0/GPT1/GPT3 audits at `6b7d96fb...`;
-- bounded restoration authority;
-- final commit and PR-description state after live validation.
+Available: canonical anchors, exact master-plan blob, PR #102 history through `7b8c23bd...`, authenticated specialist audits, final correction authority and live final state after validation.
 
-## 11. Evidence missing
+Missing: GPT0 audit at final head, final-head GPT1/GPT3, Ready/merge gates, PR-01, Supabase preflight/application authority, executed validation/rollback evidence and final Security Go decision.
 
-- independent GPT0 audit of final restoration head;
-- final-head GPT1/GPT3 reaudits;
-- Ready and merge gates;
-- PR-01 scope and implementation;
-- Supabase preflight and application authority;
-- executed validation and rollback evidence;
-- final Security Go decision.
+## 11. Single next safe action
 
-## 12. Single next safe action
-
-Run GPT0 against the exact final PR #102 head and verify:
+Run GPT0 against the exact final PR #102 head and validate:
 
 ```text
-master-plan blob:
-ea161050c535b848ff927133830984f543c1104d
-
-corrective parent:
-6b7d96fb26d6589641bc079146db9c3f429b9bd2
-
-expected commits:
-9
-
-expected net changed files:
-7
+parent: 7b8c23bd375d750e73d888f140c8c44a840280a5
+expected commits: 10
+expected net changed files: 7
+expected final-commit paths: 6
+master-plan blob: ea161050c535b848ff927133830984f543c1104d
 ```
+
+Only after GPT0 recommends Ready may GPT1 and GPT3 be repeated on the same head.
 
 Do not mark Ready, merge, start PR-01 or access Supabase.
 
-## 13. What must not be redone
+## 12. What must not be redone
 
 - do not reconstruct F1-02 from zero;
-- do not condense the detailed master plan again;
+- do not condense or rewrite the master plan;
 - do not reopen PR #101 without new evidence;
 - do not treat beta consent as a security waiver;
-- do not create an isolated branch merely because the old baseline required it universally;
-- do not use an intentional administrator assignment as B1 evidence;
+- do not create a lab merely because the historical baseline required it universally;
+- do not use administrator assignment as B1 evidence;
 - do not create recursive documentation PRs solely to record their own merge.
 
-## 14. New-conversation startup
+## 13. New-conversation startup
 
-A receiving conversation must:
-
-1. read bootstrap, governance and SFJM indexes;
-2. validate live `main`, PR #102 and the exact head;
-3. read the detailed master plan and strategy amendment together;
-4. treat the amendment as lab-only supersession, not a replacement for the technical program;
-5. preserve Security Go denied, F1-02 blocked and WDP 0;
-6. require exact authority for every GitHub and Supabase transition;
-7. stop fail-closed when evidence is incomplete.
+Read bootstrap/governance/SFJM indexes, validate live `main` and PR #102, read master plan and amendment together, treat the amendment as lab-only supersession, preserve Security Go denied/F1-02 blocked/WDP 0, require exact authority for every transition and stop fail-closed when evidence is incomplete.

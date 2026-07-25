@@ -4,13 +4,13 @@
 **Date:** `2026-07-25`  
 **Repository:** `wagnerjfjunior/fecha.ai`  
 **PR:** `#102`  
-**Base:** `affbae1a598928010b0fa7db967734de522c13b4`  
+**Base:** `main@affbae1a598928010b0fa7db967734de522c13b4`  
 **Branch:** `docs/f1-02-controlled-beta-primary-strategy`  
-**Pre-correction head:** `fc83ed752217bfc39810dfba38e93405bc7382b8`
+**Pre-final correction head:** `7b8c23bd375d750e73d888f140c8c44a840280a5`
 
 ## 1. Decision
 
-The product authority decided that MVP 1 — Família will continue as a controlled free beta on the primary Supabase project.
+The Product Authority decided that MVP 1 — Família continues on the primary Supabase project under:
 
 ```text
 Operational status: PILOT PRODUCTION / LIVE
@@ -19,215 +19,183 @@ Broad paid commercialization: BLOCKED
 Paid SLA: NO
 Real users and data: YES
 Security Go: DENIED
+F1-02: ACTIVE REMEDIATION / BLOCKED
+WDP: 0
 ```
 
-The decision accepts operating risk but does not reduce multi-company security requirements.
+Accepted operating risk is limited to downtime, maintenance, manual recovery and possible beta-data loss. It is not a waiver for privilege escalation, cross-tenant access, confidentiality, integrity, privacy or authorization failures.
 
-## 2. Accepted operating risk
+## 2. Supersession and precedence
 
-- downtime and maintenance;
-- temporary unavailability;
-- manual support and recovery;
-- possible loss of beta data;
-- rollback to a previous application/schema state;
-- no paid SLA.
+This amendment is the sole artifact that supersedes the original F1-02 master plan where that plan makes an isolated Supabase environment a universal prerequisite.
 
-## 3. Risk not accepted
+The detailed master plan was restored unchanged to the canonical `main` blob:
 
-- privilege escalation;
-- cross-tenant access or mutation;
-- disclosure of sensitive data, credentials or tokens;
-- unauthorized change of authority, company, team or user linkage;
-- forged real CRM history;
-- offensive or destructive tests against real users/data;
-- unbounded or silent database changes;
-- broad paid commercialization before Security Go.
+```text
+docs/security/evidence/F1-02_REMEDIATION_MASTER_PLAN.md
+blob: ea161050c535b848ff927133830984f543c1104d
+```
 
-Possible data loss is not a security or privacy waiver.
+Because the restored blob is identical to `main`, the master plan does not appear in the final net PR diff.
 
-## 4. Supersession and precedence
-
-This amendment supersedes the original F1-02 master plan only where that plan makes an isolated Supabase environment a universal prerequisite.
-
-After PR #102 is merged, this amendment prevails over conflicting lab-only clauses. The master plan is updated in the same PR to remove operational ambiguity.
-
-### 4.1 Superseded rules
+After PR #102 is audited and merged, this amendment prevails only for these lab-only conflicts:
 
 - mandatory isolated branch before every implementation;
-- absolute stop of all remediation when a lab is unavailable;
-- universal `LAB_VALIDATION_PASSED` state;
-- mandatory live-equivalent rollback/reapply rehearsal in a lab for every migration;
-- universal “apply only in lab” checklist language;
-- lab-cost confirmation as the mandatory next action before PR-01.
+- absolute stop when a laboratory is unavailable;
+- universal `LAB_VALIDATION_PASSED`;
+- mandatory isolated rollback/reapply rehearsal for every migration;
+- universal “apply only in lab” language;
+- lab-cost confirmation as the universal prerequisite for PR-01.
 
-### 4.2 Preserved rules
+All other detailed master-plan requirements remain binding, including:
 
-- Pilot Production / live classification;
-- Security Go denied;
 - one PR / one risk / one rollback;
-- exact environment and GitHub authority;
-- current evidence and fail-closed behavior;
-- independent audit;
-- synthetic-only fixtures;
-- no real-data negative testing;
-- rollback design;
-- separate GitHub lifecycle and Supabase-operation authorities;
-- final Security Go gate;
-- broad commercialization blocked.
+- table/RLS/grant matrices;
+- RPC contract cards;
+- call-site maps;
+- migration and rollback contracts;
+- the original PR-01 → PR-02 → PR-03 sequence;
+- positive and negative test contracts;
+- evidence, freshness, independent audits and final gates;
+- fail-closed behavior and separation of duties.
 
-## 5. Controlled validation categories
+## 3. Controlled validation model
 
-Every future test must be assigned one category before authorization.
+Every validation item must be classified before execution.
 
 ### `SAFE_LIVE`
 
-A bounded check on the primary project where unexpected success or failure cannot escape the synthetic graph or grant real authority.
+Permitted only under exact authority when unexpected success or failure cannot escape a wholly synthetic graph, create real authority, expose real data or modify global controls.
 
 ### `ISOLATED`
 
-Required when unexpected success can create admin/root authority, expose real data, change global controls, require reset, fuzzing or destructive rollback/reapply.
+Required when unexpected success can create admin/root authority, expose real data, affect global controls, require reset, fuzzing, broad discovery or destructive rollback/reapply.
 
 ### `DEFERRED`
 
-Required evidence that cannot currently be executed safely. It remains `NOT_VERIFIED` and may block Security Go.
+Required evidence that cannot currently be executed safely. It remains `NOT_VERIFIED`, keeps the finding open and may block final Security Go.
 
 ### `PROHIBITED`
 
-Never execute with real actors/data, broad discovery, real credentials, untrusted `service_role`, deliberate corruption or control disabling.
+Never execute against real actors, companies, identifiers, credentials or data, or through unbounded discovery, deliberate corruption or disabled controls.
 
-The universal lifecycle gate becomes:
+The universal lifecycle gate is interpreted as:
 
 ```text
 CONTROLLED_VALIDATION_PASSED
 ```
 
-The evidence record must list all tests by category.
-
-## 6. B1 containment rule
+## 4. B1 and intentional administration
 
 The primary project must not be used to attempt actual self-promotion to `admin_global`, root or equivalent authority.
 
-A synthetic account is not sufficient containment: if the control fails, that account gains real authority over a live project containing real companies and data.
+A synthetic account is not sufficient containment when unexpected success grants authority over a live project containing real companies and data.
 
-Allowed on the primary project for B1:
+Allowed under future exact authority:
 
-- read-only proof of grants/policies/functions;
-- proof that authority-bearing direct update exposure was removed;
+- read-only grants, policies and function inspection;
+- structural proof that authority-bearing direct update exposure was removed;
 - review of the narrow RPC contract;
-- positive smoke of the controlled RPC with a synthetic actor;
-- rejection tests that cannot create authority or access real data.
-
-The actual adversarial self-promotion test remains:
+- positive controlled smoke;
+- rejection paths that cannot create authority or access real data.
 
 ```text
-B1 GLOBAL SELF-ESCALATION NEGATIVE TEST: NOT_VERIFIED WITHOUT ISOLATION
+B1 GLOBAL SELF-ESCALATION NEGATIVE TEST:
+ISOLATED / NOT_VERIFIED WITHOUT ISOLATION
 ```
 
-## 7. Intentional `admin_global` assignment
+An intentional named `admin_global` assignment is a separate administrative-governance operation. It is not a test and does not prove B1 remediation. It requires separate `ADMINISTRATIVE_ROLE_CHANGE` authority with verified identity, business need, least privilege, server-side execution, audit and revocation. PR #102 authorizes no assignment.
 
-An intentional decision to designate a named user as `admin_global` is not a negative test and does not prove that self-escalation is blocked.
+## 5. Synthetic graph and prohibited operations
 
-It may occur only under a separate administrative-governance authorization containing:
+Any future `SAFE_LIVE` fixture must form a wholly synthetic graph. No synthetic object may reference a real company, user, broker, team, list, lead or customer. Real brokers must not receive synthetic records. Synthetic users must not receive global authority. Unexpected success must remain contained. Fixture cleanup is not schema/configuration rollback.
 
-- exact user identity;
-- verified need;
-- least-privilege rationale;
-- server-side controlled operation;
-- audit trail;
-- effective date and owner;
-- revocation/deactivation procedure;
-- post-operation verification.
+Explicitly prohibited on the primary project:
 
-No such assignment is authorized by PR #102.
-
-## 8. Synthetic graph contract
-
-Safe-live fixtures must form a wholly synthetic graph.
-
-Required invariants:
-
-1. Synthetic companies, users, brokers, teams, lists, lots, leads and stages reference only synthetic objects.
-2. No synthetic object references a real company, user, broker, team, list, lead or customer.
-3. Real brokers never receive synthetic leads, tasks, lots or lists.
-4. Synthetic users never receive global authority capable of reaching real data.
-5. Tests use exact synthetic identifiers; no broad discovery query is allowed.
-6. Unexpected success remains contained to the synthetic graph.
-7. Cleanup failure blocks additional tests and starts containment.
-8. Fixture cleanup is distinct from schema/configuration rollback.
-
-Fixture creation requires separate `CONTROLLED_BETA_PRIMARY_CHANGE` authority.
-
-## 9. Explicitly prohibited primary-project tests
-
-- `role = admin_global` or equivalent self-elevation;
-- modification of authority-bearing fields as an adversarial test;
-- broad cross-company SELECTs;
-- use of IDs belonging to real companies or records;
+- actual self-elevation to `admin_global` or root;
+- adversarial mutation of authority-bearing broker fields;
+- broad cross-company discovery;
+- use of real IDs or credentials;
 - fuzzing, load, volume or mixed-tenant offensive batches;
 - disabling RLS, policies, grants or Auth;
-- `service_role` in frontend/browser/untrusted clients;
-- reuse of real JWTs, passwords, emails, phones or payloads;
-- destructive data tests;
-- experimental schema rollback/reapply.
+- `service_role` in browser/frontend/untrusted client;
+- deliberate corruption or deletion of real data;
+- experimental destructive rollback/reapply.
 
-## 10. Authorization separation
+## 6. Authority model and legacy aliases
 
 ```text
 WINDOW_IMPLEMENTATION
-→ creates/updates one technical PR
+→ one bounded technical PR
 
 TECHNICAL_PR_LIFECYCLE
-→ authorizes Ready and exact-head merge
+→ Ready and/or exact-head merge
 
 CONTROLLED_BETA_PRIMARY_CHANGE
-→ authorizes one exact live Supabase operation
+→ one exact live Supabase operation
+
+ADMINISTRATIVE_ROLE_CHANGE
+→ one intentional named administrative-role assignment
 
 SECURITY_GATE
-→ authorizes only the final security decision
+→ final evidence-based security decision only
 ```
 
-A merged PR does not authorize SQL or configuration application.
-
-## 11. Rollback distinction
+Legacy-name mapping from the restored master plan:
 
 ```text
-Synthetic fixture cleanup
-!=
-Schema/configuration rollback
+PR_LIFECYCLE
+= legacy name for TECHNICAL_PR_LIFECYCLE
+
+PRODUCTION_CHANGE
+= legacy name for CONTROLLED_BETA_PRIMARY_CHANGE
 ```
 
-Fixture cleanup affects only the authorized synthetic graph.
+The legacy names are strict aliases only. They create no additional authority, expand no scope and cannot be used without a new, exact and unexpired authorization.
 
-Schema/configuration rollback affects the live environment and requires exact operation identity, impact analysis, ordering, monitoring, stop conditions and separate authority.
+Implementation, Ready, merge, Supabase application, administrative role assignment and Security Go remain separate decisions. A merged PR does not authorize SQL or configuration application.
 
-## 12. Current lifecycle
+## 7. Current lifecycle
+
+Immediately before this final correction:
+
+```text
+Head: 7b8c23bd375d750e73d888f140c8c44a840280a5
+Commits: 9
+Net changed files: 7
+Master-plan blob: ea161050c535b848ff927133830984f543c1104d
+GPT0: FAIL
+Required findings: stale lifecycle and authority-name mapping
+```
+
+The final correction:
+
+- has parent `7b8c23bd375d750e73d888f140c8c44a840280a5`;
+- changes exactly six authorized documentation paths;
+- leaves the master plan and `BLOCKED_ACTIONS.md` unchanged;
+- results in 10 commits and 7 net changed files;
+- externalizes its final SHA to live PR metadata and the PR description.
 
 ```text
 PR #102: OPEN / DRAFT
-Strategy decision: RECORDED BY PRODUCT AUTHORITY
-Repository acceptance: NOT YET GRANTED
-Pre-correction head: fc83ed752217bfc39810dfba38e93405bc7382b8
-Final corrective head: resolve live from PR metadata and updated PR description
-Changed files after correction: 8 documentation files
+Strategy canonicality: NOT_YET_CANONICAL
+Additional commits: NOT AUTHORIZED after this correction
 Ready: NOT AUTHORIZED
 Merge: NOT AUTHORIZED
 PR-01: NOT AUTHORIZED
 Supabase: NOT AUTHORIZED
+Admin_global assignment: NOT AUTHORIZED
 Security Go: DENIED
 F1-02: ACTIVE REMEDIATION / BLOCKED
 WDP: 0
 ```
 
-The final commit cannot embed its own SHA without changing that SHA. Live GitHub metadata and the PR description are authoritative for the final corrective head.
+## 8. Rollback and next action
 
-## 13. Rollback of this amendment
+One revert of PR #102 restores the prior universal isolated-lab strategy. That documentation revert does not revert any later technical or Supabase operation.
 
-One revert of PR #102 restores the prior universal isolated-lab strategy.
+Resolve the final head from live PR metadata and the updated PR description. Run GPT0 against that exact head. GPT0 must validate the parent, the six-path final commit, 10 total commits, 7 net changed files, unchanged master plan and `BLOCKED_ACTIONS.md`, current lifecycle and strict alias mapping.
 
-That documentation revert does not revert any later migration or Supabase operation; technical rollbacks remain independent.
-
-## 14. Next safe action
-
-Validate the single corrective commit, the eight-file diff and the updated PR description. Then repeat independent GPT0/GPT1/GPT3 audits at the exact new head.
+Only after GPT0 recommends Ready may GPT1 and GPT3 be repeated on the same exact head.
 
 No technical or Supabase action is authorized.

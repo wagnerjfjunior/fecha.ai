@@ -1,31 +1,28 @@
 # FECH.AI — SFJM Next Safe Action
 
-**Status:** `NEXT_SAFE_ACTION / PR_102_FINAL_HEAD_REAUDIT`  
+**Status:** `NEXT_SAFE_ACTION / PR_102_FINAL_HEAD_GPT0_REAUDIT`  
 **Observed on:** `2026-07-25`  
 **Repository:** `wagnerjfjunior/fecha.ai`
 
-## 1. Context
+## 1. Current safe state
 
-PR #102 records the Product Authority decision to operate MVP 1 — Família as:
+PR #102 records the Product Authority decision to operate MVP 1 — Família as `PILOT PRODUCTION / LIVE` under `CONTROLLED FREE BETA`.
+
+The primary project may receive future bounded remediation only under separate authority. It is not an unrestricted laboratory.
+
+The detailed master plan remains unchanged at:
 
 ```text
-PILOT PRODUCTION / LIVE
-CONTROLLED FREE BETA
+ea161050c535b848ff927133830984f543c1104d
 ```
 
-It removes an isolated environment as a universal prerequisite, but does not turn the primary project into a laboratory and does not authorize any technical operation.
-
-The detailed F1-02 master plan has been restored to its canonical baseline. The strategy amendment remains the isolated lab-only supersession artifact.
+The strategy amendment is the sole lab-only supersession artifact.
 
 ## 2. Exact next action
 
-Perform an independent GPT0 documentation reauditing of the final live PR #102 head.
-
-Do not reuse the GPT0 verdict from `6b7d96fb26d6589641bc079146db9c3f429b9bd2`. That head is historical after the restoration commit.
+Perform an independent GPT0 documentation reauditing of the final live PR #102 head. Do not reuse a prior verdict as approval of the final head.
 
 ## 3. Required live target
-
-Resolve from GitHub immediately before audit:
 
 ```text
 Repository: wagnerjfjunior/fecha.ai
@@ -35,88 +32,64 @@ Expected merged: false
 Base: main
 Base SHA: affbae1a598928010b0fa7db967734de522c13b4
 Branch: docs/f1-02-controlled-beta-primary-strategy
-Parent of final restoration commit:
-6b7d96fb26d6589641bc079146db9c3f429b9bd2
-Expected commits: 9
+Parent of final correction:
+7b8c23bd375d750e73d888f140c8c44a840280a5
+Expected commits: 10
 Expected net changed files: 7
+Expected final-commit paths: 6
 ```
 
-Stop with `FAIL — HEAD CHANGED` if the head being audited is not the live final head recorded in PR metadata and description.
+Stop with `FAIL — HEAD CHANGED` if the audited head differs from live PR metadata.
 
 ## 4. Mandatory GPT0 checks
 
 GPT0 must validate:
 
-1. one restoration commit directly follows `6b7d96fb...`;
-2. the restoration commit changes exactly six authorized paths;
-3. `F1-02_REMEDIATION_MASTER_PLAN.md` has blob:
-   `ea161050c535b848ff927133830984f543c1104d`;
-4. the final PR net diff contains exactly seven paths;
-5. the master plan no longer appears in the net diff because it matches `main`;
-6. the strategy amendment remains the sole lab-only supersession artifact;
-7. the original detailed contracts are preserved, including:
-   - table/RLS/grant matrix;
-   - RPC contract cards;
-   - call-site mapping;
-   - migration and rollback requirements;
-   - original PR-01 → PR-02 → PR-03 compatibility sequence;
-   - positive and negative tests;
-   - evidence schema;
-   - gate criteria;
-8. SFJM consistently records the restoration and consumed authority;
-9. no overclaim of Security Go, F1-02 acceptance, tests or Supabase authority exists;
-10. PR remains Draft.
+1. one final commit directly follows `7b8c23bd...`;
+2. exactly six authorized paths changed;
+3. master plan remains blob `ea161050c535b848ff927133830984f543c1104d`;
+4. `BLOCKED_ACTIONS.md` is unchanged;
+5. final net diff has exactly seven paths;
+6. amendment remains the sole lab-only supersession artifact;
+7. stale 8-file and old-next-action references are absent;
+8. lifecycle reflects 10 commits and 7 net files;
+9. `PR_LIFECYCLE = TECHNICAL_PR_LIFECYCLE`;
+10. `PRODUCTION_CHANGE = CONTROLLED_BETA_PRIMARY_CHANGE`;
+11. aliases create or expand no authority;
+12. correction authority is consumed;
+13. no overclaim of tests, Supabase change, B1 remediation or Security Go;
+14. PR remains Draft.
 
 ## 5. Sequencing after GPT0
 
-Only if GPT0 returns `PASS` or `PASS WITH RESIDUAL RISK` with:
+Only if GPT0 returns `PASS` or `PASS WITH RESIDUAL RISK` with `READY RECOMMENDATION: YES`, repeat GPT1 and GPT3 on the same exact head.
 
-```text
-READY RECOMMENDATION: YES
-```
+If GPT0 returns `FAIL`, stop. No additional commit may be created without new bounded Product Authority.
 
-then repeat GPT1 and GPT3 on the same exact head.
-
-If GPT0 returns `FAIL`, stop. Do not create another commit without new bounded Product Authority.
-
-If GPT0, GPT1 and GPT3 all recommend Ready, request a separate `TECHNICAL_PR_LIFECYCLE` authorization for Draft → Ready. Do not mark Ready automatically.
+If GPT0, GPT1 and GPT3 all recommend Ready, request separate `TECHNICAL_PR_LIFECYCLE` authority for Draft → Ready. Do not mark Ready automatically.
 
 ## 6. Explicitly prohibited now
 
-- additional commits;
-- PR metadata changes;
-- comments or reviews;
-- reviewer requests;
-- Ready;
-- merge;
-- PR-01;
+- additional commits or PR metadata changes;
+- comments, reviews or reviewer requests;
+- Ready, merge or PR-01;
 - Supabase access or mutation;
 - SQL, migrations, RLS, grants, policies, RPCs or Auth;
 - runtime/frontend changes;
 - fixtures or tests;
 - `admin_global` assignment;
-- Security Go;
-- F1-02 acceptance;
-- WDP.
+- Security Go, F1-02 acceptance or WDP.
 
 ## 7. Stop conditions
 
-Stop fail-closed if:
-
-- PR/head/base differs;
-- commit parent is not exact;
-- corrective scope contains another file;
-- master-plan blob differs;
-- technical contracts remain removed or condensed;
-- net changed-file count differs without a documented Git explanation;
-- the PR is no longer Draft;
-- evidence is incomplete.
+Stop fail-closed if PR/head/base/parent differs, another path enters the commit, master plan or `BLOCKED_ACTIONS.md` drifts, net file count differs without verified explanation, lifecycle or aliases remain ambiguous, PR is no longer Draft, or evidence is incomplete.
 
 ## 8. Current state
 
 ```text
 PR #102: OPEN / DRAFT
-Audit of final restoration head: PENDING
+Audit of final correction head: PENDING
+Final correction authority: CONSUMED
 Additional commits: NOT AUTHORIZED
 Ready: NOT AUTHORIZED
 Merge: NOT AUTHORIZED
