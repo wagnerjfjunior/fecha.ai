@@ -1,166 +1,198 @@
 # FECH.AI — SFJM Current State
 
-**Lifecycle state:** `F1_02_CONTROLLED_BETA_PRIMARY_STRATEGY_IN_DRAFT / FINAL_DOCUMENTARY_CORRECTION_APPLIED / SECURITY_GO_DENIED`  
-**Record type:** `OPERATIONAL_STATE / DOCUMENTATION_ONLY`  
-**Observed on:** `2026-07-25`  
+**Lifecycle state:** `GPT3_CATALOG_GATEWAY_DRAFT / PR103_FROZEN / SECURITY_GO_DENIED`  
+**Record type:** `OPERATIONAL_STATE / PARALLEL_SECURITY_ENABLEMENT`  
+**Observed on:** `2026-07-26`  
 **Repository:** `wagnerjfjunior/fecha.ai`
 
-## 1. Context
+## 1. Product context
 
 ```text
 Operational status: PILOT PRODUCTION / LIVE
 Commercial model: CONTROLLED FREE BETA
 Product phase: MVP 1 — Família
-Real users: YES
+Real users/data: YES
 Multiple companies: YES
-Sensitive lead/customer data: YES
-Paid SLA: NO
 Broad paid commercialization: BLOCKED
 Security Go: DENIED
 F1-02: ACTIVE REMEDIATION / BLOCKED
 WDP: 0
 ```
 
-Accepted operating risk is limited to downtime, maintenance, manual recovery and possible beta-data loss. It is not a security, privacy or tenant-isolation waiver.
+Accepted beta risk remains limited to downtime, maintenance, manual recovery and possible beta-data loss. It is not a waiver for privilege escalation, cross-tenant access, disclosure, unauthorized mutation or weak evidence.
 
-Frontend requests and displays. Backend/RPC/Supabase validates and decides. AI assists, but is not authority.
+Frontend/Action requests. Edge/RPC/Supabase validates and decides. AI assists but is not authority.
 
 ## 2. Canonical main
 
 ```text
-main: affbae1a598928010b0fa7db967734de522c13b4
-Source PR: #101
-PR #101 final head: 003850d012a299a947452fa5a8135cd454998f15
+main: b685b360404bbfd0a84a4b755b3092ee35a20e5e
+Source PR: #102
+PR #102: CLOSED / MERGED
+PR #102 final head: 26395a5751ded7f3bc6908f36615f761d709199c
+PR #102 squash: b685b360404bbfd0a84a4b755b3092ee35a20e5e
 ```
 
-## 3. Active strategy PR
+The F1-02 controlled-beta strategy is canonical on `main`.
+
+## 3. PR #103 — frozen remediation PR
 
 ```text
-PR: #102
+PR: #103
+Title: security: add narrow password-state RPC
 State: OPEN / DRAFT
-Merged: false
-Base: main@affbae1a598928010b0fa7db967734de522c13b4
-Branch: docs/f1-02-controlled-beta-primary-strategy
-Pre-final correction head: 7b8c23bd375d750e73d888f140c8c44a840280a5
-Final head: resolve from live PR metadata and PR description
-Expected commits: 10
-Expected net changed files: 7
-Strategy canonicality: NOT_YET_CANONICAL
+Base: main@b685b360404bbfd0a84a4b755b3092ee35a20e5e
+Branch: security/f1-02-password-state-rpc
+Head: abf6b4026343eae437283280269ed2997911dcec
+Commits: 5
+Changed files: 1
 ```
 
-The final correction changes exactly six authorized documents and leaves the master plan and `BLOCKED_ACTIONS.md` unchanged.
-
-## 4. Documentary architecture
+Freeze contract:
 
 ```text
-Detailed master plan:
-docs/security/evidence/F1-02_REMEDIATION_MASTER_PLAN.md
-blob: ea161050c535b848ff927133830984f543c1104d
-net PR diff: ABSENT
-
-Lab-only amendment:
-docs/security/evidence/2026-07-25-f1-02-controlled-beta-primary-strategy.md
+Additional commits: PROHIBITED
+Metadata changes: PROHIBITED
+Ready: PROHIBITED
+Merge: PROHIBITED
+Supabase application: PROHIBITED
 ```
 
-The amendment changes only universal laboratory requirements. It does not remove detailed matrices, RPC cards, call-site maps, migration/rollback contracts, the PR-01 → PR-02 → PR-03 sequence, tests, evidence, audits or gates.
+GPT3 found no new concrete migration defect. Its verdict remained `INCONCLUSIVE` only because the available GPT gateway exposed `health_check` with `database_access: false` and could not independently reproduce the required live catalog evidence.
 
-## 5. Validation and B1
+## 4. PR #104 — parallel catalog gateway
 
 ```text
-SAFE_LIVE
-ISOLATED
-DEFERRED
-PROHIBITED
+PR: #104
+Title: security: add bounded GPT3 Supabase catalog gateway
+State: OPEN / DRAFT
+Base: main@b685b360404bbfd0a84a4b755b3092ee35a20e5e
+Branch: security/gpt3-supabase-catalog-gateway
+Final head: resolve from live PR metadata
+Primary risk: bounded exposure of security catalog metadata
 ```
 
-Actual B1 self-promotion to `admin_global`, root or equivalent remains `ISOLATED / NOT_VERIFIED` without isolation. A named admin assignment is a separate `ADMINISTRATIVE_ROLE_CHANGE`, not a test and not authorized now.
-
-## 6. Authority vocabulary
+Expected net scope:
 
 ```text
-WINDOW_IMPLEMENTATION
-TECHNICAL_PR_LIFECYCLE
-CONTROLLED_BETA_PRIMARY_CHANGE
-ADMINISTRATIVE_ROLE_CHANGE
-SECURITY_GATE
+supabase/migrations/20260726180000_gpt_security_metadata_snapshot.sql
+supabase/functions/gpt-especialista/index.ts
+docs/integrations/gpt3-supabase-action.openapi.yaml
+docs/security/evidence/2026-07-26-gpt3-supabase-catalog-gateway.md
+docs/sfjm/AUTHORIZATIONS.md
+docs/sfjm/BLOCKED_ACTIONS.md
+docs/sfjm/CURRENT_STATE.md
+docs/sfjm/EVIDENCE_FRESHNESS.md
+docs/sfjm/NEXT_SAFE_ACTION.md
+docs/sfjm/handoffs/CURRENT.md
 ```
 
-Legacy aliases:
+PR #104 does not modify PR #103.
+
+## 5. Live Supabase state
 
 ```text
-PR_LIFECYCLE = TECHNICAL_PR_LIFECYCLE
-PRODUCTION_CHANGE = CONTROLLED_BETA_PRIMARY_CHANGE
+Project: Discador-MesaCliente
+Project ref: uobxxgzshrmbtjfdolxd
+Environment: production
+Edge Function: gpt-especialista
+Edge version observed: 7
+Edge status: ACTIVE
+verify_jwt: false
+Custom authentication: x-gpt-action-key
+health_check: WORKING
+security_metadata_snapshot operation: PRESENT IN EDGE/ACTION
+public.gpt_security_metadata_snapshot(): ABSENT
 ```
 
-Aliases create no additional authority and cannot be used without a new exact authorization.
+The secret previously visible in a capture was rotated by the user. The value is not recorded.
 
-## 7. Blockers
+The active live configuration is partial: the Edge operation exists but the RPC does not. PR #104 versions the intended final contract; it does not apply it.
 
-Documentation lifecycle:
+## 6. Read-only evidence executed
 
-- GPT0 must audit the exact final head;
-- GPT1 and GPT3 repeat only after GPT0 recommends Ready;
-- Ready and merge require separate authority;
-- a new head invalidates prior exact-head conclusions.
-
-F1-02 technical blockers:
-
-- B1 — self privilege escalation;
-- B2 — excessive direct CRM writes;
-- B3 — forgeable funnel history;
-- B4 — incomplete same-company ACL proof;
-- funnel-stage, import, feedback, `times` and leaked-password requirements;
-- executed tests, rollback/reapply and final gate.
-
-## 8. Current authorities
+A fixed catalog SELECT equivalent to the proposed RPC body was executed under:
 
 ```text
-Final correction authority: CONSUMED
-Additional commits: NOT AUTHORIZED
-Ready: NOT AUTHORIZED
-Merge: NOT AUTHORIZED
-PR-01: NOT AUTHORIZED
-Supabase read/mutation: NOT AUTHORIZED
-Runtime/frontend: NOT AUTHORIZED
-Fixtures/tests: NOT AUTHORIZED
-Admin_global assignment: NOT AUTHORIZED
-Security Go: DENIED
-F1-02 acceptance: NOT AUTHORIZED
-WDP: 0
+BEGIN
+SET LOCAL ROLE service_role
+SELECT fixed PR103 catalog snapshot
+ROLLBACK
 ```
 
-## 9. Evidence
+Result:
 
-Available:
+```text
+Query parsed: YES
+Execution as service_role: YES
+Persistent writes: ZERO
+Business-row reads: ZERO
+auth.users reads: ZERO
+Secrets returned: ZERO
+```
 
-- live `main` and PR #101 anchors;
-- exact master-plan blob;
-- PR #102 history through `7b8c23bd...`;
-- authenticated GPT0/GPT1/GPT3 audits;
-- bounded final correction authority;
-- final commit and PR-description state after live validation.
+The result included the table/columns, UNIQUE index, constraints, RLS, policies, triggers, trigger-function definition, roles, memberships, effective privileges, default function ACL, `auth.uid()` and `plpgsql`.
 
-Absent:
+This is query-contract evidence. It is not migration-application evidence.
 
-- GPT0 audit of final head;
-- final-head GPT1/GPT3 reaudits;
-- Ready and merge authority;
-- PR-01 implementation;
-- Supabase preflight, fixtures, tests, rollback/reapply and smoke;
-- final Security Go decision.
+## 7. Current authority state
+
+```text
+PR #104 WINDOW_IMPLEMENTATION:
+CONSUMED BY THE FINAL DRAFT IMPLEMENTATION COMMIT
+
+Further PR #104 commits after final head:
+NOT AUTHORIZED without bounded correction authority
+
+PR #104 Ready:
+NOT AUTHORIZED
+
+PR #104 merge:
+NOT AUTHORIZED
+
+Live Supabase migration/deploy/Action change:
+NOT AUTHORIZED
+
+PR #103 change or application:
+NOT AUTHORIZED
+
+Security Go:
+DENIED
+
+F1-02 acceptance:
+NOT AUTHORIZED
+
+WDP:
+0
+```
+
+The final Draft commit cannot contain its own SHA. Live PR metadata and the final PR description are authoritative for the head.
+
+## 8. Evidence available
+
+- live `main` and PR #102 merge anchors;
+- live PR #103 metadata and exact frozen head;
+- GPT3 PR #103 audit identifying an evidence-only blocker;
+- active Edge Function version 7 source;
+- absence of `public.gpt_security_metadata_snapshot()`;
+- successful fixed catalog query under `service_role` with rollback;
+- PR #104 versioned migration, Edge source, OpenAPI, evidence and SFJM.
+
+## 9. Evidence absent
+
+- independent exact-head GPT0/GPT1/GPT3/GPT4 audits of PR #104;
+- PR #104 Ready and merge authority;
+- PR #104 merge;
+- live application of the PR #104 migration;
+- live deploy of the versioned Edge Function;
+- live Action reconciliation to the versioned OpenAPI;
+- successful GPT Action `security_metadata_snapshot`;
+- negative gateway tests after deployment;
+- renewed GPT3 audit of PR #103;
+- PR #103 lifecycle and application gates.
 
 ## 10. Next safe action
 
-Run GPT0 against the exact final PR #102 head and validate:
+Complete PR #104 at one final Draft head, then run GPT0 against that exact head.
 
-1. parent `7b8c23bd375d750e73d888f140c8c44a840280a5`;
-2. one final correction commit;
-3. exactly six paths in that commit;
-4. 10 total commits and 7 net changed files;
-5. unchanged master-plan blob `ea161050c535b848ff927133830984f543c1104d`;
-6. unchanged `BLOCKED_ACTIONS.md`;
-7. current lifecycle and strict alias mapping;
-8. PR remains OPEN / DRAFT;
-9. no active authority for additional commits, Ready, merge, PR-01 or Supabase.
-
-Do not mark Ready, merge, begin PR-01 or access Supabase.
+Do not alter PR #103, mark either PR Ready, merge, deploy the Edge Function, apply SQL, update the GPT Action or claim Security Go.
