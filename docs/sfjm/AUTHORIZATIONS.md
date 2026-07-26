@@ -1,207 +1,151 @@
 # FECH.AI — SFJM Authorizations
 
 **Status:** `AUTHORIZATION_REGISTER / FAIL_CLOSED`  
-**Observed on:** 2026-07-24
+**Observed on:** `2026-07-25`  
+**Repository:** `wagnerjfjunior/fecha.ai`
 
 ## 1. Interpretation rule
 
-An authorization is valid only within its declared repository, target, environment, files/areas, acceptance criteria, prohibitions and expiration condition.
+An authority is valid only for its exact repository, target, environment, files or objects, operations, acceptance criteria, prohibitions and expiration condition.
 
-General phrases must be interpreted with the immediately preceding approved plan and next safe action. They never silently authorize runtime, Supabase, production, Ready or merge outside that exact context.
+General language such as `continue`, `implement`, `approve`, `go ahead` or `use the primary database` never silently authorizes additional commits, Ready, merge, Supabase, runtime/frontend, fixtures/tests, administrative role assignment, Security Go, F1-02 acceptance or WDP.
 
-When material scope remains ambiguous, stop fail-closed.
+When scope, head, evidence or terminology is inconsistent, stop fail-closed.
 
-## 2. Historical consumed authorities
-
-### PR #95 — SFJM documentation v1
+## 2. Canonical baseline
 
 ```text
+PR #101: CLOSED / MERGED
+PR #101 final head: 003850d012a299a947452fa5a8135cd454998f15
+Squash on main: affbae1a598928010b0fa7db967734de522c13b4
+Authority: CONSUMED
+```
+
+PR #101 made the F1-02 findings and detailed remediation master plan canonical. It did not authorize technical execution or Security Go.
+
+## 3. PR #102 authority history
+
+### Draft creation
+
+```text
+Initial Draft head: fc83ed752217bfc39810dfba38e93405bc7382b8
+State: CONSUMED AT DRAFT CREATION
+```
+
+### First correction
+
+```text
+Parent: fc83ed752217bfc39810dfba38e93405bc7382b8
+Head: 6b7d96fb26d6589641bc079146db9c3f429b9bd2
 State: CONSUMED
-Head: 611faa5d7275d8f40386c41b2687fb5ef6f7b5b6
-Squash: 4293f383e1e93f0cfd4a63f793024eb239bfafbb
 ```
 
-### PR #96 — post-PR #95 reconciliation
+Reaudits produced GPT0 `FAIL`, GPT1 `PASS WITH RESIDUAL RISK` and GPT3 `PASS WITH RESIDUAL RISK`. No majority rule applies.
+
+### Detailed-master-plan restoration
 
 ```text
+Parent: 6b7d96fb26d6589641bc079146db9c3f429b9bd2
+Head: 7b8c23bd375d750e73d888f140c8c44a840280a5
+Master-plan blob: ea161050c535b848ff927133830984f543c1104d
 State: CONSUMED
-Head: 91d27a4aa676f3e174ab000ca23992b69fc90a90
-Squash: 4668cc1dde4b990791583c85f5b36a5d4b55d6a8
 ```
 
-### PR #94 — F1-01 evidence map correction, audit and merge
+GPT0 confirmed the normative regression was resolved and required two final documentary corrections: lifecycle metadata and legacy authority-name reconciliation.
+
+### Final lifecycle-and-alias correction
 
 ```text
-State: CONSUMED
-Final head: a7e64c6ed817c03c4dbce7e1b9642e20360b3010
-Squash: 1caf90c60681771af6609b96ee840b190668fa0f
+Required parent: 7b8c23bd375d750e73d888f140c8c44a840280a5
+Primary risk:
+correct stale lifecycle metadata and reconcile authority names
+without modifying the detailed master plan
 ```
 
-This authority did not accept F1-01, grant Security Go or award WDP.
-
-### PR #98 — post-PR #94 reconciliation
+Authorized paths:
 
 ```text
-State: CONSUMED
-Branch: agent/reconcile-f1-01-post-pr94
-Final head: e7e52ed9762ab92fd14f82e2437845421693ec81
-Squash: 8a2eb00a9dcd46d7ee346741ca27c6081af52124
-Audit: PASS WITH RESIDUAL RISK
-```
-
-### PR #99 — post-PR #98 reconciliation
-
-```text
-State: CONSUMED
-Branch: docs/reconcile-post-pr98
-Final head: 754e35406971e72ce29763bf145060868914b4d7
-Squash: 573ecebbafc2fb0ea4a065905e0f592b9db2a308
-Audit: PASS WITH RESIDUAL RISK
-Threads: 2 RESOLVED / 0 OPEN
-```
-
-### PR #100 — close PR #99 cycle and prevent recursive reconciliation
-
-```text
-State: CONSUMED
-Branch: docs/close-pr99-reconciliation-loop
-Final head: defeda035c5e7f709e31707a84c9edd488c99799
-Squash: 0555bad889c6ab85970ee242a0e35ac6873508e8
-PR state: CLOSED / MERGED
-```
-
-PR #100 established that a bounded documentation-only closure merge does not require another PR solely to record its own squash commit.
-
-## 3. Consumed F1-02 read-only authority
-
-**Lifecycle state:** `CONSUMED`  
-**Source/date:** explicit user authorization and project identification, 2026-07-24  
-**Repository commit:** `0555bad889c6ab85970ee242a0e35ac6873508e8`  
-**Supabase project:** `uobxxgzshrmbtjfdolxd` (`Discador-MesaCliente`)  
-**Environment:** live project, read-only metadata/definition inspection
-
-Authorized actions executed:
-
-- identify and confirm exact project provenance;
-- read metadata, RLS/force-RLS state, policies and grants;
-- read relevant function/RPC signatures and bodies;
-- read constraints, triggers and security advisors;
-- correlate current GitHub source paths;
-- design but not execute negative tests;
-- produce sanitized findings and a remediation recommendation.
-
-Execution result:
-
-```text
-Read-only inspection: COMPLETED
-Mutations: ZERO
-Lead/customer row reads: ZERO
-Negative production tests: ZERO
-Security Go: DENIED
-```
-
-The read-only authority is consumed. It does not authorize further Supabase reads, writes, lab creation, migrations, negative tests or production actions.
-
-## 4. PR-00 Draft-creation authority
-
-**Lifecycle state:** `CONSUMED AT DRAFT CREATION`  
-**Source/date:** Wagner approved the detailed F1-02 master plan and instructed the project to begin, 2026-07-24  
-**Repository:** `wagnerjfjunior/fecha.ai`  
-**Base:** `0555bad889c6ab85970ee242a0e35ac6873508e8`  
-**Branch:** `docs/f1-02-security-remediation-program`  
-**Environment:** GitHub documentation only
-
-### Files authorized
-
-```text
-docs/security/evidence/F1-02_REMEDIATION_MASTER_PLAN.md
-docs/security/evidence/2026-07-24-f1-02-live-readonly-findings.md
-docs/sfjm/CURRENT_STATE.md
-docs/sfjm/NEXT_SAFE_ACTION.md
-docs/sfjm/BLOCKED_ACTIONS.md
+docs/security/evidence/2026-07-25-f1-02-controlled-beta-primary-strategy.md
 docs/sfjm/AUTHORIZATIONS.md
+docs/sfjm/CURRENT_STATE.md
 docs/sfjm/EVIDENCE_FRESHNESS.md
+docs/sfjm/NEXT_SAFE_ACTION.md
 docs/sfjm/handoffs/CURRENT.md
 ```
 
-### Authorized actions
+Explicitly prohibited:
 
-- create the exact branch from the exact base;
-- create/update only the eight listed documentation files;
-- version the complete remediation master plan;
-- version the sanitized live read-only findings;
-- reconcile material SFJM state, blockers, evidence, authority and handoff;
-- create one Draft PR titled `docs(security): establish F1-02 remediation program`.
+- `docs/security/evidence/F1-02_REMEDIATION_MASTER_PLAN.md`;
+- `docs/sfjm/BLOCKED_ACTIONS.md`;
+- every other file;
+- runtime, frontend, SQL, migrations, RLS, grants, policies, RPCs, Auth or Supabase;
+- data, users, fixtures or tests;
+- Vercel, GitHub Actions, comments, reviews or reviewers;
+- Ready, merge, PR-01, `admin_global` assignment, Security Go, F1-02 acceptance or WDP.
 
-### Acceptance constraints
+```text
+Final lifecycle-and-alias correction authority:
+CONSUMED BY THE COMMIT CONTAINING THIS RECORD
 
-- documentation only;
-- no PII, credentials, JWTs, real passwords, customer payloads or raw production UUIDs;
-- Security Go remains denied;
-- F1-01 remains unaccepted;
-- F1-02 remains blocked pending remediation;
-- WDP remains 0;
-- no product/runtime claim;
-- no Supabase lab or production authority;
-- no recursive merge-record PR.
+PR-description update authority:
+CONSUMED AFTER THE FINAL HEAD IS RECORDED
 
-### Prohibited
+Further commits:
+NOT AUTHORIZED
+```
 
-- files outside the exact list;
-- additional commits after Draft creation without a new bounded correction authority;
-- Ready or merge;
-- Supabase Branch creation or cost confirmation;
-- runtime or frontend changes;
-- migrations, RLS, grants, policies, functions/RPCs or Auth changes;
-- negative tests;
-- Edge Functions, Vercel, GitHub Actions or production;
-- Security Go, F1-01/F1-02 acceptance or WDP.
+The final commit cannot contain its own SHA without creating a recursive hash change. Live PR metadata and the updated PR description are authoritative for the final head.
 
-Rollback is one revert of the documentation-only PR if later merged.
-
-## 5. Planned future authorization types
+## 4. Authority vocabulary
 
 ### `WINDOW_IMPLEMENTATION`
 
-May authorize exact branches, files, commits and Draft PRs for one approved operational window. Does not authorize Ready, merge or production.
+One bounded technical PR. No Ready, merge or live application.
 
-### `PR_LIFECYCLE`
+### `TECHNICAL_PR_LIFECYCLE`
 
-May conditionally authorize Ready and exact-head squash merge after audit and premerge gates. Does not authorize production application.
+Ready and/or exact-head merge after independent audit and fresh GitHub validation. No Supabase application.
 
-### `PRODUCTION_CHANGE`
+### `CONTROLLED_BETA_PRIMARY_CHANGE`
 
-May authorize one exact Supabase/Vercel/Auth production operation with project, migration/config identity, preflight, smoke, monitoring and rollback.
+One exact live Supabase operation with project/ref, objects, preflight, impact, order, smoke, monitoring, stop conditions, rollback, evidence, operator and expiration.
 
-### `LAB_CREATE`
+### `ADMINISTRATIVE_ROLE_CHANGE`
 
-Required before creating `f1-02-security-lab`. Must include exact project, cost confirmation, synthetic-data-only restriction, permitted operations and destruction/containment condition.
+One intentional named administrative-role assignment under server-side control, audit and revocation. It is not a security test and does not prove B1 remediation.
 
-## 6. Current authority state after PR-00 Draft creation
+### `SECURITY_GATE`
+
+Final evidence-based decision only. It cannot retroactively authorize missing evidence or operations.
+
+## 5. Legacy-name mapping
 
 ```text
-PR-00 Draft creation authority: CONSUMED
-No authority for additional commits
-No authority for Ready
-No authority for merge
-No authority for Supabase lab creation
-No authority for PR-01 implementation
-No authority for runtime/frontend/Supabase/Auth/production
-No authority for Security Go or WDP
+PR_LIFECYCLE
+= TECHNICAL_PR_LIFECYCLE
+
+PRODUCTION_CHANGE
+= CONTROLLED_BETA_PRIMARY_CHANGE
 ```
 
-## 7. Evidence required for future authorities
+These are strict aliases only. They create no additional authority, widen no scope, bypass no exact-head gate and cannot combine GitHub lifecycle with Supabase application. They are invalid without a new exact and unexpired authorization.
 
-Every future authorization must identify:
+`WINDOW_IMPLEMENTATION`, `ADMINISTRATIVE_ROLE_CHANGE` and `SECURITY_GATE` remain separate.
 
-- source/date;
-- repository, base, branch and expected head when applicable;
-- exact environment/project;
-- exact files/objects/operations;
-- prohibited areas;
-- acceptance criteria;
-- test and audit requirements;
-- rollback/containment;
-- cost confirmation when applicable;
-- expiration condition;
-- lifecycle state.
+## 6. Current authority state
+
+```text
+PR #102: OPEN / DRAFT
+Final correction authority: CONSUMED
+Additional commits: NOT AUTHORIZED
+Ready: NOT AUTHORIZED
+Merge: NOT AUTHORIZED
+PR-01: NOT AUTHORIZED
+Supabase read/mutation: NOT AUTHORIZED
+Runtime/frontend: NOT AUTHORIZED
+Fixtures/tests: NOT AUTHORIZED
+Intentional admin_global assignment: NOT AUTHORIZED
+Security Go: DENIED
+F1-02: ACTIVE REMEDIATION / BLOCKED
+WDP: 0
+```

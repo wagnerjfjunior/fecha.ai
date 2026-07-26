@@ -1,197 +1,171 @@
 # FECH.AI — SFJM Current Handoff
 
-**Status:** `CURRENT_HANDOFF / F1_02_REMEDIATION_PROGRAM_IN_DRAFT`  
-**Observed on:** 2026-07-24  
+**Status:** `CURRENT_HANDOFF / PR_102_FINAL_DOCUMENTARY_CORRECTION / GPT0_REAUDIT_REQUIRED`  
+**Observed on:** `2026-07-25`  
 **Repository:** `wagnerjfjunior/fecha.ai`
 
 ## 1. Decision
 
-F1-02 read-only discovery is complete. Security Go is denied because live evidence confirmed material authorization and tenant-isolation blockers. The project is entering a planned remediation program, not implementation-by-improvisation.
-
 ```text
-MVP phase: MVP 1 — Família
-F1-01 acceptance: NOT GRANTED
-F1-02: ACTIVE REMEDIATION / BLOCKED
+Operational status: PILOT PRODUCTION / LIVE
+Commercial model: CONTROLLED FREE BETA
+Paid SLA: NO
+Real users/data: YES
+Broad paid commercialization: BLOCKED
 Security Go: DENIED
+F1-02: ACTIVE REMEDIATION / BLOCKED
 WDP: 0
 ```
+
+Downtime and possible beta-data loss are accepted operating risks. Privilege escalation, cross-tenant access, disclosure, unauthorized authority changes and destructive testing are not accepted.
 
 ## 2. Canonical anchors
 
 ```text
-Canonical main: 0555bad889c6ab85970ee242a0e35ac6873508e8
-Commit: docs(sfjm): close PR99 cycle and prevent recursive reconciliation (#100)
-
-PR #100: CLOSED / MERGED
-PR #100 final head: defeda035c5e7f709e31707a84c9edd488c99799
-PR #100 squash: 0555bad889c6ab85970ee242a0e35ac6873508e8
+main: affbae1a598928010b0fa7db967734de522c13b4
+PR #101: CLOSED / MERGED
+PR #101 final head: 003850d012a299a947452fa5a8135cd454998f15
+Master-plan blob: ea161050c535b848ff927133830984f543c1104d
 ```
 
-Resolve live `main` again before any later sensitive action.
-
-## 3. Live environment evidence
+## 3. Active PR
 
 ```text
-Supabase project: Discador-MesaCliente
-Project ref: uobxxgzshrmbtjfdolxd
-Region: sa-east-1
-Status observed: ACTIVE_HEALTHY
-Inspection type: read-only metadata/definition review
-Mutations: ZERO
-Negative production tests: ZERO
+PR: #102
+State: OPEN / DRAFT
+Base: affbae1a598928010b0fa7db967734de522c13b4
+Branch: docs/f1-02-controlled-beta-primary-strategy
+Pre-final correction head:
+7b8c23bd375d750e73d888f140c8c44a840280a5
+Final head:
+resolve from live PR metadata and PR description
+Expected commits: 10
+Expected net changed files: 7
 ```
 
-No real lead/customer rows or production credentials were included in the evidence.
-
-## 4. Confirmed blockers
-
-### B1 — self privilege escalation
-
-A broker's direct self-row update surface in `corretores` includes authority-bearing columns. `is_root()` can recognize an `admin_global` broker. The critical-change trigger is monitoring, not enforcement.
-
-### B2 — direct CRM structural writes
-
-Direct `authenticated` write surface remains on `leads` and `lotes`, while used paths are expected to be RPC-controlled.
-
-### B3 — funnel history integrity
-
-Direct insertion into `funil_movimentacoes` can bypass one authorized atomic transition.
-
-### B4 — list ACL tenant validation
-
-Visibility targets and the access helper do not yet prove every relevant same-company relationship server-side.
-
-Required additional hardening includes funnel-stage filtering, company-scoped import sessions, strict feedback validation and leaked-password protection decision.
-
-## 5. Selected program
+Strategy artifact:
 
 ```text
-Program: F1-02 Security Remediation
-Windows: 5
-Planned PRs: 10
-Security lab: one isolated Supabase Branch after explicit cost confirmation
-Formal gates: 2
+docs/security/evidence/2026-07-25-f1-02-controlled-beta-primary-strategy.md
+PR_DRAFT / NOT_YET_CANONICAL
 ```
 
-Canonical Draft artifacts:
+## 4. Correction history
+
+- Initial Draft: `fc83ed752217bfc39810dfba38e93405bc7382b8`.
+- First correction: `6b7d96fb26d6589641bc079146db9c3f429b9bd2`; GPT0 failed, GPT1/GPT3 passed with residual risk.
+- Master-plan restoration: `7b8c23bd375d750e73d888f140c8c44a840280a5`; master plan restored to `ea161050...`.
+- GPT0 confirmed the normative blocker was resolved and required lifecycle and authority-alias corrections.
+- Final correction parent: `7b8c23bd375d750e73d888f140c8c44a840280a5`.
+
+The final correction changes six authorized documents, leaves the master plan and `BLOCKED_ACTIONS.md` unchanged, keeps PR #102 Draft and authorizes no technical action.
+
+## 5. Documentary architecture
+
+The detailed master plan remains the complete technical program: matrices, RPC cards, call sites, migrations, rollback, PR-01 → PR-02 → PR-03, tests, evidence, audits and gates.
+
+The amendment supersedes only universal lab requirements.
+
+## 6. Authority vocabulary
 
 ```text
-docs/security/evidence/F1-02_REMEDIATION_MASTER_PLAN.md
-docs/security/evidence/2026-07-24-f1-02-live-readonly-findings.md
+WINDOW_IMPLEMENTATION
+→ one bounded technical PR
+
+TECHNICAL_PR_LIFECYCLE
+→ Ready and/or exact-head merge
+
+CONTROLLED_BETA_PRIMARY_CHANGE
+→ one exact live Supabase operation
+
+ADMINISTRATIVE_ROLE_CHANGE
+→ one named role assignment; not a test
+
+SECURITY_GATE
+→ final evidence-based decision only
 ```
 
-Window sequence:
+Legacy aliases:
 
 ```text
-J0 — program/evidence/lab strategy
-J1 — password dependency and self-escalation
-J2 — CRM direct writes and funnel history
-J3 — ACL, tenant reads and payload integrity
-J4 — repeatable negative tests and final gate
+PR_LIFECYCLE = TECHNICAL_PR_LIFECYCLE
+PRODUCTION_CHANGE = CONTROLLED_BETA_PRIMARY_CHANGE
 ```
 
-## 6. Active PR-00
+Aliases create no authority and expand no scope. Implementation, Ready, merge, Supabase application, role assignment and Security Go remain separate.
+
+## 7. Controlled Beta Primary boundary
+
+Allowed only under future exact authority: read-only proof, controlled positive smoke and exact synthetic operations whose unexpected success remains contained.
+
+Requires isolation: actual self-promotion to admin/root, adversarial authority-field mutation, tests that can reach real data/global controls, fuzzing, broad discovery and destructive rollback/reapply.
+
+A named `admin_global` assignment is not B1 evidence and is not authorized.
+
+## 8. Current blockers
+
+PR #102 lifecycle:
+
+- GPT0 audit at final head;
+- GPT1/GPT3 only after GPT0 passes;
+- separate Ready and merge authorities.
+
+F1-02:
+
+- B1–B4 remain open;
+- technical PRs are unimplemented;
+- no fixtures, tests, migration, rollback/reapply or smoke;
+- no final Security Go gate.
+
+## 9. Current prohibitions
 
 ```text
-Branch: docs/f1-02-security-remediation-program
-Base: 0555bad889c6ab85970ee242a0e35ac6873508e8
-Title: docs(security): establish F1-02 remediation program
-Type: documentation-only Draft
+Final correction authority: CONSUMED
+Additional commits: NOT AUTHORIZED
+Ready: NOT AUTHORIZED
+Merge: NOT AUTHORIZED
+PR-01: NOT AUTHORIZED
+Supabase/Auth: NOT AUTHORIZED
+Runtime/frontend: NOT AUTHORIZED
+Fixtures/tests: NOT AUTHORIZED
+Admin_global assignment: NOT AUTHORIZED
+Security Go: DENIED
+F1-02 acceptance: NOT AUTHORIZED
+WDP: 0
 ```
 
-Expected changed files, exactly:
+## 10. Evidence
+
+Available: canonical anchors, exact master-plan blob, PR #102 history through `7b8c23bd...`, authenticated specialist audits, final correction authority and live final state after validation.
+
+Missing: GPT0 audit at final head, final-head GPT1/GPT3, Ready/merge gates, PR-01, Supabase preflight/application authority, executed validation/rollback evidence and final Security Go decision.
+
+## 11. Single next safe action
+
+Run GPT0 against the exact final PR #102 head and validate:
 
 ```text
-docs/security/evidence/F1-02_REMEDIATION_MASTER_PLAN.md
-docs/security/evidence/2026-07-24-f1-02-live-readonly-findings.md
-docs/sfjm/CURRENT_STATE.md
-docs/sfjm/NEXT_SAFE_ACTION.md
-docs/sfjm/BLOCKED_ACTIONS.md
-docs/sfjm/AUTHORIZATIONS.md
-docs/sfjm/EVIDENCE_FRESHNESS.md
-docs/sfjm/handoffs/CURRENT.md
+parent: 7b8c23bd375d750e73d888f140c8c44a840280a5
+expected commits: 10
+expected net changed files: 7
+expected final-commit paths: 6
+master-plan blob: ea161050c535b848ff927133830984f543c1104d
 ```
 
-The authority covers branch/commits/Draft creation only and is consumed at Draft creation. It does not cover corrections, Ready, merge or technical execution.
+Only after GPT0 recommends Ready may GPT1 and GPT3 be repeated on the same head.
 
-## 7. Specialist routing
+Do not mark Ready, merge, start PR-01 or access Supabase.
 
-```text
-GPT0: evidence and documentation audit
-GPT1: architecture and sequencing audit
-GPT3: security finding and remediation-contract audit
-GPT4: PR/head/diff/check/merge lifecycle when later authorized
-GPT7: CRM/Discador behavior for technical PRs
-GPT2: password-flow UX only if user-facing states change
-GPT5: production monitoring/rollback/incident
-Codex: bounded implementation only after approved envelopes
-```
+## 12. What must not be redone
 
-The executor must not be the final auditor.
-
-## 8. Evidence available
-
-- exact GitHub main and PR #100 closure;
-- F1-01 current path inventory;
-- exact live Supabase project provenance;
-- current grants, RLS/policies, functions, triggers, constraints and advisors;
-- direct frontend password-state patch dependency;
-- complete remediation program Draft;
-- sanitized finding record Draft.
-
-## 9. Evidence missing
-
-- independent PR-00 audit at final head;
-- PR-00 Ready/merge lifecycle;
-- isolated lab and explicit cost confirmation;
-- synthetic two-company fixtures;
-- executed negative tests;
-- migration and rollback tests;
-- production application/smoke;
-- final F1-02 gate.
-
-## 10. What must not be redone
-
-- do not reconstruct the project from zero;
-- do not reopen PR #94–#100 without new evidence;
-- do not repeat the read-only discovery unless an invalidating event requires narrow refresh;
-- do not create an SFJM PR after every technical merge;
-- do not create a PR solely to record PR-00 or PR-09 squash merge;
-- do not count PRs as product value;
-- do not treat production as the lab.
-
-## 11. What must not be altered without separate authorization
-
-- any file after PR-00 Draft creation;
-- PR-00 Ready or merge;
-- Supabase Branch/cost;
-- frontend/runtime;
-- migrations, RLS, grants, policies, RPCs/functions or Auth;
-- Edge Functions, Vercel, Actions or production;
-- MesaCliente, PME, ADS/CAPI, Make/n8n and integrations;
-- real users or data;
-- Security Go, F1-01/F1-02 acceptance or WDP.
-
-## 12. Single next safe action
-
-Validate PR-00 exact final head, changed files and diff, then send it to independent GPT0/GPT1/GPT3 audit.
-
-After PR-00 is independently accepted and later merged under separate authority, request explicit cost confirmation and authorization for one isolated branch:
-
-```text
-f1-02-security-lab
-```
-
-Do not begin PR-01 before those gates.
+- do not reconstruct F1-02 from zero;
+- do not condense or rewrite the master plan;
+- do not reopen PR #101 without new evidence;
+- do not treat beta consent as a security waiver;
+- do not create a lab merely because the historical baseline required it universally;
+- do not use administrator assignment as B1 evidence;
+- do not create recursive documentation PRs solely to record their own merge.
 
 ## 13. New-conversation startup
 
-A receiving conversation must:
-
-1. read bootstrap, governance and SFJM indexes;
-2. validate live `main` and the active PR/head;
-3. read the two PR-00 evidence artifacts;
-4. preserve Security Go denied and WDP 0;
-5. preserve the five-window/ten-PR sequence unless new evidence justifies change;
-6. keep production out of exploratory testing;
-7. require exact authority for every lifecycle and production transition.
+Read bootstrap/governance/SFJM indexes, validate live `main` and PR #102, read master plan and amendment together, treat the amendment as lab-only supersession, preserve Security Go denied/F1-02 blocked/WDP 0, require exact authority for every transition and stop fail-closed when evidence is incomplete.

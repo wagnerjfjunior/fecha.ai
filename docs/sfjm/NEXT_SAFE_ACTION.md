@@ -1,89 +1,101 @@
 # FECH.AI — SFJM Next Safe Action
 
-**Status:** `PR_00_DRAFT_COMPLETION_AND_INDEPENDENT_AUDIT`  
-**Observed on:** 2026-07-24
+**Status:** `NEXT_SAFE_ACTION / PR_102_FINAL_HEAD_GPT0_REAUDIT`  
+**Observed on:** `2026-07-25`  
+**Repository:** `wagnerjfjunior/fecha.ai`
 
 ## 1. Current safe state
 
-```text
-Canonical main: 0555bad889c6ab85970ee242a0e35ac6873508e8
-PR #100: CLOSED / MERGED
-Open PRs before PR-00: NONE
+PR #102 records the Product Authority decision to operate MVP 1 — Família as `PILOT PRODUCTION / LIVE` under `CONTROLLED FREE BETA`.
 
-F1-01 acceptance: NOT GRANTED
-F1-02 read-only discovery: COMPLETED
+The primary project may receive future bounded remediation only under separate authority. It is not an unrestricted laboratory.
+
+The detailed master plan remains unchanged at:
+
+```text
+ea161050c535b848ff927133830984f543c1104d
+```
+
+The strategy amendment is the sole lab-only supersession artifact.
+
+## 2. Exact next action
+
+Perform an independent GPT0 documentation reauditing of the final live PR #102 head. Do not reuse a prior verdict as approval of the final head.
+
+## 3. Required live target
+
+```text
+Repository: wagnerjfjunior/fecha.ai
+PR: #102
+Expected state: OPEN / DRAFT
+Expected merged: false
+Base: main
+Base SHA: affbae1a598928010b0fa7db967734de522c13b4
+Branch: docs/f1-02-controlled-beta-primary-strategy
+Parent of final correction:
+7b8c23bd375d750e73d888f140c8c44a840280a5
+Expected commits: 10
+Expected net changed files: 7
+Expected final-commit paths: 6
+```
+
+Stop with `FAIL — HEAD CHANGED` if the audited head differs from live PR metadata.
+
+## 4. Mandatory GPT0 checks
+
+GPT0 must validate:
+
+1. one final commit directly follows `7b8c23bd...`;
+2. exactly six authorized paths changed;
+3. master plan remains blob `ea161050c535b848ff927133830984f543c1104d`;
+4. `BLOCKED_ACTIONS.md` is unchanged;
+5. final net diff has exactly seven paths;
+6. amendment remains the sole lab-only supersession artifact;
+7. stale 8-file and old-next-action references are absent;
+8. lifecycle reflects 10 commits and 7 net files;
+9. `PR_LIFECYCLE = TECHNICAL_PR_LIFECYCLE`;
+10. `PRODUCTION_CHANGE = CONTROLLED_BETA_PRIMARY_CHANGE`;
+11. aliases create or expand no authority;
+12. correction authority is consumed;
+13. no overclaim of tests, Supabase change, B1 remediation or Security Go;
+14. PR remains Draft.
+
+## 5. Sequencing after GPT0
+
+Only if GPT0 returns `PASS` or `PASS WITH RESIDUAL RISK` with `READY RECOMMENDATION: YES`, repeat GPT1 and GPT3 on the same exact head.
+
+If GPT0 returns `FAIL`, stop. No additional commit may be created without new bounded Product Authority.
+
+If GPT0, GPT1 and GPT3 all recommend Ready, request separate `TECHNICAL_PR_LIFECYCLE` authority for Draft → Ready. Do not mark Ready automatically.
+
+## 6. Explicitly prohibited now
+
+- additional commits or PR metadata changes;
+- comments, reviews or reviewer requests;
+- Ready, merge or PR-01;
+- Supabase access or mutation;
+- SQL, migrations, RLS, grants, policies, RPCs or Auth;
+- runtime/frontend changes;
+- fixtures or tests;
+- `admin_global` assignment;
+- Security Go, F1-02 acceptance or WDP.
+
+## 7. Stop conditions
+
+Stop fail-closed if PR/head/base/parent differs, another path enters the commit, master plan or `BLOCKED_ACTIONS.md` drifts, net file count differs without verified explanation, lifecycle or aliases remain ambiguous, PR is no longer Draft, or evidence is incomplete.
+
+## 8. Current state
+
+```text
+PR #102: OPEN / DRAFT
+Audit of final correction head: PENDING
+Final correction authority: CONSUMED
+Additional commits: NOT AUTHORIZED
+Ready: NOT AUTHORIZED
+Merge: NOT AUTHORIZED
+PR-01: NOT AUTHORIZED
+Supabase: NOT AUTHORIZED
 Security Go: DENIED
 F1-02: ACTIVE REMEDIATION / BLOCKED
 WDP: 0
 ```
-
-The live read-only F1-02 inspection confirmed material authorization and tenant-isolation risks. No mutation or negative production test was performed.
-
-## 2. Active bounded work
-
-```text
-Window: J0
-Branch: docs/f1-02-security-remediation-program
-Base: 0555bad889c6ab85970ee242a0e35ac6873508e8
-Type: documentation-only
-```
-
-PR-00 must contain only:
-
-- the complete F1-02 remediation master plan;
-- the sanitized live read-only finding record;
-- material SFJM state, blocker, evidence, authorization and handoff updates.
-
-## 3. Next single safe action
-
-Complete one Draft PR titled:
-
-```text
-docs(security): establish F1-02 remediation program
-```
-
-Then:
-
-1. confirm exact base and final head;
-2. confirm changed files are documentation-only and within scope;
-3. confirm no PII, token, credential, production UUID or raw payload;
-4. confirm Security Go remains denied and WDP remains 0;
-5. request independent audit from GPT0, GPT1 and GPT3;
-6. perform no subsequent commit unless a concrete audit finding is separately authorized.
-
-## 4. Audit acceptance criteria
-
-The exact PR head must prove:
-
-- project/environment provenance is correct;
-- findings match live read-only evidence without exploit overclaim;
-- 5 windows / 10 planned PRs are coherent;
-- each technical PR has one primary risk and rollback;
-- production is not used as laboratory;
-- lab creation requires explicit cost confirmation;
-- specialists and separation of duties are explicit;
-- SFJM will not generate a PR after every merge;
-- no runtime, Supabase, Auth, Vercel or production authority is implied.
-
-## 5. Actions blocked until PR-00 acceptance
-
-- create the Supabase security lab;
-- confirm or incur Supabase Branch cost;
-- start PR-01;
-- create migrations or rollback SQL;
-- alter frontend password flow;
-- alter grants, RLS, policies, RPCs or Auth;
-- execute negative tests;
-- apply anything in production;
-- mark F1-02 accepted, grant Security Go or award WDP.
-
-## 6. Action after PR-00 lifecycle completion
-
-After independent audit, Ready, merge and post-merge confirmation under separate authority, the next safe action will be:
-
-```text
-request explicit cost confirmation and authorization to create one isolated Supabase Branch:
-f1-02-security-lab
-```
-
-No documentation-only PR will be created solely to record the PR-00 merge.
