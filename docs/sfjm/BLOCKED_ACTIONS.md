@@ -1,98 +1,124 @@
 # FECH.AI — SFJM Blocked Actions
 
-**Status:** `ACTIVE_BLOCKS / F1_02_REMEDIATION / FAIL_CLOSED`  
-**Observed on:** `2026-07-25`
+**Status:** `ACTIVE_BLOCKS / PR104_GATEWAY / PR103_FROZEN / FAIL_CLOSED`  
+**Observed on:** `2026-07-26`  
+**Repository:** `wagnerjfjunior/fecha.ai`
 
 ## 1. Product blocks
 
 - declare MVP 1 — Família security-ready;
 - grant Security Go or F1-02 acceptance;
-- award WDP;
+- award WDP from PR count or documentation alone;
 - broad paid commercialization;
-- represent beta-risk acceptance as a privacy/security waiver;
-- start PR-01 before PR #102 is independently accepted and merged.
+- represent controlled-beta risk acceptance as a privacy/security waiver.
 
-## 2. PR #102 lifecycle blocks
+## 2. PR #103 freeze blocks
 
 ```text
-PR #102: OPEN / DRAFT
-Pre-correction head: fc83ed752217bfc39810dfba38e93405bc7382b8
-Final corrective head: resolve live from GitHub metadata/PR description
-Ready: BLOCKED pending GPT0/GPT1/GPT3 re-audit
-Merge: BLOCKED pending Ready, exact-head gate and separate authority
-Additional commits: BLOCKED absent new bounded correction authority
+PR #103: OPEN / DRAFT
+Head: abf6b4026343eae437283280269ed2997911dcec
+Additional commits: BLOCKED
+Metadata changes: BLOCKED
+Ready: BLOCKED
+Merge: BLOCKED
+Supabase application: BLOCKED
 ```
 
-## 3. Security blocks
+The freeze remains until the bounded GPT3 catalog gateway is available and GPT3 repeats the exact-head audit.
 
-- self-promotion to `admin_global`, root or equivalent authority in the primary project;
-- testing authority-bearing `corretores` mutations when unexpected success creates real privilege;
-- broad cross-tenant discovery queries;
-- use of real company, user, broker, team, list, lead or customer IDs in security tests;
-- use of real accounts or credentials as actors/fixtures;
-- access or mutation of real data for testing;
-- forged real funnel history;
-- fuzzing, load, volume or mixed-tenant offensive batches;
-- disabling RLS, grants, policies or Auth to test;
-- `service_role` in frontend/browser/untrusted clients;
-- reuse of real JWTs, passwords, emails, phone numbers or payloads;
-- destructive or exploratory SQL;
-- experimental rollback/reapply in the primary project.
+Do not create a PR #103 correction merely to compensate for missing evidence. The current GPT3 finding is an evidence blocker, not a demonstrated migration defect.
 
-## 4. Synthetic-fixture blocks
+## 3. PR #104 lifecycle blocks
 
-Until a separate live-operation authority and manifest exist, do not create fixtures.
+```text
+PR #104: OPEN / DRAFT
+Final head: resolve live
+Ready: BLOCKED pending exact-head GPT0/GPT1/GPT3/GPT4 audits
+Merge: BLOCKED pending Ready, fresh checks and separate authority
+Additional commits after final Draft head: BLOCKED
+```
 
-Even after authorization, block any fixture set that:
+Any file outside the declared ten-path scope is scope creep and blocks Ready.
 
-- references real objects;
-- can be distributed to real brokers;
-- grants global authority to a synthetic actor;
-- uses broad discovery instead of exact synthetic IDs;
-- lacks pre/post counts, cleanup/deactivation and stop conditions;
-- allows unexpected success to escape the synthetic graph.
+## 4. Live Supabase / Edge / Action blocks
 
-Cleanup failure blocks further tests and starts containment.
+Until separate `CONTROLLED_BETA_PRIMARY_CHANGE` authority exists, do not:
 
-## 5. Intentional administrator assignment
+- apply `20260726180000_gpt_security_metadata_snapshot.sql`;
+- create, replace, alter, grant, revoke or drop `public.gpt_security_metadata_snapshot()`;
+- deploy the versioned `gpt-especialista` Edge Function;
+- change `verify_jwt`;
+- update the GPT Action from the versioned OpenAPI;
+- run post-deploy smoke or negative gateway tests;
+- reload PostgREST schema as part of an application sequence;
+- improvise SQL after an unexpected result.
 
-Naming a deliberate `admin_global` is blocked until a separate `ADMINISTRATIVE_ROLE_CHANGE` authority identifies the exact user, necessity, least-privilege rationale, controlled server-side operation, audit trail and revocation plan.
+The already active Edge Function version 7 and Action configuration are observed live state, not authorization for further change.
 
-An intentional assignment is not a self-escalation test and cannot be used as B1 negative evidence.
+## 5. Data and discovery blocks
 
-## 6. Runtime and environment blocks
+The gateway must never allow:
 
-Without separate exact scope and authority, do not change:
+- arbitrary SQL;
+- caller-supplied schema, table, function, role or ID;
+- application row reads;
+- `auth.users` row reads;
+- lead, customer, message or payload access;
+- secrets, tokens or credentials;
+- broad catalog discovery outside the fixed PR103 snapshot;
+- fuzzing, load or volume testing;
+- use of real JWTs, passwords, emails or phone numbers in evidence.
 
-- frontend or runtime;
-- schema, data, migrations, RLS, grants, policies, functions/RPCs or Auth;
-- Edge Functions;
-- Vercel or GitHub Actions;
-- MesaCliente, PME, ADS/CAPI, Make/n8n or integrations.
+Function source is limited to trigger functions directly attached to `public.corretores` for the PR #103 evidence question.
 
-## 7. Rollback blocks
+## 6. Authentication blocks
 
-- do not treat fixture cleanup as schema rollback;
-- do not execute schema/config rollback without exact live-operation authority;
-- do not merge a technical PR without rollback design;
-- do not rehearse destructive rollback/reapply on the primary project merely to prove reversibility;
-- do not improvise follow-up SQL after an unexpected result.
+- do not record `GPT3_FECHAI_ESPECIALISTA` values;
+- do not expose the secret in screenshots, logs, PR bodies or comments;
+- do not treat user-declared rotation as permission to read or display the value;
+- do not enable unauthenticated arbitrary operations because `verify_jwt` is off;
+- do not move `service_role` into frontend, browser or an untrusted client.
 
-## 8. Audit and evidence blocks
+Custom server-to-server authentication must remain enforced by the Edge handler.
+
+## 7. Security-test blocks
+
+On the primary project, block:
+
+- actual self-promotion to `admin_global`, root or equivalent;
+- adversarial authority-field mutation;
+- cross-tenant discovery;
+- real-data fixtures;
+- deliberate duplicate/corrupt states;
+- disabling RLS, policies, grants or Auth;
+- destructive rollback/reapply experiments.
+
+The gateway is for catalog evidence only. It does not authorize runtime negative tests for PR #103.
+
+## 8. Rollback blocks
+
+- do not execute gateway rollback without exact live-operation authority;
+- do not treat Git revert as database rollback;
+- do not drop or redeploy live objects to prove reversibility;
+- do not let rollback of PR #104 alter PR #103 or `public.corretores`;
+- do not continue after rollback, ACL or contract validation fails.
+
+## 9. Audit and evidence blocks
 
 - no audit without exact PR/head/diff/final files;
-- no Ready recommendation after head change without re-audit;
+- no Ready recommendation after a head change without re-audit;
 - no executor self-approval;
-- no claim that a designed test was executed;
-- no claim of tenant isolation, B1 closure or Security Go from static documentation alone;
-- no replacement of missing evidence with participant acceptance or confidence.
+- no claim that the migration or Edge version was deployed when it was only versioned;
+- no claim that Action success occurred before live application;
+- no claim of PR #103 acceptance from the gateway PR;
+- no replacement of missing evidence with confidence or user acceptance.
 
-## 9. Removal rule
+## 10. Removal rule
 
 A block is removed only when the record identifies:
 
 - exact evidence;
-- repository/commit/environment;
+- repository, commit and environment;
 - responsible validator;
 - exact authority;
 - permitted scope;

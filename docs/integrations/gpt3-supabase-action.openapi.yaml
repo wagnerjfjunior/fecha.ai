@@ -1,0 +1,495 @@
+openapi: 3.1.0
+
+info:
+  title: FECH.AI Supabase Security Gateway
+  description: >
+    Gateway server-to-server com operações fixas e somente leitura para o
+    especialista GPT3. Não aceita SQL, nomes arbitrários de objetos, filtros,
+    conteúdo de registros ou mutações.
+  version: 1.2.1
+
+servers:
+  - url: https://uobxxgzshrmbtjfdolxd.supabase.co/functions/v1
+
+paths:
+  /gpt-especialista:
+    post:
+      operationId: executeFechaiSupabaseOperation
+      summary: Executa uma operação técnica allowlisted
+      security:
+        - GptActionKey: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/OperationRequest"
+      responses:
+        "200":
+          description: Operação executada
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: "#/components/schemas/HealthCheckResponse"
+                  - $ref: "#/components/schemas/SecurityMetadataResponse"
+        "400":
+          description: Corpo inválido ou campos adicionais
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "401":
+          description: Chave ausente ou inválida
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "403":
+          description: Operação não permitida
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "405":
+          description: Método não permitido
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "413":
+          description: Corpo excede o limite
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "415":
+          description: Content-Type não suportado
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "500":
+          description: Falha interna controlada
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "502":
+          description: Contrato retornado pela RPC é inválido
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+components:
+  securitySchemes:
+    GptActionKey:
+      type: apiKey
+      in: header
+      name: x-gpt-action-key
+
+  schemas:
+    OperationRequest:
+      type: object
+      additionalProperties: false
+      required:
+        - operation
+      properties:
+        operation:
+          type: string
+          enum:
+            - health_check
+            - security_metadata_snapshot
+
+    HealthCheckResponse:
+      type: object
+      additionalProperties: false
+      required:
+        - ok
+        - operation
+        - service
+        - project_id
+        - environment
+        - access_mode
+        - capabilities
+        - database_access
+        - row_data_access
+        - timestamp
+      properties:
+        ok:
+          type: boolean
+          const: true
+        operation:
+          type: string
+          const: health_check
+        service:
+          type: string
+          const: fechai_supabase_gateway
+        project_id:
+          type: string
+          const: uobxxgzshrmbtjfdolxd
+        environment:
+          type: string
+          const: production
+        access_mode:
+          type: string
+          const: read_only
+        capabilities:
+          type: array
+          items:
+            type: string
+            enum:
+              - health_check
+              - security_metadata_snapshot
+        database_access:
+          type: boolean
+          const: false
+        row_data_access:
+          type: boolean
+          const: false
+        timestamp:
+          type: string
+          format: date-time
+
+    SecurityMetadataResponse:
+      type: object
+      additionalProperties: false
+      required:
+        - ok
+        - operation
+        - service
+        - project_id
+        - environment
+        - access_mode
+        - database_access
+        - row_data_access
+        - snapshot
+        - timestamp
+      properties:
+        ok:
+          type: boolean
+          const: true
+        operation:
+          type: string
+          const: security_metadata_snapshot
+        service:
+          type: string
+          const: fechai_supabase_gateway
+        project_id:
+          type: string
+          const: uobxxgzshrmbtjfdolxd
+        environment:
+          type: string
+          const: production
+        access_mode:
+          type: string
+          const: read_only
+        database_access:
+          type: boolean
+          const: true
+        row_data_access:
+          type: boolean
+          const: false
+        snapshot:
+          $ref: "#/components/schemas/SecuritySnapshot"
+        timestamp:
+          type: string
+          format: date-time
+
+    SecuritySnapshot:
+      type: object
+      additionalProperties: false
+      required:
+        - snapshot_version
+        - generated_at
+        - scope
+        - table
+        - columns
+        - indexes
+        - constraints
+        - triggers
+        - trigger_functions
+        - required_functions
+        - required_function_existence
+        - roles
+        - role_memberships
+        - schema_effective_privileges
+        - table_direct_acl
+        - table_effective_privileges
+        - column_direct_acl
+        - column_effective_privileges
+        - default_function_acl
+        - builtin_function_acl_for_postgres
+        - languages
+        - policies
+      properties:
+        snapshot_version:
+          type: string
+          const: pr103_preflight_v1
+        generated_at:
+          type: string
+          format: date-time
+        scope:
+          $ref: "#/components/schemas/SnapshotScope"
+        table:
+          $ref: "#/components/schemas/SnapshotTable"
+        columns:
+          type: array
+          minItems: 3
+          maxItems: 3
+          items:
+            $ref: "#/components/schemas/SnapshotColumn"
+        indexes:
+          type: array
+          items:
+            type: object
+            additionalProperties: true
+        constraints:
+          type: array
+          items:
+            type: object
+            additionalProperties: true
+        triggers:
+          type: array
+          items:
+            type: object
+            additionalProperties: true
+        trigger_functions:
+          type: array
+          items:
+            type: object
+            additionalProperties: true
+        required_functions:
+          type: array
+          items:
+            type: object
+            additionalProperties: true
+        required_function_existence:
+          $ref: "#/components/schemas/RequiredFunctionExistence"
+        roles:
+          type: array
+          minItems: 4
+          maxItems: 4
+          items:
+            $ref: "#/components/schemas/SnapshotRole"
+        role_memberships:
+          type: array
+          items:
+            type: object
+            additionalProperties: true
+        schema_effective_privileges:
+          type: array
+          items:
+            type: object
+            additionalProperties: true
+        table_direct_acl:
+          type: array
+          items:
+            type: object
+            additionalProperties: true
+        table_effective_privileges:
+          type: array
+          items:
+            type: object
+            additionalProperties: true
+        column_direct_acl:
+          type: array
+          items:
+            type: object
+            additionalProperties: true
+        column_effective_privileges:
+          type: array
+          items:
+            type: object
+            additionalProperties: true
+        default_function_acl:
+          type: array
+          items:
+            type: object
+            additionalProperties: true
+        builtin_function_acl_for_postgres:
+          type: array
+          items:
+            type: object
+            additionalProperties: true
+        languages:
+          type: array
+          items:
+            type: object
+            additionalProperties: true
+        policies:
+          type: array
+          items:
+            type: object
+            additionalProperties: true
+
+    SnapshotScope:
+      type: object
+      additionalProperties: false
+      required:
+        - project_ref
+        - access_mode
+        - schema
+        - target_table
+        - includes_row_data
+        - includes_auth_users
+        - includes_secrets
+        - includes_business_payload
+        - includes_function_source
+        - function_source_scope
+      properties:
+        project_ref:
+          type: string
+          const: uobxxgzshrmbtjfdolxd
+        access_mode:
+          type: string
+          const: read_only
+        schema:
+          type: string
+          const: public
+        target_table:
+          type: string
+          const: corretores
+        includes_row_data:
+          type: boolean
+          const: false
+        includes_auth_users:
+          type: boolean
+          const: false
+        includes_secrets:
+          type: boolean
+          const: false
+        includes_business_payload:
+          type: boolean
+          const: false
+        includes_function_source:
+          type: boolean
+          const: true
+        function_source_scope:
+          type: string
+          const: trigger functions attached to public.corretores only
+
+    SnapshotTable:
+      type: object
+      additionalProperties: false
+      required:
+        - exists
+        - schema
+        - name
+        - relkind
+        - owner
+        - rls_enabled
+        - rls_forced
+      properties:
+        exists:
+          type: boolean
+          const: true
+        schema:
+          type: string
+          const: public
+        name:
+          type: string
+          const: corretores
+        relkind:
+          type: string
+          enum:
+            - r
+            - p
+        owner:
+          type: string
+        rls_enabled:
+          type: boolean
+        rls_forced:
+          type: boolean
+
+    SnapshotColumn:
+      type: object
+      additionalProperties: false
+      required:
+        - name
+        - ordinal_position
+        - data_type
+        - udt_schema
+        - udt_name
+        - is_nullable
+        - column_default
+        - is_identity
+        - identity_generation
+      properties:
+        name:
+          type: string
+          enum:
+            - user_id
+            - ativo
+            - must_change_password
+        ordinal_position:
+          type: integer
+        data_type:
+          type: string
+          enum:
+            - uuid
+            - boolean
+        udt_schema:
+          type: string
+        udt_name:
+          type: string
+        is_nullable:
+          type: string
+        column_default:
+          type:
+            - string
+            - "null"
+        is_identity:
+          type: string
+        identity_generation:
+          type:
+            - string
+            - "null"
+
+    RequiredFunctionExistence:
+      type: object
+      additionalProperties: false
+      required:
+        - auth_uid
+        - password_state_rpc
+      properties:
+        auth_uid:
+          type: boolean
+          const: true
+        password_state_rpc:
+          type: boolean
+
+    SnapshotRole:
+      type: object
+      additionalProperties: true
+      required:
+        - name
+        - exists
+      properties:
+        name:
+          type: string
+          enum:
+            - postgres
+            - authenticated
+            - anon
+            - service_role
+        exists:
+          type: boolean
+          const: true
+
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+        operation:
+          type: string
+        allowed_fields:
+          type: array
+          items:
+            type: string
+        allowed_operations:
+          type: array
+          items:
+            type: string

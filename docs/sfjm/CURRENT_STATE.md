@@ -1,166 +1,178 @@
 # FECH.AI — SFJM Current State
 
-**Lifecycle state:** `F1_02_CONTROLLED_BETA_PRIMARY_STRATEGY_IN_DRAFT / FINAL_DOCUMENTARY_CORRECTION_APPLIED / SECURITY_GO_DENIED`  
-**Record type:** `OPERATIONAL_STATE / DOCUMENTATION_ONLY`  
-**Observed on:** `2026-07-25`  
+**Lifecycle state:** `PR104_FINAL_RQ02_CORRECTION_VERSIONED / TARGETED_GPT3_PENDING / PR103_FROZEN`  
+**Record type:** `OPERATIONAL_STATE / PARALLEL_SECURITY_ENABLEMENT`  
+**Observed on:** `2026-07-26`  
 **Repository:** `wagnerjfjunior/fecha.ai`
 
-## 1. Context
+## 1. Product context
 
 ```text
 Operational status: PILOT PRODUCTION / LIVE
 Commercial model: CONTROLLED FREE BETA
 Product phase: MVP 1 — Família
-Real users: YES
+Real users/data: YES
 Multiple companies: YES
-Sensitive lead/customer data: YES
-Paid SLA: NO
 Broad paid commercialization: BLOCKED
 Security Go: DENIED
 F1-02: ACTIVE REMEDIATION / BLOCKED
 WDP: 0
 ```
 
-Accepted operating risk is limited to downtime, maintenance, manual recovery and possible beta-data loss. It is not a security, privacy or tenant-isolation waiver.
-
-Frontend requests and displays. Backend/RPC/Supabase validates and decides. AI assists, but is not authority.
+Frontend/Action requests. Edge/RPC/Supabase validates and decides. AI assists but is not authority.
 
 ## 2. Canonical main
 
 ```text
-main: affbae1a598928010b0fa7db967734de522c13b4
-Source PR: #101
-PR #101 final head: 003850d012a299a947452fa5a8135cd454998f15
+main: b685b360404bbfd0a84a4b755b3092ee35a20e5e
+Source PR: #102
+PR #102: CLOSED / MERGED
 ```
 
-## 3. Active strategy PR
+## 3. PR #103 — frozen
 
 ```text
-PR: #102
+PR: #103
 State: OPEN / DRAFT
-Merged: false
-Base: main@affbae1a598928010b0fa7db967734de522c13b4
-Branch: docs/f1-02-controlled-beta-primary-strategy
-Pre-final correction head: 7b8c23bd375d750e73d888f140c8c44a840280a5
-Final head: resolve from live PR metadata and PR description
-Expected commits: 10
-Expected net changed files: 7
-Strategy canonicality: NOT_YET_CANONICAL
+Base: main@b685b360404bbfd0a84a4b755b3092ee35a20e5e
+Branch: security/f1-02-password-state-rpc
+Head: abf6b4026343eae437283280269ed2997911dcec
+Commits: 5
+Changed files: 1
 ```
 
-The final correction changes exactly six authorized documents and leaves the master plan and `BLOCKED_ACTIONS.md` unchanged.
-
-## 4. Documentary architecture
+Freeze:
 
 ```text
-Detailed master plan:
-docs/security/evidence/F1-02_REMEDIATION_MASTER_PLAN.md
-blob: ea161050c535b848ff927133830984f543c1104d
-net PR diff: ABSENT
-
-Lab-only amendment:
-docs/security/evidence/2026-07-25-f1-02-controlled-beta-primary-strategy.md
+Additional commits: PROHIBITED
+Metadata changes: PROHIBITED
+Ready: PROHIBITED
+Merge: PROHIBITED
+Supabase application: PROHIBITED
 ```
 
-The amendment changes only universal laboratory requirements. It does not remove detailed matrices, RPC cards, call-site maps, migration/rollback contracts, the PR-01 → PR-02 → PR-03 sequence, tests, evidence, audits or gates.
-
-## 5. Validation and B1
+## 4. PR #104 — final corrective state
 
 ```text
-SAFE_LIVE
-ISOLATED
-DEFERRED
-PROHIBITED
+PR: #104
+State: OPEN / DRAFT
+Base: main@b685b360404bbfd0a84a4b755b3092ee35a20e5e
+Branch: security/gpt3-supabase-catalog-gateway
+Final head: resolve from live PR metadata
+Net changed files expected: 10
+Primary risk: bounded exposure of fixed PostgreSQL security metadata
 ```
 
-Actual B1 self-promotion to `admin_global`, root or equivalent remains `ISOLATED / NOT_VERIFIED` without isolation. A named admin assignment is a separate `ADMINISTRATIVE_ROLE_CHANGE`, not a test and not authorized now.
-
-## 6. Authority vocabulary
+The final authorized commit changes exactly seven existing paths:
 
 ```text
-WINDOW_IMPLEMENTATION
-TECHNICAL_PR_LIFECYCLE
-CONTROLLED_BETA_PRIMARY_CHANGE
-ADMINISTRATIVE_ROLE_CHANGE
-SECURITY_GATE
+supabase/functions/gpt-especialista/index.ts
+docs/security/evidence/2026-07-26-gpt3-supabase-catalog-gateway.md
+docs/sfjm/AUTHORIZATIONS.md
+docs/sfjm/CURRENT_STATE.md
+docs/sfjm/EVIDENCE_FRESHNESS.md
+docs/sfjm/NEXT_SAFE_ACTION.md
+docs/sfjm/handoffs/CURRENT.md
 ```
 
-Legacy aliases:
+Migration, OpenAPI and `BLOCKED_ACTIONS.md` are unchanged by the final correction.
+
+## 5. Audit state
 
 ```text
-PR_LIFECYCLE = TECHNICAL_PR_LIFECYCLE
-PRODUCTION_CHANGE = CONTROLLED_BETA_PRIMARY_CHANGE
+GPT0 at parent 134e0a...:
+PASS WITH RESIDUAL RISK
+No BLOCKING / no REQUIRED IN THIS PR
+
+GPT1 at parent 134e0a...:
+PASS WITH RESIDUAL RISK
+No BLOCKING / no REQUIRED IN THIS PR
+
+GPT3 at parent 134e0a...:
+FAIL
+RQ-01 RESOLVED
+RQ-02 PARTIALLY RESOLVED
+Only required correction: Edge deep output validation
 ```
 
-Aliases create no additional authority and cannot be used without a new exact authorization.
+The Product Authority explicitly prohibited repeating GPT0 and GPT1 because architecture, migration, OpenAPI, primary risk and ten-file net scope remain unchanged.
 
-## 7. Blockers
+Pending:
 
-Documentation lifecycle:
+```text
+GPT3 targeted re-audit of final RQ-02 delta
+GPT4 final gate on complete final head
+```
 
-- GPT0 must audit the exact final head;
-- GPT1 and GPT3 repeat only after GPT0 recommends Ready;
-- Ready and merge require separate authority;
-- a new head invalidates prior exact-head conclusions.
+## 6. Final RQ-02 correction
 
-F1-02 technical blockers:
+The Edge now rejects:
 
-- B1 — self privilege escalation;
-- B2 — excessive direct CRM writes;
-- B3 — forgeable funnel history;
-- B4 — incomplete same-company ACL proof;
-- funnel-stage, import, feedback, `times` and leaked-password requirements;
-- executed tests, rollback/reapply and final gate.
+- invalid/non-RFC3339 `generated_at`;
+- non-string table owner;
+- non-boolean RLS fields;
+- malformed structural column fields;
+- scalar or null items in metadata arrays.
+
+Invalid RPC output returns `502 security_metadata_contract_invalid`.
+
+## 7. Live environment boundary
+
+Previously observed:
+
+```text
+Project ref: uobxxgzshrmbtjfdolxd
+Edge gpt-especialista: ACTIVE / version 7
+health_check: WORKING
+security_metadata_snapshot in Edge/Action: PRESENT
+public.gpt_security_metadata_snapshot(): ABSENT
+```
+
+The final correction is versioned only. No migration, RPC creation, Edge deploy or Action update was performed.
 
 ## 8. Current authorities
 
 ```text
-Final correction authority: CONSUMED
-Additional commits: NOT AUTHORIZED
+Further commits: NOT AUTHORIZED
+GPT3 targeted audit: AUTHORIZED
+GPT4 final gate: AUTHORIZED
 Ready: NOT AUTHORIZED
 Merge: NOT AUTHORIZED
-PR-01: NOT AUTHORIZED
-Supabase read/mutation: NOT AUTHORIZED
-Runtime/frontend: NOT AUTHORIZED
-Fixtures/tests: NOT AUTHORIZED
-Admin_global assignment: NOT AUTHORIZED
+Live Supabase / Edge / Action: NOT AUTHORIZED
+PR #103 change/application: NOT AUTHORIZED
 Security Go: DENIED
 F1-02 acceptance: NOT AUTHORIZED
 WDP: 0
 ```
 
-## 9. Evidence
+## 9. Evidence available
 
-Available:
+- live `main`;
+- live PR #103 frozen head;
+- PR #104 history and final seven-file corrective authorization;
+- historical fixed catalog SELECT under rollback;
+- GPT0 and GPT1 parent-head passes;
+- GPT3 parent-head RQ-01 resolution and narrow RQ-02 finding;
+- final Edge validator code and reconciled SFJM.
 
-- live `main` and PR #101 anchors;
-- exact master-plan blob;
-- PR #102 history through `7b8c23bd...`;
-- authenticated GPT0/GPT1/GPT3 audits;
-- bounded final correction authority;
-- final commit and PR-description state after live validation.
+## 10. Evidence absent
 
-Absent:
+- targeted GPT3 result on the final correction;
+- GPT4 final gate;
+- Ready/merge authority;
+- merge/squash commit;
+- live migration and RPC ACL evidence;
+- live Edge and Action reconciliation;
+- runtime positive/negative tests;
+- renewed GPT3 audit of PR #103.
 
-- GPT0 audit of final head;
-- final-head GPT1/GPT3 reaudits;
-- Ready and merge authority;
-- PR-01 implementation;
-- Supabase preflight, fixtures, tests, rollback/reapply and smoke;
-- final Security Go decision.
+## 11. Next safe action
 
-## 10. Next safe action
+Resolve the final live head and run only:
 
-Run GPT0 against the exact final PR #102 head and validate:
+```text
+GPT3 targeted RQ-02 re-audit
+→ GPT4 final gate
+```
 
-1. parent `7b8c23bd375d750e73d888f140c8c44a840280a5`;
-2. one final correction commit;
-3. exactly six paths in that commit;
-4. 10 total commits and 7 net changed files;
-5. unchanged master-plan blob `ea161050c535b848ff927133830984f543c1104d`;
-6. unchanged `BLOCKED_ACTIONS.md`;
-7. current lifecycle and strict alias mapping;
-8. PR remains OPEN / DRAFT;
-9. no active authority for additional commits, Ready, merge, PR-01 or Supabase.
-
-Do not mark Ready, merge, begin PR-01 or access Supabase.
+Do not repeat GPT0 or GPT1. Do not mark Ready, merge, apply SQL, deploy Edge, update Action, modify PR #103 or claim Security Go.

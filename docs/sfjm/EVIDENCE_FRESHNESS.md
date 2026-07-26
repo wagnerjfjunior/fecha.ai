@@ -1,56 +1,52 @@
 # FECH.AI — SFJM Evidence Freshness
 
-**Status:** `EVIDENCE_FRESHNESS_REGISTER / FAIL_CLOSED`  
-**Observed on:** `2026-07-25`  
+**Status:** `EVIDENCE_FRESHNESS_REGISTER / FINAL_RQ02_DELTA / FAIL_CLOSED`  
+**Observed on:** `2026-07-26`  
 **Repository:** `wagnerjfjunior/fecha.ai`
 
 ## 1. Freshness rule
 
-Evidence is valid only for the exact repository, environment, branch, base, head, object set and lifecycle state observed.
+Evidence is valid only for the exact repository, environment, branch, base, head, object set and lifecycle state observed. Versioned code is not live evidence. Designed tests are not executed tests.
 
-A new commit invalidates prior exact-head conclusions for Ready. Prior findings remain historical input, not approval of a later head.
-
-No designed test is treated as executed. No documentation-only change is treated as Supabase or runtime evidence.
+A change invalidates only conclusions materially dependent on the changed area. A localized Edge validator change does not automatically invalidate prior documentary or architectural findings when their inputs remain unchanged and the Product Authority explicitly limits the re-audit scope.
 
 ## 2. Canonical anchors
 
 ```text
-main: affbae1a598928010b0fa7db967734de522c13b4
-PR #101: CLOSED / MERGED
-PR #101 final head: 003850d012a299a947452fa5a8135cd454998f15
-Master-plan blob: ea161050c535b848ff927133830984f543c1104d
+main: b685b360404bbfd0a84a4b755b3092ee35a20e5e
+PR #103 head: abf6b4026343eae437283280269ed2997911dcec
+PR #103 state: OPEN / DRAFT / FROZEN
+PR #104 base: main@b685b360404bbfd0a84a4b755b3092ee35a20e5e
+PR #104 branch: security/gpt3-supabase-catalog-gateway
+PR #104 final head: resolve live
 ```
 
-## 3. PR #102 history
+## 3. Parent-head audits
+
+At parent `134e0a8717a5cbd67e490af4c1bcd2fd2e3c8cd6`:
+
+| Specialist | Result | Freshness after final correction |
+|---|---|---|
+| GPT0 | PASS WITH RESIDUAL RISK | retained for unchanged documentary and scope conclusions |
+| GPT1 | PASS WITH RESIDUAL RISK | retained because architecture, migration, OpenAPI and primary risk are unchanged |
+| GPT3 | FAIL; RQ-01 resolved; RQ-02 partial | superseded only for RQ-02 Edge output validation |
+| GPT4 | not executed | pending on final head |
+
+The Product Authority prohibited repeating GPT0 and GPT1.
+
+## 4. Final corrective delta
+
+Authorized parent:
 
 ```text
-Initial Draft:
-fc83ed752217bfc39810dfba38e93405bc7382b8
-7 commits / 7 net files / FAIL
-
-First correction:
-6b7d96fb26d6589641bc079146db9c3f429b9bd2
-8 commits / 8 net files
-GPT0 FAIL; GPT1/GPT3 PASS WITH RESIDUAL RISK
-
-Master-plan restoration:
-7b8c23bd375d750e73d888f140c8c44a840280a5
-9 commits / 7 net files
-Master-plan blob restored: ea161050c535b848ff927133830984f543c1104d
-GPT0 FAIL only for stale lifecycle and authority-name mapping
-
-Final lifecycle-and-alias correction:
-parent 7b8c23bd375d750e73d888f140c8c44a840280a5
-final head resolved live
-expected 10 commits / 7 net files / 6 final-commit paths
+134e0a8717a5cbd67e490af4c1bcd2fd2e3c8cd6
 ```
 
-## 4. Final corrective scope
-
-Exactly these six paths may change:
+Expected changed paths in the final commit:
 
 ```text
-docs/security/evidence/2026-07-25-f1-02-controlled-beta-primary-strategy.md
+supabase/functions/gpt-especialista/index.ts
+docs/security/evidence/2026-07-26-gpt3-supabase-catalog-gateway.md
 docs/sfjm/AUTHORIZATIONS.md
 docs/sfjm/CURRENT_STATE.md
 docs/sfjm/EVIDENCE_FRESHNESS.md
@@ -58,77 +54,67 @@ docs/sfjm/NEXT_SAFE_ACTION.md
 docs/sfjm/handoffs/CURRENT.md
 ```
 
-These must remain unchanged:
+Unchanged technical objects:
 
 ```text
-docs/security/evidence/F1-02_REMEDIATION_MASTER_PLAN.md
+supabase/migrations/20260726180000_gpt_security_metadata_snapshot.sql
+docs/integrations/gpt3-supabase-action.openapi.yaml
 docs/sfjm/BLOCKED_ACTIONS.md
+PR #103 migration and metadata
 ```
 
-Any additional path blocks Ready.
+## 5. Historical Supabase evidence
 
-## 5. Evidence state
-
-| Evidence | Target | State |
-|---|---|---|
-| F1-02 findings/master plan | `main@affbae1a...` | CANONICAL BASELINE |
-| Strategy amendment | final PR #102 head | DRAFT / NOT_YET_CANONICAL |
-| Master-plan restoration | blob `ea161050...` | MUST REMAIN UNCHANGED |
-| GPT0/GPT1/GPT3 at `6b7d96fb...` | historical head | FINDING INPUT / NOT READY EVIDENCE |
-| GPT0 at `7b8c23bd...` | pre-final head | HISTORICAL REQUIRED FINDINGS |
-| GPT0 at final head | final head | MISSING |
-| GPT1/GPT3 at final head | final head | MISSING |
-
-## 6. Authority-name freshness
+Previously executed:
 
 ```text
-PR_LIFECYCLE = TECHNICAL_PR_LIFECYCLE
-PRODUCTION_CHANGE = CONTROLLED_BETA_PRIMARY_CHANGE
+BEGIN
+SET LOCAL ROLE service_role
+fixed catalog SELECT
+ROLLBACK
 ```
 
-These are strict aliases only. They create no authority and cannot be used without a new exact authorization.
+Verified historically:
 
-## 7. Supabase and runtime evidence
+- query parsed;
+- service_role could read the fixed catalog;
+- persistent writes were zero;
+- business-row reads were zero;
+- `auth.users` reads were zero.
 
-```text
-Supabase read under this correction: NONE
-Supabase mutation: NONE
-SQL/migration: NONE
-Fixture creation: NONE
-Negative tests: NONE
-Rollback/reapply: NONE
-Runtime/frontend change: NONE
-Production smoke: NONE
-Security Go: DENIED
-```
+This remains historical query-contract evidence only.
 
-Historical read-only evidence remains valid only for the objects and date observed and must be refreshed narrowly before a future technical change.
-
-## 8. Invalidation events
-
-Revalidate after:
-
-- any PR #102 head change;
-- a `main` change before Ready or merge;
-- master-plan or `BLOCKED_ACTIONS.md` drift;
-- changed-file scope drift;
-- amendment or alias-map changes;
-- any migration, RLS, grant, policy, RPC, Auth or runtime change;
-- a material audit finding.
-
-## 9. Current conclusion
+## 6. Current evidence state
 
 ```text
-PR #102: OPEN / DRAFT
-Final head: REQUIRES LIVE RESOLUTION
-Expected commits: 10
-Expected net changed files: 7
-Independent final-head GPT0 audit: MISSING
-Ready evidence: INCOMPLETE
-Merge evidence: INCOMPLETE
+RQ-01 code review: FRESH / RESOLVED
+RQ-02 parent finding: SUPERSEDED BY FINAL EDGE DELTA
+GPT0 repeat: PROHIBITED
+GPT1 repeat: PROHIBITED
+GPT3 targeted final-delta review: MISSING
+GPT4 final-head gate: MISSING
+Live gateway application: NOT AUTHORIZED / NOT EXECUTED
+PR #103 re-audit through live gateway: MISSING
 Security Go: DENIED
 F1-02: ACTIVE REMEDIATION / BLOCKED
 WDP: 0
 ```
 
-When freshness cannot be established, classify as `NOT_VERIFIED` or `STALE`, block the decision and refresh only the narrow required evidence.
+## 7. Invalidation events
+
+Revalidate the narrow affected evidence after:
+
+- any change to the final Edge validator;
+- any change to migration or OpenAPI;
+- any additional PR #104 path;
+- any PR #103 head change;
+- any live RPC, grant, Edge, Action or secret-name change;
+- any material security finding.
+
+## 8. Next evidence refresh
+
+1. Resolve final PR #104 head and compare it to parent `134e0a...`.
+2. Verify one commit and exactly seven changed files in the final delta.
+3. GPT3 reviews only RQ-02 and unchanged technical-boundary assumptions.
+4. GPT4 validates the complete final head, checks, threads, scope and lifecycle.
+5. No Ready/merge/application conclusion is valid before those two gates.

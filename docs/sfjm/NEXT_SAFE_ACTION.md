@@ -1,101 +1,93 @@
 # FECH.AI — SFJM Next Safe Action
 
-**Status:** `NEXT_SAFE_ACTION / PR_102_FINAL_HEAD_GPT0_REAUDIT`  
-**Observed on:** `2026-07-25`  
+**Status:** `NEXT_SAFE_ACTION / TARGETED_GPT3_THEN_GPT4`  
+**Observed on:** `2026-07-26`  
 **Repository:** `wagnerjfjunior/fecha.ai`
 
 ## 1. Current safe state
 
-PR #102 records the Product Authority decision to operate MVP 1 — Família as `PILOT PRODUCTION / LIVE` under `CONTROLLED FREE BETA`.
-
-The primary project may receive future bounded remediation only under separate authority. It is not an unrestricted laboratory.
-
-The detailed master plan remains unchanged at:
-
 ```text
-ea161050c535b848ff927133830984f543c1104d
+main: b685b360404bbfd0a84a4b755b3092ee35a20e5e
+PR #103: OPEN / DRAFT / FROZEN
+PR #103 head: abf6b4026343eae437283280269ed2997911dcec
+PR #104: OPEN / DRAFT
+PR #104 base: main@b685b360404bbfd0a84a4b755b3092ee35a20e5e
+PR #104 final head: resolve live after this commit
 ```
 
-The strategy amendment is the sole lab-only supersession artifact.
+The final correction is versioned only. No Supabase, Edge or GPT Action live change occurred.
 
 ## 2. Exact next action
 
-Perform an independent GPT0 documentation reauditing of the final live PR #102 head. Do not reuse a prior verdict as approval of the final head.
-
-## 3. Required live target
+Run a targeted GPT3 re-audit limited to:
 
 ```text
-Repository: wagnerjfjunior/fecha.ai
-PR: #102
-Expected state: OPEN / DRAFT
-Expected merged: false
-Base: main
-Base SHA: affbae1a598928010b0fa7db967734de522c13b4
-Branch: docs/f1-02-controlled-beta-primary-strategy
-Parent of final correction:
-7b8c23bd375d750e73d888f140c8c44a840280a5
-Expected commits: 10
-Expected net changed files: 7
-Expected final-commit paths: 6
+parent: 134e0a8717a5cbd67e490af4c1bcd2fd2e3c8cd6
+head: resolve live
+technical file: supabase/functions/gpt-especialista/index.ts
+finding: RQ-02 only
 ```
 
-Stop with `FAIL — HEAD CHANGED` if the audited head differs from live PR metadata.
+GPT3 must verify that invalid timestamp, table types, column structural types and non-object metadata-array items are rejected with the existing `502 security_metadata_contract_invalid` path.
 
-## 4. Mandatory GPT0 checks
+GPT3 must also confirm that migration and OpenAPI did not change.
 
-GPT0 must validate:
+## 3. After targeted GPT3
 
-1. one final commit directly follows `7b8c23bd...`;
-2. exactly six authorized paths changed;
-3. master plan remains blob `ea161050c535b848ff927133830984f543c1104d`;
-4. `BLOCKED_ACTIONS.md` is unchanged;
-5. final net diff has exactly seven paths;
-6. amendment remains the sole lab-only supersession artifact;
-7. stale 8-file and old-next-action references are absent;
-8. lifecycle reflects 10 commits and 7 net files;
-9. `PR_LIFECYCLE = TECHNICAL_PR_LIFECYCLE`;
-10. `PRODUCTION_CHANGE = CONTROLLED_BETA_PRIMARY_CHANGE`;
-11. aliases create or expand no authority;
-12. correction authority is consumed;
-13. no overclaim of tests, Supabase change, B1 remediation or Security Go;
-14. PR remains Draft.
+Only if GPT3 returns no `BLOCKING` and no `REQUIRED IN THIS PR`:
 
-## 5. Sequencing after GPT0
+```text
+GPT4 final gate on the complete final head
+```
 
-Only if GPT0 returns `PASS` or `PASS WITH RESIDUAL RISK` with `READY RECOMMENDATION: YES`, repeat GPT1 and GPT3 on the same exact head.
+GPT4 validates:
 
-If GPT0 returns `FAIL`, stop. No additional commit may be created without new bounded Product Authority.
+- exact head and parent;
+- one final commit;
+- exactly seven paths in the final commit;
+- ten net PR paths;
+- unchanged migration, OpenAPI and `BLOCKED_ACTIONS.md`;
+- PR #103 frozen;
+- checks, mergeability, reviews and threads;
+- PR description reconciled;
+- no Ready or merge already performed.
 
-If GPT0, GPT1 and GPT3 all recommend Ready, request separate `TECHNICAL_PR_LIFECYCLE` authority for Draft → Ready. Do not mark Ready automatically.
+## 4. Explicitly do not repeat
 
-## 6. Explicitly prohibited now
+```text
+GPT0: DO NOT REPEAT
+GPT1: DO NOT REPEAT
+```
 
-- additional commits or PR metadata changes;
-- comments, reviews or reviewer requests;
-- Ready, merge or PR-01;
-- Supabase access or mutation;
-- SQL, migrations, RLS, grants, policies, RPCs or Auth;
-- runtime/frontend changes;
-- fixtures or tests;
-- `admin_global` assignment;
-- Security Go, F1-02 acceptance or WDP.
+The Product Authority explicitly prohibited both repetitions. Their conclusions remain usable for unchanged scope and architecture.
+
+## 5. Gate after GPT4
+
+If targeted GPT3 and GPT4 pass, request a separate `TECHNICAL_PR_LIFECYCLE` authority. Do not mark Ready or merge automatically.
+
+## 6. Gate after merge
+
+Merge does not authorize production application.
+
+A separate `CONTROLLED_BETA_PRIMARY_CHANGE` must identify the exact squash commit and authorize:
+
+```text
+migration
+→ RPC owner/search_path/ACL verification
+→ Edge deploy
+→ GPT Action update
+→ positive and negative tests
+→ sanitized evidence
+```
 
 ## 7. Stop conditions
 
-Stop fail-closed if PR/head/base/parent differs, another path enters the commit, master plan or `BLOCKED_ACTIONS.md` drifts, net file count differs without verified explanation, lifecycle or aliases remain ambiguous, PR is no longer Draft, or evidence is incomplete.
+Stop if:
 
-## 8. Current state
-
-```text
-PR #102: OPEN / DRAFT
-Audit of final correction head: PENDING
-Final correction authority: CONSUMED
-Additional commits: NOT AUTHORIZED
-Ready: NOT AUTHORIZED
-Merge: NOT AUTHORIZED
-PR-01: NOT AUTHORIZED
-Supabase: NOT AUTHORIZED
-Security Go: DENIED
-F1-02: ACTIVE REMEDIATION / BLOCKED
-WDP: 0
-```
+- final head is not a direct one-commit descendant of `134e0a...`;
+- final delta contains a path outside the seven authorized files;
+- migration or OpenAPI changed;
+- PR #103 changed;
+- GPT3 still finds RQ-02 incomplete;
+- a secret or PII appears;
+- Ready, merge or live changes occurred without authority.
