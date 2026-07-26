@@ -1,14 +1,14 @@
 # FECH.AI — SFJM Authorizations
 
 **Status:** `AUTHORIZATION_REGISTER / FAIL_CLOSED`  
-**Observed on:** `2026-07-25`  
+**Observed on:** `2026-07-26`  
 **Repository:** `wagnerjfjunior/fecha.ai`
 
 ## 1. Interpretation rule
 
 An authority is valid only for its exact repository, target, environment, files or objects, operations, acceptance criteria, prohibitions and expiration condition.
 
-General language such as `continue`, `implement`, `approve`, `go ahead` or `use the primary database` never silently authorizes additional commits, Ready, merge, Supabase, runtime/frontend, fixtures/tests, administrative role assignment, Security Go, F1-02 acceptance or WDP.
+General language such as `continue`, `implement`, `approve`, `go ahead` or `use the primary database` never silently authorizes Ready, merge, live Supabase application, runtime/frontend changes, fixtures, administrative role assignment, Security Go, F1-02 acceptance or WDP.
 
 When scope, head, evidence or terminology is inconsistent, stop fail-closed.
 
@@ -17,135 +17,184 @@ When scope, head, evidence or terminology is inconsistent, stop fail-closed.
 ```text
 PR #101: CLOSED / MERGED
 PR #101 final head: 003850d012a299a947452fa5a8135cd454998f15
-Squash on main: affbae1a598928010b0fa7db967734de522c13b4
-Authority: CONSUMED
+PR #101 squash: affbae1a598928010b0fa7db967734de522c13b4
+
+PR #102: CLOSED / MERGED
+PR #102 final head: 26395a5751ded7f3bc6908f36615f761d709199c
+PR #102 squash / current main: b685b360404bbfd0a84a4b755b3092ee35a20e5e
 ```
 
-PR #101 made the F1-02 findings and detailed remediation master plan canonical. It did not authorize technical execution or Security Go.
+These authorities are consumed. They made the F1-02 program and controlled-beta strategy canonical but did not grant Security Go or unrestricted technical authority.
 
-## 3. PR #102 authority history
+## 3. PR #103 freeze authority
 
-### Draft creation
+The Product Authority directed that PR #103 remain frozen while the GPT3 evidence gateway is implemented in parallel.
 
 ```text
-Initial Draft head: fc83ed752217bfc39810dfba38e93405bc7382b8
-State: CONSUMED AT DRAFT CREATION
+PR: #103
+Base: main@b685b360404bbfd0a84a4b755b3092ee35a20e5e
+Head: abf6b4026343eae437283280269ed2997911dcec
+State: OPEN / DRAFT
 ```
 
-### First correction
+Authorized for PR #103:
 
 ```text
-Parent: fc83ed752217bfc39810dfba38e93405bc7382b8
-Head: 6b7d96fb26d6589641bc079146db9c3f429b9bd2
-State: CONSUMED
+Read-only inspection: YES
+Exact-head audit after gateway availability: YES
 ```
 
-Reaudits produced GPT0 `FAIL`, GPT1 `PASS WITH RESIDUAL RISK` and GPT3 `PASS WITH RESIDUAL RISK`. No majority rule applies.
-
-### Detailed-master-plan restoration
+Not authorized for PR #103:
 
 ```text
-Parent: 6b7d96fb26d6589641bc079146db9c3f429b9bd2
-Head: 7b8c23bd375d750e73d888f140c8c44a840280a5
-Master-plan blob: ea161050c535b848ff927133830984f543c1104d
-State: CONSUMED
+Additional commits: NO
+Metadata changes: NO
+Ready: NO
+Merge: NO
+Supabase application: NO
+Runtime tests: NO
 ```
 
-GPT0 confirmed the normative regression was resolved and required two final documentary corrections: lifecycle metadata and legacy authority-name reconciliation.
+## 4. PR #104 WINDOW_IMPLEMENTATION
 
-### Final lifecycle-and-alias correction
+**Source:** explicit Product Authority instruction on `2026-07-26` to start the approved parallel plan.  
+**Repository:** `wagnerjfjunior/fecha.ai`  
+**Base:** `main@b685b360404bbfd0a84a4b755b3092ee35a20e5e`  
+**Branch:** `security/gpt3-supabase-catalog-gateway`  
+**PR:** `#104`  
+**Environment:** GitHub Draft implementation plus bounded read-only catalog validation.
 
-```text
-Required parent: 7b8c23bd375d750e73d888f140c8c44a840280a5
 Primary risk:
-correct stale lifecycle metadata and reconcile authority names
-without modifying the detailed master plan
-```
-
-Authorized paths:
 
 ```text
-docs/security/evidence/2026-07-25-f1-02-controlled-beta-primary-strategy.md
+Expose only the fixed PostgreSQL security metadata required by GPT3,
+without exposing business rows, auth.users, secrets, arbitrary SQL or
+caller-selected objects.
+```
+
+Authorized GitHub actions:
+
+- create the branch from the exact base;
+- add and update only the declared files;
+- commit and push to the branch;
+- create and update Draft PR #104;
+- perform read-only GitHub validation;
+- document evidence, rollback and SFJM state.
+
+Authorized read-only Supabase action:
+
+```text
+Run the fixed catalog SELECT under SET LOCAL ROLE service_role
+inside a transaction that ends in ROLLBACK.
+```
+
+Observed result:
+
+```text
+Query contract: EXECUTED
+Persistent mutation: ZERO
+Business-row reads: ZERO
+auth.users reads: ZERO
+Secret reads: ZERO
+```
+
+Authorized paths, exactly:
+
+```text
+supabase/migrations/20260726180000_gpt_security_metadata_snapshot.sql
+supabase/functions/gpt-especialista/index.ts
+docs/integrations/gpt3-supabase-action.openapi.yaml
+docs/security/evidence/2026-07-26-gpt3-supabase-catalog-gateway.md
 docs/sfjm/AUTHORIZATIONS.md
+docs/sfjm/BLOCKED_ACTIONS.md
 docs/sfjm/CURRENT_STATE.md
 docs/sfjm/EVIDENCE_FRESHNESS.md
 docs/sfjm/NEXT_SAFE_ACTION.md
 docs/sfjm/handoffs/CURRENT.md
 ```
 
-Explicitly prohibited:
+The implementation window expires when the declared Draft scope is complete and the final Draft head is established. The final head is resolved from live PR metadata and the final PR description.
 
-- `docs/security/evidence/F1-02_REMEDIATION_MASTER_PLAN.md`;
-- `docs/sfjm/BLOCKED_ACTIONS.md`;
-- every other file;
-- runtime, frontend, SQL, migrations, RLS, grants, policies, RPCs, Auth or Supabase;
-- data, users, fixtures or tests;
-- Vercel, GitHub Actions, comments, reviews or reviewers;
-- Ready, merge, PR-01, `admin_global` assignment, Security Go, F1-02 acceptance or WDP.
+## 5. Explicit non-authorizations for PR #104
+
+This implementation authority does not authorize:
+
+- marking PR #104 Ready;
+- merging PR #104;
+- applying the migration to Supabase;
+- creating `public.gpt_security_metadata_snapshot()` live;
+- deploying the versioned Edge Function;
+- changing the GPT Action live;
+- changing `verify_jwt` live;
+- rotating or reading secret values;
+- accessing application rows or `auth.users`;
+- executing arbitrary SQL;
+- modifying PR #103;
+- applying the PR #103 migration;
+- granting Security Go, accepting F1-02 or awarding WDP.
+
+## 6. Secret rotation record
+
+The user declared that the previously exposed integration secret was rotated before this implementation continued.
 
 ```text
-Final lifecycle-and-alias correction authority:
-CONSUMED BY THE COMMIT CONTAINING THIS RECORD
-
-PR-description update authority:
-CONSUMED AFTER THE FINAL HEAD IS RECORDED
-
-Further commits:
-NOT AUTHORIZED
+Secret name: GPT3_FECHAI_ESPECIALISTA
+Secret value in GitHub/docs: PROHIBITED
+Independent value verification: NOT PERFORMED
 ```
 
-The final commit cannot contain its own SHA without creating a recursive hash change. Live PR metadata and the updated PR description are authoritative for the final head.
+The declaration is recorded as Product Authority input, not as disclosure of the secret value.
 
-## 4. Authority vocabulary
-
-### `WINDOW_IMPLEMENTATION`
-
-One bounded technical PR. No Ready, merge or live application.
+## 7. Future authorities required
 
 ### `TECHNICAL_PR_LIFECYCLE`
 
-Ready and/or exact-head merge after independent audit and fresh GitHub validation. No Supabase application.
+Required separately for Draft → Ready and/or exact-head merge after independent audits.
 
 ### `CONTROLLED_BETA_PRIMARY_CHANGE`
 
-One exact live Supabase operation with project/ref, objects, preflight, impact, order, smoke, monitoring, stop conditions, rollback, evidence, operator and expiration.
+Required separately for one exact live sequence identifying:
 
-### `ADMINISTRATIVE_ROLE_CHANGE`
-
-One intentional named administrative-role assignment under server-side control, audit and revocation. It is not a security test and does not prove B1 remediation.
+- project ref `uobxxgzshrmbtjfdolxd`;
+- exact squash commit;
+- exact migration;
+- exact Edge Function source;
+- exact OpenAPI version;
+- operator and order;
+- preflight, smoke, monitoring and stop conditions;
+- rollback and expiration.
 
 ### `SECURITY_GATE`
 
-Final evidence-based decision only. It cannot retroactively authorize missing evidence or operations.
+Required for any later Security Go or F1-02 acceptance decision. It cannot retroactively authorize missing evidence.
 
-## 5. Legacy-name mapping
-
-```text
-PR_LIFECYCLE
-= TECHNICAL_PR_LIFECYCLE
-
-PRODUCTION_CHANGE
-= CONTROLLED_BETA_PRIMARY_CHANGE
-```
-
-These are strict aliases only. They create no additional authority, widen no scope, bypass no exact-head gate and cannot combine GitHub lifecycle with Supabase application. They are invalid without a new exact and unexpired authorization.
-
-`WINDOW_IMPLEMENTATION`, `ADMINISTRATIVE_ROLE_CHANGE` and `SECURITY_GATE` remain separate.
-
-## 6. Current authority state
+## 8. Current authority state
 
 ```text
-PR #102: OPEN / DRAFT
-Final correction authority: CONSUMED
-Additional commits: NOT AUTHORIZED
-Ready: NOT AUTHORIZED
-Merge: NOT AUTHORIZED
-PR-01: NOT AUTHORIZED
-Supabase read/mutation: NOT AUTHORIZED
-Runtime/frontend: NOT AUTHORIZED
-Fixtures/tests: NOT AUTHORIZED
-Intentional admin_global assignment: NOT AUTHORIZED
-Security Go: DENIED
-F1-02: ACTIVE REMEDIATION / BLOCKED
-WDP: 0
+PR #104 implementation window:
+ACTIVE ONLY UNTIL DECLARED DRAFT SCOPE IS COMPLETE
+
+Further commits after final Draft head:
+NOT AUTHORIZED
+
+PR #104 Ready:
+NOT AUTHORIZED
+
+PR #104 merge:
+NOT AUTHORIZED
+
+Live Supabase / Edge / Action application:
+NOT AUTHORIZED
+
+PR #103 change/application:
+NOT AUTHORIZED
+
+Security Go:
+DENIED
+
+F1-02:
+ACTIVE REMEDIATION / BLOCKED
+
+WDP:
+0
 ```
