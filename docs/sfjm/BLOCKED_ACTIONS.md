@@ -1,6 +1,6 @@
 # FECH.AI — SFJM Blocked Actions
 
-**Status:** `ACTIVE_BLOCKS / PR104_GATEWAY / PR103_FROZEN / FAIL_CLOSED`  
+**Status:** `ACTIVE_BLOCKS / PR104_CLOSED / PR103_SEPARATE_CONTINUATION / FAIL_CLOSED`  
 **Observed on:** `2026-07-26`  
 **Repository:** `wagnerjfjunior/fecha.ai`
 
@@ -8,110 +8,113 @@
 
 - declare MVP 1 — Família security-ready;
 - grant Security Go or F1-02 acceptance;
-- award WDP from PR count or documentation alone;
+- award WDP from PR count, documentation or gateway availability alone;
 - broad paid commercialization;
 - represent controlled-beta risk acceptance as a privacy/security waiver.
 
-## 2. PR #103 freeze blocks
+## 2. PR #104 closure blocks
+
+PR #104 is closed, merged and operationally applied. The following are blocked without new material evidence and explicit authority:
+
+- additional PR #104 correction commits;
+- repeat GPT0/GPT1/GPT3/GPT4 gates solely to restate the completed lifecycle;
+- another metadata-only closure loop;
+- alteration or rollback of `public.gpt_security_metadata_snapshot()`;
+- Edge `gpt-especialista` redeploy or configuration change;
+- `verify_jwt` change;
+- GPT Action configuration change;
+- secret read, disclosure or rotation;
+- expansion of the snapshot beyond the fixed PR #103 catalog scope.
+
+The completed PR #104 topic must remain closed unless a new code, SQL, OpenAPI, deployment, authentication or security change occurs.
+
+## 3. PR #103 blocks
+
+Current observed anchor:
 
 ```text
 PR #103: OPEN / DRAFT
 Head: abf6b4026343eae437283280269ed2997911dcec
-Additional commits: BLOCKED
-Metadata changes: BLOCKED
-Ready: BLOCKED
-Merge: BLOCKED
-Supabase application: BLOCKED
+Commits: 5
+Changed files: 1
 ```
 
-The freeze remains until the bounded GPT3 catalog gateway is available and GPT3 repeats the exact-head audit.
+Until the separate PR #103 conversation completes fresh exact-state validation and grants the required lifecycle authority, block:
 
-Do not create a PR #103 correction merely to compensate for missing evidence. The current GPT3 finding is an evidence blocker, not a demonstrated migration defect.
+- Ready;
+- merge;
+- Supabase application;
+- runtime mutation tests;
+- any correction commit not tied to a demonstrated finding;
+- any assumption that gateway availability equals PR #103 approval.
 
-## 3. PR #104 lifecycle blocks
+The prior gateway-evidence blocker is removed. The remaining blocks belong to PR #103's own audit, compatibility, authority and application lifecycle.
 
-```text
-PR #104: OPEN / DRAFT
-Final head: resolve live
-Ready: BLOCKED pending exact-head GPT0/GPT1/GPT3/GPT4 audits
-Merge: BLOCKED pending Ready, fresh checks and separate authority
-Additional commits after final Draft head: BLOCKED
-```
+## 4. Gateway data and discovery blocks
 
-Any file outside the declared ten-path scope is scope creep and blocks Ready.
-
-## 4. Live Supabase / Edge / Action blocks
-
-Until separate `CONTROLLED_BETA_PRIMARY_CHANGE` authority exists, do not:
-
-- apply `20260726180000_gpt_security_metadata_snapshot.sql`;
-- create, replace, alter, grant, revoke or drop `public.gpt_security_metadata_snapshot()`;
-- deploy the versioned `gpt-especialista` Edge Function;
-- change `verify_jwt`;
-- update the GPT Action from the versioned OpenAPI;
-- run post-deploy smoke or negative gateway tests;
-- reload PostgREST schema as part of an application sequence;
-- improvise SQL after an unexpected result.
-
-The already active Edge Function version 7 and Action configuration are observed live state, not authorization for further change.
-
-## 5. Data and discovery blocks
-
-The gateway must never allow:
+The operational gateway must never allow:
 
 - arbitrary SQL;
 - caller-supplied schema, table, function, role or ID;
-- application row reads;
+- application-row reads;
 - `auth.users` row reads;
-- lead, customer, message or payload access;
+- lead, customer, message or business-payload access;
 - secrets, tokens or credentials;
-- broad catalog discovery outside the fixed PR103 snapshot;
-- fuzzing, load or volume testing;
+- broad catalog discovery outside the fixed PR #103 snapshot;
+- fuzzing, load or volume testing on the primary project;
 - use of real JWTs, passwords, emails or phone numbers in evidence.
 
-Function source is limited to trigger functions directly attached to `public.corretores` for the PR #103 evidence question.
+Function source remains limited to trigger functions directly attached to `public.corretores` for the PR #103 evidence question.
 
-## 6. Authentication blocks
+## 5. Authentication blocks
 
-- do not record `GPT3_FECHAI_ESPECIALISTA` values;
-- do not expose the secret in screenshots, logs, PR bodies or comments;
-- do not treat user-declared rotation as permission to read or display the value;
-- do not enable unauthenticated arbitrary operations because `verify_jwt` is off;
-- do not move `service_role` into frontend, browser or an untrusted client.
+- do not record or expose `GPT3_FECHAI_ESPECIALISTA` values;
+- do not place `service_role` in frontend, browser or untrusted clients;
+- do not treat `verify_jwt=false` as anonymous access permission;
+- do not remove or bypass `x-gpt-action-key` authentication;
+- do not log supplied authentication values;
+- do not infer secret-rotation authority from successful gateway operation.
 
-Custom server-to-server authentication must remain enforced by the Edge handler.
+## 6. Live database blocks
 
-## 7. Security-test blocks
+Without new exact authority, do not:
 
-On the primary project, block:
+- alter, replace, grant, revoke or drop `public.gpt_security_metadata_snapshot()`;
+- edit migration history;
+- change `public.corretores`, RLS, policies, grants, indexes, constraints or triggers;
+- query application rows or `auth.users`;
+- run destructive rollback/reapply experiments;
+- improvise DDL after an unexpected result.
 
-- actual self-promotion to `admin_global`, root or equivalent;
-- adversarial authority-field mutation;
-- cross-tenant discovery;
-- real-data fixtures;
-- deliberate duplicate/corrupt states;
-- disabling RLS, policies, grants or Auth;
-- destructive rollback/reapply experiments.
+The authorized migration `20260726224527 / gpt_security_metadata_snapshot` is applied and must not be reapplied.
 
-The gateway is for catalog evidence only. It does not authorize runtime negative tests for PR #103.
+## 7. Incident containment boundary
 
-## 8. Rollback blocks
+The accidental history-only records below were removed and have zero residual state:
+
+```text
+gpt_security_metadata_snapshot_marker_check
+noop_should_not_exist
+```
+
+Block any further migration-history manipulation unless a new, exact incident-remediation authority identifies the specific record and rollback.
+
+## 8. Audit and evidence blocks
+
+- no audit without exact repository, PR, head, diff/final file and environment evidence;
+- no claim that the gateway reads application data;
+- no claim that PR #103 is accepted because the snapshot call succeeds;
+- no replacement of missing PR #103 evidence with confidence or prior PR #104 results;
+- no executor self-approval for a new material change;
+- no recursive documentation update whose only purpose is to record its own merge SHA.
+
+## 9. Rollback blocks
 
 - do not execute gateway rollback without exact live-operation authority;
-- do not treat Git revert as database rollback;
-- do not drop or redeploy live objects to prove reversibility;
-- do not let rollback of PR #104 alter PR #103 or `public.corretores`;
-- do not continue after rollback, ACL or contract validation fails.
-
-## 9. Audit and evidence blocks
-
-- no audit without exact PR/head/diff/final files;
-- no Ready recommendation after a head change without re-audit;
-- no executor self-approval;
-- no claim that the migration or Edge version was deployed when it was only versioned;
-- no claim that Action success occurred before live application;
-- no claim of PR #103 acceptance from the gateway PR;
-- no replacement of missing evidence with confidence or user acceptance.
+- do not treat Git revert as Supabase or Edge rollback;
+- do not drop/redeploy objects merely to prove reversibility;
+- do not let gateway rollback alter PR #103 or `public.corretores`;
+- stop immediately if RPC ACL, contract or Edge authentication validation fails.
 
 ## 10. Removal rule
 

@@ -1,134 +1,123 @@
 # FECH.AI — SFJM Authorizations
 
-**Status:** `AUTHORIZATION_REGISTER / FINAL_RQ02_CORRECTION_CONSUMED / FAIL_CLOSED`  
+**Status:** `AUTHORIZATION_REGISTER / PR104_AND_GATEWAY_AUTHORITIES_CONSUMED / FAIL_CLOSED`  
 **Observed on:** `2026-07-26`  
 **Repository:** `wagnerjfjunior/fecha.ai`
 
 ## 1. Interpretation rule
 
-Authority is valid only for the exact repository, target, environment, files, operations, prohibitions and expiration stated by the Product Authority. General language never authorizes Ready, merge, production application, runtime changes, Security Go or F1-02 acceptance.
+Authority is valid only for the exact repository, environment, object, operation, prohibitions and expiration stated by the Product Authority. Recording a past authorization does not reactivate it.
 
-## 2. Canonical anchors
+## 2. Canonical anchors before this closure PR
 
 ```text
-main: b685b360404bbfd0a84a4b755b3092ee35a20e5e
-PR #102: CLOSED / MERGED
-PR #103: OPEN / DRAFT / FROZEN
+main: 6fcb42f7dcd876601d246215926fb0a6a3bf9d23
+PR #104: CLOSED / MERGED
+PR #104 squash commit: 6fcb42f7dcd876601d246215926fb0a6a3bf9d23
+PR #103: OPEN / DRAFT
 PR #103 head: abf6b4026343eae437283280269ed2997911dcec
-PR #104: OPEN / DRAFT
-PR #104 branch: security/gpt3-supabase-catalog-gateway
+Supabase project: uobxxgzshrmbtjfdolxd
 ```
 
-## 3. PR #103 freeze
+## 3. Consumed PR #104 authorities
 
-Authorized:
+### Final corrective commit
+
+Consumed by the localized Edge timestamp/contract correction ending at:
 
 ```text
-read-only inspection: YES
-exact-head audit after gateway availability: YES
+dc75198dd8d14fc2856890964771f3434942dd7a
 ```
 
-Not authorized:
+No additional commit authority remains from that instruction.
+
+### TECHNICAL_PR_LIFECYCLE
+
+Consumed by:
 
 ```text
-commits: NO
-metadata changes: NO
-Ready: NO
-merge: NO
-Supabase application: NO
-runtime tests: NO
+Draft → Ready
+exact-head revalidation
+squash merge
 ```
 
-## 4. Final PR #104 correction authority
-
-The Product Authority authorized one final commit from parent:
+Result:
 
 ```text
-134e0a8717a5cbd67e490af4c1bcd2fd2e3c8cd6
+PR #104: CLOSED / MERGED
+Squash commit: 6fcb42f7dcd876601d246215926fb0a6a3bf9d23
 ```
 
-Authorized paths, exactly:
+This authority expired immediately after the merge.
+
+### CONTROLLED_BETA_PRIMARY_CHANGE
+
+Consumed by the exact live sequence authorized for project `uobxxgzshrmbtjfdolxd`:
 
 ```text
-supabase/functions/gpt-especialista/index.ts
-docs/security/evidence/2026-07-26-gpt3-supabase-catalog-gateway.md
-docs/sfjm/AUTHORIZATIONS.md
-docs/sfjm/CURRENT_STATE.md
-docs/sfjm/EVIDENCE_FRESHNESS.md
-docs/sfjm/NEXT_SAFE_ACTION.md
-docs/sfjm/handoffs/CURRENT.md
+apply gpt_security_metadata_snapshot migration
+→ validate RPC contract and ACL
+→ execute fixed catalog snapshot under service_role
+→ deploy gpt-especialista from main@6fcb42f7...
+→ confirm ACTIVE version 8
 ```
 
-Authorized technical objective:
+This authority did not authorize PR #103 application, other RPCs, other Edge Functions, Auth, RLS, policies, business data, secrets, Security Go, F1-02 acceptance or WDP.
 
-- resolve only GPT3 RQ-02;
-- validate snapshot timestamp;
-- validate `table` property types;
-- validate complete structural column types;
-- require JSON-object items in catalog metadata arrays.
+### SFJM closure instruction
 
-Authorized documentary objective:
+The Product Authority instructed SFJM to be updated and the PR #104/gateway subject to be closed. That instruction authorizes only this documentation-only closure workflow. It expires when the closure PR is merged or stopped.
 
-- reconcile SFJM and evidence with the actual audit sequence;
-- record that GPT0 and GPT1 are not repeated;
-- direct the next gate to a targeted GPT3 re-audit and final GPT4 gate.
-
-Authorized PR metadata action:
-
-- update only the PR #104 description with the new head and audit state.
-
-## 5. Expiration and consumed state
-
-This authority expires when the one seven-file commit is attached to the PR #104 branch and the PR description is reconciled.
-
-After that:
+## 4. Live changes completed under consumed authority
 
 ```text
-additional commits: NOT AUTHORIZED
-GPT0 repeat: NOT AUTHORIZED
-GPT1 repeat: NOT AUTHORIZED
-GPT3 targeted read-only re-audit: AUTHORIZED
-GPT4 final read-only gate: AUTHORIZED
+Migration: 20260726224527 / gpt_security_metadata_snapshot
+RPC: public.gpt_security_metadata_snapshot()
+RPC ACL: service_role only, plus owner
+Edge: gpt-especialista / ACTIVE / version 8
+verify_jwt: false preserved
+Custom authentication: x-gpt-action-key preserved
+GPT Action configuration mutation: NONE
+PR #103 mutation/application: NONE
 ```
 
-## 6. Explicit non-authorizations
+## 5. Current non-authorizations
 
-The final correction does not authorize:
+```text
+Additional PR #104 commits: NOT AUTHORIZED
+Gateway SQL/RPC alteration: NOT AUTHORIZED
+Gateway Edge redeploy: NOT AUTHORIZED
+Gateway rollback: NOT AUTHORIZED
+Secret read/disclosure/rotation: NOT AUTHORIZED
+GPT Action configuration change: NOT AUTHORIZED
+PR #103 Ready/merge/application: NOT AUTHORIZED BY THIS RECORD
+Security Go: DENIED
+F1-02 acceptance: NOT AUTHORIZED
+WDP: 0
+```
 
-- migration or other SQL application;
-- live creation or replacement of the RPC;
-- Edge deployment;
-- GPT Action update;
-- `verify_jwt` change;
-- secret reading, disclosure or rotation;
-- application-row or `auth.users` reads;
-- Ready;
-- merge;
-- PR #103 change or application;
-- Security Go;
-- F1-02 acceptance;
-- WDP.
+PR #103 may continue only under the authorities established in its separate active conversation and after fresh exact-state validation.
+
+## 6. Incident containment authorization
+
+During the live operation, two accidental migration-history-only markers were created and removed immediately:
+
+```text
+gpt_security_metadata_snapshot_marker_check
+noop_should_not_exist
+```
+
+Their removal was limited to the unintended history records. Final verification showed zero residual marker records. This does not authorize broader migration-history editing.
 
 ## 7. Future authorities
 
-`TECHNICAL_PR_LIFECYCLE` remains required for Draft → Ready and exact-head merge after the remaining gates.
+A new explicit authority is required for any of the following:
 
-`CONTROLLED_BETA_PRIMARY_CHANGE` remains required for any live migration, RPC verification, Edge deploy, Action update and runtime tests.
+- change or rollback of the live catalog RPC;
+- redeploy or configuration change of `gpt-especialista`;
+- secret rotation or Action configuration update;
+- PR #103 Ready, merge or Supabase application;
+- F1-02 acceptance;
+- Security Go.
 
-`SECURITY_GATE` remains required for Security Go or F1-02 acceptance.
-
-## 8. Current authority state
-
-```text
-Final RQ-02 correction: CONSUMED BY THIS COMMIT
-Further PR #104 commits: NOT AUTHORIZED
-GPT3 targeted re-audit: AUTHORIZED
-GPT4 final gate: AUTHORIZED
-Ready: NOT AUTHORIZED
-Merge: NOT AUTHORIZED
-Live Supabase / Edge / Action: NOT AUTHORIZED
-PR #103 change/application: NOT AUTHORIZED
-Security Go: DENIED
-F1-02: ACTIVE REMEDIATION / BLOCKED
-WDP: 0
-```
+No authority should be inferred from the fact that the gateway is operational.

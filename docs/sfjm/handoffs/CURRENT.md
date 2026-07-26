@@ -1,12 +1,12 @@
 # FECH.AI — SFJM Current Handoff
 
-**Status:** `CURRENT_HANDOFF / FINAL_RQ02_CORRECTION / TARGETED_GATES_PENDING`  
+**Status:** `CURRENT_HANDOFF / PR104_CLOSED / LIVE_GATEWAY_OPERATIONAL / PR103_NEXT`  
 **Observed on:** `2026-07-26`  
 **Repository:** `wagnerjfjunior/fecha.ai`
 
 ## 1. Decision
 
-The Product Authority authorized one final seven-file commit to resolve only GPT3 RQ-02 and reconcile SFJM. GPT0 and GPT1 must not be repeated.
+Close the PR #104 and GPT3 catalog-gateway workstream.
 
 ```text
 Security Go: DENIED
@@ -14,104 +14,145 @@ F1-02: ACTIVE REMEDIATION / BLOCKED
 WDP: 0
 ```
 
-## 2. Anchors
+The next conversation must continue PR #103, not reopen PR #104.
+
+## 2. GitHub anchors before this closure PR
 
 ```text
-main: b685b360404bbfd0a84a4b755b3092ee35a20e5e
-PR #103: OPEN / DRAFT / FROZEN
+main: 6fcb42f7dcd876601d246215926fb0a6a3bf9d23
+PR #104: CLOSED / MERGED
+PR #104 audited head: dc75198dd8d14fc2856890964771f3434942dd7a
+PR #104 squash commit: 6fcb42f7dcd876601d246215926fb0a6a3bf9d23
+PR #103: OPEN / DRAFT
+PR #103 branch: security/f1-02-password-state-rpc
 PR #103 head: abf6b4026343eae437283280269ed2997911dcec
-PR #104: OPEN / DRAFT
-PR #104 branch: security/gpt3-supabase-catalog-gateway
-Final correction parent: 134e0a8717a5cbd67e490af4c1bcd2fd2e3c8cd6
-Final head: resolve live
+PR #103 commits/files: 5 / 1
 ```
 
-## 3. What changed
+The documentation-only closure merge may advance main. Do not open another PR merely to record that closure commit.
 
-Technical:
+## 3. Completed PR #104 lifecycle
 
 ```text
-supabase/functions/gpt-especialista/index.ts
+GPT0: PASS WITH RESIDUAL RISK
+GPT1: PASS WITH RESIDUAL RISK
+GPT3 final: PASS
+GPT4 final: PASS WITH RESIDUAL RISK
+Draft → Ready: COMPLETED
+Squash merge: COMPLETED
 ```
 
-The Edge output validator now rejects:
+No audit gate remains open for PR #104.
 
-- invalid RFC3339 timestamps;
-- invalid owner/RLS types;
-- invalid structural column types;
-- non-object catalog array items.
+## 4. Completed live gateway application
 
-Documentation reconciled:
+Supabase project:
 
 ```text
-docs/security/evidence/2026-07-26-gpt3-supabase-catalog-gateway.md
-docs/sfjm/AUTHORIZATIONS.md
-docs/sfjm/CURRENT_STATE.md
-docs/sfjm/EVIDENCE_FRESHNESS.md
-docs/sfjm/NEXT_SAFE_ACTION.md
-docs/sfjm/handoffs/CURRENT.md
+uobxxgzshrmbtjfdolxd / production
 ```
 
-## 4. What did not change
+Completed and validated:
 
 ```text
-migration: unchanged
-OpenAPI 1.2.1: unchanged
-BLOCKED_ACTIONS.md: unchanged
-PR #103: unchanged
-Supabase live: unchanged
-Edge live: unchanged
-GPT Action live: unchanged
+Migration: 20260726224527 / gpt_security_metadata_snapshot
+RPC: public.gpt_security_metadata_snapshot()
+RPC contract: no args / jsonb / postgres / sql / STABLE / SECURITY INVOKER
+RPC search_path: pg_catalog
+RPC EXECUTE: service_role only, plus owner
+Fixed snapshot execution: PASS
+Application-row access: false
+auth.users access: false
+Secrets included: false
+Business payload included: false
 ```
 
-## 5. Audit history
+Edge:
 
 ```text
-GPT0 parent head: PASS WITH RESIDUAL RISK
-GPT1 parent head: PASS WITH RESIDUAL RISK
-GPT3 parent head: FAIL
-RQ-01: RESOLVED
-RQ-02: PARTIALLY RESOLVED
+Function: gpt-especialista
+Status: ACTIVE
+Version: 8
+verify_jwt: false
+Custom auth: x-gpt-action-key
+Bundle: cb850eac4475d65ba8db9f1cf2d03a26abb3d4964b742d97b4e01c6552eabeeb
 ```
 
-The final commit addresses only the RQ-02 cases identified by GPT3.
-
-## 6. Remaining gates
+GPT3 repeated the Action path successfully:
 
 ```text
-1. GPT3 targeted re-audit of final RQ-02 delta
-2. GPT4 final gate on complete final head
-3. separate lifecycle authority for Ready/merge
-4. separate live-change authority after merge
+health_check: OK
+security_metadata_snapshot: OK
+database_access: true
+row_data_access: false
+writes: NONE
 ```
 
-## 7. Prohibitions
+No GPT Action configuration mutation was performed in the live operation; the existing Action successfully reached the new Edge/RPC path.
 
-- no GPT0 repeat;
-- no GPT1 repeat;
-- no additional commit;
-- no Ready;
-- no merge;
-- no migration or RPC creation live;
-- no Edge deploy;
-- no GPT Action update;
-- no PR #103 change;
-- no secret access;
-- no Security Go.
+## 5. Operational incident and containment
 
-## 8. Live drift
-
-Previously observed:
+Two accidental migration-history-only markers were created during validation:
 
 ```text
-Edge gpt-especialista: ACTIVE / version 7
-health_check: WORKING
-security_metadata_snapshot in Edge/Action: PRESENT
-public.gpt_security_metadata_snapshot(): ABSENT
+gpt_security_metadata_snapshot_marker_check
+noop_should_not_exist
 ```
 
-The final correction is not deployed.
+Both were removed immediately. Final evidence showed:
+
+```text
+unauthorized marker records: 0
+schema residual: NONE
+function residual: NONE
+policy/RLS/grant residual: NONE
+```
+
+Do not repeat this validation pattern. Read-only checks must use the SQL read endpoint, never the migration endpoint.
+
+## 6. What remains unchanged
+
+```text
+PR #103 files and head: unchanged
+PR #103 application: not executed
+public.marcar_senha_inicial_definida(): absent at gateway snapshot time
+Security Go: denied
+F1-02 acceptance: not granted
+WDP: 0
+```
+
+## 7. PR #103 continuation instructions
+
+The other active conversation should:
+
+1. reconstruct context from `docs/bootstrap/INDEX.md` and current SFJM;
+2. resolve current main and PR #103 live state;
+3. confirm exact head `abf6b402...` or stop if it changed;
+4. re-evaluate compatibility after PR #104 advanced main;
+5. use the bounded gateway for GPT3 catalog evidence;
+6. keep PR #103 audit, Ready, merge and live application authorities separate;
+7. leave a new handoff only when PR #103 materially changes state.
+
+No authority for PR #103 is granted by this handoff.
+
+## 8. Anti-loop rule
+
+Do not repeat PR #104 audits, redeployments, metadata reconciliations or closure discussions without new material evidence.
+
+The completed distinction is:
+
+```text
+versioned in GitHub: YES
+merged: YES
+migration applied: YES
+RPC operational: YES
+Edge deployed: YES
+Action path tested: YES
+PR #103 approved/applied: NO
+```
+
+Future responses must state versioned, merged, deployed and operational states separately to avoid another governance loop.
 
 ## 9. Next safe action
 
-Resolve the new head from GitHub and send only the final delta to GPT3 for RQ-02. If GPT3 passes, run GPT4. Do not reopen prior documentary or architectural decisions without new evidence.
+Return to the existing PR #103 conversation and continue from its exact live state. Treat this PR #104/gateway subject as closed.
