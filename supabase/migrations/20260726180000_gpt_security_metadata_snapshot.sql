@@ -17,16 +17,62 @@ begin;
 
 do $preflight$
 begin
-  if pg_catalog.to_regclass('public.corretores') is null then
-    raise exception 'GPT3_GATEWAY_PREFLIGHT_CORRETORES_MISSING';
+  if not exists (
+    select 1
+    from pg_catalog.pg_class c
+    join pg_catalog.pg_namespace n on n.oid = c.relnamespace
+    where n.nspname = 'public'
+      and c.relname = 'corretores'
+      and c.relkind in ('r', 'p')
+  ) then
+    raise exception 'GPT3_GATEWAY_PREFLIGHT_CORRETORES_TABLE_MISSING';
+  end if;
+
+  if not exists (
+    select 1
+    from information_schema.columns
+    where table_schema = 'public'
+      and table_name = 'corretores'
+      and column_name = 'user_id'
+      and data_type = 'uuid'
+  ) then
+    raise exception 'GPT3_GATEWAY_PREFLIGHT_USER_ID_UUID_MISSING';
+  end if;
+
+  if not exists (
+    select 1
+    from information_schema.columns
+    where table_schema = 'public'
+      and table_name = 'corretores'
+      and column_name = 'ativo'
+      and data_type = 'boolean'
+  ) then
+    raise exception 'GPT3_GATEWAY_PREFLIGHT_ATIVO_BOOLEAN_MISSING';
+  end if;
+
+  if not exists (
+    select 1
+    from information_schema.columns
+    where table_schema = 'public'
+      and table_name = 'corretores'
+      and column_name = 'must_change_password'
+      and data_type = 'boolean'
+  ) then
+    raise exception 'GPT3_GATEWAY_PREFLIGHT_PASSWORD_STATE_BOOLEAN_MISSING';
   end if;
 
   if pg_catalog.to_regprocedure('auth.uid()') is null then
     raise exception 'GPT3_GATEWAY_PREFLIGHT_AUTH_UID_MISSING';
   end if;
 
-  if pg_catalog.to_regprocedure('public.gpt_security_metadata_snapshot()') is not null then
-    raise exception 'GPT3_GATEWAY_PREFLIGHT_FUNCTION_ALREADY_EXISTS';
+  if exists (
+    select 1
+    from pg_catalog.pg_proc p
+    join pg_catalog.pg_namespace n on n.oid = p.pronamespace
+    where n.nspname = 'public'
+      and p.proname = 'gpt_security_metadata_snapshot'
+  ) then
+    raise exception 'GPT3_GATEWAY_PREFLIGHT_FUNCTION_NAME_ALREADY_EXISTS';
   end if;
 
   if pg_catalog.to_regrole('postgres') is null
@@ -42,6 +88,14 @@ begin
     where lanname = 'sql'
   ) then
     raise exception 'GPT3_GATEWAY_PREFLIGHT_SQL_LANGUAGE_MISSING';
+  end if;
+
+  if not exists (
+    select 1
+    from pg_catalog.pg_language
+    where lanname = 'plpgsql'
+  ) then
+    raise exception 'GPT3_GATEWAY_PREFLIGHT_PLPGSQL_LANGUAGE_MISSING';
   end if;
 end;
 $preflight$;
@@ -95,6 +149,7 @@ select pg_catalog.jsonb_build_object(
   'generated_at', pg_catalog.statement_timestamp(),
   'scope', pg_catalog.jsonb_build_object(
     'project_ref', 'uobxxgzshrmbtjfdolxd',
+    'access_mode', 'read_only',
     'schema', 'public',
     'target_table', 'corretores',
     'includes_row_data', false,

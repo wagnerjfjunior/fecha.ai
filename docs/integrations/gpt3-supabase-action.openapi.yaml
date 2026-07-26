@@ -6,7 +6,7 @@ info:
     Gateway server-to-server com operações fixas e somente leitura para o
     especialista GPT3. Não aceita SQL, nomes arbitrários de objetos, filtros,
     conteúdo de registros ou mutações.
-  version: 1.2.0
+  version: 1.2.1
 
 servers:
   - url: https://uobxxgzshrmbtjfdolxd.supabase.co/functions/v1
@@ -199,6 +199,7 @@ components:
 
     SecuritySnapshot:
       type: object
+      additionalProperties: false
       required:
         - snapshot_version
         - generated_at
@@ -232,13 +233,13 @@ components:
         scope:
           $ref: "#/components/schemas/SnapshotScope"
         table:
-          type: object
-          additionalProperties: true
+          $ref: "#/components/schemas/SnapshotTable"
         columns:
           type: array
+          minItems: 3
+          maxItems: 3
           items:
-            type: object
-            additionalProperties: true
+            $ref: "#/components/schemas/SnapshotColumn"
         indexes:
           type: array
           items:
@@ -265,14 +266,13 @@ components:
             type: object
             additionalProperties: true
         required_function_existence:
-          type: object
-          additionalProperties:
-            type: boolean
+          $ref: "#/components/schemas/RequiredFunctionExistence"
         roles:
           type: array
+          minItems: 4
+          maxItems: 4
           items:
-            type: object
-            additionalProperties: true
+            $ref: "#/components/schemas/SnapshotRole"
         role_memberships:
           type: array
           items:
@@ -329,6 +329,7 @@ components:
       additionalProperties: false
       required:
         - project_ref
+        - access_mode
         - schema
         - target_table
         - includes_row_data
@@ -341,6 +342,9 @@ components:
         project_ref:
           type: string
           const: uobxxgzshrmbtjfdolxd
+        access_mode:
+          type: string
+          const: read_only
         schema:
           type: string
           const: public
@@ -365,6 +369,114 @@ components:
         function_source_scope:
           type: string
           const: trigger functions attached to public.corretores only
+
+    SnapshotTable:
+      type: object
+      additionalProperties: false
+      required:
+        - exists
+        - schema
+        - name
+        - relkind
+        - owner
+        - rls_enabled
+        - rls_forced
+      properties:
+        exists:
+          type: boolean
+          const: true
+        schema:
+          type: string
+          const: public
+        name:
+          type: string
+          const: corretores
+        relkind:
+          type: string
+          enum:
+            - r
+            - p
+        owner:
+          type: string
+        rls_enabled:
+          type: boolean
+        rls_forced:
+          type: boolean
+
+    SnapshotColumn:
+      type: object
+      additionalProperties: false
+      required:
+        - name
+        - ordinal_position
+        - data_type
+        - udt_schema
+        - udt_name
+        - is_nullable
+        - column_default
+        - is_identity
+        - identity_generation
+      properties:
+        name:
+          type: string
+          enum:
+            - user_id
+            - ativo
+            - must_change_password
+        ordinal_position:
+          type: integer
+        data_type:
+          type: string
+          enum:
+            - uuid
+            - boolean
+        udt_schema:
+          type: string
+        udt_name:
+          type: string
+        is_nullable:
+          type: string
+        column_default:
+          type:
+            - string
+            - "null"
+        is_identity:
+          type: string
+        identity_generation:
+          type:
+            - string
+            - "null"
+
+    RequiredFunctionExistence:
+      type: object
+      additionalProperties: false
+      required:
+        - auth_uid
+        - password_state_rpc
+      properties:
+        auth_uid:
+          type: boolean
+          const: true
+        password_state_rpc:
+          type: boolean
+
+    SnapshotRole:
+      type: object
+      additionalProperties: true
+      required:
+        - name
+        - exists
+      properties:
+        name:
+          type: string
+          enum:
+            - postgres
+            - authenticated
+            - anon
+            - service_role
+        exists:
+          type: boolean
+          const: true
 
     ErrorResponse:
       type: object
