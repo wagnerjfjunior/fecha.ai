@@ -9,6 +9,8 @@ const SNAPSHOT_VERSION = "pr103_preflight_v1";
 const FUNCTION_SOURCE_SCOPE =
   "trigger functions attached to public.corretores only";
 const MAX_BODY_BYTES = 2048;
+const RFC3339_PATTERN =
+  /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?(?:Z|[+-]\d{2}:\d{2})$/;
 
 const ALLOWED_OPERATIONS = [
   "health_check",
@@ -143,11 +145,24 @@ function hasExactKeys(
   expectedKeys: readonly string[],
 ): boolean {
   const actualKeys = Object.keys(value);
-
   return actualKeys.length === expectedKeys.length &&
     expectedKeys.every((key) =>
       Object.prototype.hasOwnProperty.call(value, key)
     );
+}
+
+function isNullableString(value: unknown): boolean {
+  return value === null || typeof value === "string";
+}
+
+function isValidTimestamp(value: unknown): value is string {
+  return typeof value === "string" &&
+    RFC3339_PATTERN.test(value) &&
+    Number.isFinite(Date.parse(value));
+}
+
+function hasJsonObjectItems(value: unknown): value is JsonObject[] {
+  return Array.isArray(value) && value.every(isJsonObject);
 }
 
 function hasRequiredColumns(value: unknown): boolean {
@@ -162,11 +177,28 @@ function hasRequiredColumns(value: unknown): boolean {
       return false;
     }
 
-    const { name, data_type: dataType } = item;
+    const {
+      name,
+      ordinal_position: ordinalPosition,
+      data_type: dataType,
+      udt_schema: udtSchema,
+      udt_name: udtName,
+      is_nullable: isNullable,
+      column_default: columnDefault,
+      is_identity: isIdentity,
+      identity_generation: identityGeneration,
+    } = item;
 
     if (
       typeof name !== "string" ||
       typeof dataType !== "string" ||
+      !Number.isInteger(ordinalPosition) ||
+      typeof udtSchema !== "string" ||
+      typeof udtName !== "string" ||
+      typeof isNullable !== "string" ||
+      !isNullableString(columnDefault) ||
+      typeof isIdentity !== "string" ||
+      !isNullableString(identityGeneration) ||
       observed.has(name)
     ) {
       return false;
@@ -335,7 +367,7 @@ function validateSnapshot(data: unknown): data is JsonObject {
 
   if (
     data.snapshot_version !== SNAPSHOT_VERSION ||
-    typeof data.generated_at !== "string" ||
+    !isValidTimestamp(data.generated_at) ||
     !isJsonObject(data.scope) ||
     !isJsonObject(data.table) ||
     !isJsonObject(data.required_function_existence)
@@ -368,12 +400,18 @@ function validateSnapshot(data: unknown): data is JsonObject {
     table.exists !== true ||
     table.schema !== "public" ||
     table.name !== "corretores" ||
-    (table.relkind !== "r" && table.relkind !== "p")
+    (table.relkind !== "r" && table.relkind !== "p") ||
+    typeof table.owner !== "string" ||
+    typeof table.rls_enabled !== "boolean" ||
+    typeof table.rls_forced !== "boolean"
   ) {
     return false;
   }
 
   if (
+    !SNAPSHOT_ARRAY_FIELDS.every((field) =>
+      hasJsonObjectItems(data[field])
+    ) ||
     !hasRequiredColumns(data.columns) ||
     !hasExactKeys(
       requiredFunctionExistence,
@@ -388,7 +426,7 @@ function validateSnapshot(data: unknown): data is JsonObject {
     return false;
   }
 
-  return SNAPSHOT_ARRAY_FIELDS.every((field) => Array.isArray(data[field]));
+  return true;
 }
 
 async function executeSecurityMetadataSnapshot(): Promise<Response> {
@@ -397,7 +435,6 @@ async function executeSecurityMetadataSnapshot(): Promise<Response> {
 
   if (!supabaseUrl || !supabaseServerKey) {
     console.error("Supabase server credentials are unavailable");
-
     return jsonResponse(
       { error: "database_gateway_misconfigured" },
       500,
@@ -502,7 +539,6 @@ Deno.serve(async (request: Request): Promise<Response> => {
 
   if (!expectedKey) {
     console.error(`${SECRET_NAME} is not configured`);
-
     return jsonResponse(
       { error: "gateway_misconfigured" },
       500,
