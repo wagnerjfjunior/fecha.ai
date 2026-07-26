@@ -1,7 +1,7 @@
 # FECH.AI — SFJM Current State
 
-**Lifecycle state:** `PR104_FINAL_RQ02_CORRECTION_VERSIONED / TARGETED_GPT3_PENDING / PR103_FROZEN`  
-**Record type:** `OPERATIONAL_STATE / PARALLEL_SECURITY_ENABLEMENT`  
+**Lifecycle state:** `PR104_CLOSED / LIVE_GATEWAY_OPERATIONAL / PR103_SEPARATE_CONTINUATION`  
+**Record type:** `OPERATIONAL_STATE / SECURITY_ENABLEMENT_CLOSURE`  
 **Observed on:** `2026-07-26`  
 **Repository:** `wagnerjfjunior/fecha.ai`
 
@@ -21,158 +21,155 @@ WDP: 0
 
 Frontend/Action requests. Edge/RPC/Supabase validates and decides. AI assists but is not authority.
 
-## 2. Canonical main
+## 2. Canonical GitHub state before this closure PR
 
 ```text
-main: b685b360404bbfd0a84a4b755b3092ee35a20e5e
-Source PR: #102
-PR #102: CLOSED / MERGED
+main: 6fcb42f7dcd876601d246215926fb0a6a3bf9d23
+Source PR: #104
+PR #104: CLOSED / MERGED
+Merge method: squash
+PR #104 audited head: dc75198dd8d14fc2856890964771f3434942dd7a
+PR #104 squash commit: 6fcb42f7dcd876601d246215926fb0a6a3bf9d23
 ```
 
-## 3. PR #103 — frozen
+This documentation-only closure PR may advance `main`. Under `docs/sfjm/INDEX.md`, that self-closing merge must not trigger another recursive reconciliation PR unless new material evidence appears.
+
+## 3. PR #104 — closed subject
+
+PR #104 completed the bounded GPT3 catalog gateway lifecycle:
+
+```text
+GPT0: PASS WITH RESIDUAL RISK
+GPT1: PASS WITH RESIDUAL RISK
+GPT3 final: PASS
+GPT4 final: PASS WITH RESIDUAL RISK
+BLOCKING: NONE
+REQUIRED BEFORE READY: NONE
+READY: COMPLETED
+SQUASH MERGE: COMPLETED
+```
+
+Do not repeat GPT0, GPT1, GPT3 or GPT4 for PR #104 without a new material change to its code, migration, OpenAPI, deployed Edge, RPC contract or authorization boundary.
+
+## 4. Live Supabase gateway state
+
+```text
+Project ref: uobxxgzshrmbtjfdolxd
+Environment: production
+Migration record: 20260726224527 / gpt_security_metadata_snapshot
+RPC: public.gpt_security_metadata_snapshot()
+RPC arguments: none
+RPC return: jsonb
+RPC owner: postgres
+RPC language: sql
+RPC volatility: STABLE
+RPC security: SECURITY INVOKER
+RPC search_path: pg_catalog
+```
+
+Live ACL validation:
+
+```text
+service_role EXECUTE: YES
+PUBLIC EXECUTE: NO
+anon EXECUTE: NO
+authenticated EXECUTE: NO
+Unexpected direct executors: NONE
+```
+
+The RPC returned the fixed catalog snapshot under `service_role` with:
+
+```text
+snapshot_version: pr103_preflight_v1
+access_mode: read_only
+includes_row_data: false
+includes_auth_users: false
+includes_secrets: false
+includes_business_payload: false
+target: public.corretores
+RLS enabled: true
+RLS forced: true
+expected catalog columns: 3
+```
+
+## 5. Live Edge and GPT Action state
+
+```text
+Edge function: gpt-especialista
+Status: ACTIVE
+Version: 8
+verify_jwt: false
+Authentication boundary: x-gpt-action-key custom server-to-server authentication
+Bundle SHA-256: cb850eac4475d65ba8db9f1cf2d03a26abb3d4964b742d97b4e01c6552eabeeb
+```
+
+The deployed Edge contains the final request allowlist, body-size limit, deep snapshot validation, semantic RFC 3339 validation and fail-closed `502 security_metadata_contract_invalid` path.
+
+GPT3 independently repeated the Action path successfully:
+
+```text
+health_check: OK
+security_metadata_snapshot: OK
+database_access: true
+row_data_access: false
+secrets included: false
+auth.users included: false
+writes: NONE
+```
+
+No GPT Action configuration mutation was performed during the live application operation. The already configured Action successfully called the deployed gateway.
+
+## 6. Migration-history correction incident
+
+Two validation calls were accidentally sent through the migration endpoint and created history-only markers:
+
+```text
+gpt_security_metadata_snapshot_marker_check
+noop_should_not_exist
+```
+
+Both records were removed immediately. Final verification showed zero unauthorized marker records and only the authorized `gpt_security_metadata_snapshot` migration remained. No table, function, policy, RLS or grant residual was created by those markers.
+
+## 7. PR #103 — separate continuation
 
 ```text
 PR: #103
 State: OPEN / DRAFT
-Base: main@b685b360404bbfd0a84a4b755b3092ee35a20e5e
 Branch: security/f1-02-password-state-rpc
 Head: abf6b4026343eae437283280269ed2997911dcec
 Commits: 5
 Changed files: 1
+Current live mergeability observation: true
 ```
 
-Freeze:
+PR #103 was not changed, marked Ready, merged or applied by the PR #104 lifecycle or gateway application.
+
+The evidence blocker that required the catalog gateway has been removed. PR #103 must now continue in its existing separate conversation with fresh bootstrap, exact-head validation against the current `main`, gateway-backed evidence and separate authority for any Ready, merge or Supabase application.
+
+## 8. Current authority state
 
 ```text
-Additional commits: PROHIBITED
-Metadata changes: PROHIBITED
-Ready: PROHIBITED
-Merge: PROHIBITED
-Supabase application: PROHIBITED
-```
-
-## 4. PR #104 — final corrective state
-
-```text
-PR: #104
-State: OPEN / DRAFT
-Base: main@b685b360404bbfd0a84a4b755b3092ee35a20e5e
-Branch: security/gpt3-supabase-catalog-gateway
-Final head: resolve from live PR metadata
-Net changed files expected: 10
-Primary risk: bounded exposure of fixed PostgreSQL security metadata
-```
-
-The final authorized commit changes exactly seven existing paths:
-
-```text
-supabase/functions/gpt-especialista/index.ts
-docs/security/evidence/2026-07-26-gpt3-supabase-catalog-gateway.md
-docs/sfjm/AUTHORIZATIONS.md
-docs/sfjm/CURRENT_STATE.md
-docs/sfjm/EVIDENCE_FRESHNESS.md
-docs/sfjm/NEXT_SAFE_ACTION.md
-docs/sfjm/handoffs/CURRENT.md
-```
-
-Migration, OpenAPI and `BLOCKED_ACTIONS.md` are unchanged by the final correction.
-
-## 5. Audit state
-
-```text
-GPT0 at parent 134e0a...:
-PASS WITH RESIDUAL RISK
-No BLOCKING / no REQUIRED IN THIS PR
-
-GPT1 at parent 134e0a...:
-PASS WITH RESIDUAL RISK
-No BLOCKING / no REQUIRED IN THIS PR
-
-GPT3 at parent 134e0a...:
-FAIL
-RQ-01 RESOLVED
-RQ-02 PARTIALLY RESOLVED
-Only required correction: Edge deep output validation
-```
-
-The Product Authority explicitly prohibited repeating GPT0 and GPT1 because architecture, migration, OpenAPI, primary risk and ten-file net scope remain unchanged.
-
-Pending:
-
-```text
-GPT3 targeted re-audit of final RQ-02 delta
-GPT4 final gate on complete final head
-```
-
-## 6. Final RQ-02 correction
-
-The Edge now rejects:
-
-- invalid/non-RFC3339 `generated_at`;
-- non-string table owner;
-- non-boolean RLS fields;
-- malformed structural column fields;
-- scalar or null items in metadata arrays.
-
-Invalid RPC output returns `502 security_metadata_contract_invalid`.
-
-## 7. Live environment boundary
-
-Previously observed:
-
-```text
-Project ref: uobxxgzshrmbtjfdolxd
-Edge gpt-especialista: ACTIVE / version 7
-health_check: WORKING
-security_metadata_snapshot in Edge/Action: PRESENT
-public.gpt_security_metadata_snapshot(): ABSENT
-```
-
-The final correction is versioned only. No migration, RPC creation, Edge deploy or Action update was performed.
-
-## 8. Current authorities
-
-```text
-Further commits: NOT AUTHORIZED
-GPT3 targeted audit: AUTHORIZED
-GPT4 final gate: AUTHORIZED
-Ready: NOT AUTHORIZED
-Merge: NOT AUTHORIZED
-Live Supabase / Edge / Action: NOT AUTHORIZED
-PR #103 change/application: NOT AUTHORIZED
+PR #104 correction authority: CONSUMED
+PR #104 TECHNICAL_PR_LIFECYCLE: CONSUMED
+Gateway CONTROLLED_BETA_PRIMARY_CHANGE: CONSUMED
+Additional PR #104 commits or live changes: NOT AUTHORIZED
+PR #103 lifecycle/application: NOT AUTHORIZED BY THIS CLOSURE
+Gateway rollback: NOT AUTHORIZED
 Security Go: DENIED
 F1-02 acceptance: NOT AUTHORIZED
 WDP: 0
 ```
 
-## 9. Evidence available
+## 9. Residual risk
 
-- live `main`;
-- live PR #103 frozen head;
-- PR #104 history and final seven-file corrective authorization;
-- historical fixed catalog SELECT under rollback;
-- GPT0 and GPT1 parent-head passes;
-- GPT3 parent-head RQ-01 resolution and narrow RQ-02 finding;
-- final Edge validator code and reconciled SFJM.
+- GitHub Actions remain absent for the PR #104 head; Vercel status did not prove SQL or Edge runtime.
+- The Edge uses `verify_jwt=false` by design and therefore depends on correct preservation of custom `x-gpt-action-key` authentication.
+- The gateway intentionally exposes bounded catalog metadata and limited trigger-function source, not application rows.
+- PR #103 still requires its own exact-head revalidation and controlled lifecycle.
+- Security Go remains denied.
 
-## 10. Evidence absent
+## 10. Next safe action
 
-- targeted GPT3 result on the final correction;
-- GPT4 final gate;
-- Ready/merge authority;
-- merge/squash commit;
-- live migration and RPC ACL evidence;
-- live Edge and Action reconciliation;
-- runtime positive/negative tests;
-- renewed GPT3 audit of PR #103.
+Close the PR #104 topic. Continue only PR #103 in the already active separate conversation.
 
-## 11. Next safe action
-
-Resolve the final live head and run only:
-
-```text
-GPT3 targeted RQ-02 re-audit
-→ GPT4 final gate
-```
-
-Do not repeat GPT0 or GPT1. Do not mark Ready, merge, apply SQL, deploy Edge, update Action, modify PR #103 or claim Security Go.
+Do not reopen PR #104 audits, redeploy the gateway, alter its RPC, rotate/read secrets, or create another closure-only reconciliation loop without new material evidence and explicit authority.
