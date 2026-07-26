@@ -130,8 +130,8 @@ begin
   -- The migration preflight requires immediate uniqueness on user_id so a
   -- concurrent phantom duplicate cannot commit around this lock.
   begin
-    select c.ativo
-      into strict v_profile_active
+    select c.ativo, c.must_change_password
+      into strict v_profile_active, v_password_state
       from public.corretores as c
      where c.user_id = v_actor_id
      for update;
@@ -150,6 +150,12 @@ begin
     raise exception using
       errcode = '42501',
       message = 'PROFILE_INACTIVE';
+  end if;
+
+  -- Strict idempotency: an already-completed profile returns before any
+  -- UPDATE statement is emitted, including statement-level trigger effects.
+  if v_password_state is false then
+    return true;
   end if;
 
   update public.corretores as c
@@ -197,8 +203,6 @@ begin
       message = 'PASSWORD_STATE_NOT_COMPLETED';
   end if;
 
-  -- TRUE means the authenticated active profile is in the completed state.
-  -- Repeated calls are successful and do not issue another UPDATE.
   return true;
 end;
 $function$;
@@ -209,6 +213,123 @@ revoke all on function public.marcar_senha_inicial_definida() from public;
 revoke all on function public.marcar_senha_inicial_definida() from anon;
 revoke all on function public.marcar_senha_inicial_definida() from service_role;
 grant execute on function public.marcar_senha_inicial_definida() to authenticated;
+
+-- Fail closed if effective execution authority is broader than the PR-01
+-- contract after owner assignment, default ACL materialization, REVOKE and GRANT.
+do $postflight$
+declare
+  v_function_oid oid;
+  v_owner_oid oid;
+  v_postgres_oid oid;
+  v_authenticated_oid oid;
+  v_anon_oid oid;
+  v_service_role_oid oid;
+begin
+  v_function_oid := pg_catalog.to_regprocedure(
+    'public.marcar_senha_inicial_definida()'
+  );
+  v_postgres_oid := pg_catalog.to_regrole('postgres');
+  v_authenticated_oid := pg_catalog.to_regrole('authenticated');
+  v_anon_oid := pg_catalog.to_regrole('anon');
+  v_service_role_oid := pg_catalog.to_regrole('service_role');
+
+  if v_function_oid is null then
+    raise exception 'PR01_POSTFLIGHT_FUNCTION_MISSING';
+  end if;
+
+  select p.proowner
+    into strict v_owner_oid
+    from pg_catalog.pg_proc as p
+   where p.oid = v_function_oid;
+
+  if v_owner_oid is distinct from v_postgres_oid then
+    raise exception 'PR01_POSTFLIGHT_OWNER_NOT_POSTGRES';
+  end if;
+
+  if not pg_catalog.has_function_privilege(
+    v_postgres_oid,
+    v_function_oid,
+    'EXECUTE'
+  ) then
+    raise exception 'PR01_POSTFLIGHT_OWNER_EXECUTE_MISSING';
+  end if;
+
+  if not pg_catalog.has_function_privilege(
+    v_authenticated_oid,
+    v_function_oid,
+    'EXECUTE'
+  ) then
+    raise exception 'PR01_POSTFLIGHT_AUTHENTICATED_EXECUTE_MISSING';
+  end if;
+
+  if pg_catalog.has_function_privilege(
+    v_anon_oid,
+    v_function_oid,
+    'EXECUTE'
+  ) then
+    raise exception 'PR01_POSTFLIGHT_ANON_EXECUTE_PRESENT';
+  end if;
+
+  if pg_catalog.has_function_privilege(
+    v_service_role_oid,
+    v_function_oid,
+    'EXECUTE'
+  ) then
+    raise exception 'PR01_POSTFLIGHT_SERVICE_ROLE_EXECUTE_PRESENT';
+  end if;
+
+  if exists (
+    select 1
+      from pg_catalog.pg_proc as p
+      cross join lateral pg_catalog.aclexplode(
+        pg_catalog.coalesce(
+          p.proacl,
+          pg_catalog.acldefault('f', p.proowner)
+        )
+      ) as acl
+     where p.oid = v_function_oid
+       and acl.privilege_type = 'EXECUTE'
+       and acl.grantee = 0
+  ) then
+    raise exception 'PR01_POSTFLIGHT_PUBLIC_EXECUTE_PRESENT';
+  end if;
+
+  if not exists (
+    select 1
+      from pg_catalog.pg_proc as p
+      cross join lateral pg_catalog.aclexplode(
+        pg_catalog.coalesce(
+          p.proacl,
+          pg_catalog.acldefault('f', p.proowner)
+        )
+      ) as acl
+     where p.oid = v_function_oid
+       and acl.privilege_type = 'EXECUTE'
+       and acl.grantee = v_authenticated_oid
+  ) then
+    raise exception 'PR01_POSTFLIGHT_AUTHENTICATED_DIRECT_GRANT_MISSING';
+  end if;
+
+  if exists (
+    select 1
+      from pg_catalog.pg_proc as p
+      cross join lateral pg_catalog.aclexplode(
+        pg_catalog.coalesce(
+          p.proacl,
+          pg_catalog.acldefault('f', p.proowner)
+        )
+      ) as acl
+     where p.oid = v_function_oid
+       and acl.privilege_type = 'EXECUTE'
+       and acl.grantee not in (
+         v_owner_oid,
+         v_authenticated_oid
+       )
+  ) then
+    raise exception 'PR01_POSTFLIGHT_UNEXPECTED_EXECUTOR';
+  end if;
+end;
+$postflight$;
 
 comment on function public.marcar_senha_inicial_definida() is
   'F1-02 PR-01: authenticated active broker completes only its own initial-password state; no client identifiers accepted.';
