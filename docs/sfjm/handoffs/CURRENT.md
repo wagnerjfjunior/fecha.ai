@@ -1,158 +1,171 @@
 # FECH.AI — SFJM Current Handoff
 
-**Status:** `CURRENT_HANDOFF / PR104_CLOSED / LIVE_GATEWAY_OPERATIONAL / PR103_NEXT`  
-**Observed on:** `2026-07-26`  
+**Status:** `CURRENT_HANDOFF / PR103_CLOSED_WITH_RESIDUAL_RISK / PR02_NEXT_NOT_AUTHORIZED`  
+**Observed on:** `2026-07-27`  
 **Repository:** `wagnerjfjunior/fecha.ai`
 
-## 1. Decision
-
-Close the PR #104 and GPT3 catalog-gateway workstream.
+## 1. Current decision
 
 ```text
+PR #103 / F1-02 PR-01: CLOSED WITH RESIDUAL RISK
 Security Go: DENIED
 F1-02: ACTIVE REMEDIATION / BLOCKED
 WDP: 0
 ```
 
-The next conversation must continue PR #103, not reopen PR #104.
+The next conversation must continue from the F1-02 program, not reopen PR #103, #104 or #105.
 
-## 2. GitHub anchors before this closure PR
+## 2. Canonical anchors
 
 ```text
-main: 6fcb42f7dcd876601d246215926fb0a6a3bf9d23
-PR #104: CLOSED / MERGED
-PR #104 audited head: dc75198dd8d14fc2856890964771f3434942dd7a
-PR #104 squash commit: 6fcb42f7dcd876601d246215926fb0a6a3bf9d23
-PR #103: OPEN / DRAFT
-PR #103 branch: security/f1-02-password-state-rpc
-PR #103 head: abf6b4026343eae437283280269ed2997911dcec
-PR #103 commits/files: 5 / 1
+main observed before this closure PR: 276a3e55155cd0e57b6155dc13b998704bdfd654
+PR #103: CLOSED / MERGED
+PR #103 final head: abf6b4026343eae437283280269ed2997911dcec
+PR #103 squash: 276a3e55155cd0e57b6155dc13b998704bdfd654
+PR #104: CLOSED / MERGED / auxiliary gateway
+PR #105: CLOSED / MERGED / auxiliary SFJM reconciliation
 ```
 
-The documentation-only closure merge may advance main. Do not open another PR merely to record that closure commit.
+Do not create a recursive PR merely to record this closure PR's future squash SHA. Resolve live `main` before the next sensitive action.
 
-## 3. Completed PR #104 lifecycle
+## 3. PR #103 live result
 
 ```text
-GPT0: PASS WITH RESIDUAL RISK
-GPT1: PASS WITH RESIDUAL RISK
-GPT3 final: PASS
-GPT4 final: PASS WITH RESIDUAL RISK
-Draft → Ready: COMPLETED
-Squash merge: COMPLETED
+Migration: 20260727080929 / f1_02_password_state_rpc / APPLIED
+RPC: public.marcar_senha_inicial_definida() / EXISTS
+Owner: postgres
+SECURITY DEFINER: true
+search_path: pg_catalog
+authenticated EXECUTE: true
+anon EXECUTE: false
+service_role EXECUTE: false
+PUBLIC EXECUTE: false
 ```
 
-No audit gate remains open for PR #104.
-
-## 4. Completed live gateway application
-
-Supabase project:
+Canonical closure evidence:
 
 ```text
-uobxxgzshrmbtjfdolxd / production
+docs/security/evidence/2026-07-27-pr103-operational-closure-with-residual-risk.md
 ```
 
-Completed and validated:
+## 4. F1-02 PROGRAM ANCHOR
+
+Canonical source:
 
 ```text
-Migration: 20260726224527 / gpt_security_metadata_snapshot
-RPC: public.gpt_security_metadata_snapshot()
-RPC contract: no args / jsonb / postgres / sql / STABLE / SECURITY INVOKER
-RPC search_path: pg_catalog
-RPC EXECUTE: service_role only, plus owner
-Fixed snapshot execution: PASS
-Application-row access: false
-auth.users access: false
-Secrets included: false
-Business payload included: false
+docs/security/evidence/F1-02_REMEDIATION_MASTER_PLAN.md
 ```
 
-Edge:
-
 ```text
-Function: gpt-especialista
-Status: ACTIVE
-Version: 8
-verify_jwt: false
-Custom auth: x-gpt-action-key
-Bundle: cb850eac4475d65ba8db9f1cf2d03a26abb3d4964b742d97b4e01c6552eabeeb
+Program structure: 5 operational windows / 10 planned PRs
+PR-00: completed
+PR-01: completed with residual risk
+PR-02: next separate workstream / not authorized / no independent PR located
+PR-03: blocked until PR-02 is deployed and proven
+PR-04 through PR-09: planned / not started unless newer canonical evidence proves otherwise
 ```
 
-GPT3 repeated the Action path successfully:
+Auxiliary GitHub changes:
 
 ```text
-health_check: OK
-security_metadata_snapshot: OK
-database_access: true
-row_data_access: false
-writes: NONE
+#104: bounded GPT3/Supabase catalog gateway
+#105: SFJM reconciliation after #104
 ```
 
-No GPT Action configuration mutation was performed in the live operation; the existing Action successfully reached the new Edge/RPC path.
+They do not replace, renumber or consume program items PR-00 through PR-09.
 
-## 5. Operational incident and containment
+## 5. Residual risks preserved
 
-Two accidental migration-history-only markers were created during validation:
+Not established by this closure evidence:
+
+- authenticated positive smoke;
+- runtime idempotency;
+- runtime concurrency;
+- missing-profile or inactive-profile execution;
+- rollback execution;
+- reapply after rollback.
+
+PR-02 remains required for frontend cutover. PR-03 remains blocked.
+
+## 6. Local decision boundary
+
+Any laboratory, smoke or test waiver consumed during PR-01 applies only to F1-02 PR-01 / GitHub PR #103. Do not generalize it to later program work.
+
+## 7. Final gates and anti-loop
 
 ```text
-gpt_security_metadata_snapshot_marker_check
-noop_should_not_exist
+FINAL GATE STATE:
+SEE docs/sfjm/EVIDENCE_FRESHNESS.md — FINAL GATE INVENTORY
 ```
 
-Both were removed immediately. Final evidence showed:
+The `FINAL GATE INVENTORY` is the source for deciding whether a gate may be reused, is pending, is unknown or was invalidated.
+
+Do not duplicate or infer a verdict in this handoff. A gate recorded as:
 
 ```text
-unauthorized marker records: 0
-schema residual: NONE
-function residual: NONE
-policy/RLS/grant residual: NONE
+UNKNOWN — CANONICAL EVIDENCE REQUIRED
 ```
 
-Do not repeat this validation pattern. Read-only checks must use the SQL read endpoint, never the migration endpoint.
+must remain unknown until newer canonical evidence explicitly supplies the missing result. Do not request a new audit solely to fill an historical documentation gap.
 
-## 6. What remains unchanged
+The one GPT0 and one GPT4 validations explicitly authorized for the exact PR #106 corrective head are the bounded current lifecycle validations. After completion, they must not be repeated without a material invalidation event and new authority.
 
 ```text
-PR #103 files and head: unchanged
-PR #103 application: not executed
-public.marcar_senha_inicial_definida(): absent at gateway snapshot time
-Security Go: denied
-F1-02 acceptance: not granted
+NO INVALIDATION EVENT
+→ NO REAUDIT
+```
+
+A re-audit requires:
+
+```text
+1. nominal gate;
+2. owner;
+3. prior anchor;
+4. exact changed evidence;
+5. triggered invalidation rule;
+6. exact revalidation scope.
+```
+
+Without all six:
+
+```text
+AUDIT_LOOP_BLOCKED
+```
+
+## 8. Current authorities and blocks
+
+```text
+PR #103 lifecycle/application: CONSUMED
+PR #104 lifecycle/application: CONSUMED
+PR #105 closure: CONSUMED
+PR-02 implementation or PR creation: NOT AUTHORIZED
+PR-03: BLOCKED
+Security Go: DENIED
+F1-02 acceptance: NOT AUTHORIZED
 WDP: 0
 ```
 
-## 7. PR #103 continuation instructions
-
-The other active conversation should:
-
-1. reconstruct context from `docs/bootstrap/INDEX.md` and current SFJM;
-2. resolve current main and PR #103 live state;
-3. confirm exact head `abf6b402...` or stop if it changed;
-4. re-evaluate compatibility after PR #104 advanced main;
-5. use the bounded gateway for GPT3 catalog evidence;
-6. keep PR #103 audit, Ready, merge and live application authorities separate;
-7. leave a new handoff only when PR #103 materially changes state.
-
-No authority for PR #103 is granted by this handoff.
-
-## 8. Anti-loop rule
-
-Do not repeat PR #104 audits, redeployments, metadata reconciliations or closure discussions without new material evidence.
-
-The completed distinction is:
-
-```text
-versioned in GitHub: YES
-merged: YES
-migration applied: YES
-RPC operational: YES
-Edge deployed: YES
-Action path tested: YES
-PR #103 approved/applied: NO
-```
-
-Future responses must state versioned, merged, deployed and operational states separately to avoid another governance loop.
+PR #106 Ready and merge remain outside the current corrective authority.
 
 ## 9. Next safe action
 
-Return to the existing PR #103 conversation and continue from its exact live state. Treat this PR #104/gateway subject as closed.
+Reconstruct the exact canonical scope of F1-02 PR-02, locate the current frontend call site, validate current dependencies and produce a bounded implementation proposal.
+
+No implementation, branch, commit or PR-02 creation is authorized by this handoff.
+
+## 10. Conversation retirement state
+
+```text
+Current FECH.AI conversation:
+ACTIVE UNTIL MIGRATION TEST PASSES
+```
+
+Retirement requires a new conversation to reconstruct, without material manual correction:
+
+- live state;
+- F1-02 PR-00 through PR-09;
+- the role of PRs #103, #104 and #105;
+- residual risks;
+- closed-gate finality;
+- blocks and authorities;
+- the single next safe action.

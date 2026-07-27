@@ -1,131 +1,84 @@
 # FECH.AI — SFJM Blocked Actions
 
-**Status:** `ACTIVE_BLOCKS / PR104_CLOSED / PR103_SEPARATE_CONTINUATION / FAIL_CLOSED`  
-**Observed on:** `2026-07-26`  
+**Status:** `ACTIVE_BLOCKS / PR103_CLOSED / PR02_NOT_AUTHORIZED / FAIL_CLOSED`  
+**Observed on:** `2026-07-27`  
 **Repository:** `wagnerjfjunior/fecha.ai`
 
 ## 1. Product blocks
 
 - declare MVP 1 — Família security-ready;
 - grant Security Go or F1-02 acceptance;
-- award WDP from PR count, documentation or gateway availability alone;
+- award WDP from PR count or documentation alone;
 - broad paid commercialization;
-- represent controlled-beta risk acceptance as a privacy/security waiver.
+- represent controlled-beta risk acceptance as a security waiver.
 
-## 2. PR #104 closure blocks
+## 2. Closed-cycle blocks
 
-PR #104 is closed, merged and operationally applied. The following are blocked without new material evidence and explicit authority:
+Without new material evidence and explicit authority, do not:
 
-- additional PR #104 correction commits;
-- repeat GPT0/GPT1/GPT3/GPT4 gates solely to restate the completed lifecycle;
-- another metadata-only closure loop;
-- alteration or rollback of `public.gpt_security_metadata_snapshot()`;
-- Edge `gpt-especialista` redeploy or configuration change;
-- `verify_jwt` change;
-- GPT Action configuration change;
-- secret read, disclosure or rotation;
-- expansion of the snapshot beyond the fixed PR #103 catalog scope.
+- reopen PR #103 Ready, merge or application lifecycle;
+- reapply migration `20260727080929_f1_02_password_state_rpc`;
+- alter or drop `public.marcar_senha_inicial_definida()`;
+- reopen PR #104 or PR #105 audits;
+- create another metadata-only closure loop;
+- create a PR solely to record this closure PR's future squash SHA.
 
-The completed PR #104 topic must remain closed unless a new code, SQL, OpenAPI, deployment, authentication or security change occurs.
-
-## 3. PR #103 blocks
-
-Current observed anchor:
+## 3. Program dependency blocks
 
 ```text
-PR #103: OPEN / DRAFT
-Head: abf6b4026343eae437283280269ed2997911dcec
-Commits: 5
-Changed files: 1
+PR-02: not authorized / no independent PR located
+PR-03: blocked until PR-02 is deployed and proven
+PR-04 through PR-09: do not advance out of canonical order without newer evidence and authority
 ```
 
-Until the separate PR #103 conversation completes fresh exact-state validation and grants the required lifecycle authority, block:
+Do not treat GitHub PRs #104 or #105 as replacements for any F1-02 item PR-00 through PR-09.
 
-- Ready;
-- merge;
-- Supabase application;
-- runtime mutation tests;
-- any correction commit not tied to a demonstrated finding;
-- any assumption that gateway availability equals PR #103 approval.
+Do not generalize laboratory, smoke or test waivers consumed for PR-01 to later work.
 
-The prior gateway-evidence blocker is removed. The remaining blocks belong to PR #103's own audit, compatibility, authority and application lifecycle.
+## 4. Runtime and data blocks
 
-## 4. Gateway data and discovery blocks
+Without new exact authority, do not alter:
 
-The operational gateway must never allow:
+- runtime or frontend;
+- Supabase schema, Auth, RLS, policies, grants or RPC bodies;
+- Edge Functions, Vercel, GitHub Actions or GPT Actions;
+- MesaCliente, PME, LeadOps, B0, WDP or Security Go;
+- production data, secrets or credentials.
 
-- arbitrary SQL;
-- caller-supplied schema, table, function, role or ID;
-- application-row reads;
-- `auth.users` row reads;
-- lead, customer, message or business-payload access;
-- secrets, tokens or credentials;
-- broad catalog discovery outside the fixed PR #103 snapshot;
-- fuzzing, load or volume testing on the primary project;
-- use of real JWTs, passwords, emails or phone numbers in evidence.
+Do not execute runtime mutation tests, rollback or reapply experiments.
 
-Function source remains limited to trigger functions directly attached to `public.corretores` for the PR #103 evidence question.
-
-## 5. Authentication blocks
-
-- do not record or expose `GPT3_FECHAI_ESPECIALISTA` values;
-- do not place `service_role` in frontend, browser or untrusted clients;
-- do not treat `verify_jwt=false` as anonymous access permission;
-- do not remove or bypass `x-gpt-action-key` authentication;
-- do not log supplied authentication values;
-- do not infer secret-rotation authority from successful gateway operation.
-
-## 6. Live database blocks
-
-Without new exact authority, do not:
-
-- alter, replace, grant, revoke or drop `public.gpt_security_metadata_snapshot()`;
-- edit migration history;
-- change `public.corretores`, RLS, policies, grants, indexes, constraints or triggers;
-- query application rows or `auth.users`;
-- run destructive rollback/reapply experiments;
-- improvise DDL after an unexpected result.
-
-The authorized migration `20260726224527 / gpt_security_metadata_snapshot` is applied and must not be reapplied.
-
-## 7. Incident containment boundary
-
-The accidental history-only records below were removed and have zero residual state:
+## 5. Audit-loop block
 
 ```text
-gpt_security_metadata_snapshot_marker_check
-noop_should_not_exist
+NO INVALIDATION EVENT
+→ NO REAUDIT
 ```
 
-Block any further migration-history manipulation unless a new, exact incident-remediation authority identifies the specific record and rollback.
+The following are not invalidation events:
 
-## 8. Audit and evidence blocks
+- new conversation;
+- different specialist;
+- generic request to revalidate;
+- documentation-only main drift without demonstrated material impact;
+- desire for additional unanimity;
+- an already accepted residual risk without new evidence.
 
-- no audit without exact repository, PR, head, diff/final file and environment evidence;
-- no claim that the gateway reads application data;
-- no claim that PR #103 is accepted because the snapshot call succeeds;
-- no replacement of missing PR #103 evidence with confidence or prior PR #104 results;
-- no executor self-approval for a new material change;
-- no recursive documentation update whose only purpose is to record its own merge SHA.
+Before any re-audit, require:
 
-## 9. Rollback blocks
+```text
+1. prior gate;
+2. prior anchor;
+3. exact changed evidence;
+4. triggered invalidation rule;
+5. exact revalidation scope.
+```
 
-- do not execute gateway rollback without exact live-operation authority;
-- do not treat Git revert as Supabase or Edge rollback;
-- do not drop/redeploy objects merely to prove reversibility;
-- do not let gateway rollback alter PR #103 or `public.corretores`;
-- stop immediately if RPC ACL, contract or Edge authentication validation fails.
+Without all five:
 
-## 10. Removal rule
+```text
+AUDIT_LOOP_BLOCKED
+```
 
-A block is removed only when the record identifies:
+## 6. Removal rule
 
-- exact evidence;
-- repository, commit and environment;
-- responsible validator;
-- exact authority;
-- permitted scope;
-- residual risk;
-- rollback/containment;
-- expiration;
-- next safe action.
+A block is removed only by a record identifying exact evidence, scope, responsible validator, authority, residual risk, rollback or containment, expiration and next safe action.
