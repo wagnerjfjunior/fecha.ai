@@ -166,10 +166,14 @@ Canonical evidence source: PR #103 live metadata
 
 ```text
 Gate: PR #103 controlled production application validation
-Owner: GPT3 — FECH.AI Supabase Security Specialist
+Owner: UNKNOWN — CANONICAL EVIDENCE REQUIRED
 Canonical anchor: main@276a3e55155cd0e57b6155dc13b998704bdfd654 / project uobxxgzshrmbtjfdolxd / migration 20260727080929_f1_02_password_state_rpc
-Final verdict: PASS WITH RESIDUAL RISK — APPLIED; STRUCTURE, ACL AND NEGATIVE UNAUTHENTICATED SMOKE VALIDATED; AUTHENTICATED RUNTIME DEFERRED AND WAIVED FOR THIS CYCLE
-Residual risks: authenticated positive smoke, runtime idempotency, concurrency, missing/inactive profile execution, rollback and reapply were not materially validated
+Final verdict: UNKNOWN — CANONICAL EVIDENCE REQUIRED
+Migration: APPLIED
+RPC: EXISTS
+Catalog properties: OBSERVED
+Operational closure: CLOSED WITH RESIDUAL RISK
+Residual risks: authenticated positive smoke: not established; runtime idempotency: not established; runtime concurrency: not established; missing-profile execution: not established; inactive-profile execution: not established; rollback execution: not established; reapply after rollback: not established
 Explicit invalidation events: function signature, owner, security mode, search_path or ACL change; migration-history contradiction; contradictory live catalog evidence; new authenticated runtime evidence
 Canonical evidence source: docs/security/evidence/2026-07-27-pr103-operational-closure-with-residual-risk.md
 ```
@@ -215,11 +219,15 @@ Canonical evidence source: PR #105 metadata/body
 ```text
 Gate: PR #106 current documentation gate
 Owner: GPT0 — FECH.AI Documentation Auditor
-Canonical anchor: prior audited head b9aa83a50f34c7cfbbd8158aeae01df39b787e50; corrective head is the single commit containing this inventory and must be captured by post-commit validation
-Final verdict: UNKNOWN — CANONICAL EVIDENCE REQUIRED
-Prior verdict: FAIL — DOC-106-01 and DOC-106-02 required correction at b9aa83a50f34c7cfbbd8158aeae01df39b787e50
-Residual risks: final post-correction delta verdict is pending the one authorized read-only GPT0 validation
-Explicit invalidation events: this corrective three-file commit invalidates the prior FAIL only within DOC-106-01/DOC-106-02; any later head change or fourth file invalidates the pending validation
+Prior attempt target: b9aa83a50f34c7cfbbd8158aeae01df39b787e50
+Live head observed during that attempt: 94b2174339b870331d62aca5c6d9d9cf1149ce3e
+Prior result: FAIL — HEAD CHANGED
+Prior substantive documentary verdict: NONE
+Current corrected-head documentary verdict: UNKNOWN — CANONICAL EVIDENCE REQUIRED
+Corrective commit: 94b2174339b870331d62aca5c6d9d9cf1149ce3e — docs(sfjm): fix PR106 authority and gate inventory
+Corrective commit scope: new content that required an independent audit of the complete current head; no prior substantive finding is attributed to this commit
+Residual risks: the final GPT0 verdict for the authorized one-file documentary correction remains pending
+Explicit invalidation events: any later head change, additional commit or changed file outside docs/sfjm/EVIDENCE_FRESHNESS.md invalidates the pending one-file delta validation
 Canonical evidence source: PR #106 live metadata and the authorized corrective audit cycle
 ```
 
