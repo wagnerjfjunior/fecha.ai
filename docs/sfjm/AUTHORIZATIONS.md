@@ -1,123 +1,123 @@
 # FECH.AI — SFJM Authorizations
 
-**Status:** `AUTHORIZATION_REGISTER / PR104_AND_GATEWAY_AUTHORITIES_CONSUMED / FAIL_CLOSED`  
-**Observed on:** `2026-07-26`  
+**Status:** `AUTHORIZATION_REGISTER / PR103_CLOSURE_PREPARED / FAIL_CLOSED`  
+**Observed on:** `2026-07-27`  
 **Repository:** `wagnerjfjunior/fecha.ai`
 
 ## 1. Interpretation rule
 
 Authority is valid only for the exact repository, environment, object, operation, prohibitions and expiration stated by the Product Authority. Recording a past authorization does not reactivate it.
 
-## 2. Canonical anchors before this closure PR
+## 2. Consumed authorities
 
 ```text
-main: 6fcb42f7dcd876601d246215926fb0a6a3bf9d23
-PR #104: CLOSED / MERGED
-PR #104 squash commit: 6fcb42f7dcd876601d246215926fb0a6a3bf9d23
-PR #103: OPEN / DRAFT
-PR #103 head: abf6b4026343eae437283280269ed2997911dcec
-Supabase project: uobxxgzshrmbtjfdolxd
+PR #103 Ready/merge/application authority: CONSUMED
+PR #104 lifecycle/application authority: CONSUMED
+PR #105 documentation closure authority: CONSUMED
 ```
 
-## 3. Consumed PR #104 authorities
-
-### Final corrective commit
-
-Consumed by the localized Edge timestamp/contract correction ending at:
+Results:
 
 ```text
-dc75198dd8d14fc2856890964771f3434942dd7a
+PR #103: CLOSED / MERGED
+PR #103 squash: 276a3e55155cd0e57b6155dc13b998704bdfd654
+Migration 20260727080929_f1_02_password_state_rpc: APPLIED
+RPC catalog state: VALIDATED
+PR #104: CLOSED / MERGED / gateway operational
+PR #105: CLOSED / MERGED
 ```
 
-No additional commit authority remains from that instruction.
+Consumed authority does not authorize repetition of the completed lifecycle.
 
-### TECHNICAL_PR_LIFECYCLE
+## 3. Current documentation-only authority
 
-Consumed by:
+The Product Authority authorized one Draft PR from:
 
 ```text
-Draft → Ready
-exact-head revalidation
-squash merge
+main@276a3e55155cd0e57b6155dc13b998704bdfd654
 ```
 
-Result:
+Branch:
 
 ```text
-PR #104: CLOSED / MERGED
-Squash commit: 6fcb42f7dcd876601d246215926fb0a6a3bf9d23
+docs/sfjm-close-pr103-operational-cycle
 ```
 
-This authority expired immediately after the merge.
-
-### CONTROLLED_BETA_PRIMARY_CHANGE
-
-Consumed by the exact live sequence authorized for project `uobxxgzshrmbtjfdolxd`:
+Title:
 
 ```text
-apply gpt_security_metadata_snapshot migration
-→ validate RPC contract and ACL
-→ execute fixed catalog snapshot under service_role
-→ deploy gpt-especialista from main@6fcb42f7...
-→ confirm ACTIVE version 8
+docs(sfjm): close PR103 operational cycle
 ```
 
-This authority did not authorize PR #103 application, other RPCs, other Edge Functions, Auth, RLS, policies, business data, secrets, Security Go, F1-02 acceptance or WDP.
-
-### SFJM closure instruction
-
-The Product Authority instructed SFJM to be updated and the PR #104/gateway subject to be closed. That instruction authorizes only this documentation-only closure workflow. It expires when the closure PR is merged or stopped.
-
-## 4. Live changes completed under consumed authority
+Authorized paths, maximum seven:
 
 ```text
-Migration: 20260726224527 / gpt_security_metadata_snapshot
-RPC: public.gpt_security_metadata_snapshot()
-RPC ACL: service_role only, plus owner
-Edge: gpt-especialista / ACTIVE / version 8
-verify_jwt: false preserved
-Custom authentication: x-gpt-action-key preserved
-GPT Action configuration mutation: NONE
-PR #103 mutation/application: NONE
+docs/security/evidence/2026-07-27-pr103-operational-closure-with-residual-risk.md
+docs/sfjm/AUTHORIZATIONS.md
+docs/sfjm/BLOCKED_ACTIONS.md
+docs/sfjm/CURRENT_STATE.md
+docs/sfjm/EVIDENCE_FRESHNESS.md
+docs/sfjm/NEXT_SAFE_ACTION.md
+docs/sfjm/handoffs/CURRENT.md
 ```
 
-## 5. Current non-authorizations
+Authorized operations:
 
 ```text
-Additional PR #104 commits: NOT AUTHORIZED
-Gateway SQL/RPC alteration: NOT AUTHORIZED
-Gateway Edge redeploy: NOT AUTHORIZED
-Gateway rollback: NOT AUTHORIZED
-Secret read/disclosure/rotation: NOT AUTHORIZED
-GPT Action configuration change: NOT AUTHORIZED
-PR #103 Ready/merge/application: NOT AUTHORIZED BY THIS RECORD
-Security Go: DENIED
-F1-02 acceptance: NOT AUTHORIZED
-WDP: 0
+create branch from exact base
+create/update only the seven documentation paths
+open Draft PR
+run one GPT0 documentation audit
+run one GPT4 lifecycle/scope validation
 ```
 
-PR #103 may continue only under the authorities established in its separate active conversation and after fresh exact-state validation.
-
-## 6. Incident containment authorization
-
-During the live operation, two accidental migration-history-only markers were created and removed immediately:
+Not authorized:
 
 ```text
-gpt_security_metadata_snapshot_marker_check
-noop_should_not_exist
+Ready
+merge
+runtime/frontend/Supabase changes
+new migration or RPC change
+PR-02 branch, commit or PR
+runtime tests
+Security Go
+F1-02 acceptance
+WDP change
 ```
 
-Their removal was limited to the unintended history records. Final verification showed zero residual marker records. This does not authorize broader migration-history editing.
+This documentation authority expires when the Draft PR is created or the operation is stopped.
 
-## 7. Future authorities
+## 4. Future authorities required
 
-A new explicit authority is required for any of the following:
+A new explicit authority is required for:
 
-- change or rollback of the live catalog RPC;
-- redeploy or configuration change of `gpt-especialista`;
-- secret rotation or Action configuration update;
-- PR #103 Ready, merge or Supabase application;
+- marking the closure PR Ready;
+- merging the closure PR;
+- starting or implementing PR-02;
+- any runtime or Supabase mutation;
+- any rollback;
 - F1-02 acceptance;
 - Security Go.
 
-No authority should be inferred from the fact that the gateway is operational.
+## 5. Audit-finality rule
+
+```text
+NO INVALIDATION EVENT
+→ NO REAUDIT
+```
+
+Before any re-audit, identify:
+
+```text
+1. prior gate;
+2. prior anchor;
+3. exact changed evidence;
+4. triggered invalidation rule;
+5. exact revalidation scope.
+```
+
+Without all five:
+
+```text
+AUDIT_LOOP_BLOCKED
+```
