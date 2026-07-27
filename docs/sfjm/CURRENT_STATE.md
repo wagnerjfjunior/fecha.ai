@@ -1,8 +1,8 @@
 # FECH.AI — SFJM Current State
 
-**Lifecycle state:** `PR104_CLOSED / LIVE_GATEWAY_OPERATIONAL / PR103_SEPARATE_CONTINUATION`  
-**Record type:** `OPERATIONAL_STATE / SECURITY_ENABLEMENT_CLOSURE`  
-**Observed on:** `2026-07-26`  
+**Lifecycle state:** `PR103_CLOSED_WITH_RESIDUAL_RISK / F1_02_ACTIVE / PR02_NEXT_NOT_AUTHORIZED`  
+**Record type:** `OPERATIONAL_STATE / DOCUMENTATION_ONLY`  
+**Observed on:** `2026-07-27`  
 **Repository:** `wagnerjfjunior/fecha.ai`
 
 ## 1. Product context
@@ -19,157 +19,109 @@ F1-02: ACTIVE REMEDIATION / BLOCKED
 WDP: 0
 ```
 
-Frontend/Action requests. Edge/RPC/Supabase validates and decides. AI assists but is not authority.
+Frontend or Action requests. Backend, RPC and Supabase validate and decide. AI assists but is not authority.
 
-## 2. Canonical GitHub state before this closure PR
-
-```text
-main: 6fcb42f7dcd876601d246215926fb0a6a3bf9d23
-Source PR: #104
-PR #104: CLOSED / MERGED
-Merge method: squash
-PR #104 audited head: dc75198dd8d14fc2856890964771f3434942dd7a
-PR #104 squash commit: 6fcb42f7dcd876601d246215926fb0a6a3bf9d23
-```
-
-This documentation-only closure PR may advance `main`. Under `docs/sfjm/INDEX.md`, that self-closing merge must not trigger another recursive reconciliation PR unless new material evidence appears.
-
-## 3. PR #104 — closed subject
-
-PR #104 completed the bounded GPT3 catalog gateway lifecycle:
+## 2. Current canonical GitHub state
 
 ```text
-GPT0: PASS WITH RESIDUAL RISK
-GPT1: PASS WITH RESIDUAL RISK
-GPT3 final: PASS
-GPT4 final: PASS WITH RESIDUAL RISK
-BLOCKING: NONE
-REQUIRED BEFORE READY: NONE
-READY: COMPLETED
-SQUASH MERGE: COMPLETED
+main observed: 276a3e55155cd0e57b6155dc13b998704bdfd654
+PR #103: CLOSED / MERGED
+PR #103 final head: abf6b4026343eae437283280269ed2997911dcec
+PR #103 squash commit: 276a3e55155cd0e57b6155dc13b998704bdfd654
+PR #103 changed files: 1
+Program role: F1-02 PR-01
 ```
 
-Do not repeat GPT0, GPT1, GPT3 or GPT4 for PR #104 without a new material change to its code, migration, OpenAPI, deployed Edge, RPC contract or authorization boundary.
+This documentation-only closure PR may advance `main`. Its own merge must not trigger a recursive reconciliation PR without new material evidence.
 
-## 4. Live Supabase gateway state
+## 3. PR #103 operational closure
 
 ```text
-Project ref: uobxxgzshrmbtjfdolxd
-Environment: production
-Migration record: 20260726224527 / gpt_security_metadata_snapshot
-RPC: public.gpt_security_metadata_snapshot()
-RPC arguments: none
-RPC return: jsonb
-RPC owner: postgres
-RPC language: sql
-RPC volatility: STABLE
-RPC security: SECURITY INVOKER
-RPC search_path: pg_catalog
+Migration: 20260727080929 / f1_02_password_state_rpc / APPLIED
+RPC: public.marcar_senha_inicial_definida() / EXISTS
+Owner: postgres
+SECURITY DEFINER: true
+search_path: pg_catalog
+authenticated EXECUTE: true
+anon EXECUTE: false
+service_role EXECUTE: false
+PUBLIC EXECUTE: false
+Operational result: CLOSED WITH RESIDUAL RISK
 ```
 
-Live ACL validation:
+Canonical closure evidence:
 
 ```text
-service_role EXECUTE: YES
-PUBLIC EXECUTE: NO
-anon EXECUTE: NO
-authenticated EXECUTE: NO
-Unexpected direct executors: NONE
+docs/security/evidence/2026-07-27-pr103-operational-closure-with-residual-risk.md
 ```
 
-The RPC returned the fixed catalog snapshot under `service_role` with:
+## 4. F1-02 PROGRAM ANCHOR
+
+Canonical source:
 
 ```text
-snapshot_version: pr103_preflight_v1
-access_mode: read_only
-includes_row_data: false
-includes_auth_users: false
-includes_secrets: false
-includes_business_payload: false
-target: public.corretores
-RLS enabled: true
-RLS forced: true
-expected catalog columns: 3
+docs/security/evidence/F1-02_REMEDIATION_MASTER_PLAN.md
 ```
-
-## 5. Live Edge and GPT Action state
 
 ```text
-Edge function: gpt-especialista
-Status: ACTIVE
-Version: 8
-verify_jwt: false
-Authentication boundary: x-gpt-action-key custom server-to-server authentication
-Bundle SHA-256: cb850eac4475d65ba8db9f1cf2d03a26abb3d4964b742d97b4e01c6552eabeeb
+Program structure: 5 operational windows / 10 planned PRs
+PR-00: completed
+PR-01: completed with residual risk
+PR-02: next separate workstream / not authorized / no independent PR located
+PR-03: blocked until PR-02 is deployed and proven
+PR-04 through PR-09: planned / not started unless newer canonical evidence proves otherwise
 ```
 
-The deployed Edge contains the final request allowlist, body-size limit, deep snapshot validation, semantic RFC 3339 validation and fail-closed `502 security_metadata_contract_invalid` path.
-
-GPT3 independently repeated the Action path successfully:
+Auxiliary GitHub PRs:
 
 ```text
-health_check: OK
-security_metadata_snapshot: OK
-database_access: true
-row_data_access: false
-secrets included: false
-auth.users included: false
-writes: NONE
+#104: bounded GPT3/Supabase catalog gateway
+#105: SFJM reconciliation after #104
 ```
 
-No GPT Action configuration mutation was performed during the live application operation. The already configured Action successfully called the deployed gateway.
+PRs #104 and #105 do not replace, renumber or consume any program item PR-00 through PR-09.
 
-## 6. Migration-history correction incident
+## 5. Residual risks
 
-Two validation calls were accidentally sent through the migration endpoint and created history-only markers:
+Not established by the closure evidence:
+
+- authenticated positive smoke;
+- runtime idempotency;
+- runtime concurrency;
+- missing-profile and inactive-profile execution;
+- rollback execution;
+- reapply after rollback.
+
+PR-02 remains necessary for frontend cutover. PR-03 remains blocked.
+
+## 6. Local decision boundary
+
+Any laboratory, smoke or test waiver consumed during PR-01 applies only to F1-02 PR-01 / GitHub PR #103. It does not modify the F1-02 master plan globally.
+
+## 7. Closed-gate finality
 
 ```text
-gpt_security_metadata_snapshot_marker_check
-noop_should_not_exist
+NO INVALIDATION EVENT
+→ NO REAUDIT
 ```
 
-Both records were removed immediately. Final verification showed zero unauthorized marker records and only the authorized `gpt_security_metadata_snapshot` migration remained. No table, function, policy, RLS or grant residual was created by those markers.
-
-## 7. PR #103 — separate continuation
-
-```text
-PR: #103
-State: OPEN / DRAFT
-Branch: security/f1-02-password-state-rpc
-Head: abf6b4026343eae437283280269ed2997911dcec
-Commits: 5
-Changed files: 1
-Current live mergeability observation: true
-```
-
-PR #103 was not changed, marked Ready, merged or applied by the PR #104 lifecycle or gateway application.
-
-The evidence blocker that required the catalog gateway has been removed. PR #103 must now continue in its existing separate conversation with fresh bootstrap, exact-head validation against the current `main`, gateway-backed evidence and separate authority for any Ready, merge or Supabase application.
+Do not repeat a closed gate merely because a conversation, specialist or documentation-only main tip changed. A re-audit requires the prior gate, prior anchor, exact changed evidence, triggered invalidation rule and exact revalidation scope.
 
 ## 8. Current authority state
 
 ```text
-PR #104 correction authority: CONSUMED
-PR #104 TECHNICAL_PR_LIFECYCLE: CONSUMED
-Gateway CONTROLLED_BETA_PRIMARY_CHANGE: CONSUMED
-Additional PR #104 commits or live changes: NOT AUTHORIZED
-PR #103 lifecycle/application: NOT AUTHORIZED BY THIS CLOSURE
-Gateway rollback: NOT AUTHORIZED
+PR #103 lifecycle/application authority: CONSUMED
+PR #104 lifecycle/application authority: CONSUMED
+PR #105 documentation closure authority: CONSUMED
+PR-02 implementation or PR creation: NOT AUTHORIZED
+PR-03: BLOCKED
 Security Go: DENIED
 F1-02 acceptance: NOT AUTHORIZED
 WDP: 0
 ```
 
-## 9. Residual risk
+## 9. Next safe action
 
-- GitHub Actions remain absent for the PR #104 head; Vercel status did not prove SQL or Edge runtime.
-- The Edge uses `verify_jwt=false` by design and therefore depends on correct preservation of custom `x-gpt-action-key` authentication.
-- The gateway intentionally exposes bounded catalog metadata and limited trigger-function source, not application rows.
-- PR #103 still requires its own exact-head revalidation and controlled lifecycle.
-- Security Go remains denied.
+Reconstruct the exact canonical scope of F1-02 PR-02, locate the current frontend call site, validate dependencies and produce a bounded implementation proposal.
 
-## 10. Next safe action
-
-Close the PR #104 topic. Continue only PR #103 in the already active separate conversation.
-
-Do not reopen PR #104 audits, redeploy the gateway, alter its RPC, rotate/read secrets, or create another closure-only reconciliation loop without new material evidence and explicit authority.
+No implementation, branch, commit or PR-02 creation is authorized by this record.
