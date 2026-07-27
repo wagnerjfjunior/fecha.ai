@@ -91,15 +91,24 @@ PR-02 remains required for frontend cutover. PR-03 remains blocked.
 
 Any laboratory, smoke or test waiver consumed during PR-01 applies only to F1-02 PR-01 / GitHub PR #103. Do not generalize it to later program work.
 
-## 7. Closed gates and anti-loop
+## 7. Final gates and anti-loop
 
-Reuse a final specialist gate only when its canonical owner, anchor, verdict and material scope are identifiable. If not reconstructible, record:
+```text
+FINAL GATE STATE:
+SEE docs/sfjm/EVIDENCE_FRESHNESS.md — FINAL GATE INVENTORY
+```
+
+The `FINAL GATE INVENTORY` is the source for deciding whether a gate may be reused, is pending, is unknown or was invalidated.
+
+Do not duplicate or infer a verdict in this handoff. A gate recorded as:
 
 ```text
 UNKNOWN — CANONICAL EVIDENCE REQUIRED
 ```
 
-Do not request a new audit solely to fill a documentation gap.
+must remain unknown until newer canonical evidence explicitly supplies the missing result. Do not request a new audit solely to fill an historical documentation gap.
+
+The one GPT0 and one GPT4 validations explicitly authorized for the exact PR #106 corrective head are the bounded current lifecycle validations. After completion, they must not be repeated without a material invalidation event and new authority.
 
 ```text
 NO INVALIDATION EVENT
@@ -109,14 +118,15 @@ NO INVALIDATION EVENT
 A re-audit requires:
 
 ```text
-1. prior gate;
-2. prior anchor;
-3. exact changed evidence;
-4. triggered invalidation rule;
-5. exact revalidation scope.
+1. nominal gate;
+2. owner;
+3. prior anchor;
+4. exact changed evidence;
+5. triggered invalidation rule;
+6. exact revalidation scope.
 ```
 
-Without all five:
+Without all six:
 
 ```text
 AUDIT_LOOP_BLOCKED
@@ -134,6 +144,8 @@ Security Go: DENIED
 F1-02 acceptance: NOT AUTHORIZED
 WDP: 0
 ```
+
+PR #106 Ready and merge remain outside the current corrective authority.
 
 ## 9. Next safe action
 

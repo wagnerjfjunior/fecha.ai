@@ -1,6 +1,6 @@
 # FECH.AI — SFJM Authorizations
 
-**Status:** `AUTHORIZATION_REGISTER / PR103_CLOSURE_PREPARED / FAIL_CLOSED`  
+**Status:** `AUTHORIZATION_REGISTER / PR106_CORRECTIVE_WRITE_CONSUMED / AUDIT_READ_ONLY_ACTIVE / FAIL_CLOSED`  
 **Observed on:** `2026-07-27`  
 **Repository:** `wagnerjfjunior/fecha.ai`
 
@@ -29,70 +29,102 @@ PR #105: CLOSED / MERGED
 
 Consumed authority does not authorize repetition of the completed lifecycle.
 
-## 3. Current documentation-only authority
+## 3. PR #106 corrective authority split
 
-The Product Authority authorized one Draft PR from:
-
-```text
-main@276a3e55155cd0e57b6155dc13b998704bdfd654
-```
-
-Branch:
+Target:
 
 ```text
-docs/sfjm-close-pr103-operational-cycle
+PR: #106 — docs(sfjm): close PR103 operational cycle
+Base: main@276a3e55155cd0e57b6155dc13b998704bdfd654
+Branch: docs/sfjm-close-pr103-operational-cycle
+Initial head: b9aa83a50f34c7cfbbd8158aeae01df39b787e50
 ```
 
-Title:
+### A. Documentary write authority
+
+Authorized only:
 
 ```text
-docs(sfjm): close PR103 operational cycle
+update docs/sfjm/AUTHORIZATIONS.md
+update docs/sfjm/EVIDENCE_FRESHNESS.md
+update docs/sfjm/handoffs/CURRENT.md
+create exactly one corrective commit
+push that commit to the existing branch
 ```
 
-Authorized paths, maximum seven:
+Required commit message:
 
 ```text
-docs/security/evidence/2026-07-27-pr103-operational-closure-with-residual-risk.md
-docs/sfjm/AUTHORIZATIONS.md
-docs/sfjm/BLOCKED_ACTIONS.md
-docs/sfjm/CURRENT_STATE.md
-docs/sfjm/EVIDENCE_FRESHNESS.md
-docs/sfjm/NEXT_SAFE_ACTION.md
-docs/sfjm/handoffs/CURRENT.md
+docs(sfjm): fix PR106 authority and gate inventory
 ```
 
-Authorized operations:
+Expiration:
 
 ```text
-create branch from exact base
-create/update only the seven documentation paths
-open Draft PR
-run one GPT0 documentation audit
-run one GPT4 lifecycle/scope validation
+consumed by the single corrective commit that contains this record
+expired if the initial head diverged before writing
+expired if a fourth file appeared
+expired if the operation stopped
 ```
 
-Not authorized:
+Status:
+
+```text
+CONSUMED
+```
+
+No additional documentary write is authorized after that corrective commit.
+
+### B. Read-only audit authority
+
+Authorized only on the exact corrective head produced by the single commit above:
+
+```text
+one GPT0 audit of the corrective documentary delta
+one GPT4 validation of the corrective delta and live PR state
+```
+
+This read-only authority expires:
+
+```text
+after both validations are completed
+if the corrective head changes
+if any later commit appears
+if the operation stops
+```
+
+The exact corrective head must be captured by post-commit validation. This authority does not permit a new write, Ready, merge, comment or review.
+
+### C. Explicit non-authorizations
 
 ```text
 Ready
 merge
-runtime/frontend/Supabase changes
-new migration or RPC change
-PR-02 branch, commit or PR
-runtime tests
+GitHub comment or review
+runtime
+frontend
+Supabase
+SQL
+migration
+RPC
+Auth
+RLS
+policies
+grants
+PR-02
+PR-03
 Security Go
 F1-02 acceptance
 WDP change
 ```
 
-This documentation authority expires when the Draft PR is created or the operation is stopped.
-
 ## 4. Future authorities required
 
 A new explicit authority is required for:
 
-- marking the closure PR Ready;
-- merging the closure PR;
+- marking PR #106 Ready;
+- merging PR #106;
+- any further PR #106 commit;
 - starting or implementing PR-02;
 - any runtime or Supabase mutation;
 - any rollback;
@@ -109,15 +141,18 @@ NO INVALIDATION EVENT
 Before any re-audit, identify:
 
 ```text
-1. prior gate;
-2. prior anchor;
-3. exact changed evidence;
-4. triggered invalidation rule;
-5. exact revalidation scope.
+1. nominal gate;
+2. owner;
+3. prior anchor;
+4. exact changed evidence;
+5. triggered invalidation rule;
+6. exact revalidation scope.
 ```
 
-Without all five:
+Without all six:
 
 ```text
 AUDIT_LOOP_BLOCKED
 ```
+
+The one GPT0 and one GPT4 validation explicitly authorized for the PR #106 corrective head are the current bounded lifecycle validations. They must not be repeated after completion without a new material invalidation event and new authority.
