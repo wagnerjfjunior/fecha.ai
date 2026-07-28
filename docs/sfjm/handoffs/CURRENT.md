@@ -1,34 +1,64 @@
 # FECH.AI — SFJM Current Handoff
 
-**Status:** `CURRENT_HANDOFF / PR103_CLOSED_WITH_RESIDUAL_RISK / PR02_NEXT_NOT_AUTHORIZED`  
-**Observed on:** `2026-07-27`  
+**Status:** `CURRENT_HANDOFF / PR107_READY / PM107_CORRECTION_PENDING_AUDIT / PR02_NOT_AUTHORIZED`  
+**Observed on:** `2026-07-28`  
 **Repository:** `wagnerjfjunior/fecha.ai`
 
 ## 1. Current decision
 
 ```text
-PR #103 / F1-02 PR-01: CLOSED WITH RESIDUAL RISK
+PR #103 / F1-02 PR-01: COMPLETED WITH RESIDUAL RISK
+Authenticated positive smoke: PASS
+Immediate runtime idempotency: PASS
+PR #107: OPEN / READY FOR REVIEW
+Pre-merge validation: FAIL — PM-107-GATE-01
 Security Go: DENIED
 F1-02: ACTIVE REMEDIATION / BLOCKED
 WDP: 0
 ```
 
-The next conversation must continue from the F1-02 program, not reopen PR #103, #104 or #105.
+Continue from the PM-107-GATE-01 corrective head. Do not reopen PR #103, #104, #105 or #106.
 
 ## 2. Canonical anchors
 
 ```text
-main observed before this closure PR: 276a3e55155cd0e57b6155dc13b998704bdfd654
-PR #103: CLOSED / MERGED
+main before PR #107: 9624900ada5d29e24476ab6a0a0907cb4854e509
 PR #103 final head: abf6b4026343eae437283280269ed2997911dcec
 PR #103 squash: 276a3e55155cd0e57b6155dc13b998704bdfd654
-PR #104: CLOSED / MERGED / auxiliary gateway
-PR #105: CLOSED / MERGED / auxiliary SFJM reconciliation
+PR #106 squash / current main before PR #107:
+9624900ada5d29e24476ab6a0a0907cb4854e509
+PR #107 original audited head:
+51105692b0957454bd3d83f70e6591472fcf10dc
+PR #107 corrective head:
+resolve live
 ```
 
-Do not create a recursive PR merely to record this closure PR's future squash SHA. Resolve live `main` before the next sensitive action.
+## 3. PR #107 contract
 
-## 3. PR #103 live result
+```text
+PR: #107 — docs(security): record PR103 authenticated smoke
+Branch: docs/pr103-authenticated-smoke-evidence
+State: OPEN / READY FOR REVIEW
+Base: main@9624900ada5d29e24476ab6a0a0907cb4854e509
+Original commits: 7
+Corrective commits authorized: exactly 1
+Final changed-file contract: exactly 7 documentation files
+```
+
+The PM-107-GATE-01 commit may modify only:
+
+```text
+docs/sfjm/AUTHORIZATIONS.md
+docs/sfjm/BLOCKED_ACTIONS.md
+docs/sfjm/CURRENT_STATE.md
+docs/sfjm/EVIDENCE_FRESHNESS.md
+docs/sfjm/NEXT_SAFE_ACTION.md
+docs/sfjm/handoffs/CURRENT.md
+```
+
+The smoke evidence file must remain unchanged.
+
+## 4. PR #103 catalog and runtime result
 
 ```text
 Migration: 20260727080929 / f1_02_password_state_rpc / APPLIED
@@ -40,132 +70,138 @@ authenticated EXECUTE: true
 anon EXECUTE: false
 service_role EXECUTE: false
 PUBLIC EXECUTE: false
+
+First call:
+must_change_password true → false
+xmin 6997 → 6999
+RPC return true
+unexpected changed fields none
+
+Immediate repeated call:
+must_change_password false → false
+xmin 6999 → 6999
+RPC return true
+unexpected changed fields none
+
+Cleanup:
+Auth users remaining: 0
+synthetic profiles remaining: 0
+synthetic teams remaining: 0
+synthetic company: preserved inactive
 ```
 
-Canonical closure evidence:
+Evidence path:
 
 ```text
-docs/security/evidence/2026-07-27-pr103-operational-closure-with-residual-risk.md
+docs/security/evidence/2026-07-28-pr103-authenticated-smoke-and-idempotency.md
 ```
-
-## 4. F1-02 PROGRAM ANCHOR
-
-Canonical source:
-
-```text
-docs/security/evidence/F1-02_REMEDIATION_MASTER_PLAN.md
-```
-
-```text
-Program structure: 5 operational windows / 10 planned PRs
-PR-00: completed
-PR-01: completed with residual risk
-PR-02: next separate workstream / not authorized / no independent PR located
-PR-03: blocked until PR-02 is deployed and proven
-PR-04 through PR-09: planned / not started unless newer canonical evidence proves otherwise
-```
-
-Auxiliary GitHub changes:
-
-```text
-#104: bounded GPT3/Supabase catalog gateway
-#105: SFJM reconciliation after #104
-```
-
-They do not replace, renumber or consume program items PR-00 through PR-09.
 
 ## 5. Residual risks preserved
 
-Not established by this closure evidence:
+Not established:
 
-- authenticated positive smoke;
-- runtime idempotency;
 - runtime concurrency;
-- missing-profile or inactive-profile execution;
+- missing-profile execution;
+- inactive-profile execution;
 - rollback execution;
-- reapply after rollback.
+- reapply after rollback;
+- frontend cutover;
+- deployed frontend proof;
+- direct table-update denial.
 
-PR-02 remains required for frontend cutover. PR-03 remains blocked.
+The smoke narrows residual risk but does not grant Security Go or accept F1-02.
 
-## 6. Local decision boundary
-
-Any laboratory, smoke or test waiver consumed during PR-01 applies only to F1-02 PR-01 / GitHub PR #103. Do not generalize it to later program work.
-
-## 7. Final gates and anti-loop
+## 6. F1-02 program anchor
 
 ```text
-FINAL GATE STATE:
-SEE docs/sfjm/EVIDENCE_FRESHNESS.md — FINAL GATE INVENTORY
+Canonical source: docs/security/evidence/F1-02_REMEDIATION_MASTER_PLAN.md
+PR-00: completed
+PR-01: completed with residual risk
+PR-02: next technical workstream / not authorized
+PR-03: blocked until PR-02 is deployed and proven
+PR-04 through PR-09: planned unless newer canonical evidence proves otherwise
 ```
 
-The `FINAL GATE INVENTORY` is the source for deciding whether a gate may be reused, is pending, is unknown or was invalidated.
-
-Do not duplicate or infer a verdict in this handoff. A gate recorded as:
+## 7. Gates and lifecycle
 
 ```text
-UNKNOWN — CANONICAL EVIDENCE REQUIRED
+GPT0 documentation audit:
+PASS at 51105692b0957454bd3d83f70e6591472fcf10dc
+
+GPT4 lifecycle/scope validation:
+PASS at 51105692b0957454bd3d83f70e6591472fcf10dc
+
+Ready:
+authorized and executed
+
+Pre-merge validation:
+FAIL — PM-107-GATE-01
+Reason: versioned SFJM lifecycle state was stale
+
+Corrective gate:
+PENDING at exact live corrective head
+Scope: six SFJM files only
 ```
 
-must remain unknown until newer canonical evidence explicitly supplies the missing result. Do not request a new audit solely to fill an historical documentation gap.
+Prior GPT0/GPT4 PASS results do not validate the later six-file corrective delta.
 
-The one GPT0 and one GPT4 validations explicitly authorized for the exact PR #106 corrective head are the bounded current lifecycle validations. After completion, they must not be repeated without a material invalidation event and new authority.
-
-```text
-NO INVALIDATION EVENT
-→ NO REAUDIT
-```
-
-A re-audit requires:
+## 8. Authorities and blocks
 
 ```text
-1. nominal gate;
-2. owner;
-3. prior anchor;
-4. exact changed evidence;
-5. triggered invalidation rule;
-6. exact revalidation scope.
-```
-
-Without all six:
-
-```text
-AUDIT_LOOP_BLOCKED
-```
-
-## 8. Current authorities and blocks
-
-```text
-PR #103 lifecycle/application: CONSUMED
-PR #104 lifecycle/application: CONSUMED
-PR #105 closure: CONSUMED
-PR-02 implementation or PR creation: NOT AUTHORIZED
+PM-107-GATE-01 single corrective commit: CONSUMED ON PUBLICATION
+Additional commit: NOT AUTHORIZED
+Comment or review: NOT AUTHORIZED
+Metadata change: NOT AUTHORIZED
+Merge: NOT AUTHORIZED
+PR-02: NOT AUTHORIZED UNTIL PR #107 IS CLOSED AND MAIN CONFIRMED
 PR-03: BLOCKED
 Security Go: DENIED
 F1-02 acceptance: NOT AUTHORIZED
 WDP: 0
 ```
 
-PR #106 Ready and merge remain outside the current corrective authority.
+The accidental `noop` issue comment is accepted as a non-material procedural deviation. It does not authorize another comment.
 
-## 9. Next safe action
+## 9. Exact next safe action
 
-Reconstruct the exact canonical scope of F1-02 PR-02, locate the current frontend call site, validate current dependencies and produce a bounded implementation proposal.
+Run one independent GPT0 delta-only documentation audit of the six-file PM-107-GATE-01 correction at the exact live corrective head.
 
-No implementation, branch, commit or PR-02 creation is authorized by this handoff.
+If GPT0 passes:
 
-## 10. Conversation retirement state
+```text
+GPT4 lifecycle/scope validation on the same head
+→ pre-merge READ_ONLY validation
+→ separate Product Authority for squash merge
+```
+
+Do not merge or implement PR-02 in the audit steps.
+
+## 10. Anti-loop
+
+```text
+Corrective six-file commit
+→ revalidate only the six-file documentary delta
+```
+
+```text
+NO OTHER INVALIDATION EVENT
+→ NO OTHER REAUDIT
+```
+
+## 11. Conversation retirement state
 
 ```text
 Current FECH.AI conversation:
-ACTIVE UNTIL MIGRATION TEST PASSES
+ACTIVE UNTIL PR #107 IS CLOSED AND RESULTING MAIN IS CONFIRMED
 ```
 
-Retirement requires a new conversation to reconstruct, without material manual correction:
+A new conversation must reconstruct without material manual correction:
 
-- live state;
-- F1-02 PR-00 through PR-09;
-- the role of PRs #103, #104 and #105;
+- canonical main and PR #107 lifecycle;
+- original and corrective heads;
+- GPT0/GPT4 original PASS records;
+- PM-107-GATE-01 and its corrective scope;
+- PR #103 catalog/runtime evidence;
 - residual risks;
-- closed-gate finality;
-- blocks and authorities;
-- the single next safe action.
+- F1-02 sequence;
+- blocks, authorities and exact next safe action.
