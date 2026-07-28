@@ -1,6 +1,6 @@
 # FECH.AI — SFJM Blocked Actions
 
-**Status:** `ACTIVE_BLOCKS / PR103_SMOKE_RECORDED / DOC_PR_DRAFT / PR02_BLOCKED_PENDING_CLOSURE`  
+**Status:** `ACTIVE_BLOCKS / PR107_READY / PM107_CORRECTION_PENDING_AUDIT / PR02_BLOCKED_PENDING_CLOSURE`  
 **Observed on:** `2026-07-28`  
 **Repository:** `wagnerjfjunior/fecha.ai`
 
@@ -21,37 +21,52 @@ Without new material evidence and explicit authority, do not:
 - alter or drop `public.marcar_senha_inicial_definida()`;
 - repeat the completed positive smoke merely for additional unanimity;
 - reopen PR #104, #105 or #106 lifecycle;
-- create a recursive PR solely to record this documentation PR's future squash SHA.
+- create a recursive PR solely to record PR #107's future squash SHA.
 
-## 3. Current documentation PR blocks
-
-For branch:
+## 3. PR #107 current blocks
 
 ```text
-docs/pr103-authenticated-smoke-evidence
+PR: #107
+Branch: docs/pr103-authenticated-smoke-evidence
+State: OPEN / READY FOR REVIEW
+Original audited head: 51105692b0957454bd3d83f70e6591472fcf10dc
+Pre-merge result: FAIL — PM-107-GATE-01
 ```
 
-block:
+Block:
 
 - any eighth changed file;
+- any change outside the six authorized SFJM files;
 - runtime, frontend, SQL, migration, RPC-body, Auth, RLS, policy, grant, Edge, Vercel or production change;
-- any additional commit without a material finding and a new exact authority;
-- GitHub comment or review by the executor;
-- marking Ready;
-- merge;
-- representing proposed branch content as canonical `main`.
+- any commit after the single PM-107-GATE-01 corrective commit;
+- any new comment or review;
+- metadata change or Draft conversion;
+- merge until the corrective head passes the bounded validation sequence;
+- representing branch content as canonical `main`.
 
-## 4. Program dependency blocks
+The previously executed Ready transition is not blocked or reverted.
+
+## 4. Required corrective validation sequence
 
 ```text
-PR-02: implementation and PR creation blocked until the smoke-documentation PR is closed
-PR-03: blocked until PR-02 is deployed and proven
-PR-04 through PR-09: do not advance out of canonical order without newer evidence and authority
+1. GPT0 delta-only audit of the six-file correction.
+2. If PASS, GPT4 lifecycle/scope validation on the same head.
+3. If PASS, pre-merge READ_ONLY validation.
+4. Separate Product Authority for squash merge.
 ```
 
-Do not generalize the consumed PR-01 smoke authorization to PR-02, PR-03 or later work.
+No step authorizes the next step automatically.
 
-## 5. Runtime and data blocks
+## 5. Program dependency blocks
+
+```text
+PR-02: implementation and PR creation blocked until PR #107 is closed
+       and the resulting canonical main is confirmed
+PR-03: blocked until PR-02 is deployed and proven
+PR-04 through PR-09: do not advance out of canonical order
+```
+
+## 6. Runtime and data blocks
 
 Without a new exact authority, do not alter:
 
@@ -63,7 +78,7 @@ Without a new exact authority, do not alter:
 
 Do not execute concurrency, missing-profile, inactive-profile, rollback or reapply tests in production.
 
-## 6. Evidence-overclaim blocks
+## 7. Evidence-overclaim blocks
 
 Do not claim that the completed smoke establishes:
 
@@ -73,30 +88,15 @@ Do not claim that the completed smoke establishes:
 - rollback;
 - reapply;
 - frontend cutover;
+- deployed frontend proof;
 - denial of legacy direct `corretores` update;
 - F1-02 completion;
 - Security Go.
 
-## 7. Audit-loop block
+## 8. Procedural deviation
 
-The material invalidation event is limited to the new authenticated runtime evidence.
+The accidental `noop` issue comment is accepted as non-material. It does not authorize any further comment and does not alter the branch, diff, head, mergeability or evidence boundary.
 
-Before any audit outside the current seven-file documentary delta, require:
-
-```text
-1. prior gate;
-2. prior anchor;
-3. exact changed evidence;
-4. triggered invalidation rule;
-5. exact revalidation scope.
-```
-
-Without all five:
-
-```text
-AUDIT_LOOP_BLOCKED
-```
-
-## 8. Removal rule
+## 9. Removal rule
 
 A block is removed only by exact canonical evidence identifying scope, authority, validator, residual risk, rollback or containment, expiration and next safe action.

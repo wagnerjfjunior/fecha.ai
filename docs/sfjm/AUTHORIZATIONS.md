@@ -1,14 +1,14 @@
 # FECH.AI — SFJM Authorizations
 
-**Status:** `AUTHORIZATION_REGISTER / PR103_SMOKE_DOC_PR_PUBLICATION_CONSUMED / FAIL_CLOSED`  
+**Status:** `AUTHORIZATION_REGISTER / PR107_READY / PM107_CORRECTION_CONSUMED_ON_COMMIT / FAIL_CLOSED`  
 **Observed on:** `2026-07-28`  
 **Repository:** `wagnerjfjunior/fecha.ai`
 
 ## 1. Interpretation rule
 
-Authority is valid only for the exact repository, environment, object, operation, prohibitions and expiration stated by the Product Authority. Recording a past authorization does not reactivate it.
+Authority is valid only for the exact repository, object, operation, scope, prohibitions and expiration stated by Product Authority. Recording a consumed authority does not reactivate it.
 
-## 2. Previously consumed authorities
+## 2. Consumed authorities
 
 ```text
 PR #103 Ready/merge/application authority: CONSUMED
@@ -17,41 +17,40 @@ Synthetic fixture cleanup authority: CONSUMED
 PR #104 lifecycle/application authority: CONSUMED
 PR #105 documentation closure authority: CONSUMED
 PR #106 documentation lifecycle authority: CONSUMED
+PR #107 initial branch/file/PR publication authority: CONSUMED
+PR #107 GPT0 review COMMENT authority: CONSUMED
+PR #107 GPT4 review COMMENT authority: CONSUMED
+PR #107 Ready authority: CONSUMED / EXECUTED
 ```
 
-Results relevant to this record:
+Results relevant to PR #107:
 
 ```text
-PR #103: CLOSED / MERGED
-Migration 20260727080929_f1_02_password_state_rpc: APPLIED
-RPC catalog contract: VALIDATED
 Authenticated positive smoke: PASS
 Immediate runtime idempotency: PASS
 Synthetic Auth/profile/team cleanup: COMPLETE
+GPT0 documentation audit at 51105692b0957454bd3d83f70e6591472fcf10dc: PASS
+GPT4 lifecycle/scope validation at 51105692b0957454bd3d83f70e6591472fcf10dc: PASS
+PR #107 Ready transition: EXECUTED
+Pre-merge validation at 51105692b0957454bd3d83f70e6591472fcf10dc:
+FAIL — PM-107-GATE-01
 ```
 
-No consumed authority authorizes repetition or expansion.
+## 3. PM-107-GATE-01 corrective authority
 
-## 3. Current Product Authority instruction
-
-On `2026-07-28`, Product Authority authorized only the documentation PR that records the completed smoke and expressly required PR-02 to remain unauthorized until this documentation PR is closed.
-
-### 3.1 Authorized repository and base
+Product Authority authorized exactly one corrective commit on:
 
 ```text
 Repository: wagnerjfjunior/fecha.ai
-Canonical main at authorization preflight: 9624900ada5d29e24476ab6a0a0907cb4854e509
+PR: #107
 Branch: docs/pr103-authenticated-smoke-evidence
-PR title: docs(security): record PR103 authenticated smoke
-PR mode: Draft
+Required parent: 51105692b0957454bd3d83f70e6591472fcf10dc
+Commit message: docs(sfjm): reconcile PR107 pre-merge lifecycle state
 ```
 
-### 3.2 Authorized paths
-
-Exactly:
+Authorized paths only:
 
 ```text
-docs/security/evidence/2026-07-28-pr103-authenticated-smoke-and-idempotency.md
 docs/sfjm/AUTHORIZATIONS.md
 docs/sfjm/BLOCKED_ACTIONS.md
 docs/sfjm/CURRENT_STATE.md
@@ -60,39 +59,25 @@ docs/sfjm/NEXT_SAFE_ACTION.md
 docs/sfjm/handoffs/CURRENT.md
 ```
 
-### 3.3 Authorized operations
-
-Only:
-
-- create the dedicated branch from the confirmed `main`;
-- create the seven-file documentation delta;
-- publish the initial commits to that branch;
-- open one Draft pull request;
-- perform read-only post-publication metadata and changed-file verification;
-- report branch, commits, head, files and PR URL.
-
-### 3.4 Expiration and consumption
+Authorized operation:
 
 ```text
-Branch/file/PR publication authority:
-CONSUMED when the initial Draft PR is created.
-
-It expires immediately if:
-- an eighth path appears;
-- runtime, frontend or Supabase content appears;
-- the operation is stopped;
-- the confirmed base changes before branch creation.
+one commit
+one branch-ref update
+read-only post-commit verification
+report new head
 ```
 
-After initial publication, no additional commit is authorized without a material documented finding and a new exact Product Authority instruction.
+The authority is consumed immediately when the single corrective commit is created and the branch is moved to it.
 
-## 4. Explicit non-authorizations
+## 4. Current non-authorizations
 
 ```text
-Ready
+second corrective commit
+additional comment or review
+PR metadata change
+Draft conversion
 merge
-GitHub comment or review
-additional commit
 runtime
 frontend
 Supabase
@@ -114,30 +99,28 @@ F1-02 acceptance
 WDP change
 ```
 
+The accidental `noop` issue comment is accepted by Product Authority as a non-material procedural deviation. It creates no continuing comment authority.
+
 ## 5. Future authorities required
 
-A new explicit authority is required for:
+A new explicit Product Authority instruction is required for:
 
-- a corrective commit;
-- GPT4 lifecycle handling that mutates metadata;
-- marking the documentation PR Ready;
-- merging the documentation PR;
-- any rollback;
-- starting or implementing PR-02;
-- deploying PR-02;
-- any new runtime or Supabase test;
+- any commit after the PM-107-GATE-01 correction;
+- any new comment or review;
+- merge;
+- rollback;
+- PR-02 branch creation or implementation;
+- frontend, runtime, Vercel, production or Supabase change;
 - F1-02 acceptance;
 - Security Go.
 
-PR-02 may be authorized only after this documentation PR is closed and the resulting canonical `main` is confirmed.
+PR-02 may be authorized only after PR #107 is closed and the resulting canonical `main` is confirmed.
 
 ## 6. Audit-finality rule
 
-The authenticated runtime smoke is a material new evidence event. It permits revalidation only of claims affected by that evidence and of the current seven-file documentation delta.
+The corrective commit invalidates prior GPT0/GPT4 conclusions only for the six-file documentary delta. It does not invalidate the authenticated smoke, immediate idempotency, cleanup evidence or unrelated historical gates.
 
 ```text
-NO OTHER INVALIDATION EVENT
-→ NO OTHER REAUDIT
+NO MATERIAL CHANGE
+→ NO REAUDIT OUTSIDE THE EXACT SIX-FILE DELTA
 ```
-
-Historical unknown gate verdicts must not be invented merely to complete a record.

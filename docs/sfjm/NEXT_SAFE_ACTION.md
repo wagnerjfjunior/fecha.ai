@@ -1,40 +1,48 @@
 # FECH.AI — SFJM Next Safe Action
 
-**Status:** `NEXT_SAFE_ACTION / PR103_SMOKE_DOCUMENTATION_AUDIT`  
+**Status:** `NEXT_SAFE_ACTION / PM107_GPT0_DELTA_ONLY_AUDIT`  
 **Observed on:** `2026-07-28`  
 **Repository:** `wagnerjfjunior/fecha.ai`
 
-## 1. Completed material step
+## 1. Completed material steps
 
 ```text
 PR #103 authenticated positive smoke: PASS
 PR #103 immediate repeated-call idempotency: PASS
 Synthetic fixture cleanup: COMPLETE
+PR #107 GPT0 audit at 51105692b0957454bd3d83f70e6591472fcf10dc: PASS
+PR #107 GPT4 lifecycle/scope at 51105692b0957454bd3d83f70e6591472fcf10dc: PASS
+PR #107 Ready authority: CONSUMED / EXECUTED
+PR #107 pre-merge validation: FAIL — PM-107-GATE-01
+PM-107-GATE-01 corrective commit: PUBLISHED / HEAD MUST BE RESOLVED LIVE
 ```
-
-The runtime result is recorded in the current documentation-only Draft PR.
 
 ## 2. Exact next safe action
 
 ```text
-Run one independent GPT0 documentation audit
-against the exact current head of:
+Run one independent GPT0 delta-only documentation audit
+of the PM-107-GATE-01 corrective commit
+against the exact live head of:
 docs/pr103-authenticated-smoke-evidence
 ```
 
 This is a read-only audit action.
 
-## 3. GPT0 audit scope
+## 3. Exact delta-only scope
 
-Validate:
-
-1. live `main` remains the expected base or classify exact drift;
-2. the PR is open and Draft;
-3. the exact head is captured;
-4. the changed-file set contains exactly:
+Compare:
 
 ```text
-docs/security/evidence/2026-07-28-pr103-authenticated-smoke-and-idempotency.md
+parent:
+51105692b0957454bd3d83f70e6591472fcf10dc
+
+corrective head:
+resolve live
+```
+
+The corrective commit must modify exactly:
+
+```text
 docs/sfjm/AUTHORIZATIONS.md
 docs/sfjm/BLOCKED_ACTIONS.md
 docs/sfjm/CURRENT_STATE.md
@@ -43,60 +51,56 @@ docs/sfjm/NEXT_SAFE_ACTION.md
 docs/sfjm/handoffs/CURRENT.md
 ```
 
-5. the evidence records only the observed positive smoke, immediate idempotency and cleanup;
-6. concurrency, missing-profile, inactive-profile, rollback and reapply remain unestablished;
-7. no password, JWT, token, secret or unsanitized real-user/business payload appears;
-8. PR-02 remains unimplemented and unauthorized;
-9. PR-03 remains blocked;
-10. Security Go, F1-02 acceptance and WDP remain unchanged.
+Confirm:
 
-## 4. Required lifecycle sequence
+1. one corrective commit only;
+2. parent is exactly `51105692b0957454bd3d83f70e6591472fcf10dc`;
+3. the smoke evidence file is unchanged;
+4. PR #107 remains OPEN / READY FOR REVIEW;
+5. base remains `main@9624900ada5d29e24476ab6a0a0907cb4854e509`;
+6. final changed-file set remains exactly seven documentation files;
+7. GPT0 and GPT4 prior PASS results are recorded at the original head;
+8. Ready is recorded as authorized and executed;
+9. pre-merge FAIL `PM-107-GATE-01` is recorded;
+10. merge remains unauthorized;
+11. PR-02 remains unauthorized;
+12. evidence boundaries and residual risks are preserved.
+
+## 4. Required sequence after the delta audit
 
 ```text
-1. GPT0 exact-head documentation audit.
-2. If GPT0 passes, one GPT4 exact-head lifecycle/scope validation.
-3. Separate Product Authority for Ready.
-4. Separate pre-merge validation and merge authority.
-5. Confirm the resulting canonical main and closed/merged state.
-6. Only then request separate PR-02 implementation authority.
+1. GPT0 delta-only audit.
+2. If PASS, GPT4 lifecycle/scope validation on the same corrective head.
+3. If PASS, pre-merge READ_ONLY validation.
+4. If PASS, request separate Product Authority for squash merge.
+5. After authorized merge, confirm the resulting canonical main and PR closure.
+6. Only then request separate PR-02 authority.
 ```
 
 No step authorizes the next step automatically.
 
-## 5. Required future authority
-
-A new explicit Product Authority instruction is required for:
-
-- any corrective commit;
-- marking the PR Ready;
-- merging the PR;
-- PR-02 branch creation;
-- PR-02 implementation;
-- frontend or runtime changes;
-- Vercel deployment or production smoke;
-- any Supabase mutation.
-
-## 6. Explicit non-actions
+## 5. Current non-actions
 
 ```text
-No implementation
-No frontend change
-No Supabase change
 No additional commit
-No Ready
+No comment or review
+No metadata change
+No Draft conversion
 No merge
-No PR-02 creation
+No runtime or frontend change
+No Supabase change
+No PR-02
 No PR-03
 No Security Go
 No F1-02 acceptance
 No WDP change
 ```
 
-## 7. Anti-loop
+## 6. Anti-loop
 
-The new authenticated runtime evidence is the material event that justified this reconciliation. It does not invalidate unrelated closed gates.
+The new corrective commit is a valid invalidation event only for the six-file documentary delta.
 
 ```text
-NO ADDITIONAL MATERIAL CHANGE
-→ NO REAUDIT OUTSIDE THE EXACT CURRENT DOCUMENTARY DELTA
+NO OTHER MATERIAL CHANGE
+→ NO REAUDIT OUTSIDE THE SIX-FILE DELTA
 ```
