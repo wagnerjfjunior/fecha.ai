@@ -1,8 +1,8 @@
 # FECH.AI — SFJM Current State
 
-**Lifecycle state:** `PR103_CLOSED_WITH_RESIDUAL_RISK / F1_02_ACTIVE / PR02_NEXT_NOT_AUTHORIZED`  
+**Lifecycle state:** `PR103_RUNTIME_SMOKE_PASSED / F1_02_ACTIVE / SMOKE_DOC_PR_DRAFT / PR02_NOT_AUTHORIZED`  
 **Record type:** `OPERATIONAL_STATE / DOCUMENTATION_ONLY`  
-**Observed on:** `2026-07-27`  
+**Observed on:** `2026-07-28`  
 **Repository:** `wagnerjfjunior/fecha.ai`
 
 ## 1. Product context
@@ -21,20 +21,19 @@ WDP: 0
 
 Frontend or Action requests. Backend, RPC and Supabase validate and decide. AI assists but is not authority.
 
-## 2. Current canonical GitHub state
+## 2. Canonical GitHub anchor before this PR
 
 ```text
-main observed: 276a3e55155cd0e57b6155dc13b998704bdfd654
+main observed: 9624900ada5d29e24476ab6a0a0907cb4854e509
 PR #103: CLOSED / MERGED
 PR #103 final head: abf6b4026343eae437283280269ed2997911dcec
 PR #103 squash commit: 276a3e55155cd0e57b6155dc13b998704bdfd654
-PR #103 changed files: 1
-Program role: F1-02 PR-01
+PR #106 squash / current main: 9624900ada5d29e24476ab6a0a0907cb4854e509
 ```
 
-This documentation-only closure PR may advance `main`. Its own merge must not trigger a recursive reconciliation PR without new material evidence.
+This branch is a proposed documentation reconciliation. Its contents are not canonical `main` until independently reviewed, separately authorized and merged.
 
-## 3. PR #103 operational closure
+## 3. PR #103 catalog state
 
 ```text
 Migration: 20260727080929 / f1_02_password_state_rpc / APPLIED
@@ -46,16 +45,57 @@ authenticated EXECUTE: true
 anon EXECUTE: false
 service_role EXECUTE: false
 PUBLIC EXECUTE: false
-Operational result: CLOSED WITH RESIDUAL RISK
 ```
 
-Canonical closure evidence:
+## 4. New controlled runtime evidence
+
+Canonical candidate:
 
 ```text
-docs/security/evidence/2026-07-27-pr103-operational-closure-with-residual-risk.md
+docs/security/evidence/2026-07-28-pr103-authenticated-smoke-and-idempotency.md
 ```
 
-## 4. F1-02 PROGRAM ANCHOR
+Observed:
+
+```text
+First call:
+must_change_password: true → false
+xmin: 6997 → 6999
+RPC return: true
+unexpected changed fields: none
+
+Immediate repeated call:
+must_change_password: false → false
+xmin: 6999 → 6999
+RPC return: true
+unexpected changed fields: none
+```
+
+Final cleanup verification:
+
+```text
+remaining Auth users: 0
+remaining synthetic broker profiles: 0
+remaining synthetic teams: 0
+synthetic company: preserved inactive
+```
+
+## 5. PR #103 operational state after the smoke
+
+```text
+F1-02 PR-01: COMPLETED WITH RESIDUAL RISK
+Authenticated positive smoke: ESTABLISHED / PASS
+Immediate runtime idempotency: ESTABLISHED / PASS
+Controlled concurrency: NOT ESTABLISHED
+Missing-profile execution: NOT ESTABLISHED
+Inactive-profile execution: NOT ESTABLISHED
+Rollback execution: NOT ESTABLISHED
+Reapply after rollback: NOT ESTABLISHED
+```
+
+The new runtime evidence narrows the residual-risk set. It does not grant Security Go or F1-02 acceptance.
+
+## 6. F1-02 program anchor
 
 Canonical source:
 
@@ -66,54 +106,36 @@ docs/security/evidence/F1-02_REMEDIATION_MASTER_PLAN.md
 ```text
 Program structure: 5 operational windows / 10 planned PRs
 PR-00: completed
-PR-01: completed with residual risk
-PR-02: next separate workstream / not authorized / no independent PR located
+PR-01: completed with residual risk; positive smoke and immediate idempotency now established
+PR-02: next technical workstream / implementation not authorized
 PR-03: blocked until PR-02 is deployed and proven
 PR-04 through PR-09: planned / not started unless newer canonical evidence proves otherwise
 ```
 
-Auxiliary GitHub PRs:
+## 7. Current documentation workstream
 
 ```text
-#104: bounded GPT3/Supabase catalog gateway
-#105: SFJM reconciliation after #104
+Branch: docs/pr103-authenticated-smoke-evidence
+Title: docs(security): record PR103 authenticated smoke
+Mode: documentation-only / Draft
+Allowed paths: exactly 7
+Ready: NOT AUTHORIZED
+Merge: NOT AUTHORIZED
+PR-02 implementation: NOT AUTHORIZED
 ```
 
-PRs #104 and #105 do not replace, renumber or consume any program item PR-00 through PR-09.
-
-## 5. Residual risks
-
-Not established by the closure evidence:
-
-- authenticated positive smoke;
-- runtime idempotency;
-- runtime concurrency;
-- missing-profile and inactive-profile execution;
-- rollback execution;
-- reapply after rollback.
-
-PR-02 remains necessary for frontend cutover. PR-03 remains blocked.
-
-## 6. Local decision boundary
-
-Any laboratory, smoke or test waiver consumed during PR-01 applies only to F1-02 PR-01 / GitHub PR #103. It does not modify the F1-02 master plan globally.
-
-## 7. Closed-gate finality
-
-```text
-NO INVALIDATION EVENT
-→ NO REAUDIT
-```
-
-Do not repeat a closed gate merely because a conversation, specialist or documentation-only main tip changed. A re-audit requires the prior gate, prior anchor, exact changed evidence, triggered invalidation rule and exact revalidation scope.
+No runtime, frontend or Supabase change belongs to this workstream.
 
 ## 8. Current authority state
 
 ```text
 PR #103 lifecycle/application authority: CONSUMED
-PR #104 lifecycle/application authority: CONSUMED
-PR #105 documentation closure authority: CONSUMED
-PR-02 implementation or PR creation: NOT AUTHORIZED
+PR #103 controlled smoke authority: CONSUMED / EXPIRED AFTER CLEANUP
+Current smoke-documentation PR creation authority: CONSUMED BY INITIAL PUBLICATION
+Additional commits: NOT AUTHORIZED WITHOUT A MATERIAL FINDING AND NEW EXACT AUTHORITY
+Ready: NOT AUTHORIZED
+Merge: NOT AUTHORIZED
+PR-02: NOT AUTHORIZED UNTIL THIS DOCUMENTATION PR IS CLOSED
 PR-03: BLOCKED
 Security Go: DENIED
 F1-02 acceptance: NOT AUTHORIZED
@@ -122,6 +144,6 @@ WDP: 0
 
 ## 9. Next safe action
 
-Reconstruct the exact canonical scope of F1-02 PR-02, locate the current frontend call site, validate dependencies and produce a bounded implementation proposal.
+Run one independent GPT0 documentation audit at the exact current head of the Draft smoke-evidence PR.
 
-No implementation, branch, commit or PR-02 creation is authorized by this record.
+Do not mark Ready, merge or start PR-02 in the same step.
