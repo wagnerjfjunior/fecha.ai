@@ -1,7 +1,7 @@
 # FECH.AI — SFJM Evidence Freshness
 
-**Status:** `EVIDENCE_FRESHNESS_REGISTER / PR103_CATALOG_VALIDATED / FINAL_GATE_INVENTORY / FAIL_CLOSED`  
-**Observed on:** `2026-07-27`  
+**Status:** `EVIDENCE_FRESHNESS_REGISTER / PR103_RUNTIME_SMOKE_VALIDATED / FINAL_GATE_INVENTORY / FAIL_CLOSED`  
+**Observed on:** `2026-07-28`  
 **Repository:** `wagnerjfjunior/fecha.ai`
 
 ## 1. Freshness rule
@@ -13,14 +13,14 @@ A change in `main` does not invalidate all evidence automatically. Revalidate on
 ## 2. GitHub evidence
 
 ```text
-main observed: 276a3e55155cd0e57b6155dc13b998704bdfd654
+main observed before this documentation PR: 9624900ada5d29e24476ab6a0a0907cb4854e509
 PR #103: CLOSED / MERGED
 PR #103 final head: abf6b4026343eae437283280269ed2997911dcec
 PR #103 squash: 276a3e55155cd0e57b6155dc13b998704bdfd654
-PR #103 changed files: 1
+PR #106 squash / observed main: 9624900ada5d29e24476ab6a0a0907cb4854e509
 ```
 
-The closure PR may advance `main`. That documentation-only change does not invalidate the PR #103 migration or catalog evidence unless it changes a material object or claim.
+The current branch is documentation-only proposed state. It becomes canonical only after separate audit, Ready authority and merge authority.
 
 ## 3. Live Supabase evidence — PR #103
 
@@ -30,7 +30,7 @@ Project:
 uobxxgzshrmbtjfdolxd / production
 ```
 
-Verified read-only:
+Catalog state verified:
 
 ```text
 Migration version: 20260727080929
@@ -49,17 +49,55 @@ PUBLIC EXECUTE: false
 Direct ACL: postgres, authenticated
 ```
 
-## 4. Evidence not established
+Controlled runtime evidence observed on `2026-07-28`:
 
-The closure evidence does not establish:
+```text
+First authenticated call:
+must_change_password true → false
+xmin 6997 → 6999
+RPC return true
+unexpected changed fields none
 
-- authenticated positive smoke;
-- repeated-call idempotency at runtime;
+Immediate repeated call:
+must_change_password false → false
+xmin 6999 → 6999
+RPC return true
+unexpected changed fields none
+
+Cleanup:
+remaining Auth users 0
+remaining synthetic broker profiles 0
+remaining synthetic teams 0
+synthetic company preserved inactive
+```
+
+Evidence source candidate:
+
+```text
+docs/security/evidence/2026-07-28-pr103-authenticated-smoke-and-idempotency.md
+```
+
+## 4. Evidence established and not established
+
+Established by the controlled smoke:
+
+- authenticated positive execution;
+- transition `must_change_password = true → false`;
+- immediate repeated-call idempotency;
+- no second row version on the repeated call;
+- no unexpected change in the captured profile fields;
+- synthetic-fixture cleanup.
+
+Not established:
+
 - controlled concurrency behavior;
 - missing-profile execution;
 - inactive-profile execution;
 - rollback execution;
-- reapply after rollback.
+- reapply after rollback;
+- frontend cutover;
+- deployed frontend proof;
+- denial of legacy direct table update.
 
 Test design is not execution evidence.
 
@@ -67,7 +105,9 @@ Test design is not execution evidence.
 
 ```text
 F1-02 PR-01: COMPLETED WITH RESIDUAL RISK
-PR-02: next separate workstream / not authorized / no independent PR located
+Authenticated positive smoke: PASS
+Immediate runtime idempotency: PASS
+PR-02: next technical workstream / implementation not authorized
 PR-03: blocked until PR-02 is deployed and proven
 Security Go: DENIED
 F1-02: ACTIVE REMEDIATION / BLOCKED
@@ -150,6 +190,8 @@ Explicit invalidation events: migration-content change; contradictory catalog pr
 Canonical evidence source: PR #103 body, integrated migration and bounded catalog evidence described by that PR
 ```
 
+The new runtime smoke narrows later operational residual risk. It does not retroactively change this preflight gate's historical scope.
+
 ### 6.7 PR #103 final lifecycle/merge gate — GPT4
 
 ```text
@@ -162,20 +204,22 @@ Explicit invalidation events: head, base, changed-file set, checks, mergeability
 Canonical evidence source: PR #103 live metadata
 ```
 
-### 6.8 PR #103 controlled production application validation — GPT3
+### 6.8 PR #103 controlled production application and smoke validation
 
 ```text
-Gate: PR #103 controlled production application validation
-Owner: UNKNOWN — CANONICAL EVIDENCE REQUIRED
-Canonical anchor: main@276a3e55155cd0e57b6155dc13b998704bdfd654 / project uobxxgzshrmbtjfdolxd / migration 20260727080929_f1_02_password_state_rpc
-Final verdict: UNKNOWN — CANONICAL EVIDENCE REQUIRED
+Gate: PR #103 controlled production application and authenticated smoke validation
+Owner: Product Authority-authorized controlled validation; not an independent final auditor
+Canonical anchor: main@9624900ada5d29e24476ab6a0a0907cb4854e509 / project uobxxgzshrmbtjfdolxd / migration 20260727080929_f1_02_password_state_rpc
+Final verdict: PASS — AUTHENTICATED POSITIVE SMOKE AND IMMEDIATE IDEMPOTENCY ESTABLISHED
 Migration: APPLIED
 RPC: EXISTS
 Catalog properties: OBSERVED
-Operational closure: CLOSED WITH RESIDUAL RISK
-Residual risks: authenticated positive smoke: not established; runtime idempotency: not established; runtime concurrency: not established; missing-profile execution: not established; inactive-profile execution: not established; rollback execution: not established; reapply after rollback: not established
-Explicit invalidation events: function signature, owner, security mode, search_path or ACL change; migration-history contradiction; contradictory live catalog evidence; new authenticated runtime evidence
-Canonical evidence source: docs/security/evidence/2026-07-27-pr103-operational-closure-with-residual-risk.md
+First-call state: true → false / xmin 6997 → 6999
+Repeated-call state: false → false / xmin 6999 → 6999
+Cleanup: Auth users 0 / profiles 0 / teams 0 / company inactive
+Residual risks: runtime concurrency not established; missing-profile execution not established; inactive-profile execution not established; rollback execution not established; reapply after rollback not established; frontend cutover not established
+Explicit invalidation events: function signature, owner, security mode, search_path or ACL change; migration-history contradiction; contradictory live catalog evidence; contradictory authenticated runtime evidence
+Canonical evidence source: docs/security/evidence/2026-07-28-pr103-authenticated-smoke-and-idempotency.md
 ```
 
 ### 6.9 PR #104 gateway final security gate — GPT3
@@ -214,38 +258,48 @@ Explicit invalidation events: contradiction in PR #105 scope, merge result or re
 Canonical evidence source: PR #105 metadata/body
 ```
 
-### 6.12 PR #106 current documentation gate — GPT0
+### 6.12 PR #106 documentation gate — GPT0
 
 ```text
-Gate: PR #106 current documentation gate
+Gate: PR #106 documentation gate
 Owner: GPT0 — FECH.AI Documentation Auditor
-Prior attempt target: b9aa83a50f34c7cfbbd8158aeae01df39b787e50
-Live head observed during that attempt: 94b2174339b870331d62aca5c6d9d9cf1149ce3e
-Prior result: FAIL — HEAD CHANGED
-Prior substantive documentary verdict: NONE
-Current corrected-head documentary verdict: UNKNOWN — CANONICAL EVIDENCE REQUIRED
-Corrective commit: 94b2174339b870331d62aca5c6d9d9cf1149ce3e — docs(sfjm): fix PR106 authority and gate inventory
-Corrective commit scope: new content that required an independent audit of the complete current head; no prior substantive finding is attributed to this commit
-Residual risks: the final GPT0 verdict for the authorized one-file documentary correction remains pending
-Explicit invalidation events: any later head change, additional commit or changed file outside docs/sfjm/EVIDENCE_FRESHNESS.md invalidates the pending one-file delta validation
-Canonical evidence source: PR #106 live metadata and the authorized corrective audit cycle
+Canonical anchor: PR #106 final head 3b0d28406e15e9da979673eed1c7fdf81c609f76 / squash 9624900ada5d29e24476ab6a0a0907cb4854e509
+Lifecycle result: CLOSED / MERGED
+Final specialist verdict: UNKNOWN — CANONICAL EVIDENCE REQUIRED
+Residual risks: the exact final GPT0 report is not present in current versioned evidence; merge state is not a substitute for the missing report
+Explicit invalidation events: contradiction in the seven-file PR #106 scope, merge result or closure claims; newer canonical gate record
+Canonical evidence source: PR #106 live metadata and squash commit 9624900ada5d29e24476ab6a0a0907cb4854e509
 ```
 
-### 6.13 PR #106 current lifecycle/scope gate — GPT4
+### 6.13 PR #106 lifecycle/scope gate — GPT4
 
 ```text
-Gate: PR #106 current lifecycle and scope gate
+Gate: PR #106 lifecycle and scope gate
 Owner: GPT4 — FECH.AI Vercel/GitHub CI-CD Specialist
-Canonical anchor: corrective head produced by the single commit containing this inventory; exact SHA must be captured by post-commit validation
-Final verdict: UNKNOWN — CANONICAL EVIDENCE REQUIRED
-Residual risks: final GPT4 lifecycle/scope validation has not yet been completed
-Explicit invalidation events: later head change, extra commit, changed-file set outside the seven-document PR scope, base drift, mergeability/check contradiction or PR-state change
-Canonical evidence source: PR #106 live metadata and the authorized corrective audit cycle
+Canonical anchor: PR #106 final head 3b0d28406e15e9da979673eed1c7fdf81c609f76 / squash 9624900ada5d29e24476ab6a0a0907cb4854e509
+Lifecycle result: CLOSED / MERGED
+Final specialist verdict: UNKNOWN — CANONICAL EVIDENCE REQUIRED
+Residual risks: the exact final GPT4 report is not present in current versioned evidence
+Explicit invalidation events: contradiction in head, changed-file set, merge result or later canonical lifecycle evidence
+Canonical evidence source: PR #106 live metadata and squash commit 9624900ada5d29e24476ab6a0a0907cb4854e509
+```
+
+### 6.14 Current PR #103 smoke-evidence documentation gate — GPT0
+
+```text
+Gate: PR #103 authenticated smoke evidence reconciliation — documentation
+Owner: GPT0 — FECH.AI Documentation Auditor
+Base anchor: main@9624900ada5d29e24476ab6a0a0907cb4854e509
+Branch: docs/pr103-authenticated-smoke-evidence
+Current head: must be resolved live by the independent audit
+Final verdict: PENDING
+Changed-file contract: exactly seven documentation files
+Residual risks: overclaim, leakage of secrets or unsanitized real payloads, contradiction with runtime evidence, or unauthorized PR-02 scope
+Explicit invalidation events: any head change after audit; eighth file; runtime/frontend/Supabase content; contradictory live evidence
+Canonical evidence source after merge: this file and docs/security/evidence/2026-07-28-pr103-authenticated-smoke-and-idempotency.md
 ```
 
 The `UNKNOWN` state does not authorize an invented verdict. Do not request a new audit merely to replace an historical documentation gap.
-
-The one GPT0 and one GPT4 validations already authorized for the exact PR #106 corrective head remain required for the current closure lifecycle. After they complete, do not repeat them without a new material invalidation event and new authority.
 
 ## 7. Invalidation events
 
@@ -254,11 +308,13 @@ Revalidate only the narrow affected evidence after:
 - change to PR #103 integrated migration content;
 - change to `public.marcar_senha_inicial_definida()` signature, owner, security mode or search path;
 - ACL or role-membership change affecting execution;
-- contradictory live catalog evidence;
+- contradictory live catalog or authenticated runtime evidence;
 - frontend cutover or security-boundary change;
 - environment change;
 - new material security finding;
 - explicit expiration condition recorded by the original gate.
+
+The new authenticated runtime evidence is an invalidation event only for the previous claim that positive smoke and immediate runtime idempotency were not established.
 
 Not invalidation events:
 
