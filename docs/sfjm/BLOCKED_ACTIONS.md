@@ -1,14 +1,14 @@
 # FECH.AI — SFJM Blocked Actions
 
-**Status:** `ACTIVE_BLOCKS / PR103_CLOSED / PR02_NOT_AUTHORIZED / FAIL_CLOSED`  
-**Observed on:** `2026-07-27`  
+**Status:** `ACTIVE_BLOCKS / PR103_SMOKE_RECORDED / DOC_PR_DRAFT / PR02_BLOCKED_PENDING_CLOSURE`  
+**Observed on:** `2026-07-28`  
 **Repository:** `wagnerjfjunior/fecha.ai`
 
 ## 1. Product blocks
 
 - declare MVP 1 — Família security-ready;
 - grant Security Go or F1-02 acceptance;
-- award WDP from PR count or documentation alone;
+- award WDP from PR count, documentation or one smoke alone;
 - broad paid commercialization;
 - represent controlled-beta risk acceptance as a security waiver.
 
@@ -16,54 +16,72 @@
 
 Without new material evidence and explicit authority, do not:
 
-- reopen PR #103 Ready, merge or application lifecycle;
+- reopen PR #103 Ready, merge or migration-application lifecycle;
 - reapply migration `20260727080929_f1_02_password_state_rpc`;
 - alter or drop `public.marcar_senha_inicial_definida()`;
-- reopen PR #104 or PR #105 audits;
-- create another metadata-only closure loop;
-- create a PR solely to record this closure PR's future squash SHA.
+- repeat the completed positive smoke merely for additional unanimity;
+- reopen PR #104, #105 or #106 lifecycle;
+- create a recursive PR solely to record this documentation PR's future squash SHA.
 
-## 3. Program dependency blocks
+## 3. Current documentation PR blocks
+
+For branch:
 
 ```text
-PR-02: not authorized / no independent PR located
+docs/pr103-authenticated-smoke-evidence
+```
+
+block:
+
+- any eighth changed file;
+- runtime, frontend, SQL, migration, RPC-body, Auth, RLS, policy, grant, Edge, Vercel or production change;
+- any additional commit without a material finding and a new exact authority;
+- GitHub comment or review by the executor;
+- marking Ready;
+- merge;
+- representing proposed branch content as canonical `main`.
+
+## 4. Program dependency blocks
+
+```text
+PR-02: implementation and PR creation blocked until the smoke-documentation PR is closed
 PR-03: blocked until PR-02 is deployed and proven
 PR-04 through PR-09: do not advance out of canonical order without newer evidence and authority
 ```
 
-Do not treat GitHub PRs #104 or #105 as replacements for any F1-02 item PR-00 through PR-09.
+Do not generalize the consumed PR-01 smoke authorization to PR-02, PR-03 or later work.
 
-Do not generalize laboratory, smoke or test waivers consumed for PR-01 to later work.
+## 5. Runtime and data blocks
 
-## 4. Runtime and data blocks
-
-Without new exact authority, do not alter:
+Without a new exact authority, do not alter:
 
 - runtime or frontend;
-- Supabase schema, Auth, RLS, policies, grants or RPC bodies;
+- Supabase schema, data, Auth, RLS, policies, grants or RPC bodies;
 - Edge Functions, Vercel, GitHub Actions or GPT Actions;
-- MesaCliente, PME, LeadOps, B0, WDP or Security Go;
-- production data, secrets or credentials.
+- real users, companies, teams, leads, clients or commercial data;
+- MesaCliente, PME, LeadOps, B0, WDP or Security Go.
 
-Do not execute runtime mutation tests, rollback or reapply experiments.
+Do not execute concurrency, missing-profile, inactive-profile, rollback or reapply tests in production.
 
-## 5. Audit-loop block
+## 6. Evidence-overclaim blocks
 
-```text
-NO INVALIDATION EVENT
-→ NO REAUDIT
-```
+Do not claim that the completed smoke establishes:
 
-The following are not invalidation events:
+- controlled concurrency;
+- missing-profile denial;
+- inactive-profile denial;
+- rollback;
+- reapply;
+- frontend cutover;
+- denial of legacy direct `corretores` update;
+- F1-02 completion;
+- Security Go.
 
-- new conversation;
-- different specialist;
-- generic request to revalidate;
-- documentation-only main drift without demonstrated material impact;
-- desire for additional unanimity;
-- an already accepted residual risk without new evidence.
+## 7. Audit-loop block
 
-Before any re-audit, require:
+The material invalidation event is limited to the new authenticated runtime evidence.
+
+Before any audit outside the current seven-file documentary delta, require:
 
 ```text
 1. prior gate;
@@ -79,6 +97,6 @@ Without all five:
 AUDIT_LOOP_BLOCKED
 ```
 
-## 6. Removal rule
+## 8. Removal rule
 
-A block is removed only by a record identifying exact evidence, scope, responsible validator, authority, residual risk, rollback or containment, expiration and next safe action.
+A block is removed only by exact canonical evidence identifying scope, authority, validator, residual risk, rollback or containment, expiration and next safe action.
