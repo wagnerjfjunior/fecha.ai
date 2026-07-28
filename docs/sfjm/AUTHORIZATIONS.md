@@ -1,158 +1,143 @@
 # FECH.AI — SFJM Authorizations
 
-**Status:** `AUTHORIZATION_REGISTER / PR106_CORRECTIVE_WRITE_CONSUMED / AUDIT_READ_ONLY_ACTIVE / FAIL_CLOSED`  
-**Observed on:** `2026-07-27`  
+**Status:** `AUTHORIZATION_REGISTER / PR103_SMOKE_DOC_PR_PUBLICATION_CONSUMED / FAIL_CLOSED`  
+**Observed on:** `2026-07-28`  
 **Repository:** `wagnerjfjunior/fecha.ai`
 
 ## 1. Interpretation rule
 
 Authority is valid only for the exact repository, environment, object, operation, prohibitions and expiration stated by the Product Authority. Recording a past authorization does not reactivate it.
 
-## 2. Consumed authorities
+## 2. Previously consumed authorities
 
 ```text
 PR #103 Ready/merge/application authority: CONSUMED
+PR #103 controlled production smoke authority: CONSUMED
+Synthetic fixture cleanup authority: CONSUMED
 PR #104 lifecycle/application authority: CONSUMED
 PR #105 documentation closure authority: CONSUMED
+PR #106 documentation lifecycle authority: CONSUMED
 ```
 
-Results:
+Results relevant to this record:
 
 ```text
 PR #103: CLOSED / MERGED
-PR #103 squash: 276a3e55155cd0e57b6155dc13b998704bdfd654
 Migration 20260727080929_f1_02_password_state_rpc: APPLIED
-RPC catalog state: VALIDATED
-PR #104: CLOSED / MERGED / gateway operational
-PR #105: CLOSED / MERGED
+RPC catalog contract: VALIDATED
+Authenticated positive smoke: PASS
+Immediate runtime idempotency: PASS
+Synthetic Auth/profile/team cleanup: COMPLETE
 ```
 
-Consumed authority does not authorize repetition of the completed lifecycle.
+No consumed authority authorizes repetition or expansion.
 
-## 3. PR #106 corrective authority split
+## 3. Current Product Authority instruction
 
-Target:
+On `2026-07-28`, Product Authority authorized only the documentation PR that records the completed smoke and expressly required PR-02 to remain unauthorized until this documentation PR is closed.
+
+### 3.1 Authorized repository and base
 
 ```text
-PR: #106 — docs(sfjm): close PR103 operational cycle
-Base: main@276a3e55155cd0e57b6155dc13b998704bdfd654
-Branch: docs/sfjm-close-pr103-operational-cycle
-Initial head: b9aa83a50f34c7cfbbd8158aeae01df39b787e50
+Repository: wagnerjfjunior/fecha.ai
+Canonical main at authorization preflight: 9624900ada5d29e24476ab6a0a0907cb4854e509
+Branch: docs/pr103-authenticated-smoke-evidence
+PR title: docs(security): record PR103 authenticated smoke
+PR mode: Draft
 ```
 
-### A. Documentary write authority
+### 3.2 Authorized paths
 
-Authorized only:
+Exactly:
 
 ```text
-update docs/sfjm/AUTHORIZATIONS.md
-update docs/sfjm/EVIDENCE_FRESHNESS.md
-update docs/sfjm/handoffs/CURRENT.md
-create exactly one corrective commit
-push that commit to the existing branch
+docs/security/evidence/2026-07-28-pr103-authenticated-smoke-and-idempotency.md
+docs/sfjm/AUTHORIZATIONS.md
+docs/sfjm/BLOCKED_ACTIONS.md
+docs/sfjm/CURRENT_STATE.md
+docs/sfjm/EVIDENCE_FRESHNESS.md
+docs/sfjm/NEXT_SAFE_ACTION.md
+docs/sfjm/handoffs/CURRENT.md
 ```
 
-Required commit message:
+### 3.3 Authorized operations
+
+Only:
+
+- create the dedicated branch from the confirmed `main`;
+- create the seven-file documentation delta;
+- publish the initial commits to that branch;
+- open one Draft pull request;
+- perform read-only post-publication metadata and changed-file verification;
+- report branch, commits, head, files and PR URL.
+
+### 3.4 Expiration and consumption
 
 ```text
-docs(sfjm): fix PR106 authority and gate inventory
+Branch/file/PR publication authority:
+CONSUMED when the initial Draft PR is created.
+
+It expires immediately if:
+- an eighth path appears;
+- runtime, frontend or Supabase content appears;
+- the operation is stopped;
+- the confirmed base changes before branch creation.
 ```
 
-Expiration:
+After initial publication, no additional commit is authorized without a material documented finding and a new exact Product Authority instruction.
 
-```text
-consumed by the single corrective commit that contains this record
-expired if the initial head diverged before writing
-expired if a fourth file appeared
-expired if the operation stopped
-```
-
-Status:
-
-```text
-CONSUMED
-```
-
-No additional documentary write is authorized after that corrective commit.
-
-### B. Read-only audit authority
-
-Authorized only on the exact corrective head produced by the single commit above:
-
-```text
-one GPT0 audit of the corrective documentary delta
-one GPT4 validation of the corrective delta and live PR state
-```
-
-This read-only authority expires:
-
-```text
-after both validations are completed
-if the corrective head changes
-if any later commit appears
-if the operation stops
-```
-
-The exact corrective head must be captured by post-commit validation. This authority does not permit a new write, Ready, merge, comment or review.
-
-### C. Explicit non-authorizations
+## 4. Explicit non-authorizations
 
 ```text
 Ready
 merge
 GitHub comment or review
+additional commit
 runtime
 frontend
 Supabase
 SQL
 migration
-RPC
+RPC or RPC-body change
 Auth
 RLS
 policies
 grants
-PR-02
+Edge Functions
+Vercel
+GitHub Actions
+production mutation
+PR-02 branch or implementation
 PR-03
 Security Go
 F1-02 acceptance
 WDP change
 ```
 
-## 4. Future authorities required
+## 5. Future authorities required
 
 A new explicit authority is required for:
 
-- marking PR #106 Ready;
-- merging PR #106;
-- any further PR #106 commit;
-- starting or implementing PR-02;
-- any runtime or Supabase mutation;
+- a corrective commit;
+- GPT4 lifecycle handling that mutates metadata;
+- marking the documentation PR Ready;
+- merging the documentation PR;
 - any rollback;
+- starting or implementing PR-02;
+- deploying PR-02;
+- any new runtime or Supabase test;
 - F1-02 acceptance;
 - Security Go.
 
-## 5. Audit-finality rule
+PR-02 may be authorized only after this documentation PR is closed and the resulting canonical `main` is confirmed.
+
+## 6. Audit-finality rule
+
+The authenticated runtime smoke is a material new evidence event. It permits revalidation only of claims affected by that evidence and of the current seven-file documentation delta.
 
 ```text
-NO INVALIDATION EVENT
-→ NO REAUDIT
+NO OTHER INVALIDATION EVENT
+→ NO OTHER REAUDIT
 ```
 
-Before any re-audit, identify:
-
-```text
-1. nominal gate;
-2. owner;
-3. prior anchor;
-4. exact changed evidence;
-5. triggered invalidation rule;
-6. exact revalidation scope.
-```
-
-Without all six:
-
-```text
-AUDIT_LOOP_BLOCKED
-```
-
-The one GPT0 and one GPT4 validation explicitly authorized for the PR #106 corrective head are the current bounded lifecycle validations. They must not be repeated after completion without a new material invalidation event and new authority.
+Historical unknown gate verdicts must not be invented merely to complete a record.
