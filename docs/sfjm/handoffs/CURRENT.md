@@ -1,34 +1,41 @@
 # FECH.AI — SFJM Current Handoff
 
-**Status:** `CURRENT_HANDOFF / PR103_CLOSED_WITH_RESIDUAL_RISK / PR02_NEXT_NOT_AUTHORIZED`  
-**Observed on:** `2026-07-27`  
+**Status:** `CURRENT_HANDOFF / PR103_RUNTIME_SMOKE_PASSED / SMOKE_DOC_PR_DRAFT / PR02_NOT_AUTHORIZED`  
+**Observed on:** `2026-07-28`  
 **Repository:** `wagnerjfjunior/fecha.ai`
 
 ## 1. Current decision
 
 ```text
-PR #103 / F1-02 PR-01: CLOSED WITH RESIDUAL RISK
+PR #103 / F1-02 PR-01: COMPLETED WITH RESIDUAL RISK
+Authenticated positive smoke: PASS
+Immediate runtime idempotency: PASS
 Security Go: DENIED
 F1-02: ACTIVE REMEDIATION / BLOCKED
 WDP: 0
 ```
 
-The next conversation must continue from the F1-02 program, not reopen PR #103, #104 or #105.
+The next conversation must continue from the current smoke-documentation PR. It must not reopen PR #103, #104, #105 or #106.
 
-## 2. Canonical anchors
+## 2. Canonical anchors before the current PR
 
 ```text
-main observed before this closure PR: 276a3e55155cd0e57b6155dc13b998704bdfd654
+main: 9624900ada5d29e24476ab6a0a0907cb4854e509
 PR #103: CLOSED / MERGED
 PR #103 final head: abf6b4026343eae437283280269ed2997911dcec
 PR #103 squash: 276a3e55155cd0e57b6155dc13b998704bdfd654
-PR #104: CLOSED / MERGED / auxiliary gateway
-PR #105: CLOSED / MERGED / auxiliary SFJM reconciliation
+PR #106 squash / current main: 9624900ada5d29e24476ab6a0a0907cb4854e509
 ```
 
-Do not create a recursive PR merely to record this closure PR's future squash SHA. Resolve live `main` before the next sensitive action.
+Current proposed branch:
 
-## 3. PR #103 live result
+```text
+docs/pr103-authenticated-smoke-evidence
+```
+
+Resolve its live PR number, head, state and changed files before any audit or lifecycle decision.
+
+## 3. PR #103 catalog result
 
 ```text
 Migration: 20260727080929 / f1_02_password_state_rpc / APPLIED
@@ -42,13 +49,55 @@ service_role EXECUTE: false
 PUBLIC EXECUTE: false
 ```
 
-Canonical closure evidence:
+## 4. Controlled smoke result
+
+Evidence candidate:
 
 ```text
-docs/security/evidence/2026-07-27-pr103-operational-closure-with-residual-risk.md
+docs/security/evidence/2026-07-28-pr103-authenticated-smoke-and-idempotency.md
 ```
 
-## 4. F1-02 PROGRAM ANCHOR
+Observed:
+
+```text
+First call:
+must_change_password true → false
+xmin 6997 → 6999
+RPC return true
+unexpected changed fields none
+
+Immediate repeated call:
+must_change_password false → false
+xmin 6999 → 6999
+RPC return true
+unexpected changed fields none
+```
+
+Cleanup:
+
+```text
+Auth users remaining: 0
+synthetic profiles remaining: 0
+synthetic teams remaining: 0
+synthetic company: preserved inactive
+```
+
+## 5. Residual risks preserved
+
+Not established:
+
+- runtime concurrency;
+- missing-profile execution;
+- inactive-profile execution;
+- rollback execution;
+- reapply after rollback;
+- frontend cutover;
+- deployed frontend proof;
+- direct table-update denial.
+
+The smoke narrows residual risk but does not grant Security Go or accept F1-02.
+
+## 6. F1-02 program anchor
 
 Canonical source:
 
@@ -59,113 +108,76 @@ docs/security/evidence/F1-02_REMEDIATION_MASTER_PLAN.md
 ```text
 Program structure: 5 operational windows / 10 planned PRs
 PR-00: completed
-PR-01: completed with residual risk
-PR-02: next separate workstream / not authorized / no independent PR located
+PR-01: completed with residual risk; positive smoke and immediate idempotency established
+PR-02: next technical workstream / not authorized
 PR-03: blocked until PR-02 is deployed and proven
-PR-04 through PR-09: planned / not started unless newer canonical evidence proves otherwise
+PR-04 through PR-09: planned unless newer canonical evidence proves otherwise
 ```
 
-Auxiliary GitHub changes:
+## 7. Current documentation PR contract
+
+Exactly seven documentation paths:
 
 ```text
-#104: bounded GPT3/Supabase catalog gateway
-#105: SFJM reconciliation after #104
+docs/security/evidence/2026-07-28-pr103-authenticated-smoke-and-idempotency.md
+docs/sfjm/AUTHORIZATIONS.md
+docs/sfjm/BLOCKED_ACTIONS.md
+docs/sfjm/CURRENT_STATE.md
+docs/sfjm/EVIDENCE_FRESHNESS.md
+docs/sfjm/NEXT_SAFE_ACTION.md
+docs/sfjm/handoffs/CURRENT.md
 ```
 
-They do not replace, renumber or consume program items PR-00 through PR-09.
+No eighth file, runtime, frontend or Supabase change is allowed.
 
-## 5. Residual risks preserved
-
-Not established by this closure evidence:
-
-- authenticated positive smoke;
-- runtime idempotency;
-- runtime concurrency;
-- missing-profile or inactive-profile execution;
-- rollback execution;
-- reapply after rollback.
-
-PR-02 remains required for frontend cutover. PR-03 remains blocked.
-
-## 6. Local decision boundary
-
-Any laboratory, smoke or test waiver consumed during PR-01 applies only to F1-02 PR-01 / GitHub PR #103. Do not generalize it to later program work.
-
-## 7. Final gates and anti-loop
+## 8. Authorities and blocks
 
 ```text
-FINAL GATE STATE:
-SEE docs/sfjm/EVIDENCE_FRESHNESS.md — FINAL GATE INVENTORY
-```
-
-The `FINAL GATE INVENTORY` is the source for deciding whether a gate may be reused, is pending, is unknown or was invalidated.
-
-Do not duplicate or infer a verdict in this handoff. A gate recorded as:
-
-```text
-UNKNOWN — CANONICAL EVIDENCE REQUIRED
-```
-
-must remain unknown until newer canonical evidence explicitly supplies the missing result. Do not request a new audit solely to fill an historical documentation gap.
-
-The one GPT0 and one GPT4 validations explicitly authorized for the exact PR #106 corrective head are the bounded current lifecycle validations. After completion, they must not be repeated without a material invalidation event and new authority.
-
-```text
-NO INVALIDATION EVENT
-→ NO REAUDIT
-```
-
-A re-audit requires:
-
-```text
-1. nominal gate;
-2. owner;
-3. prior anchor;
-4. exact changed evidence;
-5. triggered invalidation rule;
-6. exact revalidation scope.
-```
-
-Without all six:
-
-```text
-AUDIT_LOOP_BLOCKED
-```
-
-## 8. Current authorities and blocks
-
-```text
-PR #103 lifecycle/application: CONSUMED
-PR #104 lifecycle/application: CONSUMED
-PR #105 closure: CONSUMED
-PR-02 implementation or PR creation: NOT AUTHORIZED
+Current PR publication authority: CONSUMED
+Additional commits: NOT AUTHORIZED
+Ready: NOT AUTHORIZED
+Merge: NOT AUTHORIZED
+PR-02 implementation or PR creation: NOT AUTHORIZED UNTIL THIS PR IS CLOSED
 PR-03: BLOCKED
 Security Go: DENIED
 F1-02 acceptance: NOT AUTHORIZED
 WDP: 0
 ```
 
-PR #106 Ready and merge remain outside the current corrective authority.
+## 9. Exact next safe action
 
-## 9. Next safe action
+Run one independent GPT0 documentation audit at the exact live head of the Draft smoke-evidence PR.
 
-Reconstruct the exact canonical scope of F1-02 PR-02, locate the current frontend call site, validate current dependencies and produce a bounded implementation proposal.
+Audit only the seven-file delta and the claims materially affected by the new runtime evidence.
 
-No implementation, branch, commit or PR-02 creation is authorized by this handoff.
+If GPT0 passes, the next step is one GPT4 exact-head lifecycle/scope validation. Ready and merge each require separate Product Authority.
 
-## 10. Conversation retirement state
+Do not implement PR-02 in the audit or lifecycle step.
+
+## 10. Anti-loop
+
+```text
+New authenticated runtime evidence
+→ revalidate only the affected operational claims and current documentary delta
+```
+
+```text
+NO OTHER INVALIDATION EVENT
+→ NO OTHER REAUDIT
+```
+
+## 11. Conversation retirement state
 
 ```text
 Current FECH.AI conversation:
-ACTIVE UNTIL MIGRATION TEST PASSES
+ACTIVE UNTIL THE PR103 SMOKE-DOCUMENTATION PR IS CLOSED
 ```
 
-Retirement requires a new conversation to reconstruct, without material manual correction:
+Retirement requires a new conversation to reconstruct without material manual correction:
 
-- live state;
-- F1-02 PR-00 through PR-09;
-- the role of PRs #103, #104 and #105;
-- residual risks;
-- closed-gate finality;
+- the canonical main and current Draft PR;
+- PR #103 catalog and runtime results;
+- remaining residual risks;
+- the F1-02 PR-00 through PR-09 sequence;
 - blocks and authorities;
-- the single next safe action.
+- the exact next safe action.
