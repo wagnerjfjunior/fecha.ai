@@ -1,88 +1,102 @@
 # FECH.AI — SFJM Next Safe Action
 
-**Status:** `NEXT_SAFE_ACTION / F1_02_PR02_SCOPE_RECONSTRUCTION`  
-**Observed on:** `2026-07-27`  
+**Status:** `NEXT_SAFE_ACTION / PR103_SMOKE_DOCUMENTATION_AUDIT`  
+**Observed on:** `2026-07-28`  
 **Repository:** `wagnerjfjunior/fecha.ai`
 
-## 1. Closed workstreams
+## 1. Completed material step
 
 ```text
-PR #103 / F1-02 PR-01: CLOSED WITH RESIDUAL RISK
-PR #104 gateway enablement: CLOSED
-PR #105 SFJM reconciliation after #104: CLOSED
+PR #103 authenticated positive smoke: PASS
+PR #103 immediate repeated-call idempotency: PASS
+Synthetic fixture cleanup: COMPLETE
 ```
 
-Do not reopen their completed lifecycle without a material invalidation event.
+The runtime result is recorded in the current documentation-only Draft PR.
 
 ## 2. Exact next safe action
 
 ```text
-Reconstruct the exact canonical scope of F1-02 PR-02,
-locate the current frontend call site,
-validate current dependencies,
-and produce a bounded implementation proposal.
+Run one independent GPT0 documentation audit
+against the exact current head of:
+docs/pr103-authenticated-smoke-evidence
 ```
 
-This is a read-only planning action.
+This is a read-only audit action.
 
-## 3. Required sequence
+## 3. GPT0 audit scope
+
+Validate:
+
+1. live `main` remains the expected base or classify exact drift;
+2. the PR is open and Draft;
+3. the exact head is captured;
+4. the changed-file set contains exactly:
 
 ```text
-1. Read docs/bootstrap/INDEX.md.
-2. Read docs/governance/INDEX.md when delivery or acceptance is involved.
-3. Read docs/sfjm/INDEX.md and all current SFJM records.
-4. Read docs/security/evidence/F1-02_REMEDIATION_MASTER_PLAN.md.
-5. Resolve live main.
-6. Confirm no independent PR-02 already exists.
-7. Locate the current frontend call site and dependencies.
-8. Identify exact files, risks, acceptance criteria and rollback.
-9. Return a bounded proposal only.
+docs/security/evidence/2026-07-28-pr103-authenticated-smoke-and-idempotency.md
+docs/sfjm/AUTHORIZATIONS.md
+docs/sfjm/BLOCKED_ACTIONS.md
+docs/sfjm/CURRENT_STATE.md
+docs/sfjm/EVIDENCE_FRESHNESS.md
+docs/sfjm/NEXT_SAFE_ACTION.md
+docs/sfjm/handoffs/CURRENT.md
 ```
 
-## 4. Program dependency
+5. the evidence records only the observed positive smoke, immediate idempotency and cleanup;
+6. concurrency, missing-profile, inactive-profile, rollback and reapply remain unestablished;
+7. no password, JWT, token, secret or unsanitized real-user/business payload appears;
+8. PR-02 remains unimplemented and unauthorized;
+9. PR-03 remains blocked;
+10. Security Go, F1-02 acceptance and WDP remain unchanged.
+
+## 4. Required lifecycle sequence
 
 ```text
-PR-01: completed with residual risk
-PR-02: next separate workstream
-PR-03: blocked until PR-02 is deployed and proven
-PR-04 through PR-09: remain planned unless newer canonical evidence proves otherwise
+1. GPT0 exact-head documentation audit.
+2. If GPT0 passes, one GPT4 exact-head lifecycle/scope validation.
+3. Separate Product Authority for Ready.
+4. Separate pre-merge validation and merge authority.
+5. Confirm the resulting canonical main and closed/merged state.
+6. Only then request separate PR-02 implementation authority.
 ```
 
-## 5. Required authority
+No step authorizes the next step automatically.
 
-A new explicit Product Authority instruction is required before any:
+## 5. Required future authority
 
-- PR-02 branch;
-- commit;
-- file change;
-- PR creation;
-- frontend or runtime modification;
-- Supabase modification;
-- deployment or test mutation.
+A new explicit Product Authority instruction is required for:
+
+- any corrective commit;
+- marking the PR Ready;
+- merging the PR;
+- PR-02 branch creation;
+- PR-02 implementation;
+- frontend or runtime changes;
+- Vercel deployment or production smoke;
+- any Supabase mutation.
 
 ## 6. Explicit non-actions
 
 ```text
 No implementation
-No branch
-No commit
-No PR-02 creation
-No runtime test
+No frontend change
 No Supabase change
+No additional commit
+No Ready
+No merge
+No PR-02 creation
+No PR-03
 No Security Go
 No F1-02 acceptance
 No WDP change
 ```
 
-## 7. Gate reuse rule
+## 7. Anti-loop
+
+The new authenticated runtime evidence is the material event that justified this reconciliation. It does not invalidate unrelated closed gates.
 
 ```text
-NO INVALIDATION EVENT
-→ NO REAUDIT
-```
-
-Before requesting any closed specialist gate again, identify the prior gate, prior anchor, exact changed evidence, triggered invalidation rule and exact revalidation scope. Otherwise classify:
-
-```text
-AUDIT_LOOP_BLOCKED
+NO ADDITIONAL MATERIAL CHANGE
+→ NO REAUDIT OUTSIDE THE EXACT CURRENT DOCUMENTARY DELTA
 ```
