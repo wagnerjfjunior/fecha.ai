@@ -1,6 +1,6 @@
 # FECH.AI — SFJM Authorizations
 
-**Status:** `AUTHORIZATION_REGISTER / PR107_READY / PM107_CORRECTION_CONSUMED_ON_COMMIT / FAIL_CLOSED`  
+**Status:** `AUTHORIZATION_REGISTER / PR108_DRAFT / PR02_IMPLEMENTATION_CONSUMED / FAIL_CLOSED`  
 **Observed on:** `2026-07-28`  
 **Repository:** `wagnerjfjunior/fecha.ai`
 
@@ -8,49 +8,37 @@
 
 Authority is valid only for the exact repository, object, operation, scope, prohibitions and expiration stated by Product Authority. Recording a consumed authority does not reactivate it.
 
-## 2. Consumed authorities
+## 2. Relevant consumed authorities
 
 ```text
-PR #103 Ready/merge/application authority: CONSUMED
-PR #103 controlled production smoke authority: CONSUMED
-Synthetic fixture cleanup authority: CONSUMED
-PR #104 lifecycle/application authority: CONSUMED
-PR #105 documentation closure authority: CONSUMED
-PR #106 documentation lifecycle authority: CONSUMED
-PR #107 initial branch/file/PR publication authority: CONSUMED
-PR #107 GPT0 review COMMENT authority: CONSUMED
-PR #107 GPT4 review COMMENT authority: CONSUMED
-PR #107 Ready authority: CONSUMED / EXECUTED
+PR #103 implementation, merge, production application and smoke: CONSUMED
+PR #107 audit, Ready and squash-merge authorities: CONSUMED
+PR #107 squash merge: EXECUTED
+PR-02 branch and bounded implementation authority: CONSUMED
+PR-02 Draft PR creation authority: CONSUMED
+PR-02 seven-document reconciliation authority: CONSUMED ON PUBLICATION
+PR #108 body correction authority: CONSUMED ON UPDATE
 ```
 
-Results relevant to PR #107:
-
-```text
-Authenticated positive smoke: PASS
-Immediate runtime idempotency: PASS
-Synthetic Auth/profile/team cleanup: COMPLETE
-GPT0 documentation audit at 51105692b0957454bd3d83f70e6591472fcf10dc: PASS
-GPT4 lifecycle/scope validation at 51105692b0957454bd3d83f70e6591472fcf10dc: PASS
-PR #107 Ready transition: EXECUTED
-Pre-merge validation at 51105692b0957454bd3d83f70e6591472fcf10dc:
-FAIL — PM-107-GATE-01
-```
-
-## 3. PM-107-GATE-01 corrective authority
-
-Product Authority authorized exactly one corrective commit on:
+## 3. PR-02 authorized object
 
 ```text
 Repository: wagnerjfjunior/fecha.ai
-PR: #107
-Branch: docs/pr103-authenticated-smoke-evidence
-Required parent: 51105692b0957454bd3d83f70e6591472fcf10dc
-Commit message: docs(sfjm): reconcile PR107 pre-merge lifecycle state
+Canonical base: main@cec1b22430adf1a002b172992cf6c5ea5bb427de
+PR: #108 — security: route password completion through RPC
+Planned branch: security/f1-02-password-flow-cutover
+Live branch: security/f1-02-password-flow-cutover-1
+Initial implementation commit: c458461e810e24adb7d71f7d155be06e9cf54eac
+State: OPEN / DRAFT / NOT MERGED
 ```
 
-Authorized paths only:
+The branch suffix divergence is non-material. PR #108 and its exact live head are the operational anchors.
+
+Authorized paths for the bounded PR-02 publication:
 
 ```text
+src/App.jsx
+docs/security/evidence/2026-07-28-pr02-password-flow-cutover.md
 docs/sfjm/AUTHORIZATIONS.md
 docs/sfjm/BLOCKED_ACTIONS.md
 docs/sfjm/CURRENT_STATE.md
@@ -59,68 +47,52 @@ docs/sfjm/NEXT_SAFE_ACTION.md
 docs/sfjm/handoffs/CURRENT.md
 ```
 
-Authorized operation:
+Authorized implementation effect:
 
-```text
-one commit
-one branch-ref update
-read-only post-commit verification
-report new head
-```
-
-The authority is consumed immediately when the single corrective commit is created and the branch is moved to it.
+- replace only the mandatory-password direct patch with `marcar_senha_inicial_definida()`;
+- remove `corretorId` only from `TrocarSenhaObrigatoria` and its call;
+- require strict `true` before `onConcluido()`;
+- preserve the separate administrative direct patch;
+- execute static validation and repository-wide searches;
+- keep the PR Draft.
 
 ## 4. Current non-authorizations
 
 ```text
-second corrective commit
-additional comment or review
-PR metadata change
-Draft conversion
+additional frontend or runtime code change
+change to the preserved EditarCorretorModal administrative patch
+new administrative RPC
+Supabase or database mutation
+migration or RPC-body change
+Auth, RLS, policy, grant or role change
+Edge Function or GitHub Actions change
+manual Vercel deployment
+production deployment or production smoke
+Ready for review
+approval
 merge
-runtime
-frontend
-Supabase
-SQL
-migration
-RPC or RPC-body change
-Auth
-RLS
-policies
-grants
-Edge Functions
-Vercel
-GitHub Actions
-production mutation
-PR-02 branch or implementation
+auto-merge
 PR-03
 Security Go
 F1-02 acceptance
 WDP change
 ```
 
-The accidental `noop` issue comment is accepted by Product Authority as a non-material procedural deviation. It creates no continuing comment authority.
+No audit result automatically authorizes the next lifecycle transition.
 
-## 5. Future authorities required
+## 5. Read-only work allowed by current routing
 
-A new explicit Product Authority instruction is required for:
+The next action is an independent GPT3 security/code-contract audit at the exact PR #108 head. Read-only inspection does not authorize comment, review submission, metadata change, Ready, merge, deployment or production access.
 
-- any commit after the PM-107-GATE-01 correction;
-- any new comment or review;
+## 6. Future authorities required
+
+New explicit Product Authority is required for:
+
+- any code or documentary commit after the current bounded publication;
+- any review submission or PR comment;
+- Ready transition;
 - merge;
-- rollback;
-- PR-02 branch creation or implementation;
-- frontend, runtime, Vercel, production or Supabase change;
-- F1-02 acceptance;
-- Security Go.
-
-PR-02 may be authorized only after PR #107 is closed and the resulting canonical `main` is confirmed.
-
-## 6. Audit-finality rule
-
-The corrective commit invalidates prior GPT0/GPT4 conclusions only for the six-file documentary delta. It does not invalidate the authenticated smoke, immediate idempotency, cleanup evidence or unrelated historical gates.
-
-```text
-NO MATERIAL CHANGE
-→ NO REAUDIT OUTSIDE THE EXACT SIX-FILE DELTA
-```
+- deployment or production smoke;
+- modification or replacement of the administrative direct patch;
+- PR-03;
+- F1-02 acceptance or Security Go.
