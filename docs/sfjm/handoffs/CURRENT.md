@@ -1,53 +1,53 @@
 # FECH.AI — SFJM Current Handoff
 
-**Status:** `CURRENT_HANDOFF / PR107_READY / PM107_CORRECTION_PENDING_AUDIT / PR02_NOT_AUTHORIZED`  
+**Status:** `CURRENT_HANDOFF / PR108_DRAFT_IMPLEMENTED / STATIC_VALIDATION_PASSED / GPT3_AUDIT_NEXT`  
 **Observed on:** `2026-07-28`  
 **Repository:** `wagnerjfjunior/fecha.ai`
 
 ## 1. Current decision
 
 ```text
-PR #103 / F1-02 PR-01: COMPLETED WITH RESIDUAL RISK
-Authenticated positive smoke: PASS
-Immediate runtime idempotency: PASS
-PR #107: OPEN / READY FOR REVIEW
-Pre-merge validation: FAIL — PM-107-GATE-01
+F1-02 PR-01: COMPLETED WITH RESIDUAL RISK
+PR #107: CLOSED / MERGED
+PR #108 / PR-02: OPEN / DRAFT / IMPLEMENTED / NOT MERGED
+Static frontend build: PASS
+Deployment: NOT AUTHORIZED / NOT PROVEN
+PR-03: BLOCKED
 Security Go: DENIED
 F1-02: ACTIVE REMEDIATION / BLOCKED
 WDP: 0
 ```
 
-Continue from the PM-107-GATE-01 corrective head. Do not reopen PR #103, #104, #105 or #106.
+Continue from PR #108. Do not reopen PR #103 or PR #107 without new material evidence.
 
 ## 2. Canonical anchors
 
 ```text
-main before PR #107: 9624900ada5d29e24476ab6a0a0907cb4854e509
-PR #103 final head: abf6b4026343eae437283280269ed2997911dcec
-PR #103 squash: 276a3e55155cd0e57b6155dc13b998704bdfd654
-PR #106 squash / current main before PR #107:
-9624900ada5d29e24476ab6a0a0907cb4854e509
-PR #107 original audited head:
-51105692b0957454bd3d83f70e6591472fcf10dc
-PR #107 corrective head:
-resolve live
+Canonical main:
+cec1b22430adf1a002b172992cf6c5ea5bb427de
+
+PR #107 squash:
+cec1b22430adf1a002b172992cf6c5ea5bb427de
+
+PR #108:
+#108 — security: route password completion through RPC
+Base: main@cec1b22430adf1a002b172992cf6c5ea5bb427de
+Planned branch: security/f1-02-password-flow-cutover
+Live branch: security/f1-02-password-flow-cutover-1
+Implementation commit: c458461e810e24adb7d71f7d155be06e9cf54eac
+Current documentation head: resolve live
+State: OPEN / DRAFT / NOT MERGED
 ```
 
-## 3. PR #107 contract
+The `-1` branch suffix is a non-material naming divergence. Use PR #108 and its live head as the operational anchors.
+
+## 3. PR #108 contract
+
+Final authorized changed-file set:
 
 ```text
-PR: #107 — docs(security): record PR103 authenticated smoke
-Branch: docs/pr103-authenticated-smoke-evidence
-State: OPEN / READY FOR REVIEW
-Base: main@9624900ada5d29e24476ab6a0a0907cb4854e509
-Original commits: 7
-Corrective commits authorized: exactly 1
-Final changed-file contract: exactly 7 documentation files
-```
-
-The PM-107-GATE-01 commit may modify only:
-
-```text
+src/App.jsx
+docs/security/evidence/2026-07-28-pr02-password-flow-cutover.md
 docs/sfjm/AUTHORIZATIONS.md
 docs/sfjm/BLOCKED_ACTIONS.md
 docs/sfjm/CURRENT_STATE.md
@@ -56,152 +56,97 @@ docs/sfjm/NEXT_SAFE_ACTION.md
 docs/sfjm/handoffs/CURRENT.md
 ```
 
-The smoke evidence file must remain unchanged.
+No database, migration, RPC-body, RLS, Auth, Edge, workflow or production-data change belongs to PR #108.
 
-## 4. PR #103 catalog and runtime result
-
-```text
-Migration: 20260727080929 / f1_02_password_state_rpc / APPLIED
-RPC: public.marcar_senha_inicial_definida() / EXISTS
-Owner: postgres
-SECURITY DEFINER: true
-search_path: pg_catalog
-authenticated EXECUTE: true
-anon EXECUTE: false
-service_role EXECUTE: false
-PUBLIC EXECUTE: false
-
-First call:
-must_change_password true → false
-xmin 6997 → 6999
-RPC return true
-unexpected changed fields none
-
-Immediate repeated call:
-must_change_password false → false
-xmin 6999 → 6999
-RPC return true
-unexpected changed fields none
-
-Cleanup:
-Auth users remaining: 0
-synthetic profiles remaining: 0
-synthetic teams remaining: 0
-synthetic company: preserved inactive
-```
-
-Evidence path:
+## 4. Implemented code behavior
 
 ```text
-docs/security/evidence/2026-07-28-pr103-authenticated-smoke-and-idempotency.md
+TrocarSenhaObrigatoria:
+changePassword(token, nova)
+→ sb.rpc("marcar_senha_inicial_definida", {}, token)
+→ require concluido === true
+→ onConcluido()
 ```
 
-## 5. Residual risks preserved
+The intended direct `corretores.must_change_password = false` patch and `corretorId` dependency are removed from this flow.
+
+## 5. Static validation
+
+```text
+Workflow run: 30411229438
+Job: 90447536855
+Command: npm run build
+Exit code: 0
+Conclusion: success
+Vercel Preview status: success
+```
+
+The build proves static buildability of the implementation commit. It does not prove deployed production behavior.
+
+## 6. Search and residual result
+
+Repository-wide searches covered:
+
+```text
+marcar_senha_inicial_definida
+must_change_password:false
+sb.patch("corretores"
+```
+
+Result:
+
+- intended mandatory-password direct patch removed;
+- one frontend self-service RPC call added;
+- separate `EditarCorretorModal` administrative direct patch preserved;
+- broad direct-write revocation is not yet safe to claim.
+
+## 7. Evidence boundary
+
+Established:
+
+- bounded code diff;
+- static strict-true/fail-closed gate;
+- build success;
+- no secret or sensitive literal added;
+- explicit administrative residual risk.
 
 Not established:
 
-- runtime concurrency;
-- missing-profile execution;
-- inactive-profile execution;
-- rollback execution;
-- reapply after rollback;
-- frontend cutover;
+- interactive UI success or failure execution;
 - deployed frontend proof;
-- direct table-update denial.
-
-The smoke narrows residual risk but does not grant Security Go or accept F1-02.
-
-## 6. F1-02 program anchor
-
-```text
-Canonical source: docs/security/evidence/F1-02_REMEDIATION_MASTER_PLAN.md
-PR-00: completed
-PR-01: completed with residual risk
-PR-02: next technical workstream / not authorized
-PR-03: blocked until PR-02 is deployed and proven
-PR-04 through PR-09: planned unless newer canonical evidence proves otherwise
-```
-
-## 7. Gates and lifecycle
-
-```text
-GPT0 documentation audit:
-PASS at 51105692b0957454bd3d83f70e6591472fcf10dc
-
-GPT4 lifecycle/scope validation:
-PASS at 51105692b0957454bd3d83f70e6591472fcf10dc
-
-Ready:
-authorized and executed
-
-Pre-merge validation:
-FAIL — PM-107-GATE-01
-Reason: versioned SFJM lifecycle state was stale
-
-Corrective gate:
-PENDING at exact live corrective head
-Scope: six SFJM files only
-```
-
-Prior GPT0/GPT4 PASS results do not validate the later six-file corrective delta.
+- production smoke;
+- legacy direct UPDATE denial;
+- safe replacement of the administrative path;
+- F1-02 acceptance;
+- Security Go;
+- WDP.
 
 ## 8. Authorities and blocks
 
 ```text
-PM-107-GATE-01 single corrective commit: CONSUMED ON PUBLICATION
+Bounded implementation: CONSUMED
+Documentation reconciliation: CONSUMED ON PUBLICATION
 Additional commit: NOT AUTHORIZED
-Comment or review: NOT AUTHORIZED
-Metadata change: NOT AUTHORIZED
+Comment/review: NOT AUTHORIZED
+Ready: NOT AUTHORIZED
 Merge: NOT AUTHORIZED
-PR-02: NOT AUTHORIZED UNTIL PR #107 IS CLOSED AND MAIN CONFIRMED
+Deployment: NOT AUTHORIZED
+Production smoke: NOT AUTHORIZED
 PR-03: BLOCKED
 Security Go: DENIED
 F1-02 acceptance: NOT AUTHORIZED
 WDP: 0
 ```
 
-The accidental `noop` issue comment is accepted as a non-material procedural deviation. It does not authorize another comment.
-
 ## 9. Exact next safe action
 
-Run one independent GPT0 delta-only documentation audit of the six-file PM-107-GATE-01 correction at the exact live corrective head.
+Run one independent GPT3 security/code-contract audit of PR #108 at the exact live head.
 
-If GPT0 passes:
-
-```text
-GPT4 lifecycle/scope validation on the same head
-→ pre-merge READ_ONLY validation
-→ separate Product Authority for squash merge
-```
-
-Do not merge or implement PR-02 in the audit steps.
+If GPT3 passes, route next to GPT7 operational-flow validation, then GPT4 lifecycle/checks validation. Do not mark Ready, merge or deploy in those audit steps.
 
 ## 10. Anti-loop
 
 ```text
-Corrective six-file commit
-→ revalidate only the six-file documentary delta
+NO MATERIAL HEAD OR ENVIRONMENT CHANGE
+→ DO NOT REPEAT A COMPLETED EXACT-HEAD GATE
 ```
-
-```text
-NO OTHER INVALIDATION EVENT
-→ NO OTHER REAUDIT
-```
-
-## 11. Conversation retirement state
-
-```text
-Current FECH.AI conversation:
-ACTIVE UNTIL PR #107 IS CLOSED AND RESULTING MAIN IS CONFIRMED
-```
-
-A new conversation must reconstruct without material manual correction:
-
-- canonical main and PR #107 lifecycle;
-- original and corrective heads;
-- GPT0/GPT4 original PASS records;
-- PM-107-GATE-01 and its corrective scope;
-- PR #103 catalog/runtime evidence;
-- residual risks;
-- F1-02 sequence;
-- blocks, authorities and exact next safe action.
