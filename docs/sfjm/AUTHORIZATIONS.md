@@ -1,14 +1,14 @@
 # FECH.AI — SFJM Authorizations
 
-**Status:** `AUTHORIZATION_REGISTER / PR107_READY / PM107_CORRECTION_CONSUMED_ON_COMMIT / FAIL_CLOSED`  
-**Observed on:** `2026-07-28`  
+**Status:** `AUTHORIZATION_REGISTER / PR107_CLOSED_MERGED / PR02_NOT_AUTHORIZED / FAIL_CLOSED`  
+**Observed on:** `2026-07-29`  
 **Repository:** `wagnerjfjunior/fecha.ai`
 
 ## 1. Interpretation rule
 
-Authority is valid only for the exact repository, object, operation, scope, prohibitions and expiration stated by Product Authority. Recording a consumed authority does not reactivate it.
+Authority is valid only for the exact repository, object, operation, scope, prohibitions and expiration stated by Product Authority. Recording a consumed authority does not reactivate it. Technical capability in GitHub, Supabase, Vercel, Codex or a GPT Action is not operational authority.
 
-## 2. Consumed authorities
+## 2. Closed and consumed lifecycle authorities
 
 ```text
 PR #103 Ready/merge/application authority: CONSUMED
@@ -18,70 +18,60 @@ PR #104 lifecycle/application authority: CONSUMED
 PR #105 documentation closure authority: CONSUMED
 PR #106 documentation lifecycle authority: CONSUMED
 PR #107 initial branch/file/PR publication authority: CONSUMED
-PR #107 GPT0 review COMMENT authority: CONSUMED
-PR #107 GPT4 review COMMENT authority: CONSUMED
+PR #107 original GPT0 review authority: CONSUMED
+PR #107 original GPT4 review authority: CONSUMED
 PR #107 Ready authority: CONSUMED / EXECUTED
+PR #107 PM-107-GATE-01 corrective commit authority: CONSUMED
+PR #107 GPT0 delta-only review authority: CONSUMED
+PR #107 merge lifecycle: EXECUTED / CLOSED
 ```
 
-Results relevant to PR #107:
+Live GitHub state establishes:
+
+```text
+PR #107: CLOSED / MERGED
+PR #107 final head: 62346a8976d3489dff9b84dcf7bab40a2b43e685
+PR #107 squash / current main: cec1b22430adf1a002b172992cf6c5ea5bb427de
+```
+
+The exact separate GPT4 corrective-head review artifact and the exact separate merge-authority artifact were not independently reconstructed in this SFJM update. Their absence from this reconstruction must not be converted into invented evidence. The completed GitHub merge is recorded as lifecycle fact, not as reusable authority.
+
+## 3. Results preserved from PR #107
 
 ```text
 Authenticated positive smoke: PASS
 Immediate runtime idempotency: PASS
 Synthetic Auth/profile/team cleanup: COMPLETE
-GPT0 documentation audit at 51105692b0957454bd3d83f70e6591472fcf10dc: PASS
-GPT4 lifecycle/scope validation at 51105692b0957454bd3d83f70e6591472fcf10dc: PASS
-PR #107 Ready transition: EXECUTED
-Pre-merge validation at 51105692b0957454bd3d83f70e6591472fcf10dc:
-FAIL — PM-107-GATE-01
+Original GPT0 documentation audit at 51105692b0957454bd3d83f70e6591472fcf10dc: PASS
+Original GPT4 lifecycle/scope validation at 51105692b0957454bd3d83f70e6591472fcf10dc: PASS
+GPT0 delta-only documentation re-audit at 62346a8976d3489dff9b84dcf7bab40a2b43e685: PASS
+PR #107: CLOSED / MERGED
 ```
 
-## 3. PM-107-GATE-01 corrective authority
+These results do not grant Security Go, F1-02 acceptance or authority for PR-02.
 
-Product Authority authorized exactly one corrective commit on:
+## 4. Current permitted read-only action
+
+The following planning action may proceed without creating or mutating product artifacts:
 
 ```text
-Repository: wagnerjfjunior/fecha.ai
-PR: #107
-Branch: docs/pr103-authenticated-smoke-evidence
-Required parent: 51105692b0957454bd3d83f70e6591472fcf10dc
-Commit message: docs(sfjm): reconcile PR107 pre-merge lifecycle state
+One GPT1 architectural scope reconstruction for F1-02 PR-02
+Mode: READ_ONLY
+Base: resolve current live main before execution
+Output: bounded implementation proposal only
 ```
 
-Authorized paths only:
+This permission does not include branch creation, commit, PR publication, code change, deployment or production smoke.
+
+## 5. Current non-authorizations
 
 ```text
-docs/sfjm/AUTHORIZATIONS.md
-docs/sfjm/BLOCKED_ACTIONS.md
-docs/sfjm/CURRENT_STATE.md
-docs/sfjm/EVIDENCE_FRESHNESS.md
-docs/sfjm/NEXT_SAFE_ACTION.md
-docs/sfjm/handoffs/CURRENT.md
-```
-
-Authorized operation:
-
-```text
-one commit
-one branch-ref update
-read-only post-commit verification
-report new head
-```
-
-The authority is consumed immediately when the single corrective commit is created and the branch is moved to it.
-
-## 4. Current non-authorizations
-
-```text
-second corrective commit
-additional comment or review
-PR metadata change
-Draft conversion
-merge
-runtime
-frontend
-Supabase
-SQL
+PR-02 branch creation
+PR-02 implementation
+PR-02 commit or pull request
+PR-03
+runtime or frontend mutation
+Supabase or SQL operation
 migration
 RPC or RPC-body change
 Auth
@@ -89,38 +79,34 @@ RLS
 policies
 grants
 Edge Functions
-Vercel
-GitHub Actions
+Vercel or GitHub Actions mutation
 production mutation
-PR-02 branch or implementation
-PR-03
+rollback execution
 Security Go
 F1-02 acceptance
 WDP change
 ```
 
-The accidental `noop` issue comment is accepted by Product Authority as a non-material procedural deviation. It creates no continuing comment authority.
-
-## 5. Future authorities required
+## 6. Future authorities required
 
 A new explicit Product Authority instruction is required for:
 
-- any commit after the PM-107-GATE-01 correction;
-- any new comment or review;
-- merge;
-- rollback;
-- PR-02 branch creation or implementation;
-- frontend, runtime, Vercel, production or Supabase change;
+- implementation of the bounded PR-02 proposal;
+- branch creation, commits or PR publication for PR-02;
+- any frontend, runtime, Vercel, production or Supabase mutation;
+- Ready, merge, deploy or production smoke when those stages are reached;
+- rollback execution;
+- PR-03;
 - F1-02 acceptance;
 - Security Go.
 
-PR-02 may be authorized only after PR #107 is closed and the resulting canonical `main` is confirmed.
+## 7. Audit-finality and anti-loop
 
-## 6. Audit-finality rule
-
-The corrective commit invalidates prior GPT0/GPT4 conclusions only for the six-file documentary delta. It does not invalidate the authenticated smoke, immediate idempotency, cleanup evidence or unrelated historical gates.
+PR #107 is closed. Its completed evidence and gates must not be repeated without a defined material invalidation event.
 
 ```text
-NO MATERIAL CHANGE
-→ NO REAUDIT OUTSIDE THE EXACT SIX-FILE DELTA
+NO MATERIAL CHANGE TO THE VALIDATED OBJECT OR EVIDENCE
+→ NO REAUDIT
 ```
+
+Do not create another PR solely to record the future squash SHA of this reconciliation. Record a newer main tip in the next separately authorized substantive SFJM update unless a material state, authority, blocker, evidence boundary or next action changes.
