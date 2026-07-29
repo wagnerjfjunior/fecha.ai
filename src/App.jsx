@@ -336,7 +336,7 @@ function TabBar({ tabs, active, onChange }) {
 }
 
 // ─── Troca de senha obrigatória ───────────────────────────────────────────────
-function TrocarSenhaObrigatoria({ sb, token, corretorId, onConcluido }) {
+function TrocarSenhaObrigatoria({ sb, token, onConcluido }) {
   const [nova,setNova]=useState(""); const [conf,setConf]=useState("");
   const [ld,setLd]=useState(false); const [erro,setErro]=useState("");
   const salvar = async () => {
@@ -346,7 +346,10 @@ function TrocarSenhaObrigatoria({ sb, token, corretorId, onConcluido }) {
     setLd(true);
     try {
       await sb.changePassword(token, nova);
-      await sb.patch("corretores","id=eq."+corretorId,{must_change_password:false},token);
+      const concluido = await sb.rpc("marcar_senha_inicial_definida", {}, token);
+      if (concluido !== true) {
+        throw new Error("Não foi possível concluir a definição da senha.");
+      }
       onConcluido();
     } catch(e) { setErro(e.message); }
     setLd(false);
@@ -5855,7 +5858,7 @@ export default function App() {
   if(!corretor) return (<div className="min-h-screen bg-gray-50 flex items-center justify-center p-4"><div className="bg-white rounded-2xl shadow-lg p-6 text-center max-w-sm"><p className="text-gray-700 text-lg">Carregando perfil...</p><button className="mt-4 text-blue-600 text-base" onClick={logout}>Voltar</button></div></div>);
 
   if(corretor.must_change_password) return (
-    <TrocarSenhaObrigatoria sb={sb} token={session.access_token} corretorId={corretor.id}
+    <TrocarSenhaObrigatoria sb={sb} token={session.access_token}
       onConcluido={()=>setCorretor(c=>({...c,must_change_password:false}))}
     />
   );
