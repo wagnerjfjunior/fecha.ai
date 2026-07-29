@@ -1,7 +1,7 @@
 # FECH.AI — SFJM Blocked Actions
 
-**Status:** `ACTIVE_BLOCKS / PR107_READY / PM107_CORRECTION_PENDING_AUDIT / PR02_BLOCKED_PENDING_CLOSURE`  
-**Observed on:** `2026-07-28`  
+**Status:** `ACTIVE_BLOCKS / PR107_CLOSED / PR02_NOT_AUTHORIZED / FAIL_CLOSED`  
+**Observed on:** `2026-07-29`  
 **Repository:** `wagnerjfjunior/fecha.ai`
 
 ## 1. Product blocks
@@ -20,48 +20,40 @@ Without new material evidence and explicit authority, do not:
 - reapply migration `20260727080929_f1_02_password_state_rpc`;
 - alter or drop `public.marcar_senha_inicial_definida()`;
 - repeat the completed positive smoke merely for additional unanimity;
-- reopen PR #104, #105 or #106 lifecycle;
-- create a recursive PR solely to record PR #107's future squash SHA.
+- reopen PR #104, #105, #106 or #107 lifecycle;
+- create a recursive PR solely to record a documentation-closure squash SHA.
 
-## 3. PR #107 current blocks
-
-```text
-PR: #107
-Branch: docs/pr103-authenticated-smoke-evidence
-State: OPEN / READY FOR REVIEW
-Original audited head: 51105692b0957454bd3d83f70e6591472fcf10dc
-Pre-merge result: FAIL — PM-107-GATE-01
-```
-
-Block:
-
-- any eighth changed file;
-- any change outside the six authorized SFJM files;
-- runtime, frontend, SQL, migration, RPC-body, Auth, RLS, policy, grant, Edge, Vercel or production change;
-- any commit after the single PM-107-GATE-01 corrective commit;
-- any new comment or review;
-- metadata change or Draft conversion;
-- merge until the corrective head passes the bounded validation sequence;
-- representing branch content as canonical `main`.
-
-The previously executed Ready transition is not blocked or reverted.
-
-## 4. Required corrective validation sequence
+## 3. PR #107 closure
 
 ```text
-1. GPT0 delta-only audit of the six-file correction.
-2. If PASS, GPT4 lifecycle/scope validation on the same head.
-3. If PASS, pre-merge READ_ONLY validation.
-4. Separate Product Authority for squash merge.
+PR #107: CLOSED / MERGED
+Final head: 62346a8976d3489dff9b84dcf7bab40a2b43e685
+Squash / canonical main: cec1b22430adf1a002b172992cf6c5ea5bb427de
+Changed files: exactly 7 documentation files
+Runtime/frontend/Supabase change: NONE
 ```
 
-No step authorizes the next step automatically.
+Do not represent the former `OPEN / READY`, corrective-audit or pre-merge records as current state.
+
+## 4. PR-02 current blocks
+
+PR-02 is the next planned technical workstream, but implementation is not authorized.
+
+Blocked until a bounded read-only proposal exists and Product Authority separately authorizes execution:
+
+- branch creation;
+- frontend code change;
+- commit or pull request publication;
+- Vercel preview or production deploy;
+- production smoke;
+- use of Codex as executor.
+
+The read-only GPT1 scope reconstruction is not blocked. It may map the exact current call site, dependencies, file boundary, tests and rollback without changing any artifact.
 
 ## 5. Program dependency blocks
 
 ```text
-PR-02: implementation and PR creation blocked until PR #107 is closed
-       and the resulting canonical main is confirmed
+PR-02: implementation not authorized
 PR-03: blocked until PR-02 is deployed and proven
 PR-04 through PR-09: do not advance out of canonical order
 ```
@@ -93,9 +85,11 @@ Do not claim that the completed smoke establishes:
 - F1-02 completion;
 - Security Go.
 
-## 8. Procedural deviation
+Do not infer that a merged migration proves current catalog state, or that current catalog state proves negative and cross-tenant tests.
 
-The accidental `noop` issue comment is accepted as non-material. It does not authorize any further comment and does not alter the branch, diff, head, mergeability or evidence boundary.
+## 8. Skills documentation backlog boundary
+
+The validated Builder kernels for GPT0, GPT1, GPT3 and GPT4 require a separate future documentation PR. That work must not be mixed into this SFJM continuity reconciliation or into PR-02.
 
 ## 9. Removal rule
 
