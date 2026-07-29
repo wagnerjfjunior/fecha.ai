@@ -1,7 +1,7 @@
 # FECH.AI — SFJM Current State
 
-**Lifecycle state:** `PR103_RUNTIME_SMOKE_PASSED / F1_02_ACTIVE / PR107_READY / PM107_CORRECTION_PENDING_AUDIT / PR02_NOT_AUTHORIZED`  
-**Record type:** `OPERATIONAL_STATE / DOCUMENTATION_ONLY`  
+**Lifecycle state:** `F1_02_ACTIVE / PR02_DRAFT_IMPLEMENTED / STATIC_VALIDATION_PASSED / NOT_DEPLOYED`  
+**Record type:** `OPERATIONAL_STATE / CODE_AND_DOCUMENTATION`  
 **Observed on:** `2026-07-28`  
 **Repository:** `wagnerjfjunior/fecha.ai`
 
@@ -19,146 +19,131 @@ F1-02: ACTIVE REMEDIATION / BLOCKED
 WDP: 0
 ```
 
-Frontend or Action requests. Backend, RPC and Supabase validate and decide. AI assists but is not authority.
+Frontend requests and displays. Backend, RPC and Supabase validate and decide. AI assists but is not authority.
 
-## 2. Canonical GitHub anchor before PR #107
+## 2. Canonical GitHub anchor
 
 ```text
-main observed: 9624900ada5d29e24476ab6a0a0907cb4854e509
-PR #103: CLOSED / MERGED
-PR #103 final head: abf6b4026343eae437283280269ed2997911dcec
-PR #103 squash: 276a3e55155cd0e57b6155dc13b998704bdfd654
-PR #106 squash / current main: 9624900ada5d29e24476ab6a0a0907cb4854e509
+Current canonical main:
+cec1b22430adf1a002b172992cf6c5ea5bb427de
+
+PR #107:
+CLOSED / MERGED
+Squash: cec1b22430adf1a002b172992cf6c5ea5bb427de
+
+PR #108:
+OPEN / DRAFT / NOT MERGED
+Base: main@cec1b22430adf1a002b172992cf6c5ea5bb427de
+Live branch: security/f1-02-password-flow-cutover-1
+Initial implementation commit: c458461e810e24adb7d71f7d155be06e9cf54eac
+Current head after documentation reconciliation: resolve live
 ```
 
-PR #107 remains proposed documentation state until separately authorized and merged.
+Branch content is proposed state and is not canonical `main`.
 
-## 3. PR #103 catalog state
+## 3. PR-01 prerequisite state
 
 ```text
 Migration: 20260727080929 / f1_02_password_state_rpc / APPLIED
 RPC: public.marcar_senha_inicial_definida() / EXISTS
-Owner: postgres
+Arguments: none
 SECURITY DEFINER: true
 search_path: pg_catalog
 authenticated EXECUTE: true
 anon EXECUTE: false
 service_role EXECUTE: false
 PUBLIC EXECUTE: false
+Authenticated positive smoke: PASS
+Immediate repeated-call idempotency: PASS
 ```
 
-## 4. Controlled runtime evidence
+Residual PR-01 runtime risks remain as previously recorded. They are not reopened by PR #108.
+
+## 4. PR-02 implementation state
+
+PR #108 changes the mandatory password-completion path only:
 
 ```text
-First call:
-must_change_password: true → false
-xmin: 6997 → 6999
-RPC return: true
-unexpected changed fields: none
-
-Immediate repeated call:
-must_change_password: false → false
-xmin: 6999 → 6999
-RPC return: true
-unexpected changed fields: none
-
-Cleanup:
-remaining Auth users: 0
-remaining synthetic broker profiles: 0
-remaining synthetic teams: 0
-synthetic company: preserved inactive
+src/App.jsx
+changePassword(token, nova)
+→ marcar_senha_inicial_definida({}, token)
+→ require return === true
+→ onConcluido()
 ```
 
-Evidence path:
+The direct patch is removed from `TrocarSenhaObrigatoria`, and `corretorId` is removed from that component contract and call.
+
+Implementation commit scope:
 
 ```text
-docs/security/evidence/2026-07-28-pr103-authenticated-smoke-and-idempotency.md
+1 commit
+1 file
+6 additions
+3 deletions
 ```
 
-## 5. PR #103 operational state
+## 5. Static validation
 
 ```text
-F1-02 PR-01: COMPLETED WITH RESIDUAL RISK
-Authenticated positive smoke: ESTABLISHED / PASS
-Immediate runtime idempotency: ESTABLISHED / PASS
-Controlled concurrency: NOT ESTABLISHED
-Missing-profile execution: NOT ESTABLISHED
-Inactive-profile execution: NOT ESTABLISHED
-Rollback execution: NOT ESTABLISHED
-Reapply after rollback: NOT ESTABLISHED
-Frontend cutover: NOT ESTABLISHED
+npm run build: PASS
+Workflow run: 30411229438
+Job: 90447536855
+Build exit code: 0
+Vercel Preview status: success
+```
+
+This establishes static buildability of the implementation commit. It does not establish deployed production behavior.
+
+## 6. Current changed-file contract
+
+After the bounded documentation reconciliation, PR #108 must contain exactly:
+
+```text
+src/App.jsx
+docs/security/evidence/2026-07-28-pr02-password-flow-cutover.md
+docs/sfjm/AUTHORIZATIONS.md
+docs/sfjm/BLOCKED_ACTIONS.md
+docs/sfjm/CURRENT_STATE.md
+docs/sfjm/EVIDENCE_FRESHNESS.md
+docs/sfjm/NEXT_SAFE_ACTION.md
+docs/sfjm/handoffs/CURRENT.md
+```
+
+No database, migration, RPC-body, RLS, Auth, Edge, Vercel configuration or production-data change belongs to the PR.
+
+## 7. Residual risk
+
+```text
+Mandatory-password direct patch: REMOVED IN PROPOSED PR
+Administrative EditarCorretorModal direct patch: PRESERVED
+Interactive UI success: NOT EXECUTED
+RPC-unavailable UI test: NOT EXECUTED
+Deployed frontend proof: NOT ESTABLISHED
+Production smoke: NOT EXECUTED
 Legacy direct UPDATE denial: NOT ESTABLISHED
+PR-03: BLOCKED
 ```
 
-The runtime evidence narrows the residual-risk set. It does not grant Security Go or F1-02 acceptance.
+The administrative path cannot be redirected to the self-service RPC without a separate server-side authorization design.
 
-## 6. F1-02 program anchor
-
-```text
-Canonical source: docs/security/evidence/F1-02_REMEDIATION_MASTER_PLAN.md
-Program structure: 5 operational windows / 10 planned PRs
-PR-00: completed
-PR-01: completed with residual risk
-PR-02: next technical workstream / implementation not authorized
-PR-03: blocked until PR-02 is deployed and proven
-PR-04 through PR-09: planned / not started unless newer canonical evidence proves otherwise
-```
-
-## 7. PR #107 lifecycle
+## 8. Current authority state
 
 ```text
-PR: #107 — docs(security): record PR103 authenticated smoke
-Branch: docs/pr103-authenticated-smoke-evidence
-Base: main@9624900ada5d29e24476ab6a0a0907cb4854e509
-Original audited head: 51105692b0957454bd3d83f70e6591472fcf10dc
-State: OPEN / READY FOR REVIEW
-Changed-file contract: exactly 7 documentation files
-GPT0 exact-head audit: PASS
-GPT4 exact-head lifecycle/scope validation: PASS
-Ready authority: CONSUMED / EXECUTED
-Pre-merge validation: FAIL — PM-107-GATE-01
-Corrective scope: exactly 6 SFJM files
-Corrective head: resolve live after the single commit
-Merge: NOT AUTHORIZED
-PR-02: NOT AUTHORIZED
-```
-
-No runtime, frontend or Supabase change belongs to this workstream.
-
-## 8. Corrective delta effect
-
-The PM-107-GATE-01 commit updates only stale lifecycle records. It does not modify the smoke evidence file and does not invalidate:
-
-- authenticated positive smoke;
-- immediate repeated-call idempotency;
-- cleanup evidence;
-- PR #103 catalog evidence;
-- unrelated historical gates.
-
-Prior GPT0/GPT4 PASS results are no longer sufficient for the new head only because the six SFJM files changed.
-
-## 9. Current authority state
-
-```text
-PR #107 initial publication: CONSUMED
-GPT0 review COMMENT: CONSUMED
-GPT4 review COMMENT: CONSUMED
-Ready: CONSUMED / EXECUTED
-PM-107-GATE-01 single corrective commit: CONSUMED ON PUBLICATION
+PR-02 bounded implementation: CONSUMED
+Draft PR creation: CONSUMED
+Documentation reconciliation: CONSUMED ON PUBLICATION
 Additional commit: NOT AUTHORIZED
-Comment or review: NOT AUTHORIZED
+Review/comment: NOT AUTHORIZED
+Ready: NOT AUTHORIZED
 Merge: NOT AUTHORIZED
-PR-02: NOT AUTHORIZED UNTIL PR #107 IS CLOSED AND MAIN CONFIRMED
+Deployment: NOT AUTHORIZED
+Production smoke: NOT AUTHORIZED
 PR-03: BLOCKED
 Security Go: DENIED
 F1-02 acceptance: NOT AUTHORIZED
 WDP: 0
 ```
 
-The accidental `noop` comment is accepted as a non-material procedural deviation and grants no authority.
+## 9. Next safe action
 
-## 10. Next safe action
-
-Run one GPT0 delta-only documentation audit of the six-file PM-107-GATE-01 correction at the exact live corrective head.
-
-Do not merge or start PR-02 in the same step.
+Run one independent GPT3 security/code-contract audit of PR #108 at the exact live head. Do not mutate GitHub, Supabase, runtime or production in the audit step.
