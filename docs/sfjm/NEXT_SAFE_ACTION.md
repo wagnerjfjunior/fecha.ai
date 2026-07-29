@@ -1,106 +1,96 @@
 # FECH.AI — SFJM Next Safe Action
 
-**Status:** `NEXT_SAFE_ACTION / PM107_GPT0_DELTA_ONLY_AUDIT`  
-**Observed on:** `2026-07-28`  
+**Status:** `NEXT_SAFE_ACTION / PR02_SCOPE_RECONSTRUCTION_READ_ONLY`  
+**Observed on:** `2026-07-29`  
 **Repository:** `wagnerjfjunior/fecha.ai`
 
 ## 1. Completed material steps
 
 ```text
-PR #103 authenticated positive smoke: PASS
-PR #103 immediate repeated-call idempotency: PASS
+PR #103 narrow password-state RPC: MERGED
+Migration 20260727080929: documented as APPLIED
+Authenticated positive smoke: PASS
+Immediate repeated-call idempotency: PASS
 Synthetic fixture cleanup: COMPLETE
-PR #107 GPT0 audit at 51105692b0957454bd3d83f70e6591472fcf10dc: PASS
-PR #107 GPT4 lifecycle/scope at 51105692b0957454bd3d83f70e6591472fcf10dc: PASS
-PR #107 Ready authority: CONSUMED / EXECUTED
-PR #107 pre-merge validation: FAIL — PM-107-GATE-01
-PM-107-GATE-01 corrective commit: PUBLISHED / HEAD MUST BE RESOLVED LIVE
+PR #107 evidence/SFJM documentation: CLOSED / MERGED
+Canonical main after PR #107: cec1b22430adf1a002b172992cf6c5ea5bb427de
 ```
+
+The merge of PR #107 closes the evidence-documentation workstream. It does not authorize the next technical PR.
 
 ## 2. Exact next safe action
 
+Run one GPT1 architectural scope reconstruction, strictly `READ_ONLY`, for F1-02 PR-02 against the current live `main`.
+
+Canonical PR-02 contract:
+
 ```text
-Run one independent GPT0 delta-only documentation audit
-of the PM-107-GATE-01 corrective commit
-against the exact live head of:
-docs/pr103-authenticated-smoke-evidence
+Branch target: security/f1-02-password-flow-cutover
+Title target: security: route password completion through RPC
+Primary objective: replace the confirmed direct PATCH corretores password-completion path with public.marcar_senha_inicial_definida()
 ```
 
-This is a read-only audit action.
+The reconstruction must not implement or publish anything.
 
-## 3. Exact delta-only scope
+## 3. Required reconstruction output
 
-Compare:
+The GPT1 output must identify:
+
+1. current live `main` and exact files consulted;
+2. the exact direct password-state write call site;
+3. the current frontend flow and dependencies around success/error state;
+4. the narrow RPC invocation contract;
+5. the smallest permitted file set;
+6. areas explicitly prohibited from change;
+7. multi-tenant and security implications;
+8. build and repository-wide call-site search requirements;
+9. success, fail-closed, preview, production-smoke and evidence criteria;
+10. rollback and containment;
+11. the specialists required for later independent validation;
+12. a bounded implementation task envelope for Codex, without executing it.
+
+## 4. Required safeguards
+
+The proposal must preserve:
+
+- no unrelated frontend refactor;
+- no Supabase, migration, RPC-body, RLS, policy or grant change;
+- no false-success UI when the RPC fails or is unavailable;
+- no token, credential or sensitive payload logging;
+- one PR = one primary risk = one simple rollback;
+- PR-03 remains blocked until PR-02 is deployed and proven.
+
+## 5. Sequence after the read-only proposal
 
 ```text
-parent:
-51105692b0957454bd3d83f70e6591472fcf10dc
-
-corrective head:
-resolve live
+1. GPT1 produces the bounded PR-02 proposal.
+2. Product Authority separately authorizes or rejects implementation.
+3. If authorized, Codex implements only the permitted files.
+4. Independent specialists validate their exact gates.
+5. GPT4 validates lifecycle, checks, preview and rollback.
+6. Ready, merge, deploy and production smoke each require their applicable authority.
 ```
 
-The corrective commit must modify exactly:
+No step automatically authorizes the next step.
+
+## 6. Current non-actions
 
 ```text
-docs/sfjm/AUTHORIZATIONS.md
-docs/sfjm/BLOCKED_ACTIONS.md
-docs/sfjm/CURRENT_STATE.md
-docs/sfjm/EVIDENCE_FRESHNESS.md
-docs/sfjm/NEXT_SAFE_ACTION.md
-docs/sfjm/handoffs/CURRENT.md
-```
-
-Confirm:
-
-1. one corrective commit only;
-2. parent is exactly `51105692b0957454bd3d83f70e6591472fcf10dc`;
-3. the smoke evidence file is unchanged;
-4. PR #107 remains OPEN / READY FOR REVIEW;
-5. base remains `main@9624900ada5d29e24476ab6a0a0907cb4854e509`;
-6. final changed-file set remains exactly seven documentation files;
-7. GPT0 and GPT4 prior PASS results are recorded at the original head;
-8. Ready is recorded as authorized and executed;
-9. pre-merge FAIL `PM-107-GATE-01` is recorded;
-10. merge remains unauthorized;
-11. PR-02 remains unauthorized;
-12. evidence boundaries and residual risks are preserved.
-
-## 4. Required sequence after the delta audit
-
-```text
-1. GPT0 delta-only audit.
-2. If PASS, GPT4 lifecycle/scope validation on the same corrective head.
-3. If PASS, pre-merge READ_ONLY validation.
-4. If PASS, request separate Product Authority for squash merge.
-5. After authorized merge, confirm the resulting canonical main and PR closure.
-6. Only then request separate PR-02 authority.
-```
-
-No step authorizes the next step automatically.
-
-## 5. Current non-actions
-
-```text
-No additional commit
-No comment or review
-No metadata change
-No Draft conversion
-No merge
-No runtime or frontend change
-No Supabase change
-No PR-02
+No branch creation
+No commit
+No pull request
+No frontend or runtime change
+No Supabase or SQL operation
+No migration, RPC-body, Auth, RLS, policy or grant change
+No Vercel or production mutation
 No PR-03
 No Security Go
 No F1-02 acceptance
 No WDP change
 ```
 
-## 6. Anti-loop
+## 7. Anti-loop
 
-The new corrective commit is a valid invalidation event only for the six-file documentary delta.
+Do not reopen PR #107 or repeat its completed smoke merely to obtain additional unanimity.
 
-```text
-NO OTHER MATERIAL CHANGE
-→ NO REAUDIT OUTSIDE THE SIX-FILE DELTA
-```
+Do not create a recursive closure PR solely to record the future squash SHA of this documentation reconciliation. The next substantive state change belongs to the PR-02 planning/authorization cycle.
