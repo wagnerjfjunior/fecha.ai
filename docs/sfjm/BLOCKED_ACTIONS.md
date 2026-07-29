@@ -1,102 +1,85 @@
 # FECH.AI — SFJM Blocked Actions
 
-**Status:** `ACTIVE_BLOCKS / PR107_READY / PM107_CORRECTION_PENDING_AUDIT / PR02_BLOCKED_PENDING_CLOSURE`  
+**Status:** `ACTIVE_BLOCKS / PR108_DRAFT / PR02_NOT_DEPLOYED / PR03_BLOCKED`  
 **Observed on:** `2026-07-28`  
 **Repository:** `wagnerjfjunior/fecha.ai`
 
 ## 1. Product blocks
 
+Do not:
+
 - declare MVP 1 — Família security-ready;
 - grant Security Go or F1-02 acceptance;
-- award WDP from PR count, documentation or one smoke alone;
-- broad paid commercialization;
+- award WDP from PR count, documentation, CI or one smoke alone;
+- authorize broad paid commercialization;
 - represent controlled-beta risk acceptance as a security waiver.
 
 ## 2. Closed-cycle blocks
 
-Without new material evidence and explicit authority, do not:
+Without new material evidence and exact authority, do not:
 
-- reopen PR #103 Ready, merge or migration-application lifecycle;
-- reapply migration `20260727080929_f1_02_password_state_rpc`;
+- reopen PR #103 or PR #107 lifecycle;
+- reapply or modify migration `20260727080929_f1_02_password_state_rpc`;
 - alter or drop `public.marcar_senha_inicial_definida()`;
-- repeat the completed positive smoke merely for additional unanimity;
-- reopen PR #104, #105 or #106 lifecycle;
-- create a recursive PR solely to record PR #107's future squash SHA.
+- repeat the completed PR-01 smoke merely for additional unanimity;
+- create a recursive PR solely to record PR #107 or PR #108 lifecycle state.
 
-## 3. PR #107 current blocks
-
-```text
-PR: #107
-Branch: docs/pr103-authenticated-smoke-evidence
-State: OPEN / READY FOR REVIEW
-Original audited head: 51105692b0957454bd3d83f70e6591472fcf10dc
-Pre-merge result: FAIL — PM-107-GATE-01
-```
-
-Block:
-
-- any eighth changed file;
-- any change outside the six authorized SFJM files;
-- runtime, frontend, SQL, migration, RPC-body, Auth, RLS, policy, grant, Edge, Vercel or production change;
-- any commit after the single PM-107-GATE-01 corrective commit;
-- any new comment or review;
-- metadata change or Draft conversion;
-- merge until the corrective head passes the bounded validation sequence;
-- representing branch content as canonical `main`.
-
-The previously executed Ready transition is not blocked or reverted.
-
-## 4. Required corrective validation sequence
+## 3. PR #108 current blocks
 
 ```text
-1. GPT0 delta-only audit of the six-file correction.
-2. If PASS, GPT4 lifecycle/scope validation on the same head.
-3. If PASS, pre-merge READ_ONLY validation.
-4. Separate Product Authority for squash merge.
+PR: #108
+State: OPEN / DRAFT / NOT MERGED
+Base: main@cec1b22430adf1a002b172992cf6c5ea5bb427de
+Live branch: security/f1-02-password-flow-cutover-1
+Initial implementation commit: c458461e810e24adb7d71f7d155be06e9cf54eac
 ```
 
-No step authorizes the next step automatically.
+Blocked:
 
-## 5. Program dependency blocks
+- any ninth changed file;
+- unrelated `src/App.jsx` refactor;
+- change to Supabase, migration, RPC body, Auth, RLS, policy, grant or data;
+- change to Edge Functions, Vercel configuration or GitHub Actions;
+- alteration of the preserved `EditarCorretorModal` administrative patch in this PR;
+- claim that all direct `corretores` updates were removed;
+- Ready, approval, merge, auto-merge or deployment without separate authority;
+- production smoke without separate deployment and smoke authority.
+
+## 4. PR-03 dependency block
 
 ```text
-PR-02: implementation and PR creation blocked until PR #107 is closed
-       and the resulting canonical main is confirmed
-PR-03: blocked until PR-02 is deployed and proven
-PR-04 through PR-09: do not advance out of canonical order
+PR-03: BLOCKED
 ```
 
-## 6. Runtime and data blocks
+PR-03 may not begin until canonical evidence establishes at least:
 
-Without a new exact authority, do not alter:
+1. PR #108 merged under separate authority;
+2. deployed frontend uses the RPC in the intended mandatory-password flow;
+3. controlled success and fail-closed behavior are proven;
+4. repository-wide call-site search is refreshed at the deployed head;
+5. no legitimate required password-state direct update would be broken by revocation;
+6. the administrative direct patch has an explicit safe disposition.
 
-- runtime or frontend;
-- Supabase schema, data, Auth, RLS, policies, grants or RPC bodies;
-- Edge Functions, Vercel, GitHub Actions or GPT Actions;
-- real users, companies, teams, leads, clients or commercial data;
-- MesaCliente, PME, LeadOps, B0, WDP or Security Go.
+## 5. Runtime and data blocks
 
-Do not execute concurrency, missing-profile, inactive-profile, rollback or reapply tests in production.
+Do not alter real users, companies, teams, leads, clients, passwords, Auth records or commercial data. Production is not an exploratory test environment.
 
-## 7. Evidence-overclaim blocks
+## 6. Evidence-overclaim blocks
 
-Do not claim that the completed smoke establishes:
+PR #108 does not establish:
 
-- controlled concurrency;
-- missing-profile denial;
-- inactive-profile denial;
-- rollback;
-- reapply;
-- frontend cutover;
+- interactive UI success;
+- RPC-unavailable runtime behavior;
 - deployed frontend proof;
-- denial of legacy direct `corretores` update;
+- production cutover;
+- denial of legacy direct UPDATE;
+- resolution of the administrative password-reset path;
 - F1-02 completion;
-- Security Go.
+- Security Go;
+- WDP.
 
-## 8. Procedural deviation
+A successful build and Preview are static/release signals, not production behavior proof.
 
-The accidental `noop` issue comment is accepted as non-material. It does not authorize any further comment and does not alter the branch, diff, head, mergeability or evidence boundary.
-
-## 9. Removal rule
+## 7. Removal rule
 
 A block is removed only by exact canonical evidence identifying scope, authority, validator, residual risk, rollback or containment, expiration and next safe action.
