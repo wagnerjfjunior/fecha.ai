@@ -1,7 +1,8 @@
 # FECH.AI — Auditoria de Paridade Builder × Skill — Grupo A
 
 **Data:** 2026-07-30  
-**Status:** `DOCUMENTATION_ONLY / PARITY_AUDIT / GROUP_A / NO_RUNTIME_CHANGE`  
+**Atualizado:** 2026-07-31  
+**Status:** `DOCUMENTATION_ONLY / PARITY_AUDIT / GROUP_A / SHARED_EVIDENCE_GUARDRAIL / NO_RUNTIME_CHANGE`  
 **Repositório:** `wagnerjfjunior/fecha.ai`  
 **Base auditada:** `main@cec1b22430adf1a002b172992cf6c5ea5bb427de`  
 **Escopo:** GPT0, GPT1, GPT2, GPT3, GPT4, GPT7 e GPT8.
@@ -67,12 +68,61 @@ O arquivo enviado pelo usuário é `INFORMATION_SUPPLIED`, não fonte GitHub can
 - **GPT7:** skill v1.1 é superficial frente ao contrato de lead, eventos, follow-up, deduplicação e métricas do Builder v1.6.
 - **GPT8:** skill v1.1 é superficial frente ao bloqueio greenfield, Native First, regras financeiras, proposta/histórico e cross-tenant do Builder corrigido.
 
-## 6. Não escopo
+## 6. Aprendizado transversal da auditoria independente
+
+Durante a auditoria independente da PR #111 no head inicial, a primeira resposta do GPT0 apresentou overclaim de cobertura e precisou de intervenção da Product Authority para exigir recuperação completa dos arquivos e prova de leitura até EOF.
+
+O parecer final corrigido foi documentalmente aceitável, mas o comportamento inicial deve ser classificado separadamente como:
+
+```text
+USER_CORRECTED
+INITIAL_OVERCLAIM
+NO_AUTONOMOUS_BEHAVIORAL_PASS
+```
+
+Esse defeito não é exclusivo do GPT0. Qualquer especialista pode confundir localização, snippet, metadata, patch parcial ou resposta truncada com leitura suficiente. Portanto, a correção não deve ser copiada para um skill individual nem distribuída em Instructions específicas.
+
+### REQUIRED IN THIS PR
+
+Centralizar o contrato de cobertura e integridade de leitura em:
+
+```text
+docs/bootstrap/2026-06-11-fechai-specialists-modus-operandi.md
+```
+
+Esse arquivo já é obrigatório no bootstrap de todos os especialistas por meio de `docs/bootstrap/INDEX.md`.
+
+A salvaguarda comum deve:
+
+- classificar fontes como `NOT_READ`, `PARTIAL_READ` ou `INTEGRAL_READ`;
+- impedir que path, metadata, árvore, blob localizado, snippet ou busca sejam tratados como leitura integral;
+- exigir detecção e tratamento de truncamento;
+- limitar conclusões à cobertura efetivamente lida;
+- exigir matriz de cobertura em auditorias multiarquivo;
+- distinguir diff/patch de arquivo final;
+- bloquear PASS amplo quando fonte material permanecer parcial;
+- registrar correção induzida pelo usuário como `USER_CORRECTED / INITIAL_OVERCLAIM`.
+
+### Decisão de centralização
+
+```text
+Regra transversal: Modus Operandi comum
+Regra de domínio: skill individual
+Kernel de inicialização: Instructions do Builder
+```
+
+Não alterar os sete skills para duplicar essa salvaguarda. O objetivo é uma única fonte comum, carregada por todos os GPTs e aplicável também ao futuro Grupo B.
+
+A inclusão dessa correção muda o head da PR #111. O PASS independente anterior permanece evidência apenas do head anterior e não autoriza Ready ou merge do novo head. O delta corretivo deve ser revalidado em READ_ONLY.
+
+## 7. Não escopo
 
 - nenhum runtime, frontend, Supabase, Vercel, GitHub Actions ou Builder é alterado;
 - nenhum Security Go, produto PASS, Ready, merge ou deploy é autorizado;
-- GPT5, GPT6, GPT9 e GPT10 ficam para o Grupo B após fechamento e aprendizado desta PR.
+- GPT5, GPT6, GPT9 e GPT10 ficam para o Grupo B após fechamento e aprendizado desta PR;
+- não criar novo diretório de skills;
+- não duplicar o contrato comum nos skills individuais.
 
-## 7. Rollback
+## 8. Rollback
 
 Um revert da PR documental restaura os arquivos anteriores. Não há rollback de runtime, dados ou ambiente.
