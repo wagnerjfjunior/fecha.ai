@@ -59,6 +59,12 @@ Before sensitive FECH.AI work, read in this order:
 8. `docs/sfjm/EVIDENCE_FRESHNESS.md`
 9. `docs/sfjm/handoffs/CURRENT.md`
 
+For specialist Builder construction, configuration, validation or migration between conversations, also read:
+
+```text
+docs/sfjm/handoffs/BUILDERS_CURRENT.md
+```
+
 Then validate live GitHub state and any required external evidence before proposing implementation, approval, merge or deploy.
 
 ## 4. Operational states v1
@@ -108,7 +114,10 @@ An SFJM update must not silently expand into runtime, Supabase, Vercel, MesaClie
 - Blocked actions: `docs/sfjm/BLOCKED_ACTIONS.md`
 - Authorizations: `docs/sfjm/AUTHORIZATIONS.md`
 - Evidence freshness: `docs/sfjm/EVIDENCE_FRESHNESS.md`
-- Current handoff: `docs/sfjm/handoffs/CURRENT.md`
+- Current product/security handoff: `docs/sfjm/handoffs/CURRENT.md`
+- Current specialist Builders handoff: `docs/sfjm/handoffs/BUILDERS_CURRENT.md`
+
+The two handoff files have separate scopes. `CURRENT.md` preserves the active product/security operational lifecycle. `BUILDERS_CURRENT.md` preserves specialist Builder construction and validation continuity. A Builder update must not silently mutate the product/security lifecycle, and a product/security reconciliation must not silently overwrite Builder continuity.
 
 ## 8. Material update rule
 
