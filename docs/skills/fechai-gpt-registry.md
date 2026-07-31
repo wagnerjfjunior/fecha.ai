@@ -1,6 +1,6 @@
 # FECH.AI — Registro Oficial de GPTs Especialistas
 
-**Status:** `v3.1 / CANONICAL_SKILL_REGISTRY / GROUP_A_RECONCILED / SHARED_BOOTSTRAP_CONTRACT`  
+**Status:** `v3.2 / CANONICAL_SKILL_REGISTRY / GROUP_A_RECONCILED / SHARED_BOOTSTRAP_CONTRACT`  
 **Atualizado em:** `2026-07-31`  
 **Escopo:** organização oficial dos GPTs auxiliares do FECH.AI.  
 **Fonte central:** FECH.AI — Projeto Principal / Master Project.  
@@ -84,9 +84,11 @@ O especialista deve:
 3. não reduzir salvaguarda aplicada;
 4. bloquear encerramento oficial;
 5. propor reconciliação documental;
-6. distinguir main de `PR_HEAD_ONLY`.
+6. distinguir `main` de conteúdo presente somente em PR head.
 
-Skill em PR head não substitui main até merge autorizado.
+Skill em PR head não substitui `main` até merge autorizado.
+
+Os registros de versão dos especialistas abaixo são **duráveis**. Eles descrevem a versão normativa que este registry publica quando estiver vigente na `main`; não armazenam estados transitórios como “até merge”. A localização real da versão deve ser resolvida no GitHub live.
 
 ## 4. Bootstrap comum obrigatório
 
@@ -137,7 +139,7 @@ GPT0 audita documentação/evidências
 Nome: FECH.AI Documentation Auditor
 Skill: docs/skills/fechai-gpt0-documentation-auditor.md
 Grupo: A
-Skill version: v2.0 PR_HEAD_ONLY até merge
+Skill version: v2.0 / GROUP_A_RECONCILED
 Knowledge: EMPTY
 Actions: GitHub
 ```
@@ -150,7 +152,7 @@ Responsável por documentação, evidência, drift, reconciliação, AS-IS, índ
 Nome: FECH.AI Arquiteto SaaS
 Skill: docs/skills/fechai-gpt1-architect-saas.md
 Grupo: A
-Skill version: v2.0 PR_HEAD_ONLY até merge
+Skill version: v2.0 / GROUP_A_RECONCILED
 Knowledge: EMPTY
 Actions: GitHub / Supabase conforme configuração e autorização
 ```
@@ -163,7 +165,7 @@ Responsável por arquitetura SaaS, multi-tenancy, fronteiras, impacto, roadmap, 
 Nome: FECH.AI UX/UI APP Specialist
 Skill: docs/skills/fechai-gpt2-ux-ui-app-specialist.md
 Grupo: A
-Skill version: v2.0 PR_HEAD_ONLY até merge
+Skill version: v2.0 / GROUP_A_RECONCILED
 Knowledge: EMPTY
 Actions: GitHub
 ```
@@ -176,7 +178,7 @@ Responsável por UX/UI, Product Design, jornadas, acessibilidade, mobile, microc
 Nome: FECH.AI Supabase Security Specialist
 Skill: docs/skills/fechai-gpt3-supabase-security-specialist.md
 Grupo: A
-Skill version: v2.0 PR_HEAD_ONLY até merge
+Skill version: v2.0 / GROUP_A_RECONCILED
 Knowledge: EMPTY
 Actions: GitHub / Supabase READ_ONLY por padrão
 ```
@@ -189,7 +191,7 @@ Responsável por Supabase, Auth, RLS, policies, grants, RPCs, migrations, catál
 Nome: FECH.AI Vercel/GitHub CI-CD Specialist
 Skill: docs/skills/fechai-gpt4-vercel-github-cicd-specialist.md
 Grupo: A
-Skill version: v2.0 PR_HEAD_ONLY até merge
+Skill version: v2.0 / GROUP_A_RECONCILED
 Knowledge: EMPTY
 Actions: GitHub
 ```
@@ -224,7 +226,7 @@ Responsável por Ads, Pixel, CAPI, SEO, tracking, UTMs, event_id, deduplicação
 Nome: FECH.AI LeadOps CRM Discador Specialist
 Skill: docs/skills/fechai-gpt7-leadops-crm-discador.md
 Grupo: A
-Skill version: v2.0 PR_HEAD_ONLY até merge
+Skill version: v2.0 / GROUP_A_RECONCILED
 Knowledge: EMPTY
 Actions: GitHub
 ```
@@ -237,12 +239,27 @@ Responsável por leads, listas, CRM, funil, Discador, Power Mode, próxima açã
 Nome: FECH.AI MesaCliente Tabelas Propostas Specialist
 Skill: docs/skills/fechai-gpt8-mesacliente-tabelas-propostas.md
 Grupo: A
-Skill version: v2.0 PR_HEAD_ONLY até merge
+Skill version: v2.0 / GROUP_A_RECONCILED
 Knowledge: EMPTY
-Actions: GitHub
+Actions: GitHub obrigatório; Mermaid somente após AS-IS confirmado
 ```
 
 Responsável por MesaCliente, tabelas, parser/OCR/PDF/XLSX, Native First, fluxo financeiro, simulações, propostas e segurança comercial.
+
+#### Resolução obrigatória do handoff de Builders do GPT8
+
+O handoff deve ser localizado por referência ancorada, sem busca aberta ou adivinhação:
+
+1. caminho durável esperado na `main`:
+   `docs/sfjm/handoffs/BUILDERS_CURRENT.md`, resolvido por `docs/sfjm/INDEX.md`;
+2. enquanto esse caminho não estiver presente na `main`, a ponte transitória explicitamente autorizada para leitura é:
+   - PR: `#110`;
+   - head observado e que deve ser revalidado antes da leitura: `6a79b5ab597c7facc7b0d6eafdda36289b21c287`;
+   - caminho: `docs/sfjm/handoffs/BUILDERS_CURRENT.md`;
+3. o conteúdo da PR #110 deve ser classificado como `PR_HEAD_ONLY / INFORMATION_SUPPLIED`, nunca como canônico ou mergeado;
+4. a PR #110 não pode ser alterada, marcada Ready ou mergeada apenas para satisfazer o bootstrap do GPT8;
+5. quando o caminho existir na `main`, a `main` prevalece e a ponte da PR #110 passa a ser somente âncora histórica;
+6. se a PR #110 mudar de head ou fechar sem publicar o caminho na `main`, declarar `STALE_CONTINUITY` e bloquear apenas conclusões que dependam desse handoff — não inventar conteúdo nem executar busca não ancorada.
 
 ### GPT9 — Integrações Portais Mensageria Specialist
 
