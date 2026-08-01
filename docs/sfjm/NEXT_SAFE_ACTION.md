@@ -1,106 +1,110 @@
 # FECH.AI — SFJM Next Safe Action
 
-**Status:** `NEXT_SAFE_ACTION / PM107_GPT0_DELTA_ONLY_AUDIT`  
-**Observed on:** `2026-07-28`  
+**Status:** `NEXT_SAFE_ACTION / PR108_GPT3_SECURITY_AUDIT`  
+**Observed on:** `2026-07-31`  
 **Repository:** `wagnerjfjunior/fecha.ai`
 
 ## 1. Completed material steps
 
 ```text
-PR #103 authenticated positive smoke: PASS
-PR #103 immediate repeated-call idempotency: PASS
-Synthetic fixture cleanup: COMPLETE
-PR #107 GPT0 audit at 51105692b0957454bd3d83f70e6591472fcf10dc: PASS
-PR #107 GPT4 lifecycle/scope at 51105692b0957454bd3d83f70e6591472fcf10dc: PASS
-PR #107 Ready authority: CONSUMED / EXECUTED
-PR #107 pre-merge validation: FAIL — PM-107-GATE-01
-PM-107-GATE-01 corrective commit: PUBLISHED / HEAD MUST BE RESOLVED LIVE
+PR #107 squash merge: COMPLETE
+PR #111 Group A canonical reconciliation: MERGED
+PR #110 Builders continuity handoff: MERGED
+Canonical main: a909679143ec2e9a53f0a3108e5240a91a138fc1
+PR #109: CLOSED / NOT MERGED / SUPERSEDED_BY_PR_108
+PR #108 Draft creation: COMPLETE
+PR #108 implementation commit: c458461e810e24adb7d71f7d155be06e9cf54eac
+Mandatory-password direct patch replacement: IMPLEMENTED
+corretorId removal from intended component/call: IMPLEMENTED
+npm run build on implementation commit: PASS
+Repository-wide search set: EXECUTED
+Post-#110 six-file SFJM reconciliation: PUBLISHED THROUGH ONE SQUASH COMMIT
+PR #108 body reconciliation: EXECUTED
 ```
+
+The current PR #108 head must be resolved live after the squash publication. The prior head was `bec8b2531486e76c546ddee1d3e2d8b419e220be`.
 
 ## 2. Exact next safe action
 
-```text
-Run one independent GPT0 delta-only documentation audit
-of the PM-107-GATE-01 corrective commit
-against the exact live head of:
-docs/pr103-authenticated-smoke-evidence
-```
+Run one independent GPT3 security/code-contract audit of PR #108 at the exact live head.
 
-This is a read-only audit action.
+This action is strictly read-only.
 
-## 3. Exact delta-only scope
+## 3. Required bootstrap for the GPT3 gate
 
-Compare:
+Resolve and read:
 
 ```text
-parent:
-51105692b0957454bd3d83f70e6591472fcf10dc
-
-corrective head:
-resolve live
+main@a909679143ec2e9a53f0a3108e5240a91a138fc1
+PR #108 live metadata, head, commits and changed files
+docs/bootstrap/INDEX.md
+docs/skills/fechai-gpt-registry.md
+docs/skills/fechai-gpt3-supabase-security-specialist.md
+docs/bootstrap/2026-06-11-fechai-specialists-modus-operandi.md
+docs/sfjm/INDEX.md
+these six reconciled SFJM files
+src/App.jsx patch and final blob
+docs/security/evidence/2026-07-28-pr02-password-flow-cutover.md
+F1-02 remediation master plan sections for PR-02 and PR-03
 ```
 
-The corrective commit must modify exactly:
+Classify material sources as `NOT_READ`, `PARTIAL_READ` or `INTEGRAL_READ` and do not overclaim live Supabase state.
+
+## 4. Audit scope
+
+Validate:
+
+1. PR remains `OPEN / DRAFT / NOT MERGED`;
+2. the exact live head is the head produced by the one-commit documentation squash;
+3. final changed-file set remains exactly eight authorized files;
+4. `src/App.jsx` blob remains `2541813e6af44f4e8112296b7d9666df9320db5d`;
+5. PR-02 evidence blob remains `29c0c2a9a79aea71f543a0dd245244952dbe995d`;
+6. code changes only the intended mandatory-password path;
+7. RPC is called with `{}` and no target user identifier;
+8. strict `true` is required before `onConcluido()`;
+9. the administrative direct patch remains unchanged and explicitly residual;
+10. no migration, RPC body, Auth, RLS, policy, grant, role or data change exists;
+11. no Vercel configuration, GitHub Actions or Builder change exists;
+12. build evidence remains applicable to the unchanged code blob;
+13. PR #111 and PR #110 are documentation-only continuity anchors, not security proof;
+14. PR #109 remains closed and superseded;
+15. PR-03, Ready, merge, deployment and Security Go remain blocked.
+
+## 5. Required sequence after a GPT3 PASS
 
 ```text
-docs/sfjm/AUTHORIZATIONS.md
-docs/sfjm/BLOCKED_ACTIONS.md
-docs/sfjm/CURRENT_STATE.md
-docs/sfjm/EVIDENCE_FRESHNESS.md
-docs/sfjm/NEXT_SAFE_ACTION.md
-docs/sfjm/handoffs/CURRENT.md
+GPT3 independent security/code audit
+→ GPT7 operational-flow validation
+→ GPT4 lifecycle/checks validation
+→ separate Product Authority for Ready
+→ pre-merge validation
+→ separate Product Authority for merge
+→ separate deployment authority
+→ controlled deployed-frontend smoke
+→ evidence closure
+→ only then reassess PR-03 eligibility
 ```
 
-Confirm:
+No step authorizes the next one automatically.
 
-1. one corrective commit only;
-2. parent is exactly `51105692b0957454bd3d83f70e6591472fcf10dc`;
-3. the smoke evidence file is unchanged;
-4. PR #107 remains OPEN / READY FOR REVIEW;
-5. base remains `main@9624900ada5d29e24476ab6a0a0907cb4854e509`;
-6. final changed-file set remains exactly seven documentation files;
-7. GPT0 and GPT4 prior PASS results are recorded at the original head;
-8. Ready is recorded as authorized and executed;
-9. pre-merge FAIL `PM-107-GATE-01` is recorded;
-10. merge remains unauthorized;
-11. PR-02 remains unauthorized;
-12. evidence boundaries and residual risks are preserved.
-
-## 4. Required sequence after the delta audit
-
-```text
-1. GPT0 delta-only audit.
-2. If PASS, GPT4 lifecycle/scope validation on the same corrective head.
-3. If PASS, pre-merge READ_ONLY validation.
-4. If PASS, request separate Product Authority for squash merge.
-5. After authorized merge, confirm the resulting canonical main and PR closure.
-6. Only then request separate PR-02 authority.
-```
-
-No step authorizes the next step automatically.
-
-## 5. Current non-actions
+## 6. Current non-actions
 
 ```text
 No additional commit
-No comment or review
-No metadata change
-No Draft conversion
-No merge
-No runtime or frontend change
+No comment or review submission
+No Ready transition
+No merge or auto-merge
+No rebase or branch rewrite
+No manual Vercel deploy
+No production smoke
 No Supabase change
-No PR-02
+No administrative RPC design
 No PR-03
 No Security Go
 No F1-02 acceptance
 No WDP change
 ```
 
-## 6. Anti-loop
+## 7. Anti-loop
 
-The new corrective commit is a valid invalidation event only for the six-file documentary delta.
-
-```text
-NO OTHER MATERIAL CHANGE
-→ NO REAUDIT OUTSIDE THE SIX-FILE DELTA
-```
+The next audit must be anchored to the exact PR #108 head after this material documentation reconciliation. Without a later material head or environment change, do not repeat the same gate.
