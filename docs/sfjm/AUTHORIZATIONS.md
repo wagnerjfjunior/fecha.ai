@@ -1,40 +1,63 @@
 # FECH.AI — SFJM Authorizations
 
-**Status:** `AUTHORIZATION_REGISTER / PR108_DRAFT / PR02_IMPLEMENTATION_CONSUMED / FAIL_CLOSED`  
-**Observed on:** `2026-07-28`  
+**Status:** `AUTHORIZATION_REGISTER / PR108_DRAFT / POST_BUILDERS_RECONCILIATION / FAIL_CLOSED`  
+**Observed on:** `2026-07-31`  
 **Repository:** `wagnerjfjunior/fecha.ai`
 
 ## 1. Interpretation rule
 
-Authority is valid only for the exact repository, object, operation, scope, prohibitions and expiration stated by Product Authority. Recording a consumed authority does not reactivate it.
+Authority is valid only for the exact repository, object, operation, scope, prohibitions and lifecycle transition stated by Product Authority. Recording a consumed authority does not reactivate it. Tool capability is not authorization.
 
-## 2. Relevant consumed authorities
+## 2. Canonical and live anchors
+
+```text
+Canonical main:
+a909679143ec2e9a53f0a3108e5240a91a138fc1
+
+PR #111:
+CLOSED / MERGED
+final head: b8d04e0e5d65ab2ccbee569e234db4a11f63e6e4
+squash: d9c306b6278aba5f72a29892e98318ffb2d2405c
+result: Group A canonical skills reconciled
+
+PR #110:
+CLOSED / MERGED
+final head: 3accfc53c9601d4e94b8397627d6ae092f9b16fe
+squash / current main: a909679143ec2e9a53f0a3108e5240a91a138fc1
+result: Builders continuity handoff canonical on main
+
+PR #109:
+CLOSED / NOT MERGED
+head preserved: 1a3c72e7b73a07ec7f6f30832c8d18e03c6b2827
+disposition: SUPERSEDED_BY_PR_108
+
+PR #108:
+OPEN / DRAFT / NOT MERGED
+recorded base: main@cec1b22430adf1a002b172992cf6c5ea5bb427de
+live branch: security/f1-02-password-flow-cutover-1
+prior head before this reconciliation: bec8b2531486e76c546ddee1d3e2d8b419e220be
+current head: resolve live from PR metadata
+```
+
+## 3. Consumed authorities
 
 ```text
 PR #103 implementation, merge, production application and smoke: CONSUMED
 PR #107 audit, Ready and squash-merge authorities: CONSUMED
-PR #107 squash merge: EXECUTED
-PR-02 branch and bounded implementation authority: CONSUMED
-PR-02 Draft PR creation authority: CONSUMED
-PR-02 seven-document reconciliation authority: CONSUMED ON PUBLICATION
-PR #108 body correction authority: CONSUMED ON UPDATE
+PR #111 Ready and merge authorities: CONSUMED
+PR #110 Ready and merge authorities: CONSUMED
+PR #109 close-as-superseded authority: CONSUMED
+PR-02 bounded implementation and Draft publication: CONSUMED
+PR-02 original documentation reconciliation: CONSUMED
+PR #108 post-#110 six-file SFJM reconciliation: CONSUMED ON SQUASH PUBLICATION
+PR #108 body update for the same reconciliation: CONSUMED ON UPDATE
 ```
 
-## 3. PR-02 authorized object
+The temporary branch and auxiliary PR used to obtain one squash commit are execution vehicles only. They grant no authority beyond the six authorized SFJM files.
 
-```text
-Repository: wagnerjfjunior/fecha.ai
-Canonical base: main@cec1b22430adf1a002b172992cf6c5ea5bb427de
-PR: #108 — security: route password completion through RPC
-Planned branch: security/f1-02-password-flow-cutover
-Live branch: security/f1-02-password-flow-cutover-1
-Initial implementation commit: c458461e810e24adb7d71f7d155be06e9cf54eac
-State: OPEN / DRAFT / NOT MERGED
-```
+## 4. PR #108 changed-file contract
 
-The branch suffix divergence is non-material. PR #108 and its exact live head are the operational anchors.
-
-Authorized paths for the bounded PR-02 publication:
+The complete PR contract remains exactly:
 
 ```text
 src/App.jsx
@@ -47,16 +70,9 @@ docs/sfjm/NEXT_SAFE_ACTION.md
 docs/sfjm/handoffs/CURRENT.md
 ```
 
-Authorized implementation effect:
+This corrective reconciliation may change only the six SFJM records. It must not alter `src/App.jsx` or the PR-02 evidence document.
 
-- replace only the mandatory-password direct patch with `marcar_senha_inicial_definida()`;
-- remove `corretorId` only from `TrocarSenhaObrigatoria` and its call;
-- require strict `true` before `onConcluido()`;
-- preserve the separate administrative direct patch;
-- execute static validation and repository-wide searches;
-- keep the PR Draft.
-
-## 4. Current non-authorizations
+## 5. Current non-authorizations
 
 ```text
 additional frontend or runtime code change
@@ -64,14 +80,15 @@ change to the preserved EditarCorretorModal administrative patch
 new administrative RPC
 Supabase or database mutation
 migration or RPC-body change
-Auth, RLS, policy, grant or role change
-Edge Function or GitHub Actions change
-manual Vercel deployment
-production deployment or production smoke
+Auth, RLS, policy, grant, role or data change
+Edge Function, Vercel configuration or GitHub Actions change
+external Builder mutation
+rebase or branch rewrite
 Ready for review
 approval
-merge
+merge of PR #108
 auto-merge
+deployment or production smoke
 PR-03
 Security Go
 F1-02 acceptance
@@ -80,15 +97,15 @@ WDP change
 
 No audit result automatically authorizes the next lifecycle transition.
 
-## 5. Read-only work allowed by current routing
+## 6. Read-only work currently routed
 
-The next action is an independent GPT3 security/code-contract audit at the exact PR #108 head. Read-only inspection does not authorize comment, review submission, metadata change, Ready, merge, deployment or production access.
+The next action is one independent GPT3 security/code-contract audit of PR #108 at its exact live head after the documentation-only reconciliation. The audit is read-only and does not authorize comment, review submission, metadata change, Ready, merge, deployment, production access or Supabase mutation.
 
-## 6. Future authorities required
+## 7. Future authorities required
 
 New explicit Product Authority is required for:
 
-- any code or documentary commit after the current bounded publication;
+- any further commit or metadata mutation after this reconciliation;
 - any review submission or PR comment;
 - Ready transition;
 - merge;
