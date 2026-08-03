@@ -263,15 +263,23 @@ Não adotar stack complexa apenas por maturidade teórica. Também não aceitar 
 
 ## 7. Fontes materiais do domínio
 
-Durante esta reconciliação, foram lidos integralmente como `INFORMATION_SUPPLIED`:
+Os snapshots externos abaixo foram recuperados diretamente do início ao EOF durante a sessão de reconciliação de `2026-08-03`. Essa cobertura comprova o que foi lido naquela sessão, mas não transforma uploads de conversa em fonte canônica, live ou revalidável pelo GitHub.
 
-- configuração anterior do GPT5;
-- guia de suporte N1/N2/N3;
-- observabilidade non-stop;
-- runbook de incidentes;
-- baseline Native First da MesaCliente;
-- README documental histórico;
-- snapshots históricos de GPT2, GPT3 e registry.
+### 7.1 Matriz de cobertura dos snapshots externos
+
+| Artefato exato | Origem/ref preservada | Tamanho | Linhas | Cobertura recuperada | EOF | Classificação | Limitação material |
+|---|---|---:|---:|---|---|---|---|
+| `Config e Instruções GPT5.txt` | upload de conversa, `2026-08-03`, nome exato | 8.497 bytes | 98 | linha 1 até linha 98 | confirmado | `INTEGRAL_READ / INFORMATION_SUPPLIED` | snapshot do Builder; não comprova configuração externa atual |
+| `fechai-gpt2-ux-ui-app-specialist.md` | upload de conversa, `2026-08-03`, nome exato | 9.124 bytes | 350 | linha 1 até linha 350 | confirmado | `INTEGRAL_READ / INFORMATION_SUPPLIED` | snapshot histórico; não substitui skill canônica live |
+| `fechai-gpt3-supabase-security-specialist(1).md` | upload de conversa, `2026-08-03`, nome exato | 7.448 bytes | 100 | linha 1 até linha 100 | confirmado | `INTEGRAL_READ / INFORMATION_SUPPLIED` | snapshot histórico; não substitui skill canônica live |
+| `fechai-gpt-registry(1).md` | upload de conversa, `2026-08-03`, nome exato | 3.628 bytes | 162 | linha 1 até linha 162 | confirmado | `INTEGRAL_READ / INFORMATION_SUPPLIED` | registry histórico; não prevalece sobre `main` |
+| `guia-suporte-n1-n2-n3.md` | upload de conversa, `2026-08-03`, nome exato | 3.991 bytes | 216 | linha 1 até linha 216 | confirmado | `INTEGRAL_READ / INFORMATION_SUPPLIED` | contrato documental; não prova operação de suporte implantada |
+| `mesa-cliente-native-parsers(1).md` | upload de conversa, `2026-08-03`, nome exato | 14.583 bytes | 475 | linha 1 até linha 475 | confirmado | `INTEGRAL_READ / INFORMATION_SUPPLIED` | baseline de domínio; não prova runtime atual |
+| `observabilidade-non-stop.md` | upload de conversa, `2026-08-03`, nome exato | 5.620 bytes | 210 | linha 1 até linha 210 | confirmado | `INTEGRAL_READ / INFORMATION_SUPPLIED` | planejamento documental; não prova Sentry, uptime, alertas ou dashboards ativos |
+| `README(1).md` | upload de conversa, `2026-08-03`, nome exato | 5.597 bytes | 145 | linha 1 até linha 145 | confirmado | `INTEGRAL_READ / INFORMATION_SUPPLIED` | documentação histórica; hierarquia deve ser reconciliada com bootstrap atual |
+| `runbook-incidentes.md` | upload de conversa, `2026-08-03`, nome exato | 4.020 bytes | 209 | linha 1 até linha 209 | confirmado | `INTEGRAL_READ / INFORMATION_SUPPLIED` | runbook documental; não prova execução, treinamento ou prontidão operacional |
+
+Para esta matriz, `INTEGRAL_READ` significa somente que o conteúdo daquele artefato foi recuperado do início ao EOF na sessão indicada, sem busca ou snippet como substituto. Não significa `CANONICAL_MAIN`, atualidade, implantação, teste, Builder aplicado ou runtime validado. Como não há blob Git ou URI estável para esses uploads, uma nova auditoria deve tratá-los como evidência preservada da sessão e não como revalidação live.
 
 Esses arquivos ajudam a preservar terminologia e decisões, mas não provam ferramentas implantadas, alertas ativos, restore executado, SLO medido ou runtime atual.
 
