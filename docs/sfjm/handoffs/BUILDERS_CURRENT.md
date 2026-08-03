@@ -171,23 +171,39 @@ No Product PASS
 No changes to GPT6/GPT9/GPT10
 ```
 
-## 9. Next safe action
+## 9. Next safe action — state-dependent
 
-The external GPT5 Builder must not be updated while the candidate skill is only `PR_HEAD_ONLY`. The Builder bootstrap resolves its canonical skill from `main`; updating the external Builder first would create `SKILL_DRIFT` and invalidate parity testing.
+Before selecting a branch below, resolve GitHub live and determine whether the candidate GPT5 skill is still `PR_HEAD_ONLY` or is already present on the current `main`. Never replay completed lifecycle steps solely because this handoff was merged.
 
-Required sequence:
+### Branch A — candidate not yet canonical on `main`
+
+Use this branch only when the PR is still open and the candidate skill is absent from the resolved `main`.
 
 1. audit the exact Draft head with GPT0;
 2. independently confirm that Builder Instructions remain below 8,000 characters;
-3. obtain separate Product Authority authorization for Ready;
-4. obtain separate and later Product Authority authorization for merge;
-5. after merge, resolve the new `main` and confirm the candidate skill is canonical there;
-6. only then update the external GPT5 title, description, Instructions and starters;
-7. keep Knowledge empty and GitHub Action read-only;
-8. run bounded behavioral tests for AS-IS, incident response, evidence, privilege refusal and roadmap;
-9. only after behavioral PASS, authorize a separate PR to reconcile the durable registry state;
-10. then continue to the next Group B specialist.
+3. validate lifecycle, checks, reviews, threads and drift with GPT4;
+4. obtain separate Product Authority authorization for Ready;
+5. after Ready, revalidate any new review findings;
+6. obtain separate and later Product Authority authorization for merge;
+7. do not update the external Builder, run behavioral tests or promote the registry before publication on `main`.
+
+### Branch B — candidate already canonical on `main`
+
+Use this branch only after an authorized merge and after the resolved `main` contains the candidate skill.
+
+1. resolve the new `main` and record the merge commit;
+2. confirm the final GPT5 skill and this handoff on that exact `main`, including blobs and EOF;
+3. confirm the registry still records GPT5 as `PENDING_PARITY_AUDIT`;
+4. update the external GPT5 title, description, Instructions and starters from the canonical skill;
+5. keep Knowledge empty and the GitHub Action read-only;
+6. run bounded behavioral tests for AS-IS, incident response, evidence, privilege refusal and roadmap;
+7. if behavioral PASS is achieved, authorize a separate PR to reconcile the durable registry state;
+8. only after registry reconciliation, continue to the next Group B specialist.
+
+### Branch C — PR closed without merge, head changed or state ambiguous
+
+Stop and reconstruct the Builder track from GitHub live. Do not infer that the candidate was published, do not update the external Builder and do not promote the registry.
 
 A test executed against a `PR_HEAD_ONLY` skill does not replace the post-merge test against the canonical `main`. The default sequence is publication first, Builder update second.
 
-A new conversation must resolve this branch/PR live, read the exact skill and this handoff, and continue without relying on pasted chat history.
+A new conversation must resolve the live state, select the applicable branch above, read the exact skill and this handoff, and continue without relying on pasted chat history.
