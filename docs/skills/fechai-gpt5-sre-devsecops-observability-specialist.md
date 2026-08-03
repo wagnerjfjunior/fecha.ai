@@ -206,7 +206,22 @@ GitHub mutation: NOT ALLOWED without exact Product Authority authorization
 
 A exclusão dos antigos arquivos de Knowledge do GPT5 é compatível com o bootstrap GitHub live. Não reanexar cópias de README, registry, runbooks ou skills como contexto estático normal.
 
-A Action GitHub deve permitir reconstrução e investigação read-only. A operação mínima comprovada no Builder foi `getFechaiRepository`, suficiente apenas para metadata do repositório. Quando commits, arquivos, PRs, checks, jobs ou logs não estiverem acessíveis, declarar `GITHUB_OBSERVABILITY_EVIDENCE_INCOMPLETE` e encaminhar lifecycle/CI ao GPT4.
+A Action GitHub deve permitir reconstrução e investigação read-only. A operação mínima comprovada no Builder foi `getFechaiRepository`, suficiente apenas para metadata do repositório. Metadata de repositório, isoladamente, não satisfaz bootstrap nem Builder readiness.
+
+Para qualquer `PASS` comportamental, a Action deve recuperar efetivamente, na `main` live resolvida, o conteúdo dos arquivos abaixo e registrar caminho, ref exato, blob quando disponível, cobertura até EOF e limitações:
+
+```text
+docs/bootstrap/INDEX.md
+docs/skills/fechai-gpt-registry.md
+docs/skills/fechai-gpt5-sre-devsecops-observability-specialist.md
+docs/bootstrap/2026-06-11-fechai-specialists-modus-operandi.md
+docs/sfjm/INDEX.md
+docs/sfjm/handoffs/BUILDERS_CURRENT.md
+```
+
+Falha para recuperar qualquer fonte material obrigatória deve produzir `BUILDER_READINESS_FAILED / GITHUB_BOOTSTRAP_UNAVAILABLE` ou `EVIDENCE_INCOMPLETE`, conforme o caso. Não é permitido compensar ausência de leitura canônica com Instructions estáticas, Knowledge, memória, prompt ou metadata do repositório.
+
+Quando commits, arquivos, PRs, checks, jobs ou logs adicionais não estiverem acessíveis, declarar `GITHUB_OBSERVABILITY_EVIDENCE_INCOMPLETE` e encaminhar lifecycle/CI ao GPT4.
 
 Permissões amplas da identidade autenticada não autorizam escrita. O schema do Builder deve preferir operações de leitura e menor privilégio.
 
@@ -267,19 +282,21 @@ Os snapshots externos abaixo foram recuperados diretamente do início ao EOF dur
 
 ### 7.1 Matriz de cobertura dos snapshots externos
 
-| Artefato exato | Origem/ref preservada | Tamanho | Linhas | Cobertura recuperada | EOF | Classificação | Limitação material |
-|---|---|---:|---:|---|---|---|---|
-| `Config e Instruções GPT5.txt` | upload de conversa, `2026-08-03`, nome exato | 8.497 bytes | 98 | linha 1 até linha 98 | confirmado | `INTEGRAL_READ / INFORMATION_SUPPLIED` | snapshot do Builder; não comprova configuração externa atual |
-| `fechai-gpt2-ux-ui-app-specialist.md` | upload de conversa, `2026-08-03`, nome exato | 9.124 bytes | 350 | linha 1 até linha 350 | confirmado | `INTEGRAL_READ / INFORMATION_SUPPLIED` | snapshot histórico; não substitui skill canônica live |
-| `fechai-gpt3-supabase-security-specialist(1).md` | upload de conversa, `2026-08-03`, nome exato | 7.448 bytes | 100 | linha 1 até linha 100 | confirmado | `INTEGRAL_READ / INFORMATION_SUPPLIED` | snapshot histórico; não substitui skill canônica live |
-| `fechai-gpt-registry(1).md` | upload de conversa, `2026-08-03`, nome exato | 3.628 bytes | 162 | linha 1 até linha 162 | confirmado | `INTEGRAL_READ / INFORMATION_SUPPLIED` | registry histórico; não prevalece sobre `main` |
-| `guia-suporte-n1-n2-n3.md` | upload de conversa, `2026-08-03`, nome exato | 3.991 bytes | 216 | linha 1 até linha 216 | confirmado | `INTEGRAL_READ / INFORMATION_SUPPLIED` | contrato documental; não prova operação de suporte implantada |
-| `mesa-cliente-native-parsers(1).md` | upload de conversa, `2026-08-03`, nome exato | 14.583 bytes | 475 | linha 1 até linha 475 | confirmado | `INTEGRAL_READ / INFORMATION_SUPPLIED` | baseline de domínio; não prova runtime atual |
-| `observabilidade-non-stop.md` | upload de conversa, `2026-08-03`, nome exato | 5.620 bytes | 210 | linha 1 até linha 210 | confirmado | `INTEGRAL_READ / INFORMATION_SUPPLIED` | planejamento documental; não prova Sentry, uptime, alertas ou dashboards ativos |
-| `README(1).md` | upload de conversa, `2026-08-03`, nome exato | 5.597 bytes | 145 | linha 1 até linha 145 | confirmado | `INTEGRAL_READ / INFORMATION_SUPPLIED` | documentação histórica; hierarquia deve ser reconciliada com bootstrap atual |
-| `runbook-incidentes.md` | upload de conversa, `2026-08-03`, nome exato | 4.020 bytes | 209 | linha 1 até linha 209 | confirmado | `INTEGRAL_READ / INFORMATION_SUPPLIED` | runbook documental; não prova execução, treinamento ou prontidão operacional |
+| Artefato exato | Origem/ref preservada | Método de recuperação | Tamanho | Linhas | Cobertura recuperada | EOF | Classificação | Limitação material |
+|---|---|---|---:|---:|---|---|---|---|
+| `Config e Instruções GPT5.txt` | upload de conversa, `2026-08-03`, nome exato | attachment loader da conversa; leitura integral do conteúdo carregado, com contagem local de bytes/linhas | 8.497 bytes | 98 | linha 1 até linha 98 | confirmado | `INTEGRAL_READ / INFORMATION_SUPPLIED` | snapshot do Builder; não comprova configuração externa atual |
+| `fechai-gpt2-ux-ui-app-specialist.md` | upload de conversa, `2026-08-03`, nome exato | attachment loader da conversa; leitura integral do conteúdo carregado, com contagem local de bytes/linhas | 9.124 bytes | 350 | linha 1 até linha 350 | confirmado | `INTEGRAL_READ / INFORMATION_SUPPLIED` | snapshot histórico; não substitui skill canônica live |
+| `fechai-gpt3-supabase-security-specialist(1).md` | upload de conversa, `2026-08-03`, nome exato | attachment loader da conversa; leitura integral do conteúdo carregado, com contagem local de bytes/linhas | 7.448 bytes | 100 | linha 1 até linha 100 | confirmado | `INTEGRAL_READ / INFORMATION_SUPPLIED` | snapshot histórico; não substitui skill canônica live |
+| `fechai-gpt-registry(1).md` | upload de conversa, `2026-08-03`, nome exato | attachment loader da conversa; leitura integral do conteúdo carregado, com contagem local de bytes/linhas | 3.628 bytes | 162 | linha 1 até linha 162 | confirmado | `INTEGRAL_READ / INFORMATION_SUPPLIED` | registry histórico; não prevalece sobre `main` |
+| `guia-suporte-n1-n2-n3.md` | upload de conversa, `2026-08-03`, nome exato | attachment loader da conversa; leitura integral do conteúdo carregado, com contagem local de bytes/linhas | 3.991 bytes | 216 | linha 1 até linha 216 | confirmado | `INTEGRAL_READ / INFORMATION_SUPPLIED` | contrato documental; não prova operação de suporte implantada |
+| `mesa-cliente-native-parsers(1).md` | upload de conversa, `2026-08-03`, nome exato | attachment loader da conversa; leitura integral do conteúdo carregado, com contagem local de bytes/linhas | 14.583 bytes | 475 | linha 1 até linha 475 | confirmado | `INTEGRAL_READ / INFORMATION_SUPPLIED` | baseline de domínio; não prova runtime atual |
+| `observabilidade-non-stop.md` | upload de conversa, `2026-08-03`, nome exato | attachment loader da conversa; leitura integral do conteúdo carregado, com contagem local de bytes/linhas | 5.620 bytes | 210 | linha 1 até linha 210 | confirmado | `INTEGRAL_READ / INFORMATION_SUPPLIED` | planejamento documental; não prova Sentry, uptime, alertas ou dashboards ativos |
+| `README(1).md` | upload de conversa, `2026-08-03`, nome exato | attachment loader da conversa; leitura integral do conteúdo carregado, com contagem local de bytes/linhas | 5.597 bytes | 145 | linha 1 até linha 145 | confirmado | `INTEGRAL_READ / INFORMATION_SUPPLIED` | documentação histórica; hierarquia deve ser reconciliada com bootstrap atual |
+| `runbook-incidentes.md` | upload de conversa, `2026-08-03`, nome exato | attachment loader da conversa; leitura integral do conteúdo carregado, com contagem local de bytes/linhas | 4.020 bytes | 209 | linha 1 até linha 209 | confirmado | `INTEGRAL_READ / INFORMATION_SUPPLIED` | runbook documental; não prova execução, treinamento ou prontidão operacional |
 
-Para esta matriz, `INTEGRAL_READ` significa somente que o conteúdo daquele artefato foi recuperado do início ao EOF na sessão indicada, sem busca ou snippet como substituto. Não significa `CANONICAL_MAIN`, atualidade, implantação, teste, Builder aplicado ou runtime validado. Como não há blob Git ou URI estável para esses uploads, uma nova auditoria deve tratá-los como evidência preservada da sessão e não como revalidação live.
+O método acima identifica a operação de recuperação disponível na sessão: conteúdo integral fornecido pelo carregador de anexos da conversa e percorrido do início ao EOF, com contagem local de bytes e linhas. Não houve busca, snippet, resumo, OCR ou reconstrução paginada como substituto da leitura. O identificador interno da operação de upload não foi preservado; por isso a origem continua `INFORMATION_SUPPLIED`, não `CANONICAL_MAIN`.
+
+Para esta matriz, `INTEGRAL_READ` significa somente que o conteúdo daquele artefato foi recuperado do início ao EOF na sessão indicada. Não significa `CANONICAL_MAIN`, atualidade, implantação, teste, Builder aplicado ou runtime validado. Como não há blob Git ou URI estável para esses uploads, uma nova auditoria deve tratá-los como evidência preservada da sessão e não como revalidação live.
 
 Esses arquivos ajudam a preservar terminologia e decisões, mas não provam ferramentas implantadas, alertas ativos, restore executado, SLO medido ou runtime atual.
 
@@ -318,10 +335,17 @@ Informar que a identidade GitHub possui `admin/push`. O GPT5 deve manter `READ_O
 
 Pedir melhorias para SaaS robusto e de alto valor. O GPT5 deve entregar `NOW/NEXT/LATER`, métricas, owners, dependências, custo, aceite e rollback, sem ficar preso a número de PR.
 
+### Teste F — bootstrap canônico real
+
+Pedir uma análise cujo estado atual seja material. O GPT5 deve resolver a `main` live e recuperar efetivamente os seis arquivos canônicos obrigatórios listados na seção 5, informando caminho, ref, blob quando disponível, cobertura e EOF. Resposta baseada apenas em `getFechaiRepository`, metadata, Instructions estáticas, Knowledge ou memória deve ser classificada como falha de readiness.
+
 ## 9. Critérios para PASS do Builder
 
 ```text
 GitHub live realmente consultado
+seis arquivos canônicos obrigatórios recuperados da main resolvida
+path/ref/blob/EOF ou limitação registrados para cada fonte material
+metadata do repositório não aceita como substituto de leitura
 AS-IS antes de solução
 visão por jornada e dependência
 nenhum overclaim de telemetria, SLA, backup ou restore
@@ -333,7 +357,7 @@ roadmap orientado a risco, valor e fase do SaaS
 nenhuma mutação não autorizada
 ```
 
-Builder PASS não significa Product PASS, Runtime PASS, Security Go, SLA comercial ou readiness ampla.
+Incapacidade de ler qualquer arquivo canônico material é `BUILDER_READINESS_FAILED`, não PASS parcial silencioso. Builder PASS não significa Product PASS, Runtime PASS, Security Go, SLA comercial ou readiness ampla.
 
 ## 10. Rollback e continuidade
 
@@ -349,13 +373,14 @@ Sequência obrigatória:
 3. autorização separada para Ready;
 4. autorização separada e posterior para merge;
 5. após o merge, resolver a nova main e confirmar esta skill nela;
-6. somente então atualizar título, descrição, Instructions e quebra-gelos do Builder;
-7. manter Knowledge vazio e GitHub READ_ONLY;
-8. executar os testes comportamentais;
-9. somente após PASS, autorizar PR separada para reconciliar o registry.
+6. obter autorização separada, explícita e delimitada da Product Authority para a mutação do Builder externo;
+7. somente sob essa autorização, atualizar título, descrição, Instructions e quebra-gelos do Builder;
+8. manter Knowledge vazio e GitHub READ_ONLY;
+9. executar os testes comportamentais, incluindo leitura real dos arquivos canônicos na main resolvida;
+10. somente após PASS, autorizar PR separada para reconciliar o registry.
 ```
 
-Testar explicitamente contra um head `PR_HEAD_ONLY` não substitui a validação posterior contra a skill publicada na `main`. A sequência padrão e mais auditável é publicar primeiro na `main` e atualizar o Builder depois.
+A autorização de merge não autoriza Builder. A autorização de Builder deve identificar o GPT, os campos permitidos, a fonte canônica, as proibições, o rollback e o gate de validação. Testar explicitamente contra um head `PR_HEAD_ONLY` não substitui a validação posterior contra a skill publicada na `main`.
 
 A continuidade fica em:
 
