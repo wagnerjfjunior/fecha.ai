@@ -173,13 +173,21 @@ No changes to GPT6/GPT9/GPT10
 
 ## 9. Next safe action
 
-After publication of the Draft head:
+The external GPT5 Builder must not be updated while the candidate skill is only `PR_HEAD_ONLY`. The Builder bootstrap resolves its canonical skill from `main`; updating the external Builder first would create `SKILL_DRIFT` and invalidate parity testing.
 
-1. audit the two-file final state and coverage;
-2. validate that Builder Instructions remain below 8,000 characters;
-3. update the external GPT5 title, description, Instructions and starters;
-4. keep Knowledge empty and GitHub Action read-only;
-5. run bounded behavioral tests for AS-IS, incident response, evidence, privilege refusal and roadmap;
-6. only after PASS, reconcile the durable registry state and continue to the next Group B specialist.
+Required sequence:
+
+1. audit the exact Draft head with GPT0;
+2. independently confirm that Builder Instructions remain below 8,000 characters;
+3. obtain separate Product Authority authorization for Ready;
+4. obtain separate and later Product Authority authorization for merge;
+5. after merge, resolve the new `main` and confirm the candidate skill is canonical there;
+6. only then update the external GPT5 title, description, Instructions and starters;
+7. keep Knowledge empty and GitHub Action read-only;
+8. run bounded behavioral tests for AS-IS, incident response, evidence, privilege refusal and roadmap;
+9. only after behavioral PASS, authorize a separate PR to reconcile the durable registry state;
+10. then continue to the next Group B specialist.
+
+A test executed against a `PR_HEAD_ONLY` skill does not replace the post-merge test against the canonical `main`. The default sequence is publication first, Builder update second.
 
 A new conversation must resolve this branch/PR live, read the exact skill and this handoff, and continue without relying on pasted chat history.
