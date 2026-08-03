@@ -331,7 +331,25 @@ Builder PASS não significa Product PASS, Runtime PASS, Security Go, SLA comerci
 
 Rollback documental: restaurar a versão anterior desta skill e o handoff de Builders no mesmo branch/PR.
 
-A configuração externa do Builder deve ser atualizada e testada separadamente após validação do head exato. A continuidade fica em:
+A configuração externa do Builder não deve ser atualizada enquanto esta versão permanecer apenas `PR_HEAD_ONLY`. Como o bootstrap do GPT5 resolve a skill pela `main` live, publicar Instructions novas no Builder antes do merge criaria `SKILL_DRIFT`: o Builder usaria um kernel novo e reconstruiria contexto a partir da skill antiga.
+
+Sequência obrigatória:
+
+```text
+1. auditoria GPT0 do head exato;
+2. confirmação independente do tamanho das Instructions;
+3. autorização separada para Ready;
+4. autorização separada e posterior para merge;
+5. após o merge, resolver a nova main e confirmar esta skill nela;
+6. somente então atualizar título, descrição, Instructions e quebra-gelos do Builder;
+7. manter Knowledge vazio e GitHub READ_ONLY;
+8. executar os testes comportamentais;
+9. somente após PASS, autorizar PR separada para reconciliar o registry.
+```
+
+Testar explicitamente contra um head `PR_HEAD_ONLY` não substitui a validação posterior contra a skill publicada na `main`. A sequência padrão e mais auditável é publicar primeiro na `main` e atualizar o Builder depois.
+
+A continuidade fica em:
 
 ```text
 docs/sfjm/handoffs/BUILDERS_CURRENT.md
