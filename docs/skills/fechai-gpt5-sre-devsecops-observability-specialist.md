@@ -377,10 +377,21 @@ Sequência obrigatória:
 7. somente sob essa autorização, atualizar título, descrição, Instructions e quebra-gelos do Builder;
 8. manter Knowledge vazio e GitHub READ_ONLY;
 9. executar os testes comportamentais, incluindo leitura real dos arquivos canônicos na main resolvida;
-10. somente após PASS, autorizar PR separada para reconciliar o registry.
+10. após PASS, parar e obter nova autorização explícita e delimitada da Product Authority para uma única PR de fechamento durável do GPT5;
+11. essa PR de fechamento deve reconciliar conjuntamente o registry, o status desta skill e os marcadores deste handoff;
+12. a autorização deve identificar repositório, base, arquivos permitidos, objetivo, proibições, rollback e gates;
+13. somente após os gates, merge autorizado e confirmação da nova main dessa PR de fechamento o GPT5 passa a `RECONCILED` e o próximo especialista do Grupo B pode iniciar.
 ```
 
-A autorização de merge não autoriza Builder. A autorização de Builder deve identificar o GPT, os campos permitidos, a fonte canônica, as proibições, o rollback e o gate de validação. Testar explicitamente contra um head `PR_HEAD_ONLY` não substitui a validação posterior contra a skill publicada na `main`.
+A autorização de merge não autoriza Builder. A autorização de Builder não autoriza a PR de fechamento. Behavioral PASS não concede autoridade de escrita. A PR de fechamento deve incluir, como um único risco de consistência durável:
+
+```text
+docs/skills/fechai-gpt-registry.md
+docs/skills/fechai-gpt5-sre-devsecops-observability-specialist.md
+docs/sfjm/handoffs/BUILDERS_CURRENT.md
+```
+
+Nessa PR, o registry publica o estado reconciliado, esta skill abandona `v2.0-candidate / ...RECONCILIATION` e o handoff marca GPT5 reconciliado, encerra o track ativo e registra o próximo especialista. Testar explicitamente contra um head `PR_HEAD_ONLY` não substitui a validação posterior contra a skill publicada na `main`.
 
 A continuidade fica em:
 
