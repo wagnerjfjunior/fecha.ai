@@ -164,17 +164,20 @@ Builders handoff blob at that head:
 b5c64c73a633c74f73add47f1b20481a8072b5c9
 ```
 
-The first corrective commit after that review changed the GPT5 skill:
+The first corrective pair produced the Draft review baseline:
 
 ```text
-Corrective parent head before this handoff update:
-f3ae55306605b17158b977a3e8f6134b823b1726
+Draft review head:
+5a4cfabece98d07d672d3b95e90113497c1fd509
 
 Corrected GPT5 skill blob:
 70e5b06dbb2be53fd2fee935b80a838b8d6486b2
+
+Corrected Builders handoff blob:
+dca44c7b111f6541cd151a31e457fd74f15589e6
 ```
 
-This section is an **invalidation anchor**, not a claim that a documentation file can embed its own resulting commit or blob SHA. The final corrected PR head and the resulting blob of this handoff must be resolved live and recorded in PR metadata/audit evidence after publication of this edit. Any head or blob different from the reviewed baseline invalidates the prior GPT0, size, GPT4 and Ready gates. Branch A may continue only after fresh gates bind to the exact live corrected head.
+This section is an **invalidation anchor**, not a claim that a documentation file can embed its own resulting commit or blob SHA. The final corrected PR head and the resulting blob of this handoff must be resolved live and recorded in PR metadata/audit evidence after publication of later edits. Any head or blob different from a reviewed baseline invalidates only the gates bound to that baseline. For an **open PR**, a changed head remains in Branch A and requires fresh head-bound gates. Branch C is not selected merely because an authorized corrective commit changed an open PR head.
 
 The prohibition on permanent PR numbers applies to the specialist's durable operating contract. It does not prevent this SFJM lifecycle handoff from recording the active PR, branch, reviewed head and evidence blobs needed to detect drift.
 
@@ -203,13 +206,13 @@ No Product PASS
 No changes to GPT6/GPT9/GPT10
 ```
 
-## 9. Next safe action — state-dependent
+## 9. Next safe action — mutually exclusive branches
 
-Before selecting a branch below, resolve GitHub live and determine whether the candidate GPT5 skill is still `PR_HEAD_ONLY` or is already present on the current `main`. Compare the live PR/head/blobs with the invalidation anchor in section 7. Never replay completed lifecycle steps solely because this handoff was merged.
+Before selecting a branch below, resolve GitHub live and determine whether the candidate GPT5 skill is still `PR_HEAD_ONLY` or is already present on the current `main`. Compare the live PR/head/blobs with the invalidation anchor in section 7. The branches below are mutually exclusive.
 
-### Branch A — candidate not yet canonical on `main`
+### Branch A — open PR; candidate not yet canonical on `main`
 
-Use this branch only when the PR is still open and the candidate skill is absent from the resolved `main`.
+Use this branch whenever the publication PR is open and the candidate skill is absent from the resolved `main`, including when authorized corrective commits changed the head.
 
 1. resolve the exact live PR, branch, head and both final blobs;
 2. if they differ from any previously gated baseline, invalidate all prior head-bound gates;
@@ -235,15 +238,23 @@ Use this branch only after an authorized merge and after the resolved `main` con
 7. keep Knowledge empty and the GitHub Action read-only;
 8. run bounded behavioral tests for AS-IS, incident response, evidence, privilege refusal, roadmap and real canonical-file retrieval from the exact resolved `main`;
 9. inability to fetch any mandatory canonical file is `BUILDER_READINESS_FAILED`, even when prompt-only answers appear correct;
-10. if behavioral PASS is achieved, authorize a separate PR to reconcile the durable registry state;
-11. only after registry reconciliation, continue to the next Group B specialist.
+10. after behavioral PASS, stop and obtain a new explicit, delimited Product Authority authorization for one bounded GPT5 closure PR;
+11. that closure authorization must identify the repository, base, permitted files, objective, prohibitions, rollback and validation gates;
+12. the GPT5 closure PR must reconcile all durable markers together:
+    - `docs/skills/fechai-gpt-registry.md`: publish the reconciled GPT5 registry state;
+    - `docs/skills/fechai-gpt5-sre-devsecops-observability-specialist.md`: replace `v2.0-candidate / ...RECONCILIATION` with the approved reconciled status;
+    - `docs/sfjm/handoffs/BUILDERS_CURRENT.md`: mark GPT5 reconciled, close the active GPT5 track and record the next Group B specialist;
+13. behavioral PASS, merge of this publication PR or tool capability does not authorize the closure PR;
+14. only after the authorized closure PR passes its gates, merges, and the resulting `main` is confirmed may work advance to the next Group B specialist.
 
-Merge authorization never includes Builder mutation. Builder capability, prior Builder state or a merged skill never substitutes for the separate authority required in steps 4–6.
+Merge authorization never includes Builder mutation. Builder authorization never includes registry/skill/handoff closure. Each lifecycle mutation requires its own exact authority.
 
-### Branch C — PR closed without merge, head changed or state ambiguous
+### Branch C — PR closed without merge or materially ambiguous state
 
-Stop and reconstruct the Builder track from GitHub live. Do not infer that the candidate was published, do not update the external Builder and do not promote the registry.
+Use this branch only when the publication PR is closed without merge, missing, replaced without an anchored successor, or when live evidence cannot determine whether the candidate was published. Do not select Branch C for an open PR merely because its head changed; that case belongs to Branch A with fresh gates.
 
-A test executed against a `PR_HEAD_ONLY` skill does not replace the post-merge test against the canonical `main`. The default sequence is publication first, separately authorized Builder update second.
+Stop and reconstruct the Builder track from GitHub live. Do not infer that the candidate was published, do not update the external Builder and do not promote or reconcile the registry.
 
-A new conversation must resolve the live state, select the applicable branch above, read the exact skill and this handoff, and continue without relying on pasted chat history.
+A test executed against a `PR_HEAD_ONLY` skill does not replace the post-merge test against the canonical `main`. The default sequence is publication first, separately authorized Builder update second, separately authorized durable closure third.
+
+A new conversation must resolve the live state, select exactly one applicable branch above, read the exact skill and this handoff, and continue without relying on pasted chat history.
