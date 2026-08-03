@@ -208,18 +208,36 @@ A exclusão dos antigos arquivos de Knowledge do GPT5 é compatível com o boots
 
 A Action GitHub deve permitir reconstrução e investigação read-only. A operação mínima comprovada no Builder foi `getFechaiRepository`, suficiente apenas para metadata do repositório. Metadata de repositório, isoladamente, não satisfaz bootstrap nem Builder readiness.
 
-Para qualquer `PASS` comportamental, a Action deve recuperar efetivamente, na `main` live resolvida, o conteúdo dos arquivos abaixo e registrar caminho, ref exato, blob quando disponível, cobertura até EOF e limitações:
+Para qualquer `PASS` comportamental, a Action deve recuperar efetivamente, na `main` live resolvida, todos os documentos comuns obrigatórios e todos os registros aplicáveis abaixo, com caminho, ref exato, blob quando disponível, cobertura até EOF e limitações:
 
 ```text
-docs/bootstrap/INDEX.md
-docs/skills/fechai-gpt-registry.md
-docs/skills/fechai-gpt5-sre-devsecops-observability-specialist.md
-docs/bootstrap/2026-06-11-fechai-specialists-modus-operandi.md
-docs/sfjm/INDEX.md
-docs/sfjm/handoffs/BUILDERS_CURRENT.md
+COMMON BOOTSTRAP — sempre obrigatório
+- docs/bootstrap/INDEX.md
+- docs/bootstrap/2026-06-10-fechai-saas-current-state-index.md
+- docs/bootstrap/2026-06-10-fechai-gpt-specialists-private-index.md
+- docs/bootstrap/2026-06-11-fechai-specialists-modus-operandi.md
+- docs/bootstrap/2026-06-12-fechai-codex-efficiency-greenops.md
+- docs/bootstrap/2026-06-12-fechai-bootstrap-governance-cycle-handoff.md
+- docs/skills/fechai-gpt-registry.md
+- docs/skills/fechai-gpt5-sre-devsecops-observability-specialist.md
+
+BUILDER CONTINUITY — obrigatório neste track
+- docs/sfjm/INDEX.md
+- docs/sfjm/CURRENT_STATE.md
+- docs/sfjm/NEXT_SAFE_ACTION.md
+- docs/sfjm/BLOCKED_ACTIONS.md
+- docs/sfjm/AUTHORIZATIONS.md
+- docs/sfjm/EVIDENCE_FRESHNESS.md
+- docs/sfjm/handoffs/CURRENT.md
+- docs/sfjm/handoffs/BUILDERS_CURRENT.md
+
+GOVERNANÇA CONDICIONAL
+- docs/governance/INDEX.md e registros por ele resolvidos quando o pedido
+  envolver entrega, aceite, WDP, capacidade, forecast, dependência,
+  Health Score, risco ou mudança de plano
 ```
 
-Falha para recuperar qualquer fonte material obrigatória deve produzir `BUILDER_READINESS_FAILED / GITHUB_BOOTSTRAP_UNAVAILABLE` ou `EVIDENCE_INCOMPLETE`, conforme o caso. Não é permitido compensar ausência de leitura canônica com Instructions estáticas, Knowledge, memória, prompt ou metadata do repositório.
+Uma fonte condicional somente pode ser omitida com decisão explícita de não aplicabilidade. Falha para recuperar qualquer fonte material obrigatória ou aplicável deve produzir `BUILDER_READINESS_FAILED / GITHUB_BOOTSTRAP_UNAVAILABLE` ou `EVIDENCE_INCOMPLETE`, conforme o caso. Não é permitido compensar ausência de leitura canônica com Instructions estáticas, Knowledge, memória, prompt ou metadata do repositório.
 
 Quando commits, arquivos, PRs, checks, jobs ou logs adicionais não estiverem acessíveis, declarar `GITHUB_OBSERVABILITY_EVIDENCE_INCOMPLETE` e encaminhar lifecycle/CI ao GPT4.
 
@@ -300,18 +318,7 @@ Para esta matriz, `INTEGRAL_READ` significa somente que o conteúdo daquele arte
 
 Esses arquivos ajudam a preservar terminologia e decisões, mas não provam ferramentas implantadas, alertas ativos, restore executado, SLO medido ou runtime atual.
 
-No GitHub live, a skill deve resolver dinamicamente:
-
-```text
-docs/bootstrap/INDEX.md
-docs/skills/fechai-gpt-registry.md
-docs/skills/fechai-gpt5-sre-devsecops-observability-specialist.md
-docs/bootstrap/2026-06-11-fechai-specialists-modus-operandi.md
-docs/sfjm/INDEX.md
-docs/sfjm/handoffs/BUILDERS_CURRENT.md
-```
-
-Documentos adicionais devem ser lidos conforme o risco e a jornada, sem transformar Knowledge estático em fonte de verdade.
+No GitHub live, a skill deve resolver dinamicamente o conjunto obrigatório e aplicável definido na seção 5. Documentos adicionais devem ser lidos conforme o risco e a jornada, sem transformar Knowledge estático em fonte de verdade.
 
 ## 8. Testes comportamentais mínimos
 
@@ -337,13 +344,20 @@ Pedir melhorias para SaaS robusto e de alto valor. O GPT5 deve entregar `NOW/NEX
 
 ### Teste F — bootstrap canônico real
 
-Pedir uma análise cujo estado atual seja material. O GPT5 deve resolver a `main` live e recuperar efetivamente os seis arquivos canônicos obrigatórios listados na seção 5, informando caminho, ref, blob quando disponível, cobertura e EOF. Resposta baseada apenas em `getFechaiRepository`, metadata, Instructions estáticas, Knowledge ou memória deve ser classificada como falha de readiness.
+Pedir uma análise cujo estado atual seja material. O GPT5 deve resolver a `main` live e recuperar efetivamente todos os documentos comuns e registros de continuidade definidos na seção 5, informando caminho, ref, blob quando disponível, cobertura e EOF. Resposta baseada apenas em `getFechaiRepository`, metadata, Instructions estáticas, Knowledge ou memória deve ser classificada como falha de readiness.
+
+### Teste G — aplicabilidade de governança
+
+Pedir uma análise envolvendo entrega, aceite, WDP, capacidade, forecast, dependência, Health Score, risco ou mudança de plano. O GPT5 deve recuperar `docs/governance/INDEX.md` e os registros materiais por ele resolvidos. Em pedido sem esse escopo, deve registrar explicitamente por que governança adicional não é aplicável.
 
 ## 9. Critérios para PASS do Builder
 
 ```text
 GitHub live realmente consultado
-seis arquivos canônicos obrigatórios recuperados da main resolvida
+todos os documentos comuns obrigatórios recuperados da main resolvida
+todos os registros SFJM do track recuperados da main resolvida
+governança e documentos condicionais recuperados quando aplicáveis
+não aplicabilidade condicional explicitamente justificada
 path/ref/blob/EOF ou limitação registrados para cada fonte material
 metadata do repositório não aceita como substituto de leitura
 AS-IS antes de solução
@@ -365,25 +379,50 @@ Rollback documental: restaurar a versão anterior desta skill e o handoff de Bui
 
 A configuração externa do Builder não deve ser atualizada enquanto esta versão permanecer apenas `PR_HEAD_ONLY`. Como o bootstrap do GPT5 resolve a skill pela `main` live, publicar Instructions novas no Builder antes do merge criaria `SKILL_DRIFT`: o Builder usaria um kernel novo e reconstruiria contexto a partir da skill antiga.
 
-Sequência obrigatória:
+Sequência obrigatória de publicação:
 
 ```text
 1. auditoria GPT0 do head exato;
 2. confirmação independente do tamanho das Instructions;
-3. autorização separada para Ready;
-4. autorização separada e posterior para merge;
-5. após o merge, resolver a nova main e confirmar esta skill nela;
-6. obter autorização separada, explícita e delimitada da Product Authority para a mutação do Builder externo;
-7. somente sob essa autorização, atualizar título, descrição, Instructions e quebra-gelos do Builder;
-8. manter Knowledge vazio e GitHub READ_ONLY;
-9. executar os testes comportamentais, incluindo leitura real dos arquivos canônicos na main resolvida;
-10. após PASS, parar e obter nova autorização explícita e delimitada da Product Authority para uma única PR de fechamento durável do GPT5;
-11. essa PR de fechamento deve reconciliar conjuntamente o registry, o status desta skill e os marcadores deste handoff;
-12. a autorização deve identificar repositório, base, arquivos permitidos, objetivo, proibições, rollback e gates;
-13. somente após os gates, merge autorizado e confirmação da nova main dessa PR de fechamento o GPT5 passa a `RECONCILED` e o próximo especialista do Grupo B pode iniciar.
+3. antes de qualquer pedido @codex review, comentário, review ou resolução de thread,
+   obter autorização exata da Product Authority para essa mutação GitHub;
+4. executar e fechar o review em Draft sob a autorização delimitada;
+5. autorização separada para Ready;
+6. autorização separada e posterior para merge;
+7. após o merge, resolver a nova main e confirmar esta skill nela.
 ```
 
-A autorização de merge não autoriza Builder. A autorização de Builder não autoriza a PR de fechamento. Behavioral PASS não concede autoridade de escrita. A PR de fechamento deve incluir, como um único risco de consistência durável:
+Sequência obrigatória de Builder:
+
+```text
+1. obter autorização separada, explícita e delimitada da Product Authority
+   para a mutação do Builder externo;
+2. preservar snapshot ou fingerprint não secreto da configuração anterior e
+   garantir que rollback esteja incluído ou exigir autoridade separada;
+3. somente sob essa autorização, atualizar título, descrição, Instructions e
+   quebra-gelos do Builder;
+4. manter Knowledge vazio e GitHub READ_ONLY;
+5. executar os testes comportamentais e toda a cobertura aplicável da seção 5.
+```
+
+### Resultado PASS
+
+Preservar pacote de evidência com:
+
+```text
+main e merge commit exatos
+skill canônica e blob
+fingerprints não secretos dos campos aplicados no Builder
+Knowledge e Action mode/schema
+referência e escopo da autorização de Builder
+matriz de cobertura de todas as fontes obrigatórias/aplicáveis
+testes, prompts, resultados, timestamps e limitações
+snapshot/fingerprint de rollback e riscos residuais
+```
+
+Depois parar e obter nova autorização explícita e delimitada da Product Authority para uma única PR de fechamento durável do GPT5. Essa autorização deve identificar repositório, base, arquivos, objetivo, proibições, rollback e gates. Behavioral PASS, Builder authority ou merge anterior não autorizam essa PR.
+
+A PR de fechamento deve reconciliar conjuntamente:
 
 ```text
 docs/skills/fechai-gpt-registry.md
@@ -391,7 +430,26 @@ docs/skills/fechai-gpt5-sre-devsecops-observability-specialist.md
 docs/sfjm/handoffs/BUILDERS_CURRENT.md
 ```
 
-Nessa PR, o registry publica o estado reconciliado, esta skill abandona `v2.0-candidate / ...RECONCILIATION` e o handoff marca GPT5 reconciliado, encerra o track ativo e registra o próximo especialista. Testar explicitamente contra um head `PR_HEAD_ONLY` não substitui a validação posterior contra a skill publicada na `main`.
+O handoff deve incorporar o pacote de evidência não secreto; o registry deve publicar o estado reconciliado; esta skill deve abandonar `v2.0-candidate / ...RECONCILIATION`; e o track GPT5 deve ser encerrado. Somente após gates, merge autorizado e confirmação da nova `main` o próximo especialista do Grupo B pode iniciar.
+
+### Resultado FAIL
+
+```text
+1. classificar BUILDER_READINESS_FAILED;
+2. preservar fonte/teste falho, main, configuração/fingerprint atual, timestamps,
+   limitações e evidência disponível;
+3. não alterar registry, não abrir PR de fechamento e não avançar Grupo B;
+4. executar rollback apenas se a autoridade original o incluiu; caso contrário,
+   obter autorização separada antes da mutação de rollback;
+5. para falha de Action/file-read, obter autorização delimitada para a exata
+   remediação do Builder/Action, sem inferir alteração de repositório, Supabase,
+   runtime ou produção;
+6. após remediação ou rollback autorizados, repetir cobertura e testes completos
+   contra a main canônica então vigente;
+7. manter GPT5 RECONCILIATION_ACTIVE e registry PENDING_PARITY_AUDIT.
+```
+
+A autorização de merge não autoriza Builder. A autorização de Builder não autoriza a PR de fechamento. Behavioral PASS não concede autoridade de escrita. Testar explicitamente contra um head `PR_HEAD_ONLY` não substitui a validação posterior contra a skill publicada na `main`.
 
 A continuidade fica em:
 
