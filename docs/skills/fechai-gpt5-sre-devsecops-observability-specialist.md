@@ -382,14 +382,20 @@ A configuração externa do Builder não deve ser atualizada enquanto esta vers�
 Sequência obrigatória de publicação:
 
 ```text
-1. auditoria GPT0 do head exato;
-2. confirmação independente do tamanho das Instructions;
-3. antes de qualquer pedido @codex review, comentário, review ou resolução de thread,
+1. resolver a PR live, o head exato e os blobs finais;
+2. auditar esse head com GPT0;
+3. confirmar independentemente o tamanho das Instructions;
+4. validar lifecycle, checks, reviews, threads e drift com GPT4;
+5. antes de qualquer pedido @codex review, comentário, review ou resolução de thread,
    obter autorização exata da Product Authority para essa mutação GitHub;
-4. executar e fechar o review em Draft sob a autorização delimitada;
-5. autorização separada para Ready;
-6. autorização separada e posterior para merge;
-7. após o merge, resolver a nova main e confirmar esta skill nela.
+6. executar e fechar o review em Draft sob a autorização delimitada;
+7. se qualquer correção produzir novo commit/head, retornar ao passo 1 e repetir
+   GPT0, contagem das Instructions, GPT4 e review autorizado no novo head;
+   repetir somente o Codex review é insuficiente;
+8. somente quando o mesmo head tiver todos os gates válidos e zero thread material
+   aberta, obter autorização separada para Ready;
+9. obter autorização separada e posterior para merge;
+10. após o merge, resolver a nova main e confirmar esta skill nela.
 ```
 
 Sequência obrigatória de Builder:
@@ -397,12 +403,16 @@ Sequência obrigatória de Builder:
 ```text
 1. obter autorização separada, explícita e delimitada da Product Authority
    para a mutação do Builder externo;
-2. preservar snapshot ou fingerprint não secreto da configuração anterior e
-   garantir que rollback esteja incluído ou exigir autoridade separada;
-3. somente sob essa autorização, atualizar título, descrição, Instructions e
+2. preservar um export restaurável ou snapshot completo não secreto da configuração
+   anterior, suficiente para recriar todos os campos em escopo;
+3. registrar fingerprint não secreto somente para verificar a restauração, nunca
+   como artefato de rollback; sem export/snapshot restaurável, parar e não mutar;
+4. garantir que rollback esteja incluído na autoridade original ou exigir
+   autoridade separada antes de qualquer mutação de rollback;
+5. somente sob essa autorização, atualizar título, descrição, Instructions e
    quebra-gelos do Builder;
-4. manter Knowledge vazio e GitHub READ_ONLY;
-5. executar os testes comportamentais e toda a cobertura aplicável da seção 5.
+6. manter Knowledge vazio e GitHub READ_ONLY;
+7. executar os testes comportamentais e toda a cobertura aplicável da seção 5.
 ```
 
 ### Resultado PASS
@@ -417,7 +427,7 @@ Knowledge e Action mode/schema
 referência e escopo da autorização de Builder
 matriz de cobertura de todas as fontes obrigatórias/aplicáveis
 testes, prompts, resultados, timestamps e limitações
-snapshot/fingerprint de rollback e riscos residuais
+export/snapshot restaurável de rollback, fingerprint de verificação e riscos residuais
 ```
 
 Depois parar e obter nova autorização explícita e delimitada da Product Authority para uma única PR de fechamento durável do GPT5. Essa autorização deve identificar repositório, base, arquivos, objetivo, proibições, rollback e gates. Behavioral PASS, Builder authority ou merge anterior não autorizam essa PR.
@@ -437,10 +447,12 @@ O handoff deve incorporar o pacote de evidência não secreto; o registry deve p
 ```text
 1. classificar BUILDER_READINESS_FAILED;
 2. preservar fonte/teste falho, main, configuração/fingerprint atual, timestamps,
-   limitações e evidência disponível;
+   limitações, evidência disponível e o export/snapshot restaurável pré-mudança;
 3. não alterar registry, não abrir PR de fechamento e não avançar Grupo B;
-4. executar rollback apenas se a autoridade original o incluiu; caso contrário,
-   obter autorização separada antes da mutação de rollback;
+4. executar rollback apenas se a autoridade original o incluiu; nesse caso,
+   restaurar a configuração a partir do export/snapshot preservado e verificar
+   o fingerprint restaurado; caso contrário, obter autorização separada antes
+   da mutação de rollback;
 5. para falha de Action/file-read, obter autorização delimitada para a exata
    remediação do Builder/Action, sem inferir alteração de repositório, Supabase,
    runtime ou produção;
