@@ -267,11 +267,12 @@ Use this branch whenever the publication PR is open and the candidate skill is a
 7. the review-request authority must identify repository, PR, exact head, permitted comment/review operation, scope, prohibitions and whether thread replies/resolution are included;
 8. only under that authority, request Codex review while the PR is still Draft;
 9. correct material findings within the separately authorized file scope; before replying to or resolving threads, confirm that the authority covers those exact mutations;
-10. repeat Draft review until the exact head has zero material thread open;
-11. obtain separate Product Authority authorization for Ready only after the Draft review cycle is clean;
-12. after Ready, revalidate only for new external events; do not use Ready as a discovery mechanism;
-13. obtain separate and later Product Authority authorization for merge;
-14. do not update the external Builder, run behavioral tests or promote the registry before publication on `main`.
+10. every corrective commit changes the PR head and invalidates all prior head-bound gates; after any corrective commit, restart at step 1 and rerun GPT0 exact-head audit, independent Instructions-size confirmation, GPT4 lifecycle/scope validation and the authorized Draft review on the new head; repeating only Codex review is insufficient;
+11. repeat Draft review until the exact head has zero material thread open and every restarted head-bound gate is valid for that same head;
+12. obtain separate Product Authority authorization for Ready only after the Draft review cycle is clean;
+13. after Ready, revalidate only for new external events; do not use Ready as a discovery mechanism;
+14. obtain separate and later Product Authority authorization for merge;
+15. do not update the external Builder, run behavioral tests or promote the registry before publication on `main`.
 
 ### Branch B — candidate already canonical on `main`
 
@@ -281,7 +282,7 @@ Use this branch only after an authorized merge and after the resolved `main` con
 2. confirm the final GPT5 skill and this handoff on that exact `main`, including blobs and EOF;
 3. confirm the registry still records GPT5 as `PENDING_PARITY_AUDIT`;
 4. obtain separate, explicit and delimited Product Authority authorization for the external GPT5 Builder mutation;
-5. the authorization must identify the GPT, permitted fields, canonical source, exact operation, prohibitions, validation gate and rollback; before mutation, preserve a safe last-known-good configuration snapshot or non-secret fingerprint sufficient for rollback;
+5. the authorization must identify the GPT, permitted fields, canonical source, exact operation, prohibitions, validation gate and rollback; before mutation, preserve a restorable export or complete non-secret snapshot of the last-known-good Builder configuration, sufficient to recreate every field in scope; record a non-secret fingerprint only as verification evidence, never as the rollback artifact; if no restorable export or complete snapshot can be obtained, stop and do not mutate;
 6. only under that authorization, update the external GPT5 title, description, Instructions and starters from the canonical skill;
 7. keep Knowledge empty and the GitHub Action read-only;
 8. run bounded behavioral tests for AS-IS, incident response, evidence, privilege refusal, roadmap and real canonical-file retrieval from the exact resolved `main`;
@@ -297,7 +298,7 @@ Use this branch only after an authorized merge and after the resolved `main` con
     - Product Authority Builder-mutation authorization and its exact scope;
     - coverage matrix for every mandatory and applicable canonical source;
     - behavioral tests, prompts, results, timestamps and limitations;
-    - rollback snapshot/fingerprint and residual risks;
+    - restorable rollback export/snapshot, verification fingerprint and residual risks;
 11. stop and obtain a new explicit, delimited Product Authority authorization for one bounded GPT5 closure PR;
 12. that closure authorization must identify repository, base, permitted files, objective, prohibitions, rollback and validation gates;
 13. the GPT5 closure PR must reconcile all durable markers together:
@@ -309,9 +310,9 @@ Use this branch only after an authorized merge and after the resolved `main` con
 
 #### Branch B-FAIL — any readiness or canonical-file gate fails
 
-10. classify `BUILDER_READINESS_FAILED` and preserve the exact failure evidence, failed source/test, current Builder fingerprint, resolved `main`, timestamps and limitations;
+10. classify `BUILDER_READINESS_FAILED` and preserve the exact failure evidence, failed source/test, current Builder state and fingerprint, the restorable pre-mutation export/snapshot, resolved `main`, timestamps and limitations;
 11. do not change registry status, do not open the closure PR and do not advance Group B;
-12. if the original Builder-mutation authority explicitly included rollback, restore the last-known-good Builder configuration and verify the restored fingerprint;
+12. if the original Builder-mutation authority explicitly included rollback, restore the last-known-good Builder configuration from the preserved restorable export/snapshot and verify the restored fingerprint;
 13. if rollback was not included, stop and obtain separate exact Product Authority authorization before any rollback mutation;
 14. if the failure is caused by missing GitHub file-read capability or Action configuration, obtain separate bounded Product Authority authorization for the exact Action/Builder remediation; do not change GitHub repository permissions, Supabase, runtime or production as an implied fix;
 15. after authorized remediation or rollback, rerun the complete applicable source coverage and behavioral suite against the then-current canonical `main`;
