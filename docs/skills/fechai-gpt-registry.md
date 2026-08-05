@@ -1,7 +1,7 @@
 # FECH.AI — Registro Oficial de GPTs Especialistas
 
-**Status:** `v3.2 / CANONICAL_SKILL_REGISTRY / GROUP_A_RECONCILED / SHARED_BOOTSTRAP_CONTRACT`  
-**Atualizado em:** `2026-07-31`  
+**Status:** `v3.3 / CANONICAL_SKILL_REGISTRY / GROUP_A_RECONCILED / GROUP_B_GPT5_RECONCILED_CANDIDATE / SHARED_BOOTSTRAP_CONTRACT`  
+**Atualizado em:** `2026-08-05`  
 **Escopo:** organização oficial dos GPTs auxiliares do FECH.AI.  
 **Fonte central:** FECH.AI — Projeto Principal / Master Project.  
 **Visibilidade no Builder:** assistentes privados / apenas para uso do Wagner.
@@ -114,7 +114,7 @@ GPT1 — FECH.AI Arquiteto SaaS
 GPT2 — FECH.AI UX/UI APP Specialist
 GPT3 — FECH.AI Supabase Security Specialist
 GPT4 — FECH.AI Vercel/GitHub CI-CD Specialist
-GPT5 — FECH.AI SRE/DevSecOps Observ Specialist
+GPT5 - FECH.AI SRE/DevSecOps Observability Spec
 GPT6 — FECH.AI ADS-Pixel-CAPI-SEO-CRMtoMeta
 GPT7 — FECH.AI LeadOps CRM Discador Specialist
 GPT8 — FECH.AI MesaCliente Tabelas Propostas Specialist
@@ -198,16 +198,23 @@ Actions: GitHub
 
 Responsável por lifecycle GitHub, branches, PRs, checks, mergeability, Vercel, deploy, release e rollback. Qualquer mutação exige autorização explícita e delimitada.
 
-### GPT5 — SRE/DevSecOps Observ Specialist
+### GPT5 — SRE/DevSecOps Observability
 
 ```text
-Nome: FECH.AI SRE/DevSecOps Observ Specialist
+Nome: GPT5 - FECH.AI SRE/DevSecOps Observability Spec
 Skill: docs/skills/fechai-gpt5-sre-devsecops-observability-specialist.md
 Grupo: B
-Estado: PENDING_PARITY_AUDIT
+Skill version: v2.0 / GROUP_B_GPT5_RECONCILED
+Knowledge: EMPTY
+Actions: GitHub READ_ONLY
+Builder evidence: PRODUCT_AUTHORITY_CONFIRMED / BEHAVIORAL_TEST_PASSED
 ```
 
+O nome acima é uma decisão explícita da Product Authority. O prefixo `GPT5 -` e a abreviação `Spec` são intencionais e não constituem drift.
+
 Responsável por SRE, observabilidade, incidentes, logs, métricas, alertas, SLA/SLO/SLI, backup, restore e continuidade.
+
+O estado reconciliado é limitado ao contrato e comportamento do Builder. Não implica Product PASS, Runtime PASS, Security Go, SLA comercial nem readiness ampla de produção.
 
 ### GPT6 — ADS-Pixel-CAPI-SEO-CRMtoMeta
 
@@ -332,4 +339,13 @@ Para alterar uma skill:
 8. atualizar continuidade após PASS;
 9. manter uma PR = um risco principal = rollback simples.
 
-O Grupo B — GPT5, GPT6, GPT9 e GPT10 — deve ser auditado e reconciliado em trabalho separado depois do fechamento do Grupo A.
+O Grupo B segue em trabalho separado por especialista:
+
+```text
+GPT5 — reconciliado após publicação autorizada desta closure PR
+GPT6 — próximo / PENDING_PARITY_AUDIT
+GPT9 — PENDING_PARITY_AUDIT
+GPT10 — PENDING_PARITY_AUDIT
+```
+
+A existência desta PR Draft não autoriza iniciar GPT6. O avanço exige gates válidos, autorizações separadas de Ready e merge, merge concluído e confirmação da nova `main`.
