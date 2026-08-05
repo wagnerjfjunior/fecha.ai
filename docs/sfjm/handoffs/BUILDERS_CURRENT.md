@@ -1,269 +1,331 @@
 # FECH.AI — SFJM Builders Current Handoff
 
-**Status:** `CURRENT_BUILDERS_HANDOFF / GROUP_A_RECONCILED / POST_PR111 / DOCUMENTATION_ONLY`  
-**Reconstructed on:** `2026-07-31`  
+**Status:** `CURRENT_BUILDERS_HANDOFF / GROUP_A_RECONCILED / GROUP_B_GPT5_RECONCILIATION_ACTIVE / DOCUMENTATION_ONLY`  
+**Reconstructed on:** `2026-08-03`  
 **Repository:** `wagnerjfjunior/fecha.ai`  
-**Observed canonical main:** `main@d9c306b6278aba5f72a29892e98318ffb2d2405c`  
-**Publication vehicle:** `PR #110 — docs/sfjm-builders-continuity-gpt7-gpt8`
+**Observed canonical main:** `main@f4f77e2a159ec190173dc771b189909f589e9f91`  
+**Active Builder track:** `GPT5 — SRE/DevSecOps Observability`
 
 ## 1. Purpose and boundary
 
-This record preserves continuity for FECH.AI specialist Builder configuration, canonical skills, behavioral validation and safe continuation between conversations.
+This record preserves continuity for specialist Builder configuration, canonical skills, behavioral validation and safe transition between conversations.
 
-It is separate from the product/security lifecycle recorded in:
+It is separate from the product/security lifecycle in:
 
 ```text
 docs/sfjm/handoffs/CURRENT.md
 ```
 
-This record does not:
+This Builder track does not approve runtime, Supabase, Vercel, production, Security Go, F1-02 acceptance or WDP. It does not operate product/security PRs.
 
-- approve runtime, frontend, Supabase, Vercel, deploy or production;
-- grant Security Go, F1-02 acceptance or WDP change;
-- convert a canonical skill into proof of the live external Builder configuration;
-- convert a Builder behavioral test into product/runtime/security evidence;
-- authorize mutation of a Builder, repository, PR or environment;
-- replace `docs/skills/` or `docs/skills/fechai-gpt-registry.md` as normative sources.
-
-## 2. Source hierarchy and evidence classes
-
-For specialist continuity, use this hierarchy:
+## 2. Source hierarchy
 
 ```text
-1. GitHub live state and the resolved main tip
+1. GitHub live and resolved main/ref
 2. docs/bootstrap/INDEX.md
 3. docs/skills/fechai-gpt-registry.md
-4. the specialist's canonical file in docs/skills/
-5. common bootstrap/governance/SFJM contracts
-6. this Builders handoff
-7. external Builder screenshots, exports or Product Authority statements
-8. historical prompts, uploads, comments or memory
+4. specialist canonical skill
+5. Modus Operandi and applicable governance/SFJM
+6. this handoff
+7. Product Authority-confirmed Builder state
+8. historical uploads, prompts and memory
 ```
 
-Evidence classes used in this record:
+Evidence classes:
 
 ```text
 CANONICAL_MAIN
-= versioned file confirmed on the resolved main.
-
 PR_HEAD_ONLY
-= versioned file present only on an open PR head; not canonical until merge.
-
 PRODUCT_AUTHORITY_CONFIRMED
-= external Builder configuration or decision explicitly confirmed by Wagner.
-
 BEHAVIORAL_TEST_PASSED
-= bounded specialist response passed the declared test; this does not prove live product behavior.
-
 INFORMATION_SUPPLIED
-= evidence supplied in conversation or an external snapshot and not independently resolved as live Builder configuration.
-
 EXTERNAL_BUILDER_NOT_REVALIDATED
-= the current live Builder interface/configuration was not independently inspected in this handoff reconstruction.
 ```
 
-No specialist may infer `CANONICAL_MAIN`, `PRODUCT_AUTHORITY_CONFIRMED`, `BEHAVIORAL_TEST_PASSED` or product acceptance from another evidence class.
+No evidence class may be silently promoted into another.
 
-## 3. PR #111 closure and canonical Group A state
+## 3. Group A
 
-PR #111 closed the canonical skill/documentation reconciliation for Group A.
+GPT0, GPT1, GPT2, GPT3, GPT4, GPT7 and GPT8 remain canonically reconciled under the Group A closure. Do not rebuild them merely because Group B started.
+
+Reopen only after material behavioral failure, canonical change, tool/configuration change, drift, explicit Product Authority decision or new evidence invalidating prior validation.
+
+## 4. Group B current state
 
 ```text
-PR: #111 — docs(skills): reconcile canonical Builder parity group A
-State: CLOSED / MERGED
-Final PR head: b8d04e0e5d65ab2ccbee569e234db4a11f63e6e4
-Squash commit on main: d9c306b6278aba5f72a29892e98318ffb2d2405c
-Changed files: 11, all documentation
-Runtime/frontend/Supabase/Builder mutation: NONE
+GPT5 — RECONCILIATION_ACTIVE
+GPT6 — PENDING_PARITY_AUDIT
+GPT9 — PENDING_PARITY_AUDIT
+GPT10 — PENDING_PARITY_AUDIT
 ```
 
-The merge published:
+Group B is handled as separate, bounded specialist work. Starting GPT5 does not authorize mutation of GPT6, GPT9 or GPT10.
 
-- the seven Group A canonical skills;
-- `docs/skills/fechai-gpt-registry.md` with durable `GROUP_A_RECONCILED` entries;
-- the shared bootstrap/evidence contract;
-- the Group A Builder × skill parity audit;
-- documentation safeguards for coverage, EOF, drift, overclaim and authorization.
+## 5. GPT5 evidence reconstructed
 
-The four review findings raised after the first Ready transition were corrected before merge:
-
-1. transient `PR_HEAD_ONLY até merge` status removed from durable registry entries;
-2. auditable coverage matrix added;
-3. GPT8 Actions reconciled;
-4. GPT8 Builders handoff discovery anchored.
-
-This closure proves canonical documentation reconciliation. It does not prove the current external Builder UI/configuration, product behavior, Supabase state, production or Security Go.
-
-## 4. Group A canonical registry
-
-The following specialists are canonically reconciled on `main@d9c306b6278aba5f72a29892e98318ffb2d2405c`:
-
-| Specialist | Canonical skill | Registry state | Canonical Actions contract |
-|---|---|---|---|
-| GPT0 — Documentation Auditor | `docs/skills/fechai-gpt0-documentation-auditor.md` | `v2.0 / GROUP_A_RECONCILED` | GitHub |
-| GPT1 — Arquiteto SaaS | `docs/skills/fechai-gpt1-architect-saas.md` | `v2.0 / GROUP_A_RECONCILED` | GitHub / Supabase only according to configuration and authorization |
-| GPT2 — UX/UI APP Specialist | `docs/skills/fechai-gpt2-ux-ui-app-specialist.md` | `v2.0 / GROUP_A_RECONCILED` | GitHub |
-| GPT3 — Supabase Security Specialist | `docs/skills/fechai-gpt3-supabase-security-specialist.md` | `v2.0 / GROUP_A_RECONCILED` | GitHub / Supabase `READ_ONLY` by default |
-| GPT4 — Vercel/GitHub CI-CD Specialist | `docs/skills/fechai-gpt4-vercel-github-cicd-specialist.md` | `v2.0 / GROUP_A_RECONCILED` | GitHub |
-| GPT7 — LeadOps CRM Discador Specialist | `docs/skills/fechai-gpt7-leadops-crm-discador.md` | `v2.0 / GROUP_A_RECONCILED` | GitHub |
-| GPT8 — MesaCliente Tabelas Propostas Specialist | `docs/skills/fechai-gpt8-mesacliente-tabelas-propostas.md` | `v2.0 / GROUP_A_RECONCILED` | GitHub mandatory; Mermaid only after AS-IS is confirmed |
-
-`Skill-file reconciliation: SEPARATE DOCUMENTATION BACKLOG` is no longer a valid state for Group A.
-
-GPT8 is no longer the next Builder construction objective. Its canonical skill and registry contract are part of the reconciled Group A state.
-
-## 5. External Builder and behavioral evidence boundary
-
-The current external Builder configuration was not independently inspected through GitHub during this handoff reconstruction.
-
-Therefore:
+### Canonical main
 
 ```text
-Canonical skill state: CONFIRMED ON MAIN
-Registry state: CONFIRMED ON MAIN
-Current external Builder configuration: EXTERNAL_BUILDER_NOT_REVALIDATED
-Historical Builder snapshots/tests: INFORMATION_SUPPLIED unless separately anchored
-Product/runtime/security acceptance: NOT IMPLIED
+Skill path:
+docs/skills/fechai-gpt5-sre-devsecops-observability-specialist.md
+
+Main skill before this track:
+v1.1 / blob d6bf7a043ecd8d74f9259d89bbae9c9cb06f89c7
+
+Registry state:
+Grupo B / PENDING_PARITY_AUDIT
 ```
 
-Prior operational validations and bounded tests remain useful historical evidence. They must not be reopened merely because a conversation changed.
-
-Reopen a Group A specialist only after at least one of:
-
-- material behavioral failure;
-- canonical skill or registry change;
-- Builder configuration/tool change;
-- source conflict or `SKILL_DRIFT`;
-- explicit Product Authority decision;
-- new evidence showing the prior test was incomplete or overclaimed.
-
-Do not use absence of live Builder UI access as a reason to discard the canonical Group A reconciliation.
-
-## 6. Durable operating rules retained
-
-The reconciled Group A retains these cross-specialist rules:
-
-- AS-IS before proposal;
-- GitHub live and the resolved ref prevail over memory;
-- frontend requests/displays; backend/RPC/Supabase validates and decides;
-- capability of an Action is not authorization to write;
-- fail closed when session, token, permission, tenant, evidence or authority is insufficient;
-- classify material source coverage as `NOT_READ`, `PARTIAL_READ` or `INTEGRAL_READ`;
-- do not claim complete reading without exact ref/object, coverage and EOF evidence;
-- Builder PASS is not Product PASS;
-- document is not runtime evidence;
-- code is not proof of Supabase-applied state;
-- `mergeable=true` is not merge authorization;
-- one PR = one principal risk = simple rollback.
-
-## 7. Live product/security anchors revalidated for separation
-
-The following PRs were revalidated only to preserve correct separation from the Builders track.
-
-### PR #108
+### Product Authority-confirmed external Builder state
 
 ```text
-Title: security: route password completion through RPC
-State: OPEN / DRAFT / NOT MERGED
-Base recorded: main@cec1b22430adf1a002b172992cf6c5ea5bb427de
-Head: bec8b2531486e76c546ddee1d3e2d8b419e220be
-Commits: 15
-Changed files: 8
-Mergeable reported at reconstruction: false
+Old GPT5 Knowledge files: DELETED
+Configuration snapshot: title + description + Instructions + starters supplied
+Knowledge target: EMPTY
 ```
 
-PR #108 belongs to the F1-02 password-flow security/runtime track. It must not be operated from Builder continuity.
+The deletion of static files is intentional. GitHub live must supply current context.
 
-### PR #109
+### GitHub Action evidence
 
 ```text
-Title: docs(sfjm): reconcile PR107 post-merge continuity
-State: OPEN / DRAFT / NOT MERGED
-Base recorded: main@cec1b22430adf1a002b172992cf6c5ea5bb427de
-Head: 1a3c72e7b73a07ec7f6f30832c8d18e03c6b2827
-Commits: 6
-Changed files: 6
-Mergeable reported at reconstruction: false
+Operation executed:
+getFechaiRepository
+
+Result:
+SUCCESS
+
+Repository:
+wagnerjfjunior/fecha.ai
+
+Default branch:
+main
 ```
 
-PR #109 belongs to product/security SFJM reconciliation. It contains pre-PR #111 continuity statements and must not be merged or updated from this Builder-continuity track without a separate bootstrap, scope decision and authorization.
+The response also exposed repository permissions equivalent to `admin`, `maintain`, `push`, `triage` and `pull`. This proves broad identity capability, not authorization to mutate.
 
-Both PRs remain anchored to the former main and require separate revalidation before any lifecycle action. Their presence does not block correcting or publishing this Builders handoff.
-
-## 8. PR #110 publication state
-
-This file is published through PR #110.
-
-Until PR #110 merges:
+Current contract:
 
 ```text
-docs/sfjm/handoffs/BUILDERS_CURRENT.md = PR_HEAD_ONLY
+GitHub Action: REQUIRED
+Default mode: READ_ONLY
+Mutation authority: NONE unless separately explicit and exact
+Minimum proven coverage: repository metadata only
 ```
 
-After an authorized merge and confirmation on the new main:
+Repository metadata alone does not satisfy Builder readiness.
+
+For Builder configuration and behavioral validation, the required live-source set is:
 
 ```text
-docs/sfjm/handoffs/BUILDERS_CURRENT.md = CANONICAL_MAIN continuity record
+COMMON BOOTSTRAP — always required
+- docs/bootstrap/INDEX.md
+- docs/bootstrap/2026-06-10-fechai-saas-current-state-index.md
+- docs/bootstrap/2026-06-10-fechai-gpt-specialists-private-index.md
+- docs/bootstrap/2026-06-11-fechai-specialists-modus-operandi.md
+- docs/bootstrap/2026-06-12-fechai-codex-efficiency-greenops.md
+- docs/bootstrap/2026-06-12-fechai-bootstrap-governance-cycle-handoff.md
+- docs/skills/fechai-gpt-registry.md
+- docs/skills/fechai-gpt5-sre-devsecops-observability-specialist.md
+
+BUILDER CONTINUITY — required for this track
+- docs/sfjm/INDEX.md
+- docs/sfjm/CURRENT_STATE.md
+- docs/sfjm/NEXT_SAFE_ACTION.md
+- docs/sfjm/BLOCKED_ACTIONS.md
+- docs/sfjm/AUTHORIZATIONS.md
+- docs/sfjm/EVIDENCE_FRESHNESS.md
+- docs/sfjm/handoffs/CURRENT.md
+- docs/sfjm/handoffs/BUILDERS_CURRENT.md
+
+CONDITIONAL GOVERNANCE — required when the request involves delivery,
+acceptance, WDP, capacity, forecast, dependency, Health Score, risk or plan
+- docs/governance/INDEX.md
+- additional governance records resolved by that index and material to the request
 ```
 
-The head recorded previously in the GPT8 registry bridge was `6a79b5ab597c7facc7b0d6eafdda36289b21c287`. This corrective update necessarily advances PR #110 to a new head. Until merge, consumers must resolve PR #110 live and treat any old fixed-head bridge as `STALE_CONTINUITY`; they must not invent content or treat the previous head as current.
+Behavioral PASS requires evidence that the Action fetched every applicable source from the exact resolved `main`, recording path, ref, blob when available, coverage through EOF and limitations. Skipping a conditional source requires an explicit applicability decision; silence is not evidence that it was unnecessary.
 
-This transitional mismatch blocks only conclusions that depend on the unpublished handoff. It does not authorize modifying the registry inside PR #110's scope.
+If the Action cannot read any mandatory or applicable canonical file, the result is `BUILDER_READINESS_FAILED / GITHUB_BOOTSTRAP_UNAVAILABLE` or `EVIDENCE_INCOMPLETE`, not PASS. If it cannot read additional commits, PRs, checks, jobs or logs needed for a conclusion, GPT5 must declare `GITHUB_OBSERVABILITY_EVIDENCE_INCOMPLETE` and route lifecycle/CI evidence to GPT4.
 
-## 9. Group B remains separate
+## 6. Direction approved by Product Authority
 
-The next specialist reconciliation axis is Group B:
+GPT5 must not be bound to a specific PR number.
+
+Its operating objective is:
 
 ```text
-GPT5 — SRE/DevSecOps Observability
-GPT6 — ADS, Pixel, CAPI and SEO
-GPT9 — Integrações, Portais e Mensageria
-GPT10 — Monetização, Startup e GTM
+reconstruct the broad AS-IS
+identify operational risks and missing evidence
+propose improvements for a robust, secure, recoverable and high-value SaaS
+connect reliability to conversion, productivity, support, churn, margin and MRR
 ```
 
-Current state:
+PRs, commits, workflows and deploys remain evidence and execution vehicles. They are not the specialist's permanent scope.
+
+## 7. Active Git work and invalidation anchor
 
 ```text
-PENDING_PARITY_AUDIT
-NOT STARTED BY THIS HANDOFF
-NO AUTOMATIC AUTHORIZATION
+Base:
+main@f4f77e2a159ec190173dc771b189909f589e9f91
+
+Active PR:
+#113 — docs(skills): reconcile GPT5 SRE operating contract
+
+Branch:
+docs/group-b-gpt5-sre-reconciliation
+
+Allowed files:
+docs/skills/fechai-gpt5-sre-devsecops-observability-specialist.md
+docs/sfjm/handoffs/BUILDERS_CURRENT.md
 ```
 
-Group B must use separate, small, auditable work after PR #110 closes safely. It must not be added to PR #110.
+### Non-self-referential lifecycle anchor
 
-## 10. What must not be redone or altered
-
-- do not rebuild Group A from scratch solely because this handoff changed;
-- do not restore `GPT8_NEXT`;
-- do not restore Group A skill reconciliation as backlog;
-- do not add repository documents to Builder Knowledge by default;
-- do not add Supabase Actions to specialists whose canonical contract does not require them;
-- do not infer current live Builder settings without direct evidence;
-- do not treat MesaCliente as greenfield;
-- do not operate PR #108 or PR #109 from this track;
-- do not alter runtime, frontend, Supabase, migrations, RLS, grants, policies, RPCs, Edge Functions, Vercel, GitHub Actions or production;
-- do not claim Security Go, product acceptance or deploy readiness.
-
-## 11. Current single next safe action
-
-For PR #110:
+The exact baseline reviewed at the second Ready transition was:
 
 ```text
-1. audit the corrective delta and final PR description with GPT0 in DELTA_ONLY / READ_ONLY mode;
-2. after GPT0 PASS, validate lifecycle/scope with GPT4 in READ_ONLY mode;
-3. obtain separate explicit Product Authority authorization for Ready;
-4. obtain a later, separate explicit authorization for merge;
-5. after merge, resolve the new main and confirm this file plus docs/sfjm/INDEX.md are present and coherent.
+Reviewed head:
+aec87b384d1744f02a3ede064e30310029353bb6
+
+GPT5 skill blob at that head:
+969abb867b78b622c62d92ef6de53f8c0599dda5
+
+Builders handoff blob at that head:
+b5c64c73a633c74f73add47f1b20481a8072b5c9
 ```
 
-No Group B implementation or Builder mutation belongs to the PR #110 closure step.
+The first corrective pair produced the first Draft review baseline:
 
-## 12. Continuity after PR #110
+```text
+Draft review head:
+5a4cfabece98d07d672d3b95e90113497c1fd509
 
-Once PR #110 is merged and this file is confirmed on main:
+Corrected GPT5 skill blob:
+70e5b06dbb2be53fd2fee935b80a838b8d6486b2
 
-- new conversations must bootstrap through `docs/bootstrap/INDEX.md`, `docs/sfjm/INDEX.md`, the registry, the applicable canonical skill and this handoff;
-- Group A remains canonically reconciled unless new material evidence requires reopening;
-- Group B may be scoped in separate work;
-- product/security PRs continue under their own SFJM lifecycle;
-- this long-running conversation is not required as the sole continuity source.
+Corrected Builders handoff blob:
+dca44c7b111f6541cd151a31e457fd74f15589e6
+```
+
+The second corrective pair produced the next Draft review baseline:
+
+```text
+Draft review head:
+ad673ce7853a77c55bac6377dd2ebe20c8b3ec15
+
+Corrected GPT5 skill blob:
+4629a8234c910bf4fe87139d90bf1184d3670fad
+
+Corrected Builders handoff blob:
+7264ed8d6a9cbf8276f142d272efc5dfa00e3d36
+```
+
+This section is an **invalidation anchor**, not a claim that a documentation file can embed its own resulting commit or blob SHA. The final corrected PR head and the resulting blob of this handoff must be resolved live and recorded in PR metadata/audit evidence after publication of later edits. Any head or blob different from a reviewed baseline invalidates only the gates bound to that baseline. For an **open PR**, a changed head remains in Branch A and requires fresh head-bound gates. Branch C is not selected merely because an authorized corrective commit changed an open PR head.
+
+The prohibition on permanent PR numbers applies to the specialist's durable operating contract. It does not prevent this SFJM lifecycle handoff from recording the active PR, branch, reviewed head and evidence blobs needed to detect drift.
+
+Primary risk:
+
+```text
+GPT5 operating from a narrow, static or stale SRE contract that cannot
+reconstruct the real SaaS AS-IS or propose evidence-based reliability evolution.
+```
+
+Rollback: one documentation revert. No runtime, data, Supabase or deployment rollback.
+
+## 8. Explicit non-actions
+
+```text
+No runtime/frontend change
+No Supabase/SQL/migration/RPC/RLS/policy/grant change
+No Vercel or GitHub Actions change
+No external Builder mutation through Git
+No external Builder mutation without separate exact Product Authority authorization
+No Ready
+No merge
+No deploy
+No Security Go
+No Product PASS
+No changes to GPT6/GPT9/GPT10
+```
+
+## 9. Next safe action — mutually exclusive branches
+
+Before selecting a branch below, resolve GitHub live and determine whether the candidate GPT5 skill is still `PR_HEAD_ONLY` or is already present on the current `main`. Compare the live PR/head/blobs with the invalidation anchor in section 7. The branches below are mutually exclusive.
+
+### Branch A — open PR; candidate not yet canonical on `main`
+
+Use this branch whenever the publication PR is open and the candidate skill is absent from the resolved `main`, including when authorized corrective commits changed the head.
+
+1. resolve the exact live PR, branch, head and both final blobs;
+2. if they differ from any previously gated baseline, invalidate all prior head-bound gates;
+3. audit the exact Draft head with GPT0;
+4. independently confirm that Builder Instructions remain below 8,000 characters;
+5. validate lifecycle, checks, reviews, threads and drift with GPT4;
+6. before posting `@codex review`, requesting a reviewer or submitting any review/comment, obtain exact Product Authority authorization for that GitHub mutation;
+7. the review-request authority must identify repository, PR, exact head, permitted comment/review operation, scope, prohibitions and whether thread replies/resolution are included;
+8. only under that authority, request Codex review while the PR is still Draft;
+9. correct material findings within the separately authorized file scope; before replying to or resolving threads, confirm that the authority covers those exact mutations;
+10. every corrective commit changes the PR head and invalidates all prior head-bound gates; after any corrective commit, restart at step 1 and rerun GPT0 exact-head audit, independent Instructions-size confirmation, GPT4 lifecycle/scope validation and the authorized Draft review on the new head; repeating only Codex review is insufficient;
+11. repeat Draft review until the exact head has zero material thread open and every restarted head-bound gate is valid for that same head;
+12. obtain separate Product Authority authorization for Ready only after the Draft review cycle is clean;
+13. after Ready, revalidate only for new external events; do not use Ready as a discovery mechanism;
+14. obtain separate and later Product Authority authorization for merge;
+15. do not update the external Builder, run behavioral tests or promote the registry before publication on `main`.
+
+### Branch B — candidate already canonical on `main`
+
+Use this branch only after an authorized merge and after the resolved `main` contains the candidate skill.
+
+1. resolve the new `main` and record the merge commit;
+2. confirm the final GPT5 skill and this handoff on that exact `main`, including blobs and EOF;
+3. confirm the registry still records GPT5 as `PENDING_PARITY_AUDIT`;
+4. obtain separate, explicit and delimited Product Authority authorization for the external GPT5 Builder mutation;
+5. the authorization must identify the GPT, permitted fields, canonical source, exact operation, prohibitions, validation gate and rollback; before mutation, preserve a restorable export or complete non-secret snapshot of the last-known-good Builder configuration, sufficient to recreate every field in scope; record a non-secret fingerprint only as verification evidence, never as the rollback artifact; if no restorable export or complete snapshot can be obtained, stop and do not mutate;
+6. only under that authorization, update the external GPT5 title, description, Instructions and starters from the canonical skill;
+7. keep Knowledge empty and the GitHub Action read-only;
+8. run bounded behavioral tests for AS-IS, incident response, evidence, privilege refusal, roadmap and real canonical-file retrieval from the exact resolved `main`;
+9. apply the full source set and applicability rules from section 5; inability to fetch any mandatory or applicable source is `BUILDER_READINESS_FAILED`, even when prompt-only answers appear correct;
+
+#### Branch B-PASS — all readiness gates pass
+
+10. preserve a complete PASS evidence package containing:
+    - exact resolved `main` and merge commit;
+    - canonical GPT5 skill path and blob;
+    - non-secret fingerprints of applied title, description, Instructions and starters;
+    - Knowledge state and GitHub Action mode/schema evidence;
+    - Product Authority Builder-mutation authorization and its exact scope;
+    - coverage matrix for every mandatory and applicable canonical source;
+    - behavioral tests, prompts, results, timestamps and limitations;
+    - restorable rollback export/snapshot, verification fingerprint and residual risks;
+11. stop and obtain a new explicit, delimited Product Authority authorization for one bounded GPT5 closure PR;
+12. that closure authorization must identify repository, base, permitted files, objective, prohibitions, rollback and validation gates;
+13. the GPT5 closure PR must reconcile all durable markers together:
+    - `docs/skills/fechai-gpt-registry.md`: publish the reconciled GPT5 registry state;
+    - `docs/skills/fechai-gpt5-sre-devsecops-observability-specialist.md`: replace `v2.0-candidate / ...RECONCILIATION` with the approved reconciled status;
+    - `docs/sfjm/handoffs/BUILDERS_CURRENT.md`: embed the non-secret PASS evidence package, mark GPT5 reconciled, close the active GPT5 track and record the next Group B specialist;
+14. behavioral PASS, merge of this publication PR or tool capability does not authorize the closure PR;
+15. only after the authorized closure PR passes its gates, merges, and the resulting `main` is confirmed may work advance to the next Group B specialist.
+
+#### Branch B-FAIL — any readiness or canonical-file gate fails
+
+10. classify `BUILDER_READINESS_FAILED` and preserve the exact failure evidence, failed source/test, current Builder state and fingerprint, the restorable pre-mutation export/snapshot, resolved `main`, timestamps and limitations;
+11. do not change registry status, do not open the closure PR and do not advance Group B;
+12. if the original Builder-mutation authority explicitly included rollback, restore the last-known-good Builder configuration from the preserved restorable export/snapshot and verify the restored fingerprint;
+13. if rollback was not included, stop and obtain separate exact Product Authority authorization before any rollback mutation;
+14. if the failure is caused by missing GitHub file-read capability or Action configuration, obtain separate bounded Product Authority authorization for the exact Action/Builder remediation; do not change GitHub repository permissions, Supabase, runtime or production as an implied fix;
+15. after authorized remediation or rollback, rerun the complete applicable source coverage and behavioral suite against the then-current canonical `main`;
+16. keep GPT5 `RECONCILIATION_ACTIVE` and the registry `PENDING_PARITY_AUDIT` until Branch B-PASS and the later authorized closure PR both complete.
+
+Merge authorization never includes Builder mutation. Builder authorization never includes registry/skill/handoff closure. Each lifecycle mutation requires its own exact authority.
+
+### Branch C — PR closed without merge or materially ambiguous state
+
+Use this branch only when the publication PR is closed without merge, missing, replaced without an anchored successor, or when live evidence cannot determine whether the candidate was published. Do not select Branch C for an open PR merely because its head changed; that case belongs to Branch A with fresh gates.
+
+Stop and reconstruct the Builder track from GitHub live. Do not infer that the candidate was published, do not update the external Builder and do not promote or reconcile the registry.
+
+A test executed against a `PR_HEAD_ONLY` skill does not replace the post-merge test against the canonical `main`. The default sequence is publication first, separately authorized Builder update second, separately authorized durable closure third.
+
+A new conversation must resolve the live state, select exactly one applicable branch above, read the exact skill and this handoff, and continue without relying on pasted chat history.
