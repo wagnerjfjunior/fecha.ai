@@ -1,15 +1,17 @@
 # FECH.AI — GPT5 SRE/DevSecOps Observability Specialist
 
-**Status:** `v2.0-candidate / GROUP_B_GPT5_RECONCILIATION / DOCUMENTATION_ONLY`  
-**Atualizado em:** `2026-08-03`  
+**Status:** `v2.0 / GROUP_B_GPT5_RECONCILED / BUILDER_BEHAVIORAL_PASS / DOCUMENTATION_ONLY`  
+**Atualizado em:** `2026-08-05`  
 **Escopo:** confiabilidade, observabilidade, incidentes, SLI/SLO, error budget, capacidade, custos, backup, restore, RTO/RPO, suporte e continuidade operacional.  
 **Fonte central:** FECH.AI — Projeto Principal / Master Project + GitHub live em `wagnerjfjunior/fecha.ai`.
 
 ## 1. Nome do Builder
 
 ```text
-FECH.AI SRE/DevSecOps Observability Specialist
+GPT5 - FECH.AI SRE/DevSecOps Observability Spec
 ```
+
+O nome acima é uma decisão explícita da Product Authority. O prefixo `GPT5 -` e a abreviação `Spec` são intencionais e não constituem drift.
 
 ## 2. Descrição do Builder
 
@@ -373,95 +375,100 @@ nenhuma mutação não autorizada
 
 Incapacidade de ler qualquer arquivo canônico material é `BUILDER_READINESS_FAILED`, não PASS parcial silencioso. Builder PASS não significa Product PASS, Runtime PASS, Security Go, SLA comercial ou readiness ampla.
 
-## 10. Rollback e continuidade
+## 10. Evidência de fechamento do Builder
 
-Rollback documental: restaurar a versão anterior desta skill e o handoff de Builders no mesmo branch/PR.
-
-A configuração externa do Builder não deve ser atualizada enquanto esta versão permanecer apenas `PR_HEAD_ONLY`. Como o bootstrap do GPT5 resolve a skill pela `main` live, publicar Instructions novas no Builder antes do merge criaria `SKILL_DRIFT`: o Builder usaria um kernel novo e reconstruiria contexto a partir da skill antiga.
-
-Sequência obrigatória de publicação:
+### 10.1 Publicação canônica
 
 ```text
-1. resolver a PR live, o head exato e os blobs finais;
-2. auditar esse head com GPT0;
-3. confirmar independentemente o tamanho das Instructions;
-4. validar lifecycle, checks, reviews, threads e drift com GPT4;
-5. antes de qualquer pedido @codex review, comentário, review ou resolução de thread,
-   obter autorização exata da Product Authority para essa mutação GitHub;
-6. executar e fechar o review em Draft sob a autorização delimitada;
-7. se qualquer correção produzir novo commit/head, retornar ao passo 1 e repetir
-   GPT0, contagem das Instructions, GPT4 e review autorizado no novo head;
-   repetir somente o Codex review é insuficiente;
-8. somente quando o mesmo head tiver todos os gates válidos e zero thread material
-   aberta, obter autorização separada para Ready;
-9. obter autorização separada e posterior para merge;
-10. após o merge, resolver a nova main e confirmar esta skill nela.
+Publication PR: #113
+Publication final head: f464d26c1f153e9dc61b8ebf65dc56fd614b458a
+Canonical main / squash: 75eebf7978513eec825ba4b019a4395823ea82a0
+Canonical pre-closure skill blob: 09a90879f93920d9fe241e6502e075f5967e51b2
 ```
 
-Sequência obrigatória de Builder:
+### 10.2 Configuração confirmada
 
 ```text
-1. obter autorização separada, explícita e delimitada da Product Authority
-   para a mutação do Builder externo;
-2. preservar um export restaurável ou snapshot completo não secreto da configuração
-   anterior, suficiente para recriar todos os campos em escopo;
-3. registrar fingerprint não secreto somente para verificar a restauração, nunca
-   como artefato de rollback; sem export/snapshot restaurável, parar e não mutar;
-4. garantir que rollback esteja incluído na autoridade original ou exigir
-   autoridade separada antes de qualquer mutação de rollback;
-5. somente sob essa autorização, atualizar título, descrição, Instructions e
-   quebra-gelos do Builder;
-6. manter Knowledge vazio e GitHub READ_ONLY;
-7. executar os testes comportamentais e toda a cobertura aplicável da seção 5.
+Builder name: GPT5 - FECH.AI SRE/DevSecOps Observability Spec
+Description: canonical description applied
+Instructions: canonical 7,610-character block applied
+Conversation starters: six canonical starters applied
+Knowledge: EMPTY
+GitHub Action: READ_ONLY operating contract
+Restorable pre-mutation snapshot: PRESERVED
 ```
 
-### Resultado PASS
+A configuração e o snapshot são `PRODUCT_AUTHORITY_CONFIRMED`. As capturas visuais são evidência parcial da interface e não substituem export ou fingerprint integral.
 
-Preservar pacote de evidência com:
+### 10.3 Resultados comportamentais
 
 ```text
-main e merge commit exatos
-skill canônica e blob
-fingerprints não secretos dos campos aplicados no Builder
-Knowledge e Action mode/schema
-referência e escopo da autorização de Builder
-matriz de cobertura de todas as fontes obrigatórias/aplicáveis
-testes, prompts, resultados, timestamps e limitações
-export/snapshot restaurável de rollback, fingerprint de verificação e riscos residuais
+Test A — AS-IS/bootstrap/evidence/roadmap:
+PASS WITH RESIDUAL RISK
+
+Test B — incident response:
+PASS WITH RESIDUAL RISK
+
+Test C — privilege refusal/fail-closed:
+PASS
+
+Consolidated result:
+BUILDER_BEHAVIORAL_PASS
 ```
 
-Depois parar e obter nova autorização explícita e delimitada da Product Authority para uma única PR de fechamento durável do GPT5. Essa autorização deve identificar repositório, base, arquivos, objetivo, proibições, rollback e gates. Behavioral PASS, Builder authority ou merge anterior não autorizam essa PR.
+A nomenclatura dos testes executados na sessão de fechamento não substitui a suíte mínima acima. O teste de bootstrap/AS-IS cobriu também roadmap, fontes condicionais e distinção entre estado versionado, aplicado e validado. O teste de privilege refusal cobriu o contrato de privilégio da Action.
 
-A PR de fechamento deve reconciliar conjuntamente:
+### 10.4 Limitações e riscos residuais
 
 ```text
-docs/skills/fechai-gpt-registry.md
-docs/skills/fechai-gpt5-sre-devsecops-observability-specialist.md
-docs/sfjm/handoffs/BUILDERS_CURRENT.md
+character-by-character fingerprint of all Builder fields: NOT independently preserved
+complete Action operation/method inventory: NOT independently captured in the screenshots
+Knowledge EMPTY: PRODUCT_AUTHORITY_CONFIRMED
+restorable snapshot: PRODUCT_AUTHORITY_CONFIRMED
+branch protection claim from tests: NOT independently confirmed
+external Vercel commit status: success, despite zero observed GitHub Actions/check runs
 ```
 
-O handoff deve incorporar o pacote de evidência não secreto; o registry deve publicar o estado reconciliado; esta skill deve abandonar `v2.0-candidate / ...RECONCILIATION`; e o track GPT5 deve ser encerrado. Somente após gates, merge autorizado e confirmação da nova `main` o próximo especialista do Grupo B pode iniciar.
-
-### Resultado FAIL
+Classificação:
 
 ```text
-1. classificar BUILDER_READINESS_FAILED;
-2. preservar fonte/teste falho, main, configuração/fingerprint atual, timestamps,
-   limitações, evidência disponível e o export/snapshot restaurável pré-mudança;
-3. não alterar registry, não abrir PR de fechamento e não avançar Grupo B;
-4. executar rollback apenas se a autoridade original o incluiu; nesse caso,
-   restaurar a configuração a partir do export/snapshot preservado e verificar
-   o fingerprint restaurado; caso contrário, obter autorização separada antes
-   da mutação de rollback;
-5. para falha de Action/file-read, obter autorização delimitada para a exata
-   remediação do Builder/Action, sem inferir alteração de repositório, Supabase,
-   runtime ou produção;
-6. após remediação ou rollback autorizados, repetir cobertura e testes completos
-   contra a main canônica então vigente;
-7. manter GPT5 RECONCILIATION_ACTIVE e registry PENDING_PARITY_AUDIT.
+ACCEPTABLE_WITH_RESIDUAL_RISK
 ```
 
-A autorização de merge não autoriza Builder. A autorização de Builder não autoriza a PR de fechamento. Behavioral PASS não concede autoridade de escrita. Testar explicitamente contra um head `PR_HEAD_ONLY` não substitui a validação posterior contra a skill publicada na `main`.
+A conclusão reconciliada é limitada ao Builder e ao contrato canônico. Não constitui Product PASS, Runtime PASS, Security Go, SLA, backup recoverability ou produção plenamente confiável.
+
+## 11. Rollback e continuidade
+
+Rollback documental: restaurar a versão anterior desta skill, do registry e do handoff de Builders na mesma closure PR ou por um único revert após merge.
+
+O rollback externo do Builder permanece separado. Se necessário, deve usar o snapshot restaurável preservado e autorização exata. Fingerprint não é artefato de rollback.
+
+A closure PR autorizada usa:
+
+```text
+Repository: wagnerjfjunior/fecha.ai
+Base: main@75eebf7978513eec825ba4b019a4395823ea82a0
+Branch: docs/gpt5-builder-reconciliation-closure
+Allowed files:
+- docs/skills/fechai-gpt-registry.md
+- docs/skills/fechai-gpt5-sre-devsecops-observability-specialist.md
+- docs/sfjm/handoffs/BUILDERS_CURRENT.md
+State required: DRAFT
+```
+
+A autorização da closure PR não autoriza comentário, review, thread mutation, Ready, merge ou deploy. Cada transição exige autoridade separada.
+
+Antes de Ready, o exact head deve receber:
+
+```text
+GPT0 documentation/evidence audit
+independent Instructions-size confirmation
+GPT4 lifecycle/scope/checks/reviews/threads/drift validation
+```
+
+Qualquer corrective commit muda o head e invalida gates vinculados ao head anterior.
+
+Somente após gates, Ready autorizado, merge autorizado e confirmação da nova `main` o GPT5 pode ser considerado publicado como reconciliado e o track GPT6 pode iniciar separadamente.
 
 A continuidade fica em:
 
@@ -469,4 +476,4 @@ A continuidade fica em:
 docs/sfjm/handoffs/BUILDERS_CURRENT.md
 ```
 
-A skill não deve armazenar números permanentes de PR como regra operacional. PRs específicos pertencem apenas à evidência e ao lifecycle do trabalho que os criou.
+A skill não deve armazenar números permanentes de PR como regra operacional. As referências desta seção são evidência limitada ao fechamento de 2026-08-05 e não alteram o escopo permanente do especialista.
