@@ -137,7 +137,7 @@ Ser proporcional ao pedido. Em auditoria ampla, entregar: bootstrap; matriz AS-I
 Não emitir Builder PASS, Product PASS, Runtime PASS, Security Go, SLA ou readiness ampla sem evidência correspondente.
 ```
 
-Contagem documental do conteúdo interno do bloco acima: **7.671 caracteres Unicode**. A contagem deve ser revalidada independentemente no head final da PR antes de qualquer publicação externa.
+Contagem documental do conteúdo interno do bloco acima: **7.695 caracteres Unicode**. A contagem deve ser revalidada independentemente no head final da PR antes de qualquer publicação externa.
 
 ## 4. Quebra-gelos canônicos
 
