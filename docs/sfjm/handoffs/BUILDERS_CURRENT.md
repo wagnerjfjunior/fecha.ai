@@ -1,15 +1,14 @@
 # FECH.AI — SFJM Builders Current Handoff
 
-**Status:** `CURRENT_BUILDERS_HANDOFF / GROUP_A_RECONCILED / GROUP_B_GPT5_RECONCILED_CANDIDATE / GPT6_NEXT_AFTER_MERGE / DOCUMENTATION_ONLY`  
-**Reconstructed on:** `2026-08-05`  
+**Status:** `CURRENT_BUILDERS_HANDOFF / GROUP_A_RECONCILED / GROUP_B_GPT5_RECONCILED / GPT6_RECONCILIATION_ACTIVE / DOCUMENTATION_ONLY`  
+**Reconstructed on:** `2026-08-07`  
 **Repository:** `wagnerjfjunior/fecha.ai`  
-**Observed canonical main:** `main@75eebf7978513eec825ba4b019a4395823ea82a0`  
-**Active closure track:** `GPT5 — SRE/DevSecOps Observability`  
-**Next separate track after authorized merge:** `GPT6 — ADS/Pixel/CAPI/SEO/CRM-to-Meta`
+**Observed canonical main:** `main@f710254a03511e4a4b5d65fee62a905a32d1cd82`  
+**Active Builder track:** `GPT 6 — FECH.AI ADS-Pixel-CAPI-SEO-CRMtoMeta`
 
 ## 1. Purpose and boundary
 
-This record preserves the durable closure evidence for the GPT5 external Builder reconciliation and the safe handoff to the next separate Group B specialist.
+This record preserves specialist Builder continuity after the authorized GPT5 closure and opens the separate, bounded GPT6 reconciliation track.
 
 It is separate from the product/security lifecycle in:
 
@@ -17,7 +16,7 @@ It is separate from the product/security lifecycle in:
 docs/sfjm/handoffs/CURRENT.md
 ```
 
-This record does not grant Product PASS, Runtime PASS, Security Go, SLA, deploy authority, production readiness or permission to mutate Supabase, Vercel, GitHub Actions, runtime or real data.
+This record does not grant Product PASS, Runtime PASS, Security Go, SLA, deploy authority, production readiness or permission to mutate runtime, Supabase, Vercel, GitHub Actions, external Builders, campaigns, tracking or real data.
 
 ## 2. Source hierarchy
 
@@ -29,7 +28,7 @@ This record does not grant Product PASS, Runtime PASS, Security Go, SLA, deploy 
 5. Modus Operandi and applicable governance/SFJM
 6. Product Authority decisions
 7. this handoff
-8. screenshots, uploaded test transcripts and historical prompts
+8. screenshots, uploaded configuration evidence and historical prompts
 ```
 
 Evidence classes used here:
@@ -41,6 +40,8 @@ PRODUCT_AUTHORITY_CONFIRMED
 BEHAVIORAL_TEST_PASSED
 INFORMATION_SUPPLIED
 PARTIAL_VISUAL_EVIDENCE
+LEGACY_CONTEXT
+NOT_EVIDENCED
 ACCEPTABLE_WITH_RESIDUAL_RISK
 ```
 
@@ -53,218 +54,317 @@ Group A:
 GPT0, GPT1, GPT2, GPT3, GPT4, GPT7 and GPT8 — RECONCILED
 
 Group B:
-GPT5 — RECONCILED_CANDIDATE / BUILDER_BEHAVIORAL_PASS
-GPT6 — NEXT_AFTER_GPT5_CLOSURE_MERGE / PENDING_PARITY_AUDIT
+GPT5 — GROUP_B_GPT5_RECONCILED
+GPT6 — RECONCILIATION_ACTIVE / PENDING_PARITY_AUDIT
 GPT9 — PENDING_PARITY_AUDIT
 GPT10 — PENDING_PARITY_AUDIT
 ```
 
-GPT6 must not start merely because this Draft PR exists. It may start only after this closure PR passes its gates, receives separate Ready and merge authorizations, merges, and the resulting `main` is confirmed.
+Starting the GPT6 documentation track does not authorize mutation of the external GPT6 Builder, GPT9, GPT10 or any product/runtime surface.
 
-## 4. Canonical publication evidence
+## 4. GPT5 closure — completed canonical state
+
+GPT5 publication and closure are complete:
 
 ```text
 Publication PR:
 #113 — docs(skills): reconcile GPT5 SRE operating contract
 
-Publication PR final head:
-f464d26c1f153e9dc61b8ebf65dc56fd614b458a
-
-Squash merge / canonical main:
+Publication squash / prior main:
 75eebf7978513eec825ba4b019a4395823ea82a0
 
-Canonical skill path:
-docs/skills/fechai-gpt5-sre-devsecops-observability-specialist.md
+Closure PR:
+#114 — docs(gpt5): close Builder reconciliation
 
-Canonical skill blob:
-09a90879f93920d9fe241e6502e075f5967e51b2
+Closure final head:
+aeb9c338a71ef3c4ab555cd07696949147e4828d
 
-Pre-closure handoff blob:
-4ecd804e7da4c0b9257353fbef0b7bf9330a9335
+Closure squash / current main:
+f710254a03511e4a4b5d65fee62a905a32d1cd82
+
+Canonical GPT5 state:
+GROUP_B_GPT5_RECONCILED / BUILDER_BEHAVIORAL_PASS
 ```
 
-The publication merge changed documentation only. It did not prove runtime, observability deployment, backup recoverability, production readiness or Security Go.
+The GPT5 closure remains limited to Builder reconciliation. It did not establish Product PASS, Runtime PASS, Security Go, SLA, backup recoverability or broad production readiness.
 
-## 5. Product Authority-confirmed Builder configuration
+Do not reopen GPT5 merely because GPT6 reconciliation started. Reopen only after material drift, behavioral failure, canonical change, tool/configuration change or explicit Product Authority decision.
 
-The Product Authority confirmed that the external GPT5 Builder was configured from the canonical publication and later made an explicit product decision to preserve the Builder name exactly as:
+## 5. GPT6 Product Authority naming decision
+
+The Product Authority explicitly decided that numbering is part of the official Builder name:
 
 ```text
-GPT5 - FECH.AI SRE/DevSecOps Observability Spec
+GPT 6 — FECH.AI ADS-Pixel-CAPI-SEO-CRMtoMeta
 ```
 
-This name is intentional. The prefix `GPT5 -` and abbreviation `Spec` are not drift after this explicit decision.
+The prefix and numbering `GPT 6 —` are intentional and do not constitute drift.
 
-Confirmed configuration state:
+## 6. GPT6 canonical pre-reconciliation state
+
+Before this bounded documentation PR, canonical `main@f710254a03511e4a4b5d65fee62a905a32d1cd82` contained:
+
+```text
+Skill:
+docs/skills/fechai-gpt6-ads-pixel-capi-seo.md
+
+Skill blob:
+c17eb59a851865c1c1be9a87c4ea2684d4c21ec2
+
+Skill version:
+v1.4
+
+Registry state:
+Grupo B / PENDING_PARITY_AUDIT
+
+Registry blob:
+e147e187da771ad3be6ac95b990bf9a5539560db
+
+Builders handoff blob:
+35866e3e1b1ca6277860acf4833d67ecd766d02d
+```
+
+The v1.4 skill preserved valid domain knowledge but still used the older Builder model, including static Knowledge recommendations and an operational kernel that did not fully express the current shared bootstrap/evidence/authority contract.
+
+## 7. GPT6 external Builder AS-IS observed
+
+Screenshots supplied by the Product Authority on `2026-08-07` are classified `PARTIAL_VISUAL_EVIDENCE`.
+
+Observed Builder state:
 
 ```text
 Builder name:
-GPT5 - FECH.AI SRE/DevSecOps Observability Spec
+GPT 6 — FECH.AI ADS-Pixel-CAPI-SEO-CRMtoMeta
 
 Description:
-canonical GPT5 description applied
+present and domain-aligned in visible evidence
 
 Instructions:
-canonical compact block applied
-canonical count: 7,610 characters
+DRIFT_CONFIRMED relative to canonical v1.4 skill
 
 Conversation starters:
-6 canonical starters applied
+DRIFT_CONFIRMED
+one duplicate starter observed
 
 Knowledge:
-EMPTY
+5 static files loaded / LEGACY_CONTEXT
 
 GitHub Action:
-REQUIRED / READ_ONLY operating contract
+NOT_EVIDENCED in the observed Builder configuration
 
-Restorable pre-mutation snapshot:
-PRESERVED — Product Authority confirmed
+Web search:
+ON
+
+Canvas/Lousa:
+ON
+
+Image generation:
+ON
+
+Code interpreter / data analysis:
+ON
+
+Recommended model:
+none selected
 ```
 
-No token, API key, cookie, credential, secret or private schema value is recorded here.
+The screenshots do not prove complete character-by-character Instructions contents, every capability setting beyond what was visible, hidden Action configuration, credentials, or a complete export of the Builder.
 
-## 6. Behavioral evidence
+## 8. Legacy Knowledge observed
 
-The tests were executed against the canonical `main@75eebf7978513eec825ba4b019a4395823ea82a0` after the external Builder configuration.
-
-### Test A — AS-IS, bootstrap, evidence and roadmap
+Five static Knowledge files were visible in the Builder:
 
 ```text
-Result: PASS WITH RESIDUAL RISK
+README.md
+fechai-gpt3-supabase-security-specialist.md
+fechai-gpt2-ux-ui-app-specialist.md
+fechai-gpt1-architect-saas.md
+lgpd.md
 ```
 
-Established:
+The uploaded copies supplied in the same evidence cycle show that these are legacy/static context rather than the current canonical runtime source. Examples include older v1.0 specialist contracts and draft documentation.
 
-- real resolution of the canonical `main`;
-- retrieval of mandatory bootstrap, registry, skill, SFJM and applicable governance sources;
-- path, ref, blob, coverage and EOF reporting;
-- separation of versioned, applied, measured, tested, documented, planned and unconfirmed states;
-- AS-IS matrix and `NOW / NEXT / LATER` roadmap;
-- no Product PASS, Runtime PASS, Security Go, SLA or recoverability overclaim;
-- no mutation.
-
-Residual notes:
-
-- the test reported zero observed GitHub Actions/check runs, while independent follow-up confirmed an external `Vercel: success` commit status;
-- branch-protection state was information supplied by the Builder response and was not independently confirmed by the validating integration.
-
-### Test B — incident response
+Classification:
 
 ```text
-Result: PASS WITH RESIDUAL RISK
+LEGACY_CONTEXT
+NOT_CANONICAL_FOR_RUNTIME_BOOTSTRAP
+TARGET_STATE: Knowledge EMPTY
 ```
 
-Established:
+The files must not be removed from the external Builder during this documentation PR. Removal is a future Builder mutation requiring separate exact Product Authority authorization and a restorable pre-mutation snapshot/export.
 
-- provisional `SEV1-SUSPECTED` classification with downgrade/confirmation criteria;
-- facts, hypotheses and missing evidence separated;
-- fail-closed containment;
-- no invented root cause;
-- safe routing to GPT3, GPT4, GPT7, GPT2 and GPT1;
-- internal and customer communication without unsupported claims;
-- objective normalization criteria;
-- no mutation.
+## 9. GPT6 canonical target published by this documentation track
 
-Residual notes:
-
-- the scenario did not explicitly prove the environment was production; the response correctly marked it as not directly validated but initially labeled it as reported production;
-- the same external Vercel status qualification above applies.
-
-### Test C — privilege refusal and fail-closed
+The intended canonical contract is:
 
 ```text
-Result: PASS
+Name:
+GPT 6 — FECH.AI ADS-Pixel-CAPI-SEO-CRMtoMeta
+
+Skill:
+docs/skills/fechai-gpt6-ads-pixel-capi-seo.md
+
+Skill version:
+v2.0 / GROUP_B_GPT6_RECONCILIATION_CANDIDATE
+
+State:
+PENDING_PARITY_AUDIT
+
+Knowledge target:
+EMPTY
+
+GitHub Action target:
+REQUIRED / READ_ONLY
 ```
 
-Established:
-
-- individual refusal to disable RLS;
-- individual refusal to widen grants;
-- refusal to mutate password-state data directly;
-- refusal to alter the RPC;
-- refusal to rollback Vercel without evidence and authority;
-- refusal to create commit/PR without authority;
-- explicit separation of administrative capability from Product Authority;
-- preservation of multi-tenant isolation, LGPD, evidence and rollback boundaries;
-- no mutation.
-
-## 7. Visual and configuration evidence limits
-
-Screenshots support the visible Builder name, description, Instructions sections, six starters and the presence of the GitHub read-only Action configuration.
-
-They do not independently establish:
+The skill v2 must preserve the GPT6 domain:
 
 ```text
-character-by-character equality of all 7,610 Instruction characters
-complete inventory of every Action operation and HTTP method
-independent non-secret fingerprints for every configured field
-complete export contents of the preserved rollback snapshot
+Meta Ads
+Google Ads
+Pixel / Meta CAPI
+Google Offline Conversions
+Enhanced Conversions for Leads
+CRM-to-Ads
+GTM Web / server-side
+Stape when justified
+UTMs and click IDs
+event_id / deduplication / retries
+attribution
+SEO technical
+landing pages
+LGPD / minimization
+campaign and lead-quality metrics
 ```
 
-These limitations are classified:
+It must also inherit and explicitly preserve the shared operating safeguards required for Builder readiness: live main resolution, registry/skill bootstrap, Modus Operandi, SFJM, coverage classes, EOF, truncation handling, fail-closed, authority boundaries and anti-overclaim.
+
+## 10. What this documentation PR may establish
 
 ```text
-ACCEPTABLE_WITH_RESIDUAL_RISK
+canonical GPT6 v2 contract
+Product Authority naming decision
+Knowledge EMPTY target
+GitHub READ_ONLY target
+canonical conversation starters
+Builder AS-IS evidence record
+registry alignment
+continuity for the next authorized step
 ```
 
-The closure basis is the combined evidence of:
+It does not establish:
 
 ```text
-canonical GitHub publication
-Product Authority configuration confirmation
-restorable snapshot confirmation
-visual evidence
-real canonical-file retrieval
-behavioral Tests A, B and C
-fail-closed mutation refusal
+external Builder mutation
+Knowledge removal applied
+GitHub Action configured externally
+Builder parity PASS
+behavioral test PASS
+tracking/CAPI runtime
+campaign correctness
+Meta/Google platform state
+Product PASS
+Runtime PASS
+Security Go
+SLA
+production readiness
 ```
 
-This is a Builder reconciliation conclusion only. It does not extend to product/runtime/security acceptance.
-
-## 8. Closure PR lifecycle
-
-Authorized closure branch:
+Therefore GPT6 must remain:
 
 ```text
-docs/gpt5-builder-reconciliation-closure
+PENDING_PARITY_AUDIT
+```
+
+## 11. Future external Builder mutation gate
+
+After this publication is independently audited, receives separate Ready and merge authorizations, merges, and the resulting `main` is confirmed, a new exact Product Authority authorization is required before any external Builder mutation.
+
+Required sequence:
+
+1. resolve new `main` live;
+2. read final GPT6 skill and registry;
+3. preserve a restorable export/snapshot of the current Builder;
+4. record non-secret AS-IS evidence;
+5. receive exact Builder mutation authorization;
+6. apply name, description, Instructions and canonical starters;
+7. remove the five legacy Knowledge files so `Knowledge: EMPTY`;
+8. configure GitHub Action under the `REQUIRED / READ_ONLY` contract;
+9. preserve non-secret evidence of the applied state;
+10. execute bounded behavioral tests;
+11. only after PASS, consider a separate closure PR.
+
+A Builder mutation does not authorize tests that modify product/runtime state. Tests remain read-only unless a later scenario has its own exact authority.
+
+## 12. Future behavioral suite
+
+Minimum bounded suite after authorized Builder configuration:
+
+```text
+A — bootstrap real and evidence integrity
+B — Ads/tracking diagnosis with fact/hypothesis/gap separation
+C — privilege refusal and fail-closed
+D — Meta Pixel/CAPI with event_id/deduplication reasoning
+E — Google Offline/Enhanced and CRM-to-Ads reasoning
+F — SEO/landing page without unsupported claims
+G — real canonical-file retrieval from GitHub
+```
+
+Inability to fetch a mandatory/applicable canonical source when live state is material must result in `BUILDER_READINESS_FAILED`, not substitution by memory or static Knowledge.
+
+## 13. Current documentation PR lifecycle contract
+
+Authorized branch:
+
+```text
+docs/gpt6-builder-reconciliation
 ```
 
 Authorized base:
 
 ```text
-main@75eebf7978513eec825ba4b019a4395823ea82a0
+main@f710254a03511e4a4b5d65fee62a905a32d1cd82
 ```
 
 Exactly three authorized files:
 
 ```text
+docs/skills/fechai-gpt6-ads-pixel-capi-seo.md
 docs/skills/fechai-gpt-registry.md
-docs/skills/fechai-gpt5-sre-devsecops-observability-specialist.md
 docs/sfjm/handoffs/BUILDERS_CURRENT.md
 ```
 
-Lifecycle contract:
+Lifecycle:
 
 ```text
 Create as Draft
-No comment or review mutation
-No thread mutation
+Documentation mutation only in the three authorized files
+Post-creation validation READ_ONLY
+No external Builder mutation
+No behavioral tests
+No comment/review/thread mutation
 No Ready
 No merge
 No deploy
 ```
 
-Every corrective commit changes the head and invalidates gates bound to the previous head. Ready and merge require later, separate Product Authority authorizations.
+Any new corrective commit changes the PR head and invalidates gates bound to the previous head.
 
-## 9. Explicit non-actions
+## 14. Explicit non-actions
 
 ```text
-No additional external Builder mutation
+No external GPT6 Builder mutation
+No Knowledge removal in Builder
+No GitHub Action creation/configuration in Builder
+No behavioral tests external to this documentation gate
 No runtime/frontend change
-No Supabase/Auth/SQL/migration/RPC/RLS/policy/grant change
+No tracking/CAPI/Meta/Google/GTM/Stape mutation
+No Supabase/Auth/SQL/migration/RPC/RLS/policy/grant/data change
 No Vercel or GitHub Actions change
-No production or data mutation
-No comment, review or thread mutation
+No production mutation
+No GPT5/GPT9/GPT10 mutation
+No comment/review/thread mutation
 No Ready
 No merge
 No deploy
@@ -272,21 +372,20 @@ No Product PASS
 No Runtime PASS
 No Security Go
 No SLA
-No mutation of GPT6, GPT9 or GPT10
 ```
 
-## 10. Rollback
+## 15. Rollback
 
-Rollback for this closure candidate is one documentation-only revert of the closure PR after merge.
+Rollback of this reconciliation publication is one documentation-only revert of the PR after any later authorized merge.
 
-The external Builder rollback remains independent and must use the preserved restorable pre-mutation snapshot under separate exact authority if ever required. A fingerprint alone is not a rollback artifact.
+External Builder rollback is separate and depends on the restorable pre-mutation snapshot/export preserved before the future Builder change. A hash or screenshot alone is not a rollback artifact.
 
-## 11. Single next safe action
+## 16. Single next safe action
 
-Run independent, strictly read-only validation of this Draft closure PR on its exact head:
+After creation of the Draft PR, run only independent READ_ONLY gates on its exact head:
 
-1. GPT0 documentation/evidence audit of the three final files and this evidence package;
-2. independent confirmation that the compact Instructions block remains below 8,000 characters;
-3. GPT4 lifecycle, scope, changed-files, checks, reviews, threads, drift and mergeability validation.
+1. GPT0 documentation/evidence audit of the three final files and diff;
+2. independent deterministic count of the compact Builder Instructions block against the 8,000-character limit;
+3. GPT4 lifecycle, scope, checks, reviews, threads, drift and mergeability validation.
 
-Do not request review, comment, resolve threads, mark Ready, merge, deploy or start GPT6 in the same step.
+Do not configure the external GPT6 Builder, remove Knowledge, add an Action, execute behavioral tests, mark Ready, merge or deploy in the same step.
