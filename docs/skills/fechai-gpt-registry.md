@@ -1,7 +1,7 @@
 # FECH.AI — Registro Oficial de GPTs Especialistas
 
-**Status:** `v3.4 / CANONICAL_SKILL_REGISTRY / GROUP_A_RECONCILED / GROUP_B_GPT5_RECONCILED / GPT6_RECONCILIATION_ACTIVE / SHARED_BOOTSTRAP_CONTRACT`  
-**Atualizado em:** `2026-08-07`  
+**Status:** `v3.5 / CANONICAL_SKILL_REGISTRY / GROUP_A_RECONCILED / GROUP_B_GPT5_RECONCILED / GROUP_B_GPT6_RECONCILED / SHARED_BOOTSTRAP_CONTRACT`  
+**Atualizado em:** `2026-08-08`  
 **Escopo:** organização oficial dos GPTs auxiliares do FECH.AI.  
 **Fonte central:** FECH.AI — Projeto Principal / Master Project.  
 **Visibilidade no Builder:** assistentes privados / apenas para uso do Wagner.
@@ -222,17 +222,17 @@ O estado reconciliado é limitado ao contrato e comportamento do Builder. Não i
 Nome: GPT 6 — FECH.AI ADS-Pixel-CAPI-SEO-CRMtoMeta
 Skill: docs/skills/fechai-gpt6-ads-pixel-capi-seo.md
 Grupo: B
-Skill version: v2.0 / GROUP_B_GPT6_RECONCILIATION_CANDIDATE
-Estado: PENDING_PARITY_AUDIT
+Skill version: v2.0 / GROUP_B_GPT6_RECONCILED
 Knowledge: EMPTY
-Actions: GitHub READ_ONLY — target contract / external parity pending
+Actions: GitHub READ_ONLY
+Builder evidence: PRODUCT_AUTHORITY_CONFIRMED / BEHAVIORAL_TEST_PASSED
 ```
 
 O prefixo e a numeração `GPT 6 —` são decisão explícita da Product Authority e não constituem drift.
 
 Responsável por Ads, Pixel, CAPI, SEO, tracking, UTMs, IDs de clique, `event_id`, deduplicação, atribuição, CRM-to-Ads, GTM Web/server-side, Stape quando aplicável, Google Offline Conversions e Enhanced Conversions for Leads.
 
-A publicação v2 reconcilia o contrato canônico, mas não prova configuração externa do Builder nem testes comportamentais. O GPT6 permanece `PENDING_PARITY_AUDIT` até a configuração externa autorizada e a closure independente posterior.
+O estado reconciliado é limitado à configuração e ao comportamento do Builder contra o contrato canônico. Não implica Product PASS, Runtime PASS, Meta/Google runtime validado, Security Go, SLA comercial nem readiness ampla de produção.
 
 ### GPT7 — LeadOps CRM Discador Specialist
 
@@ -350,9 +350,9 @@ O Grupo B segue em trabalho separado por especialista:
 
 ```text
 GPT5 — GROUP_B_GPT5_RECONCILED
-GPT6 — RECONCILIATION_ACTIVE / PENDING_PARITY_AUDIT
+GPT6 — GROUP_B_GPT6_RECONCILED
 GPT9 — PENDING_PARITY_AUDIT
 GPT10 — PENDING_PARITY_AUDIT
 ```
 
-A publicação documental do contrato GPT6 não autoriza alteração do Builder externo, remoção de Knowledge, criação/configuração de Action, testes comportamentais, Ready, merge, deploy ou qualquer mutação fora do escopo autorizado. Cada transição exige autorização própria da Product Authority.
+A reconciliação do GPT6 é limitada ao Builder e ao contrato canônico. Ela não autoriza iniciar GPT9, alterar qualquer Builder, executar tracking/Ads em runtime, marcar Ready, mergear, fazer deploy ou conceder Product PASS, Runtime PASS ou Security Go. Cada nova transição exige autorização própria da Product Authority.

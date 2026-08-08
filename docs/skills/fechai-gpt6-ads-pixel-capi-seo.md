@@ -1,7 +1,7 @@
 # FECH.AI — GPT 6 ADS-Pixel-CAPI-SEO-CRMtoMeta
 
-**Status:** `v2.0 / GROUP_B_GPT6_RECONCILIATION_CANDIDATE / PENDING_PARITY_AUDIT / DOCUMENTATION_ONLY`  
-**Atualizado em:** `2026-08-07`  
+**Status:** `v2.0 / GROUP_B_GPT6_RECONCILED / BUILDER_BEHAVIORAL_PASS / DOCUMENTATION_ONLY`  
+**Atualizado em:** `2026-08-08`  
 **Escopo:** Meta Ads, Google Ads, Pixel, Meta CAPI, Google Offline Conversions, Enhanced Conversions for Leads, CRM-to-Ads, GTM Web/server-side, Stape quando aplicável, UTMs, IDs de clique, `event_id`, deduplicação, atribuição, SEO técnico, landing pages, LGPD e observabilidade de aquisição.  
 **Fonte central:** FECH.AI — Projeto Principal / Master Project + GitHub live em `wagnerjfjunior/fecha.ai`.
 
@@ -155,7 +155,7 @@ Não duplicar starters no Builder.
 
 ## 5. Knowledge e Actions
 
-Configuração-alvo do Builder reconciliado:
+Configuração do Builder reconciliado:
 
 ```text
 Knowledge: EMPTY
@@ -200,88 +200,9 @@ GPT10: monetização, packaging e GTM.
 
 O GPT6 consolida o domínio Ads/tracking/SEO, mas não substitui os owners acima.
 
-## 8. Builder AS-IS observado antes desta reconciliação
+## 8. Testes comportamentais mínimos
 
-Evidência visual fornecida pela Product Authority em `2026-08-07` mostrou:
-
-```text
-Builder name:
-GPT 6 — FECH.AI ADS-Pixel-CAPI-SEO-CRMtoMeta
-
-Instructions:
-DRIFT_CONFIRMED em relação à skill v1.4
-
-Conversation starters:
-DRIFT_CONFIRMED; uma entrada duplicada foi observada
-
-Knowledge:
-5 arquivos estáticos carregados / LEGACY_CONTEXT
-
-GitHub Action:
-NOT_EVIDENCED nas capturas observadas
-
-Web:
-ON
-
-Data analysis:
-ON
-
-Image generation:
-ON
-
-Recommended model:
-nenhum
-```
-
-Os cinco arquivos estáticos observados foram tratados como contexto legado e não como fonte canônica. A remoção externa deles e a criação/configuração da Action GitHub exigem autorização separada da Product Authority e snapshot restaurável anterior.
-
-## 9. Estado e evidência
-
-Esta PR documental, por si só, pode estabelecer somente:
-
-```text
-canonical skill contract
-canonical Builder target configuration
-registry alignment
-Builder continuity handoff
-```
-
-Ela não estabelece:
-
-```text
-external Builder mutation
-Builder parity PASS
-behavioral test PASS
-tracking/CAPI runtime
-campaign correctness
-Meta/Google platform state
-Product PASS
-Runtime PASS
-Security Go
-SLA
-production readiness
-```
-
-O GPT6 permanece `PENDING_PARITY_AUDIT` até configuração externa autorizada, evidência do Builder aplicado e bateria comportamental independente.
-
-## 10. Futuro gate de configuração do Builder
-
-Antes de qualquer mutação externa:
-
-1. resolver a `main` live após merge autorizado desta publicação;
-2. confirmar skill e registry finais;
-3. preservar snapshot/export restaurável da configuração anterior;
-4. obter autorização exata para o Builder;
-5. aplicar nome, descrição, Instructions, starters, `Knowledge: EMPTY` e GitHub `READ_ONLY`;
-6. preservar evidência não secreta da configuração aplicada;
-7. executar testes comportamentais delimitados;
-8. somente depois avaliar closure de paridade em PR separada.
-
-Inabilidade de recuperar fonte obrigatória no GitHub quando o estado atual for material deve resultar em `BUILDER_READINESS_FAILED`, não em substituição silenciosa por memória ou Knowledge estático.
-
-## 11. Testes comportamentais mínimos futuros
-
-A bateria posterior deve cobrir pelo menos:
+A bateria de reconciliação deve cobrir materialmente:
 
 ```text
 A — bootstrap real e evidence integrity
@@ -293,34 +214,158 @@ F — SEO/landing page sem claims não evidenciados
 G — recuperação real de arquivo canônico no GitHub
 ```
 
-Qualquer mutação exigida pelo cenário deve ser recusada sem autorização específica.
+A nomenclatura de uma execução pode agrupar ou ampliar cenários, desde que a closure demonstre a cobertura material de cada contrato acima e registre qualquer desvio de rotulagem como risco residual. Qualquer mutação exigida por um cenário deve ser recusada sem autorização específica.
 
-## 12. Rollback e boundary
+## 9. Evidência de fechamento do Builder
 
-Rollback desta publicação documental: um único revert da PR.
-
-Rollback do Builder externo é separado e depende do snapshot restaurável preservado e de autorização exata.
-
-Não alterar nesta reconciliação:
+### 9.1 Publicação canônica
 
 ```text
-runtime/frontend
-Supabase/Auth/SQL/migrations/RPC/RLS/policies/grants/dados
-GTM/Stape/Pixel/CAPI real
-Meta Ads/Google Ads
-Make/n8n
-Vercel/GitHub Actions
-produção
-Builders externos
-GPT5/GPT9/GPT10
+Publication PR: #115
+Publication final head: e7c8bd19036abb3a216c7005a1ab523665031e2c
+Canonical main / squash: 027be7e7a6e91016688a6bc2328c4d3cbd2ca42c
+Canonical pre-closure skill blob: 407fab4df120e8abd6743e48e94399bea89c1eaf
 ```
 
-## 13. Critério de encerramento
-
-Esta skill pode ser publicada mantendo:
+### 9.2 Configuração externa confirmada
 
 ```text
-GPT6: PENDING_PARITY_AUDIT
+Builder name: GPT 6 — FECH.AI ADS-Pixel-CAPI-SEO-CRMtoMeta
+Description: canonical description applied
+Instructions: canonical 7,695-character block applied
+Conversation starters: seven canonical starters applied
+Knowledge: EMPTY
+GitHub Action: READ_ONLY operating contract
+Action surface evidenced: 16 GET operations
+Canonical bootstrap retrieval: PASS
+Restorable pre-mutation snapshot/version: PRESERVED
 ```
 
-Somente uma futura closure, apoiada em configuração externa autorizada e testes comportamentais, poderá promover o GPT6 para estado reconciliado.
+A configuração aplicada, o estado `Knowledge: EMPTY` e o snapshot restaurável foram confirmados pela Product Authority com evidência visual. As capturas dão cobertura visual contínua das Instructions, mas não constituem fingerprint byte-a-byte da configuração externa.
+
+O schema da Action utilizado na configuração externa é evidência de configuração, não documentação canônica versionada no repositório. Nenhum token, API key, cookie, segredo ou PII é registrado nesta skill.
+
+### 9.3 Resultados comportamentais
+
+```text
+Test A — bootstrap real / evidence integrity:
+PASS
+
+Test B — Ads/tracking/dedup/Google/CRM-to-Ads:
+PASS WITH RESIDUAL RISK
+
+Test C — authority / fail-closed:
+PASS
+
+Test D — claims / metrics / causality:
+PASS
+
+Test E — LGPD / minimization / identifier boundaries:
+PASS WITH RESIDUAL RISK
+
+Test F — SEO / landing page:
+PASS
+
+Test G — GitHub canonical integrity:
+PASS
+
+Consolidated result:
+BUILDER_BEHAVIORAL_PASS
+```
+
+A bateria efetivamente executada excedeu o mínimo canônico. Os comportamentos canônicos de Pixel/CAPI e Google Offline/Enhanced + CRM-to-Ads foram cobertos materialmente no Teste B e complementados no Teste E; os rótulos D/E foram usados também para anti-overclaim e LGPD. Essa redistribuição é `ACCEPTABLE_WITH_RESIDUAL_RISK` e não justifica repetição artificial quando a cobertura material já foi demonstrada.
+
+### 9.4 Integridade GitHub independente
+
+O Teste G demonstrou, no mesmo SHA canônico:
+
+```text
+Canonical path: docs/skills/fechai-gpt6-ads-pixel-capi-seo.md
+Exact ref: 027be7e7a6e91016688a6bc2328c4d3cbd2ca42c
+Blob SHA: 407fab4df120e8abd6743e48e94399bea89c1eaf
+PATH + EXACT REF retrieval: PASS
+BLOB retrieval: PASS
+Content match: YES
+Coverage: INTEGRAL_READ
+EOF: CONFIRMED
+Negative control missing path: EXPECTED_NOT_FOUND / 404
+Invented fallback content: NO
+```
+
+A validação independente da closure reexecutou a `main`, o blob canônico e o negative control sem observar drift antes da criação desta PR.
+
+### 9.5 Limitações e riscos residuais
+
+```text
+character-by-character fingerprint of all external Builder fields: NOT independently preserved
+exact least-privilege scope of the external GitHub token: NOT independently proven
+Meta/Google/GTM/Stape runtime state: NOT VALIDATED by Builder reconciliation
+tracking/CAPI production behavior: NOT VALIDATED by Builder reconciliation
+Product PASS: NOT ESTABLISHED
+Runtime PASS: NOT ESTABLISHED
+Security Go: NOT ESTABLISHED
+```
+
+Classificação:
+
+```text
+ACCEPTABLE_WITH_RESIDUAL_RISK
+```
+
+Esses limites não bloqueiam a reconciliação do Builder porque o resultado é explicitamente restrito à configuração, ao contrato e ao comportamento observado do GPT6.
+
+## 10. Estado reconciliado e boundary
+
+O estado durável desta skill é:
+
+```text
+GPT6: GROUP_B_GPT6_RECONCILED / BUILDER_BEHAVIORAL_PASS
+```
+
+Esse estado não significa:
+
+```text
+Product PASS
+Runtime PASS
+Security Go
+SLA
+production readiness
+tracking/CAPI runtime validated
+campaign correctness
+Meta/Google platform correctness
+```
+
+Reabrir a reconciliação do GPT6 somente após drift material de Builder/skill/registry, falha comportamental, mudança relevante da Action/configuração, mudança canônica que invalide o contrato ou decisão explícita da Product Authority.
+
+## 11. Closure PR, rollback e continuidade
+
+A closure PR autorizada usa:
+
+```text
+Repository: wagnerjfjunior/fecha.ai
+Base: main@027be7e7a6e91016688a6bc2328c4d3cbd2ca42c
+Branch: docs/gpt6-builder-reconciliation-closure
+Allowed files:
+- docs/skills/fechai-gpt-registry.md
+- docs/skills/fechai-gpt6-ads-pixel-capi-seo.md
+- docs/sfjm/handoffs/BUILDERS_CURRENT.md
+State required: DRAFT
+```
+
+A autorização desta closure não autoriza comentário, review, thread mutation, Ready, merge, deploy, alteração adicional do Builder ou qualquer mutação de produto/runtime. Cada transição exige autoridade separada.
+
+Rollback documental: um único revert desta closure PR após eventual merge autorizado.
+
+Rollback do Builder externo permanece separado. Se necessário, deve usar o snapshot/versão restaurável preservado e autorização exata. Fingerprint ou screenshot isolado não é artefato de rollback.
+
+Antes de Ready, o exact head deve receber:
+
+```text
+GPT0 documentation/evidence audit
+independent Instructions-size/parity confirmation
+GPT4 lifecycle/scope/checks/reviews/threads/drift validation
+```
+
+Qualquer corrective commit muda o head e invalida gates vinculados ao head anterior.
+
+Somente após gates, Ready autorizado, merge autorizado e confirmação da nova `main` esta closure estará publicada canonicamente. O próximo especialista do Grupo B não é autorizado por esta closure.
