@@ -1,7 +1,7 @@
 # FECH.AI — Private GPT Specialists Index
 
-**Date:** 2026-06-10  
-**Status:** BOOTSTRAP_INDEX / DOCUMENTATION_ONLY / PRIVATE_USE_BY_WAGNER  
+**Date:** 2026-08-09  
+**Status:** BOOTSTRAP_INDEX_V2 / GPT1_5_CANONICAL_IDENTITY / LEGACY_ALIAS_ROUTING / DOCUMENTATION_ONLY / PRIVATE_USE_BY_WAGNER  
 **Scope:** canonical index of FECH.AI private GPT specialists used by Wagner to govern audits, architecture, implementation reviews, product strategy and operational handoffs.  
 
 ---
@@ -15,8 +15,19 @@ These GPTs are not public product personas. They are private working specialists
 Important correction:
 
 ```text
-Counting GPT 0 through GPT 10, the FECH.AI specialist layer has 11 GPTs.
+Counting the legacy specialist slots GPT0 through GPT10, the FECH.AI specialist layer has 11 GPTs.
+GPT1.5 is the current identity of the historical GPT1 architectural slot; it is not a twelfth specialist.
 ```
+
+Legacy routing compatibility is explicit:
+
+```text
+GPT1
+GPT 1
+→ GPT1.5 — FECH.AI Arquiteto SaaS
+```
+
+Older canonical documents may continue to reference `GPT1` or `GPT 1`. Those references resolve to GPT1.5 unless a historical passage explicitly refers to a past version rather than current routing.
 
 ---
 
@@ -71,8 +82,9 @@ sanitization check
 
 ---
 
-### GPT 1 — FECH.AI Arquiteto SaaS
+### GPT1.5 — FECH.AI Arquiteto SaaS
 
+**Legacy routing aliases:** `GPT1` / `GPT 1`  
 **Access / audience:** Wagner only.  
 **Primary role:** SaaS architecture and safe evolution.
 
@@ -95,6 +107,8 @@ module boundary review
 safe PR order
 strategic technical planning
 ```
+
+Any current-routing reference to `GPT1` or `GPT 1` in this index or another canonical FECH.AI document MUST resolve to this GPT1.5 specialist. Historical prose may preserve the old label when the historical identity itself is the subject.
 
 ---
 
@@ -355,7 +369,7 @@ Horizontal governance layer:
 
 ```text
 GPT 0 — Documentation Auditor
-GPT 1 — SaaS Architect
+GPT1.5 — SaaS Architect (legacy routing aliases: GPT1 / GPT 1)
 GPT 2 — UX/UI APP
 GPT 3 — Supabase Security
 GPT 4 — Vercel/GitHub CI-CD
@@ -378,17 +392,19 @@ GPT 10 — Monetização Startup GTM
 
 When a task touches multiple domains, do not let one specialist decide alone.
 
+Current routing uses `GPT1.5`. Any legacy `GPT1` / `GPT 1` reference resolves to GPT1.5 and does not identify a separate specialist.
+
 Examples:
 
 ```text
-Supabase/RLS/RPC change: GPT 3 primary, GPT 1 support, GPT 0 documentation audit.
-Vercel/deploy/PR issue: GPT 4 primary, GPT 1 support.
-LeadOps CRM workflow: GPT 7 primary, GPT 1 + GPT 3 + GPT 2 support.
-MesaCliente financial proposal: GPT 8 primary, GPT 3 + GPT 1 support.
-Observability/HA/SLA: GPT 5 primary, GPT 1 + GPT 4 support.
+Supabase/RLS/RPC change: GPT 3 primary, GPT1.5 support, GPT 0 documentation audit.
+Vercel/deploy/PR issue: GPT 4 primary, GPT1.5 support.
+LeadOps CRM workflow: GPT 7 primary, GPT1.5 + GPT 3 + GPT 2 support.
+MesaCliente financial proposal: GPT 8 primary, GPT 3 + GPT1.5 support.
+Observability/HA/SLA: GPT 5 primary, GPT1.5 + GPT 4 support.
 ADS/CAPI/CRM-to-Ads: GPT 6 primary, GPT 3 + GPT 7 support.
 Portals/WhatsApp/webhooks: GPT 9 primary, GPT 3 + GPT 7 support.
-Pricing/GTM/investor: GPT 10 primary, GPT 1 + GPT 5 support.
+Pricing/GTM/investor: GPT 10 primary, GPT1.5 + GPT 5 support.
 Documentation reconciliation: GPT 0 primary, relevant domain specialist support.
 ```
 
