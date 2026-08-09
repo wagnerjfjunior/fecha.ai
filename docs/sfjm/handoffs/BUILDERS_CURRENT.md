@@ -1,6 +1,6 @@
 # FECH.AI — SFJM Builders Current Handoff
 
-**Status:** `CURRENT_BUILDERS_HANDOFF / GROUP_A_RECONCILED / GPT1_5_POST_REVIEW_REMEDIATION / GPT1_5_BEHAVIORAL_DELTA_PENDING / GROUP_B_GPT5_RECONCILED / GROUP_B_GPT6_RECONCILED / DOCUMENTATION_ONLY`  
+**Status:** `CURRENT_BUILDERS_HANDOFF / GROUP_A_RECONCILED / GPT1_5_POST_REVIEW_REMEDIATION / GPT1_5_BUILDER_BEHAVIORAL_PASS / GROUP_B_GPT5_RECONCILED / GROUP_B_GPT6_RECONCILED / DOCUMENTATION_ONLY`  
 **Reconstructed on:** `2026-08-09`  
 **Repository:** `wagnerjfjunior/fecha.ai`  
 **GPT1.5 remediation source base:** `main@fce3ac5815e86d3863701cdd7177fc41e450383e`  
@@ -9,7 +9,7 @@
 
 ## 1. Purpose and boundary
 
-This record preserves the durable closure evidence for the GPT6 external Builder reconciliation and the safe transition boundary after that closure, plus durable GPT1.5 continuity, the post-merge review findings from PR #118 and the bounded remediation/test gate required before any new GPT1.5 behavioral PASS can be claimed.
+This record preserves the durable closure evidence for the GPT6 external Builder reconciliation and the safe transition boundary after that closure, plus durable GPT1.5 continuity, the post-merge review findings from PR #118, the bounded remediation contract and the fresh v3.1 behavioral delta evidence.
 
 It is separate from the product/security lifecycle in:
 
@@ -41,7 +41,7 @@ CANONICAL_MAIN
 PR_HEAD_ONLY
 PRODUCT_AUTHORITY_CONFIRMED
 BEHAVIORAL_TEST_PASSED
-BEHAVIORAL_DELTA_PENDING
+BEHAVIORAL_DELTA_CLEAN_PASS
 USER_CORRECTED
 INITIAL_OVERCLAIM
 INFORMATION_SUPPLIED
@@ -59,7 +59,7 @@ No evidence class may be silently promoted into another.
 ```text
 Group A:
 GPT0, GPT2, GPT3, GPT4, GPT7 and GPT8 — RECONCILED
-GPT1.5 — CANONICAL_CONTRACT / POST_REVIEW_REMEDIATION / BEHAVIORAL_DELTA_PENDING
+GPT1.5 — CANONICAL_CONTRACT / POST_REVIEW_REMEDIATION / BUILDER_BEHAVIORAL_PASS
 GPT1 / GPT 1 — LEGACY_ROUTING_ALIASES → GPT1.5
 
 Group B:
@@ -472,13 +472,16 @@ EOF remediation — coverage correction:
 COMPLETED / corrective evidence
 
 Fresh v3.1 behavioral delta:
-PENDING
+CLEAN_PASS
+
+Tested candidate head:
+601689fa12c7f7c963a3209c6da8f98406f5ec9f
 
 Current consolidated GPT1.5 Builder behavioral status:
-BUILDER_BEHAVIORAL_PASS — NOT YET ESTABLISHED FOR v3.1
+BUILDER_BEHAVIORAL_PASS — ESTABLISHED FOR v3.1 CANDIDATE CONTRACT
 ```
 
-The historical suite demonstrated material architectural capability, but the common Modus Operandi forbids converting a Product-Authority-corrected initial overclaim into a retroactive behavioral PASS. A fresh autonomous delta against the corrected v3.1 candidate contract is required before the PASS label can be restored.
+The historical suite remains classified without retroactive promotion. The new `BUILDER_BEHAVIORAL_PASS` is based only on the fresh autonomous v3.1 delta against the exact candidate contract above. It does not convert the earlier `USER_CORRECTED / INITIAL_OVERCLAIM` event into PASS and does not make the candidate contract canonical on `main` by itself.
 
 Material rules produced by the evolution and retained in the GPT1.5 contract:
 
@@ -503,7 +506,7 @@ The evolution deliberately records, rather than hides, the correction events:
 2. An `App.jsx` characterization initially treated lines `0–5525` as complete. Independent revalidation established EOF at line `5902` on the same blob; the previous claim was invalidated, the delta `5526–5902` was read, and the matrix was corrected.
 3. The common Modus Operandi requires `USER_CORRECTED / INITIAL_OVERCLAIM` when deeper Product Authority intervention is required; the Test B history therefore remains corrected rather than promoted retroactively.
 
-The final characterization added `MesaCliente` to the root blast-radius map and confirmed `CorretorApp` as a composition boundary rather than one bounded context. Those corrected observations remain useful evidence but do not themselves establish Builder behavioral parity for v3.1.
+The final characterization added `MesaCliente` to the root blast-radius map and confirmed `CorretorApp` as a composition boundary rather than one bounded context. Those corrected observations remain useful evidence but are distinct from the fresh v3.1 behavioral PASS.
 
 ### 12.4 PR #118 publication and post-merge review provenance
 
@@ -588,11 +591,11 @@ Security Go
 
 Rollback is one documentation-only revert after any later authorized merge.
 
-### 12.6 Fresh v3.1 behavioral delta contract
+### 12.6 Fresh v3.1 behavioral delta — contract and evidence
 
 The behavioral delta must run against an exact candidate head containing the corrected normative contract.
 
-It must autonomously establish, at minimum:
+Required behaviors:
 
 ```text
 GPT1 / GPT 1 → GPT1.5 deterministic alias
@@ -611,17 +614,90 @@ READ_ONLY / authority boundaries preserved
 
 A response materially corrected by the Product Authority during this fresh delta is not `CLEAN_PASS` for that case.
 
-Two-step evidence rule:
+Fresh v3.1 delta executed on `2026-08-09`:
 
 ```text
-H1 = final candidate behavioral contract
-→ run fresh v3.1 delta on H1
+Result:
+CLEAN_PASS
 
-H2 = evidence-recording commit only in BUILDERS_CURRENT.md
-→ record result/ref without changing skill, registry routing or private index
+Main observed during test and independently revalidated after test:
+fce3ac5815e86d3863701cdd7177fc41e450383e
+
+Tested candidate H1:
+601689fa12c7f7c963a3209c6da8f98406f5ec9f
+
+H1 head drift during test:
+NO
+
+Mutations during test:
+NONE
+
+Private routing index blob tested:
+1b2a91fde2dd19a44af221a0ab417bf2033cde20
+
+Registry blob tested:
+3cddbe611e0170a2f5d0c631e4e98293aafa51a9
+
+GPT1.5 skill blob tested:
+ac37cd53e6f777ca4b117d9ce32afe5c90d2b232
+
+Builders handoff H1 blob tested:
+43bbc36ea6eb32c68d212ffb9831a62626846b74
+
+Legacy alias resolution:
+PASS
+
+Shared EOF contract delegation:
+PASS
+
+Initial overclaim handling:
+PASS — USER_CORRECTED / INITIAL_OVERCLAIM / NO RETROACTIVE PASS
+
+Tool claim integrity:
+PASS — DIRECT_BLOB_CONTENT_RETRIEVAL_USED: NO / BLOB_IDENTITY_CROSS_CHECK_USED: YES
+
+Head-bound GPT0/GPT4 gate reasoning:
+PASS
+
+Second-monolith / God Layer / God Gateway control:
+PASS
+
+ANTI_GLOBAL_ORCHESTRATOR:
+PASS
 ```
 
-If skill, registry routing or private index changes after the behavioral test, the affected behavioral gate is invalidated and must be retested proportionally.
+Evidence provenance:
+
+```text
+Full behavioral transcript:
+PRODUCT_AUTHORITY_SUPPLIED / INFORMATION_SUPPLIED / NOT VERSIONED AS A REPOSITORY ARTIFACT
+
+Independent post-test validation:
+GitHub live revalidated main, PR #119, exact H1, material contract points and H1 EOF evidence before accepting CLEAN_PASS.
+```
+
+The transcript was evaluated as evidence, not as automatic authority. The `CLEAN_PASS` classification was accepted only after independent GitHub revalidation of the exact candidate and the material contract requirements.
+
+Two-step evidence rule now resolves as:
+
+```text
+H1 = 601689fa12c7f7c963a3209c6da8f98406f5ec9f
+→ fresh v3.1 delta: CLEAN_PASS
+
+H2 = evidence-recording commit only in BUILDERS_CURRENT.md
+→ record result/ref
+→ do not change skill, registry routing or private index
+```
+
+This H2 changes only evidence continuity. It does not change the behavioral contract tested at H1. No behavioral retest is required solely because H2 records the result, provided these three tested contract blobs remain byte-identical:
+
+```text
+private routing index: 1b2a91fde2dd19a44af221a0ab417bf2033cde20
+registry: 3cddbe611e0170a2f5d0c631e4e98293aafa51a9
+skill: ac37cd53e6f777ca4b117d9ce32afe5c90d2b232
+```
+
+If any of those three artifacts changes after the behavioral test, the affected behavioral gate is invalidated and must be retested proportionally.
 
 ### 12.7 Exact-head lifecycle gates — mandatory before Ready and merge
 
@@ -701,12 +777,12 @@ No product architecture implementation authorization
 
 Current Draft/Ready/Open/Merged status and current `main`/head are resolved from GitHub live; this file does not own those volatile facts.
 
-If this version is observed only on a PR head:
+If this H2 version is observed on a PR head:
 
-1. confirm the four-file H1 candidate contract on the exact head;
-2. execute the fresh v3.1 behavioral delta before any `BUILDER_BEHAVIORAL_PASS` claim;
-3. after a clean delta, update only this handoff to record evidence (H2);
-4. run GPT0 and GPT4 exact-head gates required by section 12.7;
+1. confirm that H1 → H2 changed only `docs/sfjm/handoffs/BUILDERS_CURRENT.md`;
+2. confirm the tested private routing index, registry and skill blobs remain byte-identical to H1;
+3. do not repeat the behavioral delta solely because this evidence-recording H2 changed the PR head;
+4. run GPT0 and GPT4 exact-head gates required by section 12.7 on the H2 head;
 5. await separate Product Authority authorization for Ready;
 6. after Ready, wait for reviews/threads on the final head;
 7. do not request merge while any material finding remains unresolved;
