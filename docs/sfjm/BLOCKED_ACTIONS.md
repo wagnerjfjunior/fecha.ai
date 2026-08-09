@@ -1,97 +1,114 @@
 # FECH.AI — SFJM Blocked Actions
 
-**Status:** `ACTIVE_BLOCKS / PR108_DRAFT / PR02_NOT_DEPLOYED / PR03_BLOCKED`  
-**Observed on:** `2026-07-31`  
+**Status:** `MATERIAL_BLOCKER_VIEW / FAIL_CLOSED / DOCUMENTATION_ONLY`  
+**Updated:** `2026-08-09`  
 **Repository:** `wagnerjfjunior/fecha.ai`
 
-## 1. Product and security blocks
+## 1. Authority
 
-Do not:
-
-- declare MVP 1 — Família security-ready;
-- grant Security Go or F1-02 acceptance;
-- award WDP from PR count, documentation, CI or one smoke alone;
-- authorize broad paid commercialization;
-- represent controlled-beta risk acceptance as a security waiver.
-
-## 2. Closed and superseded cycles
-
-Without new material evidence and exact authority, do not:
-
-- reopen PR #103 or PR #107;
-- reopen the completed Group A reconciliation from PR #111;
-- reopen the Builders continuity publication from PR #110;
-- merge, update or reuse PR #109, which is `CLOSED / NOT MERGED / SUPERSEDED_BY_PR_108`;
-- reapply or modify migration `20260727080929_f1_02_password_state_rpc`;
-- alter or drop `public.marcar_senha_inicial_definida()`;
-- repeat completed gates merely for additional unanimity;
-- create a recursive PR solely to record the merge of a documentation-only closure PR.
-
-## 3. PR #108 current anchors
+This file is a thin material-blocker view. The principal durable operational state is:
 
 ```text
-PR: #108 — security: route password completion through RPC
-State: OPEN / DRAFT / NOT MERGED
-Recorded base: main@cec1b22430adf1a002b172992cf6c5ea5bb427de
-Current canonical main: a909679143ec2e9a53f0a3108e5240a91a138fc1
-Live branch: security/f1-02-password-flow-cutover-1
-Prior head before this reconciliation: bec8b2531486e76c546ddee1d3e2d8b419e220be
-Current head: resolve live from PR metadata
+docs/sfjm/CURRENT_STATE.md
 ```
 
-The main drift consists of documentation-only closures from PR #111 and PR #110 and was classified as non-material to the unchanged PR-02 code contract. Do not rebase or rewrite the branch without a separate material reason and authorization.
+Do not use this file as a frozen GitHub lifecycle snapshot.
 
-## 4. PR #108 scope blocks
+## 2. Product and security blocks
 
-Blocked:
-
-- any ninth changed file;
-- any further `src/App.jsx` change without a new bounded finding and authority;
-- any change to `docs/security/evidence/2026-07-28-pr02-password-flow-cutover.md` in this reconciliation;
-- unrelated frontend refactor;
-- change to Supabase, migration, RPC body, Auth, RLS, policy, grant, role or data;
-- change to Edge Functions, Vercel configuration, GitHub Actions or external Builders;
-- alteration of the preserved `EditarCorretorModal` administrative patch in this PR;
-- claim that all direct `corretores` updates were removed;
-- rebase, Ready, approval, merge, auto-merge or deployment without separate authority;
-- production smoke without separate deployment and smoke authority.
-
-## 5. PR-03 dependency block
+The following remain blocked unless exact material evidence and authority change their state:
 
 ```text
-PR-03: BLOCKED
+Security Go
+F1-02 acceptance
+broad paid commercialization
+WDP increase without verified governance acceptance
+PR-03 implementation before material eligibility
+administrative password-state redesign without separate server-side contract
 ```
 
-PR-03 may not begin until canonical evidence establishes at least:
+Controlled beta does not waive security, isolation, privacy or LGPD requirements.
 
-1. PR #108 merged under separate authority;
-2. the exact frontend build is deployed under separate authority;
-3. the deployed mandatory-password flow uses the RPC;
-4. controlled success and fail-closed behavior are proven;
-5. repository-wide call-site search is refreshed at the deployment candidate;
-6. no legitimate required password-state direct update would be broken by revocation;
-7. the administrative direct patch has an explicit safe server-side disposition.
+## 3. PR-03 material predicates
 
-## 6. Runtime and data blocks
+PR-03 remains blocked while one or more of these predicates is true:
 
-Do not alter real users, companies, teams, leads, clients, passwords, Auth records or commercial data. Production is not an exploratory test environment.
+```text
+post-deploy functional proof is incomplete
+post-deploy runtime fail-closed proof is incomplete
+repository-wide direct-write/call-site inventory does not yet confirm that no required direct update remains
+EditarCorretorModal lacks a safe server-side disposition
+cutover observation has not yet confirmed that no legitimate flow depends on direct UPDATE
+controlled RPCs have not yet been individually inventoried and tested for continuity under direct-UPDATE revocation
+```
 
-## 7. Evidence-overclaim blocks
+Do not require legacy direct UPDATE denial as a circular precondition for creating the PR whose purpose is to revoke that direct UPDATE. Denial is acceptance evidence after the revocation change exists and is applied under separate authority.
 
-PR #108 does not establish:
+## 4. Closed-cycle protection
 
-- interactive UI success;
-- RPC-unavailable runtime behavior;
-- deployed frontend proof;
-- production cutover;
-- denial of legacy direct UPDATE;
-- resolution of the administrative password-reset path;
-- F1-02 completion;
-- Security Go;
-- WDP.
+Without a new material invalidation event, do not:
 
-A successful build and Preview are static/release signals, not production behavior proof. Canonical Builder documentation is not product/runtime/security evidence.
+```text
+reopen completed PR-01 work
+reopen PR-02 / PR #108 merely to recover historical paperwork
+repeat exact-head gates merely for unanimity
+reapply or modify the narrow password-state RPC as part of continuity work
+create a closure PR solely to record another closure merge
+```
 
-## 8. Removal rule
+Historical missing provenance must be handled under `NO_RETROACTIVE_GATE_REPLAY`.
 
-A block is removed only by exact canonical evidence identifying scope, authority, validator, residual risk, rollback or containment, expiration and next safe action.
+## 5. Scope blocks for SFJM continuity work
+
+SFJM documentation work does not authorize changes to:
+
+```text
+frontend/runtime
+Supabase
+migrations
+RPC bodies
+Auth
+RLS
+policies
+grants
+roles
+data
+Edge Functions
+Vercel configuration
+GitHub Actions
+Builders
+production
+PR-03 implementation
+EditarCorretorModal implementation
+```
+
+## 6. Live lifecycle is not a material blocker by itself
+
+Do not persist blockers such as:
+
+```text
+PR is Draft
+main SHA is X
+head is Y
+mergeability is Z
+```
+
+as durable blocker truth.
+
+Resolve lifecycle live. Record only the semantic consequence when it changes a material decision.
+
+## 7. Removal rule
+
+Remove a material blocker only when evidence identifies, as applicable:
+
+```text
+claim resolved
+object/environment validated
+material authority
+validator/evidence
+residual risk
+rollback or containment
+new semantic next action
+```
+
+A lifecycle transition alone does not remove a semantic security blocker unless it actually satisfies the blocker condition.

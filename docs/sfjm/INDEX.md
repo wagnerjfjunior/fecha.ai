@@ -1,143 +1,234 @@
 # FECH.AI — SFJM Operational Continuity Index
 
-**Status:** OPERATIONAL_CONTINUITY_V1 / DOCUMENTATION_ONLY / NO_RUNTIME_CHANGE  
+**Status:** `OPERATIONAL_CONTINUITY_V2 / MATERIAL_STATE_AUTHORITY / LIVE_LIFECYCLE_RESOLUTION / DOCUMENTATION_ONLY`  
+**Updated:** `2026-08-08`  
 **Repository:** `wagnerjfjunior/fecha.ai`
 
 ## 1. Purpose
 
-SFJM is the transversal continuity and operational-state layer for FECH.AI.
+SFJM is the transversal continuity layer for FECH.AI. It preserves durable operational meaning between conversations, specialists, audits and execution cycles without copying volatile GitHub lifecycle into multiple Markdown authorities.
 
-It preserves, between conversations, agents, specialists, executors, auditors, pull requests and operational transitions:
+SFJM is not a product feature, security boundary, business authority or substitute for GitHub, Supabase, Vercel, runtime evidence, the B0 governance baseline or specialist validation.
 
-- the current verified state;
-- the next single safe action;
-- blocked actions;
-- active authorizations and their limits;
-- evidence freshness;
-- the current handoff.
+## 2. Core state separation
 
-SFJM is not a CRM module, product feature, business authority, security boundary or substitute for GitHub, Supabase, Vercel, the B0 governance baseline or FECH.AI specialists.
-
-## 2. Responsibility boundaries
+The normative model is:
 
 ```text
-Bootstrap = how context is reconstructed before acting.
-B0 governance = what must be delivered, dependencies, acceptance and measurement.
-SFJM = the current operational state and continuity between executions.
-GitHub = versioned code, documentation, PRs, commits and history.
-Supabase/Vercel = applied environment state and live operational evidence.
+LIVE_RESOLVED_STATE
+!=
+MATERIAL_RECORDED_STATE
 ```
 
-SFJM does not:
+### 2.1 LIVE_RESOLVED_STATE
 
-- grant Security Go;
-- authorize implementation merely by recording an action;
-- validate tenant, company, profile or permission;
-- replace RLS, grants, policies, RPC validation or backend authorization;
-- convert memory, chat text, screenshots or unverified summaries into canonical evidence;
-- count PRs or documents as earned product value.
-
-The FECH.AI architecture principle remains:
+Resolve live before any sensitive action. This class includes facts that can change without a material product/security decision:
 
 ```text
-Frontend requests and displays.
-Backend/RPC/Supabase validates and decides.
-AI assists, but is not authority.
+current main SHA
+PR Open/Closed
+Draft/Ready
+base/head SHA
+checks
+reviews
+threads
+mergeability
+workflow state
+current deployment state
 ```
 
-## 3. Mandatory reading order
+GitHub is authoritative for GitHub lifecycle. Supabase/Vercel/runtime evidence is authoritative for the applied environment within its own scope.
 
-Before sensitive FECH.AI work, read in this order:
+A Markdown snapshot of these facts is never sufficient current truth.
 
-1. `docs/bootstrap/INDEX.md`
-2. `docs/governance/INDEX.md`
-3. `docs/sfjm/INDEX.md`
-4. `docs/sfjm/CURRENT_STATE.md`
-5. `docs/sfjm/NEXT_SAFE_ACTION.md`
-6. `docs/sfjm/BLOCKED_ACTIONS.md`
-7. `docs/sfjm/AUTHORIZATIONS.md`
-8. `docs/sfjm/EVIDENCE_FRESHNESS.md`
-9. `docs/sfjm/handoffs/CURRENT.md`
+### 2.2 MATERIAL_RECORDED_STATE
 
-For specialist Builder construction, configuration, validation or migration between conversations, also read:
+`docs/sfjm/CURRENT_STATE.md` is the principal authority for durable product/security operational meaning, including:
 
 ```text
+current objective
+material decisions
+active/resolved problems
+residual risks
+material blockers
+conditions to proceed
+program state
+relevant durable evidence boundaries
+semantic next action
+architecture/security constraints
+```
+
+Material state is expected to remain valid across ordinary commits, merges and lifecycle transitions when those events do not change its meaning.
+
+## 3. Authority map
+
+```text
+docs/sfjm/INDEX.md
+→ protocol and authority model
+
+docs/sfjm/CURRENT_STATE.md
+→ principal MATERIAL_RECORDED_STATE authority
+
+docs/sfjm/AUTHORIZATIONS.md
+→ durable authority/provenance ledger
+
+docs/sfjm/EVIDENCE_FRESHNESS.md
+→ evidence claim/anchor/invalidation ledger
+
+docs/sfjm/NEXT_SAFE_ACTION.md
+→ thin semantic view; must not own volatile lifecycle
+
+docs/sfjm/BLOCKED_ACTIONS.md
+→ thin material-blocker view; must not own volatile lifecycle
+
+docs/sfjm/handoffs/CURRENT.md
+→ thin product/security handoff pointer
+
 docs/sfjm/handoffs/BUILDERS_CURRENT.md
+→ separate specialist-Builder continuity; not modified by product/security reconciliation
 ```
 
-Then validate live GitHub state and any required external evidence before proposing implementation, approval, merge or deploy.
+Consumers must not create a second current-state authority by copying the same lifecycle snapshot into multiple files.
 
-## 4. Operational states v1
+## 4. Mandatory reconstruction order
 
-The initial SFJM lifecycle uses the following states:
+Before sensitive FECH.AI work:
+
+1. resolve `main` live;
+2. read `docs/bootstrap/INDEX.md`;
+3. resolve the canonical specialist skill through `docs/skills/fechai-gpt-registry.md` when a specialist is involved;
+4. read the common Modus Operandi;
+5. read governance when applicable;
+6. read this index;
+7. read `CURRENT_STATE.md`;
+8. read the thin blocker/action/authority/evidence/handoff views required by the decision;
+9. resolve every live GitHub/environment object material to the next action;
+10. reconcile `LIVE_RESOLVED_STATE + MATERIAL_RECORDED_STATE` before acting.
+
+If live state and recorded material meaning conflict, declare the conflict and preserve the more restrictive safe interpretation until resolved.
+
+## 5. Material update rule
+
+Update product/security SFJM only when evidence or a decision materially changes one or more of:
 
 ```text
-CONTEXT_NOT_RECONSTRUCTED
-CONTEXT_CONFIRMED
-EVIDENCE_INCOMPLETE
-AUTHORIZED_FOR_IMPLEMENTATION
-READY_FOR_INDEPENDENT_AUDIT
-AUDIT_FAILED
-AUDIT_PASSED
-RECONCILED
+program/objective state
+material risk or blocker
+condition to proceed
+security/product decision
+material authorization
+relevant evidence validity
+semantic next action
+handoff ownership/transition meaning
 ```
 
-No agent may move directly from `CONTEXT_NOT_RECONSTRUCTED` to implementation. No merge or deployment conclusion may be inferred from implementation alone.
+The following are not material-update triggers by themselves:
 
-## 5. Evidence and authority rule
+```text
+main SHA changes only
+PR Draft/Ready transition only
+PR Open/Closed transition only without material effect
+documentation-only closure merge
+unrelated specialist-Builder documentation merge
+new conversation
+specialist change
+request to repeat an unchanged exact-head gate
+```
 
-Operational records must distinguish:
+A lifecycle event can be material when it changes the actual program condition. Example: integration or deployment of a required product change may satisfy a material dependency. Record the semantic consequence, not a frozen lifecycle snapshot.
 
-- verified evidence;
-- information supplied by Wagner;
-- inference;
-- missing evidence;
-- out-of-scope items;
-- the next single safe action.
+## 6. NO_RECURSIVE_LIFECYCLE_RECONCILIATION
 
-When GitHub, live environment evidence and documentation disagree, use the FECH.AI truth hierarchy and declare the divergence explicitly.
+```text
+NO_RECURSIVE_LIFECYCLE_RECONCILIATION
+```
 
-## 6. Change discipline
+A bounded documentation-only closure is self-closing when its merge changes only publication/lifecycle and introduces no new material product/security state.
 
-Every relevant SFJM update must preserve:
+After such a merge:
+
+```text
+resolve new main live
+compare material meaning
+if no material change:
+    no SFJM reconciliation PR
+```
+
+Never open another PR solely to record that the previous continuity PR merged, that `main` advanced, or that a Draft became Ready/merged.
+
+## 7. NO_RETROACTIVE_GATE_REPLAY
+
+```text
+NO_RETROACTIVE_GATE_REPLAY
+```
+
+When later lifecycle is independently established live, missing historical documentation for a prior gate or authority must be classified, as applicable, as:
+
+```text
+GATE_PROVENANCE_NOT_RECORDED
+AUTHORITY_PROVENANCE_NOT_RECORDED
+```
+
+These classifications do not mean:
+
+```text
+GATE_FAILED
+UNAUTHORIZED
+```
+
+Before replaying any historical gate, ask whether the provenance gap changes a current safety decision.
+
+If no, record the historical gap and continue without replay.
+
+If yes, perform only the smallest present-time validation required to restore a safe decision. Do not automatically reconstruct the full historical pipeline.
+
+## 8. Evidence and coverage
+
+All material sources remain subject to the common evidence contract:
+
+```text
+NOT_READ
+PARTIAL_READ
+INTEGRAL_READ
+```
+
+Versioned, merged, deployed, applied and runtime-tested states are distinct. Tool capability is not authority.
+
+## 9. Change discipline
 
 ```text
 one PR = one primary risk = one simple rollback
 ```
 
-An SFJM update must not silently expand into runtime, Supabase, Vercel, MesaCliente, PME, ADS/CAPI, Make/n8n, integration or production changes.
+An SFJM documentation change must not silently expand into frontend, Supabase, Auth, RLS, RPC, migration, Vercel, GitHub Actions, Builders, integrations, production or data changes.
 
-## 7. Current operational records
+## 10. Anti-loop acceptance matrix
 
-- Current state: `docs/sfjm/CURRENT_STATE.md`
-- Next safe action: `docs/sfjm/NEXT_SAFE_ACTION.md`
-- Blocked actions: `docs/sfjm/BLOCKED_ACTIONS.md`
-- Authorizations: `docs/sfjm/AUTHORIZATIONS.md`
-- Evidence freshness: `docs/sfjm/EVIDENCE_FRESHNESS.md`
-- Current product/security handoff: `docs/sfjm/handoffs/CURRENT.md`
-- Current specialist Builders handoff: `docs/sfjm/handoffs/BUILDERS_CURRENT.md`
+```text
+main SHA changes only
+→ NO SFJM material update
 
-The two handoff files have separate scopes. `CURRENT.md` preserves the active product/security operational lifecycle. `BUILDERS_CURRENT.md` preserves specialist Builder construction and validation continuity. A Builder update must not silently mutate the product/security lifecycle, and a product/security reconciliation must not silently overwrite Builder continuity.
+documentation-only closure merge
+→ NO SFJM material update
 
-## 8. Material update rule
+Draft/Ready lifecycle transition only
+→ NO SFJM material update
 
-Update SFJM records when a change materially alters one or more of the following:
+unrelated Builder documentation merge
+→ NO product/security SFJM material update
 
-- current operational state;
-- active PR, branch or head relevant to the next decision;
-- authorization scope or lifecycle;
-- evidence freshness or validity;
-- audit decision;
-- active B0 activity;
-- blocker;
-- product or security decision;
-- next safe action;
-- handoff ownership or transition state.
+material product/security decision or evidence change
+→ SFJM material update
+```
 
-A new commit on canonical `main` is an invalidating event for any record that claims an exact current tip. It does not, by itself, require a new reconciliation PR when the commit is solely the squash merge of a bounded documentation-only closure PR and does not materially change the operational state, evidence, authority, blocker, decision or next safe action already recorded by that closure PR.
+Critical acceptance test:
 
-The merge of a documentation-only closure PR is therefore self-closing unless new material evidence or state appears. It must not create an infinite sequence of post-merge reconciliation PRs merely to record its own merge commit.
-
-Before any later sensitive action, resolve the live `main` tip and compare it with the material state recorded here. When only the closure commit changed and no material state changed, live GitHub validation is sufficient; record the newer tip in the next separately authorized substantive update rather than opening another closure-only PR.
-
-A stale or materially divergent SFJM record must be treated as evidence requiring reconciliation, not as current truth.
+```text
+structural continuity PR merges
+→ main changes
+→ no new material product/security event
+→ new conversation resolves main live
+→ reads MATERIAL_RECORDED_STATE
+→ continues normally
+→ NO follow-up reconciliation PR required
+```
