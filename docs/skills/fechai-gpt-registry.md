@@ -47,7 +47,7 @@ Regras:
 - backup é `DISASTER_RECOVERY_ONLY / NON_CANONICAL / NOT_FOR_RUNTIME_CONTEXT`;
 - backup não entra no bootstrap normal e não deve ser consultado sem pedido explícito de recuperação/auditoria do Builder.
 
-As salvaguardas comuns e transversais não devem ser duplicadas integralmente em cada skill. Todos os especialistas devem ler, por meio de `docs/bootstrap/INDEX.md`:
+As salvaguardas comuns e transversais não devem ser duplicadas em cada skill. Todos os especialistas devem ler, por meio de `docs/bootstrap/INDEX.md`:
 
 ```text
 docs/bootstrap/2026-06-11-fechai-specialists-modus-operandi.md
@@ -65,7 +65,7 @@ Esse arquivo comum é a fonte normativa para:
 - fail-closed;
 - escopo, rollback, documentação e handoff.
 
-Skills individuais contêm regras estáveis do domínio e salvaguardas adicionais descobertas por testes materiais. Elas não devem enfraquecer o contrato comum.
+Skills individuais contêm regras estáveis do domínio. Elas não devem copiar integralmente o contrato comum nem enfraquecê-lo.
 
 ## 3. Divergência
 
@@ -88,7 +88,7 @@ O especialista deve:
 
 Skill em PR head não substitui `main` até merge autorizado.
 
-Os registros de versão abaixo são duráveis. Descrevem a versão normativa publicada quando estiver vigente na `main`; lifecycle transitório deve ser resolvido live.
+Os registros de versão dos especialistas abaixo são **duráveis**. Eles descrevem a versão normativa que este registry publica quando estiver vigente na `main`; não armazenam estados transitórios como “até merge”. A localização real da versão deve ser resolvida no GitHub live.
 
 ## 4. Bootstrap comum obrigatório
 
@@ -215,7 +215,7 @@ Actions: GitHub READ_ONLY
 Builder evidence: PRODUCT_AUTHORITY_CONFIRMED / BEHAVIORAL_TEST_PASSED
 ```
 
-O prefixo `GPT5 -` e a abreviação `Spec` são decisão explícita da Product Authority e não constituem drift.
+O nome acima é uma decisão explícita da Product Authority. O prefixo `GPT5 -` e a abreviação `Spec` são intencionais e não constituem drift.
 
 Responsável por SRE, observabilidade, incidentes, logs, métricas, alertas, SLA/SLO/SLI, backup, restore e continuidade.
 
@@ -269,12 +269,16 @@ Responsável por MesaCliente, tabelas, parser/OCR/PDF/XLSX, Native First, fluxo 
 
 O handoff deve ser localizado por referência ancorada, sem busca aberta ou adivinhação:
 
-1. caminho durável esperado na `main`: `docs/sfjm/handoffs/BUILDERS_CURRENT.md`, resolvido por `docs/sfjm/INDEX.md`;
-2. enquanto esse caminho não estiver presente na `main`, a ponte transitória explicitamente autorizada para leitura é PR `#110`, head observado `6a79b5ab597c7facc7b0d6eafdda36289b21c287`, caminho `docs/sfjm/handoffs/BUILDERS_CURRENT.md`;
-3. conteúdo da PR #110 deve ser classificado `PR_HEAD_ONLY / INFORMATION_SUPPLIED`, nunca canônico;
-4. a PR #110 não pode ser alterada, marcada Ready ou mergeada apenas para satisfazer bootstrap;
-5. quando o caminho existir na `main`, a `main` prevalece e a ponte passa a âncora histórica;
-6. se a ponte mudar/fechar sem publicar o caminho, declarar `STALE_CONTINUITY` apenas para conclusões dependentes desse handoff.
+1. caminho durável esperado na `main`:
+   `docs/sfjm/handoffs/BUILDERS_CURRENT.md`, resolvido por `docs/sfjm/INDEX.md`;
+2. enquanto esse caminho não estiver presente na `main`, a ponte transitória explicitamente autorizada para leitura é:
+   - PR: `#110`;
+   - head observado e que deve ser revalidado antes da leitura: `6a79b5ab597c7facc7b0d6eafdda36289b21c287`;
+   - caminho: `docs/sfjm/handoffs/BUILDERS_CURRENT.md`;
+3. o conteúdo da PR #110 deve ser classificado como `PR_HEAD_ONLY / INFORMATION_SUPPLIED`, nunca como canônico ou mergeado;
+4. a PR #110 não pode ser alterada, marcada Ready ou mergeada apenas para satisfazer o bootstrap do GPT8;
+5. quando o caminho existir na `main`, a `main` prevalece e a ponte da PR #110 passa a ser somente âncora histórica;
+6. se a PR #110 mudar de head ou fechar sem publicar o caminho na `main`, declarar `STALE_CONTINUITY` e bloquear apenas conclusões que dependam desse handoff — não inventar conteúdo nem executar busca não ancorada.
 
 ### GPT9 — Integrações Portais Mensageria Specialist
 
@@ -347,7 +351,7 @@ Para alterar uma skill:
 8. atualizar continuidade após PASS;
 9. manter uma PR = um risco principal = rollback simples.
 
-Estado de especialistas pendentes permanece separado:
+O Grupo B segue em trabalho separado por especialista:
 
 ```text
 GPT5 — GROUP_B_GPT5_RECONCILED
@@ -356,4 +360,6 @@ GPT9 — PENDING_PARITY_AUDIT
 GPT10 — PENDING_PARITY_AUDIT
 ```
 
-A reconciliação GPT1.5 é limitada ao especialista arquitetural. Não autoriza alterar Builder de outro GPT, iniciar reestruturação do produto, alterar `App.jsx`, executar Supabase, marcar Ready, mergear, fazer deploy ou conceder Product PASS, Runtime PASS ou Security Go. Cada transição exige autoridade própria.
+A reconciliação do GPT6 é limitada ao Builder e ao contrato canônico. Ela não autoriza iniciar GPT9, alterar qualquer Builder, executar tracking/Ads em runtime, marcar Ready, mergear, fazer deploy ou conceder Product PASS, Runtime PASS ou Security Go. Cada nova transição exige autorização própria da Product Authority.
+
+A reconciliação GPT1.5 é limitada ao especialista arquitetural. Não autoriza iniciar reestruturação do produto, alterar `App.jsx`, executar Supabase, marcar Ready, mergear, fazer deploy ou conceder Product PASS, Runtime PASS ou Security Go.
