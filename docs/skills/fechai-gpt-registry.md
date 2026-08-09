@@ -1,7 +1,7 @@
 # FECH.AI — Registro Oficial de GPTs Especialistas
 
-**Status:** `v3.5 / CANONICAL_SKILL_REGISTRY / GROUP_A_RECONCILED / GROUP_B_GPT5_RECONCILED / GROUP_B_GPT6_RECONCILED / SHARED_BOOTSTRAP_CONTRACT`  
-**Atualizado em:** `2026-08-08`  
+**Status:** `v3.6 / CANONICAL_SKILL_REGISTRY / GROUP_A_RECONCILED / GPT1_5_RECONCILED / GROUP_B_GPT5_RECONCILED / GROUP_B_GPT6_RECONCILED / SHARED_BOOTSTRAP_CONTRACT`  
+**Atualizado em:** `2026-08-09`  
 **Escopo:** organização oficial dos GPTs auxiliares do FECH.AI.  
 **Fonte central:** FECH.AI — Projeto Principal / Master Project.  
 **Visibilidade no Builder:** assistentes privados / apenas para uso do Wagner.
@@ -110,7 +110,7 @@ Não afirmar leitura integral, paridade completa ou ausência de regra omitida s
 
 ```text
 GPT0 — FECH.AI Documentation Auditor
-GPT1 — FECH.AI Arquiteto SaaS
+GPT1.5 — FECH.AI Arquiteto SaaS
 GPT2 — FECH.AI UX/UI APP Specialist
 GPT3 — FECH.AI Supabase Security Specialist
 GPT4 — FECH.AI Vercel/GitHub CI-CD Specialist
@@ -126,7 +126,7 @@ Fluxo padrão:
 
 ```text
 GPT0 audita documentação/evidências
-→ GPT1 consolida arquitetura e impacto
+→ GPT1.5 consolida arquitetura, discovery e impacto
 → GPT especialista aprofunda domínio
 → ferramentas executam somente com escopo e autorização
 ```
@@ -146,18 +146,23 @@ Actions: GitHub
 
 Responsável por documentação, evidência, drift, reconciliação, AS-IS, índice, handoff e anti-overclaim.
 
-### GPT1 — Arquiteto SaaS
+### GPT1.5 — Arquiteto SaaS
 
 ```text
-Nome: FECH.AI Arquiteto SaaS
+Nome: GPT1.5 — FECH.AI Arquiteto SaaS
 Skill: docs/skills/fechai-gpt1-architect-saas.md
 Grupo: A
-Skill version: v2.0 / GROUP_A_RECONCILED
+Skill version: v3.0 / GPT1_5_RECONCILED / DEEP_ARCHITECTURE_AUDIT / DISCOVERY_ORIENTED / TARGET_ARCHITECTURE_SYNTHESIS
 Knowledge: EMPTY
-Actions: GitHub / Supabase conforme configuração e autorização
+Actions: GitHub / Supabase READ_ONLY por padrão
+Builder evidence: PRODUCT_AUTHORITY_CONFIRMED / TEST_A_PASS / TEST_B_PASS_WITH_EVIDENCE_CORRECTIONS / TEST_C_PASS / EOF_REMEDIATION_PASS
 ```
 
-Responsável por arquitetura SaaS, multi-tenancy, fronteiras, impacto, roadmap, trade-offs, rollback e coordenação técnica.
+Responsável por arquitetura SaaS, multi-tenancy, trust boundaries, discovery profundo, target architecture synthesis, bounded contexts, dependency rules, impacto, roadmap, trade-offs, blast radius, rollback, proof obligations e coordenação técnica.
+
+A evolução de `GPT1` para `GPT1.5` preserva o caminho canônico `docs/skills/fechai-gpt1-architect-saas.md` para evitar quebra desnecessária de bootstrap e referências. A identidade normativa publicada passa a ser GPT1.5 quando esta versão estiver em `main`.
+
+O estado reconciliado é limitado à configuração/contrato do especialista e aos testes comportamentais fornecidos pela Product Authority. Não implica Product PASS, Runtime PASS, Security Go, produção validada ou aprovação de qualquer arquitetura do produto sem investigação live.
 
 ### GPT2 — UX/UI APP Specialist
 
@@ -301,7 +306,7 @@ Responsável por monetização, pricing, packaging, planos, ICP, GTM e venda.
 
 ```text
 GPT0: documentação e evidência
-GPT1: arquitetura e impacto
+GPT1.5: arquitetura, discovery, trust boundaries, target design e impacto
 GPT2: UX/UI
 GPT3: Supabase e segurança de dados
 GPT4: GitHub/Vercel/lifecycle
@@ -356,3 +361,5 @@ GPT10 — PENDING_PARITY_AUDIT
 ```
 
 A reconciliação do GPT6 é limitada ao Builder e ao contrato canônico. Ela não autoriza iniciar GPT9, alterar qualquer Builder, executar tracking/Ads em runtime, marcar Ready, mergear, fazer deploy ou conceder Product PASS, Runtime PASS ou Security Go. Cada nova transição exige autorização própria da Product Authority.
+
+A reconciliação GPT1.5 é limitada ao especialista arquitetural. Não autoriza iniciar reestruturação do produto, alterar `App.jsx`, executar Supabase, marcar Ready, mergear, fazer deploy ou conceder Product PASS, Runtime PASS ou Security Go.

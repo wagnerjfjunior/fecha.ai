@@ -1,15 +1,15 @@
 # FECH.AI — SFJM Builders Current Handoff
 
-**Status:** `CURRENT_BUILDERS_HANDOFF / GROUP_A_RECONCILED / GROUP_B_GPT5_RECONCILED / GPT6_RECONCILED_CANDIDATE / BUILDER_BEHAVIORAL_PASS / DOCUMENTATION_ONLY`  
-**Reconstructed on:** `2026-08-08`  
+**Status:** `CURRENT_BUILDERS_HANDOFF / GROUP_A_RECONCILED / GPT1_5_RECONCILED / GROUP_B_GPT5_RECONCILED / GROUP_B_GPT6_RECONCILED / BUILDER_BEHAVIORAL_PASS / DOCUMENTATION_ONLY`  
+**Reconstructed on:** `2026-08-09`  
 **Repository:** `wagnerjfjunior/fecha.ai`  
-**Observed canonical main / closure base:** `main@027be7e7a6e91016688a6bc2328c4d3cbd2ca42c`  
-**Active closure track:** `GPT 6 — FECH.AI ADS-Pixel-CAPI-SEO-CRMtoMeta`  
-**Next Group B candidate after authorized closure merge:** `GPT9 — PENDING_PARITY_AUDIT / NOT AUTHORIZED`
+**GPT1.5 reconciliation source base:** `main@174cf1ee8feacc824ef070e573cf39c9dbc7ed9b`  
+**Lifecycle authority:** resolve GitHub live; this handoff stores durable Builder continuity only  
+**Next Group B candidate remains:** `GPT9 — PENDING_PARITY_AUDIT / NOT AUTHORIZED`
 
 ## 1. Purpose and boundary
 
-This record preserves the durable closure evidence for the GPT6 external Builder reconciliation and the safe transition boundary after that closure.
+This record preserves the durable closure evidence for the GPT6 external Builder reconciliation and the safe transition boundary after that closure, plus durable GPT1.5 reconciliation evidence and post-publication continuity.
 
 It is separate from the product/security lifecycle in:
 
@@ -55,16 +55,17 @@ No evidence class may be silently promoted into another.
 
 ```text
 Group A:
-GPT0, GPT1, GPT2, GPT3, GPT4, GPT7 and GPT8 — RECONCILED
+GPT0, GPT1.5, GPT2, GPT3, GPT4, GPT7 and GPT8 — RECONCILED
+GPT1 historical identity — SUPERSEDED_BY_GPT1_5 in this version; live canonicity is resolved from GitHub
 
 Group B:
 GPT5 — GROUP_B_GPT5_RECONCILED
-GPT6 — RECONCILED_CANDIDATE / BUILDER_BEHAVIORAL_PASS
+GPT6 — GROUP_B_GPT6_RECONCILED
 GPT9 — PENDING_PARITY_AUDIT / NOT AUTHORIZED
 GPT10 — PENDING_PARITY_AUDIT
 ```
 
-GPT6 becomes canonically reconciled only after this closure PR passes its independent gates, receives separate Ready and merge authorizations, merges, and the resulting `main` is confirmed. The existence of this Draft PR does not authorize GPT9 work or any external Builder mutation.
+This block records the durable Builder state represented by this file when it is canonical on `main`. It does not store current PR lifecycle. If this version is observed only on a PR head, treat GPT1.5 publication as `PR_HEAD_ONLY` until GitHub live shows the version on `main`. Once published, no follow-up reconciliation PR is required solely to replace Draft/Ready/Merged labels or refresh the `main` SHA. Product rearchitecture, GPT9 work and any additional external Builder mutation remain separately authorized scopes.
 
 ## 4. GPT6 canonical publication evidence
 
@@ -331,7 +332,7 @@ No campaign correctness PASS
 No Meta/Google platform PASS
 ```
 
-## 8. Closure PR lifecycle
+## 8. GPT6 closure PR lifecycle — historical evidence
 
 Authorized closure branch:
 
@@ -353,10 +354,10 @@ docs/skills/fechai-gpt6-ads-pixel-capi-seo.md
 docs/sfjm/handoffs/BUILDERS_CURRENT.md
 ```
 
-Primary risk:
+Historical primary risk addressed by the GPT6 closure:
 
 ```text
-GPT6 Builder reconciliation is behaviorally complete but is not yet durably
+GPT6 Builder reconciliation was behaviorally complete but was not yet durably
 published as reconciled in the canonical skill, registry and Builder continuity handoff.
 ```
 
@@ -402,7 +403,9 @@ Rollback for this closure candidate is one documentation-only revert of the clos
 
 The external GPT6 Builder rollback remains independent and must use the preserved restorable version/snapshot under separate exact authority if ever required. A fingerprint or screenshot alone is not a rollback artifact.
 
-## 11. Single next safe action
+## 11. GPT6 closure-era next safe action — historical evidence
+
+The following was the recorded next action during the GPT6 closure. It is retained as provenance only and is not current lifecycle authority.
 
 Run independent, strictly READ_ONLY validation of this Draft closure PR on its exact head:
 
@@ -413,3 +416,161 @@ Run independent, strictly READ_ONLY validation of this Draft closure PR on its e
 Do not request review, comment, resolve threads, mark Ready, merge, deploy or start GPT9 in the same step.
 
 After a clean gate set, the next lifecycle transition is a separate Product Authority decision for Ready. No gate authorizes the next one automatically.
+
+## 12. GPT1.5 reconciliation evidence and durable continuity
+
+### 12.1 Product Authority-confirmed Builder state
+
+The Product Authority configured the external architecture specialist as:
+
+```text
+Builder name:
+GPT1.5 — FECH.AI Arquiteto SaaS
+
+Knowledge:
+EMPTY
+
+GitHub Action:
+REQUIRED / READ_ONLY baseline
+
+Supabase Action:
+Security Gateway / READ_ONLY / limited operations
+```
+
+The exact character-by-character Builder fingerprint is not versioned here. The canonical skill is the complete normative contract; the Builder remains a compact operational kernel.
+
+### 12.2 Behavioral evidence
+
+The GPT1.5 suite was executed in new conversations against:
+
+```text
+main@174cf1ee8feacc824ef070e573cf39c9dbc7ed9b
+```
+
+Product Authority-supplied results:
+
+```text
+Test A — bootstrap + senior architecture reasoning:
+PASS
+
+Test B — discovery-oriented deep audit:
+PASS WITH EVIDENCE CORRECTIONS
+
+Test C — target architecture synthesis:
+PASS
+
+EOF remediation — coverage integrity:
+PASS
+```
+
+The suite established deep trust-boundary reasoning, discovery beyond known findings, target-architecture criticism/synthesis and self-correction of an evidence-integrity overclaim.
+
+Material rules produced by the suite and now published in the GPT1.5 skill:
+
+```text
+DEEP_ARCHITECTURE_AUDIT
+DISCOVERY_ORIENTED_DEEP_AUDIT
+TARGET_ARCHITECTURE_SYNTHESIS
+ANTI_SECOND_MONOLITH
+ANTI_GLOBAL_ORCHESTRATOR
+ARCHITECTURE_PROOF_OBLIGATIONS
+METRIC_INTEGRITY
+TOOL_CLAIM_INTEGRITY
+EOF_INTEGRITY
+SKILL_DRIFT
+```
+
+### 12.3 Evidence corrections preserved
+
+The reconciliation deliberately records, rather than hides, two correction events:
+
+1. Test B used a stronger `BLOB RETRIEVAL USED` label than the indirect method actually proved; this generated `TOOL_CLAIM_INTEGRITY`.
+2. An `App.jsx` characterization initially treated lines `0–5525` as complete. Independent revalidation established EOF at line `5902` on the same blob; the previous claim was invalidated, the delta `5526–5902` was read, and the current matrix was corrected. This generated `METRIC_INTEGRITY` and `EOF_INTEGRITY`.
+
+The final characterization added `MesaCliente` to the root blast-radius map and confirmed `CorretorApp` as a composition boundary rather than one bounded context.
+
+### 12.4 Reconciliation provenance and scope
+
+Authorized branch:
+
+```text
+docs/gpt1-5-builder-reconciliation
+```
+
+Authorized base:
+
+```text
+main@174cf1ee8feacc824ef070e573cf39c9dbc7ed9b
+```
+
+Exactly three authorized files:
+
+```text
+docs/skills/fechai-gpt1-architect-saas.md
+docs/skills/fechai-gpt-registry.md
+docs/sfjm/handoffs/BUILDERS_CURRENT.md
+```
+
+Primary risk addressed by this reconciliation:
+
+```text
+Builder GPT1.5 was behaviorally validated while canonical main still published historical GPT1 semantics.
+```
+
+Lifecycle contract used for the reconciliation PR:
+
+```text
+Create as Draft
+Documentation-only mutation in exactly the three authorized files
+Post-creation validation READ_ONLY
+No comment or review mutation
+No thread mutation
+No Ready
+No merge
+No deploy
+No external Builder mutation
+```
+
+Every corrective commit changes the PR head and invalidates head-bound gates. Ready and merge require later, separate Product Authority authorizations.
+
+### 12.5 Explicit non-actions
+
+```text
+No additional external GPT1.5 Builder mutation in this PR
+No GPT2–GPT10 Builder mutation
+No runtime/frontend/App.jsx change
+No Supabase/Auth/SQL/migration/RPC/RLS/policy/grant/data change
+No Vercel or GitHub Actions change
+No production mutation
+No comment, review or thread mutation
+No Ready
+No merge
+No deploy
+No Product PASS
+No Runtime PASS
+No Security Go
+No product architecture implementation authorization
+```
+
+### 12.6 Rollback
+
+Rollback for the published GPT1.5 reconciliation is one documentation-only revert. External Builder rollback is independent and requires its own preserved Builder version/snapshot plus separate authority.
+
+### 12.7 Self-closing lifecycle and next safe action
+
+Current Draft/Ready/Open/Merged status and current `main`/head are resolved from GitHub live; this file does not own those volatile facts.
+
+If this version is observed only on a PR head:
+
+1. validate only the exact-head material delta and lifecycle required by the current decision;
+2. await separate Product Authority authorizations for Ready and merge;
+3. do not create a second reconciliation PR merely to record lifecycle or refresh a SHA.
+
+If this version is canonical on `main`:
+
+- GPT1.5 reconciliation is closed;
+- do not open another SFJM/Builder reconciliation PR solely to record the merge or new `main` SHA;
+- resolve live lifecycle on demand;
+- any subsequent product rearchitecture remains a separate scope requiring its own explicit authorization and specialist gates.
+
+No Product PASS, Runtime PASS or Security Go follows from this closure.
