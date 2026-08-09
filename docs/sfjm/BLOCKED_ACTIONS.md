@@ -1,7 +1,7 @@
 # FECH.AI — SFJM Blocked Actions
 
 **Status:** `MATERIAL_BLOCKER_VIEW / FAIL_CLOSED / DOCUMENTATION_ONLY`  
-**Updated:** `2026-08-08`  
+**Updated:** `2026-08-09`  
 **Repository:** `wagnerjfjunior/fecha.ai`
 
 ## 1. Authority
@@ -36,8 +36,10 @@ PR-03 remains blocked while one or more of these predicates is true:
 ```text
 post-deploy functional proof is incomplete
 post-deploy runtime fail-closed proof is incomplete
-current direct-write/call-site inventory is not refreshed for the revocation candidate
+repository-wide direct-write/call-site inventory does not yet confirm that no required direct update remains
 EditarCorretorModal lacks a safe server-side disposition
+cutover observation has not yet confirmed that no legitimate flow depends on direct UPDATE
+controlled RPCs have not yet been individually inventoried and tested for continuity under direct-UPDATE revocation
 ```
 
 Do not require legacy direct UPDATE denial as a circular precondition for creating the PR whose purpose is to revoke that direct UPDATE. Denial is acceptance evidence after the revocation change exists and is applied under separate authority.

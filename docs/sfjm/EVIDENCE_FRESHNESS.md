@@ -1,7 +1,7 @@
 # FECH.AI — SFJM Evidence Freshness
 
 **Status:** `CLAIM_ANCHOR_INVALIDATION_LEDGER / DOCUMENTATION_ONLY`  
-**Updated:** `2026-08-08`  
+**Updated:** `2026-08-09`  
 **Repository:** `wagnerjfjunior/fecha.ai`
 
 ## 1. Freshness model
@@ -30,7 +30,16 @@ Claim:
 public.marcar_senha_inicial_definida() exists as the F1-02 narrow self-service password-state RPC contract.
 ```
 
-Durable evidence boundary recorded by the completed PR-01 cycle includes:
+Environment and migration anchor:
+
+```text
+Supabase project: uobxxgzshrmbtjfdolxd
+Environment: production
+Migration: 20260727080929 / f1_02_password_state_rpc / APPLIED
+Evidence source: docs/security/evidence/2026-07-27-pr103-operational-closure-with-residual-risk.md
+```
+
+Durable evidence boundary recorded by the completed PR-01 cycle for that exact project/environment includes:
 
 ```text
 no caller-selected target identifier
@@ -39,7 +48,9 @@ authenticated positive smoke established
 immediate repeated-call idempotency established
 ```
 
-Invalidate/revalidate the affected claim after a material RPC signature/body/owner/search_path/grant change, relevant Auth/RLS/policy/role change, contradictory runtime evidence or other security finding.
+This PR-01 evidence is scoped to `uobxxgzshrmbtjfdolxd / production`. It must not be carried to another Supabase project or environment without fresh validation of the applicable catalog/runtime claim.
+
+Invalidate/revalidate the affected claim after a material RPC signature/body/owner/search_path/grant change, relevant Auth/RLS/policy/role change, project/environment replacement, contradictory runtime evidence or other security finding.
 
 ### PR-02 frontend cutover
 
@@ -87,8 +98,10 @@ Invalidate/revalidate the affected frontend claim after relevant code/dependency
 ```text
 post-deploy functional smoke: NOT ESTABLISHED
 post-deploy runtime fail-closed evidence: NOT ESTABLISHED
-current call-site inventory for PR-03 candidate: NOT CURRENTLY ESTABLISHED
+repository-wide direct-write/call-site inventory confirming no required direct update remains: NOT CURRENTLY ESTABLISHED
 safe server-side disposition for EditarCorretorModal: NOT ESTABLISHED
+cutover observation confirming no legitimate flow depends on direct UPDATE: NOT ESTABLISHED
+controlled RPC inventory and individual continuity testing for direct-UPDATE revocation: NOT ESTABLISHED
 ```
 
 These are evidence gaps, not proof of failure.

@@ -1,7 +1,7 @@
 # FECH.AI — SFJM Next Safe Action
 
 **Status:** `SEMANTIC_NEXT_ACTION_VIEW / DOCUMENTATION_ONLY`  
-**Updated:** `2026-08-08`  
+**Updated:** `2026-08-09`  
 **Repository:** `wagnerjfjunior/fecha.ai`
 
 ## 1. Authority
@@ -31,8 +31,10 @@ The current material evidence needs are defined in `CURRENT_STATE.md` and includ
 ```text
 post-deploy functional smoke
 post-deploy runtime fail-closed evidence
-refreshed current call-site inventory
+refreshed repository-wide direct-write/call-site inventory confirming no required direct update remains
 safe server-side disposition for EditarCorretorModal
+cutover observation sufficient to confirm no legitimate flow depends on direct UPDATE
+controlled RPCs individually inventoried and tested for continuity under direct-UPDATE revocation
 ```
 
 This statement is semantic. It does not authorize any runtime test, Supabase mutation, implementation, Ready, merge, deployment or production action.

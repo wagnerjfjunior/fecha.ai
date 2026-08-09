@@ -1,7 +1,7 @@
 # FECH.AI — SFJM Current Material State
 
 **Status:** `MATERIAL_RECORDED_STATE / F1_02_ACTIVE_REMEDIATION / PR03_NOT_YET_ELIGIBLE / DOCUMENTATION_ONLY`  
-**Updated:** `2026-08-08`  
+**Updated:** `2026-08-09`  
 **Repository:** `wagnerjfjunior/fecha.ai`
 
 ## 1. Authority rule
@@ -35,6 +35,8 @@ State: COMPLETED WITH RESIDUAL RISK
 RPC: public.marcar_senha_inicial_definida()
 Actor derivation: auth.uid()
 Target identifiers from client: none
+Supabase project/environment: uobxxgzshrmbtjfdolxd / production
+Migration anchor: 20260727080929 / f1_02_password_state_rpc / APPLIED
 Authenticated positive smoke: ESTABLISHED
 Immediate repeated-call idempotency: ESTABLISHED
 ```
@@ -75,7 +77,9 @@ The existence of a successful Production deployment record does not by itself es
 State: NOT_YET_MATERIALLY_ELIGIBLE
 ```
 
-PR-03 must not begin until the smallest remaining material evidence set establishes that broad direct-update revocation will not break required legitimate behavior.
+PR-03 must not begin until the canonical eligibility contract establishes that broad direct-update revocation will not break required legitimate behavior.
+
+The PR-01 production RPC prerequisite is anchored to `uobxxgzshrmbtjfdolxd / production` and migration `20260727080929 / f1_02_password_state_rpc / APPLIED`. PR-02 deployment is recorded, but the remaining runtime and continuity predicates below are not yet all established.
 
 ## 4. Active residual risk
 
@@ -95,8 +99,10 @@ No new administrative RPC, direct-write removal or runtime change is authorized 
 ```text
 1. post-deploy functional smoke of the mandatory-password cutover;
 2. post-deploy runtime fail-closed evidence;
-3. refreshed current call-site inventory before direct UPDATE revocation;
-4. safe server-side disposition for the EditarCorretorModal administrative path.
+3. refreshed repository-wide direct-write/call-site inventory confirming no required direct update remains;
+4. safe server-side disposition for the EditarCorretorModal administrative path;
+5. cutover observation sufficient to confirm no legitimate flow depends on direct UPDATE;
+6. controlled RPCs individually inventoried and tested for continuity under direct-UPDATE revocation.
 ```
 
 The absence of legacy direct UPDATE denial is not a circular prerequisite for starting the PR that is intended to revoke that permission. Direct-update denial belongs to post-PR-03 acceptance evidence.
@@ -140,7 +146,7 @@ These are semantic blockers. Their validity is not tied to a particular current 
 Resolve the smallest remaining evidence set required to determine PR-03 eligibility.
 ```
 
-Concretely, preserve the four evidence needs in section 5 and do not widen scope or replay closed lifecycle merely to recreate historical paperwork.
+Concretely, preserve all six evidence needs in section 5 and do not widen scope or replay closed lifecycle merely to recreate historical paperwork.
 
 Any runtime smoke, Supabase change, PR-03 implementation, administrative server-side replacement, Ready, merge or deploy requires its own exact authority when applicable.
 
