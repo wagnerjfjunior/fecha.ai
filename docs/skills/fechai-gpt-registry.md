@@ -1,6 +1,6 @@
 # FECH.AI — Registro Oficial de GPTs Especialistas
 
-**Status:** `v3.6 / CANONICAL_SKILL_REGISTRY / GROUP_A_RECONCILED / GPT1_5_RECONCILED / GROUP_B_GPT5_RECONCILED / GROUP_B_GPT6_RECONCILED / SHARED_BOOTSTRAP_CONTRACT`  
+**Status:** `v3.7 / CANONICAL_SKILL_REGISTRY / GROUP_A_RECONCILED / GPT1_5_CANONICAL_IDENTITY / GPT1_5_ALIAS_ROUTING / GROUP_B_GPT5_RECONCILED / GROUP_B_GPT6_RECONCILED / SHARED_BOOTSTRAP_CONTRACT`  
 **Atualizado em:** `2026-08-09`  
 **Escopo:** organização oficial dos GPTs auxiliares do FECH.AI.  
 **Fonte central:** FECH.AI — Projeto Principal / Master Project.  
@@ -90,6 +90,30 @@ Skill em PR head não substitui `main` até merge autorizado.
 
 Os registros de versão dos especialistas abaixo são **duráveis**. Eles descrevem a versão normativa que este registry publica quando estiver vigente na `main`; não armazenam estados transitórios como “até merge”. A localização real da versão deve ser resolvida no GitHub live.
 
+### 3.1 Alias legado do slot arquitetural
+
+A identidade normativa atual do slot arquitetural histórico GPT1 é:
+
+```text
+GPT1.5 — FECH.AI Arquiteto SaaS
+```
+
+Compatibilidade de roteamento:
+
+```text
+GPT1
+GPT 1
+→ GPT1.5 — FECH.AI Arquiteto SaaS
+```
+
+Regras:
+
+- `GPT1` e `GPT 1` são aliases legados, não especialistas adicionais;
+- referências legadas em skills e documentos canônicos não exigem mass-update para permanecer semanticamente válidas;
+- quando o texto estiver definindo identidade atual, usar `GPT1.5`;
+- quando o texto estiver registrando história, o rótulo legado pode ser preservado explicitamente como histórico;
+- o private specialist routing index deve publicar o mesmo alias; divergência entre os dois é `SKILL_DRIFT`.
+
 ## 4. Bootstrap comum obrigatório
 
 Antes de trabalho sensível, todo especialista deve:
@@ -150,19 +174,22 @@ Responsável por documentação, evidência, drift, reconciliação, AS-IS, índ
 
 ```text
 Nome: GPT1.5 — FECH.AI Arquiteto SaaS
+Legacy routing aliases: GPT1 / GPT 1
 Skill: docs/skills/fechai-gpt1-architect-saas.md
 Grupo: A
-Skill version: v3.0 / GPT1_5_RECONCILED / DEEP_ARCHITECTURE_AUDIT / DISCOVERY_ORIENTED / TARGET_ARCHITECTURE_SYNTHESIS
+Skill version: v3.1 / GPT1_5_CANONICAL_CONTRACT / DEEP_ARCHITECTURE_AUDIT / DISCOVERY_ORIENTED / TARGET_ARCHITECTURE_SYNTHESIS / SHARED_EVIDENCE_CONTRACT_DELEGATED
 Knowledge: EMPTY
 Actions: GitHub / Supabase READ_ONLY por padrão
-Builder evidence: PRODUCT_AUTHORITY_CONFIRMED / TEST_A_PASS / TEST_B_PASS_WITH_EVIDENCE_CORRECTIONS / TEST_C_PASS / EOF_REMEDIATION_PASS
+Builder evidence authority: docs/sfjm/handoffs/BUILDERS_CURRENT.md
 ```
 
 Responsável por arquitetura SaaS, multi-tenancy, trust boundaries, discovery profundo, target architecture synthesis, bounded contexts, dependency rules, impacto, roadmap, trade-offs, blast radius, rollback, proof obligations e coordenação técnica.
 
-A evolução de `GPT1` para `GPT1.5` preserva o caminho canônico `docs/skills/fechai-gpt1-architect-saas.md` para evitar quebra desnecessária de bootstrap e referências. A identidade normativa publicada passa a ser GPT1.5 quando esta versão estiver em `main`.
+A evolução de `GPT1` para `GPT1.5` preserva o caminho canônico `docs/skills/fechai-gpt1-architect-saas.md` e define `GPT1` / `GPT 1` como aliases legados do mesmo slot. A identidade normativa atual é GPT1.5; não existe um especialista adicional criado pela mudança de rótulo.
 
-O estado reconciliado é limitado à configuração/contrato do especialista e aos testes comportamentais fornecidos pela Product Authority. Não implica Product PASS, Runtime PASS, Security Go, produção validada ou aprovação de qualquer arquitetura do produto sem investigação live.
+Este registry não declara `BUILDER_BEHAVIORAL_PASS` para GPT1.5. A classificação comportamental vigente, incluindo correções históricas e eventual fresh delta test, deve ser resolvida em `docs/sfjm/handoffs/BUILDERS_CURRENT.md` no ref correto.
+
+O contrato canônico do especialista não implica Product PASS, Runtime PASS, Security Go, produção validada ou aprovação de qualquer arquitetura do produto sem investigação live.
 
 ### GPT2 — UX/UI APP Specialist
 
@@ -362,4 +389,4 @@ GPT10 — PENDING_PARITY_AUDIT
 
 A reconciliação do GPT6 é limitada ao Builder e ao contrato canônico. Ela não autoriza iniciar GPT9, alterar qualquer Builder, executar tracking/Ads em runtime, marcar Ready, mergear, fazer deploy ou conceder Product PASS, Runtime PASS ou Security Go. Cada nova transição exige autorização própria da Product Authority.
 
-A reconciliação GPT1.5 é limitada ao especialista arquitetural. Não autoriza iniciar reestruturação do produto, alterar `App.jsx`, executar Supabase, marcar Ready, mergear, fazer deploy ou conceder Product PASS, Runtime PASS ou Security Go.
+A identidade/skill GPT1.5 é limitada ao especialista arquitetural. A evidência comportamental corrente deve ser resolvida no handoff de Builders; este registry não promove correção assistida a behavioral PASS. Nenhum estado GPT1.5 autoriza iniciar reestruturação do produto, alterar `App.jsx`, executar Supabase, marcar Ready, mergear, fazer deploy ou conceder Product PASS, Runtime PASS ou Security Go.

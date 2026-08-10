@@ -1,15 +1,15 @@
 # FECH.AI — SFJM Builders Current Handoff
 
-**Status:** `CURRENT_BUILDERS_HANDOFF / GROUP_A_RECONCILED / GPT1_5_RECONCILED / GROUP_B_GPT5_RECONCILED / GROUP_B_GPT6_RECONCILED / BUILDER_BEHAVIORAL_PASS / DOCUMENTATION_ONLY`  
+**Status:** `CURRENT_BUILDERS_HANDOFF / GROUP_A_RECONCILED / GPT1_5_POST_REVIEW_REMEDIATION / GPT1_5_BUILDER_BEHAVIORAL_PASS / GROUP_B_GPT5_RECONCILED / GROUP_B_GPT6_RECONCILED / DOCUMENTATION_ONLY`  
 **Reconstructed on:** `2026-08-09`  
 **Repository:** `wagnerjfjunior/fecha.ai`  
-**GPT1.5 reconciliation source base:** `main@174cf1ee8feacc824ef070e573cf39c9dbc7ed9b`  
+**GPT1.5 remediation source base:** `main@fce3ac5815e86d3863701cdd7177fc41e450383e`  
 **Lifecycle authority:** resolve GitHub live; this handoff stores durable Builder continuity only  
 **Next Group B candidate remains:** `GPT9 — PENDING_PARITY_AUDIT / NOT AUTHORIZED`
 
 ## 1. Purpose and boundary
 
-This record preserves the durable closure evidence for the GPT6 external Builder reconciliation and the safe transition boundary after that closure, plus durable GPT1.5 reconciliation evidence and post-publication continuity.
+This record preserves the durable closure evidence for the GPT6 external Builder reconciliation and the safe transition boundary after that closure, plus durable GPT1.5 continuity, the post-merge review findings from PR #118, the bounded remediation contract and the fresh v3.1 behavioral delta evidence.
 
 It is separate from the product/security lifecycle in:
 
@@ -41,6 +41,9 @@ CANONICAL_MAIN
 PR_HEAD_ONLY
 PRODUCT_AUTHORITY_CONFIRMED
 BEHAVIORAL_TEST_PASSED
+BEHAVIORAL_DELTA_CLEAN_PASS
+USER_CORRECTED
+INITIAL_OVERCLAIM
 INFORMATION_SUPPLIED
 PARTIAL_VISUAL_EVIDENCE
 INTEGRAL_READ
@@ -55,8 +58,9 @@ No evidence class may be silently promoted into another.
 
 ```text
 Group A:
-GPT0, GPT1.5, GPT2, GPT3, GPT4, GPT7 and GPT8 — RECONCILED
-GPT1 historical identity — SUPERSEDED_BY_GPT1_5 in this version; live canonicity is resolved from GitHub
+GPT0, GPT2, GPT3, GPT4, GPT7 and GPT8 — RECONCILED
+GPT1.5 — CANONICAL_CONTRACT / POST_REVIEW_REMEDIATION / BUILDER_BEHAVIORAL_PASS
+GPT1 / GPT 1 — LEGACY_ROUTING_ALIASES → GPT1.5
 
 Group B:
 GPT5 — GROUP_B_GPT5_RECONCILED
@@ -65,7 +69,7 @@ GPT9 — PENDING_PARITY_AUDIT / NOT AUTHORIZED
 GPT10 — PENDING_PARITY_AUDIT
 ```
 
-This block records the durable Builder state represented by this file when it is canonical on `main`. It does not store current PR lifecycle. If this version is observed only on a PR head, treat GPT1.5 publication as `PR_HEAD_ONLY` until GitHub live shows the version on `main`. Once published, no follow-up reconciliation PR is required solely to replace Draft/Ready/Merged labels or refresh the `main` SHA. Product rearchitecture, GPT9 work and any additional external Builder mutation remain separately authorized scopes.
+This block records durable Builder state represented by this file when it is canonical on `main`. It does not store current PR lifecycle. Current Draft/Ready/Open/Merged state must be resolved live. A documentation-only lifecycle move does not itself create behavioral evidence.
 
 ## 4. GPT6 canonical publication evidence
 
@@ -417,7 +421,7 @@ Do not request review, comment, resolve threads, mark Ready, merge, deploy or st
 
 After a clean gate set, the next lifecycle transition is a separate Product Authority decision for Ready. No gate authorizes the next one automatically.
 
-## 12. GPT1.5 reconciliation evidence and durable continuity
+## 12. GPT1.5 evolution, review findings and durable continuity
 
 ### 12.1 Product Authority-confirmed Builder state
 
@@ -439,33 +443,47 @@ Security Gateway / READ_ONLY / limited operations
 
 The exact character-by-character Builder fingerprint is not versioned here. The canonical skill is the complete normative contract; the Builder remains a compact operational kernel.
 
-### 12.2 Behavioral evidence
+### 12.2 Historical behavioral evidence and corrected classification
 
-The GPT1.5 suite was executed in new conversations against:
+The pre-v3.x GPT1.5 suite was executed in new conversations against:
 
 ```text
 main@174cf1ee8feacc824ef070e573cf39c9dbc7ed9b
 ```
 
-Product Authority-supplied results:
+That ref contained the previous canonical GPT1 contract and did not yet publish the new v3.x contract.
+
+Product Authority-supplied historical results, corrected according to the common anti-overclaim contract:
 
 ```text
 Test A — bootstrap + senior architecture reasoning:
 PASS
 
-Test B — discovery-oriented deep audit:
-PASS WITH EVIDENCE CORRECTIONS
+Test B — discovery-oriented deep audit — initial autonomous result:
+USER_CORRECTED / INITIAL_OVERCLAIM
+
+Test B — corrective evidence/remediation:
+COMPLETED / NOT A RETROACTIVE BEHAVIORAL PASS
 
 Test C — target architecture synthesis:
 PASS
 
-EOF remediation — coverage integrity:
-PASS
+EOF remediation — coverage correction:
+COMPLETED / corrective evidence
+
+Fresh v3.1 behavioral delta:
+CLEAN_PASS
+
+Tested candidate head:
+601689fa12c7f7c963a3209c6da8f98406f5ec9f
+
+Current consolidated GPT1.5 Builder behavioral status:
+BUILDER_BEHAVIORAL_PASS — ESTABLISHED FOR v3.1 CANDIDATE CONTRACT
 ```
 
-The suite established deep trust-boundary reasoning, discovery beyond known findings, target-architecture criticism/synthesis and self-correction of an evidence-integrity overclaim.
+The historical suite remains classified without retroactive promotion. The new `BUILDER_BEHAVIORAL_PASS` is based only on the fresh autonomous v3.1 delta against the exact candidate contract above. It does not convert the earlier `USER_CORRECTED / INITIAL_OVERCLAIM` event into PASS and does not make the candidate contract canonical on `main` by itself.
 
-Material rules produced by the suite and now published in the GPT1.5 skill:
+Material rules produced by the evolution and retained in the GPT1.5 contract:
 
 ```text
 DEEP_ARCHITECTURE_AUDIT
@@ -482,95 +500,299 @@ SKILL_DRIFT
 
 ### 12.3 Evidence corrections preserved
 
-The reconciliation deliberately records, rather than hides, two correction events:
+The evolution deliberately records, rather than hides, the correction events:
 
 1. Test B used a stronger `BLOB RETRIEVAL USED` label than the indirect method actually proved; this generated `TOOL_CLAIM_INTEGRITY`.
-2. An `App.jsx` characterization initially treated lines `0–5525` as complete. Independent revalidation established EOF at line `5902` on the same blob; the previous claim was invalidated, the delta `5526–5902` was read, and the current matrix was corrected. This generated `METRIC_INTEGRITY` and `EOF_INTEGRITY`.
+2. An `App.jsx` characterization initially treated lines `0–5525` as complete. Independent revalidation established EOF at line `5902` on the same blob; the previous claim was invalidated, the delta `5526–5902` was read, and the matrix was corrected.
+3. The common Modus Operandi requires `USER_CORRECTED / INITIAL_OVERCLAIM` when deeper Product Authority intervention is required; the Test B history therefore remains corrected rather than promoted retroactively.
 
-The final characterization added `MesaCliente` to the root blast-radius map and confirmed `CorretorApp` as a composition boundary rather than one bounded context.
+The final characterization added `MesaCliente` to the root blast-radius map and confirmed `CorretorApp` as a composition boundary rather than one bounded context. Those corrected observations remain useful evidence but are distinct from the fresh v3.1 behavioral PASS.
 
-### 12.4 Reconciliation provenance and scope
+### 12.4 PR #118 publication and post-merge review provenance
 
-Authorized branch:
+Historical publication PR:
 
 ```text
-docs/gpt1-5-builder-reconciliation
+#118 — docs(gpt1.5): reconcile deep architecture specialist
 ```
 
-Authorized base:
+Historical publication head reviewed by Codex:
 
 ```text
-main@174cf1ee8feacc824ef070e573cf39c9dbc7ed9b
+06db4c582aff00aa49d8442bbd237440b9ed801f
 ```
 
-Exactly three authorized files:
+Publication squash/main result:
 
 ```text
-docs/skills/fechai-gpt1-architect-saas.md
+fce3ac5815e86d3863701cdd7177fc41e450383e
+```
+
+Codex review:
+
+```text
+review id: 4892701716
+state: COMMENTED
+submitted: 2026-08-09T22:13:11Z
+reviewed commit: 06db4c582a...
+material threads observed after merge: 5
+```
+
+The review arrived after the merge and identified material remediation work. Its findings are evidence, not automatic authority; each finding must be independently classified against canonical sources before correction or closure.
+
+Confirmed remediation set:
+
+```text
+P1 — define GPT1 / GPT 1 legacy alias → GPT1.5 and align private routing index
+P2 — remove duplicated detailed EOF procedure from GPT1.5 skill; common Modus Operandi owns it
+P1 — preserve Test B as USER_CORRECTED / INITIAL_OVERCLAIM; no retroactive PASS
+P1 — restore explicit GPT0 + GPT4 exact-head gates before Ready/merge
+P1 — run fresh v3.1 behavioral delta on the corrected candidate contract before BUILDER_BEHAVIORAL_PASS
+```
+
+### 12.5 Current bounded remediation scope
+
+The remediation source base is:
+
+```text
+main@fce3ac5815e86d3863701cdd7177fc41e450383e
+```
+
+Exactly four authorized documentation paths:
+
+```text
+docs/bootstrap/2026-06-10-fechai-gpt-specialists-private-index.md
 docs/skills/fechai-gpt-registry.md
+docs/skills/fechai-gpt1-architect-saas.md
 docs/sfjm/handoffs/BUILDERS_CURRENT.md
 ```
 
-Primary risk addressed by this reconciliation:
+Primary risk:
 
 ```text
-Builder GPT1.5 was behaviorally validated while canonical main still published historical GPT1 semantics.
+post-merge GPT1.5 reconciliation findings can leave routing, evidence classification,
+shared-contract ownership and lifecycle gates inconsistent unless remediated together.
 ```
 
-Lifecycle contract used for the reconciliation PR:
+Forbidden in this remediation:
 
 ```text
-Create as Draft
-Documentation-only mutation in exactly the three authorized files
-Post-creation validation READ_ONLY
-No comment or review mutation
-No thread mutation
-No Ready
-No merge
-No deploy
-No external Builder mutation
+runtime/frontend/App.jsx
+Supabase/Auth/SQL/migration/RPC/RLS/policy/grant/data
+Vercel configuration
+GitHub Actions
+other specialist skills
+external Builder mutation
+production/data mutation
+Product PASS
+Runtime PASS
+Security Go
 ```
 
-Every corrective commit changes the PR head and invalidates head-bound gates. Ready and merge require later, separate Product Authority authorizations.
+Rollback is one documentation-only revert after any later authorized merge.
 
-### 12.5 Explicit non-actions
+### 12.6 Fresh v3.1 behavioral delta — contract and evidence
+
+The behavioral delta must run against an exact candidate head containing the corrected normative contract.
+
+Required behaviors:
 
 ```text
-No additional external GPT1.5 Builder mutation in this PR
+GPT1 / GPT 1 → GPT1.5 deterministic alias
+registry ↔ private routing identity consistency
+no SKILL_DRIFT for the architectural slot
+EOF_INTEGRITY inherited from the common Modus Operandi without duplicated procedure
+TOOL_CLAIM_INTEGRITY preserved
+METRIC_INTEGRITY preserved
+USER_CORRECTED / INITIAL_OVERCLAIM not retroactively promoted to PASS
+Deep Architecture Audit preserved
+Discovery-Oriented Deep Audit preserved
+Target Architecture Synthesis preserved
+ANTI_GLOBAL_ORCHESTRATOR preserved
+READ_ONLY / authority boundaries preserved
+```
+
+A response materially corrected by the Product Authority during this fresh delta is not `CLEAN_PASS` for that case.
+
+Fresh v3.1 delta executed on `2026-08-09`:
+
+```text
+Result:
+CLEAN_PASS
+
+Main observed during test and independently revalidated after test:
+fce3ac5815e86d3863701cdd7177fc41e450383e
+
+Tested candidate H1:
+601689fa12c7f7c963a3209c6da8f98406f5ec9f
+
+H1 head drift during test:
+NO
+
+Mutations during test:
+NONE
+
+Private routing index blob tested:
+1b2a91fde2dd19a44af221a0ab417bf2033cde20
+
+Registry blob tested:
+3cddbe611e0170a2f5d0c631e4e98293aafa51a9
+
+GPT1.5 skill blob tested:
+ac37cd53e6f777ca4b117d9ce32afe5c90d2b232
+
+Builders handoff H1 blob tested:
+43bbc36ea6eb32c68d212ffb9831a62626846b74
+
+Legacy alias resolution:
+PASS
+
+Shared EOF contract delegation:
+PASS
+
+Initial overclaim handling:
+PASS — USER_CORRECTED / INITIAL_OVERCLAIM / NO RETROACTIVE PASS
+
+Tool claim integrity:
+PASS — DIRECT_BLOB_CONTENT_RETRIEVAL_USED: NO / BLOB_IDENTITY_CROSS_CHECK_USED: YES
+
+Head-bound GPT0/GPT4 gate reasoning:
+PASS
+
+Second-monolith / God Layer / God Gateway control:
+PASS
+
+ANTI_GLOBAL_ORCHESTRATOR:
+PASS
+```
+
+Evidence provenance:
+
+```text
+Full behavioral transcript:
+PRODUCT_AUTHORITY_SUPPLIED / INFORMATION_SUPPLIED / NOT VERSIONED AS A REPOSITORY ARTIFACT
+
+Independent post-test validation:
+GitHub live revalidated main, PR #119, exact H1, material contract points and H1 EOF evidence before accepting CLEAN_PASS.
+```
+
+The transcript was evaluated as evidence, not as automatic authority. The `CLEAN_PASS` classification was accepted only after independent GitHub revalidation of the exact candidate and the material contract requirements.
+
+Two-step evidence rule now resolves as:
+
+```text
+H1 = 601689fa12c7f7c963a3209c6da8f98406f5ec9f
+→ fresh v3.1 delta: CLEAN_PASS
+
+H2 = evidence-recording commit only in BUILDERS_CURRENT.md
+→ record result/ref
+→ do not change skill, registry routing or private index
+```
+
+This H2 changes only evidence continuity. It does not change the behavioral contract tested at H1. No behavioral retest is required solely because H2 records the result, provided these three tested contract blobs remain byte-identical:
+
+```text
+private routing index: 1b2a91fde2dd19a44af221a0ab417bf2033cde20
+registry: 3cddbe611e0170a2f5d0c631e4e98293aafa51a9
+skill: ac37cd53e6f777ca4b117d9ce32afe5c90d2b232
+```
+
+If any of those three artifacts changes after the behavioral test, the affected behavioral gate is invalidated and must be retested proportionally.
+
+### 12.7 Exact-head lifecycle gates — mandatory before Ready and merge
+
+When the remediation version exists on a PR head, the following independent gates are mandatory on the exact head relevant to the decision:
+
+```text
+GPT0 gate:
+- documentation/evidence audit
+- exact head/base
+- changed files and diff/patch
+- final material files
+- coverage/EOF classification
+- finding disposition and scope discipline
+
+GPT4 gate:
+- exact base/head
+- lifecycle state
+- changed files/scope
+- checks/statuses/workflow evidence when accessible
+- reviews
+- review threads
+- mergeability
+- drift
+- rollback
+```
+
+Rules:
+
+1. any material head change invalidates prior head-bound gates as applicable;
+2. Ready requires clean required gates plus separate explicit Product Authority authorization;
+3. after Ready, wait for automated/manual reviews on the final head before merge decision;
+4. `material unresolved findings > 0 → NO MERGE`;
+5. merge requires a separate explicit Product Authority authorization;
+6. a successful check, preview or deployment does not replace documentation/lifecycle review.
+
+The handoff must remain self-closing after publication: no new PR solely to record Draft→Ready→Merged or refresh `main` SHA.
+
+### 12.8 Original PR #118 thread closure contract
+
+The five PR #118 review threads must not be abandoned or resolved merely because a remediation PR exists.
+
+After the remediation is proven and, if authorized, published canonically:
+
+```text
+for each PR #118 material thread:
+- record disposition
+- cite remediation evidence/ref
+- confirm the finding is actually resolved or explicitly rejected with evidence
+- only then resolve the thread under separate thread-mutation authority
+```
+
+Target closure state:
+
+```text
+PR #118 material unresolved threads: 0
+remediation PR material unresolved threads: 0
+```
+
+Thread resolution is not authorized by the creation of this handoff or by a documentation PASS.
+
+### 12.9 Explicit non-actions
+
+```text
+No additional external GPT1.5 Builder mutation in this remediation step
 No GPT2–GPT10 Builder mutation
 No runtime/frontend/App.jsx change
 No Supabase/Auth/SQL/migration/RPC/RLS/policy/grant/data change
 No Vercel or GitHub Actions change
-No production mutation
-No comment, review or thread mutation
-No Ready
-No merge
-No deploy
+No production/data mutation
 No Product PASS
 No Runtime PASS
 No Security Go
 No product architecture implementation authorization
 ```
 
-### 12.6 Rollback
-
-Rollback for the published GPT1.5 reconciliation is one documentation-only revert. External Builder rollback is independent and requires its own preserved Builder version/snapshot plus separate authority.
-
-### 12.7 Self-closing lifecycle and next safe action
+### 12.10 Self-closing lifecycle and next safe action
 
 Current Draft/Ready/Open/Merged status and current `main`/head are resolved from GitHub live; this file does not own those volatile facts.
 
-If this version is observed only on a PR head:
+If this H2 version is observed on a PR head:
 
-1. validate only the exact-head material delta and lifecycle required by the current decision;
-2. await separate Product Authority authorizations for Ready and merge;
-3. do not create a second reconciliation PR merely to record lifecycle or refresh a SHA.
+1. confirm that H1 → H2 changed only `docs/sfjm/handoffs/BUILDERS_CURRENT.md`;
+2. confirm the tested private routing index, registry and skill blobs remain byte-identical to H1;
+3. do not repeat the behavioral delta solely because this evidence-recording H2 changed the PR head;
+4. run GPT0 and GPT4 exact-head gates required by section 12.7 on the H2 head;
+5. await separate Product Authority authorization for Ready;
+6. after Ready, wait for reviews/threads on the final head;
+7. do not request merge while any material finding remains unresolved;
+8. do not create another reconciliation PR merely to record lifecycle or refresh a SHA.
 
-If this version is canonical on `main`:
+If this remediation is later canonical on `main` and all material findings are closed:
 
-- GPT1.5 reconciliation is closed;
-- do not open another SFJM/Builder reconciliation PR solely to record the merge or new `main` SHA;
+- GPT1.5 routing/contract reconciliation is closed;
 - resolve live lifecycle on demand;
+- do not open another SFJM/Builder reconciliation PR solely to record the merge or new `main` SHA;
 - any subsequent product rearchitecture remains a separate scope requiring its own explicit authorization and specialist gates.
 
 No Product PASS, Runtime PASS or Security Go follows from this closure.
