@@ -1,0 +1,274 @@
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+
+// ─── CORS restrito ao domínio da app ─────────────────────────────────────────
+const ALLOWED_ORIGINS = [
+  'https://fecha-ai.vercel.app',
+  'https://fech-ai.vercel.app',
+  'http://localhost:5173',
+  'http://localhost:3000',
+]
+
+function getCorsHeaders(req: Request) {
+  const origin = req.headers.get('origin') ?? ''
+  const allowed = ALLOWED_ORIGINS.includes(origin) ? origin : ALLOWED_ORIGINS[0]
+  return {
+    'Access-Control-Allow-Origin': allowed,
+    'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+    'Access-Control-Allow-Methods': 'POST, OPTIONS',
+  }
+}
+
+// ─── Rate limiting simples por IP ────────────────────────────────────────────
+const rateMap = new Map<string, { count: number; reset: number }>()
+
+function checkRateLimit(ip: string, maxPerMinute = 5): boolean {
+  const now = Date.now()
+  const entry = rateMap.get(ip)
+  if (!entry || now > entry.reset) {
+    rateMap.set(ip, { count: 1, reset: now + 60_000 })
+    return true
+  }
+  if (entry.count >= maxPerMinute) return false
+  entry.count++
+  return true
+}
+
+// ─── Helpers ─────────────────────────────────────────────────────────────────
+function json(data: unknown, status = 200, cors: Record<string, string>) {
+  return new Response(JSON.stringify(data), {
+    status,
+    headers: { ...cors, 'Content-Type': 'application/json' },
+  })
+}
+
+Deno.serve(async (req: Request) => {
+  const cors = getCorsHeaders(req)
+
+  if (req.method === 'OPTIONS') return new Response('ok', { headers: cors })
+
+  // ─── Rate limiting ────────────────────────────────────────────────────────
+  const clientIp = req.headers.get('x-forwarded-for') ?? req.headers.get('x-real-ip') ?? 'unknown'
+  if (!checkRateLimit(clientIp)) {
+    return json({ error: 'Muitas requisições. Aguarde 1 minuto.' }, 429, cors)
+  }
+
+  // ─── Cliente admin (service_role) ────────────────────────────────────────
+  const admin = createClient(
+    Deno.env.get('SUPABASE_URL') ?? '',
+    Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '',
+    { auth: { autoRefreshToken: false, persistSession: false } }
+  )
+
+  try {
+    // ─── Extrair e validar JWT do usuário logado ──────────────────────────
+    const authHeader = req.headers.get('authorization') ?? ''
+    if (!authHeader.startsWith('Bearer ')) {
+      return json({ error: 'Token de autenticação obrigatório.' }, 401, cors)
+    }
+
+    const token = authHeader.slice(7)
+    const { data: { user: caller }, error: callerErr } = await admin.auth.getUser(token)
+    if (callerErr || !caller) {
+      return json({ error: 'Token inválido ou expirado.' }, 401, cors)
+    }
+
+    // ─── Carregar perfil do usuário que está fazendo a requisição ─────────
+    const { data: callerProfile, error: profileErr } = await admin
+      .from('corretores')
+      .select('id, empresa_id, is_admin_local, is_gestor, nome, email')
+      .eq('user_id', caller.id)
+      .single()
+
+    // Se não encontrou em corretores, verifica se é ROOT
+    const { data: adminData } = await admin
+      .from('admins')
+      .select('id, nome, email')
+      .eq('user_id', caller.id)
+      .single()
+
+    const isRoot = !!adminData
+    const isAdminLocal = callerProfile?.is_admin_local === true
+    const isGestor = callerProfile?.is_gestor === true
+
+    // Apenas ROOT, admin_local ou gestor podem criar/editar usuários
+    if (!isRoot && !isAdminLocal && !isGestor) {
+      return json({ error: 'Sem permissão. Apenas admin ou gestor podem criar usuários.' }, 403, cors)
+    }
+
+    const body = await req.json()
+
+    // ─── LOG de auditoria ─────────────────────────────────────────────────
+    const logId = `audit-${Date.now()}-${Math.random().toString(36).slice(2)}`
+    await admin.from('audit_logs').insert({
+      id: logId,
+      empresa_id: callerProfile?.empresa_id ?? null,
+      action: body.action === 'reset_password' ? 'password_reset_attempt' : 'user_creation_attempt',
+      actor_id: caller.id,
+      actor_email: caller.email,
+      target_email: body.email ?? null,
+      ip_address: clientIp,
+      payload: { status: 'attempt', action: body.action ?? 'create' },
+    })
+
+    // ═══════════════════════════════════════════════════════════════════════
+    // AÇÃO: RESET DE SENHA
+    // ═══════════════════════════════════════════════════════════════════════
+    if (body.action === 'reset_password') {
+      const { user_id, password } = body
+
+      if (!user_id || !password) {
+        return json({ error: 'user_id e password obrigatórios.' }, 400, cors)
+      }
+
+      // Verificar que o usuário alvo pertence à mesma empresa
+      if (!isRoot) {
+        const { data: targetProfile } = await admin
+          .from('corretores')
+          .select('empresa_id')
+          .eq('user_id', user_id)
+          .single()
+
+        if (!targetProfile || targetProfile.empresa_id !== callerProfile?.empresa_id) {
+          return json({ error: 'Usuário não encontrado na sua empresa.' }, 403, cors)
+        }
+
+        // Gestor só pode resetar senha de corretores do seu time
+        if (isGestor && !isAdminLocal) {
+          const { data: targetCorretor } = await admin
+            .from('corretores')
+            .select('time_id')
+            .eq('user_id', user_id)
+            .single()
+
+          const { data: gestorTimes } = await admin
+            .from('times')
+            .select('id')
+            .eq('gestor_id', callerProfile!.id)
+
+          const gestorTimeIds = gestorTimes?.map((t: { id: string }) => t.id) ?? []
+          if (!gestorTimeIds.includes(targetCorretor?.time_id)) {
+            return json({ error: 'Você só pode resetar senhas de corretores dos seus times.' }, 403, cors)
+          }
+        }
+      }
+
+      const { data, error } = await admin.auth.admin.updateUserById(user_id, { password })
+      if (error) throw error
+
+      // Atualizar log de auditoria
+      await admin.from('audit_logs')
+        .update({ payload: { status: 'success', user_id } })
+        .eq('id', logId)
+
+      return json({ ok: true, user_id: data.user.id }, 200, cors)
+    }
+
+    // ═══════════════════════════════════════════════════════════════════════
+    // AÇÃO: CRIAR NOVO USUÁRIO
+    // ═══════════════════════════════════════════════════════════════════════
+    const { nome, email, is_admin_local_novo, is_gestor_novo, time_id } = body
+    const password = body.password ?? body.senha
+    const empresa_id_alvo = body.empresa_id ?? callerProfile?.empresa_id
+
+    if (!email || !password || !nome) {
+      return json({ error: 'email, senha e nome são obrigatórios.' }, 400, cors)
+    }
+
+    // ─── Validação de tenant ───────────────────────────────────────────────
+    // ROOT pode criar em qualquer empresa
+    // Admin local e gestor só podem criar na própria empresa
+    if (!isRoot && empresa_id_alvo !== callerProfile?.empresa_id) {
+      return json({ error: 'Você só pode criar usuários na sua própria empresa.' }, 403, cors)
+    }
+
+    // Gestor NÃO pode criar admin_local nem outro gestor de outro time
+    if (isGestor && !isAdminLocal && !isRoot) {
+      if (is_admin_local_novo) {
+        return json({ error: 'Gestores não podem criar admin local.' }, 403, cors)
+      }
+      // Gestor só pode criar corretor no seu próprio time
+      if (time_id) {
+        const { data: gestorTimes } = await admin
+          .from('times')
+          .select('id')
+          .eq('gestor_id', callerProfile!.id)
+        const gestorTimeIds = gestorTimes?.map((t: { id: string }) => t.id) ?? []
+        if (!gestorTimeIds.includes(time_id)) {
+          return json({ error: 'Você só pode criar corretores nos seus próprios times.' }, 403, cors)
+        }
+      }
+    }
+
+    // ─── Verificar limites do plano ────────────────────────────────────────
+    if (!isRoot) {
+      const { data: empresa } = await admin
+        .from('empresas')
+        .select('plano_id, planos(max_corretores)')
+        .eq('id', empresa_id_alvo)
+        .single() as { data: { plano_id: string; planos: { max_corretores: number } } | null }
+
+      if (empresa) {
+        const { count } = await admin
+          .from('corretores')
+          .select('*', { count: 'exact', head: true })
+          .eq('empresa_id', empresa_id_alvo)
+
+        const maxCorretores = empresa.planos?.max_corretores ?? 999
+        if ((count ?? 0) >= maxCorretores) {
+          return json({
+            error: `Limite de ${maxCorretores} usuários atingido para o plano atual.`
+          }, 403, cors)
+        }
+      }
+    }
+
+    // ─── Criar usuário no Supabase Auth ───────────────────────────────────
+    const { data: authData, error: authError } = await admin.auth.admin.createUser({
+      email,
+      password,
+      email_confirm: true,
+    })
+    if (authError) {
+      await admin.from('audit_logs')
+        .update({ payload: { status: 'failed', error: authError.message } })
+        .eq('id', logId)
+      throw authError
+    }
+
+    // ─── Inserir na tabela corretores (v1.1.6 — role obrigatório) ─────────
+    const { error: dbError } = await admin.from('corretores').insert({
+      user_id:             authData.user.id,
+      empresa_id:          empresa_id_alvo,
+      time_id:             time_id ?? null,
+      nome,
+      email,
+      role:                is_admin_local_novo ? 'admin_local' : (is_gestor_novo ? 'gestor' : 'corretor'),
+      ativo:               true,
+      apto_para_receber:   !is_admin_local_novo && !is_gestor_novo,
+      is_admin_local:      is_admin_local_novo ?? false,
+      is_gestor:           is_gestor_novo ?? false,
+      must_change_password: true,
+      created_by:          callerProfile?.id ?? null,
+    })
+
+    if (dbError) {
+      // Rollback: remover do auth se o insert no banco falhar
+      await admin.auth.admin.deleteUser(authData.user.id)
+      await admin.from('audit_logs')
+        .update({ payload: { status: 'rollback', error: dbError.message } })
+        .eq('id', logId)
+      throw dbError
+    }
+
+    // ─── Atualizar log com sucesso ─────────────────────────────────────────
+    await admin.from('audit_logs')
+      .update({ payload: { status: 'success', user_id: authData.user.id } })
+      .eq('id', logId)
+
+    return json({ ok: true, user_id: authData.user.id }, 200, cors)
+
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : String(err)
+    return json({ error: message }, 400, cors)
+  }
+})
