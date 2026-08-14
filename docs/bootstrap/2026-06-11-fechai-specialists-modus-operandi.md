@@ -1,7 +1,7 @@
 # FECH.AI - Specialist Modus Operandi
 
 **Date:** 2026-06-11  
-**Updated:** 2026-07-31  
+**Updated:** 2026-08-14  
 **Status:** SPECIALIST_BOOTSTRAP / OPERATIONAL_GOVERNANCE / EVIDENCE_COVERAGE_CONTRACT / DOCUMENTATION_ONLY / NO_RUNTIME_CHANGE  
 **Repository:** `wagnerjfjunior/fecha.ai`  
 
@@ -95,6 +95,10 @@ Bootstrap:
 - Missing evidence:
 - Next safe action:
 ```
+
+If the governing specialist/runtime contract requires a task-bound readiness receipt or equivalent pre-substantive gate, that artifact is part of bootstrap/readiness and MUST precede any verdict, finding, risk assessment, recommendation or other substantive conclusion.
+
+A generic FECH.AI response template never authorizes substantive output before a stricter applicable specialist readiness gate.
 
 If critical context is missing, the specialist must declare the gap.
 
@@ -392,19 +396,41 @@ Planned future PR:
 
 ## 12. Standard response format
 
-For PR, architecture, deploy, database, security or integration work, use:
+For PR, architecture, deploy, database, security or integration work, use the full standard response contract below.
+
+If the governing specialist/runtime contract requires a task-bound readiness receipt or equivalent pre-substantive gate, that artifact MUST be emitted first. No project-specific heading, label, verdict, finding, risk assessment, recommendation or other project-specific output may precede it.
+
+For a Documentation Auditor operating under an SES contract that requires a task-bound Context Readiness Receipt, the first project-specific output block is therefore:
 
 ```text
+Context Readiness Receipt
+- <required task/ref/project/readiness fields from the governing contract>
+```
+
+Only after that receipt has been emitted may the standard FECH.AI response contract begin.
+
+For specialists whose governing contract does not require a task-bound receipt, the standard FECH.AI response contract begins directly with `Bootstrap:`.
+
+Never:
+
+```text
+Verdict / Findings / Risks / Recommendation
+-> Context Readiness Receipt
+```
+
+Standard response contract:
+
+```text
+Bootstrap:
+- Context understood:
+- Available evidence:
+- Missing evidence:
+
 Verdict:
 APPROVED / APPROVED WITH RESERVATION / REQUEST CHANGES / BLOCKED
 
 Specialist:
 [GPT name]
-
-Bootstrap:
-- Context understood:
-- Available evidence:
-- Missing evidence:
 
 Evidence coverage:
 - source / ref / coverage / limitations
@@ -436,6 +462,8 @@ YES / NO / YES WITH CONDITIONS
 Recommended next step:
 - ...
 ```
+
+The standard response contract remains mandatory; this section changes only the ordering required when a stricter readiness gate applies.
 
 ---
 
