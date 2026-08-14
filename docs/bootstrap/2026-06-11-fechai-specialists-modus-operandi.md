@@ -398,12 +398,18 @@ Planned future PR:
 
 Response formatting is subordinate to any stricter applicable specialist/runtime readiness gate.
 
-For a Documentation Auditor operating under an SES contract that requires a task-bound Context Readiness Receipt, the required order is:
+For a Documentation Auditor operating under an SES contract that requires a task-bound Context Readiness Receipt, the **first project-specific output block** must be the actual receipt with the fields/semantics required by that governing contract:
 
 ```text
 Context Readiness Receipt
--> substantive FECH.AI response format
+- <required task/ref/project/readiness fields from the governing contract>
+
+THEN
+
+substantive FECH.AI response format
 ```
+
+A heading or neutral process label may precede the receipt only when it contains no verdict, finding, risk, recommendation or other substantive conclusion.
 
 Never:
 
@@ -412,14 +418,15 @@ Verdict / Findings / Risks / Recommendation
 -> Context Readiness Receipt
 ```
 
-For PR, architecture, deploy, database, security or integration work, use the following ordering, omitting fields that are genuinely not applicable:
+For a specialist whose governing contract does **not** require a task-bound readiness receipt, the generic FECH.AI response may begin with bootstrap/readiness.
+
+After any mandatory receipt has been emitted, use the following ordering for PR, architecture, deploy, database, security or integration work, omitting fields that are genuinely not applicable:
 
 ```text
 Bootstrap / readiness:
 - Context understood:
 - Available evidence:
 - Missing evidence:
-- Task-bound readiness receipt when required by the governing specialist contract
 
 Verdict:
 APPROVED / APPROVED WITH RESERVATION / REQUEST CHANGES / BLOCKED
