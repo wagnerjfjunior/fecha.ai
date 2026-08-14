@@ -396,20 +396,20 @@ Planned future PR:
 
 ## 12. Standard response format
 
-Response formatting is subordinate to any stricter applicable specialist/runtime readiness gate.
+For PR, architecture, deploy, database, security or integration work, use the full standard response contract below.
 
-For a Documentation Auditor operating under an SES contract that requires a task-bound Context Readiness Receipt, the **first project-specific output block** must be the actual receipt with the fields/semantics required by that governing contract:
+If the governing specialist/runtime contract requires a task-bound readiness receipt or equivalent pre-substantive gate, that artifact MUST be emitted first. No project-specific heading, label, verdict, finding, risk assessment, recommendation or other project-specific output may precede it.
+
+For a Documentation Auditor operating under an SES contract that requires a task-bound Context Readiness Receipt, the first project-specific output block is therefore:
 
 ```text
 Context Readiness Receipt
 - <required task/ref/project/readiness fields from the governing contract>
-
-THEN
-
-substantive FECH.AI response format
 ```
 
-A heading or neutral process label may precede the receipt only when it contains no verdict, finding, risk, recommendation or other substantive conclusion.
+Only after that receipt has been emitted may the standard FECH.AI response contract begin.
+
+For specialists whose governing contract does not require a task-bound receipt, the standard FECH.AI response contract begins directly with `Bootstrap:`.
 
 Never:
 
@@ -418,12 +418,10 @@ Verdict / Findings / Risks / Recommendation
 -> Context Readiness Receipt
 ```
 
-For a specialist whose governing contract does **not** require a task-bound readiness receipt, the generic FECH.AI response may begin with bootstrap/readiness.
-
-After any mandatory receipt has been emitted, use the following ordering for PR, architecture, deploy, database, security or integration work:
+Standard response contract:
 
 ```text
-Bootstrap / readiness:
+Bootstrap:
 - Context understood:
 - Available evidence:
 - Missing evidence:
@@ -465,7 +463,7 @@ Recommended next step:
 - ...
 ```
 
-The generic template must not move a mandatory readiness artifact below a verdict for presentation convenience.
+The standard response contract remains mandatory; this section changes only the ordering required when a stricter readiness gate applies.
 
 ---
 
