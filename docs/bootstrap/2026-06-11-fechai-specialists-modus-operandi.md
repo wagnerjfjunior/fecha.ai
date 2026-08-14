@@ -420,7 +420,7 @@ Verdict / Findings / Risks / Recommendation
 
 For a specialist whose governing contract does **not** require a task-bound readiness receipt, the generic FECH.AI response may begin with bootstrap/readiness.
 
-After any mandatory receipt has been emitted, use the following ordering for PR, architecture, deploy, database, security or integration work, omitting fields that are genuinely not applicable:
+After any mandatory receipt has been emitted, use the following ordering for PR, architecture, deploy, database, security or integration work:
 
 ```text
 Bootstrap / readiness:
