@@ -1,7 +1,7 @@
 # FECH.AI - Specialist Modus Operandi
 
 **Date:** 2026-06-11  
-**Updated:** 2026-07-31  
+**Updated:** 2026-08-14  
 **Status:** SPECIALIST_BOOTSTRAP / OPERATIONAL_GOVERNANCE / EVIDENCE_COVERAGE_CONTRACT / DOCUMENTATION_ONLY / NO_RUNTIME_CHANGE  
 **Repository:** `wagnerjfjunior/fecha.ai`  
 
@@ -95,6 +95,10 @@ Bootstrap:
 - Missing evidence:
 - Next safe action:
 ```
+
+If the governing specialist/runtime contract requires a task-bound readiness receipt or equivalent pre-substantive gate, that artifact is part of bootstrap/readiness and MUST precede any verdict, finding, risk assessment, recommendation or other substantive conclusion.
+
+A generic FECH.AI response template never authorizes substantive output before a stricter applicable specialist readiness gate.
 
 If critical context is missing, the specialist must declare the gap.
 
@@ -392,19 +396,36 @@ Planned future PR:
 
 ## 12. Standard response format
 
-For PR, architecture, deploy, database, security or integration work, use:
+Response formatting is subordinate to any stricter applicable specialist/runtime readiness gate.
+
+For a Documentation Auditor operating under an SES contract that requires a task-bound Context Readiness Receipt, the required order is:
 
 ```text
+Context Readiness Receipt
+-> substantive FECH.AI response format
+```
+
+Never:
+
+```text
+Verdict / Findings / Risks / Recommendation
+-> Context Readiness Receipt
+```
+
+For PR, architecture, deploy, database, security or integration work, use the following ordering, omitting fields that are genuinely not applicable:
+
+```text
+Bootstrap / readiness:
+- Context understood:
+- Available evidence:
+- Missing evidence:
+- Task-bound readiness receipt when required by the governing specialist contract
+
 Verdict:
 APPROVED / APPROVED WITH RESERVATION / REQUEST CHANGES / BLOCKED
 
 Specialist:
 [GPT name]
-
-Bootstrap:
-- Context understood:
-- Available evidence:
-- Missing evidence:
 
 Evidence coverage:
 - source / ref / coverage / limitations
@@ -436,6 +457,8 @@ YES / NO / YES WITH CONDITIONS
 Recommended next step:
 - ...
 ```
+
+The generic template must not move a mandatory readiness artifact below a verdict for presentation convenience.
 
 ---
 
