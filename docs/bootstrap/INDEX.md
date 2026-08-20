@@ -1,10 +1,10 @@
 # FECH.AI — Bootstrap Index
 
-**Status:** `BOOTSTRAP_INDEX_V2 / CANONICAL_SKILL_RESOLUTION / DOCUMENTATION_ONLY`  
-**Atualizado em:** `2026-07-31`  
+**Status:** `BOOTSTRAP_INDEX_V3 / SES_RUNTIME_GATEWAY_ROUTING / CANONICAL_SKILL_RESOLUTION`  
+**Atualizado em:** `2026-08-20`  
 **Repositório:** `wagnerjfjunior/fecha.ai`
 
-Este índice define a ordem mínima de reconstrução de contexto antes de conversas sensíveis, validações de PR, arquitetura, segurança, deploy, Supabase, produto, handoffs ou trabalho dos GPTs especialistas.
+Este índice define a ordem mínima de reconstrução de contexto antes de conversas sensíveis, validações de PR, arquitetura, segurança, deploy, Supabase, produto, handoffs ou trabalho dos especialistas.
 
 ## 1. Resolução obrigatória da main
 
@@ -18,47 +18,69 @@ Antes de ler documentação operacional:
 
 Se a main não puder ser resolvida, declarar `GITHUB_BOOTSTRAP_UNAVAILABLE` e operar fail-closed.
 
-## 2. Resolução da skill canônica do especialista
+## 2. Resolução do especialista
 
-Para qualquer GPT especialista:
+Primeiro ler:
+
+```text
+docs/skills/SES_SPECIALIST_ROUTING.md
+```
+
+Se a tarefa corresponder a um `ROLE` explicitamente adotado nesse documento:
+
+1. resolver `wagnerjfjunior/Specialist-Engineering-System` / `main` live;
+2. resolver o projeto `fechai` pelo SES Project Registry e Project Adapter;
+3. resolver o `ROLE -> ARCHETYPE_ID` exato;
+4. confirmar o arquétipo `ACTIVE` no SES Archetype Registry;
+5. confirmar a elegibilidade atual no ledger de certificação SES;
+6. carregar o contrato do arquétipo SES;
+7. carregar a skill/regra local FECH.AI apontada para o role, quando aplicável;
+8. continuar o bootstrap FECH.AI e emitir Context Readiness antes de trabalho substantivo quando exigido.
+
+Não usar nomes históricos `GPT0`, `GPT1`, `GPT1.5`, `GPT2` ou `GPT3` como autoridade atual de routing quando o role correspondente estiver mapeado no SES. Esses nomes permanecem referências de continuidade e de skills project-local.
+
+Se o domínio **não** possuir role SES adotado, usar o routing project-local existente:
 
 1. ler `docs/skills/fechai-gpt-registry.md`;
-2. localizar o caminho exato do próprio especialista;
+2. localizar o caminho exato do especialista local;
 3. confirmar que o caminho está em `docs/skills/`;
 4. ler a skill canônica no SHA live de `main`;
 5. somente depois complementar o bootstrap com documentos do domínio e evidências do caso.
 
-Canonicidade exige simultaneamente:
+Não inferir nem auto-adotar um arquétipo SES ausente do role map.
+
+Canonicidade de skill project-local exige simultaneamente:
 
 ```text
 arquivo dentro de docs/skills/
 +
-entrada correspondente no registry
+entrada correspondente no registry ou referência explícita no SES specialist routing
 ```
 
 Regras:
 
-- `docs/skills/` é o único diretório normativo de skills;
+- `docs/skills/` é o único diretório normativo de skills FECH.AI;
+- arquétipos SES são resolvidos no repositório SES, não copiados para FECH.AI;
 - o limite de 8.000 caracteres aplica-se apenas às Instructions do GPT Builder;
 - a skill GitHub não possui esse limite artificial;
 - Instructions do Builder são um núcleo operacional derivado, não a fonte normativa completa;
-- `Knowledge` do Builder não é fonte canônica e deve permanecer vazio quando o GPT usa bootstrap GitHub live;
+- `Knowledge` do Builder não é fonte canônica e deve permanecer vazio quando o especialista usa bootstrap GitHub live;
 - backup de Instructions é somente recuperação, não skill e não contexto operacional;
 - não buscar nem ler backups durante o bootstrap normal;
-- arquivo de skill existente, mas ausente do registry, é `NON_CANONICAL / PENDING_RECONCILIATION`;
-- entrada no registry apontando para caminho inexistente é `BLOCKING`.
+- entrada apontando para caminho inexistente é `BLOCKING`;
+- `ROUTABLE != EXECUTED` e `PROJECT_CONTEXT_READY != AUTHORIZED_TO_MUTATE`.
 
-Quando Builder, skill, registry ou handoff divergirem:
+Quando SES routing, Builder, skill, registry ou handoff divergirem:
 
 ```text
-declarar SKILL_DRIFT ou STALE_CONTINUITY
+declarar SPECIALIST_ROUTING_DRIFT, SKILL_DRIFT ou STALE_CONTINUITY
 preservar temporariamente a regra mais restritiva
 não reduzir salvaguarda já aplicada
-bloquear encerramento oficial
+bloquear encerramento oficial afetado
 propor reconciliação documental
 ```
 
-Skill presente somente em PR head é `PR_HEAD_ONLY`; não substitui a skill da main enquanto não for mergeada.
+Conteúdo presente somente em PR head é `PR_HEAD_ONLY`; não substitui `main` enquanto não for mergeado.
 
 ## 3. Documentos obrigatórios de bootstrap
 
@@ -83,12 +105,13 @@ Usar para:
 docs/bootstrap/2026-06-10-fechai-gpt-specialists-private-index.md
 ```
 
-Usar para:
+Usar como continuidade histórica/project-local para:
 
-- roteamento entre especialistas;
-- mapa de responsabilidades;
-- handoff entre GPTs;
+- responsabilidades locais ainda não migradas para roles SES;
+- handoff entre especialistas;
 - separação de papéis e gates.
+
+Para roles explicitamente adotados em `docs/skills/SES_SPECIALIST_ROUTING.md`, o routing SES atual prevalece sobre identidade GPT legada. O índice privado não pode substituir o `ROLE -> ARCHETYPE_ID` vigente.
 
 ### 3.3 Specialist modus operandi
 
@@ -141,6 +164,8 @@ Usar para:
 - contexto inicial de nova conversa;
 - ordem de rollback documental.
 
+Esse handoff é histórico/continuity e não substitui o SES specialist routing atual para roles adotados.
+
 ## 4. Baseline ativo de governança de entrega
 
 ```text
@@ -167,24 +192,26 @@ Ler após o bootstrap e a governança aplicável para determinar:
 - handoff corrente;
 - o que não alterar ou inferir.
 
-SFJM não substitui bootstrap, registry ou evidência live.
+SFJM não substitui bootstrap, routing SES, registry ou evidência live.
 
 ## 6. Ordem mínima de execução
 
 ```text
-1. Resolver main live.
+1. Resolver FECH.AI main live.
 2. Ler este INDEX.
-3. Resolver e ler a skill canônica pelo registry.
-4. Ler os documentos comuns de bootstrap, incluindo o Modus Operandi.
-5. Ler governança quando entrega/aceite estiverem envolvidos.
-6. Ler SFJM quando houver continuidade operacional.
-7. Localizar somente os documentos e arquivos necessários ao módulo/risco.
-8. Classificar a cobertura de cada fonte material.
-9. Reconstruir contexto, evidências, lacunas e conflitos.
-10. Validar GitHub live e ambiente necessário.
-11. Classificar riscos.
-12. Definir a próxima ação segura.
-13. Registrar handoff/index quando necessário.
+3. Ler SES_SPECIALIST_ROUTING.md.
+4. Para role SES adotado: resolver SES main + Project Adapter + archetype + certificação + regra local aplicável.
+5. Para domínio não adotado: resolver a skill project-local pelo registry FECH.AI.
+6. Ler os documentos comuns de bootstrap, incluindo o Modus Operandi.
+7. Ler governança quando entrega/aceite estiverem envolvidos.
+8. Ler SFJM quando houver continuidade operacional.
+9. Localizar somente os documentos e arquivos necessários ao módulo/risco.
+10. Classificar a cobertura de cada fonte material.
+11. Reconstruir contexto, evidências, lacunas e conflitos.
+12. Validar GitHub live e ambiente necessário.
+13. Classificar riscos.
+14. Definir a próxima ação segura.
+15. Registrar handoff/index quando necessário.
 ```
 
 ## 7. Contrato de cobertura comum
