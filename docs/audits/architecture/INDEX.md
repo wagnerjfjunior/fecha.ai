@@ -8,6 +8,29 @@ This index lists architecture audit records that must be read before changing Sa
 
 ## Current mandatory architecture records
 
+### A1/A2 AS-IS architecture, call-site and App.jsx integral-read baseline
+
+```text
+docs/audits/architecture/2026-08-21-a1-a2-as-is-callsite-and-app-integral-read-baseline.md
+```
+
+Purpose:
+
+```text
+Preserves the A1/A2 static architecture reconstruction, the fresh integral GitHub range read of src/App.jsx, current direct-write inventory, authority-boundary gaps, candidate dependency cuts and anti-loop invalidation rules before any target-architecture synthesis.
+```
+
+Read before:
+
+```text
+- decomposing or materially refactoring src/App.jsx;
+- selecting a target architecture for the FECH.AI monolith/decomposition front;
+- changing administrative direct-write paths in EditarCorretorModal;
+- changing MesaCliente composition/parser/Worker boundaries;
+- changing LeadOps application/data-access boundaries;
+- claiming that the A1/A2 baseline must be repeated without a material invalidation event.
+```
+
 ### Edge Functions, SaaS security layers and LeadOps bridge context
 
 ```text
