@@ -23,20 +23,33 @@ docs/sfjm/INDEX.md
 ## 2. Current semantic next action
 
 ```text
-Resolve the safe server-side disposition and authority contract for the remaining EditarCorretorModal administrative writes, without implementing until separately authorized.
+Complete the refreshed repository-wide direct-write/call-site inventory for PR-03 eligibility, preserving the two already-confirmed EditarCorretorModal writes and without re-reading unchanged App.jsx.
 ```
 
-The 2026-08-21 refreshed direct-write inventory is established and confirms two current direct PATCH paths in `EditarCorretorModal`; therefore the inventory is no longer the missing evidence item. Its result is negative for PR-03 eligibility because current administrative direct writes remain.
+The 2026-08-21 fresh integral read establishes the App.jsx bounded direct-write inventory and confirms two current direct PATCH paths in `EditarCorretorModal`.
 
-The other remaining material needs continue to be defined by `CURRENT_STATE.md` and include:
+That evidence does **not** by itself close the broader repository-wide predicate. The remaining inventory task must explicitly define:
+
+```text
+repository/source universe
+search/enumeration method
+coverage
+write mechanisms/patterns checked
+limitations
+```
+
+The other material needs continue to be defined by `CURRENT_STATE.md` and include:
 
 ```text
 post-deploy functional smoke
 post-deploy runtime fail-closed evidence
+refreshed repository-wide direct-write/call-site inventory
 safe server-side disposition for EditarCorretorModal
 cutover observation sufficient to confirm no legitimate flow depends on direct UPDATE
 controlled RPCs individually inventoried and tested for continuity under direct-UPDATE revocation
 ```
+
+After the bounded repository-wide inventory is closed, the next likely dependency is the safe server-side disposition and authority contract for the remaining administrative writes. That future transition is not pre-authorized here.
 
 This statement is semantic. It does not authorize any runtime test, Supabase mutation, implementation, Ready, merge, deployment or production action.
 
