@@ -1,7 +1,7 @@
 # FECH.AI — SFJM Next Safe Action
 
 **Status:** `SEMANTIC_NEXT_ACTION_VIEW / DOCUMENTATION_ONLY`  
-**Updated:** `2026-08-09`  
+**Updated:** `2026-08-21`  
 **Repository:** `wagnerjfjunior/fecha.ai`
 
 ## 1. Authority
@@ -23,15 +23,16 @@ docs/sfjm/INDEX.md
 ## 2. Current semantic next action
 
 ```text
-Resolve the smallest remaining evidence set required to determine PR-03 eligibility.
+Resolve the safe server-side disposition and authority contract for the remaining EditarCorretorModal administrative writes, without implementing until separately authorized.
 ```
 
-The current material evidence needs are defined in `CURRENT_STATE.md` and include:
+The 2026-08-21 refreshed direct-write inventory is established and confirms two current direct PATCH paths in `EditarCorretorModal`; therefore the inventory is no longer the missing evidence item. Its result is negative for PR-03 eligibility because current administrative direct writes remain.
+
+The other remaining material needs continue to be defined by `CURRENT_STATE.md` and include:
 
 ```text
 post-deploy functional smoke
 post-deploy runtime fail-closed evidence
-refreshed repository-wide direct-write/call-site inventory confirming no required direct update remains
 safe server-side disposition for EditarCorretorModal
 cutover observation sufficient to confirm no legitimate flow depends on direct UPDATE
 controlled RPCs individually inventoried and tested for continuity under direct-UPDATE revocation

@@ -1,7 +1,7 @@
 # FECH.AI — SFJM Evidence Freshness
 
 **Status:** `CLAIM_ANCHOR_INVALIDATION_LEDGER / DOCUMENTATION_ONLY`  
-**Updated:** `2026-08-09`  
+**Updated:** `2026-08-21`  
 **Repository:** `wagnerjfjunior/fecha.ai`
 
 ## 1. Freshness model
@@ -93,18 +93,71 @@ The deployment record proves a Production deployment event for the merge anchor.
 
 Invalidate/revalidate the affected frontend claim after relevant code/dependency/workflow change, deployment of a different code object for the decision being made, contradictory runtime evidence or a new material security finding.
 
+### PR-03 refreshed direct-write / call-site inventory
+
+Claim:
+
+```text
+the current protected App.jsx source was freshly read in full and its direct-write call sites were inventoried for the PR-03 eligibility question.
+```
+
+Code anchor:
+
+```text
+repository: wagnerjfjunior/fecha.ai
+ref used for the audit: 51a15d5abdfb8ce62d5903272eb2855917a8d456
+path: src/App.jsx
+blob: 2541813e6af44f4e8112296b7d9666df9320db5d
+size: 327255 bytes
+lines: 5902
+```
+
+Retrieval/coverage anchor:
+
+```text
+fresh GitHub bounded line retrieval
+continuous coverage: 1–5902
+stable blob across accepted ranges: YES
+post-EOF probe from line 5903: EMPTY
+coverage: INTEGRAL_READ
+```
+
+Durable result:
+
+```text
+repository/source direct-write inventory: ESTABLISHED
+
+active App.jsx direct PATCH paths confirmed in EditarCorretorModal:
+1. public.corretores -> ativo, apto_para_receber
+2. public.corretores -> must_change_password=false after administrative reset_password
+
+PR-03 eligibility condition "no required direct update remains":
+NOT SATISFIED
+```
+
+Evidence record:
+
+```text
+docs/audits/architecture/2026-08-21-a1-a2-as-is-callsite-and-app-integral-read-baseline.md
+```
+
+This result is static/versioned evidence. It does not prove current production grants/RLS behavior or authorize implementation.
+
+Invalidate/revalidate this claim after a material `src/App.jsx` blob change, relevant administrative component/data-access path change, contradictory repository evidence or other material source change affecting the inventory.
+
 ## 3. Remaining unestablished material claims
 
 ```text
 post-deploy functional smoke: NOT ESTABLISHED
 post-deploy runtime fail-closed evidence: NOT ESTABLISHED
-repository-wide direct-write/call-site inventory confirming no required direct update remains: NOT CURRENTLY ESTABLISHED
 safe server-side disposition for EditarCorretorModal: NOT ESTABLISHED
 cutover observation confirming no legitimate flow depends on direct UPDATE: NOT ESTABLISHED
 controlled RPC inventory and individual continuity testing for direct-UPDATE revocation: NOT ESTABLISHED
 ```
 
-These are evidence gaps, not proof of failure.
+The direct-write inventory is no longer an evidence gap. Its established result is negative for PR-03 eligibility because current administrative direct writes remain.
+
+These remaining items are evidence/disposition gaps, not proof of failure beyond the bounded claim stated.
 
 ## 4. Historical provenance claims
 
