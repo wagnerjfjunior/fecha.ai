@@ -138,6 +138,8 @@ A2 was defined to close the material evidence gaps before target synthesis:
 7. refresh the direct-write inventory required by SFJM PR-03 eligibility;
 8. identify candidate dependency cuts without selecting target architecture.
 
+A2 materially closed the large-file/App.jsx portion of this scope and several explicit runtime/data boundaries. It did **not** establish an exhaustive repository-wide direct-write inventory; that broader predicate remains open until its source universe, enumeration method, coverage and limitations are explicitly recorded.
+
 ## 6. Large-file retrieval correction and historical integrity
 
 ### 6.1 Initial failure
@@ -290,7 +292,7 @@ Therefore the file is not only UI composition. It also participates directly in 
 
 The existence of a generic helper does not prove a corresponding active call site. In particular, an `insert` capability exists, but no active `sb.insert(...)` invocation was established in the integral App.jsx call-site inventory.
 
-## 10. Refreshed direct-write inventory
+## 10. Refreshed App.jsx direct-write inventory
 
 The fresh integral read established two current direct `PATCH` call sites on `public.corretores`, both inside `EditarCorretorModal`.
 
@@ -327,18 +329,23 @@ This residual is distinct from the self-service mandatory-password cutover, whic
 
 The administrative flow spans Supabase Auth/Edge plus Postgres profile state and is not proven to be one atomic transaction.
 
-## 11. SFJM PR-03 consequence
+## 11. SFJM PR-03 consequence and independent-audit correction
 
 Before this evidence event, SFJM listed the refreshed repository-wide direct-write/call-site inventory as `NOT CURRENTLY ESTABLISHED`.
 
-The A1/A2 work now establishes the static repository inventory sufficiently to answer the relevant App/front-end question:
+The fresh A2 retrieval establishes a strong bounded component of that predicate:
 
 ```text
-REFRESHED DIRECT-WRITE INVENTORY:
+APP.JSX DIRECT-WRITE/CALL-SITE INVENTORY:
 ESTABLISHED
+
+REPOSITORY-WIDE DIRECT-WRITE/CALL-SITE INVENTORY:
+NOT YET ESTABLISHED
 ```
 
-However, the eligibility condition is **not satisfied**, because the refreshed inventory confirms required current administrative direct writes rather than proving that none remain.
+The App.jsx result itself is materially negative for future PR-03 eligibility because two current administrative direct writes are confirmed. However, it must not be promoted to an exhaustive repository-wide claim without a defined universe, enumeration/search method, coverage and limitations.
+
+An independent audit of PR #123 detected an earlier documentation overclaim that promoted the bounded App.jsx result to `repository-wide ESTABLISHED`. The PR was corrected in place; the overclaim is preserved as historical correction rather than retroactively erased.
 
 Therefore:
 
@@ -349,11 +356,17 @@ STILL NOT_YET_MATERIALLY_ELIGIBLE
 Administrative password-state residual:
 STILL ACTIVE_RESIDUAL_RISK
 
+App.jsx bounded inventory:
+ESTABLISHED
+
+Repository-wide predicate #3:
+OPEN / NOT YET ESTABLISHED
+
 Safe server-side disposition for EditarCorretorModal:
 STILL NOT ESTABLISHED
 ```
 
-The evidence gap changed; the product/security decision did not become PASS.
+The evidence improved materially; the product/security decision did not become PASS.
 
 ## 12. Authoritative boundary observations
 
@@ -474,10 +487,11 @@ No target topology was selected.
 | FECH.AI bootstrap index | main `51a15d5...` | `INTEGRAL_READ` for task | current routing/bootstrap contract |
 | FECH.AI SES routing | main `51a15d5...` | `INTEGRAL_READ` for task | adopted role map |
 | FECH.AI Modus Operandi | blob `e2deb1...` | `INTEGRAL_READ` | coverage and PR discipline |
-| SFJM `CURRENT_STATE.md` | blob `6fce3a...` | `INTEGRAL_READ` | PR-03 state and six predicates |
-| SFJM `EVIDENCE_FRESHNESS.md` | blob `ef8620...` | `INTEGRAL_READ` | current evidence-gap ledger |
+| SFJM `CURRENT_STATE.md` | main baseline blob `6fce3a...` plus PR #123 corrected final state | `INTEGRAL_READ` in applicable audit gates | PR-03 state/predicates |
+| SFJM `EVIDENCE_FRESHNESS.md` | main baseline blob `ef8620...` plus PR #123 corrected final state | `INTEGRAL_READ` in applicable audit gates | evidence-gap ledger |
 | SES Project Adapter | SES main `773fd947...` | `INTEGRAL_READ` | FECH.AI adopted roles |
 | SES architecture/documentation archetype contracts | SES main `773fd947...` | task-relevant canonical reads | reusable method only |
+| repository-wide direct-write/call-site universe | repository source set | `PARTIAL / NOT YET ESTABLISHED` | requires explicit enumeration/search coverage before predicate #3 can close |
 | Edge `criar-usuario` implementation | canonical repo tree | `NOT_READ / NOT_AVAILABLE_IN_TREE` | authority contract not established |
 | Edge `assistente-ai` implementation | canonical repo tree | `NOT_READ / NOT_AVAILABLE_IN_TREE` | authority contract not established |
 | external Mesa Worker runtime/source | external boundary | `NOT_READ / NOT_AVAILABLE` | outside current source universe |
@@ -497,7 +511,8 @@ No target topology was selected.
 
 ### PLANNED FUTURE WORK
 
-- Backend/Data authority-contract closure for the administrative `EditarCorretorModal` paths.
+- Complete the refreshed repository-wide direct-write/call-site inventory with an explicit source universe, enumeration/search method, coverage and limitations.
+- Backend/Data authority-contract closure for the administrative `EditarCorretorModal` paths after the inventory predicate is closed.
 - Independent AppSec validation of sensitive boundaries when the architecture/data evidence is sufficient.
 - Architecture alternatives/target synthesis only after the remaining authority dependencies required by that decision are closed.
 
@@ -513,6 +528,7 @@ full tenant-isolation PASS
 current applied RLS/grants/policy parity
 Edge Function security PASS
 Worker security PASS
+repository-wide direct-write inventory completeness
 PR-03 eligibility
 approved target architecture
 approved refactor
@@ -538,10 +554,18 @@ An unrelated documentation-only merge or `main` SHA movement alone does not inva
 
 ## 20. Next safe action
 
-The static architecture baseline is now substantially stronger because the large source hotspot has a fresh integral read and current direct-write inventory.
+The static architecture baseline is substantially stronger because the large source hotspot has a fresh integral read and a bounded current App.jsx direct-write inventory.
 
-The next material evidence gap for PR-03 is not another App.jsx re-read. It is the safe server-side disposition and authority contract for the remaining administrative writes, together with the other runtime/continuity predicates already preserved by SFJM.
+The next material evidence closure for PR-03 predicate #3 is:
 
-For future target-architecture work, do not reopen A1/A2 merely to recreate the same evidence unless a relevant invalidation event occurs.
+```text
+Complete the refreshed repository-wide direct-write/call-site inventory,
+while preserving the two already-confirmed EditarCorretorModal writes
+and without re-reading unchanged App.jsx.
+```
+
+That inventory must define its repository/source universe, search/enumeration method, coverage, checked write mechanisms and limitations. Only after that bounded repository-wide proof is closed should the workflow advance to the safe server-side disposition/authority contract for the remaining administrative writes.
+
+For future target-architecture work, do not reopen already-closed A1/App.jsx evidence merely to recreate the same proof unless a relevant invalidation event occurs.
 
 `NO MATERIAL EVENT -> NO AUTOMATIC RE-AUDIT`
