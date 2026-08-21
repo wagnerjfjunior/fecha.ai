@@ -1,7 +1,7 @@
 # FECH.AI — SFJM Next Safe Action
 
 **Status:** `SEMANTIC_NEXT_ACTION_VIEW / DOCUMENTATION_ONLY`  
-**Updated:** `2026-08-09`  
+**Updated:** `2026-08-21`  
 **Repository:** `wagnerjfjunior/fecha.ai`
 
 ## 1. Authority
@@ -23,19 +23,33 @@ docs/sfjm/INDEX.md
 ## 2. Current semantic next action
 
 ```text
-Resolve the smallest remaining evidence set required to determine PR-03 eligibility.
+Complete the refreshed repository-wide direct-write/call-site inventory for PR-03 eligibility, preserving the two already-confirmed EditarCorretorModal writes and without re-reading unchanged App.jsx.
 ```
 
-The current material evidence needs are defined in `CURRENT_STATE.md` and include:
+The 2026-08-21 fresh integral read establishes the App.jsx bounded direct-write inventory and confirms two current direct PATCH paths in `EditarCorretorModal`.
+
+That evidence does **not** by itself close the broader repository-wide predicate. The remaining inventory task must explicitly define:
+
+```text
+repository/source universe
+search/enumeration method
+coverage
+write mechanisms/patterns checked
+limitations
+```
+
+The other material needs continue to be defined by `CURRENT_STATE.md` and include:
 
 ```text
 post-deploy functional smoke
 post-deploy runtime fail-closed evidence
-refreshed repository-wide direct-write/call-site inventory confirming no required direct update remains
+refreshed repository-wide direct-write/call-site inventory
 safe server-side disposition for EditarCorretorModal
 cutover observation sufficient to confirm no legitimate flow depends on direct UPDATE
 controlled RPCs individually inventoried and tested for continuity under direct-UPDATE revocation
 ```
+
+After the bounded repository-wide inventory is closed, the next likely dependency is the safe server-side disposition and authority contract for the remaining administrative writes. That future transition is not pre-authorized here.
 
 This statement is semantic. It does not authorize any runtime test, Supabase mutation, implementation, Ready, merge, deployment or production action.
 
