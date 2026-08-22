@@ -130,9 +130,6 @@ App.jsx direct-write/call-site inventory: ESTABLISHED
 active App.jsx direct PATCH paths confirmed in EditarCorretorModal:
 1. public.corretores -> ativo, apto_para_receber
 2. public.corretores -> must_change_password=false after administrative reset_password
-
-repository-wide direct-write/call-site inventory:
-NOT YET ESTABLISHED
 ```
 
 Evidence record:
@@ -141,24 +138,90 @@ Evidence record:
 docs/audits/architecture/2026-08-21-a1-a2-as-is-callsite-and-app-integral-read-baseline.md
 ```
 
-This result is static/versioned and bounded to the recovered App.jsx plus the other explicitly inspected A1/A2 sources. It does not prove exhaustive repository-wide direct-write absence, current production grants/RLS behavior or implementation authority.
-
 Invalidate/revalidate the App.jsx claim after a material `src/App.jsx` blob change, relevant administrative component/data-access path change, contradictory repository evidence or other material source change affecting the bounded inventory.
+
+### PR-03 repository-wide static source direct-write / call-site inventory
+
+Claim:
+
+```text
+the refreshed repository-wide direct-write/call-site inventory is established for the explicitly bounded executable/versioned source universe, and no additional confirmed direct PostgREST table-DML caller was found by the enumerated mechanisms.
+```
+
+Repository/base anchor:
+
+```text
+repository: wagnerjfjunior/fecha.ai
+base/main: 827f8591bfe4eee595a1aa22e169dcf6465f7fa3
+root tree: e641a2ab1222404aa3634c7513154ebb6e0539f8
+```
+
+Bounded source-universe anchors:
+
+```text
+src/:               960b060d4950e737740eea1048d08412cbc8c462 / truncated=false
+api/:               81269ab5e79c1fcec7d421da74979f61208e0d8a / truncated=false
+public/:            cf3d9041c0bd07a970718ad8950d84f268a73ff9 / truncated=false
+scripts/:           a2f9961a1d88a8dd9b493f71103dcecd4e0b3e65 / truncated=false / test-only
+supabase/functions: 5cfe3c5f34d983f4567809d21f641c0733036d33 / truncated=false
+```
+
+Method boundary:
+
+```text
+complete tree enumeration of the bounded source universe
++ adversarial searches for direct DML methods, PostgREST URL construction, client wrappers and HTTP write methods
++ classification of material candidate source files
+```
+
+Durable result:
+
+```text
+repository-wide static source direct-write/call-site inventory: ESTABLISHED
+
+confirmed active direct table-write callers:
+1. EditarCorretorModal.salvar() -> PATCH public.corretores -> ativo, apto_para_receber
+2. EditarCorretorModal.redefinirSenha() -> PATCH public.corretores -> must_change_password=false
+
+predicate condition "confirming no required direct update remains": NOT SATISFIED
+PR-03: NOT_YET_MATERIALLY_ELIGIBLE
+```
+
+Evidence record:
+
+```text
+docs/audits/architecture/2026-08-21-pr03-repository-wide-direct-write-inventory-closure.md
+```
+
+Negative-evidence boundary:
+
+```text
+no additional confirmed direct table-DML caller was found in the bounded source universe by the enumerated mechanisms
+!= universal absence outside that universe
+!= runtime/security PASS
+```
+
+Invalidate/revalidate the affected inventory claim after a material change to the enumerated caller-source subtrees, App.jsx/EditCorretor data-access behavior, shared PostgREST/Supabase transport, runtime entrypoints, introduction of a new write mechanism, or contradictory repository/runtime evidence.
+
+A documentation-only main movement preserving these source anchors does not invalidate this claim by itself.
 
 ## 3. Remaining unestablished material claims
 
 ```text
 post-deploy functional smoke: NOT ESTABLISHED
 post-deploy runtime fail-closed evidence: NOT ESTABLISHED
-refreshed repository-wide direct-write/call-site inventory confirming no required direct update remains: NOT ESTABLISHED
 safe server-side disposition for EditarCorretorModal: NOT ESTABLISHED
 cutover observation confirming no legitimate flow depends on direct UPDATE: NOT ESTABLISHED
 controlled RPC inventory and individual continuity testing for direct-UPDATE revocation: NOT ESTABLISHED
 ```
 
-The App.jsx inventory is no longer an evidence gap. The broader repository-wide predicate remains open until its source universe, enumeration/search method, coverage and limitations are explicitly established.
+Predicate #3 no longer has an inventory-evidence gap. Its terminal condition is currently negative evidence against eligibility:
 
-These remaining items are evidence/disposition gaps, not proof of failure beyond the bounded claim stated.
+```text
+"confirming no required direct update remains" = NOT SATISFIED
+```
+
+The remaining items are evidence/disposition gaps, not proof of safety or failure beyond the bounded claims stated.
 
 ## 4. Historical provenance claims
 

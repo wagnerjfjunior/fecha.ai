@@ -1,6 +1,6 @@
 # FECH.AI — SFJM Current Material State
 
-**Status:** `MATERIAL_RECORDED_STATE / F1_02_ACTIVE_REMEDIATION / PR03_NOT_YET_ELIGIBLE / DOCUMENTATION_ONLY`  
+**Status:** `MATERIAL_RECORDED_STATE / F1_02_ACTIVE_REMEDIATION / PR03_NOT_YET_ELIGIBLE / PREDICATE3_STATIC_INVENTORY_ESTABLISHED / DOCUMENTATION_ONLY`  
 **Updated:** `2026-08-21`  
 **Repository:** `wagnerjfjunior/fecha.ai`
 
@@ -87,20 +87,27 @@ PR-03 must not begin until the canonical eligibility contract establishes that b
 
 The PR-01 production RPC prerequisite is anchored to `uobxxgzshrmbtjfdolxd / production` and migration `20260727080929 / f1_02_password_state_rpc / APPLIED`. PR-02 deployment is recorded, but the remaining runtime and continuity predicates below are not yet all established.
 
-The refreshed 2026-08-21 source evidence materially strengthens one part of predicate #3 without satisfying the repository-wide predicate:
+The refreshed 2026-08-21 repository-wide static source inventory now establishes the evidence component of predicate #3 for a defined executable/versioned source universe:
 
 ```text
 App.jsx bounded direct-write/call-site inventory: ESTABLISHED
-repository-wide direct-write/call-site inventory: NOT YET ESTABLISHED
-confirmed App.jsx result: two active direct PATCH paths remain in EditarCorretorModal
+repository-wide static source direct-write/call-site inventory: ESTABLISHED
+confirmed direct table-write result: two active direct PATCH paths remain in EditarCorretorModal
+predicate condition "no required direct update remains": NOT SATISFIED
 PR-03 eligibility: unchanged / NOT_YET_MATERIALLY_ELIGIBLE
+```
+
+The reproducible inventory method, source universe, search mechanisms, coverage and limitations are recorded in:
+
+```text
+docs/audits/architecture/2026-08-21-pr03-repository-wide-direct-write-inventory-closure.md
 ```
 
 ## 4. Active residual risk
 
 ### Administrative broker/profile writes
 
-The refreshed integral App.jsx inventory establishes two active direct writes in `EditarCorretorModal`:
+The refreshed inventory establishes two active direct writes in `EditarCorretorModal`:
 
 ```text
 1. operational broker state
@@ -125,7 +132,7 @@ No new administrative RPC, direct-write removal or runtime change is authorized 
 
 ## 5. PR-03 eligibility predicates
 
-### Established bounded evidence within predicate #3
+### Established evidence within predicate #3
 
 ```text
 App.jsx direct-write/call-site inventory:
@@ -133,19 +140,32 @@ App.jsx direct-write/call-site inventory:
    anchor: src/App.jsx blob 2541813e6af44f4e8112296b7d9666df9320db5d
    retrieval: fresh continuous GitHub ranges 1–5902 + empty 5903+ probe
    result: two current administrative direct PATCH paths confirmed
+
+repository-wide static source direct-write/call-site inventory:
+   ESTABLISHED on 2026-08-21
+   base: 827f8591bfe4eee595a1aa22e169dcf6465f7fa3
+   bounded executable/versioned source universe: src/, api/, public/, supabase/functions/, scripts/ test-only, material root runtime/build config
+   method: complete tree enumeration + adversarial write-mechanism searches + material candidate classification
+   result: no additional confirmed direct PostgREST table-DML caller found in the bounded universe; the two App.jsx paths remain active
 ```
 
-This closes the App.jsx evidence gap only. It does not by itself prove a refreshed repository-wide inventory because other frontend/source paths and generic or alternate write mechanisms still require an explicit bounded search universe and coverage record.
+Predicate #3 is not satisfied as a whole because its terminal condition is negative and currently false:
+
+```text
+"confirming no required direct update remains"
+→ NOT SATISFIED
+```
+
+The blocker has therefore moved from *inventory evidence missing* to *safe disposition of known required administrative direct-write dependencies*.
 
 ### Remaining material evidence / disposition needs
 
 ```text
 1. post-deploy functional smoke of the mandatory-password cutover;
 2. post-deploy runtime fail-closed evidence;
-3. refreshed repository-wide direct-write/call-site inventory confirming no required direct update remains;
-4. safe server-side disposition for the EditarCorretorModal administrative paths;
-5. cutover observation sufficient to confirm no legitimate flow depends on direct UPDATE;
-6. controlled RPCs individually inventoried and tested for continuity under direct-UPDATE revocation.
+3. safe server-side disposition for the EditarCorretorModal administrative paths;
+4. cutover observation sufficient to confirm no legitimate flow depends on direct UPDATE;
+5. controlled RPCs individually inventoried and tested for continuity under direct-UPDATE revocation.
 ```
 
 The absence of legacy direct UPDATE denial is not a circular prerequisite for starting the PR that is intended to revoke that permission. Direct-update denial belongs to post-PR-03 acceptance evidence.
@@ -179,8 +199,8 @@ Broad paid commercialization remains BLOCKED.
 F1-02 remains ACTIVE REMEDIATION / BLOCKED.
 PR-03 remains NOT_YET_MATERIALLY_ELIGIBLE.
 Administrative password-state residual remains ACTIVE_RESIDUAL_RISK.
-App.jsx bounded inventory confirms two current administrative direct-PATCH dependencies.
-Repository-wide direct-write/call-site predicate remains open.
+Repository-wide static source inventory is ESTABLISHED, but predicate #3 remains unsatisfied because two active direct-PATCH dependencies remain.
+Safe server-side disposition for EditarCorretorModal remains NOT ESTABLISHED.
 ```
 
 These are semantic blockers. Their validity is not tied to a particular current `main` SHA or PR Draft/Ready snapshot.
@@ -188,12 +208,34 @@ These are semantic blockers. Their validity is not tied to a particular current 
 ## 8. Semantic next action
 
 ```text
-Complete the refreshed repository-wide direct-write/call-site inventory for PR-03 eligibility, preserving the two already-confirmed EditarCorretorModal writes and without re-reading unchanged App.jsx.
+Resolve the safe server-side disposition and authority contract for the two remaining EditarCorretorModal administrative writes.
 ```
 
-This is the smallest remaining evidence closure for predicate #3. It must define the repository/source universe, search/enumeration method, coverage and limitations rather than promoting the App.jsx result to repository-wide coverage.
+The next specialist role is:
 
-After that bounded inventory is closed, resolve the safe server-side disposition and authority contract for the remaining EditarCorretorModal administrative writes, together with the other runtime/continuity predicates in section 5.
+```text
+ROLE=backend_data
+→ backend-data-platform-specialist
+```
+
+The next read-only closure must trace, at minimum:
+
+```text
+caller
+→ server-side command/RPC/Edge contract
+→ auth.uid() actor derivation
+→ actor profile/role
+→ tenant/company derivation
+→ target-user authorization
+→ allowed protected-state transition
+→ authoritative tables
+→ transaction or compensation semantics
+→ grants/RLS/policy implications
+→ auditability
+→ failure and rollback semantics
+```
+
+The existing `atualizar_status_corretor` RPC used by `TimesTab` is a candidate seam for part of the broker-state disposition, not proof of equivalence; its authoritative body and authorization contract must be verified before reuse is recommended.
 
 Any runtime smoke, Supabase change, PR-03 implementation, administrative server-side replacement, Ready, merge or deploy requires its own exact authority when applicable.
 
