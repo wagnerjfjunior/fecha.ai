@@ -88,7 +88,7 @@ begin
   if v_security_definer is distinct from true then
     raise exception 'T1_PREFLIGHT_STATUS_SECURITY_MODE_DRIFT';
   end if;
-  if not pg_catalog.coalesce(
+  if not coalesce(
     v_proconfig @> array['search_path=public']::text[], false
   ) then
     raise exception 'T1_PREFLIGHT_STATUS_SEARCH_PATH_DRIFT';
@@ -101,8 +101,7 @@ begin
     raise exception 'T1_PREFLIGHT_STATUS_ACL_DRIFT';
   end if;
 
-  -- Exact current corretores table ACL.
-  select pg_catalog.md5(pg_catalog.coalesce(c.relacl::text,''))
+  select pg_catalog.md5(coalesce(c.relacl::text,''))
     into strict v_table_acl_md5
   from pg_catalog.pg_class as c
   join pg_catalog.pg_namespace as n on n.oid=c.relnamespace
@@ -130,11 +129,10 @@ begin
     raise exception 'T1_PREFLIGHT_COLUMN_UPDATE_ACL_DRIFT';
   end if;
 
-  -- Exact current UPDATE policy, including the historical self-row branch.
   select pg_catalog.md5(
-    pg_catalog.coalesce(pg_catalog.pg_get_expr(p.polqual,p.polrelid),'')
+    coalesce(pg_catalog.pg_get_expr(p.polqual,p.polrelid),'')
     || '|'
-    || pg_catalog.coalesce(pg_catalog.pg_get_expr(p.polwithcheck,p.polrelid),'')
+    || coalesce(pg_catalog.pg_get_expr(p.polwithcheck,p.polrelid),'')
   )
   into strict v_policy_md5
   from pg_catalog.pg_policy as p
@@ -159,14 +157,12 @@ begin
     raise exception 'T1_PREFLIGHT_T1_OBJECT_ALREADY_EXISTS';
   end if;
 
-  -- The trusted root source must not be writable by authenticated users.
   if pg_catalog.has_table_privilege(v_authenticated_oid,'public.admins','INSERT')
      or pg_catalog.has_table_privilege(v_authenticated_oid,'public.admins','UPDATE')
      or pg_catalog.has_table_privilege(v_authenticated_oid,'public.admins','DELETE') then
     raise exception 'T1_PREFLIGHT_ADMINS_AUTHENTICATED_DML_PRESENT';
   end if;
 
-  -- RLS + FORCE RLS expected on all material tables.
   if exists (
     select 1
     from pg_catalog.pg_class as c
@@ -179,7 +175,6 @@ begin
     raise exception 'T1_PREFLIGHT_RLS_DRIFT';
   end if;
 
-  -- Required columns/types.
   if not exists (select 1 from information_schema.columns where table_schema='public' and table_name='corretores' and column_name='user_id' and data_type='uuid')
      or not exists (select 1 from information_schema.columns where table_schema='public' and table_name='corretores' and column_name='empresa_id' and data_type='uuid')
      or not exists (select 1 from information_schema.columns where table_schema='public' and table_name='corretores' and column_name='time_id' and data_type='uuid')
@@ -198,7 +193,6 @@ begin
     raise exception 'T1_PREFLIGHT_REQUIRED_COLUMN_DRIFT';
   end if;
 
-  -- Unique auth subject mapping for both actor sources.
   if not exists (
     select 1
     from pg_catalog.pg_index as i
@@ -274,7 +268,6 @@ revoke update on table public.corretores from authenticated;
 grant update (ativo,apto_para_receber,must_change_password)
   on public.corretores to authenticated;
 
--- Remove ordinary self-row direct UPDATE. Root path is also made strict here.
 drop policy corretores_update on public.corretores;
 create policy corretores_update
 on public.corretores
@@ -290,8 +283,6 @@ with check (
   or (public.is_gestor() and time_id=any(public.my_times_como_gestor()))
 );
 
--- Guard only direct authenticated Data API updates. SECURITY DEFINER RPC DML
--- executes as its owner and therefore is not mistaken for legacy direct DML.
 create function public.t1_guard_corretores_direct_compat_update()
 returns trigger
 language plpgsql
@@ -343,8 +334,6 @@ begin
     raise exception using errcode='42501',message='PROFILE_INACTIVE';
   end if;
 
-  -- Direct self changes to active/password state are never allowed. Controlled
-  -- self password completion remains the dedicated SECURITY DEFINER RPC.
   if old.user_id=v_uid and new.ativo is distinct from old.ativo then
     raise exception using errcode='42501',message='SELF_ACTIVE_CHANGE_DENIED';
   end if;
@@ -438,14 +427,12 @@ begin
     return jsonb_build_object('ok',false,'code','AUTH_REQUIRED','error','Usuário não autenticado');
   end if;
 
-  -- Root source is locked for the transaction and never comes from corretores.role.
   perform 1
   from public.admins as a
   where a.user_id=v_uid and a.ativo is true and a.role='admin_global'
   for share;
   if found then v_root:=true; end if;
 
-  -- Stabilize actor authority/active state before target mutation.
   begin
     select c.id,c.empresa_id,c.role,c.ativo,
            coalesce(c.is_admin_local,false),coalesce(c.is_gestor,false)
@@ -564,7 +551,7 @@ begin
   select p.proowner,p.prosecdef,p.proconfig into strict v_owner,v_definer,v_config
   from pg_catalog.pg_proc as p where p.oid=v_status_oid;
   if v_owner is distinct from v_postgres_oid or v_definer is distinct from true
-     or not pg_catalog.coalesce(v_config @> array['search_path=pg_catalog']::text[],false) then
+     or not coalesce(v_config @> array['search_path=pg_catalog']::text[],false) then
     raise exception 'T1_POSTFLIGHT_STATUS_SECURITY_CONTRACT_INVALID';
   end if;
   if not pg_catalog.has_function_privilege(v_authenticated_oid,v_status_oid,'EXECUTE')
@@ -574,7 +561,7 @@ begin
   end if;
   if exists (
     select 1 from pg_catalog.pg_proc as p
-    cross join lateral pg_catalog.aclexplode(pg_catalog.coalesce(p.proacl,pg_catalog.acldefault('f',p.proowner))) as acl
+    cross join lateral pg_catalog.aclexplode(coalesce(p.proacl,pg_catalog.acldefault('f',p.proowner))) as acl
     where p.oid=v_status_oid and acl.privilege_type='EXECUTE'
       and acl.grantee not in (p.proowner,v_authenticated_oid)
   ) then
@@ -584,7 +571,7 @@ begin
   select p.proowner,p.prosecdef,p.proconfig into strict v_owner,v_definer,v_config
   from pg_catalog.pg_proc as p where p.oid=v_root_oid;
   if v_owner is distinct from v_postgres_oid or v_definer is distinct from true
-     or not pg_catalog.coalesce(v_config @> array['search_path=pg_catalog']::text[],false) then
+     or not coalesce(v_config @> array['search_path=pg_catalog']::text[],false) then
     raise exception 'T1_POSTFLIGHT_ROOT_HELPER_SECURITY_INVALID';
   end if;
   if not pg_catalog.has_function_privilege(v_authenticated_oid,v_root_oid,'EXECUTE')
@@ -596,7 +583,7 @@ begin
   select p.proowner,p.prosecdef,p.proconfig into strict v_owner,v_definer,v_config
   from pg_catalog.pg_proc as p where p.oid=v_guard_oid;
   if v_owner is distinct from v_postgres_oid or v_definer is distinct from false
-     or not pg_catalog.coalesce(v_config @> array['search_path=pg_catalog']::text[],false) then
+     or not coalesce(v_config @> array['search_path=pg_catalog']::text[],false) then
     raise exception 'T1_POSTFLIGHT_GUARD_SECURITY_INVALID';
   end if;
 
@@ -627,10 +614,10 @@ begin
     and p.polname='corretores_update' and p.polcmd='w';
 
   if v_check is null
-     or pg_catalog.position('user_id = auth.uid()' in v_using)>0
-     or pg_catalog.position('user_id = auth.uid()' in v_check)>0
-     or pg_catalog.position('t1_is_root_strict' in v_using)=0
-     or pg_catalog.position('t1_is_root_strict' in v_check)=0 then
+     or position('user_id = auth.uid()' in v_using)>0
+     or position('user_id = auth.uid()' in v_check)>0
+     or position('t1_is_root_strict' in v_using)=0
+     or position('t1_is_root_strict' in v_check)=0 then
     raise exception 'T1_POSTFLIGHT_UPDATE_POLICY_INVALID';
   end if;
 
