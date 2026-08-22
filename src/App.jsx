@@ -4596,8 +4596,30 @@ function EditarCorretorModal({ corretor, sb, token, onSalvo, onFechar, session }
         p_lista_preferencial: listaId  || null,
       }, token);
       if (r.error) throw new Error(r.error);
-      await sb.patch("corretores","id=eq."+corretor.id,{ativo,apto_para_receber:apto},token);
-      onSalvo({...corretor, apelido, telefone_prof:telefone, empresa, ativo, apto_para_receber:apto});
+
+      const ativoMudou = ativo !== corretor.ativo;
+      const aptoMudou = apto !== corretor.apto_para_receber;
+      let status = null;
+
+      if (ativoMudou || aptoMudou) {
+        status = await sb.rpc("atualizar_status_corretor", {
+          p_corretor_id: corretor.id,
+          p_ativo: ativoMudou ? ativo : null,
+          p_apto_para_receber: aptoMudou ? apto : null,
+        }, token);
+        if (!status?.ok) {
+          throw new Error(status?.error || status?.code || "Erro ao atualizar status do corretor");
+        }
+      }
+
+      onSalvo({
+        ...corretor,
+        apelido,
+        telefone_prof: telefone,
+        empresa,
+        ativo: status?.ok ? status.ativo : corretor.ativo,
+        apto_para_receber: status?.ok ? status.apto_para_receber : corretor.apto_para_receber,
+      });
     } catch(e) { setErro(e.message); }
     setLd(false);
   };
