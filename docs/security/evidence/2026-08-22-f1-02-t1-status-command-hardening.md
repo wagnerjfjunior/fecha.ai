@@ -128,9 +128,28 @@ Any non-null `p_ativo` from a gestor is denied.
 
 Denied fail-closed.
 
-### Target and concurrency
+### Target, authorization and concurrency
 
-The target row is selected `FOR UPDATE` before authorization-dependent state mutation. `user_id` uniqueness is a migration preflight prerequisite for actor resolution.
+The first draft selected the target `FOR UPDATE` before the final authorization decision. That was corrected before independent review because an authenticated unauthorized caller should not be able to lock a foreign target row merely by knowing its ID.
+
+The current T1 contract uses operation-specific conditional `UPDATE` predicates:
+
+```text
+root:
+UPDATE by target id
+
+admin_local:
+UPDATE where target id + actor empresa_id
+
+gestor:
+UPDATE apto only where target id + actor empresa_id
++ ordinary broker role/flags
++ target time belongs to actor as gestor
+```
+
+The authorization predicate and mutation are therefore evaluated in the same database statement. A target that does not satisfy the operation-specific authority predicate is not updated, and the function returns the same bounded `TARGET_NOT_AUTHORIZED` result without distinguishing nonexistence from cross-tenant/unauthorized membership.
+
+This avoids a pre-authorization row lock and avoids target-existence disclosure through differentiated error codes.
 
 ### Audit
 
@@ -191,7 +210,7 @@ unexpected owner/security mode/search_path
 unexpected current ACL state
 direct UPDATE already revoked
 RLS/FORCE RLS drift
-required columns/types missing
+required corretores/admins/times columns or types missing
 user_id uniqueness missing
 ```
 
