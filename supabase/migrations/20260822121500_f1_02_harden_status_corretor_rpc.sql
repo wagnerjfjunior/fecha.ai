@@ -3,7 +3,7 @@
 --
 -- Product contract
 --   root        -> ativo/apto on authorized target
---   admin_local -> same company, ativo/apto
+--   admin_local -> same company, ativo/apto; admin authority does NOT require is_gestor=true
 --   gestor      -> ordinary brokers in own ACTIVE managed teams, apto only
 --   corretor / no auth / inactive actor -> deny
 --   root source -> ONLY public.admins(role='admin_global', ativo=true)
@@ -205,8 +205,8 @@ begin
     where c.role in ('corretor','gestor','admin_local')
       and (
         coalesce(c.is_admin_local,false) is distinct from (c.role='admin_local')
-        or coalesce(c.is_gestor,false)
-           is distinct from (c.role in ('gestor','admin_local'))
+        or (c.role='corretor' and coalesce(c.is_gestor,false) is true)
+        or (c.role='gestor' and coalesce(c.is_gestor,false) is distinct from true)
       )
   ) then
     raise exception 'T1_PREFLIGHT_ROLE_FLAG_INCONSISTENCY';
@@ -438,7 +438,6 @@ begin
 
   if v_actor_role='admin_local'
      and v_actor_admin is true
-     and v_actor_gestor is true
      and v_actor_empresa is not null
      and p_target_empresa_id=v_actor_empresa then
     return true;
@@ -589,8 +588,8 @@ begin
     if new.role not in ('corretor','gestor','admin_local')
        or coalesce(new.is_admin_local,false)
           is distinct from (new.role='admin_local')
-       or coalesce(new.is_gestor,false)
-          is distinct from (new.role in ('gestor','admin_local')) then
+       or (new.role='corretor' and coalesce(new.is_gestor,false) is true)
+       or (new.role='gestor' and coalesce(new.is_gestor,false) is distinct from true) then
       raise exception using
         errcode='42501',message='ROLE_FLAG_TRANSITION_INVALID';
     end if;
@@ -599,7 +598,6 @@ begin
       null;
     elsif v_actor_role='admin_local'
           and v_actor_admin is true
-          and v_actor_gestor is true
           and v_actor_empresa is not null
           and old.empresa_id=v_actor_empresa
           and old.role is distinct from 'admin_local' then
@@ -623,7 +621,6 @@ begin
       null;
     elsif v_actor_role='admin_local'
           and v_actor_admin is true
-          and v_actor_gestor is true
           and v_actor_empresa is not null
           and old.empresa_id=v_actor_empresa then
       null;
@@ -661,7 +658,6 @@ begin
 
     if v_actor_role='admin_local'
        and v_actor_admin is true
-       and v_actor_gestor is true
        and v_actor_empresa is not null
        and old.empresa_id=v_actor_empresa
        and old.user_id is distinct from v_uid then
@@ -815,7 +811,6 @@ begin
 
   if v_role='admin_local'
      and v_admin is true
-     and v_gestor is true
      and v_empresa_id is not null
      and old.empresa_id=v_empresa_id then
     return new;
@@ -983,8 +978,7 @@ begin
       into v_updated_id,v_updated_ativo,v_updated_apto;
 
   elsif v_role='admin_local'
-        and v_admin is true
-        and v_gestor is true then
+        and v_admin is true then
 
     update public.corretores as target
        set ativo=coalesce(p_ativo,target.ativo),
