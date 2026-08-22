@@ -1,24 +1,26 @@
 -- FECH.AI / F1-02 / T1
--- Server-authoritative status command + minimum direct-DML integrity required
--- for that command to trust actor authority.
+-- Status authority hardening for Pilot Production.
 --
--- Product contract:
--- root       -> ativo/apto on authorized target
--- admin_local-> same company, ativo/apto
--- gestor     -> ordinary brokers in own ACTIVE managed teams, apto only
--- corretor / no auth / inactive actor -> deny
--- root source -> ONLY public.admins(role='admin_global', ativo=true)
+-- Product contract
+--   root        -> ativo/apto on authorized target
+--   admin_local -> same company, ativo/apto
+--   gestor      -> ordinary brokers in own ACTIVE managed teams, apto only
+--   corretor / no auth / inactive actor -> deny
+--   root source -> ONLY public.admins(role='admin_global', ativo=true)
 --
--- Compatibility window:
--- authenticated direct UPDATE is NOT fully revoked yet. It is narrowed to the
--- three legacy fields still required before frontend/password cutovers:
--- ativo, apto_para_receber, must_change_password.
--- Authority-bearing columns are removed from authenticated direct DML and a
--- trigger prevents the legacy PATCH path from bypassing the same actor/tenant/
--- team/field restrictions.
+-- T1 also protects the authority fields consumed by the status boundary.
+-- This is required because a server-side read is not authoritative if the
+-- authenticated caller can directly or indirectly rewrite the same authority.
 --
--- GitHub versioning != Supabase application. Production application remains a
--- separate authorized gate.
+-- Compatibility window
+--   authenticated direct UPDATE is not fully revoked yet.
+--   Only ativo, apto_para_receber and must_change_password remain temporarily
+--   writable for the existing frontend paths, behind a strict BEFORE trigger.
+--   Authority fields are removed from direct authenticated DML and authority
+--   UPDATEs issued through existing SECURITY DEFINER RPCs are guarded too.
+--
+-- GitHub versioning != Supabase application. This file is not executed by being
+-- committed. Production application remains a separate Product Authority gate.
 
 -- =============================================================================
 -- 1. EXACT PRE-FLIGHT
@@ -67,18 +69,16 @@ begin
     raise exception 'T1_PREFLIGHT_STATUS_FUNCTION_MISSING';
   end if;
 
-  select
-    p.proowner,
-    p.prosecdef,
-    p.proconfig,
-    pg_catalog.md5(pg_catalog.pg_get_functiondef(p.oid)),
-    p.proacl::text
-  into strict
-    v_owner_oid,
-    v_security_definer,
-    v_proconfig,
-    v_function_md5,
-    v_function_acl
+  select p.proowner,
+         p.prosecdef,
+         p.proconfig,
+         pg_catalog.md5(pg_catalog.pg_get_functiondef(p.oid)),
+         p.proacl::text
+    into strict v_owner_oid,
+                v_security_definer,
+                v_proconfig,
+                v_function_md5,
+                v_function_acl
   from pg_catalog.pg_proc as p
   where p.oid = v_status_oid;
 
@@ -88,16 +88,13 @@ begin
   if v_security_definer is distinct from true then
     raise exception 'T1_PREFLIGHT_STATUS_SECURITY_MODE_DRIFT';
   end if;
-  if not coalesce(
-    v_proconfig @> array['search_path=public']::text[], false
-  ) then
+  if not coalesce(v_proconfig @> array['search_path=public']::text[], false) then
     raise exception 'T1_PREFLIGHT_STATUS_SEARCH_PATH_DRIFT';
   end if;
   if v_function_md5 is distinct from 'ef89d686ebb3230ae4bef1b71d4860fd' then
     raise exception 'T1_PREFLIGHT_STATUS_BODY_DRIFT';
   end if;
-  if v_function_acl is distinct from
-     '{postgres=X/postgres,service_role=X/postgres}' then
+  if v_function_acl is distinct from '{postgres=X/postgres,service_role=X/postgres}' then
     raise exception 'T1_PREFLIGHT_STATUS_ACL_DRIFT';
   end if;
 
@@ -122,7 +119,8 @@ begin
     from pg_catalog.pg_attribute as a
     cross join lateral pg_catalog.aclexplode(a.attacl) as acl
     where a.attrelid='public.corretores'::regclass
-      and a.attnum>0 and not a.attisdropped
+      and a.attnum>0
+      and not a.attisdropped
       and acl.grantee=v_authenticated_oid
       and acl.privilege_type='UPDATE'
   ) then
@@ -130,11 +128,11 @@ begin
   end if;
 
   select pg_catalog.md5(
-    coalesce(pg_catalog.pg_get_expr(p.polqual,p.polrelid),'')
-    || '|'
-    || coalesce(pg_catalog.pg_get_expr(p.polwithcheck,p.polrelid),'')
-  )
-  into strict v_policy_md5
+           coalesce(pg_catalog.pg_get_expr(p.polqual,p.polrelid),'')
+           || '|'
+           || coalesce(pg_catalog.pg_get_expr(p.polwithcheck,p.polrelid),'')
+         )
+    into strict v_policy_md5
   from pg_catalog.pg_policy as p
   where p.polrelid='public.corretores'::regclass
     and p.polname='corretores_update'
@@ -145,24 +143,37 @@ begin
   end if;
 
   if pg_catalog.to_regprocedure('public.t1_is_root_strict()') is not null
-     or pg_catalog.to_regprocedure(
-       'public.t1_guard_corretores_direct_compat_update()'
-     ) is not null
+     or pg_catalog.to_regprocedure('public.t1_guard_corretores_authority_update()') is not null
+     or pg_catalog.to_regprocedure('public.t1_guard_corretores_direct_compat_update()') is not null
      or exists (
-       select 1 from pg_catalog.pg_trigger as tg
+       select 1
+       from pg_catalog.pg_trigger as tg
        where tg.tgrelid='public.corretores'::regclass
-         and tg.tgname='trg_t1_guard_corretores_direct_compat_update'
+         and tg.tgname in (
+           'trg_t1_guard_corretores_authority_update',
+           'trg_t1_guard_corretores_direct_compat_update'
+         )
          and not tg.tgisinternal
      ) then
     raise exception 'T1_PREFLIGHT_T1_OBJECT_ALREADY_EXISTS';
   end if;
 
+  -- Trusted root boundary must not be client-writable.
   if pg_catalog.has_table_privilege(v_authenticated_oid,'public.admins','INSERT')
      or pg_catalog.has_table_privilege(v_authenticated_oid,'public.admins','UPDATE')
      or pg_catalog.has_table_privilege(v_authenticated_oid,'public.admins','DELETE') then
     raise exception 'T1_PREFLIGHT_ADMINS_AUTHENTICATED_DML_PRESENT';
   end if;
 
+  if not exists (
+    select 1
+    from public.admins as a
+    where a.ativo is true and a.role='admin_global'
+  ) then
+    raise exception 'T1_PREFLIGHT_ACTIVE_ROOT_MISSING';
+  end if;
+
+  -- RLS/FORCE RLS expected on all material tables.
   if exists (
     select 1
     from pg_catalog.pg_class as c
@@ -175,6 +186,7 @@ begin
     raise exception 'T1_PREFLIGHT_RLS_DRIFT';
   end if;
 
+  -- Required columns/types.
   if not exists (select 1 from information_schema.columns where table_schema='public' and table_name='corretores' and column_name='user_id' and data_type='uuid')
      or not exists (select 1 from information_schema.columns where table_schema='public' and table_name='corretores' and column_name='empresa_id' and data_type='uuid')
      or not exists (select 1 from information_schema.columns where table_schema='public' and table_name='corretores' and column_name='time_id' and data_type='uuid')
@@ -184,6 +196,7 @@ begin
      or not exists (select 1 from information_schema.columns where table_schema='public' and table_name='corretores' and column_name='ativo' and data_type='boolean')
      or not exists (select 1 from information_schema.columns where table_schema='public' and table_name='corretores' and column_name='apto_para_receber' and data_type='boolean')
      or not exists (select 1 from information_schema.columns where table_schema='public' and table_name='corretores' and column_name='must_change_password' and data_type='boolean')
+     or not exists (select 1 from information_schema.columns where table_schema='public' and table_name='times' and column_name='id' and data_type='uuid')
      or not exists (select 1 from information_schema.columns where table_schema='public' and table_name='times' and column_name='gestor_id' and data_type='uuid')
      or not exists (select 1 from information_schema.columns where table_schema='public' and table_name='times' and column_name='empresa_id' and data_type='uuid')
      or not exists (select 1 from information_schema.columns where table_schema='public' and table_name='times' and column_name='ativo' and data_type='boolean')
@@ -193,18 +206,43 @@ begin
     raise exception 'T1_PREFLIGHT_REQUIRED_COLUMN_DRIFT';
   end if;
 
+  -- Current non-admin_global role/flag state must be internally coherent before
+  -- T1 freezes it as authority. Legacy admin_global rows are deliberately not
+  -- treated as root unless backed by the trusted admins table.
+  if exists (
+    select 1
+    from public.corretores as c
+    where c.role in ('corretor','gestor','admin_local')
+      and (
+        coalesce(c.is_admin_local,false) is distinct from (c.role='admin_local')
+        or coalesce(c.is_gestor,false) is distinct from (c.role in ('gestor','admin_local'))
+      )
+  ) then
+    raise exception 'T1_PREFLIGHT_ROLE_FLAG_INCONSISTENCY';
+  end if;
+
+  -- Unique auth-subject mapping for both actor sources.
   if not exists (
     select 1
     from pg_catalog.pg_index as i
     join pg_catalog.pg_class as t on t.oid=i.indrelid
     join pg_catalog.pg_namespace as n on n.oid=t.relnamespace
     join pg_catalog.pg_attribute as a
-      on a.attrelid=t.oid and a.attname='user_id'
-      and a.attnum>0 and not a.attisdropped
-    where n.nspname='public' and t.relname='corretores'
-      and i.indisunique and i.indisvalid and i.indisready
-      and i.indimmediate and i.indpred is null and i.indexprs is null
-      and i.indnkeyatts=1 and i.indnatts=1 and i.indkey[0]=a.attnum
+      on a.attrelid=t.oid
+     and a.attname='user_id'
+     and a.attnum>0
+     and not a.attisdropped
+    where n.nspname='public'
+      and t.relname='corretores'
+      and i.indisunique
+      and i.indisvalid
+      and i.indisready
+      and i.indimmediate
+      and i.indpred is null
+      and i.indexprs is null
+      and i.indnkeyatts=1
+      and i.indnatts=1
+      and i.indkey[0]=a.attnum
   ) then
     raise exception 'T1_PREFLIGHT_CORRETORES_USER_ID_UNIQUE_MISSING';
   end if;
@@ -215,18 +253,28 @@ begin
     join pg_catalog.pg_class as t on t.oid=i.indrelid
     join pg_catalog.pg_namespace as n on n.oid=t.relnamespace
     join pg_catalog.pg_attribute as a
-      on a.attrelid=t.oid and a.attname='user_id'
-      and a.attnum>0 and not a.attisdropped
-    where n.nspname='public' and t.relname='admins'
-      and i.indisunique and i.indisvalid and i.indisready
-      and i.indimmediate and i.indpred is null and i.indexprs is null
-      and i.indnkeyatts=1 and i.indnatts=1 and i.indkey[0]=a.attnum
+      on a.attrelid=t.oid
+     and a.attname='user_id'
+     and a.attnum>0
+     and not a.attisdropped
+    where n.nspname='public'
+      and t.relname='admins'
+      and i.indisunique
+      and i.indisvalid
+      and i.indisready
+      and i.indimmediate
+      and i.indpred is null
+      and i.indexprs is null
+      and i.indnkeyatts=1
+      and i.indnatts=1
+      and i.indkey[0]=a.attnum
   ) then
     raise exception 'T1_PREFLIGHT_ADMINS_USER_ID_UNIQUE_MISSING';
   end if;
 
   if not exists (
-    select 1 from pg_catalog.pg_trigger as tg
+    select 1
+    from pg_catalog.pg_trigger as tg
     where tg.tgrelid='public.corretores'::regclass
       and tg.tgname='trg_audit_trail_corretores_critical_update'
       and not tg.tgisinternal
@@ -237,7 +285,7 @@ end;
 $preflight$;
 
 -- =============================================================================
--- 2. STRICT ROOT SOURCE USED BY T1 + LEGACY DIRECT COMPATIBILITY
+-- 2. STRICT ROOT HELPER
 -- =============================================================================
 create function public.t1_is_root_strict()
 returns boolean
@@ -262,12 +310,193 @@ revoke all on function public.t1_is_root_strict() from service_role;
 grant execute on function public.t1_is_root_strict() to authenticated;
 
 -- =============================================================================
--- 3. NARROW AUTHENTICATED DIRECT UPDATE — NOT FINAL PR-03 REVOCATION
+-- 3. AUTHORITY UPDATE GUARD
+-- =============================================================================
+-- This trigger also sees UPDATEs issued by authenticated callers through existing
+-- SECURITY DEFINER role/time RPCs because auth.uid() remains the request actor.
+-- A privileged internal service operation with no user subject may pass only when
+-- current_user is postgres or service_role.
+create function public.t1_guard_corretores_authority_update()
+returns trigger
+language plpgsql
+security invoker
+set search_path=pg_catalog
+as $fn$
+declare
+  v_uid uuid;
+  v_actor_id uuid;
+  v_actor_empresa uuid;
+  v_actor_role text;
+  v_actor_active boolean;
+  v_actor_admin boolean;
+  v_actor_gestor boolean;
+  v_root boolean:=false;
+begin
+  if new.role is not distinct from old.role
+     and new.is_admin_local is not distinct from old.is_admin_local
+     and new.is_gestor is not distinct from old.is_gestor
+     and new.empresa_id is not distinct from old.empresa_id
+     and new.time_id is not distinct from old.time_id
+     and new.user_id is not distinct from old.user_id then
+    return new;
+  end if;
+
+  v_uid:=auth.uid();
+
+  if v_uid is null then
+    if current_user in ('postgres','service_role') then
+      return new;
+    end if;
+    raise exception using errcode='42501',message='AUTH_REQUIRED';
+  end if;
+
+  perform 1
+  from public.admins as a
+  where a.user_id=v_uid
+    and a.ativo is true
+    and a.role='admin_global'
+  for share;
+  if found then v_root:=true; end if;
+
+  begin
+    select c.id,
+           c.empresa_id,
+           c.role,
+           c.ativo,
+           coalesce(c.is_admin_local,false),
+           coalesce(c.is_gestor,false)
+      into strict v_actor_id,
+                  v_actor_empresa,
+                  v_actor_role,
+                  v_actor_active,
+                  v_actor_admin,
+                  v_actor_gestor
+    from public.corretores as c
+    where c.user_id=v_uid
+    for share;
+  exception
+    when no_data_found then
+      if v_root then
+        v_actor_id:=null;
+        v_actor_empresa:=null;
+      else
+        raise exception using errcode='42501',message='ACTOR_PROFILE_NOT_FOUND';
+      end if;
+    when too_many_rows then
+      raise exception using errcode='21000',message='ACTOR_PROFILE_AMBIGUOUS';
+  end;
+
+  if v_actor_id is not null and v_actor_active is distinct from true then
+    raise exception using errcode='42501',message='PROFILE_INACTIVE';
+  end if;
+
+  -- No authenticated user, including root, changes its own authority/identity
+  -- through a user-scoped request. Out-of-band platform maintenance remains a
+  -- separate privileged service operation.
+  if old.user_id=v_uid then
+    raise exception using errcode='42501',message='SELF_AUTHORITY_CHANGE_DENIED';
+  end if;
+
+  if new.user_id is distinct from old.user_id
+     or new.empresa_id is distinct from old.empresa_id then
+    raise exception using errcode='42501',message='IDENTITY_OR_TENANT_CHANGE_DENIED';
+  end if;
+
+  -- Role/flag transitions: root or strict same-company admin_local only.
+  if new.role is distinct from old.role
+     or new.is_admin_local is distinct from old.is_admin_local
+     or new.is_gestor is distinct from old.is_gestor then
+
+    if new.role not in ('corretor','gestor','admin_local')
+       or coalesce(new.is_admin_local,false) is distinct from (new.role='admin_local')
+       or coalesce(new.is_gestor,false) is distinct from (new.role in ('gestor','admin_local')) then
+      raise exception using errcode='42501',message='ROLE_FLAG_TRANSITION_INVALID';
+    end if;
+
+    if v_root then
+      null;
+    elsif v_actor_role='admin_local'
+          and v_actor_admin is true
+          and v_actor_gestor is true
+          and v_actor_empresa is not null
+          and old.empresa_id=v_actor_empresa
+          and old.role is distinct from 'admin_local' then
+      null;
+    else
+      raise exception using errcode='42501',message='ROLE_CHANGE_DENIED';
+    end if;
+  end if;
+
+  -- Team transitions: root, strict same-company admin_local, or gestor assuming
+  -- an unassigned ordinary broker into one of the actor's own active teams.
+  if new.time_id is distinct from old.time_id then
+    if new.time_id is not null and not exists (
+      select 1
+      from public.times as t
+      where t.id=new.time_id
+        and t.empresa_id=new.empresa_id
+    ) then
+      raise exception using errcode='42501',message='TARGET_TEAM_INVALID';
+    end if;
+
+    if v_root then
+      null;
+    elsif v_actor_role='admin_local'
+          and v_actor_admin is true
+          and v_actor_gestor is true
+          and v_actor_empresa is not null
+          and old.empresa_id=v_actor_empresa then
+      null;
+    elsif v_actor_role='gestor'
+          and v_actor_gestor is true
+          and v_actor_admin is false
+          and v_actor_empresa is not null
+          and old.empresa_id=v_actor_empresa
+          and old.role='corretor'
+          and coalesce(old.is_admin_local,false) is false
+          and coalesce(old.is_gestor,false) is false
+          and old.time_id is null
+          and new.time_id is not null then
+      perform 1
+      from public.times as t
+      where t.id=new.time_id
+        and t.empresa_id=v_actor_empresa
+        and t.gestor_id=v_actor_id
+        and t.ativo is true
+      for share;
+      if not found then
+        raise exception using errcode='42501',message='TEAM_CHANGE_DENIED';
+      end if;
+    else
+      raise exception using errcode='42501',message='TEAM_CHANGE_DENIED';
+    end if;
+  end if;
+
+  return new;
+end;
+$fn$;
+
+alter function public.t1_guard_corretores_authority_update() owner to postgres;
+revoke all on function public.t1_guard_corretores_authority_update() from public;
+revoke all on function public.t1_guard_corretores_authority_update() from anon;
+revoke all on function public.t1_guard_corretores_authority_update() from authenticated;
+revoke all on function public.t1_guard_corretores_authority_update() from service_role;
+
+create trigger trg_t1_guard_corretores_authority_update
+before update of role,is_admin_local,is_gestor,empresa_id,time_id,user_id
+on public.corretores
+for each row
+execute function public.t1_guard_corretores_authority_update();
+
+-- =============================================================================
+-- 4. NARROW AUTHENTICATED DIRECT UPDATE — NOT FINAL PR-03 REVOCATION
 -- =============================================================================
 revoke update on table public.corretores from authenticated;
 grant update (ativo,apto_para_receber,must_change_password)
   on public.corretores to authenticated;
 
+-- The coarse RLS policy no longer contains the ordinary self-row path. Strict
+-- field/tenant/team enforcement is repeated in the compatibility trigger below.
 drop policy corretores_update on public.corretores;
 create policy corretores_update
 on public.corretores
@@ -283,6 +512,9 @@ with check (
   or (public.is_gestor() and time_id=any(public.my_times_como_gestor()))
 );
 
+-- =============================================================================
+-- 5. TEMPORARY DIRECT-COMPATIBILITY GUARD
+-- =============================================================================
 create function public.t1_guard_corretores_direct_compat_update()
 returns trigger
 language plpgsql
@@ -297,7 +529,7 @@ declare
   v_ativo boolean;
   v_admin boolean;
   v_gestor boolean;
-  v_root boolean;
+  v_root boolean:=false;
 begin
   if current_user <> 'authenticated' then
     return new;
@@ -309,19 +541,35 @@ begin
     return new;
   end if;
 
-  v_uid := auth.uid();
+  v_uid:=auth.uid();
   if v_uid is null then
     raise exception using errcode='42501',message='AUTH_REQUIRED';
   end if;
 
-  v_root := public.t1_is_root_strict();
+  perform 1
+  from public.admins as a
+  where a.user_id=v_uid
+    and a.ativo is true
+    and a.role='admin_global'
+  for share;
+  if found then v_root:=true; end if;
 
   begin
-    select c.id,c.empresa_id,c.role,c.ativo,
-           coalesce(c.is_admin_local,false),coalesce(c.is_gestor,false)
-      into strict v_actor_id,v_empresa_id,v_role,v_ativo,v_admin,v_gestor
+    select c.id,
+           c.empresa_id,
+           c.role,
+           c.ativo,
+           coalesce(c.is_admin_local,false),
+           coalesce(c.is_gestor,false)
+      into strict v_actor_id,
+                  v_empresa_id,
+                  v_role,
+                  v_ativo,
+                  v_admin,
+                  v_gestor
     from public.corretores as c
-    where c.user_id=v_uid;
+    where c.user_id=v_uid
+    for share;
   exception
     when no_data_found then
       if v_root then return new; end if;
@@ -346,7 +594,7 @@ begin
     return new;
   end if;
 
-  if v_role='admin_local' and v_admin is true and v_gestor is false then
+  if v_role='admin_local' and v_admin is true and v_gestor is true then
     if v_empresa_id is null or old.empresa_id is distinct from v_empresa_id then
       raise exception using errcode='42501',message='CROSS_TENANT_DENIED';
     end if;
@@ -367,13 +615,14 @@ begin
       raise exception using errcode='42501',message='TARGET_NOT_AUTHORIZED';
     end if;
 
-    if not exists (
-      select 1 from public.times as t
-      where t.id=old.time_id
-        and t.empresa_id=v_empresa_id
-        and t.gestor_id=v_actor_id
-        and t.ativo is true
-    ) then
+    perform 1
+    from public.times as t
+    where t.id=old.time_id
+      and t.empresa_id=v_empresa_id
+      and t.gestor_id=v_actor_id
+      and t.ativo is true
+    for share;
+    if not found then
       raise exception using errcode='42501',message='TARGET_NOT_AUTHORIZED';
     end if;
 
@@ -393,10 +642,11 @@ revoke all on function public.t1_guard_corretores_direct_compat_update() from se
 create trigger trg_t1_guard_corretores_direct_compat_update
 before update of ativo,apto_para_receber,must_change_password
 on public.corretores
-for each row execute function public.t1_guard_corretores_direct_compat_update();
+for each row
+execute function public.t1_guard_corretores_direct_compat_update();
 
 -- =============================================================================
--- 4. HARDENED STATUS RPC
+-- 6. HARDENED STATUS RPC
 -- =============================================================================
 create or replace function public.atualizar_status_corretor(
   p_corretor_id uuid,
@@ -424,37 +674,59 @@ declare
 begin
   v_uid:=auth.uid();
   if v_uid is null then
-    return jsonb_build_object('ok',false,'code','AUTH_REQUIRED','error','Usuário não autenticado');
+    return jsonb_build_object(
+      'ok',false,'code','AUTH_REQUIRED','error','Usuário não autenticado'
+    );
   end if;
 
   perform 1
   from public.admins as a
-  where a.user_id=v_uid and a.ativo is true and a.role='admin_global'
+  where a.user_id=v_uid
+    and a.ativo is true
+    and a.role='admin_global'
   for share;
   if found then v_root:=true; end if;
 
   begin
-    select c.id,c.empresa_id,c.role,c.ativo,
-           coalesce(c.is_admin_local,false),coalesce(c.is_gestor,false)
-      into strict v_actor_id,v_empresa_id,v_role,v_ativo,v_admin,v_gestor
+    select c.id,
+           c.empresa_id,
+           c.role,
+           c.ativo,
+           coalesce(c.is_admin_local,false),
+           coalesce(c.is_gestor,false)
+      into strict v_actor_id,
+                  v_empresa_id,
+                  v_role,
+                  v_ativo,
+                  v_admin,
+                  v_gestor
     from public.corretores as c
     where c.user_id=v_uid
     for share;
     v_profile_found:=true;
   exception
-    when no_data_found then v_profile_found:=false;
+    when no_data_found then
+      v_profile_found:=false;
     when too_many_rows then
-      return jsonb_build_object('ok',false,'code','ACTOR_PROFILE_AMBIGUOUS','error','Perfil autenticado ambíguo');
+      return jsonb_build_object(
+        'ok',false,'code','ACTOR_PROFILE_AMBIGUOUS','error','Perfil autenticado ambíguo'
+      );
   end;
 
   if v_profile_found and v_ativo is distinct from true then
-    return jsonb_build_object('ok',false,'code','PROFILE_INACTIVE','error','Perfil autenticado inativo');
+    return jsonb_build_object(
+      'ok',false,'code','PROFILE_INACTIVE','error','Perfil autenticado inativo'
+    );
   end if;
   if not v_root and not v_profile_found then
-    return jsonb_build_object('ok',false,'code','ACTOR_PROFILE_NOT_FOUND','error','Perfil autenticado não encontrado');
+    return jsonb_build_object(
+      'ok',false,'code','ACTOR_PROFILE_NOT_FOUND','error','Perfil autenticado não encontrado'
+    );
   end if;
   if p_ativo is null and p_apto_para_receber is null then
-    return jsonb_build_object('ok',false,'code','NO_CHANGE_REQUESTED','error','Nenhuma alteração solicitada');
+    return jsonb_build_object(
+      'ok',false,'code','NO_CHANGE_REQUESTED','error','Nenhuma alteração solicitada'
+    );
   end if;
 
   if v_root then
@@ -465,7 +737,7 @@ begin
      returning target.id,target.ativo,target.apto_para_receber
       into v_updated_id,v_updated_ativo,v_updated_apto;
 
-  elsif v_role='admin_local' and v_admin is true and v_gestor is false then
+  elsif v_role='admin_local' and v_admin is true and v_gestor is true then
     update public.corretores as target
        set ativo=coalesce(p_ativo,target.ativo),
            apto_para_receber=coalesce(p_apto_para_receber,target.apto_para_receber)
@@ -477,11 +749,17 @@ begin
 
   elsif v_role='gestor' and v_gestor is true and v_admin is false then
     if p_ativo is not null then
-      return jsonb_build_object('ok',false,'code','ACTIVE_CHANGE_DENIED_FOR_MANAGER','error','Gestor não pode alterar o estado ativo do corretor');
+      return jsonb_build_object(
+        'ok',false,
+        'code','ACTIVE_CHANGE_DENIED_FOR_MANAGER',
+        'error','Gestor não pode alterar o estado ativo do corretor'
+      );
     end if;
 
     update public.corretores as target
-       set apto_para_receber=coalesce(p_apto_para_receber,target.apto_para_receber)
+       set apto_para_receber=coalesce(
+         p_apto_para_receber,target.apto_para_receber
+       )
      where target.id=p_corretor_id
        and v_empresa_id is not null
        and target.empresa_id=v_empresa_id
@@ -490,7 +768,8 @@ begin
        and coalesce(target.is_gestor,false) is false
        and target.time_id is not null
        and exists (
-         select 1 from public.times as t
+         select 1
+         from public.times as t
          where t.id=target.time_id
            and t.empresa_id=v_empresa_id
            and t.gestor_id=v_actor_id
@@ -500,16 +779,24 @@ begin
       into v_updated_id,v_updated_ativo,v_updated_apto;
 
   else
-    return jsonb_build_object('ok',false,'code','ACCESS_DENIED','error','Sem permissão para alterar status de corretor');
+    return jsonb_build_object(
+      'ok',false,'code','ACCESS_DENIED','error','Sem permissão para alterar status de corretor'
+    );
   end if;
 
   if v_updated_id is null then
-    return jsonb_build_object('ok',false,'code','TARGET_NOT_AUTHORIZED','error','Corretor não encontrado ou não autorizado');
+    return jsonb_build_object(
+      'ok',false,
+      'code','TARGET_NOT_AUTHORIZED',
+      'error','Corretor não encontrado ou não autorizado'
+    );
   end if;
 
   return jsonb_build_object(
-    'ok',true,'corretor_id',v_updated_id,
-    'ativo',v_updated_ativo,'apto_para_receber',v_updated_apto
+    'ok',true,
+    'corretor_id',v_updated_id,
+    'ativo',v_updated_ativo,
+    'apto_para_receber',v_updated_apto
   );
 end;
 $fn$;
@@ -524,13 +811,14 @@ comment on function public.atualizar_status_corretor(uuid,boolean,boolean) is
   'F1-02 T1 strict status command: root only from active admins/admin_global; admin_local same tenant; gestor own active managed ordinary brokers, apto only.';
 
 -- =============================================================================
--- 5. POST-FLIGHT
+-- 7. POST-FLIGHT
 -- =============================================================================
 do $postflight$
 declare
   v_status_oid oid;
   v_root_oid oid;
-  v_guard_oid oid;
+  v_authority_guard_oid oid;
+  v_compat_guard_oid oid;
   v_postgres_oid oid:=pg_catalog.to_regrole('postgres');
   v_authenticated_oid oid:=pg_catalog.to_regrole('authenticated');
   v_anon_oid oid:=pg_catalog.to_regrole('anon');
@@ -541,67 +829,125 @@ declare
   v_definer boolean;
   v_config text[];
 begin
-  v_status_oid:=pg_catalog.to_regprocedure('public.atualizar_status_corretor(uuid,boolean,boolean)');
+  v_status_oid:=pg_catalog.to_regprocedure(
+    'public.atualizar_status_corretor(uuid,boolean,boolean)'
+  );
   v_root_oid:=pg_catalog.to_regprocedure('public.t1_is_root_strict()');
-  v_guard_oid:=pg_catalog.to_regprocedure('public.t1_guard_corretores_direct_compat_update()');
-  if v_status_oid is null or v_root_oid is null or v_guard_oid is null then
+  v_authority_guard_oid:=pg_catalog.to_regprocedure(
+    'public.t1_guard_corretores_authority_update()'
+  );
+  v_compat_guard_oid:=pg_catalog.to_regprocedure(
+    'public.t1_guard_corretores_direct_compat_update()'
+  );
+
+  if v_status_oid is null
+     or v_root_oid is null
+     or v_authority_guard_oid is null
+     or v_compat_guard_oid is null then
     raise exception 'T1_POSTFLIGHT_REQUIRED_FUNCTION_MISSING';
   end if;
 
-  select p.proowner,p.prosecdef,p.proconfig into strict v_owner,v_definer,v_config
-  from pg_catalog.pg_proc as p where p.oid=v_status_oid;
-  if v_owner is distinct from v_postgres_oid or v_definer is distinct from true
+  select p.proowner,p.prosecdef,p.proconfig
+    into strict v_owner,v_definer,v_config
+  from pg_catalog.pg_proc as p
+  where p.oid=v_status_oid;
+
+  if v_owner is distinct from v_postgres_oid
+     or v_definer is distinct from true
      or not coalesce(v_config @> array['search_path=pg_catalog']::text[],false) then
-    raise exception 'T1_POSTFLIGHT_STATUS_SECURITY_CONTRACT_INVALID';
+    raise exception 'T1_POSTFLIGHT_STATUS_SECURITY_INVALID';
   end if;
-  if not pg_catalog.has_function_privilege(v_authenticated_oid,v_status_oid,'EXECUTE')
+
+  if not pg_catalog.has_function_privilege(
+       v_authenticated_oid,v_status_oid,'EXECUTE'
+     )
      or pg_catalog.has_function_privilege(v_anon_oid,v_status_oid,'EXECUTE')
      or pg_catalog.has_function_privilege(v_service_role_oid,v_status_oid,'EXECUTE') then
     raise exception 'T1_POSTFLIGHT_STATUS_ACL_INVALID';
   end if;
+
   if exists (
-    select 1 from pg_catalog.pg_proc as p
-    cross join lateral pg_catalog.aclexplode(coalesce(p.proacl,pg_catalog.acldefault('f',p.proowner))) as acl
-    where p.oid=v_status_oid and acl.privilege_type='EXECUTE'
+    select 1
+    from pg_catalog.pg_proc as p
+    cross join lateral pg_catalog.aclexplode(
+      coalesce(p.proacl,pg_catalog.acldefault('f',p.proowner))
+    ) as acl
+    where p.oid=v_status_oid
+      and acl.privilege_type='EXECUTE'
       and acl.grantee not in (p.proowner,v_authenticated_oid)
   ) then
     raise exception 'T1_POSTFLIGHT_STATUS_UNEXPECTED_EXECUTOR';
   end if;
 
-  select p.proowner,p.prosecdef,p.proconfig into strict v_owner,v_definer,v_config
-  from pg_catalog.pg_proc as p where p.oid=v_root_oid;
-  if v_owner is distinct from v_postgres_oid or v_definer is distinct from true
+  select p.proowner,p.prosecdef,p.proconfig
+    into strict v_owner,v_definer,v_config
+  from pg_catalog.pg_proc as p
+  where p.oid=v_root_oid;
+
+  if v_owner is distinct from v_postgres_oid
+     or v_definer is distinct from true
      or not coalesce(v_config @> array['search_path=pg_catalog']::text[],false) then
     raise exception 'T1_POSTFLIGHT_ROOT_HELPER_SECURITY_INVALID';
   end if;
-  if not pg_catalog.has_function_privilege(v_authenticated_oid,v_root_oid,'EXECUTE')
+
+  if not pg_catalog.has_function_privilege(
+       v_authenticated_oid,v_root_oid,'EXECUTE'
+     )
      or pg_catalog.has_function_privilege(v_anon_oid,v_root_oid,'EXECUTE')
      or pg_catalog.has_function_privilege(v_service_role_oid,v_root_oid,'EXECUTE') then
     raise exception 'T1_POSTFLIGHT_ROOT_HELPER_ACL_INVALID';
   end if;
 
-  select p.proowner,p.prosecdef,p.proconfig into strict v_owner,v_definer,v_config
-  from pg_catalog.pg_proc as p where p.oid=v_guard_oid;
-  if v_owner is distinct from v_postgres_oid or v_definer is distinct from false
+  select p.proowner,p.prosecdef,p.proconfig
+    into strict v_owner,v_definer,v_config
+  from pg_catalog.pg_proc as p
+  where p.oid=v_authority_guard_oid;
+
+  if v_owner is distinct from v_postgres_oid
+     or v_definer is distinct from false
      or not coalesce(v_config @> array['search_path=pg_catalog']::text[],false) then
-    raise exception 'T1_POSTFLIGHT_GUARD_SECURITY_INVALID';
+    raise exception 'T1_POSTFLIGHT_AUTHORITY_GUARD_SECURITY_INVALID';
   end if;
 
-  if pg_catalog.has_table_privilege(v_authenticated_oid,'public.corretores','UPDATE') then
+  select p.proowner,p.prosecdef,p.proconfig
+    into strict v_owner,v_definer,v_config
+  from pg_catalog.pg_proc as p
+  where p.oid=v_compat_guard_oid;
+
+  if v_owner is distinct from v_postgres_oid
+     or v_definer is distinct from false
+     or not coalesce(v_config @> array['search_path=pg_catalog']::text[],false) then
+    raise exception 'T1_POSTFLIGHT_COMPAT_GUARD_SECURITY_INVALID';
+  end if;
+
+  if pg_catalog.has_table_privilege(
+    v_authenticated_oid,'public.corretores','UPDATE'
+  ) then
     raise exception 'T1_POSTFLIGHT_BROAD_UPDATE_PRESENT';
   end if;
 
-  if not pg_catalog.has_column_privilege(v_authenticated_oid,'public.corretores','ativo','UPDATE')
-     or not pg_catalog.has_column_privilege(v_authenticated_oid,'public.corretores','apto_para_receber','UPDATE')
-     or not pg_catalog.has_column_privilege(v_authenticated_oid,'public.corretores','must_change_password','UPDATE') then
+  if not pg_catalog.has_column_privilege(
+       v_authenticated_oid,'public.corretores','ativo','UPDATE'
+     )
+     or not pg_catalog.has_column_privilege(
+       v_authenticated_oid,'public.corretores','apto_para_receber','UPDATE'
+     )
+     or not pg_catalog.has_column_privilege(
+       v_authenticated_oid,'public.corretores','must_change_password','UPDATE'
+     ) then
     raise exception 'T1_POSTFLIGHT_COMPAT_COLUMN_UPDATE_MISSING';
   end if;
 
   if exists (
-    select 1 from information_schema.column_privileges as cp
-    where cp.table_schema='public' and cp.table_name='corretores'
-      and cp.grantee='authenticated' and cp.privilege_type='UPDATE'
-      and cp.column_name not in ('ativo','apto_para_receber','must_change_password')
+    select 1
+    from information_schema.column_privileges as cp
+    where cp.table_schema='public'
+      and cp.table_name='corretores'
+      and cp.grantee='authenticated'
+      and cp.privilege_type='UPDATE'
+      and cp.column_name not in (
+        'ativo','apto_para_receber','must_change_password'
+      )
   ) then
     raise exception 'T1_POSTFLIGHT_UNEXPECTED_UPDATE_COLUMN';
   end if;
@@ -611,7 +957,8 @@ begin
     into strict v_using,v_check
   from pg_catalog.pg_policy as p
   where p.polrelid='public.corretores'::regclass
-    and p.polname='corretores_update' and p.polcmd='w';
+    and p.polname='corretores_update'
+    and p.polcmd='w';
 
   if v_check is null
      or position('user_id = auth.uid()' in v_using)>0
@@ -622,12 +969,23 @@ begin
   end if;
 
   if not exists (
-    select 1 from pg_catalog.pg_trigger as tg
+    select 1
+    from pg_catalog.pg_trigger as tg
+    where tg.tgrelid='public.corretores'::regclass
+      and tg.tgname='trg_t1_guard_corretores_authority_update'
+      and not tg.tgisinternal
+  ) then
+    raise exception 'T1_POSTFLIGHT_AUTHORITY_GUARD_TRIGGER_MISSING';
+  end if;
+
+  if not exists (
+    select 1
+    from pg_catalog.pg_trigger as tg
     where tg.tgrelid='public.corretores'::regclass
       and tg.tgname='trg_t1_guard_corretores_direct_compat_update'
       and not tg.tgisinternal
   ) then
-    raise exception 'T1_POSTFLIGHT_GUARD_TRIGGER_MISSING';
+    raise exception 'T1_POSTFLIGHT_COMPAT_GUARD_TRIGGER_MISSING';
   end if;
 
   if pg_catalog.has_table_privilege(v_authenticated_oid,'public.admins','INSERT')
@@ -639,13 +997,15 @@ end;
 $postflight$;
 
 -- =============================================================================
--- 6. EXACT ROLLBACK — separate production authorization required
+-- 8. EXACT ROLLBACK — SEPARATE PRODUCTION AUTHORIZATION REQUIRED
 -- =============================================================================
--- Before rollback, first prove the currently applied surface is still exactly
--- this T1 version. Do not overwrite later drift.
+-- Before rollback, prove that the currently applied surface is still exactly
+-- this T1 version. Never overwrite later drift.
 --
 -- drop trigger if exists trg_t1_guard_corretores_direct_compat_update on public.corretores;
 -- drop function if exists public.t1_guard_corretores_direct_compat_update();
+-- drop trigger if exists trg_t1_guard_corretores_authority_update on public.corretores;
+-- drop function if exists public.t1_guard_corretores_authority_update();
 -- drop policy if exists corretores_update on public.corretores;
 -- create policy corretores_update
 -- on public.corretores
@@ -656,7 +1016,8 @@ $postflight$;
 --   or (public.is_gestor() and time_id=any(public.my_times_como_gestor()))
 --   or (user_id=auth.uid())
 -- );
--- revoke update (ativo,apto_para_receber,must_change_password) on public.corretores from authenticated;
+-- revoke update (ativo,apto_para_receber,must_change_password)
+--   on public.corretores from authenticated;
 -- grant update on table public.corretores to authenticated;
 -- revoke all on function public.t1_is_root_strict() from authenticated;
 -- drop function if exists public.t1_is_root_strict();
