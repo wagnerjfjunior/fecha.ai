@@ -122,59 +122,80 @@ begin
   end if;
 
   if not exists (
-    select 1
-      from information_schema.columns
-     where table_schema = 'public'
-       and table_name = 'corretores'
-       and column_name = 'user_id'
-       and data_type = 'uuid'
-  ) then
-    raise exception 'T1_PREFLIGHT_USER_ID_UUID_MISSING';
-  end if;
+    select 1 from information_schema.columns
+     where table_schema='public' and table_name='corretores'
+       and column_name='user_id' and data_type='uuid'
+  ) then raise exception 'T1_PREFLIGHT_USER_ID_UUID_MISSING'; end if;
 
   if not exists (
-    select 1
-      from information_schema.columns
-     where table_schema = 'public'
-       and table_name = 'corretores'
-       and column_name = 'empresa_id'
-       and data_type = 'uuid'
-  ) then
-    raise exception 'T1_PREFLIGHT_EMPRESA_ID_UUID_MISSING';
-  end if;
+    select 1 from information_schema.columns
+     where table_schema='public' and table_name='corretores'
+       and column_name='empresa_id' and data_type='uuid'
+  ) then raise exception 'T1_PREFLIGHT_EMPRESA_ID_UUID_MISSING'; end if;
 
   if not exists (
-    select 1
-      from information_schema.columns
-     where table_schema = 'public'
-       and table_name = 'corretores'
-       and column_name = 'time_id'
-       and data_type = 'uuid'
-  ) then
-    raise exception 'T1_PREFLIGHT_TIME_ID_UUID_MISSING';
-  end if;
+    select 1 from information_schema.columns
+     where table_schema='public' and table_name='corretores'
+       and column_name='time_id' and data_type='uuid'
+  ) then raise exception 'T1_PREFLIGHT_TIME_ID_UUID_MISSING'; end if;
 
   if not exists (
-    select 1
-      from information_schema.columns
-     where table_schema = 'public'
-       and table_name = 'corretores'
-       and column_name = 'ativo'
-       and data_type = 'boolean'
-  ) then
-    raise exception 'T1_PREFLIGHT_ATIVO_BOOLEAN_MISSING';
-  end if;
+    select 1 from information_schema.columns
+     where table_schema='public' and table_name='corretores'
+       and column_name='role' and data_type='text'
+  ) then raise exception 'T1_PREFLIGHT_ROLE_TEXT_MISSING'; end if;
 
   if not exists (
-    select 1
-      from information_schema.columns
-     where table_schema = 'public'
-       and table_name = 'corretores'
-       and column_name = 'apto_para_receber'
-       and data_type = 'boolean'
-  ) then
-    raise exception 'T1_PREFLIGHT_APTO_BOOLEAN_MISSING';
-  end if;
+    select 1 from information_schema.columns
+     where table_schema='public' and table_name='corretores'
+       and column_name='is_admin_local' and data_type='boolean'
+  ) then raise exception 'T1_PREFLIGHT_ADMIN_FLAG_BOOLEAN_MISSING'; end if;
+
+  if not exists (
+    select 1 from information_schema.columns
+     where table_schema='public' and table_name='corretores'
+       and column_name='is_gestor' and data_type='boolean'
+  ) then raise exception 'T1_PREFLIGHT_GESTOR_FLAG_BOOLEAN_MISSING'; end if;
+
+  if not exists (
+    select 1 from information_schema.columns
+     where table_schema='public' and table_name='corretores'
+       and column_name='ativo' and data_type='boolean'
+  ) then raise exception 'T1_PREFLIGHT_ATIVO_BOOLEAN_MISSING'; end if;
+
+  if not exists (
+    select 1 from information_schema.columns
+     where table_schema='public' and table_name='corretores'
+       and column_name='apto_para_receber' and data_type='boolean'
+  ) then raise exception 'T1_PREFLIGHT_APTO_BOOLEAN_MISSING'; end if;
+
+  if not exists (
+    select 1 from information_schema.columns
+     where table_schema='public' and table_name='admins'
+       and column_name='user_id' and data_type='uuid'
+  ) or not exists (
+    select 1 from information_schema.columns
+     where table_schema='public' and table_name='admins'
+       and column_name='ativo' and data_type='boolean'
+  ) then raise exception 'T1_PREFLIGHT_ADMINS_CONTRACT_MISSING'; end if;
+
+  if not exists (
+    select 1 from information_schema.columns
+     where table_schema='public' and table_name='times'
+       and column_name='id' and data_type='uuid'
+  ) or not exists (
+    select 1 from information_schema.columns
+     where table_schema='public' and table_name='times'
+       and column_name='empresa_id' and data_type='uuid'
+  ) or not exists (
+    select 1 from information_schema.columns
+     where table_schema='public' and table_name='times'
+       and column_name='gestor_id' and data_type='uuid'
+  ) or not exists (
+    select 1 from information_schema.columns
+     where table_schema='public' and table_name='times'
+       and column_name='ativo' and data_type='boolean'
+  ) then raise exception 'T1_PREFLIGHT_TIMES_CONTRACT_MISSING'; end if;
 
   -- Actor mapping must remain unambiguous.
   if not exists (
@@ -223,17 +244,8 @@ declare
   v_actor_is_gestor boolean := false;
   v_actor_is_admin_global boolean := false;
   v_root boolean := false;
-
-  v_target_empresa_id uuid;
-  v_target_time_id uuid;
-  v_target_role text;
-  v_target_is_admin_local boolean;
-  v_target_is_gestor boolean;
-  v_target_ativo boolean;
-  v_target_apto boolean;
-
-  v_new_ativo boolean;
-  v_new_apto boolean;
+  v_final_ativo boolean;
+  v_final_apto boolean;
 begin
   v_actor_user_id := auth.uid();
 
@@ -245,9 +257,9 @@ begin
     );
   end if;
 
-  -- Root authority is derived server-side. The admins table is authoritative
-  -- for platform root; the historical active admin_global role remains
-  -- compatible until PR-03 removes direct authority-field mutation.
+  -- Platform root is derived server-side from public.admins. The historical
+  -- active admin_global compatibility path is retained until PR-03 closes
+  -- direct authority-field mutation.
   select exists (
     select 1
       from public.admins as a
@@ -309,56 +321,24 @@ begin
     );
   end if;
 
-  begin
-    select
-      c.empresa_id,
-      c.time_id,
-      c.role,
-      coalesce(c.is_admin_local, false),
-      coalesce(c.is_gestor, false),
-      c.ativo,
-      c.apto_para_receber
-    into strict
-      v_target_empresa_id,
-      v_target_time_id,
-      v_target_role,
-      v_target_is_admin_local,
-      v_target_is_gestor,
-      v_target_ativo,
-      v_target_apto
-    from public.corretores as c
-    where c.id = p_corretor_id
-    for update;
-  exception
-    when no_data_found then
-      return jsonb_build_object(
-        'ok', false,
-        'code', 'TARGET_NOT_FOUND',
-        'error', 'Corretor alvo não encontrado'
-      );
-    when too_many_rows then
-      return jsonb_build_object(
-        'ok', false,
-        'code', 'TARGET_AMBIGUOUS',
-        'error', 'Corretor alvo ambíguo'
-      );
-  end;
-
   if v_root then
-    null;
+    update public.corretores as c
+       set ativo = coalesce(p_ativo, c.ativo),
+           apto_para_receber = coalesce(p_apto_para_receber, c.apto_para_receber)
+     where c.id = p_corretor_id
+     returning c.ativo, c.apto_para_receber
+      into v_final_ativo, v_final_apto;
 
   elsif v_actor_is_admin_local then
-    if v_actor_empresa_id is null
-       or v_target_empresa_id is distinct from v_actor_empresa_id then
-      return jsonb_build_object(
-        'ok', false,
-        'code', 'CROSS_TENANT_DENIED',
-        'error', 'Corretor não pertence à sua empresa'
-      );
-    end if;
+    update public.corretores as c
+       set ativo = coalesce(p_ativo, c.ativo),
+           apto_para_receber = coalesce(p_apto_para_receber, c.apto_para_receber)
+     where c.id = p_corretor_id
+       and c.empresa_id = v_actor_empresa_id
+     returning c.ativo, c.apto_para_receber
+      into v_final_ativo, v_final_apto;
 
   elsif v_actor_is_gestor then
-    -- Product contract: gestor never owns the target's ativo transition.
     if p_ativo is not null then
       return jsonb_build_object(
         'ok', false,
@@ -367,42 +347,23 @@ begin
       );
     end if;
 
-    if v_actor_empresa_id is null
-       or v_target_empresa_id is distinct from v_actor_empresa_id then
-      return jsonb_build_object(
-        'ok', false,
-        'code', 'CROSS_TENANT_DENIED',
-        'error', 'Corretor não pertence à sua empresa'
-      );
-    end if;
-
-    -- Product contract: gestor may change lead eligibility only for ordinary
-    -- brokers in teams that the actor actually manages.
-    if v_target_role is distinct from 'corretor'
-       or v_target_is_admin_local
-       or v_target_is_gestor then
-      return jsonb_build_object(
-        'ok', false,
-        'code', 'TARGET_ROLE_DENIED_FOR_MANAGER',
-        'error', 'Gestor só pode alterar corretores dos próprios times'
-      );
-    end if;
-
-    if v_target_time_id is null
-       or not exists (
+    update public.corretores as c
+       set apto_para_receber = coalesce(p_apto_para_receber, c.apto_para_receber)
+     where c.id = p_corretor_id
+       and c.empresa_id = v_actor_empresa_id
+       and c.role = 'corretor'
+       and coalesce(c.is_admin_local, false) = false
+       and coalesce(c.is_gestor, false) = false
+       and exists (
          select 1
            from public.times as t
-          where t.id = v_target_time_id
+          where t.id = c.time_id
             and t.empresa_id = v_actor_empresa_id
             and t.gestor_id = v_actor_id
             and coalesce(t.ativo, true) = true
-       ) then
-      return jsonb_build_object(
-        'ok', false,
-        'code', 'TARGET_OUTSIDE_MANAGED_TEAMS',
-        'error', 'Corretor não pertence a um time gerenciado pelo ator'
-      );
-    end if;
+       )
+     returning c.ativo, c.apto_para_receber
+      into v_final_ativo, v_final_apto;
 
   else
     return jsonb_build_object(
@@ -412,19 +373,20 @@ begin
     );
   end if;
 
-  v_new_ativo := coalesce(p_ativo, v_target_ativo);
-  v_new_apto := coalesce(p_apto_para_receber, v_target_apto);
-
-  update public.corretores as c
-     set ativo = v_new_ativo,
-         apto_para_receber = v_new_apto
-   where c.id = p_corretor_id;
+  -- Do not leak target existence or tenant membership to an unauthorized caller.
+  if not found then
+    return jsonb_build_object(
+      'ok', false,
+      'code', 'TARGET_NOT_AUTHORIZED',
+      'error', 'Corretor alvo indisponível para esta operação'
+    );
+  end if;
 
   return jsonb_build_object(
     'ok', true,
     'corretor_id', p_corretor_id,
-    'ativo', v_new_ativo,
-    'apto_para_receber', v_new_apto
+    'ativo', v_final_ativo,
+    'apto_para_receber', v_final_apto
   );
 end;
 $function$;
