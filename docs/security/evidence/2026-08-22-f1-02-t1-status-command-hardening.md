@@ -1,18 +1,18 @@
 # FECH.AI — F1-02 T1 Status Command Hardening
 
-**Status:** `DRAFT_IMPLEMENTED / GITHUB_ONLY / NOT_APPLIED / PRODUCTION_GATE_PENDING`  
+**Status:** `DRAFT_REVISED_AFTER_APPSEC_REQUEST_CHANGES / GITHUB_ONLY / NOT_APPLIED / REAUDIT_REQUIRED`  
 **Date:** `2026-08-22`  
 **Repository:** `wagnerjfjunior/fecha.ai`  
-**Risk:** one narrow server-side authority boundary for `ativo` / `apto_para_receber`  
-**Environment:** Supabase `uobxxgzshrmbtjfdolxd` is the only active database environment; no test branch is adopted at this stage.
+**Primary risk:** trusted server-side authority for `ativo` / `apto_para_receber` while preserving the temporary production compatibility window.  
+**Environment:** Supabase production `uobxxgzshrmbtjfdolxd`; no separate test database/branch is adopted at this stage.
 
-## 1. Exact anchors
+## 1. Exact base and branch
 
 ```text
-Base branch:
+Base:
 main
 
-Base SHA at T1 branch creation:
+Base SHA:
 827f8591bfe4eee595a1aa22e169dcf6465f7fa3
 
 Branch:
@@ -22,275 +22,424 @@ Migration:
 supabase/migrations/20260822121500_f1_02_harden_status_corretor_rpc.sql
 ```
 
-The active documentation reconciliation PR #124 remains separate and is not modified by T1. Its SFJM state is `PR_HEAD_ONLY` until independently authorized lifecycle changes occur.
+Resolve the live PR head before every gate. Any new commit invalidates an earlier exact-head review.
 
-## 2. Product Authority decisions used by T1
-
-The following target rules were explicitly approved before implementation:
+## 2. Product Authority contract
 
 ```text
-1. Gestor may change apto_para_receber only for ordinary brokers in teams the gestor manages.
-2. Gestor does not change ativo.
-3. Root may change operational status on an authorized target.
-4. Admin local may change ativo/apto_para_receber only inside its own company.
-5. Frontend is not authority for tenant/company/team/role.
-6. Direct frontend writes will be removed in a later cutover, not in T1.
+ROOT
+- may change ativo and/or apto_para_receber on an authorized target.
+- root authority for T1 must come from the trusted admins boundary.
+
+ADMIN_LOCAL
+- active, strict admin-local profile.
+- same company only.
+- may change ativo and/or apto_para_receber.
+
+GESTOR
+- active, strict gestor profile.
+- same company.
+- target must be ordinary role=corretor.
+- target must be in an ACTIVE team actually managed by the actor.
+- may change apto_para_receber only.
+- any ativo transition is denied.
+
+CORRETOR / NO AUTH / INACTIVE ACTOR
+- denied fail-closed.
 ```
 
-Password-reset decisions are intentionally deferred to their own backend/frontend risk slices and are not implemented by this PR.
+Frontend-supplied company, tenant, role, team or privilege values are never authority.
 
-## 3. Live AS-IS evidence observed before implementation
+## 3. Live AS-IS evidence before T1
 
-Read-only Supabase catalog inspection established:
+Read-only production catalog inspection established:
 
 ```text
-public.corretores:
-RLS enabled = true
+public.corretores
+RLS = true
 FORCE RLS = true
 owner = postgres
 
-authenticated table privileges:
-SELECT = present
-UPDATE = present
+public.times
+RLS = true
+FORCE RLS = true
 
-public.atualizar_status_corretor(uuid, boolean, boolean):
+public.admins
+RLS = true
+FORCE RLS = true
+authenticated INSERT/UPDATE/DELETE = absent
+
+public.atualizar_status_corretor(uuid,boolean,boolean)
 owner = postgres
 SECURITY DEFINER = true
 search_path = public
-EXECUTE authenticated = false
-EXECUTE anon = false
-EXECUTE service_role = true
+function definition md5 = ef89d686ebb3230ae4bef1b71d4860fd
+ACL = {postgres=X/postgres,service_role=X/postgres}
+authenticated EXECUTE = false
+service_role EXECUTE = true
+
+public.corretores table ACL md5
+afa3a93809a23f744356971cbc461855
+
+authenticated table privileges
+SELECT + broad UPDATE
+
+corretores_update policy md5
+a3b9b4a44e859728ca9c69f6e6b2a842
+
+historical ordinary self-row UPDATE branch
+user_id = auth.uid()
 ```
 
-The pre-T1 function authorizes root/admin_local/gestor but allows a gestor to reach any target in the same company and does not express the approved field-level rule that `ativo` is forbidden to gestor.
-
-Repository source evidence also establishes:
+The critical audit trigger is present:
 
 ```text
-src/components/TimesTab.jsx
-→ authenticated frontend caller of atualizar_status_corretor
-→ used for apto_para_receber
-
-src/App.jsx / EditarCorretorModal.salvar()
-→ atualizar_perfil_corretor
-→ direct PATCH public.corretores for ativo/apto_para_receber
+trg_audit_trail_corretores_critical_update
 ```
 
-Therefore:
+The T1 helper/guard objects are absent from production before application.
+
+## 4. First independent Application Security Assurance gate
+
+The first exact-head AppSec audit on the earlier T1 head returned:
 
 ```text
-CALL SITE EXISTS != CURRENT RPC EXECUTABLE BY AUTHENTICATED
+REQUEST CHANGES
+T1 TARGET CONTRACT = FAIL
+MULTI-TENANT = FAIL
+AUTHORIZATION = FAIL
+ACL = PASS
+CONCURRENCY = FAIL
+ROLLBACK = FAIL
+READY = NO
+SECURITY GO = DENIED / UNCHANGED
 ```
 
-and the current direct PATCH remains a compatibility dependency until the separately scoped frontend cutover.
+The result is preserved as historical evidence. It is not retroactively rewritten.
 
-## 4. T1 target contract
+Material findings:
 
-T1 changes only `public.atualizar_status_corretor(uuid, boolean, boolean)` and its EXECUTE ACL.
+```text
+F1 BLOCKING
+T1 trusted role/is_admin_local/is_gestor/empresa_id and related actor state
+from public.corretores while authenticated broad direct UPDATE remained.
+The authority source was therefore self-escalatable.
 
-### Actor
+F2 REQUIRED
+An active admins/root path could bypass the generic inactive-profile rule.
+
+F3 REQUIRED
+Actor authority was read before target mutation without stabilizing the actor
+state, leaving a revocation/authorization race.
+
+F4 REQUIRED
+coalesce(times.ativo,true) failed open for NULL/unknown team state.
+
+F5 REQUIRED
+The rollback was described as exact, but preflight did not bind to the exact
+pre-apply function body/ACL strongly enough.
+```
+
+The review also confirmed that the prior pre-authorization target `FOR UPDATE`
+had already been removed and that target-side conditional predicates were a
+material improvement.
+
+## 5. Revised T1 strategy
+
+The revised migration keeps the PR at one principal risk but expands the DB-side
+hardening necessary for the status RPC to have a trustworthy authority source.
+
+### 5.1 Exact preflight
+
+Before any mutation, the migration requires the exact observed pre-T1 state:
+
+```text
+status function body md5
+= ef89d686ebb3230ae4bef1b71d4860fd
+
+status function ACL
+= {postgres=X/postgres,service_role=X/postgres}
+
+corretores table ACL md5
+= afa3a93809a23f744356971cbc461855
+
+corretores_update policy md5
+= a3b9b4a44e859728ca9c69f6e6b2a842
+
+T1 helper/guard objects
+= absent
+
+authenticated DML on admins
+= absent
+
+RLS/FORCE RLS on corretores/times/admins
+= present
+
+required columns/types/unique user mappings/audit trigger
+= present
+```
+
+A read-only production query on 2026-08-22 revalidated all of those preflight
+anchors as true. This does not apply the migration.
+
+### 5.2 Authority-field integrity
+
+T1 no longer leaves broad authenticated table UPDATE in place.
+
+Target direct-DML state after T1:
+
+```text
+authenticated table-level UPDATE public.corretores
+= absent
+
+authenticated column UPDATE
+= ativo
+  apto_para_receber
+  must_change_password
+
+no authenticated UPDATE on:
+role
+is_admin_local
+is_gestor
+empresa_id
+time_id
+user_id
+or any other corretores column
+```
+
+This is intentionally narrower than the old exposure but is not the final PR-03
+revocation. The three columns remain only because the current frontend/password
+paths still require a compatibility window before their separate cutovers.
+
+### 5.3 Direct UPDATE policy
+
+The old ordinary self-row direct update path is removed from
+`corretores_update`.
+
+The replacement policy retains only:
+
+```text
+strict T1 root
+or admin_local same company
+or gestor rows in managed teams
+```
+
+Root for this policy uses `public.t1_is_root_strict()` and therefore does not use
+`corretores.role='admin_global'`.
+
+### 5.4 Temporary direct-compatibility guard
+
+A T1-only BEFORE trigger protects the three remaining direct compatibility
+columns.
+
+For direct authenticated Data API DML it revalidates:
 
 ```text
 auth.uid()
-→ resolved server-side
+actor profile
+actor active state
+strict admin_local / gestor role+flag consistency
+strict root through admins only
+tenant/company
+gestor target role
+gestor managed ACTIVE team
+field transition
 ```
 
-No caller-supplied tenant, company, team, role or privilege flag is accepted.
+Direct clients cannot change their own `ativo` or `must_change_password` state.
+The existing self-service password RPC remains a SECURITY DEFINER command and is
+not converted back to direct table authority.
 
-### Root
-
-Platform root is resolved from the server-side `public.admins` relationship. The historical active `admin_global` compatibility rule remains temporarily recognized because removing that broader authority model belongs to the later PR-03/direct-update closure.
-
-### Admin local
+Gestor direct compatibility behavior is restricted to:
 
 ```text
-active profile
-+ admin-local authority
-+ target empresa_id == actor empresa_id
-→ may change ativo and/or apto_para_receber
+ordinary broker
+same company
+own active managed team
+apto_para_receber only
 ```
 
-### Gestor
+This prevents the legacy frontend PATCH path from bypassing the T1 server-side
+business rule while the frontend cutover remains pending.
+
+### 5.5 Strict root
+
+T1 root authority is now:
 
 ```text
-active profile
-+ gestor authority
-+ same empresa
-+ target is ordinary role=corretor
-+ target is not admin_local/gestor
-+ target time belongs to actor as gestor
-→ may change apto_para_receber only
+public.admins
+user_id = auth.uid()
+ativo IS TRUE
+role = admin_global
 ```
 
-Any non-null `p_ativo` from a gestor is denied.
+`corretores.role='admin_global'` does not establish root for T1.
 
-### Corretor / missing / inactive actor
+Production metadata confirms authenticated users do not have INSERT/UPDATE/DELETE
+on `public.admins`.
 
-Denied fail-closed.
+### 5.6 Inactive actor
 
-### Target, authorization and concurrency
-
-The first draft selected the target `FOR UPDATE` before the final authorization decision. That was corrected before independent review because an authenticated unauthorized caller should not be able to lock a foreign target row merely by knowing its ID.
-
-The current T1 contract uses operation-specific conditional `UPDATE` predicates:
+For the RPC:
 
 ```text
-root:
-UPDATE by target id
-
-admin_local:
-UPDATE where target id + actor empresa_id
-
-gestor:
-UPDATE apto only where target id + actor empresa_id
-+ ordinary broker role/flags
-+ target time belongs to actor as gestor
+non-root requires an active corretores profile.
+root with an existing corretores profile is denied if that profile is inactive.
+root without a corretores profile remains supported through the trusted admins row.
 ```
 
-The authorization predicate and mutation are therefore evaluated in the same database statement. A target that does not satisfy the operation-specific authority predicate is not updated, and the function returns the same bounded `TARGET_NOT_AUTHORIZED` result without distinguishing nonexistence from cross-tenant/unauthorized membership.
+For temporary direct DML, an existing actor profile must be active; a strict root
+without a corretores profile remains supported.
 
-This avoids a pre-authorization row lock and avoids target-existence disclosure through differentiated error codes.
+### 5.7 Concurrency
 
-### Audit
+The revised RPC stabilizes authority before target mutation:
 
-The existing `trg_audit_trail_corretores_critical_update` trigger remains responsible for successful critical-state change logging. T1 does not create a second audit subsystem.
+```text
+active admins/root row -> FOR SHARE
+actor corretores profile -> FOR SHARE
+then operation-specific target UPDATE
+```
 
-## 5. ACL target
+A concurrent role/company/active-state mutation of the actor cannot commit
+through the authorization-to-mutation window without waiting for the actor lock.
+
+The target is not pre-read or pre-locked. Authorization and target mutation remain
+bound inside operation-specific conditional UPDATE statements.
+
+### 5.8 Team state
+
+All gestor checks now require:
+
+```text
+times.ativo IS TRUE
+```
+
+NULL/unknown team state is denied.
+
+### 5.9 ACL target
 
 After T1:
 
 ```text
-EXECUTE postgres/owner = present
-EXECUTE authenticated = present
-EXECUTE anon = absent
-EXECUTE PUBLIC = absent
-EXECUTE service_role = absent
-```
-
-The function uses:
-
-```text
-SECURITY DEFINER
-search_path = pg_catalog
-fully qualified application objects
-```
-
-`authenticated UPDATE public.corretores` is intentionally preserved during T1 because removing it before frontend cutover would create an incompatible runtime state. Revocation remains a separate PR-03 action.
-
-## 6. Production-only operating constraint
-
-Product Authority explicitly decided not to create or maintain a Supabase test database/branch at the current stage.
-
-This changes the validation strategy but does not relax correctness requirements.
-
-Before any production application, T1 therefore requires:
-
-```text
-1. exact-head review of the migration;
-2. independent Application Security Assurance review;
-3. re-resolution of production catalog immediately before application;
-4. explicit production-change authorization;
-5. migration preflight must pass before mutation;
-6. migration postflight must prove owner/security mode/search_path/ACL;
-7. no destructive/offensive production testing;
-8. controlled positive smoke only after separate authorization;
-9. rollback remains immediately available.
-```
-
-No claim is made that absence of a test environment is equivalent to lab validation. It is an accepted operating constraint with additional production risk.
-
-## 7. Fail-closed migration design
-
-The migration aborts before replacing the function when material catalog prerequisites drift, including:
-
-```text
-missing tables/function/auth.uid
-required role missing
-unexpected owner/security mode/search_path
-unexpected current ACL state
-direct UPDATE already revoked
-RLS/FORCE RLS drift
-required corretores/admins/times columns or types missing
-user_id uniqueness missing
-```
-
-The postflight aborts the transaction if the resulting contract does not prove:
-
-```text
-function exists
+public.atualizar_status_corretor
 owner = postgres
 SECURITY DEFINER
 search_path = pg_catalog
-authenticated EXECUTE present
-anon/PUBLIC/service_role EXECUTE absent
-no unexpected executor
-direct UPDATE compatibility window still present
+EXECUTE authenticated = yes
+EXECUTE anon/PUBLIC/service_role = no
+
+public.t1_is_root_strict
+owner = postgres
+SECURITY DEFINER
+search_path = pg_catalog
+EXECUTE authenticated = yes
+EXECUTE anon/service_role = no
+
+public.t1_guard_corretores_direct_compat_update
+owner = postgres
+SECURITY INVOKER
+search_path = pg_catalog
+trigger-only use
 ```
 
-## 8. Exact rollback
+### 5.10 Rollback coupling
 
-The migration contains a version-coupled commented rollback that restores the pre-T1 live function body and ACL:
+The preflight now binds to the exact pre-T1 function definition and ACL, plus the
+exact table ACL and UPDATE policy baseline.
+
+The embedded rollback restores:
 
 ```text
-authenticated EXECUTE → revoked
-service_role EXECUTE → restored
-search_path → public
-pre-T1 same-company authorization body → restored
+pre-T1 status function body
+search_path = public
+service_role-only EXECUTE
+broad authenticated table UPDATE
+original self-row UPDATE policy
+removal of T1 trigger/helper objects
 ```
 
-Rollback execution is a separate production mutation and requires explicit authorization.
+Rollback is itself a separate production mutation and must first prove that the
+currently applied state is still this exact T1 version. It must not overwrite
+later drift.
 
-## 9. Scope exclusions
+## 6. Static compatibility evidence
 
-T1 does not alter:
+Known current consumers remain:
+
+```text
+TimesTab.jsx
+-> authenticated RPC call
+-> p_corretor_id
+-> p_apto_para_receber
+-> p_ativo omitted
+
+EditarCorretorModal.salvar()
+-> current direct PATCH ativo/apto
+-> remains temporarily compatible through narrowed column grants + guard
+
+EditarCorretorModal.redefinirSenha()
+-> current direct PATCH must_change_password
+-> remains temporarily compatible until the password-reset slice
+```
+
+No frontend code is changed by T1.
+
+The known controlled profile/time/role/password RPCs are `SECURITY DEFINER`, so
+removing broad authenticated table UPDATE does not make those RPCs depend on the
+removed caller table grant.
+
+## 7. Scope exclusions
+
+T1 still does not change:
 
 ```text
 src/App.jsx
 src/components/TimesTab.jsx
 criar-usuario Edge Function
-password reset
-must_change_password
-corretores table UPDATE grant/policy
-other RPC bodies
-RLS policies
-real users or data
+password-reset target semantics
+final must_change_password flow
 Vercel/deploy
+real rows/data
 PR #124
+final PR-03 full direct-update revocation
 Security Go
 ```
 
-## 10. Residual risk
-
-### ACTIVE_RESIDUAL_RISK — authority-bearing fields still directly writable
-
-Until PR-03 revokes the broad `authenticated UPDATE` path, authority-bearing fields on `public.corretores` remain part of the known F1-02 exposure. T1 does not claim to close self-escalation by itself.
-
-### ACTIVE_RESIDUAL_RISK — no separate database test environment
-
-T1 has not been applied or exercised in an isolated Supabase environment. This is explicit and must not be converted into a test PASS.
-
-### PLANNED FUTURE PR — frontend cutover
-
-After T1 is independently accepted/applied, `EditarCorretorModal` and `TimesTab` must converge on the controlled RPC with fail-closed UI handling. The direct `ativo/apto_para_receber` PATCH is then removed.
-
-## 11. Current verdict
+## 8. Validation status
 
 ```text
-TARGET CONTRACT: ESTABLISHED
-MIGRATION: VERSIONED ON DRAFT BRANCH
+GitHub migration versioned: YES
+migration applied to Supabase: NO
+runtime tested: NO
+production smoke: NO
+lab/test DB: NOT ADOPTED
+read-only live preflight anchors: REVALIDATED
+first AppSec audit: REQUEST CHANGES / HISTORICAL
+revised exact-head AppSec audit: REQUIRED
+```
+
+During static self-review, invalid schema-qualified uses of SQL special forms
+`COALESCE`/`POSITION` were detected in an intermediate Draft head and corrected
+before any production application or new AppSec gate.
+
+## 9. Current verdict
+
+```text
+TARGET CONTRACT DESIGN: REVISED
+AUTHORITY SOURCE INTEGRITY: ADDRESSED IN VERSIONED MIGRATION
+T1 IMPLEMENTATION: GITHUB DRAFT ONLY
 SUPABASE APPLIED: NO
-PRODUCTION TESTED: NO
-FRONTEND CUTOVER: NO
-DIRECT UPDATE REVOKED: NO
+PRODUCTION VALIDATED: NO
 PR-03 ELIGIBILITY: UNCHANGED / NOT_YET_MATERIALLY_ELIGIBLE
 SECURITY GO: DENIED / UNCHANGED
 ```
 
-## 12. Next safe gate
+## 10. Next safe gate
 
 ```text
-Independent exact-head Backend/Data + Application Security Assurance review
-of the Draft T1 migration and rollback.
+Repeat independent Application Security Assurance on the new exact PR #125 head.
 ```
 
-No Supabase application, Ready, merge, frontend deployment or production mutation is authorized by this evidence file.
+No Ready, merge, Supabase application, deploy or Security Go is authorized by
+this document.
