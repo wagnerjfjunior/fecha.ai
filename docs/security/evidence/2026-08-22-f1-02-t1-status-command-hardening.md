@@ -1,12 +1,12 @@
 # FECH.AI — F1-02 T1 Status Command Hardening
 
-**Status:** `DRAFT_REVISED_AFTER_APPSEC_REQUEST_CHANGES / GITHUB_ONLY / NOT_APPLIED / REAUDIT_REQUIRED`  
+**Status:** `DRAFT_REVISED_AFTER_APPSEC_GATE_2_REQUEST_CHANGES / GITHUB_ONLY / NOT_APPLIED / REAUDIT_REQUIRED`  
 **Date:** `2026-08-22`  
 **Repository:** `wagnerjfjunior/fecha.ai`  
 **Primary risk:** establish trustworthy server-side authority for `ativo` / `apto_para_receber` while preserving only the minimum temporary compatibility surface required before frontend/password cutover.  
 **Environment:** Supabase production `uobxxgzshrmbtjfdolxd`; no separate test database/branch is adopted.
 
-## 1. Base / branch / files
+## 1. Exact scope
 
 ```text
 Base:
@@ -23,46 +23,44 @@ Changed files:
 2. docs/security/evidence/2026-08-22-f1-02-t1-status-command-hardening.md
 ```
 
-Resolve the live PR head before every gate. Any head movement invalidates an earlier exact-head review.
+Any head movement invalidates an earlier exact-head AppSec verdict.
 
 ## 2. Product Authority contract
 
 ```text
 ROOT
-- authority source: ONLY public.admins.
+- trusted source ONLY public.admins.
 - admins.user_id = auth.uid().
 - admins.ativo IS TRUE.
 - admins.role = admin_global.
-- may change ativo/apto on an authorized target.
+- may change ativo/apto on authorized target.
 
 ADMIN_LOCAL
-- active corretores profile.
-- role = admin_local.
-- is_admin_local = true.
-- is_gestor = true, matching the current role/flag contract used by alterar_role_corretor.
+- active strict admin_local profile.
 - same empresa only.
 - may change ativo/apto.
+- during the temporary compatibility window, may also drive the current
+  administrative must_change_password PATCH for same-tenant targets.
+- this password-state direct write is temporary and must disappear in T3/T4.
 
 GESTOR
-- active corretores profile.
-- role = gestor.
-- is_gestor = true.
-- is_admin_local = false.
+- active strict gestor profile.
 - same empresa.
-- target = ordinary role=corretor.
+- target must be ordinary role=corretor with no admin/gestor flags.
 - target team must be ACTIVE and actually managed by the actor.
-- may change apto only.
-- ativo transition denied.
+- may change apto_para_receber only.
+- cannot change ativo.
+- cannot change must_change_password.
 
 CORRETOR / NO AUTH / INACTIVE ACTOR
 - denied fail-closed.
 ```
 
-Frontend-supplied tenant/company/role/team/privilege values are never accepted as authority inputs.
+Frontend tenant/company/role/team/privilege values are never authority inputs.
 
-## 3. Live AS-IS evidence before T1
+## 3. Live baseline before T1
 
-Read-only production catalog inspection established:
+READ_ONLY production catalog evidence established:
 
 ```text
 public.corretores
@@ -84,86 +82,98 @@ public.atualizar_status_corretor(uuid,boolean,boolean)
 owner = postgres
 SECURITY DEFINER = true
 search_path = public
-function definition md5 = ef89d686ebb3230ae4bef1b71d4860fd
+body md5 = ef89d686ebb3230ae4bef1b71d4860fd
 ACL = {postgres=X/postgres,service_role=X/postgres}
-authenticated EXECUTE = false
-service_role EXECUTE = true
 
 public.corretores table ACL md5
 afa3a93809a23f744356971cbc461855
 
 corretores_update policy md5
 a3b9b4a44e859728ca9c69f6e6b2a842
-
-historical ordinary self-row UPDATE branch
-user_id = auth.uid()
-
-critical audit trigger
-trg_audit_trail_corretores_critical_update = present
-
-T1 helper/guard objects
-= absent before application
 ```
 
-A read-only preflight query on 2026-08-22 confirmed the exact function body/ACL, table ACL, update policy, RLS/FORCE RLS, audit trigger, absence of T1 objects and absence of authenticated DML on `admins`.
-
-## 4. Material live authority findings
-
-Aggregate/invariant queries were used; no user identifiers, email addresses, names or raw PII were returned.
-
-Observed before T1:
+Aggregate authority invariants observed without PII:
 
 ```text
-active admins.role=admin_global rows:
-1
-
-corretores.role=admin_global rows:
-2
-
-corretores.admin_global backed by active admins root:
-1
-
-corretores.admin_global NOT backed by active admins root:
-1
-
-non-admin_global role/flag mismatches:
-0
-
-ordinary rows carrying privilege flags:
-0
-
-null corretores.user_id rows:
-0
+active admins.role=admin_global rows = 1
+corretores.role=admin_global rows = 2
+corretores.admin_global backed by active admins root = 1
+corretores.admin_global NOT backed by active admins root = 1
+non-admin_global role/flag mismatches = 0
+ordinary rows carrying privilege flags = 0
+null corretores.user_id rows = 0
 ```
 
-Material interpretation:
+Therefore:
 
 ```text
-corretores.role='admin_global'
-!= trusted root identity
+corretores.role='admin_global' != trusted root identity
 ```
 
-At least one legacy `corretores.admin_global` row is not backed by the trusted `admins` root boundary. T1 therefore must not accept `corretores.role='admin_global'` directly or indirectly as root authority.
+## 4. Critical audit baseline now bound exactly
 
-The live helper definitions confirmed the legacy compatibility risk:
+The Gate 2 review correctly identified that existence-by-name was insufficient.
+READ_ONLY live evidence now anchors:
 
 ```text
-public.is_root()
-- accepts active public.admins
-  OR corretores.role='admin_global'
+trigger:
+trg_audit_trail_corretores_critical_update
 
-public.is_admin_local()
-- treats role admin_global as admin-local compatible
+enabled:
+O
 
-public.is_gestor()
-- treats role admin_global as gestor compatible
+exact trigger definition:
+CREATE TRIGGER trg_audit_trail_corretores_critical_update AFTER UPDATE ON corretores FOR EACH ROW EXECUTE FUNCTION audit_trail_log_corretores_critical_update()
+
+trigger function:
+audit_trail_log_corretores_critical_update()
+owner = postgres
+SECURITY DEFINER = true
+search_path = public
+body md5 = 3fdaca39d55f348ca36f796023f3260b
+ACL = {postgres=X/postgres,authenticated=X/postgres,service_role=X/postgres}
 ```
 
-Those helpers remain legacy project behavior but are not sufficient as T1 authority proof by themselves.
+The revised migration preflight and postflight bind this exact surface.
 
-## 5. First independent Application Security Assurance gate
+## 5. Legacy SECURITY DEFINER seams now explicitly fingerprinted
 
-The first exact-head AppSec audit returned:
+READ_ONLY live definitions relevant to T1:
+
+```text
+alterar_role_corretor(uuid,text)
+SECURITY DEFINER
+authenticated EXECUTE = yes
+body md5 = edde7ac084d416171a334d783cdcad3e
+writes role/is_admin_local/is_gestor/apto_para_receber
+legacy authorization references is_root()
+
+atualizar_time_corretor(uuid,uuid)
+SECURITY DEFINER
+authenticated EXECUTE = yes
+body md5 = 74965d3c682a3ae4a3c69bf6a7524b93
+writes time_id
+legacy authorization references is_root()/is_admin_local()/is_gestor()
+
+marcar_senha_inicial_definida()
+SECURITY DEFINER
+authenticated EXECUTE = yes
+search_path = pg_catalog
+body md5 = 2a7b28d4bb6342a99d075c4d3c49af4d
+updates only the authenticated actor's must_change_password true -> false
+
+redefinir_senha_corretor(uuid,text)
+SECURITY DEFINER
+authenticated EXECUTE = no
+service_role EXECUTE = yes
+body md5 = 2f1ff707c6ea94e0abf4ede0f2ec3835
+```
+
+A targeted catalog inventory established that the only authenticated-executable SECURITY DEFINER function directly writing `corretores.must_change_password` is `marcar_senha_inicial_definida()`.
+
+## 6. AppSec Gate 1 — historical
+
+The first independent exact-head audit returned:
 
 ```text
 REQUEST CHANGES
@@ -177,437 +187,255 @@ READY = NO
 SECURITY GO = DENIED / UNCHANGED
 ```
 
-Historical findings preserved:
+Historical F1–F5 were preserved, not rewritten.
+
+## 7. AppSec Gate 2 — historical exact-head result
+
+Gate 2 audited HEAD:
 
 ```text
-F1 BLOCKING
-Authority consumed by T1 was self-escalatable while authenticated broad direct UPDATE remained.
-
-F2 REQUIRED
-Inactive root/profile semantics were not consistently fail-closed.
-
-F3 REQUIRED
-Actor authority was read before mutation without stabilization.
-
-F4 REQUIRED
-coalesce(times.ativo,true) failed open.
-
-F5 REQUIRED
-The claimed exact rollback was insufficiently coupled to the exact pre-apply function/ACL state.
+0e8fefe297c15bb11b3a495bd3da639052961617
 ```
 
-The prior AppSec verdict applies only to its earlier exact head and is invalidated by subsequent commits.
-
-## 6. Revised T1 — exact preflight
-
-Before any mutation the migration requires the exact observed baseline:
+Result:
 
 ```text
-status RPC body md5
-= ef89d686ebb3230ae4bef1b71d4860fd
-
-status RPC ACL
-= {postgres=X/postgres,service_role=X/postgres}
-
-corretores table ACL md5
-= afa3a93809a23f744356971cbc461855
-
-corretores_update policy md5
-= a3b9b4a44e859728ca9c69f6e6b2a842
-
-authenticated broad table UPDATE
-= present before T1
-
-authenticated pre-existing column UPDATE grants
-= absent
-
-authenticated DML on admins
-= absent
-
-active admins/admin_global root
-= at least one
-
-RLS/FORCE RLS on corretores/times/admins
-= present
-
-required columns/types
-= present
-
-unique user_id mappings required for corretores/admins
-= present
-
-non-admin_global role/flag inconsistencies
-= absent
-
-critical audit trigger
-= present
-
-T1 helper/guard functions/triggers
-= absent
+VERDICT = REQUEST CHANGES
+T1 TARGET CONTRACT = FAIL
+MULTI-TENANT = NOT FULLY PROVEN
+AUTHORIZATION = FAIL
+ACL = PASS
+CONCURRENCY = FAIL
+ROLLBACK = FAIL
+READY = NO
+PRODUCTION APPLICATION = NOT AUTHORIZED
+SECURITY GO = DENIED / UNCHANGED
 ```
 
-Any material drift causes the migration to abort before applying T1.
+Material Gate 2 findings:
 
-## 7. Revised T1 — direct DML integrity
+### G2-F1 — gestor could change must_change_password
 
-T1 removes broad authenticated table UPDATE and keeps only the three temporary compatibility columns:
+The prior direct-compatibility guard denied gestor `ativo` changes but did not deny `must_change_password` changes. This violated the explicit `GESTOR -> apto only` contract.
+
+**Revision now versioned:**
 
 ```text
-authenticated table UPDATE public.corretores
-= revoked
-
-authenticated column UPDATE
-= ativo
-= apto_para_receber
-= must_change_password
-
-NO authenticated direct UPDATE on:
-role
-is_admin_local
-is_gestor
-empresa_id
-time_id
-user_id
-or any other corretores column
+manager branch:
+ativo change -> deny
+must_change_password change -> deny
+only apto_para_receber may transition
 ```
 
-This is not the final PR-03 revocation. These three fields remain temporarily because the current frontend/password paths have not yet been cut over.
+Admin-local temporary password-state compatibility is now explicitly documented instead of implicit.
 
-The ordinary self-row branch is removed from the UPDATE policy.
+### G2-F2 — SECURITY DEFINER effective-user bypass
 
-## 8. Revised T1 — strict root
-
-T1 introduces `public.t1_is_root_strict()`:
+The prior direct-compat guard began with:
 
 ```text
-public.admins
-user_id = auth.uid()
-ativo IS TRUE
-role = admin_global
+current_user <> authenticated -> return NEW
 ```
 
-`corretores.role='admin_global'` is not a root source for T1.
+That allowed user-subject SECURITY DEFINER calls running as postgres to bypass the compatibility guard.
 
-The strict root helper is `SECURITY DEFINER`, owned by `postgres`, fixed to `search_path=pg_catalog`, executable by `authenticated`, and not executable by `anon` or `service_role` under the T1 target ACL.
-
-## 9. Revised T1 — authority-update guard
-
-A new T1-only BEFORE trigger protects every authority-bearing `corretores` transition:
+**Revision now versioned:**
 
 ```text
-trg_t1_guard_corretores_authority_update
+if auth.uid() IS NOT NULL:
+  always perform strict user-subject authorization
+  regardless of current_user
 
-BEFORE UPDATE OF:
-role
-is_admin_local
-is_gestor
-empresa_id
-time_id
-user_id
+if auth.uid() IS NULL:
+  only postgres/service_role privileged platform operation may pass
 ```
 
-Its function is `SECURITY INVOKER` with fixed `search_path=pg_catalog`.
+The authority trigger also detects protected side effects when an authority-writing RPC emits a no-op role/time transition. A no-op `alterar_role_corretor` cannot use legacy helper authority merely to change `apto_para_receber`; strict root/admin authority is required.
 
-The guard is intentionally required even after direct column grants are removed because current authenticated `SECURITY DEFINER` RPCs still update role/time authority fields. `auth.uid()` remains the request actor inside those calls.
-
-Live inventory confirmed the material existing RPCs:
+The self-service password-completion exception is tightly bounded to:
 
 ```text
-alterar_role_corretor
-- SECURITY DEFINER
-- authenticated executable
-- updates role / is_admin_local / is_gestor
-- also updates apto_para_receber
-- legacy authorization currently references public.is_root()
-
-atualizar_time_corretor
-- SECURITY DEFINER
-- authenticated executable
-- updates time_id
-- legacy authorization currently references public.is_root()/is_admin_local()/is_gestor()
-
-atualizar_perfil_corretor
-- SECURITY DEFINER
-- does not update T1 authority fields
-
-marcar_senha_inicial_definida
-- SECURITY DEFINER
-- updates must_change_password only
+old.user_id = auth.uid()
+current_user = postgres
+must_change_password true -> false
+ativo unchanged
+apto_para_receber unchanged
 ```
 
-The T1 authority guard therefore enforces the final transition independently of those legacy helper decisions.
+The preflight additionally proves that `marcar_senha_inicial_definida()` is the only authenticated-executable SECURITY DEFINER direct writer of `must_change_password` in the observed live catalog.
 
-Authority guard contract:
+### G2-F3 — manager team revocation race
+
+The prior status RPC used the team row only inside an `EXISTS`, without stabilizing it.
+
+**Revision now versioned:**
 
 ```text
-SELF authority/identity change
-= denied for user-scoped requests
-
-user_id change
-= denied
-
-empresa_id change
-= denied
-
-role/flag transition
-= strict root OR strict same-company admin_local
-= role limited to corretor/gestor/admin_local
-= role/flag pair must be internally coherent
-= same actor cannot alter own authority
-
-admin_local transition
-role=admin_local
-is_admin_local=true
-is_gestor=true
-
-manager transition
-role=gestor
-is_admin_local=false
-is_gestor=true
-
-ordinary broker
-role=corretor
-is_admin_local=false
-is_gestor=false
-
-time transition
-= strict root
-  OR strict same-company admin_local
-  OR strict gestor assuming an unassigned ordinary broker into one of the gestor's own ACTIVE teams
-
-legacy corretores.admin_global without trusted admins root
-= denied by strict transition rules
+manager status path:
+- resolve authorized target + team relation without pre-locking target;
+- lock the exact authorizing public.times row FOR SHARE;
+- require same empresa;
+- require target ordinary corretor;
+- require team.gestor_id = actor id;
+- require team.ativo IS TRUE;
+- recheck target.time_id and the same team predicates in the final UPDATE.
 ```
 
-Privileged platform operations without a user subject remain outside this user-scoped boundary and require `current_user` to be `postgres` or `service_role` in the guard.
+A concurrent revocation of team `ativo` or `gestor_id` cannot commit through the authorization-to-mutation window.
 
-## 10. Revised T1 — direct compatibility guard
+### G2-F4 — rollback/preflight coupling insufficient
 
-A separate T1 BEFORE trigger protects the three remaining direct compatibility fields:
+Gate 2 correctly found two gaps:
+
+1. critical audit trigger was only checked by name/existence;
+2. rollback said to prove exact T1 state but did not contain a mechanical verifier.
+
+**Revision now versioned:**
 
 ```text
-ativo
-apto_para_receber
-must_change_password
+preflight:
+- exact audit trigger enabled state;
+- exact pg_get_triggerdef;
+- audit function owner/security/search_path/body md5/ACL;
+- exact status RPC baseline;
+- exact table ACL;
+- exact RLS policy hash;
+- exact legacy SECURITY DEFINER seam fingerprints.
+
+apply:
+- each T1 function is self-fingerprinted at apply time using
+  md5(pg_get_functiondef(...)) stored in COMMENT;
+- both T1 triggers are fingerprinted using md5(pg_get_triggerdef(...));
+- the T1 UPDATE policy is fingerprinted from USING + WITH CHECK expressions.
+
+rollback preflight:
+- compares live definitions to the stored T1 fingerprints;
+- checks trigger enabled state;
+- checks exact temporary grants;
+- rechecks the critical audit surface;
+- aborts before any DROP/CREATE on drift.
+
+rollback postflight:
+- verifies restoration of the exact pre-T1 status RPC md5;
+- verifies authenticated status RPC EXECUTE removed;
+- verifies broad authenticated UPDATE restored;
+- verifies all T1-only functions removed.
 ```
 
-For direct authenticated Data API DML it revalidates:
+Rollback remains a separate production mutation and is NOT authorized by this PR.
+
+## 8. Strict RLS prefilter revision
+
+The prior policy still used legacy `is_admin_local()` / `is_gestor()` helpers, creating avoidable row-candidate leakage.
+
+The revised policy uses only:
 
 ```text
-auth.uid()
-strict root through admins only
-active actor profile when present
-strict admin_local/gestor role+flag consistency
-tenant/company
-gestor target role
-gestor own ACTIVE team
-field transition
+public.t1_can_update_corretor_row_strict(
+  empresa_id,
+  time_id,
+  role,
+  is_admin_local,
+  is_gestor
+)
 ```
 
-Direct user-scoped DML cannot change the actor's own `ativo` or `must_change_password` state.
+The helper derives strict root/admin/gestor server-side and, for gestor, requires ordinary target role/flags plus own active managed team. It is only a visibility prefilter; final authority remains enforced in locked triggers/RPC predicates.
 
-Gestor compatibility behavior remains:
+Legacy `corretores.role='admin_global'` without trusted `admins` backing does not satisfy this strict helper.
+
+## 9. Direct DML target state after T1
 
 ```text
-ordinary broker
-same company
-own ACTIVE managed team
-apto_para_receber only
-ativo denied
+authenticated table-level UPDATE public.corretores = absent
+
+authenticated column UPDATE temporarily retained only for:
+- ativo
+- apto_para_receber
+- must_change_password
+
+NO direct authenticated UPDATE on:
+- role
+- is_admin_local
+- is_gestor
+- empresa_id
+- time_id
+- user_id
+- any other corretores column
 ```
 
-`SECURITY DEFINER` controlled commands such as the self-service password RPC are not reclassified as direct Data API authority.
+The three temporary columns remain only until the frontend/password cutovers. This is not the final PR-03 revocation.
 
-## 11. Revised T1 — status RPC authorization
+## 10. Static compatibility
 
-The replacement `public.atualizar_status_corretor(uuid,boolean,boolean)` is:
-
-```text
-owner = postgres
-SECURITY DEFINER
-search_path = pg_catalog
-EXECUTE authenticated = yes
-EXECUTE anon/PUBLIC/service_role = no
-```
-
-Actor/root authority is stabilized before target mutation:
-
-```text
-trusted admins/root row -> FOR SHARE
-actor corretores profile -> FOR SHARE
-then conditional target UPDATE
-```
-
-Root with an existing inactive `corretores` profile is denied. A strict root with no `corretores` profile remains supported by the trusted `admins` row.
-
-Target behavior:
-
-```text
-ROOT
-- target id must exist.
-- may change ativo/apto.
-
-ADMIN_LOCAL
-- same company only.
-- may change ativo/apto.
-
-GESTOR
-- p_ativo must be NULL.
-- same company.
-- target role=corretor.
-- target admin/gestor flags false.
-- target has a team.
-- team belongs to same company.
-- team.gestor_id = actor corretor id.
-- team.ativo IS TRUE.
-- may change apto only.
-
-CORRETOR / unauthorized role/flag combination
-- denied.
-
-Unknown/cross-tenant/not-authorized target
-- converges on TARGET_NOT_AUTHORIZED.
-```
-
-No pre-authorization target row lock is used.
-
-## 12. Concurrency / fail-closed
-
-```text
-actor authority/root state
-= stabilized with FOR SHARE before target mutation
-
-target authorization + mutation
-= bound in operation-specific conditional UPDATE
-
-gestor team state
-= must satisfy ativo IS TRUE
-
-NULL/unknown team state
-= denied
-```
-
-The authority guard also locks the user-scoped actor/root source before permitting role/time authority transitions.
-
-## 13. Rollback coupling
-
-The preflight binds to the exact pre-T1 status function body/ACL, table ACL and UPDATE policy observed live.
-
-The embedded rollback restores the documented pre-T1 surface:
-
-```text
-pre-T1 status RPC body
-search_path=public
-service_role-only EXECUTE
-broad authenticated table UPDATE
-original self-row UPDATE policy
-removal of T1 direct-compat guard
-removal of T1 authority guard
-removal of T1 strict-root helper
-```
-
-Rollback is a separate production mutation. Before rollback, the currently applied state must be proven to still be this exact T1 version; rollback must not overwrite later drift.
-
-## 14. Static compatibility
-
-Known current callers remain:
+Known callers remain:
 
 ```text
 TimesTab.jsx
 -> authenticated atualizar_status_corretor
--> p_apto_para_receber supplied
--> p_ativo omitted
+-> supplies p_corretor_id + p_apto_para_receber
+-> omits p_ativo
+-> statically compatible with revised RPC defaults
 
 EditarCorretorModal.salvar()
 -> current direct PATCH ativo/apto
--> temporary narrowed columns + compat guard
+-> temporarily protected by strict RLS prefilter + compatibility trigger
 
 EditarCorretorModal.redefinirSenha()
 -> current direct PATCH must_change_password
--> temporary narrowed column + compat guard until password reset slice
+-> temporary root/admin-local compatibility only
+-> gestor denied
 ```
 
-No frontend code changes in T1.
+No frontend file changes in T1.
 
-The known profile/time/role/password RPCs are `SECURITY DEFINER`, so removal of broad caller table UPDATE does not make their internal DML depend on the removed authenticated table grant.
-
-## 15. Scope exclusions
-
-T1 does not change:
+## 11. Validation / environment boundary
 
 ```text
-src/App.jsx
-src/components/TimesTab.jsx
-criar-usuario Edge Function
-password-reset target semantics
-final must_change_password workflow
-Vercel/deploy
-real rows/data
-PR #124
-final PR-03 full direct-update revocation
-Security Go
+GitHub migration versioned = YES
+migration applied to Supabase = NO
+runtime tested = NO
+production smoke = NO
+lab/test DB = NOT ADOPTED
+live catalog checks = READ_ONLY
+Gate 1 = REQUEST CHANGES / historical
+Gate 2 = REQUEST CHANGES / historical
+Gate 3 exact-head AppSec = REQUIRED
 ```
 
-## 16. Exact-head gate snapshot
+No test-offensive activity was performed in production.
 
-The exact head must be resolved live after any evidence/documentation commit. The latest completed technical snapshot before the final evidence-head mutation established:
+## 12. Backend/Data self-review after Gate 2
 
 ```text
-main = 827f8591bfe4eee595a1aa22e169dcf6465f7fa3
-PR #125 = OPEN / DRAFT / mergeable=true
-changed files = exactly 2
-behind base = 0
-reviews = 0
-review threads = 0
-Vercel status = success
-Supabase migration applied = NO
+G2 manager must_change_password bypass: ADDRESSED IN VERSIONED MIGRATION
+G2 SECURITY DEFINER effective-user bypass: ADDRESSED IN VERSIONED MIGRATION
+G2 no-op authority RPC protected-side-effect bypass: ADDRESSED
+G2 manager team revocation race: ADDRESSED WITH FOR SHARE + FINAL RECHECK
+G2 audit trigger weak preflight: ADDRESSED WITH EXACT FINGERPRINT
+G2 rollback procedural-only coupling: ADDRESSED WITH MECHANICAL PRE-ROLLBACK FINGERPRINT VERIFIER
+legacy admin_global root bypass: REMAINS DENIED FOR T1
+broad authenticated authority DML: REMAINS REMOVED IN TARGET STATE
 ```
 
-The next independent AppSec gate must resolve the resulting current head itself and treat any later head movement as invalidation.
+This is implementer-side review only and does **not** grant an AppSec PASS.
 
-## 17. Validation status
+## 13. Current verdict
 
 ```text
-GitHub migration versioned: YES
-migration applied to Supabase: NO
-runtime tested: NO
-production smoke: NO
-lab/test DB: NOT ADOPTED
-read-only live preflight anchors: REVALIDATED
-live aggregate authority invariants: REVALIDATED
-first AppSec audit: REQUEST CHANGES / HISTORICAL
-revised exact-head AppSec audit: REQUIRED
+T1 IMPLEMENTATION = GITHUB DRAFT ONLY
+SUPABASE APPLIED = NO
+PRODUCTION VALIDATED = NO
+READY = NO
+MERGE = NO
+PRODUCTION APPLICATION = NOT AUTHORIZED
+SECURITY GO = DENIED / UNCHANGED
 ```
 
-During static self-review, invalid schema-qualified uses of SQL special forms `COALESCE`/`POSITION` were found in an intermediate Draft head and corrected before production application or the next AppSec gate.
-
-## 18. Backend/Data self-review verdict
+## 14. Next safe gate
 
 ```text
-T1 PRINCIPAL RISK SCOPE: PRESERVED
-DIRECT SELF-ESCALATION PATH: ADDRESSED IN VERSIONED MIGRATION
-LEGACY ADMIN_GLOBAL ROOT BYPASS: ADDRESSED FOR T1
-AUTHORITY-WRITING RPC BYPASS: GUARDED IN VERSIONED MIGRATION
-INACTIVE ACTOR FAIL-CLOSED: ADDRESSED
-ACTOR AUTHORITY RACE: ADDRESSED WITH ROW SHARE LOCKS
-TEAM NULL/INACTIVE FAIL-OPEN: ADDRESSED WITH IS TRUE
-PRE-T1 DRIFT COUPLING: ADDRESSED
-ROLLBACK RECIPE: RESTORES DOCUMENTED EXACT PRE-T1 SURFACE IF PRE-ROLLBACK STATE IS PROVEN TO BE THIS T1 VERSION
-BACKEND/DATA SECURITY PASS: NOT SELF-GRANTED
-NEXT INDEPENDENT GATE: APPLICATION SECURITY ASSURANCE
+Repeat independent Application Security Assurance on the new exact PR #125 head.
 ```
 
-## 19. Current project status
-
-```text
-T1 IMPLEMENTATION: GITHUB DRAFT ONLY
-SUPABASE APPLIED: NO
-PRODUCTION VALIDATED: NO
-PR-03 ELIGIBILITY: UNCHANGED / NOT_YET_MATERIALLY_ELIGIBLE
-SECURITY GO: DENIED / UNCHANGED
-READY: NOT EXECUTED
-MERGE: NOT EXECUTED
-DEPLOY: NOT EXECUTED
-```
-
-No Ready, merge, Supabase application, deploy or Security Go is authorized by this document.
+No Ready, merge, Supabase application or deploy is authorized by this evidence file.
