@@ -548,7 +548,24 @@ final PR-03 full direct-update revocation
 Security Go
 ```
 
-## 16. Validation status
+## 16. Exact-head gate snapshot
+
+The exact head must be resolved live after any evidence/documentation commit. The latest completed technical snapshot before the final evidence-head mutation established:
+
+```text
+main = 827f8591bfe4eee595a1aa22e169dcf6465f7fa3
+PR #125 = OPEN / DRAFT / mergeable=true
+changed files = exactly 2
+behind base = 0
+reviews = 0
+review threads = 0
+Vercel status = success
+Supabase migration applied = NO
+```
+
+The next independent AppSec gate must resolve the resulting current head itself and treat any later head movement as invalidation.
+
+## 17. Validation status
 
 ```text
 GitHub migration versioned: YES
@@ -564,24 +581,33 @@ revised exact-head AppSec audit: REQUIRED
 
 During static self-review, invalid schema-qualified uses of SQL special forms `COALESCE`/`POSITION` were found in an intermediate Draft head and corrected before production application or the next AppSec gate.
 
-## 17. Current verdict
+## 18. Backend/Data self-review verdict
 
 ```text
-TARGET CONTRACT DESIGN: REVISED
-AUTHORITY SOURCE INTEGRITY: ADDRESSED IN VERSIONED MIGRATION
+T1 PRINCIPAL RISK SCOPE: PRESERVED
+DIRECT SELF-ESCALATION PATH: ADDRESSED IN VERSIONED MIGRATION
 LEGACY ADMIN_GLOBAL ROOT BYPASS: ADDRESSED FOR T1
 AUTHORITY-WRITING RPC BYPASS: GUARDED IN VERSIONED MIGRATION
+INACTIVE ACTOR FAIL-CLOSED: ADDRESSED
+ACTOR AUTHORITY RACE: ADDRESSED WITH ROW SHARE LOCKS
+TEAM NULL/INACTIVE FAIL-OPEN: ADDRESSED WITH IS TRUE
+PRE-T1 DRIFT COUPLING: ADDRESSED
+ROLLBACK RECIPE: RESTORES DOCUMENTED EXACT PRE-T1 SURFACE IF PRE-ROLLBACK STATE IS PROVEN TO BE THIS T1 VERSION
+BACKEND/DATA SECURITY PASS: NOT SELF-GRANTED
+NEXT INDEPENDENT GATE: APPLICATION SECURITY ASSURANCE
+```
+
+## 19. Current project status
+
+```text
 T1 IMPLEMENTATION: GITHUB DRAFT ONLY
 SUPABASE APPLIED: NO
 PRODUCTION VALIDATED: NO
 PR-03 ELIGIBILITY: UNCHANGED / NOT_YET_MATERIALLY_ELIGIBLE
 SECURITY GO: DENIED / UNCHANGED
-```
-
-## 18. Next safe gate
-
-```text
-Repeat independent Application Security Assurance on the new exact PR #125 head.
+READY: NOT EXECUTED
+MERGE: NOT EXECUTED
+DEPLOY: NOT EXECUTED
 ```
 
 No Ready, merge, Supabase application, deploy or Security Go is authorized by this document.
