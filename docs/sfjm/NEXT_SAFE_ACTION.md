@@ -1,92 +1,120 @@
 # FECH.AI — SFJM Next Safe Action
 
-**Status:** `SEMANTIC_NEXT_ACTION_VIEW / DOCUMENTATION_ONLY`  
-**Updated:** `2026-08-21`  
+**Status:** `SEMANTIC_NEXT_ACTION_VIEW / T3A_CORRECTION / DOCUMENTATION_ONLY`  
+**Updated:** `2026-08-23`  
 **Repository:** `wagnerjfjunior/fecha.ai`
 
 ## 1. Authority
 
-This file is a thin semantic view. It is not a second current-state authority.
-
-Principal material state:
+This file is a thin semantic view. Principal material state:
 
 ```text
 docs/sfjm/CURRENT_STATE.md
 ```
 
-Before any sensitive action, resolve GitHub/environment lifecycle live as required by:
+Resolve GitHub/Supabase lifecycle live before acting.
+
+Because the 2026-08-23 transition update is currently on the active T3A change set, a new conversation must bootstrap from live `main`, then resolve the active T3A PR/head and read this file from that exact head until the change set is merged.
+
+## 2. Single current semantic next action
 
 ```text
-docs/sfjm/INDEX.md
+Correct the existing T3A administrative password-reset boundary change set in place, closing B1-B4 without opening another T3A PR.
 ```
 
-## 2. Current semantic next action
+Required blockers:
 
 ```text
-Complete the refreshed repository-wide direct-write/call-site inventory for PR-03 eligibility, preserving the two already-confirmed EditarCorretorModal writes and without re-reading unchanged App.jsx.
+B1 safe rollout order
+B2 trust-anchor preflight
+B3 drift-safe rollback
+B4 T1 guard interoperability
 ```
 
-The 2026-08-21 fresh integral read establishes the App.jsx bounded direct-write inventory and confirms two current direct PATCH paths in `EditarCorretorModal`.
+## 3. Corrective sequence
 
-That evidence does **not** by itself close the broader repository-wide predicate. The remaining inventory task must explicitly define:
+The next conversation should:
 
 ```text
-repository/source universe
-search/enumeration method
-coverage
-write mechanisms/patterns checked
-limitations
+1. resolve FECH.AI main live
+2. execute canonical bootstrap and specialist resolution
+3. resolve the active T3A PR live: base/head/state/changed files/checks/reviews/threads
+4. read CURRENT_STATE + this file from the exact active T3A head
+5. revalidate production read-only anchors material to B1-B4
+6. correct only the existing T3A Edge/migration/rollback/evidence artifacts required by the blockers
+7. preserve T1/T2 contracts and do not alter frontend in T3A
+8. update PR description after the final corrective head so description and actual scope cannot diverge
+9. read all final material artifacts to EOF and publish a coverage matrix
+10. Backend/Data exact-head review
+11. independent AppSec exact-head review
+12. stop before Ready unless Product Authority separately authorizes Ready
 ```
 
-The other material needs continue to be defined by `CURRENT_STATE.md` and include:
+Head changes invalidate prior exact-head gates. Do not carry a PASS across a corrective commit.
+
+## 4. Required safe deployment semantics after later approval
+
+This section is a proof obligation, not deployment authorization.
+
+The intended fail-closed rollout is:
 
 ```text
-post-deploy functional smoke
-post-deploy runtime fail-closed evidence
-refreshed repository-wide direct-write/call-site inventory
-safe server-side disposition for EditarCorretorModal
-cutover observation sufficient to confirm no legitimate flow depends on direct UPDATE
-controlled RPCs individually inventoried and tested for continuity under direct-UPDATE revocation
+reviewed hardened Edge deployed first
+→ T3 RPC absent: administrative reset fails closed without Auth mutation
+→ apply reviewed migration
+→ validate function/ACL/grants/triggers/fingerprints
+→ controlled positive/negative/cross-tenant smoke
+→ confirm direct must_change_password client write cannot bypass boundary
 ```
 
-After the bounded repository-wide inventory is closed, the next likely dependency is the safe server-side disposition and authority contract for the remaining administrative writes. That future transition is not pre-authorized here.
+Do not use the inverse order while the v17 reset behavior remains live.
 
-This statement is semantic. It does not authorize any runtime test, Supabase mutation, implementation, Ready, merge, deployment or production action.
+## 5. Required rollback semantics
 
-## 3. No frozen lifecycle routing
+This section is a proof obligation, not rollback authorization.
 
-This file must not encode a durable instruction such as:
+Rollback must be executable and drift-aware:
 
 ```text
-run GPT-X on PR-Y at head-Z
+validate exact T3A function/ACL/fingerprint + expected grant state
+validate exact T3A-modified T1 guard fingerprint when applicable
+if drift: STOP
+otherwise restore database boundary to reviewed pre-T3A contract
+while hardened Edge remains deployed and T3 RPC is absent: reset fails closed
+then restore the versioned v17 Edge baseline only under explicit rollback authority
+verify runtime/catalog after rollback
 ```
 
-when that instruction depends only on volatile lifecycle state.
+Rollback must not rewrite real user password-state data merely to recreate old presentation state.
 
-Exact PR/head/check/review/deployment facts must be resolved live at execution time.
+## 6. Anti-workaround requirements
 
-## 4. No retrospective replay
-
-Historical provenance gaps do not automatically become the next action.
+The correction must not solve T3A by:
 
 ```text
-UNKNOWN != REEXECUTE
-GATE_PROVENANCE_NOT_RECORDED != GATE_FAILED
-AUTHORITY_PROVENANCE_NOT_RECORDED != UNAUTHORIZED
+disabling T1 triggers
+broadening authenticated UPDATE
+trusting empresa/role/flags/time from client
+making service_role the caller identity for the T3 authorization RPC
+granting T3 EXECUTE to anon/PUBLIC/service_role
+silently changing user-creation semantics
+using production trial-and-error as implementation validation
 ```
 
-Replay a prior gate only when its missing provenance materially affects a current safety decision, and then perform only the minimum present-time validation required.
+## 7. No audit loop
 
-## 5. Update rule
+Do not reopen T1/T2 as independent workstreams absent new material evidence that invalidates their established scope.
 
-Update this file only when the semantic next action changes materially.
+Use their current live contracts only as dependencies to prove T3A compatibility.
 
-Do not update it for:
+A repeated audit on unchanged evidence is:
 
 ```text
-main SHA change only
-Draft/Ready transition only
-documentation-only closure merge
-unrelated Builder documentation merge
-new conversation or specialist
+AUDIT_LOOP_BLOCKED
 ```
+
+## 8. Update rule
+
+Update this file when the semantic next action changes materially, for example after B1-B4 closure, an exact-head gate result, application/deployment validation or a new material blocker.
+
+Do not update merely for SHA movement or lifecycle-only transitions.
