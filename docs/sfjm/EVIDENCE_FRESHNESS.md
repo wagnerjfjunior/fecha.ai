@@ -171,7 +171,7 @@ Corrected v2 candidate body anchors now recorded in this change set:
 
 ```text
 public.t3_prepare_admin_password_reset(uuid):
-  md5 90c537dd4c2c7ae6fb7ae93373c4cc77
+  md5 6f2acb633adc81994394be52d9ca18b9
 
 T3-aware t1_guard_corretores_direct_compat_update():
   md5 f2cbf4762b5f5b2d6c6eb56fcf0edc2b

@@ -11,6 +11,10 @@
 
 begin;
 
+-- Serialize the exact rollback boundary against ordinary writes and table DDL.
+-- SHARE permits reads and is held through post-rollback verification.
+lock table public.admins, public.corretores, public.times in share mode;
+
 -- =============================================================================
 -- 1. FAIL-CLOSED ROLLBACK PREFLIGHT — NO DESTRUCTIVE STEP BEFORE THIS PASSES
 -- =============================================================================
@@ -26,7 +30,13 @@ declare
   v_guard_oid oid:=pg_catalog.to_regprocedure(
     'public.t1_guard_corretores_direct_compat_update()'
   );
+  v_owner oid;
+  v_definer boolean;
+  v_config text[];
+  v_md5 text;
+  v_public_execute boolean;
   v_update_columns text[];
+  r record;
 begin
   if v_postgres_oid is null
      or v_authenticated_oid is null
@@ -40,10 +50,85 @@ begin
     raise exception 'T3A_ROLLBACK_REQUIRED_OBJECT_MISSING';
   end if;
 
-  if pg_catalog.md5(pg_catalog.pg_get_functiondef(
-       'auth.uid()'::regprocedure
-     )) is distinct from 'ea3b41bf29e2ad573067939329aa088e' then
+  if pg_catalog.to_regprocedure('auth.uid()') is null
+     or not exists (
+       select 1
+       from pg_catalog.pg_proc as p
+       where p.oid='auth.uid()'::regprocedure
+         and pg_catalog.pg_get_userbyid(p.proowner)='supabase_auth_admin'
+         and p.prosecdef is false
+         and p.provolatile='s'
+         and p.prorettype='uuid'::regtype
+         and p.pronargs=0
+         and pg_catalog.md5(pg_catalog.pg_get_functiondef(p.oid))=
+           'ea3b41bf29e2ad573067939329aa088e'
+         and pg_catalog.has_function_privilege(
+               v_authenticated_oid,p.oid,'EXECUTE'
+             )
+         and pg_catalog.has_function_privilege(v_anon_oid,p.oid,'EXECUTE')
+         and pg_catalog.has_function_privilege(
+               v_service_role_oid,p.oid,'EXECUTE'
+             )
+     ) then
     raise exception 'T3A_ROLLBACK_AUTH_UID_DRIFT';
+  end if;
+
+  if not exists (select 1 from information_schema.columns where table_schema='public' and table_name='admins' and column_name='user_id' and data_type='uuid')
+     or not exists (select 1 from information_schema.columns where table_schema='public' and table_name='admins' and column_name='role' and data_type='text')
+     or not exists (select 1 from information_schema.columns where table_schema='public' and table_name='admins' and column_name='ativo' and data_type='boolean')
+     or not exists (select 1 from information_schema.columns where table_schema='public' and table_name='corretores' and column_name='id' and data_type='uuid')
+     or not exists (select 1 from information_schema.columns where table_schema='public' and table_name='corretores' and column_name='user_id' and data_type='uuid')
+     or not exists (select 1 from information_schema.columns where table_schema='public' and table_name='corretores' and column_name='empresa_id' and data_type='uuid')
+     or not exists (select 1 from information_schema.columns where table_schema='public' and table_name='corretores' and column_name='time_id' and data_type='uuid')
+     or not exists (select 1 from information_schema.columns where table_schema='public' and table_name='corretores' and column_name='role' and data_type='text')
+     or not exists (select 1 from information_schema.columns where table_schema='public' and table_name='corretores' and column_name='ativo' and data_type='boolean')
+     or not exists (select 1 from information_schema.columns where table_schema='public' and table_name='corretores' and column_name='apto_para_receber' and data_type='boolean')
+     or not exists (select 1 from information_schema.columns where table_schema='public' and table_name='corretores' and column_name='is_admin_local' and data_type='boolean')
+     or not exists (select 1 from information_schema.columns where table_schema='public' and table_name='corretores' and column_name='is_gestor' and data_type='boolean')
+     or not exists (select 1 from information_schema.columns where table_schema='public' and table_name='corretores' and column_name='must_change_password' and data_type='boolean')
+     or not exists (select 1 from information_schema.columns where table_schema='public' and table_name='times' and column_name='id' and data_type='uuid')
+     or not exists (select 1 from information_schema.columns where table_schema='public' and table_name='times' and column_name='gestor_id' and data_type='uuid')
+     or not exists (select 1 from information_schema.columns where table_schema='public' and table_name='times' and column_name='empresa_id' and data_type='uuid')
+     or not exists (select 1 from information_schema.columns where table_schema='public' and table_name='times' and column_name='ativo' and data_type='boolean') then
+    raise exception 'T3A_ROLLBACK_REQUIRED_COLUMN_DRIFT';
+  end if;
+
+  if not exists (
+    select 1
+    from pg_catalog.pg_index as i
+    join pg_catalog.pg_class as t on t.oid=i.indrelid
+    join pg_catalog.pg_namespace as n on n.oid=t.relnamespace
+    join pg_catalog.pg_attribute as a
+      on a.attrelid=t.oid
+     and a.attname='user_id'
+     and a.attnum>0
+     and not a.attisdropped
+    where n.nspname='public'
+      and t.relname='corretores'
+      and i.indisunique and i.indisvalid and i.indisready
+      and i.indimmediate and i.indpred is null and i.indexprs is null
+      and i.indnkeyatts=1 and i.indnatts=1 and i.indkey[0]=a.attnum
+  ) then
+    raise exception 'T3A_ROLLBACK_CORRETORES_USER_ID_UNIQUE_MISSING';
+  end if;
+
+  if not exists (
+    select 1
+    from pg_catalog.pg_index as i
+    join pg_catalog.pg_class as t on t.oid=i.indrelid
+    join pg_catalog.pg_namespace as n on n.oid=t.relnamespace
+    join pg_catalog.pg_attribute as a
+      on a.attrelid=t.oid
+     and a.attname='user_id'
+     and a.attnum>0
+     and not a.attisdropped
+    where n.nspname='public'
+      and t.relname='admins'
+      and i.indisunique and i.indisvalid and i.indisready
+      and i.indimmediate and i.indpred is null and i.indexprs is null
+      and i.indnkeyatts=1 and i.indnatts=1 and i.indkey[0]=a.attnum
+  ) then
+    raise exception 'T3A_ROLLBACK_ADMINS_USER_ID_UNIQUE_MISSING';
   end if;
 
   if exists (
@@ -66,9 +151,9 @@ begin
       and p.prosecdef is true
       and p.proconfig=array['search_path=pg_catalog']::text[]
       and pg_catalog.md5(pg_catalog.pg_get_functiondef(p.oid))=
-        '90c537dd4c2c7ae6fb7ae93373c4cc77'
+        '6f2acb633adc81994394be52d9ca18b9'
       and pg_catalog.obj_description(p.oid,'pg_proc')=
-        'T3A-v2|90c537dd4c2c7ae6fb7ae93373c4cc77|auth.uid actor; authority and tenant derived server-side; transaction-bound T1 interoperability'
+        'T3A-v2|6f2acb633adc81994394be52d9ca18b9|auth.uid actor; authority and tenant derived server-side; transaction-bound T1 interoperability'
       and pg_catalog.has_function_privilege(
             v_authenticated_oid,p.oid,'EXECUTE'
           )
@@ -161,6 +246,80 @@ begin
   ) then
     raise exception 'T3A_ROLLBACK_T1_AUTHORITY_GUARD_DRIFT';
   end if;
+
+  -- Revalidate every unchanged helper/RPC that the restored pre-T3A boundary
+  -- relies on. A body hash alone is not enough: owner, security mode, config and
+  -- effective EXECUTE surface are part of the reviewed state.
+  for r in
+    select *
+    from (
+      values
+        ('public.is_root()',
+         '465c04885d729e63f1a1d4458fc2a1b0','search_path=public',true,true),
+        ('public.is_admin_local()',
+         '64b982da412f62c324aa2dde210eea0c','search_path=public',true,true),
+        ('public.my_empresa_id()',
+         '7d7a73d22953d547a103f89c7b676906','search_path=public',true,true),
+        ('public.my_corretor_id()',
+         'c8f243d33d42837c46236625a74c3fb7','search_path=public',true,true),
+        ('public.t1_can_update_corretor_row_strict(uuid,uuid,text,boolean,boolean)',
+         '3cc5c9279ed4a2f40acc6c3750fc7cc4','search_path=pg_catalog',true,false),
+        ('public.atualizar_status_corretor(uuid,boolean,boolean)',
+         '563dc0b60766bda1aaf5ed9814a1c8cd','search_path=pg_catalog',true,false),
+        ('public.marcar_senha_inicial_definida()',
+         '2a7b28d4bb6342a99d075c4d3c49af4d','search_path=pg_catalog',true,false),
+        ('public.audit_trail_log_corretores_critical_update()',
+         '3fdaca39d55f348ca36f796023f3260b','search_path=public',true,true)
+    ) as expected(signature,body_md5,config_entry,authenticated_execute,service_execute)
+  loop
+    if pg_catalog.to_regprocedure(r.signature) is null then
+      raise exception 'T3A_ROLLBACK_REQUIRED_FUNCTION_MISSING: %',r.signature;
+    end if;
+
+    select p.proowner,
+           p.prosecdef,
+           p.proconfig,
+           pg_catalog.md5(pg_catalog.pg_get_functiondef(p.oid)),
+           exists (
+             select 1
+             from pg_catalog.aclexplode(
+               coalesce(p.proacl,pg_catalog.acldefault('f',p.proowner))
+             ) as acl
+             where acl.grantee=0 and acl.privilege_type='EXECUTE'
+           )
+      into strict v_owner,v_definer,v_config,v_md5,v_public_execute
+    from pg_catalog.pg_proc as p
+    where p.oid=pg_catalog.to_regprocedure(r.signature);
+
+    if v_owner is distinct from v_postgres_oid
+       or v_definer is distinct from true
+       or v_config is distinct from array[r.config_entry]::text[]
+       or v_md5 is distinct from r.body_md5
+       or pg_catalog.has_function_privilege(
+            v_authenticated_oid,pg_catalog.to_regprocedure(r.signature),'EXECUTE'
+          ) is distinct from r.authenticated_execute
+       or pg_catalog.has_function_privilege(
+            v_service_role_oid,pg_catalog.to_regprocedure(r.signature),'EXECUTE'
+          ) is distinct from r.service_execute
+       or pg_catalog.has_function_privilege(
+            v_anon_oid,pg_catalog.to_regprocedure(r.signature),'EXECUTE'
+          )
+       or v_public_execute
+       or exists (
+         select 1
+         from pg_catalog.pg_proc as p2
+         cross join lateral pg_catalog.aclexplode(
+           coalesce(p2.proacl,pg_catalog.acldefault('f',p2.proowner))
+         ) as acl
+         where p2.oid=pg_catalog.to_regprocedure(r.signature)
+           and acl.privilege_type='EXECUTE'
+           and acl.grantee not in (
+             v_postgres_oid,v_authenticated_oid,v_service_role_oid
+           )
+       ) then
+      raise exception 'T3A_ROLLBACK_REQUIRED_FUNCTION_DRIFT: %',r.signature;
+    end if;
+  end loop;
 
   if not exists (
     select 1
@@ -370,7 +529,10 @@ begin
     raise exception 'T3A_ROLLBACK_TIMES_PRIVILEGE_DRIFT';
   end if;
 
-  if pg_catalog.has_table_privilege(
+  if not pg_catalog.has_table_privilege(
+       v_authenticated_oid,'public.corretores','SELECT'
+     )
+     or pg_catalog.has_table_privilege(
        v_authenticated_oid,'public.corretores','UPDATE'
      )
      or pg_catalog.has_table_privilege(
@@ -629,6 +791,7 @@ begin
        select 1
        from pg_catalog.pg_proc as p
        where p.oid=v_guard_oid
+         and p.proowner=v_postgres_oid
          and p.prosecdef is false
          and p.proconfig=array['search_path=pg_catalog']::text[]
          and pg_catalog.md5(pg_catalog.pg_get_functiondef(p.oid))=
@@ -669,10 +832,28 @@ begin
     raise exception 'T3A_ROLLBACK_T1_TRIGGER_DRIFT';
   end if;
 
-  if pg_catalog.has_table_privilege(
+  if not pg_catalog.has_table_privilege(
+       v_authenticated_oid,'public.corretores','SELECT'
+     )
+     or pg_catalog.has_table_privilege(
+       v_authenticated_oid,'public.corretores','INSERT'
+     )
+     or pg_catalog.has_table_privilege(
        v_authenticated_oid,'public.corretores','UPDATE'
+     )
+     or pg_catalog.has_table_privilege(
+       v_authenticated_oid,'public.corretores','DELETE'
+     )
+     or pg_catalog.has_table_privilege(
+       v_authenticated_oid,'public.corretores','TRUNCATE'
+     )
+     or pg_catalog.has_table_privilege(
+       v_authenticated_oid,'public.corretores','REFERENCES'
+     )
+     or pg_catalog.has_table_privilege(
+       v_authenticated_oid,'public.corretores','TRIGGER'
      ) then
-    raise exception 'T3A_ROLLBACK_BROAD_UPDATE_PRESENT';
+    raise exception 'T3A_ROLLBACK_CORRETORES_TABLE_PRIVILEGE_DRIFT';
   end if;
 
   select pg_catalog.array_agg(a.attname::text order by a.attname::text)

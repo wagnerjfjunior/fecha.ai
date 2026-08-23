@@ -147,7 +147,7 @@ B1-B4 evidence and coverage matrix
 Corrected candidate fingerprints:
 
 ```text
-T3 RPC: 90c537dd4c2c7ae6fb7ae93373c4cc77
+T3 RPC: 6f2acb633adc81994394be52d9ca18b9
 T3-aware direct guard: f2cbf4762b5f5b2d6c6eb56fcf0edc2b
 rollback-restored pre-T3A direct guard: 99477024e337de5645dd042a30f8cf78
 ```
@@ -181,6 +181,7 @@ GESTOR
   target same empresa
   target role='corretor'
   target not admin/gestor
+  target has no public.admins identity
   target ACTIVE managed team
   team.empresa_id = actor.empresa_id
   team.gestor_id = actor.id
@@ -205,7 +206,8 @@ reviewed hardened Edge first
 
 ### B2 — trust-anchor preflight: CANDIDATE ADDRESSED
 
-The migration requires exact roles, authority-column types, immediate unique
+The migration holds the three authority-bearing tables in SHARE mode and
+requires exact roles, authority-column types, immediate unique
 identity indexes, RLS/FORCE, authenticated/anon grant surfaces, the single
 `corretores_update` and `times_update` policies with exact expressions,
 authority/helper fingerprints, enabled T1/audit triggers and absence of an
@@ -213,9 +215,10 @@ unexpected password writer or T3 context-key collision.
 
 ### B3 — drift-safe rollback: CANDIDATE ADDRESSED
 
-Before any replacement, drop or grant, rollback verifies the exact T3 RPC,
-T3-aware guard, ACLs/comments/fingerprints, unchanged T1/audit triggers,
-policies/helpers and exact post-T3A grant surface. Drift stops the transaction.
+Before any replacement, drop or grant, rollback holds the authority tables in
+SHARE mode and verifies the exact T3 RPC, T3-aware guard, required columns and
+identity indexes, `auth.uid()`, helper owners/security/config/ACLs, unchanged
+T1/audit triggers, policies and exact post-T3A grant surface. Drift stops the transaction.
 It restores guard MD5 `99477024e337de5645dd042a30f8cf78`, drops the proven
 T3 function without `IF EXISTS`, restores only the prior column grant and never
 rewrites user/Auth state.

@@ -100,6 +100,7 @@ The migration now stops before DDL if any material authority anchor differs.
 | `corretores_update` | exact single permissive UPDATE policy with identical strict helper in USING and WITH CHECK |
 | unexpected writer scan | only existing authenticated self-service password-state writer before T3A |
 | context-key collision | no existing function contains `fechai.t3_admin_password_reset_context` |
+| migration consistency | `admins`, `corretores` and `times` held in SHARE mode through preflight, mutation and postflight |
 
 Live fingerprints embedded in the preflight:
 
@@ -158,6 +159,7 @@ auth.uid()
 -> active unique public.corretores profile
 -> role='gestor', is_gestor=true, is_admin_local=false
 -> target is an ordinary broker in the same empresa
+-> target has no public.admins identity
 -> target.time_id identifies an active team in that empresa
 -> team.gestor_id=actor.id
 ```
@@ -180,7 +182,10 @@ fechai.t3_admin_password_reset_context
 = auth.uid() : target.user_id : txid_current()
 ```
 
-The enabled T1 direct guard admits the protected transition only when:
+The RPC also holds `public.admins` in SHARE mode through the authority decision,
+preventing a concurrent root/protected-identity mutation from changing the
+meaning of either actor or target mid-reset. The enabled T1 direct guard admits
+the protected transition only when:
 
 ```text
 current_user='postgres'                  -- SECURITY DEFINER execution only
@@ -209,7 +214,7 @@ All remaining T1 guard branches are byte-for-byte the pre-T3A body. This keeps:
 Reviewed candidate fingerprints:
 
 ```text
-T3 RPC: 90c537dd4c2c7ae6fb7ae93373c4cc77
+T3 RPC: 6f2acb633adc81994394be52d9ca18b9
 T3-aware direct guard: f2cbf4762b5f5b2d6c6eb56fcf0edc2b
 pre-T3A direct guard restored by rollback: 99477024e337de5645dd042a30f8cf78
 ```
@@ -218,6 +223,7 @@ pre-T3A direct guard restored by rollback: 99477024e337de5645dd042a30f8cf78
 
 ```text
 authorize from server-side rows
+-> hold public.admins in SHARE mode for stable root/protected identity
 -> lock the actor authority row FOR SHARE
 -> lock exact target profile FOR UPDATE
 -> for gestor, lock the active managed team FOR SHARE
@@ -257,12 +263,13 @@ migration transaction.
 
 The rollback begins with exact validation before any destructive statement:
 
-- T3 RPC body `90c537dd...`, owner, SECURITY DEFINER config, marker and ACL;
+- T3 RPC body `6f2acb63...`, owner, SECURITY DEFINER config, marker and ACL;
 - T3-aware guard body `f2cbf476...`, owner, SECURITY INVOKER config, marker and ACL;
 - unchanged T1 authority guard, both enabled trigger definitions/comments and audit trigger;
 - exact `corretores_update` and `times_update` policy semantics;
-- exact policy-helper fingerprints and required grants;
-- exact post-T3A `corretores` UPDATE columns (`ativo`, `apto_para_receber`);
+- exact required column types and immediate unique identity indexes;
+- exact `auth.uid()` and policy-helper bodies, owners, security modes, configs and ACLs;
+- exact post-T3A `corretores` SELECT/table privilege surface and UPDATE columns (`ativo`, `apto_para_receber`);
 - no unexpected context-key user.
 
 If any check differs, the rollback stops. It never uses
@@ -317,6 +324,7 @@ strict gestor -> ordinary broker own active team    ALLOW
 gestor -> broker other/inactive team                DENY
 gestor -> other company                             DENY
 gestor -> admin_local/gestor target                  DENY
+gestor -> public.admins identity                     DENY
 ordinary corretor -> any target                     DENY
 inactive actor -> any target                        DENY
 missing/invalid session                             DENY

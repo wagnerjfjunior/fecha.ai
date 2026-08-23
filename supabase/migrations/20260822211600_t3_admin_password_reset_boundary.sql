@@ -14,6 +14,11 @@
 
 begin;
 
+-- Hold authority-bearing table data and table DDL stable for the complete
+-- preflight -> mutation -> postflight transaction. SHARE permits concurrent
+-- reads but blocks ordinary writes while the exact boundary is being changed.
+lock table public.admins, public.corretores, public.times in share mode;
+
 -- =============================================================================
 -- 1. EXACT FAIL-CLOSED TRUST-ANCHOR PREFLIGHT
 -- =============================================================================
@@ -735,6 +740,11 @@ begin
     raise exception using errcode='42501',message='TARGET_NOT_AUTHORIZED';
   end if;
 
+  -- Prevent a concurrent public.admins insert/update/delete from changing root
+  -- or protected-target identity between the authority decision and the
+  -- password-state transition. Concurrent reset calls remain compatible.
+  lock table public.admins in share mode;
+
   -- Root authority is derived only from public.admins.
   perform 1
   from public.admins as a
@@ -853,6 +863,11 @@ begin
         and c.role='corretor'
         and coalesce(c.is_admin_local,false) is false
         and coalesce(c.is_gestor,false) is false
+        and not exists (
+          select 1
+          from public.admins as protected_admin
+          where protected_admin.user_id=c.user_id
+        )
       for update;
     exception
       when no_data_found or too_many_rows then
@@ -919,7 +934,7 @@ grant execute on function public.t3_prepare_admin_password_reset(uuid)
   to authenticated;
 
 comment on function public.t3_prepare_admin_password_reset(uuid) is
-'T3A-v2|90c537dd4c2c7ae6fb7ae93373c4cc77|auth.uid actor; authority and tenant derived server-side; transaction-bound T1 interoperability';
+'T3A-v2|6f2acb633adc81994394be52d9ca18b9|auth.uid actor; authority and tenant derived server-side; transaction-bound T1 interoperability';
 
 -- App.jsx remains unchanged in T3A. Its stale direct PATCH cannot undo the
 -- server-authoritative state after this narrow grant is revoked.
@@ -961,9 +976,9 @@ begin
       and p.prosecdef is true
       and p.proconfig=array['search_path=pg_catalog']::text[]
       and pg_catalog.md5(pg_catalog.pg_get_functiondef(p.oid))=
-        '90c537dd4c2c7ae6fb7ae93373c4cc77'
+        '6f2acb633adc81994394be52d9ca18b9'
       and pg_catalog.obj_description(p.oid,'pg_proc')=
-        'T3A-v2|90c537dd4c2c7ae6fb7ae93373c4cc77|auth.uid actor; authority and tenant derived server-side; transaction-bound T1 interoperability'
+        'T3A-v2|6f2acb633adc81994394be52d9ca18b9|auth.uid actor; authority and tenant derived server-side; transaction-bound T1 interoperability'
       and pg_catalog.has_function_privilege(
             v_authenticated_oid,p.oid,'EXECUTE'
           )
@@ -1093,10 +1108,28 @@ begin
     raise exception 'T3A_POSTFLIGHT_CONTEXT_KEY_COLLISION';
   end if;
 
-  if pg_catalog.has_table_privilege(
+  if not pg_catalog.has_table_privilege(
+       v_authenticated_oid,'public.corretores','SELECT'
+     )
+     or pg_catalog.has_table_privilege(
+       v_authenticated_oid,'public.corretores','INSERT'
+     )
+     or pg_catalog.has_table_privilege(
        v_authenticated_oid,'public.corretores','UPDATE'
+     )
+     or pg_catalog.has_table_privilege(
+       v_authenticated_oid,'public.corretores','DELETE'
+     )
+     or pg_catalog.has_table_privilege(
+       v_authenticated_oid,'public.corretores','TRUNCATE'
+     )
+     or pg_catalog.has_table_privilege(
+       v_authenticated_oid,'public.corretores','REFERENCES'
+     )
+     or pg_catalog.has_table_privilege(
+       v_authenticated_oid,'public.corretores','TRIGGER'
      ) then
-    raise exception 'T3A_POSTFLIGHT_BROAD_UPDATE_PRESENT';
+    raise exception 'T3A_POSTFLIGHT_CORRETORES_TABLE_PRIVILEGE_DRIFT';
   end if;
 
   select pg_catalog.array_agg(a.attname::text order by a.attname::text)
