@@ -1,7 +1,7 @@
 # FECH.AI — SFJM Next Safe Action
 
-**Status:** `SEMANTIC_NEXT_ACTION_VIEW / T3A_CORRECTION / DOCUMENTATION_ONLY`  
-**Updated:** `2026-08-23`  
+**Status:** `SEMANTIC_NEXT_ACTION_VIEW / T3A_CORRECTED_CANDIDATE / EXACT_HEAD_REVIEWS_PENDING / DOCUMENTATION_ONLY`
+**Updated:** `2026-08-23`
 **Repository:** `wagnerjfjunior/fecha.ai`
 
 ## 1. Authority
@@ -19,10 +19,11 @@ Because the 2026-08-23 transition update is currently on the active T3A change s
 ## 2. Single current semantic next action
 
 ```text
-Correct the existing T3A administrative password-reset boundary change set in place, closing B1-B4 without opening another T3A PR.
+Finalize the B1-B4 correction in the existing T3A change set, resolve its live
+final head, then obtain Backend/Data and independent AppSec exact-head reviews.
 ```
 
-Required blockers:
+Corrected candidate domains to reconcile on that exact head:
 
 ```text
 B1 safe rollout order
@@ -31,7 +32,7 @@ B3 drift-safe rollback
 B4 T1 guard interoperability
 ```
 
-## 3. Corrective sequence
+## 3. Exact-head closure sequence
 
 The next conversation should:
 
@@ -40,17 +41,21 @@ The next conversation should:
 2. execute canonical bootstrap and specialist resolution
 3. resolve the active T3A PR live: base/head/state/changed files/checks/reviews/threads
 4. read CURRENT_STATE + this file from the exact active T3A head
-5. revalidate production read-only anchors material to B1-B4
-6. correct only the existing T3A Edge/migration/rollback/evidence artifacts required by the blockers
-7. preserve T1/T2 contracts and do not alter frontend in T3A
-8. update PR description after the final corrective head so description and actual scope cannot diverge
-9. read all final material artifacts to EOF and publish a coverage matrix
-10. Backend/Data exact-head review
-11. independent AppSec exact-head review
+5. confirm the corrected Edge/migration/rollback/evidence/SFJM artifacts are the resolved PR head
+6. preserve T1/T2 contracts and confirm App.jsx has no T3A diff
+7. update the existing PR description so it matches that final head
+8. read every final material artifact to EOF and reconcile the coverage matrix
+9. prepare the exact-head Backend/Data prompt; Product Authority submits it manually to backend-data-platform-specialist and returns the integral response
+10. after Backend/Data closure, repeat independently with application-security-assurance-specialist
+11. record the manual exact-head outcomes without inventing a Gateway receipt or carrying a prior-head PASS
 12. stop before Ready unless Product Authority separately authorizes Ready
 ```
 
 Head changes invalidate prior exact-head gates. Do not carry a PASS across a corrective commit.
+
+The SES Router is temporarily frozen for this workstream because its Action is
+not available from inside the project. Use the manual copy/paste channel recorded
+in `AUTHORIZATIONS.md` until Product Authority restores the Router.
 
 ## 4. Required safe deployment semantics after later approval
 
@@ -115,6 +120,8 @@ AUDIT_LOOP_BLOCKED
 
 ## 8. Update rule
 
-Update this file when the semantic next action changes materially, for example after B1-B4 closure, an exact-head gate result, application/deployment validation or a new material blocker.
+Update this file when the semantic next action changes materially, for example
+after an exact-head gate result, application/deployment validation or a new
+material blocker.
 
 Do not update merely for SHA movement or lifecycle-only transitions.

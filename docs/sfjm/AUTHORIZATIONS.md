@@ -1,7 +1,7 @@
 # FECH.AI — SFJM Authorizations
 
-**Status:** `AUTHORITY_PROVENANCE_LEDGER / T3A_CORRECTION_ACTIVE / FAIL_CLOSED / DOCUMENTATION_ONLY`  
-**Updated:** `2026-08-23`  
+**Status:** `AUTHORITY_PROVENANCE_LEDGER / T3A_CORRECTIVE_GITHUB_AUTHORITY_ACTIVE / FAIL_CLOSED / DOCUMENTATION_ONLY`
+**Updated:** `2026-08-23`
 **Repository:** `wagnerjfjunior/fecha.ai`
 
 ## 1. Interpretation rule
@@ -67,7 +67,42 @@ B3 drift-safe rollback
 B4 T1 guard interoperability
 ```
 
+The v2 candidate records corrective implementations for B1-B4. This authority
+remains active only for publishing/reconciling those bounded artifacts in the
+existing PR, updating its description/evidence and completing the required
+read-only exact-head validation record. It does not turn a candidate statement
+into a specialist PASS or authorize the next lifecycle transition.
+
 This `ACTIVE_AUTHORITY` is for producing a corrected reviewable GitHub candidate in the existing T3A change set. It is not production mutation authority.
+
+### Temporary specialist execution channel — manual while Router is frozen
+
+On `2026-08-23`, Product Authority recorded that the SES Router/Action is not
+available when specialist invocation originates inside the project, despite the
+documented intended integration. Repeated live tests did not establish a usable
+in-project Action path, so the Router is temporarily frozen for this workstream.
+
+Until Product Authority restores that channel:
+
+```text
+do not invent or simulate a Gateway receipt
+prepare an exact task/head-bound specialist prompt
+Product Authority submits that prompt manually to the named specialist
+Product Authority returns the specialist response integrally to this thread
+validate that response against the same live exact head before recording it
+run Backend/Data before the independent AppSec review
+```
+
+This is an execution-channel exception, not fuzzy role resolution and not
+mutation authority. The adopted roles remain:
+
+```text
+backend_data -> backend-data-platform-specialist
+application_security -> application-security-assurance-specialist
+```
+
+Manual specialist output must identify the repository, PR, exact head, material
+files read and verdict. It cannot authorize Ready, merge or production.
 
 ## 4. CONSUMED_AUTHORITY — SFJM new-conversation transition
 

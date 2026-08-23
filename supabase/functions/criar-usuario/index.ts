@@ -1,6 +1,6 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 
-// FECH.AI — T3A-v1
+// FECH.AI — T3A-v2
 // reset_password authority is derived server-side by public.t3_prepare_admin_password_reset().
 // The user-creation path below intentionally preserves the v17 behavior in this change.
 
@@ -97,7 +97,7 @@ Deno.serve(async (req: Request) => {
       .single()
 
     // ═══════════════════════════════════════════════════════════════════════
-    // AÇÃO: RESET DE SENHA — T3A-v1 / MULTI-TENANT AUTHORITY BOUNDARY
+    // AÇÃO: RESET DE SENHA — T3A-v2 / MULTI-TENANT AUTHORITY BOUNDARY
     // ═══════════════════════════════════════════════════════════════════════
     if (body.action === 'reset_password') {
       const logId = `audit-${Date.now()}-${Math.random().toString(36).slice(2)}`

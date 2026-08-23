@@ -1,7 +1,7 @@
 # FECH.AI — SFJM Current Product/Security Handoff
 
-**Status:** `THIN_HANDOFF_POINTER / T3A_ACTIVE_CORRECTION / LIVE_LIFECYCLE_RESOLUTION`  
-**Updated:** `2026-08-23`  
+**Status:** `THIN_HANDOFF_POINTER / T3A_CORRECTED_CANDIDATE / EXACT_HEAD_REVIEWS_PENDING / LIVE_LIFECYCLE_RESOLUTION`
+**Updated:** `2026-08-23`
 **Repository:** `wagnerjfjunior/fecha.ai`
 
 ## 1. Purpose
@@ -36,12 +36,12 @@ The current workstream is:
 
 ```text
 T3A — Administrative Password Reset Multi-Tenant Authority Boundary
-STATE: ACTIVE CORRECTION
+STATE: CORRECTED B1-B4 CANDIDATE / EXACT-HEAD REVIEWS PENDING
 ```
 
 The next conversation must continue the **existing** T3A change set rather than restart the design or open another PR for the same blocker set.
 
-Material blockers to carry forward:
+Corrected domains to reconcile on the final exact head:
 
 ```text
 B1 safe rollout ordering
@@ -50,7 +50,10 @@ B3 drift-safe rollback
 B4 T1 guard interoperability
 ```
 
-The current T3A candidate is not eligible for Ready/merge/deploy/application until those blockers are corrected and independently validated on the final exact head.
+The v2 candidate records corrections for all four domains in the existing PR.
+It is not eligible for Ready/merge/deploy/application until Backend/Data and an
+independent AppSec reviewer validate the same resolved final head. Candidate
+closure is not specialist PASS.
 
 ## 4. New-conversation reconstruction order
 
@@ -61,9 +64,15 @@ The current T3A candidate is not eligible for Ready/merge/deploy/application unt
 4. read common Modus Operandi + governance/SFJM
 5. resolve the active T3A PR live
 6. because this 2026-08-23 SFJM transition is PR_HEAD_ONLY until merge, read the SFJM files from the active T3A head
-7. resolve current Supabase/Edge read-only anchors material to B1-B4
-8. continue from docs/sfjm/NEXT_SAFE_ACTION.md
+7. confirm current Supabase/Edge read-only anchors material to B1-B4
+8. resolve the corrective PR head, reconcile evidence/coverage and perform the two exact-head reviews
+9. stop before Ready without a new Product Authority
 ```
+
+The SES Router is temporarily frozen because the in-project Action path is not
+reliably available. Use the manual exact-head prompt/response channel recorded
+in `AUTHORIZATIONS.md`: Backend/Data first, independent AppSec second. Never
+represent that manual channel as a Gateway invocation.
 
 Do not use this handoff as a frozen source for current main/head/check/review/deployment state.
 
@@ -100,9 +109,9 @@ A successful new conversation should be able to reconstruct:
 T1 applied and preserved
 T2 positive status cutover proven in bounded production smoke
 T3A not applied/deployed
-existing T3A candidate requires B1-B4 correction
+existing T3A v2 candidate records B1-B4 correction
 current corrective GitHub authority exists, but Ready/merge/production remain separate gates
-next action is correction + exact-head Backend/Data + independent AppSec validation
+next action is final-head reconciliation + Backend/Data + independent AppSec validation
 ```
 
 If those facts cannot be reconstructed from live evidence + SFJM, stop and declare the specific continuity gap rather than guessing.

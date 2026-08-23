@@ -1,7 +1,7 @@
 # FECH.AI — SFJM Evidence Freshness
 
-**Status:** `CLAIM_ANCHOR_INVALIDATION_LEDGER / T3A_TRANSITION / DOCUMENTATION_ONLY`  
-**Updated:** `2026-08-23`  
+**Status:** `CLAIM_ANCHOR_INVALIDATION_LEDGER / T3A_CORRECTED_CANDIDATE / EXACT_HEAD_REVIEWS_PENDING / DOCUMENTATION_ONLY`
+**Updated:** `2026-08-23`
 **Repository:** `wagnerjfjunior/fecha.ai`
 
 ## 1. Freshness model
@@ -131,7 +131,7 @@ This remains a T3A/T3B dependency. It must not be interpreted as legitimate auth
 
 Invalidate after that callsite/blob changes.
 
-## 5. T3A initial candidate anchor and review invalidation
+## 5. T3A blocked-head lineage and corrective invalidation
 
 Initial reviewed candidate object anchors:
 
@@ -147,6 +147,9 @@ supabase/rollback/20260822211600_t3_admin_password_reset_boundary_rollback.sql
 
 initial exact PR head reviewed:
   d51340766c3eb8bc3fa0977d327ce229218aaaa3
+
+PR_HEAD_ONLY SFJM transition head before corrective implementation:
+  45ad27668835b6458b52d2fb592cfa36b5589726
 ```
 
 Review result on that initial candidate:
@@ -164,22 +167,42 @@ Any corrective change to a material T3A artifact invalidates the prior exact-hea
 
 Do not preserve a partial PASS across head movement.
 
+Corrected v2 candidate body anchors now recorded in this change set:
+
+```text
+public.t3_prepare_admin_password_reset(uuid):
+  md5 90c537dd4c2c7ae6fb7ae93373c4cc77
+
+T3-aware t1_guard_corretores_direct_compat_update():
+  md5 f2cbf4762b5f5b2d6c6eb56fcf0edc2b
+
+exact pre-T3A guard restored by rollback:
+  md5 99477024e337de5645dd042a30f8cf78
+```
+
+The final corrective commit/head and Git blob anchors must be resolved live;
+the hashes above do not establish either specialist review.
+
 ## 6. Live trust-anchor observations used by T3A review
 
 Read-only production evidence on 2026-08-23 established, without PII:
 
 ```text
-admins authenticated INSERT/UPDATE/DELETE: absent
+admins authenticated SELECT/INSERT/UPDATE/DELETE: absent
 corretores authenticated broad UPDATE: absent
 corretores authority-bearing columns role/empresa_id/user_id/time_id/is_admin_local/is_gestor: not directly authenticated-updatable
 times authenticated table UPDATE: present and therefore materially dependent on RLS/policy semantics
-times_update policy: one permissive UPDATE policy observed
-RLS/FORCE on required authority tables: previously established and must be revalidated by final T3A preflight
+times_update policy: exactly one permissive UPDATE policy with the recorded expression
+corretores_update policy: exactly one permissive UPDATE policy with identical strict USING/WITH CHECK helper
+RLS/FORCE on admins/corretores/times: present / enabled
+unexpected authenticated password writer besides self-service: absent
+T3 context-key collision: absent
 ```
 
 Observed helper fingerprints relevant to the current `times` policy trust chain:
 
 ```text
+auth.uid() md5: ea3b41bf29e2ad573067939329aa088e
 is_root() md5: 465c04885d729e63f1a1d4458fc2a1b0
 is_admin_local() md5: 64b982da412f62c324aa2dde210eea0c
 my_corretor_id() md5: c8f243d33d42837c46236625a74c3fb7
@@ -208,10 +231,11 @@ Invalidate after any Edge version/runtime change.
 
 ## 8. Unestablished claims
 
-At this transition, do not claim:
+At this transition, claim only the corrected candidate state and do not claim:
 
 ```text
-corrected T3A candidate exists: NOT YET ESTABLISHED
+corrected T3A v2 candidate artifacts: RECORDED IN CHANGE SET
+corrected final live PR head: MUST BE RESOLVED AFTER COMMIT
 T3A Backend/Data exact-head PASS: NOT ESTABLISHED
 T3A independent AppSec exact-head PASS: NOT ESTABLISHED
 T3A applied to Supabase production: NO
@@ -221,6 +245,12 @@ T3A rollback runtime-tested: NOT EXECUTED
 T3B frontend password cutover: NOT IMPLEMENTED
 Security Go: DENIED
 ```
+
+While the SES Router is temporarily frozen, a manual specialist result is fresh
+only if the returned response explicitly binds itself to the live repository,
+PR and exact head, identifies the material files read, and contains the complete
+specialist verdict. A prompt alone is not review evidence. Do not fabricate a
+Gateway receipt.
 
 ## 9. Invalidation rules
 

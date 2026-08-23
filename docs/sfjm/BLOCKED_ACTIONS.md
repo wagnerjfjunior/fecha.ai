@@ -1,7 +1,7 @@
 # FECH.AI — SFJM Blocked Actions
 
-**Status:** `MATERIAL_BLOCKER_VIEW / T3A_CORRECTION / FAIL_CLOSED / DOCUMENTATION_ONLY`  
-**Updated:** `2026-08-23`  
+**Status:** `MATERIAL_BLOCKER_VIEW / T3A_EXACT_HEAD_REVIEWS_PENDING / FAIL_CLOSED / DOCUMENTATION_ONLY`
+**Updated:** `2026-08-23`
 **Repository:** `wagnerjfjunior/fecha.ai`
 
 ## 1. Authority
@@ -31,7 +31,7 @@ T3B frontend password cutover before T3A backend is safely applied/deployed/vali
 WDP increase without governance acceptance
 ```
 
-## 3. T3A blockers required in the existing change set
+## 3. Initial T3A blocker lineage and current gate
 
 Do not create another T3A PR merely to address these blockers.
 
@@ -42,7 +42,23 @@ B3 — rollback not sufficiently drift-safe
 B4 — incompatibility with the live T1 direct-compatibility guard for gestor password-state transition
 ```
 
-The corrected head must close all four before Ready can even be considered.
+The v2 candidate addresses all four in the existing change set through
+Edge-first rollout semantics, exact trust-anchor checks, an exact drift-aware
+rollback and transaction-bound T1 guard interoperability. This is not yet an
+exact-head specialist PASS.
+
+Current blocking gate:
+
+```text
+publish/resolve one final corrective PR head
+-> integral material-file read + coverage reconciliation
+-> Backend/Data exact-head PASS
+-> independent AppSec exact-head PASS
+-> STOP before Ready pending separate Product Authority
+```
+
+Any material correction after either review invalidates both head-bound results
+as applicable; do not open another T3A PR merely because the head advances.
 
 ## 4. Explicitly prohibited workaround classes
 

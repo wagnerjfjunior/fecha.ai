@@ -1,7 +1,7 @@
 # FECH.AI — SFJM Current Material State
 
-**Status:** `MATERIAL_RECORDED_STATE / T3A_ACTIVE_CORRECTION / SECURITY_GO_DENIED / DOCUMENTATION_ONLY`  
-**Updated:** `2026-08-23`  
+**Status:** `MATERIAL_RECORDED_STATE / T3A_CORRECTED_CANDIDATE / EXACT_HEAD_REVIEWS_PENDING / SECURITY_GO_DENIED / DOCUMENTATION_ONLY`
+**Updated:** `2026-08-23`
 **Repository:** `wagnerjfjunior/fecha.ai`
 
 ## 1. Authority rule
@@ -130,15 +130,30 @@ rollback that restores the exact prior boundary
 
 ### Current implementation lineage
 
-A T3A candidate is versioned in the active security change set. The initial candidate contains:
+The initial candidate at PR head
+`45ad27668835b6458b52d2fb592cfa36b5589726` received material B1-B4
+findings. The same T3A change set now contains a corrected v2 candidate:
 
 ```text
 versioned criar-usuario Edge baseline + hardened reset path
 public.t3_prepare_admin_password_reset(uuid) migration
+exact fail-closed trust-anchor preflight/postflight
+transaction-bound T1 direct-guard interoperability
 revocation of authenticated UPDATE(must_change_password)
-executable rollback
-evidence document
+exact drift-aware rollback to the pre-T3A T1 guard
+B1-B4 evidence and coverage matrix
 ```
+
+Corrected candidate fingerprints:
+
+```text
+T3 RPC: 90c537dd4c2c7ae6fb7ae93373c4cc77
+T3-aware direct guard: f2cbf4762b5f5b2d6c6eb56fcf0edc2b
+rollback-restored pre-T3A direct guard: 99477024e337de5645dd042a30f8cf78
+```
+
+These are candidate facts, not exact-head specialist PASS or runtime proof. The
+final corrective commit/head must be resolved live before review.
 
 The production Edge remains the pre-T3A `criar-usuario` v17 at this transition point. T3A RPC is absent in production. No T3A migration has been applied and no T3A Edge has been deployed.
 
@@ -173,80 +188,55 @@ GESTOR
 
 Same-company membership alone is insufficient for gestor authority.
 
-## 6. T3A current blockers — REQUIRED IN THIS PR
+## 6. T3A B1-B4 corrective candidate state
 
-The initial T3A candidate received `REQUEST CHANGES`. Do not open a second T3A PR merely to resolve these findings. Correct the existing T3A change set and then re-run exact-head validation.
+The findings remain historical invalidation anchors for the initial head. They
+are addressed in the same PR candidate as follows:
 
-### B1 — safe rollout ordering
-
-Unsafe initial ordering:
-
-```text
-migration/revoke must_change_password grant
-→ then hardened Edge
-```
-
-This could leave the still-live v17 Edge able to change Auth password while the stale frontend can no longer correct state, producing an administrative password without mandatory-change enforcement.
-
-Required fail-closed rollout semantics:
+### B1 — safe rollout ordering: CANDIDATE ADDRESSED
 
 ```text
-1. deploy reviewed hardened Edge first
-2. before RPC exists, reset_password fails closed and does not mutate Auth
-3. apply reviewed T3A migration
-4. validate catalog/ACL/fingerprints
-5. controlled positive + negative + cross-tenant smoke
+reviewed hardened Edge first
+-> RPC absent: reset_password fails closed before Auth mutation
+-> reviewed migration
+-> catalog/ACL/fingerprint validation
+-> separately-authorized bounded smoke
 ```
 
-The temporary loss of administrative reset availability is preferable to an insecure password transition.
+### B2 — trust-anchor preflight: CANDIDATE ADDRESSED
 
-### B2 — trust-anchor preflight
+The migration requires exact roles, authority-column types, immediate unique
+identity indexes, RLS/FORCE, authenticated/anon grant surfaces, the single
+`corretores_update` and `times_update` policies with exact expressions,
+authority/helper fingerprints, enabled T1/audit triggers and absence of an
+unexpected password writer or T3 context-key collision.
 
-The T3A RPC trusts server-side authority data in `admins`, `corretores` and `times`. The migration must fail closed against material drift in the grants/policies/helpers that protect those fields.
+### B3 — drift-safe rollback: CANDIDATE ADDRESSED
 
-At minimum the corrected preflight must prove the expected contract for:
+Before any replacement, drop or grant, rollback verifies the exact T3 RPC,
+T3-aware guard, ACLs/comments/fingerprints, unchanged T1/audit triggers,
+policies/helpers and exact post-T3A grant surface. Drift stops the transaction.
+It restores guard MD5 `99477024e337de5645dd042a30f8cf78`, drops the proven
+T3 function without `IF EXISTS`, restores only the prior column grant and never
+rewrites user/Auth state.
 
-```text
-admins authority columns and authenticated DML absence
-corretores authority-bearing columns and exact authenticated UPDATE surface
-RLS/FORCE on required tables
-relevant times UPDATE policy/grants used by gestor authority
-required helper/function fingerprints when they are part of the trust chain
-T1 guards/triggers that materially interact with the password-state update
-```
+### B4 — T1 guard interoperability: CANDIDATE ADDRESSED
 
-`RLS ENABLED != POLICY CORRECT`.
+The existing direct trigger remains enabled. After strict authorization and row
+locks, the T3 RPC binds a transaction-local context to
+`auth.uid():target.user_id:txid_current()`. The direct guard accepts only the
+postgres-effective, real-actor, exact-target, same-transaction transition from
+not-true to `must_change_password=true`, with other protected columns unchanged.
+The remaining T1 body is the pre-T3A contract.
 
-### B3 — drift-safe rollback
-
-The rollback must not blindly drop whatever function currently has the T3A name or restore grants after material drift.
-
-Before destructive rollback operations it must validate the exact reviewed T3A object/ACL/fingerprint and the expected current grant state. If the object changed, rollback must stop fail-closed.
-
-Rollback must also restore any T1 guard body changed by T3A to its exact pre-T3A fingerprint/semantics.
-
-Rollback does not rewrite user password-state data merely to recreate an earlier visual state.
-
-### B4 — T1 guard interoperability
-
-Live production evidence shows that the T1 direct-compatibility guard currently rejects gestor changes to `must_change_password`.
-
-The corrected T3A design must preserve T1 and introduce only a narrowly provable server-internal path for an already-authorized T3 administrative reset. Prohibited solutions include:
-
-```text
-disabling the T1 trigger
-broadening authenticated UPDATE
-granting service_role/public execution to the T3 RPC
-trusting client role/empresa/time
-using frontend state as authority
-allowing arbitrary postgres writes to masquerade as T3
-```
-
-The final implementation must prove that ordinary direct client writes remain denied while the strict server-authorized T3 path works for root/admin_local/gestor according to contract.
+No B1-B4 candidate statement is a specialist PASS. The next gate is review of
+one resolved final exact head; do not open another PR or carry the initial
+head's review outcome.
 
 ## 7. Material blockers
 
-Until B1-B4 are corrected and independently revalidated on one exact final head:
+Until Backend/Data and independent AppSec both pass on one exact final head and
+the later lifecycle/runtime authorities are separately granted:
 
 ```text
 T3A Ready: BLOCKED
@@ -284,7 +274,8 @@ Those remain separate lifecycle/runtime decisions and require their applicable e
 ## 9. Semantic next action
 
 ```text
-Continue the existing T3A change set and correct B1-B4 without opening another T3A PR.
+Finalize the corrected B1-B4 candidate in the existing T3A change set, then run
+the two required reviews on one live-resolved exact head.
 ```
 
 Required sequence for the next conversation:
@@ -294,14 +285,26 @@ Required sequence for the next conversation:
 2. bootstrap normally
 3. resolve active T3A PR live and exact current head
 4. read SFJM from that PR head because this transition is PR_HEAD_ONLY until merge
-5. revalidate the material live anchors used by B1-B4
-6. correct Edge/migration/rollback/evidence in the same T3A change set
-7. update the PR description so it matches the final corrected scope/head
-8. read final material files integral to EOF
+5. confirm the corrective commit is the resolved PR head
+6. update the existing PR description/evidence for that exact head
+7. read final material files integral to EOF
+8. reconcile the B1-B4 coverage matrix
 9. run Backend/Data exact-head review
-10. run independent AppSec exact-head review
+10. run independent AppSec exact-head review without inheriting the first review
 11. stop before Ready unless Product Authority separately authorizes Ready
 ```
+
+Temporary specialist-channel fact:
+
+```text
+SES Router/Action from inside the project: FROZEN / NOT RELIABLY AVAILABLE
+Backend/Data review channel: exact-head manual prompt/response via Product Authority
+AppSec review channel: separate exact-head manual prompt/response via Product Authority
+fabricated Gateway receipt: PROHIBITED
+```
+
+This temporary channel changes neither adopted specialist identity nor mutation
+authority.
 
 Do not reopen T1/T2 absent a new material invalidation event. T1/T2 are dependencies/anchors for T3A, not new audit programs.
 
