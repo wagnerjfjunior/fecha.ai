@@ -1,6 +1,6 @@
 # FECH.AI — SFJM Next Safe Action
 
-**Status:** `SEMANTIC_NEXT_ACTION_VIEW / T3A_V3_AFTER_BACKEND_REQUEST_CHANGES / REPEAT_BACKEND_EXACT_HEAD_REVIEW_PENDING / DOCUMENTATION_ONLY`
+**Status:** `SEMANTIC_NEXT_ACTION_VIEW / T3A_V3_AFTER_SECOND_BACKEND_REQUEST_CHANGES / REPEAT_BACKEND_EXACT_HEAD_REVIEW_PENDING / DOCUMENTATION_ONLY`
 **Updated:** `2026-08-23`
 **Repository:** `wagnerjfjunior/fecha.ai`
 
@@ -19,9 +19,10 @@ Because the 2026-08-23 transition update is currently on the active T3A change s
 ## 2. Single current semantic next action
 
 ```text
-Publish/reconcile the v3 correction for the valid Backend/Data `REQUEST_CHANGES`
-on `bf8fb1f...`, resolve the new live final head, and repeat Backend/Data. Only
-after Backend/Data closure, obtain the independent AppSec exact-head review.
+Publish/reconcile the membership/aggregate/public-schema correction for the
+valid Backend/Data `REQUEST_CHANGES` on `46313258...`, resolve the new live
+exact head, and repeat Backend/Data. Only after Backend/Data closure, obtain the
+independent AppSec exact-head review.
 ```
 
 Corrected candidate domains to reconcile on that exact head:
@@ -35,6 +36,9 @@ DB-commit-to-Auth authority continuity through a durable lease/fence whose
 unique-index probes remain effective across pre-lease MVCC snapshots
 exact authority-table ACL transition with service_role TRUNCATE removed
 positive non-system routine inventory replacing the rejected writer regex
+all routine kinds with an explicit positive zero non-system aggregate assertion
+full role-membership graph including grantor/admin/inherit/set options
+exact database/public owner + complete public schema ACL inventory
 ```
 
 ## 3. Exact-head closure sequence
@@ -50,7 +54,7 @@ The next conversation should:
 6. preserve T1/T2 contracts and confirm App.jsx has no T3A diff
 7. update the existing PR description so it matches that final head
 8. read every final material artifact to EOF and reconcile the coverage matrix
-9. prepare a new exact-head Backend/Data prompt that includes the prior HIGH-1/HIGH-2 corrections; Product Authority submits it manually to backend-data-platform-specialist and returns the integral response
+9. prepare a new exact-head Backend/Data prompt that includes both prior review lineages and the membership/aggregate/schema corrections; Product Authority submits it manually to backend-data-platform-specialist and returns the integral response
 10. after Backend/Data closure, repeat independently with application-security-assurance-specialist
 11. record the manual exact-head outcomes without inventing a Gateway receipt or carrying a prior-head PASS
 12. stop before Ready unless Product Authority separately authorizes Ready
@@ -72,7 +76,8 @@ The intended fail-closed rollout is:
 reviewed hardened Edge deployed first
 → T3 RPC absent: administrative reset fails closed without Auth mutation
 → apply reviewed migration
-→ validate function/ACL/grants/triggers/fingerprints, the empty lease table and positive routine inventory
+→ validate function/ACL/grants/triggers/fingerprints, the empty lease table,
+  complete role/schema anchors and all-kind positive routine inventory
 → controlled positive/negative/cross-tenant smoke
 → confirm direct must_change_password client write cannot bypass boundary
 ```
@@ -86,7 +91,9 @@ This section is a proof obligation, not rollback authorization.
 Rollback must be executable and drift-aware:
 
 ```text
-validate exact T3A prepare/release/fence functions, lease table/triggers, positive routine inventory and expected grant state
+validate exact T3A prepare/release/fence functions, lease table/triggers,
+complete role/schema anchors, all-kind positive routine inventory and expected
+grant state
 validate exact T3A-modified T1 guard fingerprint when applicable
 require the locked lease table to be empty; otherwise STOP
 if drift: STOP

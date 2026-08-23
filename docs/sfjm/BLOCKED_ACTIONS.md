@@ -1,6 +1,6 @@
 # FECH.AI — SFJM Blocked Actions
 
-**Status:** `MATERIAL_BLOCKER_VIEW / T3A_V3_REPEAT_BACKEND_REVIEW_PENDING / FAIL_CLOSED / DOCUMENTATION_ONLY`
+**Status:** `MATERIAL_BLOCKER_VIEW / T3A_V3_AFTER_SECOND_BACKEND_REQUEST_CHANGES / REPEAT_BACKEND_REVIEW_PENDING / FAIL_CLOSED / DOCUMENTATION_ONLY`
 **Updated:** `2026-08-23`
 **Repository:** `wagnerjfjunior/fecha.ai`
 
@@ -44,11 +44,13 @@ B4 — incompatibility with the live T1 direct-compatibility guard for gestor pa
 
 The Backend/Data exact-head review of `bf8fb1f...` returned `REQUEST_CHANGES`:
 the DB lock did not span the later Auth side effect and the writer regex was not
-transitive. The v3 candidate in the same PR replaces those mechanisms with a
-durable authority lease/fence with snapshot-independent unique-index probes,
-success-only exact release and a positive full
-routine inventory used by migration and rollback. This changed head still has
-no exact-head specialist PASS.
+transitive. The v3 candidate at `4631325827a76152ba554bece2a59da9eb1bb662`
+replaced those mechanisms with a durable authority lease/fence and positive
+routine inventory. Its second exact-head review closed HIGH-1 and passed B1/B4,
+but returned `REQUEST_CHANGES` because B2/B3 still omitted the full membership
+graph/options, aggregates, and the complete `public` schema ACL. The current
+correction adds those exact anchors in migration and rollback. Its changed head
+still has no exact-head specialist PASS.
 
 Current blocking gate:
 

@@ -68,14 +68,26 @@ B4 T1 guard interoperability
 ```
 
 The manually relayed Backend/Data review of exact head `bf8fb1f...` returned
-`REQUEST_CHANGES` for two material defects within B2/B3 and end-to-end B1/B4:
-the DB-to-Auth authority race and non-transitive writer detection. Correcting
-those findings with the v3 lease/fence and positive routine inventory remains
-inside this same active bounded authority. This authority remains active only
-for publishing/reconciling those artifacts in the existing PR, updating its
-description/evidence and completing the required exact-head validation record.
-It does not turn a candidate statement into specialist PASS or authorize the
-next lifecycle transition.
+`REQUEST_CHANGES` for the DB-to-Auth authority race and non-transitive writer
+detection. The v3 lease/fence correction was then reviewed at exact head
+`4631325827a76152ba554bece2a59da9eb1bb662` / tree
+`843bbc9c9f32f07e97713368e7e472fca9e650cd`; that second integral manual review
+also returned `REQUEST_CHANGES`, closed HIGH-1, and left B2/B3 open for three
+positive-closure defects:
+
+```text
+full bidirectional role-membership/options inventory
+all routine kinds, including aggregates or a positive empty aggregate proof
+complete public schema owner/ACL inventory
+manual response SHA-256:
+  1ab2b39d52536b0ba92cd25df4d91b808f25abd08be0c5de72146113c7cda544
+```
+
+Correcting all of these findings in the same PR remains inside this active
+bounded authority. It covers publishing/reconciling the corrected artifacts,
+updating the existing PR description/evidence and completing the required
+exact-head validation record. It does not turn a candidate statement into
+specialist PASS or authorize the next lifecycle transition.
 
 This `ACTIVE_AUTHORITY` is for producing a corrected reviewable GitHub candidate in the existing T3A change set. It is not production mutation authority.
 

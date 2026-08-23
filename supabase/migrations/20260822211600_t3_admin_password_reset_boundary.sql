@@ -30,6 +30,8 @@ declare
   v_authenticated_oid oid:=pg_catalog.to_regrole('authenticated');
   v_anon_oid oid:=pg_catalog.to_regrole('anon');
   v_service_role_oid oid:=pg_catalog.to_regrole('service_role');
+  v_authenticator_oid oid:=pg_catalog.to_regrole('authenticator');
+  v_database_owner_oid oid:=pg_catalog.to_regrole('pg_database_owner');
   v_oid oid;
   v_owner oid;
   v_definer boolean;
@@ -42,6 +44,11 @@ declare
   v_routine_md5 text;
   v_authenticated_definer_count bigint;
   v_authenticated_definer_md5 text;
+  v_aggregate_count bigint;
+  v_membership_count bigint;
+  v_membership_md5 text;
+  v_schema_acl_count bigint;
+  v_schema_acl_md5 text;
   v_column_acl_count bigint;
   v_column_acl_md5 text;
   v_policy_count bigint;
@@ -51,13 +58,16 @@ begin
   if v_postgres_oid is null
      or v_authenticated_oid is null
      or v_anon_oid is null
-     or v_service_role_oid is null then
+     or v_service_role_oid is null
+     or v_authenticator_oid is null
+     or v_database_owner_oid is null then
     raise exception 'T3A_PREFLIGHT_REQUIRED_ROLE_MISSING';
   end if;
 
-  -- Client roles must not inherit an unreviewed privilege path. service_role
-  -- remains BYPASSRLS for its established operational use, but has no role
-  -- memberships and is never accepted as T3 actor authority.
+  -- Pin every privilege-bearing role attribute used by the API boundary.
+  -- service_role remains BYPASSRLS for established operational use and is
+  -- never accepted as T3 actor authority. authenticator is the NOINHERIT login
+  -- role that may SET the exact client roles through the pinned graph below.
   if not exists (
        select 1 from pg_catalog.pg_roles as r
        where r.oid=v_postgres_oid
@@ -86,12 +96,19 @@ begin
          and not r.rolcreatedb and not r.rolcanlogin
          and not r.rolreplication and r.rolbypassrls
      )
-     or exists (
-       select 1
-       from pg_catalog.pg_auth_members as m
-       where m.member in (
-         v_authenticated_oid,v_anon_oid,v_service_role_oid
-       )
+     or not exists (
+       select 1 from pg_catalog.pg_roles as r
+       where r.oid=v_authenticator_oid
+         and not r.rolinherit and not r.rolsuper and not r.rolcreaterole
+         and not r.rolcreatedb and r.rolcanlogin
+         and not r.rolreplication and not r.rolbypassrls
+     )
+     or not exists (
+       select 1 from pg_catalog.pg_roles as r
+       where r.oid=v_database_owner_oid
+         and r.rolinherit and not r.rolsuper and not r.rolcreaterole
+         and not r.rolcreatedb and not r.rolcanlogin
+         and not r.rolreplication and not r.rolbypassrls
      )
      or pg_catalog.has_schema_privilege(
           v_authenticated_oid,'public','CREATE'
@@ -108,6 +125,78 @@ begin
               v_service_role_oid,'public','USAGE'
             ) then
     raise exception 'T3A_PREFLIGHT_CLIENT_ROLE_DRIFT';
+  end if;
+
+  -- Exact full membership graph, not a one-direction client-role absence test.
+  -- This captures roleid/member/grantor and PostgreSQL 16+ option semantics, so
+  -- new direct or transitive SET/INHERIT paths fail closed before any mutation.
+  with membership_items as (
+    select pg_catalog.concat_ws(
+             '|',granted.rolname,member_role.rolname,grantor.rolname,
+             m.admin_option::text,m.inherit_option::text,m.set_option::text
+           ) as item
+    from pg_catalog.pg_auth_members as m
+    join pg_catalog.pg_roles as granted on granted.oid=m.roleid
+    join pg_catalog.pg_roles as member_role on member_role.oid=m.member
+    join pg_catalog.pg_roles as grantor on grantor.oid=m.grantor
+  )
+  select pg_catalog.count(*),
+         pg_catalog.md5(coalesce(pg_catalog.string_agg(
+           item,E'\n' order by item
+         ),''))
+    into v_membership_count,v_membership_md5
+  from membership_items;
+
+  if v_membership_count is distinct from 21
+     or v_membership_md5 is distinct from
+          'fb803a204209bc71074a1eee7b57944e' then
+    raise exception 'T3A_PREFLIGHT_ROLE_MEMBERSHIP_GRAPH_DRIFT';
+  end if;
+
+  -- SECURITY DEFINER routines resolved through public must not gain an
+  -- unreviewed object creator. Pin database/schema ownership and the complete
+  -- effective public schema ACL, while retaining direct client checks above.
+  if not exists (
+       select 1
+       from pg_catalog.pg_database as d
+       where d.datname=pg_catalog.current_database()
+         and d.datdba=v_postgres_oid
+     )
+     or not exists (
+       select 1
+       from pg_catalog.pg_namespace as n
+       where n.nspname='public'
+         and n.nspowner=v_database_owner_oid
+     ) then
+    raise exception 'T3A_PREFLIGHT_PUBLIC_SCHEMA_OWNER_DRIFT';
+  end if;
+
+  with schema_acl_items as (
+    select pg_catalog.format(
+             '%s>%s:%s:%s',
+             case when acl.grantee=0 then 'PUBLIC'
+                  else pg_catalog.pg_get_userbyid(acl.grantee) end,
+             pg_catalog.pg_get_userbyid(acl.grantor),
+             acl.privilege_type,
+             acl.is_grantable
+           ) as item
+    from pg_catalog.pg_namespace as n
+    cross join lateral pg_catalog.aclexplode(
+      coalesce(n.nspacl,pg_catalog.acldefault('n',n.nspowner))
+    ) as acl
+    where n.nspname='public'
+  )
+  select pg_catalog.count(*),
+         pg_catalog.md5(coalesce(pg_catalog.string_agg(
+           item,E'\n' order by item
+         ),''))
+    into v_schema_acl_count,v_schema_acl_md5
+  from schema_acl_items;
+
+  if v_schema_acl_count is distinct from 7
+     or v_schema_acl_md5 is distinct from
+          'e2ad94b6bfb9b0cb8c4980459fd55a6e' then
+    raise exception 'T3A_PREFLIGHT_PUBLIC_SCHEMA_ACL_DRIFT';
   end if;
 
   if pg_catalog.to_regprocedure('auth.uid()') is null
@@ -253,7 +342,7 @@ begin
     from pg_catalog.pg_proc as p
     join pg_catalog.pg_namespace as n on n.oid=p.pronamespace
     join pg_catalog.pg_language as l on l.oid=p.prolang
-    where p.prokind in ('f','p','w')
+    where p.prokind in ('f','p','a','w')
       and n.nspname not in ('pg_catalog','information_schema')
       and n.nspname not like 'pg_toast%'
       and n.nspname not like 'pg_temp_%'
@@ -263,6 +352,7 @@ begin
     select
       oid,
       signature_key,
+      prokind,
       prosecdef,
       pg_catalog.concat_ws(
         '|',signature_key,owner_name,language_name,prokind,prosecdef,
@@ -293,11 +383,13 @@ begin
               v_authenticated_oid,oid,'EXECUTE'
             )
         )
-    )
+    ),
+    pg_catalog.count(*) filter (where prokind='a')
     into v_routine_count,
          v_routine_md5,
          v_authenticated_definer_count,
-         v_authenticated_definer_md5
+         v_authenticated_definer_md5,
+         v_aggregate_count
   from serialized;
 
   if v_routine_count is distinct from 264
@@ -305,7 +397,8 @@ begin
           'b1f0919df8a0acaca7bbea2b928b0ffe'
      or v_authenticated_definer_count is distinct from 122
      or v_authenticated_definer_md5 is distinct from
-          '7faa376a403c69239d9606559cf9c2db' then
+          '7faa376a403c69239d9606559cf9c2db'
+     or v_aggregate_count is distinct from 0 then
     raise exception 'T3A_PREFLIGHT_POSITIVE_ROUTINE_INVENTORY_DRIFT';
   end if;
 
@@ -1704,6 +1797,8 @@ declare
   v_authenticated_oid oid:=pg_catalog.to_regrole('authenticated');
   v_anon_oid oid:=pg_catalog.to_regrole('anon');
   v_service_role_oid oid:=pg_catalog.to_regrole('service_role');
+  v_authenticator_oid oid:=pg_catalog.to_regrole('authenticator');
+  v_database_owner_oid oid:=pg_catalog.to_regrole('pg_database_owner');
   v_t3_oid oid:=pg_catalog.to_regprocedure(
     'public.t3_prepare_admin_password_reset(uuid)'
   );
@@ -1724,6 +1819,11 @@ declare
   v_routine_md5 text;
   v_authenticated_definer_count bigint;
   v_authenticated_definer_md5 text;
+  v_aggregate_count bigint;
+  v_membership_count bigint;
+  v_membership_md5 text;
+  v_schema_acl_count bigint;
+  v_schema_acl_md5 text;
   v_table_acl_md5 text;
   v_column_acl_count bigint;
   v_column_acl_md5 text;
@@ -1731,6 +1831,15 @@ declare
   v_policy_md5 text;
   r record;
 begin
+  if v_postgres_oid is null
+     or v_authenticated_oid is null
+     or v_anon_oid is null
+     or v_service_role_oid is null
+     or v_authenticator_oid is null
+     or v_database_owner_oid is null then
+    raise exception 'T3A_POSTFLIGHT_REQUIRED_ROLE_MISSING';
+  end if;
+
   if pg_catalog.md5(pg_catalog.pg_get_functiondef(
        'auth.uid()'::regprocedure
      )) is distinct from 'ea3b41bf29e2ad573067939329aa088e' then
@@ -1765,11 +1874,19 @@ begin
          and not r.rolcreatedb and not r.rolcanlogin
          and not r.rolreplication and r.rolbypassrls
      )
-     or exists (
-       select 1 from pg_catalog.pg_auth_members as m
-       where m.member in (
-         v_authenticated_oid,v_anon_oid,v_service_role_oid
-       )
+     or not exists (
+       select 1 from pg_catalog.pg_roles as r
+       where r.oid=v_authenticator_oid
+         and not r.rolinherit and not r.rolsuper and not r.rolcreaterole
+         and not r.rolcreatedb and r.rolcanlogin
+         and not r.rolreplication and not r.rolbypassrls
+     )
+     or not exists (
+       select 1 from pg_catalog.pg_roles as r
+       where r.oid=v_database_owner_oid
+         and r.rolinherit and not r.rolsuper and not r.rolcreaterole
+         and not r.rolcreatedb and not r.rolcanlogin
+         and not r.rolreplication and not r.rolbypassrls
      )
      or pg_catalog.has_schema_privilege(
           v_authenticated_oid,'public','CREATE'
@@ -1786,6 +1903,72 @@ begin
               v_service_role_oid,'public','USAGE'
             ) then
     raise exception 'T3A_POSTFLIGHT_CLIENT_ROLE_DRIFT';
+  end if;
+
+  with membership_items as (
+    select pg_catalog.concat_ws(
+             '|',granted.rolname,member_role.rolname,grantor.rolname,
+             m.admin_option::text,m.inherit_option::text,m.set_option::text
+           ) as item
+    from pg_catalog.pg_auth_members as m
+    join pg_catalog.pg_roles as granted on granted.oid=m.roleid
+    join pg_catalog.pg_roles as member_role on member_role.oid=m.member
+    join pg_catalog.pg_roles as grantor on grantor.oid=m.grantor
+  )
+  select pg_catalog.count(*),
+         pg_catalog.md5(coalesce(pg_catalog.string_agg(
+           item,E'\n' order by item
+         ),''))
+    into v_membership_count,v_membership_md5
+  from membership_items;
+
+  if v_membership_count is distinct from 21
+     or v_membership_md5 is distinct from
+          'fb803a204209bc71074a1eee7b57944e' then
+    raise exception 'T3A_POSTFLIGHT_ROLE_MEMBERSHIP_GRAPH_DRIFT';
+  end if;
+
+  if not exists (
+       select 1
+       from pg_catalog.pg_database as d
+       where d.datname=pg_catalog.current_database()
+         and d.datdba=v_postgres_oid
+     )
+     or not exists (
+       select 1
+       from pg_catalog.pg_namespace as n
+       where n.nspname='public'
+         and n.nspowner=v_database_owner_oid
+     ) then
+    raise exception 'T3A_POSTFLIGHT_PUBLIC_SCHEMA_OWNER_DRIFT';
+  end if;
+
+  with schema_acl_items as (
+    select pg_catalog.format(
+             '%s>%s:%s:%s',
+             case when acl.grantee=0 then 'PUBLIC'
+                  else pg_catalog.pg_get_userbyid(acl.grantee) end,
+             pg_catalog.pg_get_userbyid(acl.grantor),
+             acl.privilege_type,
+             acl.is_grantable
+           ) as item
+    from pg_catalog.pg_namespace as n
+    cross join lateral pg_catalog.aclexplode(
+      coalesce(n.nspacl,pg_catalog.acldefault('n',n.nspowner))
+    ) as acl
+    where n.nspname='public'
+  )
+  select pg_catalog.count(*),
+         pg_catalog.md5(coalesce(pg_catalog.string_agg(
+           item,E'\n' order by item
+         ),''))
+    into v_schema_acl_count,v_schema_acl_md5
+  from schema_acl_items;
+
+  if v_schema_acl_count is distinct from 7
+     or v_schema_acl_md5 is distinct from
+          'e2ad94b6bfb9b0cb8c4980459fd55a6e' then
+    raise exception 'T3A_POSTFLIGHT_PUBLIC_SCHEMA_ACL_DRIFT';
   end if;
 
   if v_t3_oid is null
@@ -2598,7 +2781,7 @@ begin
     from pg_catalog.pg_proc as p
     join pg_catalog.pg_namespace as n on n.oid=p.pronamespace
     join pg_catalog.pg_language as l on l.oid=p.prolang
-    where p.prokind in ('f','p','w')
+    where p.prokind in ('f','p','a','w')
       and n.nspname not in ('pg_catalog','information_schema')
       and n.nspname not like 'pg_toast%'
       and n.nspname not like 'pg_temp_%'
@@ -2608,6 +2791,7 @@ begin
     select
       oid,
       signature_key,
+      prokind,
       prosecdef,
       pg_catalog.concat_ws(
         '|',signature_key,owner_name,language_name,prokind,prosecdef,
@@ -2638,11 +2822,13 @@ begin
               v_authenticated_oid,oid,'EXECUTE'
             )
         )
-    )
+    ),
+    pg_catalog.count(*) filter (where prokind='a')
     into v_routine_count,
          v_routine_md5,
          v_authenticated_definer_count,
-         v_authenticated_definer_md5
+         v_authenticated_definer_md5,
+         v_aggregate_count
   from serialized;
 
   if v_routine_count is distinct from 264
@@ -2650,7 +2836,8 @@ begin
           'b1f0919df8a0acaca7bbea2b928b0ffe'
      or v_authenticated_definer_count is distinct from 122
      or v_authenticated_definer_md5 is distinct from
-          '7faa376a403c69239d9606559cf9c2db' then
+          '7faa376a403c69239d9606559cf9c2db'
+     or v_aggregate_count is distinct from 0 then
     raise exception 'T3A_POSTFLIGHT_POSITIVE_ROUTINE_INVENTORY_DRIFT';
   end if;
 end;

@@ -1,6 +1,6 @@
 # FECH.AI — SFJM Current Material State
 
-**Status:** `MATERIAL_RECORDED_STATE / T3A_CORRECTED_AFTER_BACKEND_REQUEST_CHANGES / NEW_EXACT_HEAD_REVIEWS_PENDING / SECURITY_GO_DENIED / DOCUMENTATION_ONLY`
+**Status:** `MATERIAL_RECORDED_STATE / T3A_CORRECTED_AFTER_SECOND_BACKEND_REQUEST_CHANGES / REPEAT_BACKEND_EXACT_HEAD_REVIEW_PENDING / SECURITY_GO_DENIED / DOCUMENTATION_ONLY`
 **Updated:** `2026-08-23`
 **Repository:** `wagnerjfjunior/fecha.ai`
 
@@ -135,8 +135,12 @@ The initial candidate at PR head
 findings. A later exact-head Backend/Data review of
 `bf8fb1f4ab043226de3c77763b9b425a13b0261e` was validly relayed manually and
 returned `REQUEST_CHANGES`: its HIGH-1 identified the DB-commit-to-Auth race;
-HIGH-2 rejected the direct `prosrc` writer regex as non-transitive. The same
-T3A change set now contains a corrected v3 candidate:
+HIGH-2 rejected the direct `prosrc` writer regex as non-transitive. The next v3
+head `4631325827a76152ba554bece2a59da9eb1bb662` received a second integral
+manual Backend/Data review: B1/B4 passed statically and HIGH-1 closed, but B2/B3
+failed because the role-membership check was unilateral, the routine inventory
+omitted aggregates, and the `public` schema ACL was not complete. The same T3A
+change set now contains the correction for those three findings:
 
 ```text
 versioned criar-usuario Edge baseline + hardened leased reset path
@@ -145,6 +149,9 @@ durable reset lease + snapshot-independent unique-index probes + three authority
 service-role-only exact lease release after proven Auth success
 exact authority-table ACL pinning + service_role TRUNCATE revocation
 positive full non-system routine inventory instead of writer regex
+full role-membership graph/options + authenticator role anchor
+database/public-schema owner + complete public ACL anchor
+all pg_proc routine kinds + explicit zero non-system aggregate assertion
 exact fail-closed trust-anchor preflight/postflight
 lease-bound T1 direct-guard interoperability
 revocation of authenticated UPDATE(must_change_password)
@@ -217,25 +224,32 @@ reviewed hardened Edge first
 ### B2 — trust-anchor preflight: CANDIDATE ADDRESSED
 
 The migration holds the three authority-bearing tables in SHARE mode and
-requires exact postgres/client-role attributes, client memberships and public
-schema CREATE/USAGE surface, authority-column types,
+requires exact postgres/client/authenticator/pg_database_owner attributes; the complete
+21-edge role-membership graph with grantor/admin/inherit/set options
+(`fb803a204209bc71074a1eee7b57944e`); exact database and `public` schema
+owners; the complete seven-entry effective `public` ACL
+(`e2ad94b6bfb9b0cb8c4980459fd55a6e`); authority-column types,
 immediate unique identity indexes, RLS/FORCE, grant/policy surfaces,
 authority/helper/legacy-writer fingerprints, exact complete authority-trigger
 inventory, the exact seven-policy inventory
 `1cb8f611f86778af0f60c78f2ffc70b0` and absence of authority-table rewrite
 rules. It
 replaces the negative writer regex with an exact positive inventory of every
-non-system routine except the separately-pinned direct T1 guard: 264 routines /
+non-system function, procedure, aggregate and window function except the
+separately-pinned direct T1 guard: 264 routines /
 `b1f0919df8a0acaca7bbea2b928b0ffe`, including 122 authenticated-effective
-SECURITY DEFINER routines / `7faa376a403c69239d9606559cf9c2db`.
+SECURITY DEFINER routines / `7faa376a403c69239d9606559cf9c2db`, with an
+explicit positive non-system aggregate count of zero.
 
 ### B3 — drift-safe rollback: CANDIDATE ADDRESSED
 
 Before any replacement, drop or grant, rollback locks the three authority tables
 and the lease table in SHARE mode. An active/unresolved lease stops rollback. It
 verifies the exact lease table, prepare/release/fence functions, three fencing
-triggers, T3-aware guard, client roles, full positive routine inventory,
-T1/audit objects, policies and grants. It restores guard MD5
+triggers, T3-aware guard, client/authenticator roles, the complete membership
+graph, database/schema ownership, complete `public` ACL and all-kind positive
+routine inventory including the zero-aggregate assertion, T1/audit objects,
+policies and grants. It restores guard MD5
 `99477024e337de5645dd042a30f8cf78`, drops only proven T3 objects without
 `IF EXISTS`, restores only the prior column grant and never rewrites user/Auth
 state.
@@ -256,10 +270,13 @@ privilege is removed from service_role while T3A is active. The direct guard den
 password-state writer except the established active self-service true-to-false
 completion. Non-password T1 behavior remains established.
 
-The Backend/Data `REQUEST_CHANGES` on `bf8fb1f...` is historical material input,
-not closure for the changed head. No B1-B4 candidate statement is a specialist
-PASS. The next gate is a repeated Backend/Data review of one new resolved exact
-head; AppSec follows only after Backend/Data closure.
+The Backend/Data `REQUEST_CHANGES` results on `bf8fb1f...` and `46313258...` are
+historical material inputs, not closure for the changed head. The second review
+response is anchored by SHA-256
+`1ab2b39d52536b0ba92cd25df4d91b808f25abd08be0c5de72146113c7cda544`.
+No B1-B4 candidate statement is a specialist PASS. The next gate is a repeated
+Backend/Data review of one new resolved exact head; AppSec follows only after
+Backend/Data closure.
 
 ## 7. Material blockers
 

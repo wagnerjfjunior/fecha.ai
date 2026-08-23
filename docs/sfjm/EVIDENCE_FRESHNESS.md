@@ -1,6 +1,6 @@
 # FECH.AI — SFJM Evidence Freshness
 
-**Status:** `CLAIM_ANCHOR_INVALIDATION_LEDGER / T3A_V3_AFTER_BACKEND_REQUEST_CHANGES / NEW_EXACT_HEAD_REVIEWS_PENDING / DOCUMENTATION_ONLY`
+**Status:** `CLAIM_ANCHOR_INVALIDATION_LEDGER / T3A_V3_AFTER_SECOND_BACKEND_REQUEST_CHANGES / REPEAT_BACKEND_EXACT_HEAD_REVIEW_PENDING / DOCUMENTATION_ONLY`
 **Updated:** `2026-08-23`
 **Repository:** `wagnerjfjunior/fecha.ai`
 
@@ -186,6 +186,28 @@ This response is fresh evidence about `bf8fb1f...`, but every corrective code
 change after it invalidates the response as a final-head gate. It is not an
 AppSec result and authorizes no lifecycle transition.
 
+The next v3 exact head reached
+`4631325827a76152ba554bece2a59da9eb1bb662` (tree
+`843bbc9c9f32f07e97713368e7e472fca9e650cd`). A second manually relayed integral
+Backend/Data review read the exact ten blobs / 6744 lines to EOF and returned:
+
+```text
+REQUEST_CHANGES
+B1: PASS
+B2: FAIL — membership, aggregate and public-schema closure incomplete
+B3: FAIL — rollback repeats those incomplete trust anchors
+B4: PASS (static)
+HIGH-1: CLOSED
+HIGH-2: OPEN
+manual response SHA-256:
+  1ab2b39d52536b0ba92cd25df4d91b808f25abd08be0c5de72146113c7cda544
+```
+
+This is fresh evidence about `46313258...` and materially accepts the v3
+lease/fence concurrency analysis. The current membership/aggregate/schema
+correction changes the head, so the response is not a final-head PASS. AppSec
+remains blocked until a repeated Backend/Data review closes the new exact head.
+
 Corrected v3 candidate body/inventory anchors now recorded in this change set:
 
 ```text
@@ -209,6 +231,17 @@ positive non-system routine baseline excluding the direct guard:
 
 authenticated-effective SECURITY DEFINER subset:
   count 122 / inventory md5 7faa376a403c69239d9606559cf9c2db
+
+non-system aggregates included by prokind='a':
+  count 0
+
+full pg_auth_members graph (role/member/grantor + admin/inherit/set options):
+  count 21 / inventory md5 fb803a204209bc71074a1eee7b57944e
+
+database/public schema:
+  current database postgres / owner postgres
+  public owner pg_database_owner
+  complete effective ACL count 7 / md5 e2ad94b6bfb9b0cb8c4980459fd55a6e
 
 lease-table constraint shape:
   unique lease_id + actor_user_id + target_user_id + non-null authority_time_id
@@ -247,6 +280,14 @@ corretores_update policy: exactly one permissive UPDATE policy with identical st
 RLS/FORCE on admins/corretores/times: present / enabled
 direct literal authenticated password writer besides self-service: absent
 T3 context-key collision: absent
+authenticator: NOINHERIT / LOGIN / no superuser-create-replication-bypass
+pg_database_owner: INHERIT / NOLOGIN / no superuser-create-replication-bypass
+full pg_auth_members graph: count 21 / md5 fb803a204209bc71074a1eee7b57944e
+non-system aggregates: count 0
+database owner: postgres
+public schema owner: pg_database_owner
+only public ACL CREATE grantee: pg_database_owner -> database owner postgres
+complete public schema ACL: count 7 / md5 e2ad94b6bfb9b0cb8c4980459fd55a6e
 ```
 
 Observed helper fingerprints relevant to the current `times` policy trust chain:

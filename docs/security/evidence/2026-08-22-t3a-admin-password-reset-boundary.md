@@ -1,17 +1,19 @@
 # FECH.AI — T3A-v3 Administrative Password Reset Multi-Tenant Authority Boundary
 
-**Status:** `CORRECTED_AFTER_BACKEND_REQUEST_CHANGES / B1-B4 CANDIDATE_ADDRESSED / EXACT_HEAD_REVIEW_REQUIRED / NOT_APPLIED / NOT_DEPLOYED / NOT_READY / NOT_MERGED`
+**Status:** `CORRECTED_AFTER_SECOND_BACKEND_REQUEST_CHANGES / B1-B4_CANDIDATE_ADDRESSED / REPEAT_BACKEND_EXACT_HEAD_REVIEW_REQUIRED / NOT_APPLIED / NOT_DEPLOYED / NOT_READY / NOT_MERGED`
 **Initial evidence date:** `2026-08-22`
 **Corrective evidence date:** `2026-08-23`
 **Repository:** `wagnerjfjunior/fecha.ai`
 **Base main:** `037232fe3da37a749ab980f783af92ff15e2baf2`
 **Branch:** `security/t3a-admin-password-reset-boundary`
 **Initial blocked PR head:** `45ad27668835b6458b52d2fb592cfa36b5589726`
-**Backend/Data reviewed head:** `bf8fb1f4ab043226de3c77763b9b425a13b0261e`
+**Backend/Data reviewed heads:** `bf8fb1f4ab043226de3c77763b9b425a13b0261e`, `4631325827a76152ba554bece2a59da9eb1bb662`
+**Latest reviewed tree:** `843bbc9c9f32f07e97713368e7e472fca9e650cd`
+**Latest manual response SHA-256:** `1ab2b39d52536b0ba92cd25df4d91b808f25abd08be0c5de72146113c7cda544`
 
-This document records the corrected candidate after the valid manually-relayed
-Backend/Data exact-head review returned `REQUEST_CHANGES`. The new final exact
-head must be resolved live after commit. No verdict from an earlier head carries
+This document records the correction after the second valid manually-relayed
+Backend/Data exact-head review returned `REQUEST_CHANGES`. The next exact head
+must be resolved live after commit. No verdict from an earlier head carries
 forward.
 
 ## 1. Authorized and prohibited scope
@@ -65,7 +67,7 @@ No PII was needed or returned by catalog reconciliation.
 
 ## 3. Exact-head review lineage
 
-The manual Backend/Data response was integral and bound to:
+The first manual Backend/Data response was integral and bound to:
 
 ```text
 role: backend_data -> backend-data-platform-specialist
@@ -85,9 +87,30 @@ The two material findings were:
 2. the negative `pg_proc.prosrc` regex did not prove indirect, dynamic or
    transitive password-state writer absence for migration or rollback.
 
-The current candidate changes the design for both findings. That changes the
-head and invalidates the reviewed-head verdict as a closure result. Backend/Data
-must review the new exact head again before independent AppSec.
+The lease/fence candidate was then published and a second integral manual
+Backend/Data review read the exact ten material blobs to EOF:
+
+```text
+reviewed head: 4631325827a76152ba554bece2a59da9eb1bb662
+tree: 843bbc9c9f32f07e97713368e7e472fca9e650cd
+files / lines: exact 10 / 6744
+manual response SHA-256:
+  1ab2b39d52536b0ba92cd25df4d91b808f25abd08be0c5de72146113c7cda544
+verdict: REQUEST_CHANGES
+B1: PASS
+B2: FAIL
+B3: FAIL
+B4: PASS (static)
+HIGH-1: CLOSED
+HIGH-2: OPEN
+```
+
+It accepted the durable lease/fence concurrency design and identified three
+remaining positive-closure gaps: unilateral membership checking, omission of
+`prokind='a'` aggregates, and incomplete `public` schema ACL checking. The
+current candidate corrects those three findings. Its changed head invalidates
+the second verdict as a closure result. Backend/Data must review the new exact
+head again before independent AppSec.
 
 ## 4. B1 — safe rollout and failure ordering
 
@@ -129,9 +152,12 @@ The inverse migration-first order remains prohibited while v17 is live.
 The migration holds `admins`, `corretores` and `times` in `SHARE` mode
 through preflight, DDL and postflight. Before mutation it verifies:
 
-- exact postgres owner/BYPASSRLS attributes, exact client-role attributes,
-  absence of client-role memberships and no `public` schema CREATE for
-  anon/authenticated/service_role;
+- exact postgres/client-role attributes plus exact `authenticator`
+  NOINHERIT/login and `pg_database_owner` NOLOGIN attributes;
+- the complete live `pg_auth_members` graph, including granted role, member,
+  grantor, `admin_option`, `inherit_option` and `set_option`;
+- exact current-database owner, `public` schema owner and complete effective
+  schema ACL, while retaining direct no-CREATE/client-USAGE assertions;
 - `auth.uid()` owner, security mode, volatility, return/signature, body and
   effective EXECUTE surface;
 - authority tables, exact required column types, RLS and FORCE RLS;
@@ -150,9 +176,10 @@ through preflight, DDL and postflight. Before mutation it verifies:
 - the exact positive non-system routine inventory described below.
 
 The old direct writer regex is removed. Instead the complete reviewed live
-non-system routine catalog is serialized by stable signature plus owner,
-language, kind, security mode, volatility/parallel/leak/strict/set-returning
-flags, return type, config, implementation hash and normalized ACL:
+non-system routine catalog — functions, procedures, aggregates and window
+functions — is serialized by stable signature plus owner, language, kind,
+security mode, volatility/parallel/leak/strict/set-returning flags, return type,
+config, implementation hash and normalized ACL:
 
 ```text
 baseline routines, excluding only the separately-pinned direct T1 guard:
@@ -162,12 +189,31 @@ baseline routines, excluding only the separately-pinned direct T1 guard:
 authenticated-effective SECURITY DEFINER subset:
   count = 122
   inventory_md5 = 7faa376a403c69239d9606559cf9c2db
+
+non-system aggregates included in that inventory:
+  count = 0
 ```
 
 This positive inventory spans all non-system schemas, not just `public`. It
 pins wrappers, dynamic-SQL-capable routines and possible transitive callees even
-when their source does not contain the target table/column literals. Postflight
+when their source does not contain the target table/column literals. The
+explicit zero-aggregate assertion is positive: a newly introduced non-system
+aggregate changes both the routine inventory and aggregate count. Postflight
 and rollback exclude only the exact new T3 functions and separately verify each.
+
+Role/schema anchors are positive and complete:
+
+```text
+full pg_auth_members graph:
+  count = 21
+  inventory_md5 = fb803a204209bc71074a1eee7b57944e
+current database / owner = postgres / postgres
+public schema owner = pg_database_owner
+only public ACL CREATE grantee = pg_database_owner -> database owner postgres
+complete effective public schema ACL:
+  count = 7
+  inventory_md5 = e2ad94b6bfb9b0cb8c4980459fd55a6e
+```
 
 The known legacy service-only writer
 `redefinir_senha_corretor(uuid,text)` is also pinned directly:
@@ -359,8 +405,10 @@ Rollback begins by locking the three authority tables and the lease table in
 - the exact seven-trigger T3A authority inventory differs, including any
   absent/changed/disabled fence, T1 or audit trigger, or any rewrite rule;
 - the T3-aware direct guard or either original T1 trigger differs;
-- roles, `auth.uid()`, helpers, legacy writer, audit objects, policies, grants,
-  indexes, context use or positive full routine inventory differs.
+- role attributes or the complete membership graph, database/schema ownership,
+  complete `public` ACL, `auth.uid()`, helpers, legacy writer, audit objects,
+  policies, grants, indexes, context use or positive full routine inventory
+  including the zero-aggregate assertion differs.
 
 Only after exact proof and an empty locked lease table does it atomically:
 
@@ -383,8 +431,8 @@ is a later separately-authorized step.
 | Blocker / invariant | Corrective artifact | Candidate result | Runtime result |
 |---|---|---|---|
 | B1 Edge-first rollout | Edge fail-before-Auth + documented order | addressed | not executed |
-| B2 trust-anchor preflight | exact roles/objects + positive routine inventory | addressed after Backend HIGH-2 | not applied |
-| B3 drift-safe rollback | same inventory + empty locked lease + exact reversal | addressed after Backend HIGH-2 | not executed |
+| B2 trust-anchor preflight | exact full role graph + public schema ACL + all routine kinds | addressed after second Backend findings | not applied |
+| B3 drift-safe rollback | same exact anchors + empty locked lease + exact reversal | addressed after second Backend findings | not executed |
 | B4 T1 interoperability | both T1 triggers + exact leased transitions | addressed | not executed |
 | DB→Auth authority continuity | durable lease + snapshot-independent unique-index probes + 3 fencing triggers + service-role TRUNCATE removal + success-only release | addressed after Backend HIGH-1 | not runtime-tested |
 | actor=`auth.uid()` | caller JWT prepare RPC | preserved | not runtime-tested |
@@ -430,6 +478,8 @@ rollback after any reviewed routine/object drift     STOP
 Performed on the candidate source:
 
 - read-only production catalog inventory and exact baseline digests;
+- full 21-edge membership graph, exact database/schema ownership, complete
+  seven-entry `public` ACL and positive zero non-system aggregate observation;
 - exact `prosrc` extraction reconciled against live known-function hashing;
 - static SQL/catalog/concurrency review;
 - SQL dollar-quote/parenthesis/top-level statement balance scan, byte-identical
