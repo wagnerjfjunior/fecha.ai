@@ -1,6 +1,6 @@
 # FECH.AI — SFJM Blocked Actions
 
-**Status:** `MATERIAL_BLOCKER_VIEW / T3A_EXACT_HEAD_REVIEWS_PENDING / FAIL_CLOSED / DOCUMENTATION_ONLY`
+**Status:** `MATERIAL_BLOCKER_VIEW / T3A_V3_REPEAT_BACKEND_REVIEW_PENDING / FAIL_CLOSED / DOCUMENTATION_ONLY`
 **Updated:** `2026-08-23`
 **Repository:** `wagnerjfjunior/fecha.ai`
 
@@ -42,17 +42,20 @@ B3 — rollback not sufficiently drift-safe
 B4 — incompatibility with the live T1 direct-compatibility guard for gestor password-state transition
 ```
 
-The v2 candidate addresses all four in the existing change set through
-Edge-first rollout semantics, exact trust-anchor checks, an exact drift-aware
-rollback and transaction-bound T1 guard interoperability. This is not yet an
-exact-head specialist PASS.
+The Backend/Data exact-head review of `bf8fb1f...` returned `REQUEST_CHANGES`:
+the DB lock did not span the later Auth side effect and the writer regex was not
+transitive. The v3 candidate in the same PR replaces those mechanisms with a
+durable authority lease/fence with snapshot-independent unique-index probes,
+success-only exact release and a positive full
+routine inventory used by migration and rollback. This changed head still has
+no exact-head specialist PASS.
 
 Current blocking gate:
 
 ```text
-publish/resolve one final corrective PR head
+publish/resolve the new v3 corrective PR head
 -> integral material-file read + coverage reconciliation
--> Backend/Data exact-head PASS
+-> repeat Backend/Data exact-head review and obtain PASS
 -> independent AppSec exact-head PASS
 -> STOP before Ready pending separate Product Authority
 ```
@@ -74,6 +77,8 @@ exposing T3 RPC to anon/PUBLIC/service_role
 normalizing production users to fit the code
 trial-and-error SQL in production
 mixing unrelated user-creation redesign into password-reset hardening
+using a frontend/server timeout as lease authority or automatic expiry
+releasing an unresolved lease after an ambiguous Auth result
 ```
 
 Any correction that makes the immediate test pass while weakening tenant isolation, authority derivation or rollback is `BLOCKING`, not an acceptable shortcut.

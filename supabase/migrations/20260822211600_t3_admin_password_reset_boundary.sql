@@ -1,4 +1,4 @@
--- FECH.AI — T3A-v2
+-- FECH.AI — T3A-v3
 -- Administrative Password Reset Multi-Tenant Authority Boundary
 --
 -- Safe rollout after a separate production authorization:
@@ -8,9 +8,11 @@
 --   4. validate catalog/ACL/fingerprints;
 --   5. run the separately-authorized bounded smoke matrix.
 --
--- This migration never changes an Auth password. It authorizes one target and
--- prepares must_change_password=true before the versioned Edge performs the
--- Auth mutation. Company, role, flags and team are derived server-side.
+-- This migration never changes an Auth password. It authorizes one target,
+-- prepares must_change_password=true and commits a durable lease before the
+-- versioned Edge performs the Auth mutation. T3 fencing triggers keep every
+-- material database authority row stable until that exact lease is released.
+-- Company, role, flags and team are derived server-side.
 
 begin;
 
@@ -36,6 +38,14 @@ declare
   v_comment text;
   v_public_execute boolean;
   v_update_columns text[];
+  v_routine_count bigint;
+  v_routine_md5 text;
+  v_authenticated_definer_count bigint;
+  v_authenticated_definer_md5 text;
+  v_column_acl_count bigint;
+  v_column_acl_md5 text;
+  v_policy_count bigint;
+  v_policy_md5 text;
   r record;
 begin
   if v_postgres_oid is null
@@ -43,6 +53,61 @@ begin
      or v_anon_oid is null
      or v_service_role_oid is null then
     raise exception 'T3A_PREFLIGHT_REQUIRED_ROLE_MISSING';
+  end if;
+
+  -- Client roles must not inherit an unreviewed privilege path. service_role
+  -- remains BYPASSRLS for its established operational use, but has no role
+  -- memberships and is never accepted as T3 actor authority.
+  if not exists (
+       select 1 from pg_catalog.pg_roles as r
+       where r.oid=v_postgres_oid
+         and not r.rolsuper and r.rolinherit and r.rolcreaterole
+         and r.rolcreatedb and r.rolcanlogin and r.rolreplication
+         and r.rolbypassrls
+     )
+     or not exists (
+       select 1 from pg_catalog.pg_roles as r
+       where r.oid=v_authenticated_oid
+         and r.rolinherit and not r.rolsuper and not r.rolcreaterole
+         and not r.rolcreatedb and not r.rolcanlogin
+         and not r.rolreplication and not r.rolbypassrls
+     )
+     or not exists (
+       select 1 from pg_catalog.pg_roles as r
+       where r.oid=v_anon_oid
+         and r.rolinherit and not r.rolsuper and not r.rolcreaterole
+         and not r.rolcreatedb and not r.rolcanlogin
+         and not r.rolreplication and not r.rolbypassrls
+     )
+     or not exists (
+       select 1 from pg_catalog.pg_roles as r
+       where r.oid=v_service_role_oid
+         and r.rolinherit and not r.rolsuper and not r.rolcreaterole
+         and not r.rolcreatedb and not r.rolcanlogin
+         and not r.rolreplication and r.rolbypassrls
+     )
+     or exists (
+       select 1
+       from pg_catalog.pg_auth_members as m
+       where m.member in (
+         v_authenticated_oid,v_anon_oid,v_service_role_oid
+       )
+     )
+     or pg_catalog.has_schema_privilege(
+          v_authenticated_oid,'public','CREATE'
+        )
+     or pg_catalog.has_schema_privilege(v_anon_oid,'public','CREATE')
+     or pg_catalog.has_schema_privilege(
+          v_service_role_oid,'public','CREATE'
+        )
+     or not pg_catalog.has_schema_privilege(
+              v_authenticated_oid,'public','USAGE'
+            )
+     or not pg_catalog.has_schema_privilege(v_anon_oid,'public','USAGE')
+     or not pg_catalog.has_schema_privilege(
+              v_service_role_oid,'public','USAGE'
+            ) then
+    raise exception 'T3A_PREFLIGHT_CLIENT_ROLE_DRIFT';
   end if;
 
   if pg_catalog.to_regprocedure('auth.uid()') is null
@@ -77,16 +142,171 @@ begin
 
   if pg_catalog.to_regprocedure(
        'public.t3_prepare_admin_password_reset(uuid)'
-     ) is not null then
-    raise exception 'T3A_PREFLIGHT_FUNCTION_ALREADY_EXISTS';
+     ) is not null
+     or pg_catalog.to_regprocedure(
+          'public.t3_release_admin_password_reset_lease(uuid,uuid,uuid)'
+        ) is not null
+     or pg_catalog.to_regprocedure(
+          'public.t3_guard_admin_password_reset_lease()'
+        ) is not null
+     or pg_catalog.to_regclass(
+          'public.t3_admin_password_reset_leases'
+        ) is not null then
+    raise exception 'T3A_PREFLIGHT_T3_OBJECT_ALREADY_EXISTS';
   end if;
 
   if exists (
     select 1
     from pg_catalog.pg_proc as p
-    where lower(p.prosrc) like '%fechai.t3_admin_password_reset_context%'
+    where lower(
+      coalesce(p.prosrc,'') || E'\n' || coalesce(p.prosqlbody::text,'')
+    ) like '%fechai.t3_admin_password_reset_context%'
   ) then
     raise exception 'T3A_PREFLIGHT_CONTEXT_KEY_COLLISION';
+  end if;
+
+  if exists (
+    select 1
+    from pg_catalog.pg_trigger as tg
+    where not tg.tgisinternal
+      and tg.tgname in (
+        'trg_t3_fence_admin_password_reset_admins',
+        'trg_t3_fence_admin_password_reset_corretores',
+        'trg_t3_fence_admin_password_reset_times'
+      )
+  ) then
+    raise exception 'T3A_PREFLIGHT_T3_TRIGGER_NAME_COLLISION';
+  end if;
+
+  if pg_catalog.to_regprocedure('pg_catalog.gen_random_uuid()') is null
+     or not exists (
+       select 1
+       from pg_catalog.pg_proc as p
+       where p.oid='pg_catalog.gen_random_uuid()'::regprocedure
+         and p.prorettype='uuid'::regtype
+         and p.pronargs=0
+         and p.provolatile='v'
+         and p.prosecdef is false
+     ) then
+    raise exception 'T3A_PREFLIGHT_UUID_GENERATOR_DRIFT';
+  end if;
+
+  -- Positive authority inventory: pin every non-system routine body, owner,
+  -- security mode/config and normalized ACL, not merely direct SQL text that
+  -- happens to mention must_change_password. This freezes indirect callees,
+  -- wrappers and dynamic-SQL-capable routines at the reviewed live baseline.
+  -- The direct T1 guard is excluded because T3 replaces and separately checks
+  -- it below. No other existing routine is excluded.
+  with routine_inventory as (
+    select
+      p.oid,
+      pg_catalog.format(
+        '%I.%I(%s)',n.nspname,p.proname,
+        p.proargtypes::text
+      ) as signature_key,
+      pg_catalog.pg_get_userbyid(p.proowner) as owner_name,
+      l.lanname as language_name,
+      p.prokind,
+      p.prosecdef,
+      p.provolatile,
+      p.proparallel,
+      p.proleakproof,
+      p.proisstrict,
+      p.proretset,
+      p.prorettype::text as return_type_oid,
+      p.provariadic::text as variadic_type_oid,
+      p.proargtypes::text as input_arg_type_oids,
+      coalesce(p.proallargtypes::text,'') as all_arg_type_oids,
+      coalesce(p.proargmodes::text,'') as arg_modes,
+      coalesce(p.proargnames::text,'') as arg_names,
+      p.pronargdefaults,
+      coalesce(p.proargdefaults::text,'') as arg_defaults,
+      p.prosupport::text as support_oid,
+      p.procost::text as procost,
+      p.prorows::text as prorows,
+      coalesce(p.proconfig::text,'') as config_text,
+      pg_catalog.md5(
+        coalesce(p.prosrc,'') || E'\n' ||
+        coalesce(p.probin,'') || E'\n' ||
+        coalesce(p.prosqlbody::text,'')
+      ) as implementation_md5,
+      coalesce(
+        pg_catalog.obj_description(p.oid,'pg_proc'),''
+      ) as comment_text,
+      coalesce((
+        select pg_catalog.string_agg(
+          pg_catalog.format(
+            '%s>%s:%s:%s',
+            case when acl.grantee=0 then 'PUBLIC'
+                 else pg_catalog.pg_get_userbyid(acl.grantee) end,
+            pg_catalog.pg_get_userbyid(acl.grantor),
+            acl.privilege_type,
+            acl.is_grantable
+          ),
+          ',' order by acl.grantee,acl.grantor,
+                       acl.privilege_type,acl.is_grantable
+        )
+        from pg_catalog.aclexplode(
+          coalesce(p.proacl,pg_catalog.acldefault('f',p.proowner))
+        ) as acl
+      ),'') as acl_text
+    from pg_catalog.pg_proc as p
+    join pg_catalog.pg_namespace as n on n.oid=p.pronamespace
+    join pg_catalog.pg_language as l on l.oid=p.prolang
+    where p.prokind in ('f','p','w')
+      and n.nspname not in ('pg_catalog','information_schema')
+      and n.nspname not like 'pg_toast%'
+      and n.nspname not like 'pg_temp_%'
+      and n.nspname not like 'pg_toast_temp_%'
+      and p.oid<>'public.t1_guard_corretores_direct_compat_update()'::regprocedure
+  ), serialized as (
+    select
+      oid,
+      signature_key,
+      prosecdef,
+      pg_catalog.concat_ws(
+        '|',signature_key,owner_name,language_name,prokind,prosecdef,
+        provolatile,proparallel,proleakproof,proisstrict,proretset,
+        return_type_oid,variadic_type_oid,input_arg_type_oids,
+        all_arg_type_oids,arg_modes,arg_names,pronargdefaults,arg_defaults,
+        support_oid,procost,prorows,config_text,implementation_md5,
+        comment_text,acl_text
+      ) as item
+    from routine_inventory
+  )
+  select
+    pg_catalog.count(*),
+    pg_catalog.md5(
+      pg_catalog.string_agg(item,E'\n' order by signature_key)
+    ),
+    pg_catalog.count(*) filter (
+      where prosecdef
+        and pg_catalog.has_function_privilege(
+          v_authenticated_oid,oid,'EXECUTE'
+        )
+    ),
+    pg_catalog.md5(
+      pg_catalog.string_agg(item,E'\n' order by signature_key)
+        filter (
+          where prosecdef
+            and pg_catalog.has_function_privilege(
+              v_authenticated_oid,oid,'EXECUTE'
+            )
+        )
+    )
+    into v_routine_count,
+         v_routine_md5,
+         v_authenticated_definer_count,
+         v_authenticated_definer_md5
+  from serialized;
+
+  if v_routine_count is distinct from 264
+     or v_routine_md5 is distinct from
+          'b1f0919df8a0acaca7bbea2b928b0ffe'
+     or v_authenticated_definer_count is distinct from 122
+     or v_authenticated_definer_md5 is distinct from
+          '7faa376a403c69239d9606559cf9c2db' then
+    raise exception 'T3A_PREFLIGHT_POSITIVE_ROUTINE_INVENTORY_DRIFT';
   end if;
 
   if not exists (select 1 from information_schema.columns where table_schema='public' and table_name='admins' and column_name='user_id' and data_type='uuid')
@@ -115,10 +335,94 @@ begin
     join pg_catalog.pg_namespace as n on n.oid=c.relnamespace
     where n.nspname='public'
       and c.relname in ('admins','corretores','times')
-      and (c.relrowsecurity is distinct from true
+      and (c.relkind is distinct from 'r'
+           or c.relpersistence is distinct from 'p'
+           or c.relowner is distinct from v_postgres_oid
+           or c.relrowsecurity is distinct from true
            or c.relforcerowsecurity is distinct from true)
   ) then
     raise exception 'T3A_PREFLIGHT_RLS_FORCE_DRIFT';
+  end if;
+
+  -- Pin the complete authority-table ACLs, including service_role. The later
+  -- narrow TRUNCATE revocation is part of the fence because TRUNCATE does not
+  -- run row triggers.
+  for r in
+    select *
+    from (
+      values
+        ('admins','b0e2ac3625f075350c4b2621a8429dd7'),
+        ('corretores','c05095bb90a0c041ba5bbe82cea27702'),
+        ('times','82f04ab162741d5ab0e8cd323f083ec8')
+    ) as expected(table_name,acl_md5)
+  loop
+    select pg_catalog.md5(coalesce(pg_catalog.string_agg(
+             pg_catalog.format(
+               '%s>%s:%s:%s',
+               case when acl.grantee=0 then 'PUBLIC'
+                    else pg_catalog.pg_get_userbyid(acl.grantee) end,
+               pg_catalog.pg_get_userbyid(acl.grantor),
+               acl.privilege_type,
+               acl.is_grantable
+             ),
+             ',' order by acl.grantee,acl.grantor,
+                          acl.privilege_type,acl.is_grantable
+           ),''))
+      into v_md5
+    from pg_catalog.pg_class as c
+    join pg_catalog.pg_namespace as n on n.oid=c.relnamespace
+    cross join lateral pg_catalog.aclexplode(
+      coalesce(c.relacl,pg_catalog.acldefault('r',c.relowner))
+    ) as acl
+    where n.nspname='public' and c.relname=r.table_name;
+
+    if v_md5 is distinct from r.acl_md5 then
+      raise exception 'T3A_PREFLIGHT_AUTHORITY_TABLE_ACL_DRIFT: %',
+        r.table_name;
+    end if;
+  end loop;
+
+  with column_acl_items as (
+    select
+      c.relname,
+      a.attnum,
+      a.attname,
+      coalesce((
+        select pg_catalog.string_agg(
+          pg_catalog.format(
+            '%s>%s:%s:%s',
+            case when acl.grantee=0 then 'PUBLIC'
+                 else pg_catalog.pg_get_userbyid(acl.grantee) end,
+            pg_catalog.pg_get_userbyid(acl.grantor),
+            acl.privilege_type,
+            acl.is_grantable
+          ),
+          ',' order by acl.grantee,acl.grantor,
+                       acl.privilege_type,acl.is_grantable
+        )
+        from pg_catalog.aclexplode(a.attacl) as acl
+      ),'') as acl_text
+    from pg_catalog.pg_class as c
+    join pg_catalog.pg_namespace as n on n.oid=c.relnamespace
+    join pg_catalog.pg_attribute as a
+      on a.attrelid=c.oid and a.attnum>0 and not a.attisdropped
+    where n.nspname='public'
+      and c.relname in ('admins','corretores','times')
+  )
+  select pg_catalog.count(*),
+         pg_catalog.md5(pg_catalog.string_agg(
+           pg_catalog.format(
+             '%s.%s.%s|%s',relname,attnum,attname,acl_text
+           ),
+           E'\n' order by relname,attnum
+         ))
+    into v_column_acl_count,v_column_acl_md5
+  from column_acl_items;
+
+  if v_column_acl_count is distinct from 33
+     or v_column_acl_md5 is distinct from
+          '3fa731261b3d39ca5d046fd548c1bf53' then
+    raise exception 'T3A_PREFLIGHT_AUTHORITY_COLUMN_ACL_DRIFT';
   end if;
 
   if not exists (
@@ -322,6 +626,47 @@ begin
     raise exception 'T3A_PREFLIGHT_TIMES_UPDATE_POLICY_DRIFT';
   end if;
 
+  with policy_items as (
+    select
+      c.relname,
+      p.polname,
+      p.polcmd,
+      p.polpermissive,
+      coalesce((
+        select pg_catalog.string_agg(
+          case when role_item.role_oid=0 then 'PUBLIC'
+               else pg_catalog.pg_get_userbyid(role_item.role_oid) end,
+          ',' order by role_item.role_oid
+        )
+        from pg_catalog.unnest(p.polroles) as role_item(role_oid)
+      ),'') as roles,
+      coalesce(pg_catalog.pg_get_expr(p.polqual,p.polrelid),'') as using_expr,
+      coalesce(
+        pg_catalog.pg_get_expr(p.polwithcheck,p.polrelid),''
+      ) as check_expr
+    from pg_catalog.pg_policy as p
+    join pg_catalog.pg_class as c on c.oid=p.polrelid
+    join pg_catalog.pg_namespace as n on n.oid=c.relnamespace
+    where n.nspname='public'
+      and c.relname in ('admins','corretores','times')
+  )
+  select pg_catalog.count(*),
+         pg_catalog.md5(pg_catalog.string_agg(
+           pg_catalog.concat_ws(
+             '|',relname,polname,polcmd,polpermissive,roles,
+             using_expr,check_expr
+           ),
+           E'\n' order by relname,polname
+         ))
+    into v_policy_count,v_policy_md5
+  from policy_items;
+
+  if v_policy_count is distinct from 7
+     or v_policy_md5 is distinct from
+          '1cb8f611f86778af0f60c78f2ffc70b0' then
+    raise exception 'T3A_PREFLIGHT_AUTHORITY_POLICY_INVENTORY_DRIFT';
+  end if;
+
   -- Exact helper/RPC bodies that are part of the authority and compatibility chain.
   for r in
     select *
@@ -341,6 +686,8 @@ begin
          '563dc0b60766bda1aaf5ed9814a1c8cd','search_path=pg_catalog',true,false),
         ('public.marcar_senha_inicial_definida()',
          '2a7b28d4bb6342a99d075c4d3c49af4d','search_path=pg_catalog',true,false),
+        ('public.redefinir_senha_corretor(uuid,text)',
+         '2f1ff707c6ea94e0abf4ede0f2ec3835','search_path=public',false,true),
         ('public.audit_trail_log_corretores_critical_update()',
          '3fdaca39d55f348ca36f796023f3260b','search_path=public',true,true)
     ) as expected(signature,body_md5,config_entry,authenticated_execute,service_execute)
@@ -430,6 +777,25 @@ begin
        or v_config is distinct from array['search_path=pg_catalog']::text[]
        or v_md5 is distinct from r.body_md5
        or v_comment is distinct from r.expected_comment
+       or not exists (
+         select 1
+         from pg_catalog.pg_proc as metadata
+         where metadata.oid=v_oid
+           and metadata.prokind='f'
+           and metadata.prorettype='trigger'::regtype
+           and metadata.provolatile='v' and metadata.proparallel='u'
+           and not metadata.proisstrict
+           and not metadata.proleakproof
+           and not metadata.proretset
+           and metadata.procost=100 and metadata.prorows=0
+           and metadata.pronargs=0 and metadata.pronargdefaults=0
+           and metadata.proargdefaults is null
+           and metadata.proallargtypes is null
+           and metadata.proargmodes is null
+           and metadata.proargnames is null
+           and metadata.provariadic=0::oid
+           and metadata.prosupport=0::oid
+       )
        or pg_catalog.has_function_privilege(v_authenticated_oid,v_oid,'EXECUTE')
        or pg_catalog.has_function_privilege(v_anon_oid,v_oid,'EXECUTE')
        or pg_catalog.has_function_privilege(v_service_role_oid,v_oid,'EXECUTE')
@@ -500,35 +866,276 @@ begin
     raise exception 'T3A_PREFLIGHT_CRITICAL_AUDIT_DRIFT';
   end if;
 
+  if (
+       select pg_catalog.count(*)
+       from pg_catalog.pg_trigger as tg
+       join pg_catalog.pg_class as c on c.oid=tg.tgrelid
+       join pg_catalog.pg_namespace as n on n.oid=c.relnamespace
+       where n.nspname='public'
+         and c.relname in ('admins','corretores','times')
+         and not tg.tgisinternal
+     )<>4
+     or not exists (
+       select 1
+       from pg_catalog.pg_trigger as tg
+       join pg_catalog.pg_proc as p on p.oid=tg.tgfoid
+       where tg.tgrelid='public.times'::regclass
+         and tg.tgname='trg_audit_trail_times_governance'
+         and not tg.tgisinternal
+         and tg.tgenabled='O'
+         and pg_catalog.pg_get_triggerdef(tg.oid,true)=
+           'CREATE TRIGGER trg_audit_trail_times_governance AFTER INSERT OR DELETE OR UPDATE ON times FOR EACH ROW EXECUTE FUNCTION audit_trail_log_times_governance()'
+         and pg_catalog.md5(pg_catalog.pg_get_triggerdef(tg.oid,true))=
+           'dab63f610ccad2d8b947706603023793'
+         and pg_catalog.md5(pg_catalog.pg_get_functiondef(p.oid))=
+           'e6974ffdf3f9fe3187318a688a3b067e'
+         and pg_catalog.obj_description(tg.oid,'pg_trigger') is null
+     ) then
+    raise exception 'T3A_PREFLIGHT_AUTHORITY_TRIGGER_INVENTORY_DRIFT';
+  end if;
+
   if exists (
     select 1
-    from pg_catalog.pg_proc as p
-    join pg_catalog.pg_namespace as n on n.oid=p.pronamespace
+    from pg_catalog.pg_rewrite as rw
+    join pg_catalog.pg_class as c on c.oid=rw.ev_class
+    join pg_catalog.pg_namespace as n on n.oid=c.relnamespace
     where n.nspname='public'
-      and p.prosecdef
-      and pg_catalog.has_function_privilege(
-            v_authenticated_oid,p.oid,'EXECUTE'
-          )
-      and lower(p.prosrc) ~ 'update[[:space:]]+(public\.)?corretores'
-      and lower(p.prosrc) like '%must_change_password%'
-      and p.oid <> 'public.marcar_senha_inicial_definida()'::regprocedure
+      and c.relname in ('admins','corretores','times')
   ) then
-    raise exception 'T3A_PREFLIGHT_UNEXPECTED_AUTH_PASSWORD_WRITER';
+    raise exception 'T3A_PREFLIGHT_AUTHORITY_REWRITE_RULE_DRIFT';
   end if;
+
 end;
 $preflight$;
 
 -- =============================================================================
--- 2. NARROW T1 GUARD INTEROPERABILITY
+-- 2. DURABLE CROSS-SYSTEM AUTHORITY LEASE AND FENCING
+-- =============================================================================
+-- No timeout participates in authority. A lease remains until the exact
+-- service-role-only release RPC proves actor + target + random lease identity.
+-- A crashed Edge therefore leaves an availability incident, never an unfenced
+-- password mutation window. Recovery remains a separate runtime authority.
+create table public.t3_admin_password_reset_leases (
+  lease_id uuid not null,
+  actor_user_id uuid not null,
+  target_user_id uuid not null,
+  authority_time_id uuid,
+  created_at timestamp with time zone not null
+    default pg_catalog.statement_timestamp(),
+  constraint t3_admin_password_reset_leases_pkey
+    primary key (lease_id),
+  constraint t3_admin_password_reset_leases_actor_user_id_key
+    unique (actor_user_id),
+  constraint t3_admin_password_reset_leases_target_user_id_key
+    unique (target_user_id),
+  constraint t3_admin_password_reset_leases_authority_time_id_key
+    unique (authority_time_id)
+);
+
+alter table public.t3_admin_password_reset_leases owner to postgres;
+alter table public.t3_admin_password_reset_leases enable row level security;
+alter table public.t3_admin_password_reset_leases force row level security;
+revoke all on table public.t3_admin_password_reset_leases from public;
+revoke all on table public.t3_admin_password_reset_leases from anon;
+revoke all on table public.t3_admin_password_reset_leases from authenticated;
+revoke all on table public.t3_admin_password_reset_leases from service_role;
+
+comment on table public.t3_admin_password_reset_leases is
+'T3A-v3 durable authority fence; no time-based authorization or expiry';
+
+create function public.t3_guard_admin_password_reset_lease()
+returns trigger
+language plpgsql
+security definer
+set search_path=pg_catalog
+as $function$
+declare
+  v_actor_user_id uuid:=auth.uid();
+  v_context text:=pg_catalog.current_setting(
+    'fechai.t3_admin_password_reset_context',true
+  );
+  v_subject_id uuid;
+  v_probe_lease_id uuid;
+  v_probe_user_id uuid;
+  v_probe_rows integer;
+begin
+  if tg_level<>'ROW'
+     or tg_when<>'BEFORE'
+     or tg_table_schema<>'public'
+     or tg_table_name not in ('admins','corretores','times') then
+    raise exception using errcode='42501',message='ACCESS_DENIED';
+  end if;
+
+  -- The only write admitted through an existing target lease is the exact
+  -- T3 preparation operation that ensures the flag is true. Every other
+  -- column must remain byte-for-byte
+  -- equivalent in the row's JSON representation.
+  if tg_table_name='corretores'
+     and tg_op='UPDATE'
+     and v_actor_user_id is not null
+     and (pg_catalog.to_jsonb(old)->>'user_id')::uuid
+           is not distinct from
+         (pg_catalog.to_jsonb(new)->>'user_id')::uuid
+     and (pg_catalog.to_jsonb(new)->'must_change_password')='true'::jsonb
+     and (pg_catalog.to_jsonb(new)-'must_change_password')
+           is not distinct from
+         (pg_catalog.to_jsonb(old)-'must_change_password')
+     and exists (
+       select 1
+       from public.t3_admin_password_reset_leases as l
+       where l.actor_user_id=v_actor_user_id
+         and l.target_user_id=
+               (pg_catalog.to_jsonb(old)->>'user_id')::uuid
+         and v_context=pg_catalog.format(
+           '%s:%s:%s:%s',
+           l.lease_id,l.actor_user_id,l.target_user_id,
+           pg_catalog.txid_current()
+         )
+     ) then
+    return new;
+  end if;
+
+  -- A plain SELECT can miss a lease when a writer is using a snapshot taken
+  -- before the lease committed. Probe the unique indexes instead: PostgreSQL
+  -- uniqueness arbitration observes conflicting live index entries even when
+  -- the row is outside the transaction's MVCC snapshot. Each successful probe
+  -- is deleted immediately but remains transactionally conflicting until the
+  -- authority-table writer commits, serializing a concurrent reset safely.
+  if tg_table_name in ('admins','corretores') then
+    for v_subject_id in
+      select distinct u.subject_id
+      from pg_catalog.unnest(
+        case tg_op
+          when 'INSERT' then array[
+            (pg_catalog.to_jsonb(new)->>'user_id')::uuid
+          ]
+          when 'DELETE' then array[
+            (pg_catalog.to_jsonb(old)->>'user_id')::uuid
+          ]
+          else array[
+            (pg_catalog.to_jsonb(old)->>'user_id')::uuid,
+            (pg_catalog.to_jsonb(new)->>'user_id')::uuid
+          ]
+        end
+      ) as u(subject_id)
+      where u.subject_id is not null
+      order by u.subject_id
+    loop
+      v_probe_lease_id:=pg_catalog.gen_random_uuid();
+
+      insert into public.t3_admin_password_reset_leases (
+        lease_id,actor_user_id,target_user_id
+      ) values (
+        v_probe_lease_id,v_subject_id,v_subject_id
+      )
+      on conflict do nothing;
+
+      get diagnostics v_probe_rows=row_count;
+      if v_probe_rows<>1 then
+        raise exception using errcode='42501',message='ACCESS_DENIED';
+      end if;
+
+      delete from public.t3_admin_password_reset_leases as l
+       where l.lease_id=v_probe_lease_id;
+      get diagnostics v_probe_rows=row_count;
+      if v_probe_rows<>1 then
+        raise exception using errcode='P0001',message='FENCE_PROBE_FAILED';
+      end if;
+    end loop;
+  else
+    for v_subject_id in
+      select distinct u.subject_id
+      from pg_catalog.unnest(
+        case tg_op
+          when 'INSERT' then array[
+            (pg_catalog.to_jsonb(new)->>'id')::uuid
+          ]
+          when 'DELETE' then array[
+            (pg_catalog.to_jsonb(old)->>'id')::uuid
+          ]
+          else array[
+            (pg_catalog.to_jsonb(old)->>'id')::uuid,
+            (pg_catalog.to_jsonb(new)->>'id')::uuid
+          ]
+        end
+      ) as u(subject_id)
+      where u.subject_id is not null
+      order by u.subject_id
+    loop
+      v_probe_lease_id:=pg_catalog.gen_random_uuid();
+      v_probe_user_id:=pg_catalog.gen_random_uuid();
+
+      insert into public.t3_admin_password_reset_leases (
+        lease_id,actor_user_id,target_user_id,authority_time_id
+      ) values (
+        v_probe_lease_id,v_probe_user_id,v_probe_user_id,v_subject_id
+      )
+      on conflict do nothing;
+
+      get diagnostics v_probe_rows=row_count;
+      if v_probe_rows<>1 then
+        raise exception using errcode='42501',message='ACCESS_DENIED';
+      end if;
+
+      delete from public.t3_admin_password_reset_leases as l
+       where l.lease_id=v_probe_lease_id;
+      get diagnostics v_probe_rows=row_count;
+      if v_probe_rows<>1 then
+        raise exception using errcode='P0001',message='FENCE_PROBE_FAILED';
+      end if;
+    end loop;
+  end if;
+
+  if tg_op='DELETE' then return old; end if;
+  return new;
+end;
+$function$;
+
+alter function public.t3_guard_admin_password_reset_lease()
+  owner to postgres;
+revoke all on function public.t3_guard_admin_password_reset_lease()
+  from public;
+revoke all on function public.t3_guard_admin_password_reset_lease()
+  from anon;
+revoke all on function public.t3_guard_admin_password_reset_lease()
+  from authenticated;
+revoke all on function public.t3_guard_admin_password_reset_lease()
+  from service_role;
+
+comment on function public.t3_guard_admin_password_reset_lease() is
+'T3A-v3 durable actor/target/protected-admin/authority-team fencing';
+
+create trigger trg_t3_fence_admin_password_reset_admins
+before insert or update or delete on public.admins
+for each row execute function public.t3_guard_admin_password_reset_lease();
+
+create trigger trg_t3_fence_admin_password_reset_corretores
+before insert or update or delete on public.corretores
+for each row execute function public.t3_guard_admin_password_reset_lease();
+
+create trigger trg_t3_fence_admin_password_reset_times
+before insert or update or delete on public.times
+for each row execute function public.t3_guard_admin_password_reset_lease();
+
+comment on trigger trg_t3_fence_admin_password_reset_admins
+  on public.admins is 'T3A-v3 durable authority fence';
+comment on trigger trg_t3_fence_admin_password_reset_corretores
+  on public.corretores is 'T3A-v3 durable authority fence';
+comment on trigger trg_t3_fence_admin_password_reset_times
+  on public.times is 'T3A-v3 durable authority fence';
+
+-- =============================================================================
+-- 3. NARROW T1 GUARD INTEROPERABILITY
 -- =============================================================================
 -- The existing trigger remains enabled and bound to the same three columns.
 -- A T3 transition is admitted only when all of these are true:
 --   * SECURITY DEFINER effective user is postgres;
 --   * auth.uid() is still the authenticated actor;
---   * a transaction-local marker binds actor + target + txid;
+--   * a transaction-local marker binds lease + actor + target + txid;
 --   * only must_change_password moves from not-true to true.
--- Ordinary client writes and arbitrary postgres writes without the marker keep
--- the exact pre-T3A T1 behavior below.
+-- Non-password compatibility branches retain the established T1 behavior.
+-- Password state is narrowed to the exact leased T3 transition plus the
+-- established active self-service true-to-false completion.
 create or replace function public.t1_guard_corretores_direct_compat_update()
 returns trigger
 language plpgsql
@@ -558,8 +1165,16 @@ begin
 
   if current_user='postgres'
      and v_uid is not null
-     and v_t3_context=pg_catalog.format(
-       '%s:%s:%s',v_uid,old.user_id,pg_catalog.txid_current()
+     and exists (
+       select 1
+       from public.t3_admin_password_reset_leases as l
+       where l.actor_user_id=v_uid
+         and l.target_user_id=old.user_id
+         and v_t3_context=pg_catalog.format(
+           '%s:%s:%s:%s',
+           l.lease_id,l.actor_user_id,l.target_user_id,
+           pg_catalog.txid_current()
+         )
      )
      and old.must_change_password is distinct from true
      and new.must_change_password is true
@@ -569,6 +1184,10 @@ begin
   end if;
 
   if v_uid is null then
+    if new.must_change_password is distinct from old.must_change_password then
+      raise exception using
+        errcode='42501',message='PASSWORD_STATE_CHANGE_DENIED';
+    end if;
     if current_user in ('postgres','service_role') then
       return new;
     end if;
@@ -631,10 +1250,12 @@ begin
     raise exception using errcode='42501',message='SELF_ACTIVE_CHANGE_DENIED';
   end if;
 
-  if old.user_id=v_uid
-     and new.must_change_password is distinct from old.must_change_password then
+  -- After T3A, no root/admin/service/indirect writer may change password state
+  -- outside the exact T3 lease transition or the established self-service
+  -- true-to-false completion above.
+  if new.must_change_password is distinct from old.must_change_password then
     raise exception using
-      errcode='42501',message='SELF_PASSWORD_STATE_CHANGE_DENIED';
+      errcode='42501',message='PASSWORD_STATE_CHANGE_DENIED';
   end if;
 
   if v_root then
@@ -702,10 +1323,10 @@ revoke all on function public.t1_guard_corretores_direct_compat_update()
   from service_role;
 
 comment on function public.t1_guard_corretores_direct_compat_update() is
-'T3A-v2|f2cbf4762b5f5b2d6c6eb56fcf0edc2b|pre_t3a=99477024e337de5645dd042a30f8cf78';
+'T3A-v3 exact leased password-state writer boundary; pre_t3a=99477024e337de5645dd042a30f8cf78';
 
 -- =============================================================================
--- 3. ADMINISTRATIVE PASSWORD-RESET AUTHORITY BOUNDARY
+-- 4. ADMINISTRATIVE PASSWORD-RESET AUTHORITY BOUNDARY
 -- =============================================================================
 create function public.t3_prepare_admin_password_reset(p_target_user_id uuid)
 returns jsonb
@@ -730,6 +1351,12 @@ declare
   v_target_role text;
   v_target_is_admin_local boolean;
   v_target_is_gestor boolean;
+  v_lease_id uuid;
+  v_authority_time_id uuid;
+  v_probe_subject_id uuid;
+  v_probe_lease_id uuid;
+  v_probe_user_id uuid;
+  v_probe_rows integer;
   v_rows integer;
 begin
   if v_actor_user_id is null then
@@ -740,10 +1367,13 @@ begin
     raise exception using errcode='42501',message='TARGET_NOT_AUTHORIZED';
   end if;
 
-  -- Prevent a concurrent public.admins insert/update/delete from changing root
-  -- or protected-target identity between the authority decision and the
-  -- password-state transition. Concurrent reset calls remain compatible.
-  lock table public.admins in share mode;
+  -- Serialize reset authorization against authority-table relation-lock
+  -- acquisition. The unique-index probes cover transactions whose MVCC
+  -- snapshot predates that lock. This also gives all reset calls one
+  -- deterministic table-lock order and removes reciprocal actor/target
+  -- row-lock deadlocks. Reads remain available.
+  lock table public.admins, public.corretores, public.times
+    in share row exclusive mode;
 
   -- Root authority is derived only from public.admins.
   perform 1
@@ -889,14 +1519,82 @@ begin
     if not found then
       raise exception using errcode='42501',message='TARGET_NOT_AUTHORIZED';
     end if;
+
+    v_authority_time_id:=v_target_time_id;
   else
     raise exception using errcode='42501',message='AUTHORITY_DENIED';
   end if;
 
+  -- Prevent cross-role overlap such as an existing target becoming the actor
+  -- of another reset. The fixed table lock serializes prepare calls; these
+  -- unique-index probes additionally remain authoritative across old snapshots
+  -- and concurrent service-role release transactions.
+  for v_probe_subject_id in
+    select distinct u.subject_id
+    from pg_catalog.unnest(
+      array[v_actor_user_id,v_target_user_id]
+    ) as u(subject_id)
+    order by u.subject_id
+  loop
+    v_probe_lease_id:=pg_catalog.gen_random_uuid();
+
+    insert into public.t3_admin_password_reset_leases (
+      lease_id,actor_user_id,target_user_id
+    ) values (
+      v_probe_lease_id,v_probe_subject_id,v_probe_subject_id
+    )
+    on conflict do nothing;
+
+    get diagnostics v_probe_rows=row_count;
+    if v_probe_rows<>1 then
+      raise exception using errcode='42501',message='AUTHORITY_DENIED';
+    end if;
+
+    delete from public.t3_admin_password_reset_leases as l
+     where l.lease_id=v_probe_lease_id;
+    get diagnostics v_probe_rows=row_count;
+    if v_probe_rows<>1 then
+      raise exception using errcode='P0001',message='LEASE_PROBE_FAILED';
+    end if;
+  end loop;
+
+  if v_authority_time_id is not null then
+    v_probe_lease_id:=pg_catalog.gen_random_uuid();
+    v_probe_user_id:=pg_catalog.gen_random_uuid();
+
+    insert into public.t3_admin_password_reset_leases (
+      lease_id,actor_user_id,target_user_id,authority_time_id
+    ) values (
+      v_probe_lease_id,v_probe_user_id,v_probe_user_id,v_authority_time_id
+    )
+    on conflict do nothing;
+
+    get diagnostics v_probe_rows=row_count;
+    if v_probe_rows<>1 then
+      raise exception using errcode='42501',message='AUTHORITY_DENIED';
+    end if;
+
+    delete from public.t3_admin_password_reset_leases as l
+     where l.lease_id=v_probe_lease_id;
+    get diagnostics v_probe_rows=row_count;
+    if v_probe_rows<>1 then
+      raise exception using errcode='P0001',message='LEASE_PROBE_FAILED';
+    end if;
+  end if;
+
+  v_lease_id:=pg_catalog.gen_random_uuid();
+
+  insert into public.t3_admin_password_reset_leases (
+    lease_id,actor_user_id,target_user_id,authority_time_id
+  ) values (
+    v_lease_id,v_actor_user_id,v_target_user_id,v_authority_time_id
+  );
+
   perform pg_catalog.set_config(
     'fechai.t3_admin_password_reset_context',
     pg_catalog.format(
-      '%s:%s:%s',v_actor_user_id,v_target_user_id,pg_catalog.txid_current()
+      '%s:%s:%s:%s',
+      v_lease_id,v_actor_user_id,v_target_user_id,pg_catalog.txid_current()
     ),
     true
   );
@@ -917,7 +1615,8 @@ begin
 
   return pg_catalog.jsonb_build_object(
     'ok',true,
-    'user_id',v_target_user_id
+    'user_id',v_target_user_id,
+    'lease_id',v_lease_id
   );
 end;
 $function$;
@@ -934,15 +1633,70 @@ grant execute on function public.t3_prepare_admin_password_reset(uuid)
   to authenticated;
 
 comment on function public.t3_prepare_admin_password_reset(uuid) is
-'T3A-v2|6f2acb633adc81994394be52d9ca18b9|auth.uid actor; authority and tenant derived server-side; transaction-bound T1 interoperability';
+'T3A-v3 auth.uid actor; server-derived authority; durable fenced lease before Auth';
+
+-- service_role may release only the exact opaque lease already authorized by
+-- auth.uid(). It cannot create a lease, select authority, set password state or
+-- act as the user. A mismatched/missing lease fails closed.
+create function public.t3_release_admin_password_reset_lease(
+  p_lease_id uuid,
+  p_actor_user_id uuid,
+  p_target_user_id uuid
+)
+returns boolean
+language plpgsql
+security definer
+set search_path=pg_catalog
+as $function$
+declare
+  v_rows integer;
+begin
+  if p_lease_id is null
+     or p_actor_user_id is null
+     or p_target_user_id is null then
+    raise exception using errcode='42501',message='LEASE_RELEASE_DENIED';
+  end if;
+
+  delete from public.t3_admin_password_reset_leases as l
+   where l.lease_id=p_lease_id
+     and l.actor_user_id=p_actor_user_id
+     and l.target_user_id=p_target_user_id;
+
+  get diagnostics v_rows=row_count;
+  if v_rows<>1 then
+    raise exception using errcode='42501',message='LEASE_RELEASE_DENIED';
+  end if;
+
+  return true;
+end;
+$function$;
+
+alter function public.t3_release_admin_password_reset_lease(uuid,uuid,uuid)
+  owner to postgres;
+revoke all on function public.t3_release_admin_password_reset_lease(uuid,uuid,uuid)
+  from public;
+revoke all on function public.t3_release_admin_password_reset_lease(uuid,uuid,uuid)
+  from anon;
+revoke all on function public.t3_release_admin_password_reset_lease(uuid,uuid,uuid)
+  from authenticated;
+grant execute on function public.t3_release_admin_password_reset_lease(uuid,uuid,uuid)
+  to service_role;
+
+comment on function public.t3_release_admin_password_reset_lease(uuid,uuid,uuid) is
+'T3A-v3 service-role operational release only; exact lease+actor+target required';
 
 -- App.jsx remains unchanged in T3A. Its stale direct PATCH cannot undo the
 -- server-authoritative state after this narrow grant is revoked.
 revoke update (must_change_password)
   on table public.corretores from authenticated;
 
+-- Row fencing covers service-role INSERT/UPDATE/DELETE. TRUNCATE does not run
+-- row triggers, so remove only that operation for the three authority tables.
+revoke truncate on table public.admins, public.corretores, public.times
+  from service_role;
+
 -- =============================================================================
--- 4. EXACT POSTFLIGHT
+-- 5. EXACT POSTFLIGHT
 -- =============================================================================
 do $postflight$
 declare
@@ -953,10 +1707,29 @@ declare
   v_t3_oid oid:=pg_catalog.to_regprocedure(
     'public.t3_prepare_admin_password_reset(uuid)'
   );
+  v_release_oid oid:=pg_catalog.to_regprocedure(
+    'public.t3_release_admin_password_reset_lease(uuid,uuid,uuid)'
+  );
+  v_fence_oid oid:=pg_catalog.to_regprocedure(
+    'public.t3_guard_admin_password_reset_lease()'
+  );
   v_guard_oid oid:=pg_catalog.to_regprocedure(
     'public.t1_guard_corretores_direct_compat_update()'
   );
+  v_lease_rel_oid oid:=pg_catalog.to_regclass(
+    'public.t3_admin_password_reset_leases'
+  );
   v_update_columns text[];
+  v_routine_count bigint;
+  v_routine_md5 text;
+  v_authenticated_definer_count bigint;
+  v_authenticated_definer_md5 text;
+  v_table_acl_md5 text;
+  v_column_acl_count bigint;
+  v_column_acl_md5 text;
+  v_policy_count bigint;
+  v_policy_md5 text;
+  r record;
 begin
   if pg_catalog.md5(pg_catalog.pg_get_functiondef(
        'auth.uid()'::regprocedure
@@ -964,8 +1737,233 @@ begin
     raise exception 'T3A_POSTFLIGHT_AUTH_UID_DRIFT';
   end if;
 
-  if v_t3_oid is null or v_guard_oid is null then
+  if not exists (
+       select 1 from pg_catalog.pg_roles as r
+       where r.oid=v_postgres_oid
+         and not r.rolsuper and r.rolinherit and r.rolcreaterole
+         and r.rolcreatedb and r.rolcanlogin and r.rolreplication
+         and r.rolbypassrls
+     )
+     or not exists (
+       select 1 from pg_catalog.pg_roles as r
+       where r.oid=v_authenticated_oid
+         and r.rolinherit and not r.rolsuper and not r.rolcreaterole
+         and not r.rolcreatedb and not r.rolcanlogin
+         and not r.rolreplication and not r.rolbypassrls
+     )
+     or not exists (
+       select 1 from pg_catalog.pg_roles as r
+       where r.oid=v_anon_oid
+         and r.rolinherit and not r.rolsuper and not r.rolcreaterole
+         and not r.rolcreatedb and not r.rolcanlogin
+         and not r.rolreplication and not r.rolbypassrls
+     )
+     or not exists (
+       select 1 from pg_catalog.pg_roles as r
+       where r.oid=v_service_role_oid
+         and r.rolinherit and not r.rolsuper and not r.rolcreaterole
+         and not r.rolcreatedb and not r.rolcanlogin
+         and not r.rolreplication and r.rolbypassrls
+     )
+     or exists (
+       select 1 from pg_catalog.pg_auth_members as m
+       where m.member in (
+         v_authenticated_oid,v_anon_oid,v_service_role_oid
+       )
+     )
+     or pg_catalog.has_schema_privilege(
+          v_authenticated_oid,'public','CREATE'
+        )
+     or pg_catalog.has_schema_privilege(v_anon_oid,'public','CREATE')
+     or pg_catalog.has_schema_privilege(
+          v_service_role_oid,'public','CREATE'
+        )
+     or not pg_catalog.has_schema_privilege(
+              v_authenticated_oid,'public','USAGE'
+            )
+     or not pg_catalog.has_schema_privilege(v_anon_oid,'public','USAGE')
+     or not pg_catalog.has_schema_privilege(
+              v_service_role_oid,'public','USAGE'
+            ) then
+    raise exception 'T3A_POSTFLIGHT_CLIENT_ROLE_DRIFT';
+  end if;
+
+  if v_t3_oid is null
+     or v_release_oid is null
+     or v_fence_oid is null
+     or v_guard_oid is null
+     or v_lease_rel_oid is null then
     raise exception 'T3A_POSTFLIGHT_REQUIRED_FUNCTION_MISSING';
+  end if;
+
+  if not exists (
+       select 1
+       from pg_catalog.pg_class as c
+       where c.oid=v_lease_rel_oid
+         and c.relkind='r'
+         and c.relpersistence='p'
+         and c.relowner=v_postgres_oid
+         and c.relrowsecurity
+         and c.relforcerowsecurity
+         and not exists (
+           select 1
+           from pg_catalog.aclexplode(
+             coalesce(c.relacl,pg_catalog.acldefault('r',c.relowner))
+           ) as acl
+           where acl.grantee<>v_postgres_oid
+         )
+         and pg_catalog.md5(coalesce((
+           select pg_catalog.string_agg(
+             pg_catalog.format(
+               '%s>%s:%s:%s',
+               case when acl.grantee=0 then 'PUBLIC'
+                    else pg_catalog.pg_get_userbyid(acl.grantee) end,
+               pg_catalog.pg_get_userbyid(acl.grantor),
+               acl.privilege_type,
+               acl.is_grantable
+             ),
+             ',' order by acl.grantee,acl.grantor,
+                          acl.privilege_type,acl.is_grantable
+           )
+           from pg_catalog.aclexplode(
+             coalesce(c.relacl,pg_catalog.acldefault('r',c.relowner))
+           ) as acl
+         ),''))='df15c22895181b78b4b8c47092a334a0'
+     )
+     or (
+       select pg_catalog.count(*)
+       from pg_catalog.pg_attribute as a
+       where a.attrelid=v_lease_rel_oid
+         and a.attnum>0
+         and not a.attisdropped
+     )<>5
+     or exists (
+       select 1
+       from pg_catalog.pg_attribute as a
+       cross join lateral pg_catalog.aclexplode(a.attacl) as acl
+       where a.attrelid=v_lease_rel_oid
+         and a.attnum>0 and not a.attisdropped
+     )
+     or not exists (
+       select 1 from pg_catalog.pg_attribute as a
+       where a.attrelid=v_lease_rel_oid and a.attname='lease_id'
+         and a.atttypid='uuid'::regtype and a.attnotnull
+         and not a.atthasdef
+     )
+     or not exists (
+       select 1 from pg_catalog.pg_attribute as a
+       where a.attrelid=v_lease_rel_oid and a.attname='actor_user_id'
+         and a.atttypid='uuid'::regtype and a.attnotnull
+         and not a.atthasdef
+     )
+     or not exists (
+       select 1 from pg_catalog.pg_attribute as a
+       where a.attrelid=v_lease_rel_oid and a.attname='target_user_id'
+         and a.atttypid='uuid'::regtype and a.attnotnull
+         and not a.atthasdef
+     )
+     or not exists (
+       select 1 from pg_catalog.pg_attribute as a
+       where a.attrelid=v_lease_rel_oid and a.attname='authority_time_id'
+         and a.atttypid='uuid'::regtype and not a.attnotnull
+         and not a.atthasdef
+     )
+     or not exists (
+       select 1
+       from pg_catalog.pg_attribute as a
+       join pg_catalog.pg_attrdef as d
+         on d.adrelid=a.attrelid and d.adnum=a.attnum
+       where a.attrelid=v_lease_rel_oid and a.attname='created_at'
+         and a.atttypid='timestamp with time zone'::regtype
+         and a.attnotnull
+         and pg_catalog.pg_get_expr(d.adbin,d.adrelid)=
+             'statement_timestamp()'
+     )
+     or (
+       select pg_catalog.count(*)
+       from pg_catalog.pg_constraint as c
+       where c.conrelid=v_lease_rel_oid
+     )<>4
+     or (
+       select pg_catalog.count(*)
+       from pg_catalog.pg_index as i
+       where i.indrelid=v_lease_rel_oid
+     )<>4
+     or exists (
+       select 1
+       from pg_catalog.pg_constraint as c
+       join pg_catalog.pg_index as i on i.indexrelid=c.conindid
+       where c.conrelid=v_lease_rel_oid
+         and c.contype in ('p','u')
+         and (
+           not i.indisunique or not i.indisvalid or not i.indisready
+           or not i.indimmediate or i.indpred is not null
+           or i.indexprs is not null or i.indnullsnotdistinct
+           or i.indnkeyatts<>1 or i.indnatts<>1
+         )
+     )
+     or not exists (
+       select 1 from pg_catalog.pg_constraint as c
+       where c.conrelid=v_lease_rel_oid
+         and c.conname='t3_admin_password_reset_leases_pkey'
+         and c.contype='p' and c.convalidated
+         and not c.condeferrable and not c.condeferred
+         and c.conkey=array[(
+           select a.attnum from pg_catalog.pg_attribute as a
+           where a.attrelid=v_lease_rel_oid and a.attname='lease_id'
+         )]::smallint[]
+     )
+     or not exists (
+       select 1 from pg_catalog.pg_constraint as c
+       where c.conrelid=v_lease_rel_oid
+         and c.conname='t3_admin_password_reset_leases_actor_user_id_key'
+         and c.contype='u' and c.convalidated
+         and not c.condeferrable and not c.condeferred
+         and c.conkey=array[(
+           select a.attnum from pg_catalog.pg_attribute as a
+           where a.attrelid=v_lease_rel_oid and a.attname='actor_user_id'
+         )]::smallint[]
+     )
+     or not exists (
+       select 1 from pg_catalog.pg_constraint as c
+       where c.conrelid=v_lease_rel_oid
+         and c.conname='t3_admin_password_reset_leases_target_user_id_key'
+         and c.contype='u' and c.convalidated
+         and not c.condeferrable and not c.condeferred
+         and c.conkey=array[(
+           select a.attnum from pg_catalog.pg_attribute as a
+           where a.attrelid=v_lease_rel_oid and a.attname='target_user_id'
+         )]::smallint[]
+     )
+     or not exists (
+       select 1 from pg_catalog.pg_constraint as c
+       where c.conrelid=v_lease_rel_oid
+         and c.conname='t3_admin_password_reset_leases_authority_time_id_key'
+         and c.contype='u' and c.convalidated
+         and not c.condeferrable and not c.condeferred
+         and c.conkey=array[(
+           select a.attnum from pg_catalog.pg_attribute as a
+           where a.attrelid=v_lease_rel_oid and a.attname='authority_time_id'
+         )]::smallint[]
+     )
+     or exists (
+       select 1 from pg_catalog.pg_policy as p
+       where p.polrelid=v_lease_rel_oid
+     )
+     or exists (
+       select 1 from pg_catalog.pg_trigger as tg
+       where tg.tgrelid=v_lease_rel_oid and not tg.tgisinternal
+     )
+     or exists (
+       select 1 from pg_catalog.pg_rewrite as rw
+       where rw.ev_class=v_lease_rel_oid
+     )
+     or exists (
+       select 1 from public.t3_admin_password_reset_leases
+     )
+     or pg_catalog.obj_description(v_lease_rel_oid,'pg_class') is distinct from
+          'T3A-v3 durable authority fence; no time-based authorization or expiry' then
+    raise exception 'T3A_POSTFLIGHT_LEASE_TABLE_DRIFT';
   end if;
 
   if not exists (
@@ -973,12 +1971,26 @@ begin
     from pg_catalog.pg_proc as p
     where p.oid=v_t3_oid
       and p.proowner=v_postgres_oid
+      and p.prokind='f'
       and p.prosecdef is true
       and p.proconfig=array['search_path=pg_catalog']::text[]
-      and pg_catalog.md5(pg_catalog.pg_get_functiondef(p.oid))=
-        '6f2acb633adc81994394be52d9ca18b9'
+      and p.prolang=(
+        select l.oid from pg_catalog.pg_language as l
+        where l.lanname='plpgsql'
+      )
+      and p.prorettype='jsonb'::regtype
+      and p.provolatile='v'
+      and p.proparallel='u'
+      and not p.proisstrict and not p.proleakproof and not p.proretset
+      and p.procost=100 and p.prorows=0
+      and p.pronargs=1 and p.pronargdefaults=0
+      and p.proargdefaults is null and p.proallargtypes is null
+      and p.proargmodes is null
+      and p.proargnames=array['p_target_user_id']::text[]
+      and p.provariadic=0::oid and p.prosupport=0::oid
+      and pg_catalog.md5(p.prosrc)='91fc82deadc0d18e871e43a812c8d6dd'
       and pg_catalog.obj_description(p.oid,'pg_proc')=
-        'T3A-v2|6f2acb633adc81994394be52d9ca18b9|auth.uid actor; authority and tenant derived server-side; transaction-bound T1 interoperability'
+        'T3A-v3 auth.uid actor; server-derived authority; durable fenced lease before Auth'
       and pg_catalog.has_function_privilege(
             v_authenticated_oid,p.oid,'EXECUTE'
           )
@@ -999,7 +2011,10 @@ begin
           coalesce(p.proacl,pg_catalog.acldefault('f',p.proowner))
         ) as acl
         where acl.privilege_type='EXECUTE'
-          and acl.grantee not in (v_postgres_oid,v_authenticated_oid)
+          and (
+            acl.grantee not in (v_postgres_oid,v_authenticated_oid)
+            or (acl.grantee=v_authenticated_oid and acl.is_grantable)
+          )
       )
   ) then
     raise exception 'T3A_POSTFLIGHT_FUNCTION_SECURITY_ACL_OR_BODY_DRIFT';
@@ -1008,14 +2023,126 @@ begin
   if not exists (
     select 1
     from pg_catalog.pg_proc as p
+    where p.oid=v_release_oid
+      and p.proowner=v_postgres_oid
+      and p.prokind='f'
+      and p.prosecdef is true
+      and p.proconfig=array['search_path=pg_catalog']::text[]
+      and p.prolang=(
+        select l.oid from pg_catalog.pg_language as l
+        where l.lanname='plpgsql'
+      )
+      and p.prorettype='boolean'::regtype
+      and p.provolatile='v'
+      and p.proparallel='u'
+      and not p.proisstrict and not p.proleakproof and not p.proretset
+      and p.procost=100 and p.prorows=0
+      and p.pronargs=3 and p.pronargdefaults=0
+      and p.proargdefaults is null and p.proallargtypes is null
+      and p.proargmodes is null
+      and p.proargnames=array[
+        'p_lease_id','p_actor_user_id','p_target_user_id'
+      ]::text[]
+      and p.provariadic=0::oid and p.prosupport=0::oid
+      and pg_catalog.md5(p.prosrc)='a51c5b360c5d8a3684a97271460ec249'
+      and pg_catalog.obj_description(p.oid,'pg_proc')=
+        'T3A-v3 service-role operational release only; exact lease+actor+target required'
+      and not pg_catalog.has_function_privilege(
+                v_authenticated_oid,p.oid,'EXECUTE'
+              )
+      and not pg_catalog.has_function_privilege(v_anon_oid,p.oid,'EXECUTE')
+      and pg_catalog.has_function_privilege(
+            v_service_role_oid,p.oid,'EXECUTE'
+          )
+      and not exists (
+        select 1
+        from pg_catalog.aclexplode(
+          coalesce(p.proacl,pg_catalog.acldefault('f',p.proowner))
+        ) as acl
+        where acl.grantee=0 and acl.privilege_type='EXECUTE'
+      )
+      and not exists (
+        select 1
+        from pg_catalog.aclexplode(
+          coalesce(p.proacl,pg_catalog.acldefault('f',p.proowner))
+        ) as acl
+        where acl.privilege_type='EXECUTE'
+          and (
+            acl.grantee not in (v_postgres_oid,v_service_role_oid)
+            or (acl.grantee=v_service_role_oid and acl.is_grantable)
+          )
+      )
+  ) then
+    raise exception 'T3A_POSTFLIGHT_RELEASE_FUNCTION_DRIFT';
+  end if;
+
+  if not exists (
+    select 1
+    from pg_catalog.pg_proc as p
+    where p.oid=v_fence_oid
+      and p.proowner=v_postgres_oid
+      and p.prokind='f'
+      and p.prosecdef is true
+      and p.proconfig=array['search_path=pg_catalog']::text[]
+      and p.prolang=(
+        select l.oid from pg_catalog.pg_language as l
+        where l.lanname='plpgsql'
+      )
+      and p.prorettype='trigger'::regtype
+      and p.provolatile='v'
+      and p.proparallel='u'
+      and not p.proisstrict and not p.proleakproof and not p.proretset
+      and p.procost=100 and p.prorows=0
+      and p.pronargs=0 and p.pronargdefaults=0
+      and p.proargdefaults is null and p.proallargtypes is null
+      and p.proargmodes is null and p.proargnames is null
+      and p.provariadic=0::oid and p.prosupport=0::oid
+      and pg_catalog.md5(p.prosrc)='bd611e591aa2d951b178853f78caaa65'
+      and pg_catalog.obj_description(p.oid,'pg_proc')=
+        'T3A-v3 durable actor/target/protected-admin/authority-team fencing'
+      and not pg_catalog.has_function_privilege(
+                v_authenticated_oid,p.oid,'EXECUTE'
+              )
+      and not pg_catalog.has_function_privilege(v_anon_oid,p.oid,'EXECUTE')
+      and not pg_catalog.has_function_privilege(
+                v_service_role_oid,p.oid,'EXECUTE'
+              )
+      and not exists (
+        select 1
+        from pg_catalog.aclexplode(
+          coalesce(p.proacl,pg_catalog.acldefault('f',p.proowner))
+        ) as acl
+        where acl.privilege_type='EXECUTE'
+          and acl.grantee<>v_postgres_oid
+      )
+  ) then
+    raise exception 'T3A_POSTFLIGHT_FENCE_FUNCTION_DRIFT';
+  end if;
+
+  if not exists (
+    select 1
+    from pg_catalog.pg_proc as p
     where p.oid=v_guard_oid
       and p.proowner=v_postgres_oid
+      and p.prokind='f'
       and p.prosecdef is false
       and p.proconfig=array['search_path=pg_catalog']::text[]
-      and pg_catalog.md5(pg_catalog.pg_get_functiondef(p.oid))=
-        'f2cbf4762b5f5b2d6c6eb56fcf0edc2b'
+      and p.prolang=(
+        select l.oid from pg_catalog.pg_language as l
+        where l.lanname='plpgsql'
+      )
+      and p.prorettype='trigger'::regtype
+      and p.provolatile='v'
+      and p.proparallel='u'
+      and not p.proisstrict and not p.proleakproof and not p.proretset
+      and p.procost=100 and p.prorows=0
+      and p.pronargs=0 and p.pronargdefaults=0
+      and p.proargdefaults is null and p.proallargtypes is null
+      and p.proargmodes is null and p.proargnames is null
+      and p.provariadic=0::oid and p.prosupport=0::oid
+      and pg_catalog.md5(p.prosrc)='951da8a6ac6e934828f06ab1513778fa'
       and pg_catalog.obj_description(p.oid,'pg_proc')=
-        'T3A-v2|f2cbf4762b5f5b2d6c6eb56fcf0edc2b|pre_t3a=99477024e337de5645dd042a30f8cf78'
+        'T3A-v3 exact leased password-state writer boundary; pre_t3a=99477024e337de5645dd042a30f8cf78'
       and not pg_catalog.has_function_privilege(
                 v_authenticated_oid,p.oid,'EXECUTE'
               )
@@ -1072,6 +2199,53 @@ begin
     raise exception 'T3A_POSTFLIGHT_T1_AUTHORITY_GUARD_DRIFT';
   end if;
 
+  if (
+       select pg_catalog.count(*)
+       from pg_catalog.pg_trigger as tg
+       join pg_catalog.pg_class as c on c.oid=tg.tgrelid
+       join pg_catalog.pg_namespace as n on n.oid=c.relnamespace
+       where n.nspname='public'
+         and c.relname in ('admins','corretores','times')
+         and not tg.tgisinternal
+     )<>7
+     or not exists (
+       select 1
+       from pg_catalog.pg_trigger as tg
+       join pg_catalog.pg_proc as p on p.oid=tg.tgfoid
+       where tg.tgrelid='public.corretores'::regclass
+         and tg.tgname='trg_audit_trail_corretores_critical_update'
+         and not tg.tgisinternal and tg.tgenabled='O'
+         and pg_catalog.md5(pg_catalog.pg_get_triggerdef(tg.oid,true))=
+           '60e6c615f59d9196e0979d6e93d2ad94'
+         and pg_catalog.md5(pg_catalog.pg_get_functiondef(p.oid))=
+           '3fdaca39d55f348ca36f796023f3260b'
+     )
+     or not exists (
+       select 1
+       from pg_catalog.pg_trigger as tg
+       join pg_catalog.pg_proc as p on p.oid=tg.tgfoid
+       where tg.tgrelid='public.times'::regclass
+         and tg.tgname='trg_audit_trail_times_governance'
+         and not tg.tgisinternal and tg.tgenabled='O'
+         and pg_catalog.md5(pg_catalog.pg_get_triggerdef(tg.oid,true))=
+           'dab63f610ccad2d8b947706603023793'
+         and pg_catalog.md5(pg_catalog.pg_get_functiondef(p.oid))=
+           'e6974ffdf3f9fe3187318a688a3b067e'
+     ) then
+    raise exception 'T3A_POSTFLIGHT_AUTHORITY_TRIGGER_INVENTORY_DRIFT';
+  end if;
+
+  if exists (
+    select 1
+    from pg_catalog.pg_rewrite as rw
+    join pg_catalog.pg_class as c on c.oid=rw.ev_class
+    join pg_catalog.pg_namespace as n on n.oid=c.relnamespace
+    where n.nspname='public'
+      and c.relname in ('admins','corretores','times')
+  ) then
+    raise exception 'T3A_POSTFLIGHT_AUTHORITY_REWRITE_RULE_DRIFT';
+  end if;
+
   if not exists (
     select 1
     from pg_catalog.pg_trigger as tg
@@ -1095,17 +2269,158 @@ begin
            'faf7f23f5e7c246a4500a7db9e518bc5'
          and pg_catalog.obj_description(tg.oid,'pg_trigger')=
            'F1-02-T1-v3|faf7f23f5e7c246a4500a7db9e518bc5'
-     ) then
+  ) then
     raise exception 'T3A_POSTFLIGHT_T1_TRIGGER_DRIFT';
+  end if;
+
+  if (
+       select pg_catalog.count(*)
+       from pg_catalog.pg_trigger as tg
+       where tg.tgfoid=v_fence_oid and not tg.tgisinternal
+     )<>3
+     or not exists (
+       select 1 from pg_catalog.pg_trigger as tg
+       where tg.tgrelid='public.admins'::regclass
+         and tg.tgname='trg_t3_fence_admin_password_reset_admins'
+         and tg.tgfoid=v_fence_oid and not tg.tgisinternal
+         and tg.tgenabled='O' and tg.tgtype=31 and tg.tgnargs=0
+         and tg.tgqual is null
+         and pg_catalog.obj_description(tg.oid,'pg_trigger')=
+             'T3A-v3 durable authority fence'
+     )
+     or not exists (
+       select 1 from pg_catalog.pg_trigger as tg
+       where tg.tgrelid='public.corretores'::regclass
+         and tg.tgname='trg_t3_fence_admin_password_reset_corretores'
+         and tg.tgfoid=v_fence_oid and not tg.tgisinternal
+         and tg.tgenabled='O' and tg.tgtype=31 and tg.tgnargs=0
+         and tg.tgqual is null
+         and pg_catalog.obj_description(tg.oid,'pg_trigger')=
+             'T3A-v3 durable authority fence'
+     )
+     or not exists (
+       select 1 from pg_catalog.pg_trigger as tg
+       where tg.tgrelid='public.times'::regclass
+         and tg.tgname='trg_t3_fence_admin_password_reset_times'
+         and tg.tgfoid=v_fence_oid and not tg.tgisinternal
+         and tg.tgenabled='O' and tg.tgtype=31 and tg.tgnargs=0
+         and tg.tgqual is null
+         and pg_catalog.obj_description(tg.oid,'pg_trigger')=
+             'T3A-v3 durable authority fence'
+     ) then
+    raise exception 'T3A_POSTFLIGHT_FENCE_TRIGGER_DRIFT';
   end if;
 
   if (
     select pg_catalog.count(*)
     from pg_catalog.pg_proc as p
-    where lower(p.prosrc) like '%fechai.t3_admin_password_reset_context%'
-      and p.oid not in (v_t3_oid,v_guard_oid)
-  ) <> 0 then
+    where lower(
+      coalesce(p.prosrc,'') || E'\n' || coalesce(p.prosqlbody::text,'')
+    ) like '%fechai.t3_admin_password_reset_context%'
+      and p.oid in (v_t3_oid,v_guard_oid,v_fence_oid)
+  ) <> 3
+     or exists (
+       select 1
+       from pg_catalog.pg_proc as p
+       where lower(
+         coalesce(p.prosrc,'') || E'\n' || coalesce(p.prosqlbody::text,'')
+       ) like '%fechai.t3_admin_password_reset_context%'
+         and p.oid not in (v_t3_oid,v_guard_oid,v_fence_oid)
+     ) then
     raise exception 'T3A_POSTFLIGHT_CONTEXT_KEY_COLLISION';
+  end if;
+
+  if exists (
+    select 1
+    from pg_catalog.pg_class as c
+    join pg_catalog.pg_namespace as n on n.oid=c.relnamespace
+    where n.nspname='public'
+      and c.relname in ('admins','corretores','times')
+      and (c.relkind is distinct from 'r'
+           or c.relpersistence is distinct from 'p'
+           or c.relowner is distinct from v_postgres_oid
+           or c.relrowsecurity is distinct from true
+           or c.relforcerowsecurity is distinct from true)
+  ) then
+    raise exception 'T3A_POSTFLIGHT_AUTHORITY_TABLE_METADATA_DRIFT';
+  end if;
+
+  for r in
+    select *
+    from (
+      values
+        ('admins','f680b340dd9a87a76fea61b681bf6f1e'),
+        ('corretores','4cce675b8126424e9a455ee4c0569dde'),
+        ('times','abbf21bbb402467692ba198f40d2026a')
+    ) as expected(table_name,acl_md5)
+  loop
+    select pg_catalog.md5(coalesce(pg_catalog.string_agg(
+             pg_catalog.format(
+               '%s>%s:%s:%s',
+               case when acl.grantee=0 then 'PUBLIC'
+                    else pg_catalog.pg_get_userbyid(acl.grantee) end,
+               pg_catalog.pg_get_userbyid(acl.grantor),
+               acl.privilege_type,
+               acl.is_grantable
+             ),
+             ',' order by acl.grantee,acl.grantor,
+                          acl.privilege_type,acl.is_grantable
+           ),''))
+      into v_table_acl_md5
+    from pg_catalog.pg_class as c
+    join pg_catalog.pg_namespace as n on n.oid=c.relnamespace
+    cross join lateral pg_catalog.aclexplode(
+      coalesce(c.relacl,pg_catalog.acldefault('r',c.relowner))
+    ) as acl
+    where n.nspname='public' and c.relname=r.table_name;
+
+    if v_table_acl_md5 is distinct from r.acl_md5 then
+      raise exception 'T3A_POSTFLIGHT_AUTHORITY_TABLE_ACL_DRIFT: %',
+        r.table_name;
+    end if;
+  end loop;
+
+  with column_acl_items as (
+    select
+      c.relname,
+      a.attnum,
+      a.attname,
+      coalesce((
+        select pg_catalog.string_agg(
+          pg_catalog.format(
+            '%s>%s:%s:%s',
+            case when acl.grantee=0 then 'PUBLIC'
+                 else pg_catalog.pg_get_userbyid(acl.grantee) end,
+            pg_catalog.pg_get_userbyid(acl.grantor),
+            acl.privilege_type,
+            acl.is_grantable
+          ),
+          ',' order by acl.grantee,acl.grantor,
+                       acl.privilege_type,acl.is_grantable
+        )
+        from pg_catalog.aclexplode(a.attacl) as acl
+      ),'') as acl_text
+    from pg_catalog.pg_class as c
+    join pg_catalog.pg_namespace as n on n.oid=c.relnamespace
+    join pg_catalog.pg_attribute as a
+      on a.attrelid=c.oid and a.attnum>0 and not a.attisdropped
+    where n.nspname='public'
+      and c.relname in ('admins','corretores','times')
+  )
+  select pg_catalog.count(*),
+         pg_catalog.md5(pg_catalog.string_agg(
+           pg_catalog.format(
+             '%s.%s.%s|%s',relname,attnum,attname,acl_text
+           ),
+           E'\n' order by relname,attnum
+         ))
+    into v_column_acl_count,v_column_acl_md5
+  from column_acl_items;
+
+  if v_column_acl_count is distinct from 33
+     or v_column_acl_md5 is distinct from
+          'd475edbb63410c2ab4b4c2be55ac270c' then
+    raise exception 'T3A_POSTFLIGHT_AUTHORITY_COLUMN_ACL_DRIFT';
   end if;
 
   if not pg_catalog.has_table_privilege(
@@ -1186,23 +2501,157 @@ begin
     raise exception 'T3A_POSTFLIGHT_TIMES_POLICY_DRIFT';
   end if;
 
-  if exists (
-    select 1
+  with policy_items as (
+    select
+      c.relname,
+      p.polname,
+      p.polcmd,
+      p.polpermissive,
+      coalesce((
+        select pg_catalog.string_agg(
+          case when role_item.role_oid=0 then 'PUBLIC'
+               else pg_catalog.pg_get_userbyid(role_item.role_oid) end,
+          ',' order by role_item.role_oid
+        )
+        from pg_catalog.unnest(p.polroles) as role_item(role_oid)
+      ),'') as roles,
+      coalesce(pg_catalog.pg_get_expr(p.polqual,p.polrelid),'') as using_expr,
+      coalesce(
+        pg_catalog.pg_get_expr(p.polwithcheck,p.polrelid),''
+      ) as check_expr
+    from pg_catalog.pg_policy as p
+    join pg_catalog.pg_class as c on c.oid=p.polrelid
+    join pg_catalog.pg_namespace as n on n.oid=c.relnamespace
+    where n.nspname='public'
+      and c.relname in ('admins','corretores','times')
+  )
+  select pg_catalog.count(*),
+         pg_catalog.md5(pg_catalog.string_agg(
+           pg_catalog.concat_ws(
+             '|',relname,polname,polcmd,polpermissive,roles,
+             using_expr,check_expr
+           ),
+           E'\n' order by relname,polname
+         ))
+    into v_policy_count,v_policy_md5
+  from policy_items;
+
+  if v_policy_count is distinct from 7
+     or v_policy_md5 is distinct from
+          '1cb8f611f86778af0f60c78f2ffc70b0' then
+    raise exception 'T3A_POSTFLIGHT_AUTHORITY_POLICY_INVENTORY_DRIFT';
+  end if;
+
+  with routine_inventory as (
+    select
+      p.oid,
+      pg_catalog.format(
+        '%I.%I(%s)',n.nspname,p.proname,
+        p.proargtypes::text
+      ) as signature_key,
+      pg_catalog.pg_get_userbyid(p.proowner) as owner_name,
+      l.lanname as language_name,
+      p.prokind,
+      p.prosecdef,
+      p.provolatile,
+      p.proparallel,
+      p.proleakproof,
+      p.proisstrict,
+      p.proretset,
+      p.prorettype::text as return_type_oid,
+      p.provariadic::text as variadic_type_oid,
+      p.proargtypes::text as input_arg_type_oids,
+      coalesce(p.proallargtypes::text,'') as all_arg_type_oids,
+      coalesce(p.proargmodes::text,'') as arg_modes,
+      coalesce(p.proargnames::text,'') as arg_names,
+      p.pronargdefaults,
+      coalesce(p.proargdefaults::text,'') as arg_defaults,
+      p.prosupport::text as support_oid,
+      p.procost::text as procost,
+      p.prorows::text as prorows,
+      coalesce(p.proconfig::text,'') as config_text,
+      pg_catalog.md5(
+        coalesce(p.prosrc,'') || E'\n' ||
+        coalesce(p.probin,'') || E'\n' ||
+        coalesce(p.prosqlbody::text,'')
+      ) as implementation_md5,
+      coalesce(
+        pg_catalog.obj_description(p.oid,'pg_proc'),''
+      ) as comment_text,
+      coalesce((
+        select pg_catalog.string_agg(
+          pg_catalog.format(
+            '%s>%s:%s:%s',
+            case when acl.grantee=0 then 'PUBLIC'
+                 else pg_catalog.pg_get_userbyid(acl.grantee) end,
+            pg_catalog.pg_get_userbyid(acl.grantor),
+            acl.privilege_type,
+            acl.is_grantable
+          ),
+          ',' order by acl.grantee,acl.grantor,
+                       acl.privilege_type,acl.is_grantable
+        )
+        from pg_catalog.aclexplode(
+          coalesce(p.proacl,pg_catalog.acldefault('f',p.proowner))
+        ) as acl
+      ),'') as acl_text
     from pg_catalog.pg_proc as p
     join pg_catalog.pg_namespace as n on n.oid=p.pronamespace
-    where n.nspname='public'
-      and p.prosecdef
-      and pg_catalog.has_function_privilege(
-            v_authenticated_oid,p.oid,'EXECUTE'
-          )
-      and lower(p.prosrc) ~ 'update[[:space:]]+(public\.)?corretores'
-      and lower(p.prosrc) like '%must_change_password%'
-      and p.oid not in (
-        'public.marcar_senha_inicial_definida()'::regprocedure,
-        v_t3_oid
-      )
-  ) then
-    raise exception 'T3A_POSTFLIGHT_UNEXPECTED_AUTH_PASSWORD_WRITER';
+    join pg_catalog.pg_language as l on l.oid=p.prolang
+    where p.prokind in ('f','p','w')
+      and n.nspname not in ('pg_catalog','information_schema')
+      and n.nspname not like 'pg_toast%'
+      and n.nspname not like 'pg_temp_%'
+      and n.nspname not like 'pg_toast_temp_%'
+      and p.oid not in (v_guard_oid,v_t3_oid,v_release_oid,v_fence_oid)
+  ), serialized as (
+    select
+      oid,
+      signature_key,
+      prosecdef,
+      pg_catalog.concat_ws(
+        '|',signature_key,owner_name,language_name,prokind,prosecdef,
+        provolatile,proparallel,proleakproof,proisstrict,proretset,
+        return_type_oid,variadic_type_oid,input_arg_type_oids,
+        all_arg_type_oids,arg_modes,arg_names,pronargdefaults,arg_defaults,
+        support_oid,procost,prorows,config_text,implementation_md5,
+        comment_text,acl_text
+      ) as item
+    from routine_inventory
+  )
+  select
+    pg_catalog.count(*),
+    pg_catalog.md5(
+      pg_catalog.string_agg(item,E'\n' order by signature_key)
+    ),
+    pg_catalog.count(*) filter (
+      where prosecdef
+        and pg_catalog.has_function_privilege(
+          v_authenticated_oid,oid,'EXECUTE'
+        )
+    ),
+    pg_catalog.md5(
+      pg_catalog.string_agg(item,E'\n' order by signature_key)
+        filter (
+          where prosecdef
+            and pg_catalog.has_function_privilege(
+              v_authenticated_oid,oid,'EXECUTE'
+            )
+        )
+    )
+    into v_routine_count,
+         v_routine_md5,
+         v_authenticated_definer_count,
+         v_authenticated_definer_md5
+  from serialized;
+
+  if v_routine_count is distinct from 264
+     or v_routine_md5 is distinct from
+          'b1f0919df8a0acaca7bbea2b928b0ffe'
+     or v_authenticated_definer_count is distinct from 122
+     or v_authenticated_definer_md5 is distinct from
+          '7faa376a403c69239d9606559cf9c2db' then
+    raise exception 'T3A_POSTFLIGHT_POSITIVE_ROUTINE_INVENTORY_DRIFT';
   end if;
 end;
 $postflight$;

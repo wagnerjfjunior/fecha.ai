@@ -1,7 +1,9 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 
-// FECH.AI — T3A-v2
+// FECH.AI — T3A-v3
 // reset_password authority is derived server-side by public.t3_prepare_admin_password_reset().
+// A durable database lease fences the reviewed authority rows until the Auth
+// mutation has completed and the service-role client releases that exact lease.
 // The user-creation path below intentionally preserves the v17 behavior in this change.
 
 // ─── CORS restrito ao domínio da app ─────────────────────────────────────────
@@ -43,6 +45,14 @@ function json(data: unknown, status = 200, cors: Record<string, string>) {
     status,
     headers: { ...cors, 'Content-Type': 'application/json' },
   })
+}
+
+function normalizeUuid(value: unknown): string | null {
+  if (typeof value !== 'string') return null
+  const normalized = value.toLowerCase()
+  return /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/.test(normalized)
+    ? normalized
+    : null
 }
 
 Deno.serve(async (req: Request) => {
@@ -97,7 +107,7 @@ Deno.serve(async (req: Request) => {
       .single()
 
     // ═══════════════════════════════════════════════════════════════════════
-    // AÇÃO: RESET DE SENHA — T3A-v2 / MULTI-TENANT AUTHORITY BOUNDARY
+    // AÇÃO: RESET DE SENHA — T3A-v3 / MULTI-TENANT AUTHORITY BOUNDARY
     // ═══════════════════════════════════════════════════════════════════════
     if (body.action === 'reset_password') {
       const logId = `audit-${Date.now()}-${Math.random().toString(36).slice(2)}`
@@ -112,9 +122,10 @@ Deno.serve(async (req: Request) => {
         payload: { status: 'attempt', action: 'reset_password' },
       })
 
-      const { user_id, password } = body
+      const { user_id: requestedUserId, password } = body
+      const userId = normalizeUuid(requestedUserId)
 
-      if (!user_id || typeof password !== 'string' || password.length < 8) {
+      if (!userId || typeof password !== 'string' || password.length < 8) {
         return json({ error: 'user_id e senha temporária de no mínimo 8 caracteres são obrigatórios.' }, 400, cors)
       }
 
@@ -130,15 +141,27 @@ Deno.serve(async (req: Request) => {
         }
       )
 
-      const { data: authorization, error: authorizationError } = await callerDb.rpc(
-        't3_prepare_admin_password_reset',
-        { p_target_user_id: user_id }
-      )
+      let authorization: { ok?: boolean; user_id?: string; lease_id?: string } | null = null
+      let authorizationError: unknown = null
+
+      try {
+        const result = await callerDb.rpc(
+          't3_prepare_admin_password_reset',
+          { p_target_user_id: userId }
+        )
+        authorization = result.data
+        authorizationError = result.error
+      } catch (caught: unknown) {
+        authorizationError = caught
+      }
+
+      const leaseId = normalizeUuid(authorization?.lease_id)
 
       if (
         authorizationError ||
         authorization?.ok !== true ||
-        authorization?.user_id !== user_id
+        authorization?.user_id !== userId ||
+        !leaseId
       ) {
         await admin.from('audit_logs')
           .update({ payload: { status: 'denied', action: 'reset_password' } })
@@ -149,25 +172,76 @@ Deno.serve(async (req: Request) => {
         return json({ error: 'Usuário não encontrado ou não autorizado.' }, 403, cors)
       }
 
-      // The RPC has already set must_change_password=true under the same
-      // server-side authorization decision. Only then may Auth be changed.
-      const { data, error } = await admin.auth.admin.updateUserById(
-        authorization.user_id,
-        { password }
-      )
+      // The RPC has already set must_change_password=true and committed a
+      // durable lease. T3 fencing triggers now reject any relevant actor,
+      // target, protected-admin or gestor-team authority mutation until this
+      // exact lease is released after the external Auth call completes.
+      let authData: { user: { id: string } } | null = null
+      let authError: unknown = null
 
-      if (error) {
+      try {
+        const result = await admin.auth.admin.updateUserById(
+          userId,
+          { password }
+        )
+        authData = result.data
+        authError = result.error
+      } catch (caught: unknown) {
+        authError = caught
+      }
+
+      if (
+        authError ||
+        !authData?.user?.id ||
+        authData.user.id !== userId
+      ) {
         await admin.from('audit_logs')
-          .update({ payload: { status: 'failed', action: 'reset_password' } })
+          .update({ payload: { status: 'auth_result_unresolved', action: 'reset_password' } })
           .eq('id', logId)
-        throw error
+
+        // A transport/runtime/Auth error can be ambiguous. Keep the durable
+        // lease instead of guessing that no side effect occurred. Recovery is
+        // a separate, explicitly authorized operation.
+        return json({ error: 'Não foi possível concluir a redefinição de senha.' }, 500, cors)
+      }
+
+      // service_role is only the operational releaser of the exact lease after
+      // a proven successful Auth mutation. It is not actor authority and cannot
+      // create or authorize a reset lease.
+      let released: unknown = null
+      let releaseError: unknown = null
+
+      try {
+        const result = await admin.rpc(
+          't3_release_admin_password_reset_lease',
+          {
+            p_lease_id: leaseId,
+            p_actor_user_id: caller.id,
+            p_target_user_id: userId,
+          }
+        )
+        released = result.data
+        releaseError = result.error
+      } catch (caught: unknown) {
+        releaseError = caught
+      }
+
+      if (releaseError || released !== true) {
+        await admin.from('audit_logs')
+          .update({ payload: { status: 'lease_release_unresolved', action: 'reset_password' } })
+          .eq('id', logId)
+
+        // Auth success was proven before release was attempted. A lost release
+        // response can mean either the exact safe release committed or the
+        // lease remains. Do not claim success, retry or improvise cleanup.
+        return json({ error: 'Não foi possível concluir a redefinição de senha.' }, 500, cors)
       }
 
       await admin.from('audit_logs')
-        .update({ payload: { status: 'success', user_id: data.user.id } })
+        .update({ payload: { status: 'success', user_id: authData.user.id } })
         .eq('id', logId)
 
-      return json({ ok: true, user_id: data.user.id }, 200, cors)
+      return json({ ok: true, user_id: authData.user.id }, 200, cors)
     }
 
     // ═══════════════════════════════════════════════════════════════════════

@@ -1,6 +1,6 @@
 # FECH.AI — SFJM Next Safe Action
 
-**Status:** `SEMANTIC_NEXT_ACTION_VIEW / T3A_CORRECTED_CANDIDATE / EXACT_HEAD_REVIEWS_PENDING / DOCUMENTATION_ONLY`
+**Status:** `SEMANTIC_NEXT_ACTION_VIEW / T3A_V3_AFTER_BACKEND_REQUEST_CHANGES / REPEAT_BACKEND_EXACT_HEAD_REVIEW_PENDING / DOCUMENTATION_ONLY`
 **Updated:** `2026-08-23`
 **Repository:** `wagnerjfjunior/fecha.ai`
 
@@ -19,8 +19,9 @@ Because the 2026-08-23 transition update is currently on the active T3A change s
 ## 2. Single current semantic next action
 
 ```text
-Finalize the B1-B4 correction in the existing T3A change set, resolve its live
-final head, then obtain Backend/Data and independent AppSec exact-head reviews.
+Publish/reconcile the v3 correction for the valid Backend/Data `REQUEST_CHANGES`
+on `bf8fb1f...`, resolve the new live final head, and repeat Backend/Data. Only
+after Backend/Data closure, obtain the independent AppSec exact-head review.
 ```
 
 Corrected candidate domains to reconcile on that exact head:
@@ -30,6 +31,10 @@ B1 safe rollout order
 B2 trust-anchor preflight
 B3 drift-safe rollback
 B4 T1 guard interoperability
+DB-commit-to-Auth authority continuity through a durable lease/fence whose
+unique-index probes remain effective across pre-lease MVCC snapshots
+exact authority-table ACL transition with service_role TRUNCATE removed
+positive non-system routine inventory replacing the rejected writer regex
 ```
 
 ## 3. Exact-head closure sequence
@@ -45,7 +50,7 @@ The next conversation should:
 6. preserve T1/T2 contracts and confirm App.jsx has no T3A diff
 7. update the existing PR description so it matches that final head
 8. read every final material artifact to EOF and reconcile the coverage matrix
-9. prepare the exact-head Backend/Data prompt; Product Authority submits it manually to backend-data-platform-specialist and returns the integral response
+9. prepare a new exact-head Backend/Data prompt that includes the prior HIGH-1/HIGH-2 corrections; Product Authority submits it manually to backend-data-platform-specialist and returns the integral response
 10. after Backend/Data closure, repeat independently with application-security-assurance-specialist
 11. record the manual exact-head outcomes without inventing a Gateway receipt or carrying a prior-head PASS
 12. stop before Ready unless Product Authority separately authorizes Ready
@@ -67,7 +72,7 @@ The intended fail-closed rollout is:
 reviewed hardened Edge deployed first
 → T3 RPC absent: administrative reset fails closed without Auth mutation
 → apply reviewed migration
-→ validate function/ACL/grants/triggers/fingerprints
+→ validate function/ACL/grants/triggers/fingerprints, the empty lease table and positive routine inventory
 → controlled positive/negative/cross-tenant smoke
 → confirm direct must_change_password client write cannot bypass boundary
 ```
@@ -81,8 +86,9 @@ This section is a proof obligation, not rollback authorization.
 Rollback must be executable and drift-aware:
 
 ```text
-validate exact T3A function/ACL/fingerprint + expected grant state
+validate exact T3A prepare/release/fence functions, lease table/triggers, positive routine inventory and expected grant state
 validate exact T3A-modified T1 guard fingerprint when applicable
+require the locked lease table to be empty; otherwise STOP
 if drift: STOP
 otherwise restore database boundary to reviewed pre-T3A contract
 while hardened Edge remains deployed and T3 RPC is absent: reset fails closed

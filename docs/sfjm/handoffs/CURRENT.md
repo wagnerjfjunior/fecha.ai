@@ -1,6 +1,6 @@
 # FECH.AI — SFJM Current Product/Security Handoff
 
-**Status:** `THIN_HANDOFF_POINTER / T3A_CORRECTED_CANDIDATE / EXACT_HEAD_REVIEWS_PENDING / LIVE_LIFECYCLE_RESOLUTION`
+**Status:** `THIN_HANDOFF_POINTER / T3A_V3_AFTER_BACKEND_REQUEST_CHANGES / REPEAT_BACKEND_REVIEW_PENDING / LIVE_LIFECYCLE_RESOLUTION`
 **Updated:** `2026-08-23`
 **Repository:** `wagnerjfjunior/fecha.ai`
 
@@ -36,7 +36,7 @@ The current workstream is:
 
 ```text
 T3A — Administrative Password Reset Multi-Tenant Authority Boundary
-STATE: CORRECTED B1-B4 CANDIDATE / EXACT-HEAD REVIEWS PENDING
+STATE: V3 CORRECTED AFTER BACKEND REQUEST_CHANGES / NEW EXACT-HEAD REVIEW PENDING
 ```
 
 The next conversation must continue the **existing** T3A change set rather than restart the design or open another PR for the same blocker set.
@@ -50,10 +50,13 @@ B3 drift-safe rollback
 B4 T1 guard interoperability
 ```
 
-The v2 candidate records corrections for all four domains in the existing PR.
-It is not eligible for Ready/merge/deploy/application until Backend/Data and an
-independent AppSec reviewer validate the same resolved final head. Candidate
-closure is not specialist PASS.
+The Backend/Data review of exact head `bf8fb1f...` returned `REQUEST_CHANGES`
+for the DB→Auth race and non-transitive writer regex. The v3 candidate records a
+durable lease/fence with snapshot-independent unique-index probes,
+success-only release and positive full routine inventory
+in the existing PR. It is not eligible for Ready/merge/deploy/application until
+Backend/Data is repeated and then independent AppSec validates the same new
+resolved final head.
 
 ## 4. New-conversation reconstruction order
 
@@ -65,7 +68,7 @@ closure is not specialist PASS.
 5. resolve the active T3A PR live
 6. because this 2026-08-23 SFJM transition is PR_HEAD_ONLY until merge, read the SFJM files from the active T3A head
 7. confirm current Supabase/Edge read-only anchors material to B1-B4
-8. resolve the corrective PR head, reconcile evidence/coverage and perform the two exact-head reviews
+8. resolve the v3 corrective PR head, reconcile evidence/coverage, repeat Backend/Data and only after closure run independent AppSec
 9. stop before Ready without a new Product Authority
 ```
 
@@ -109,9 +112,9 @@ A successful new conversation should be able to reconstruct:
 T1 applied and preserved
 T2 positive status cutover proven in bounded production smoke
 T3A not applied/deployed
-existing T3A v2 candidate records B1-B4 correction
+existing T3A v3 candidate records B1-B4 plus Backend HIGH-1/HIGH-2 correction
 current corrective GitHub authority exists, but Ready/merge/production remain separate gates
-next action is final-head reconciliation + Backend/Data + independent AppSec validation
+next action is new-head reconciliation + repeated Backend/Data + independent AppSec validation
 ```
 
 If those facts cannot be reconstructed from live evidence + SFJM, stop and declare the specific continuity gap rather than guessing.

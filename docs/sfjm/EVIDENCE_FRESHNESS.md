@@ -1,6 +1,6 @@
 # FECH.AI — SFJM Evidence Freshness
 
-**Status:** `CLAIM_ANCHOR_INVALIDATION_LEDGER / T3A_CORRECTED_CANDIDATE / EXACT_HEAD_REVIEWS_PENDING / DOCUMENTATION_ONLY`
+**Status:** `CLAIM_ANCHOR_INVALIDATION_LEDGER / T3A_V3_AFTER_BACKEND_REQUEST_CHANGES / NEW_EXACT_HEAD_REVIEWS_PENDING / DOCUMENTATION_ONLY`
 **Updated:** `2026-08-23`
 **Repository:** `wagnerjfjunior/fecha.ai`
 
@@ -167,17 +167,67 @@ Any corrective change to a material T3A artifact invalidates the prior exact-hea
 
 Do not preserve a partial PASS across head movement.
 
-Corrected v2 candidate body anchors now recorded in this change set:
+The next corrected exact head reached
+`bf8fb1f4ab043226de3c77763b9b425a13b0261e` (tree
+`7f5ad06ed27ae1fb724175dd5f30af1e7135010b`). A manually relayed integral
+Backend/Data review bound to that exact head read all ten files and returned:
+
+```text
+REQUEST_CHANGES
+B1: PASS
+B2: FAIL — direct prosrc writer regex is not transitive/authoritative
+B3: FAIL — rollback repeats the non-transitive writer check
+B4: PASS for the static DB transaction
+HIGH-1: DB locks end before external Auth mutation
+HIGH-2: positive exact routine/writer inventory required
+```
+
+This response is fresh evidence about `bf8fb1f...`, but every corrective code
+change after it invalidates the response as a final-head gate. It is not an
+AppSec result and authorizes no lifecycle transition.
+
+Corrected v3 candidate body/inventory anchors now recorded in this change set:
 
 ```text
 public.t3_prepare_admin_password_reset(uuid):
-  md5 6f2acb633adc81994394be52d9ca18b9
+  prosrc md5 91fc82deadc0d18e871e43a812c8d6dd
+
+public.t3_release_admin_password_reset_lease(uuid,uuid,uuid):
+  prosrc md5 a51c5b360c5d8a3684a97271460ec249
+
+public.t3_guard_admin_password_reset_lease():
+  prosrc md5 bd611e591aa2d951b178853f78caaa65
 
 T3-aware t1_guard_corretores_direct_compat_update():
-  md5 f2cbf4762b5f5b2d6c6eb56fcf0edc2b
+  prosrc md5 951da8a6ac6e934828f06ab1513778fa
 
 exact pre-T3A guard restored by rollback:
-  md5 99477024e337de5645dd042a30f8cf78
+  pg_get_functiondef md5 99477024e337de5645dd042a30f8cf78
+
+positive non-system routine baseline excluding the direct guard:
+  count 264 / inventory md5 b1f0919df8a0acaca7bbea2b928b0ffe
+
+authenticated-effective SECURITY DEFINER subset:
+  count 122 / inventory md5 7faa376a403c69239d9606559cf9c2db
+
+lease-table constraint shape:
+  unique lease_id + actor_user_id + target_user_id + non-null authority_time_id
+  fencing check uses transactional unique-index probes, not snapshot-only SELECT
+  prepare probes actor/target/team and rejects cross-role subject overlap
+
+authority-table ACL transition:
+  complete ACL fingerprints pinned before/after
+  service_role TRUNCATE removed only while T3A row fences are active
+  33-column ACL md5 pre-T3A 3fa731261b3d39ca5d046fd548c1bf53
+  33-column ACL md5 T3A d475edbb63410c2ab4b4c2be55ac270c
+
+complete authority-table RLS policy inventory:
+  count 7 / md5 1cb8f611f86778af0f60c78f2ffc70b0
+
+authority-table non-internal trigger inventory:
+  pre-T3A count 4 / T3A count 7
+  includes corretores critical audit + both T1 guards + times governance audit
+  authority-table rewrite rules count 0
 ```
 
 The final corrective commit/head and Git blob anchors must be resolved live;
@@ -195,7 +245,7 @@ times authenticated table UPDATE: present and therefore materially dependent on 
 times_update policy: exactly one permissive UPDATE policy with the recorded expression
 corretores_update policy: exactly one permissive UPDATE policy with identical strict USING/WITH CHECK helper
 RLS/FORCE on admins/corretores/times: present / enabled
-unexpected authenticated password writer besides self-service: absent
+direct literal authenticated password writer besides self-service: absent
 T3 context-key collision: absent
 ```
 
@@ -209,7 +259,10 @@ my_corretor_id() md5: c8f243d33d42837c46236625a74c3fb7
 my_empresa_id() md5: 7d7a73d22953d547a103f89c7b676906
 ```
 
-These are review anchors, not a permanent guarantee. The corrected migration must fail closed against material drift in the authority chain it relies upon.
+The old direct-literal result is not proof against wrappers, dynamic SQL or
+transitive callees. The v3 migration therefore pins the full positive routine
+inventory and enforces the password-state transition at the enabled T1/T3
+guards. These remain review anchors, not runtime proof.
 
 ## 7. Production Edge baseline
 
@@ -234,7 +287,7 @@ Invalidate after any Edge version/runtime change.
 At this transition, claim only the corrected candidate state and do not claim:
 
 ```text
-corrected T3A v2 candidate artifacts: RECORDED IN CHANGE SET
+corrected T3A v3 candidate artifacts: RECORDED IN CHANGE SET
 corrected final live PR head: MUST BE RESOLVED AFTER COMMIT
 T3A Backend/Data exact-head PASS: NOT ESTABLISHED
 T3A independent AppSec exact-head PASS: NOT ESTABLISHED

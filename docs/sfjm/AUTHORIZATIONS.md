@@ -67,11 +67,15 @@ B3 drift-safe rollback
 B4 T1 guard interoperability
 ```
 
-The v2 candidate records corrective implementations for B1-B4. This authority
-remains active only for publishing/reconciling those bounded artifacts in the
-existing PR, updating its description/evidence and completing the required
-read-only exact-head validation record. It does not turn a candidate statement
-into a specialist PASS or authorize the next lifecycle transition.
+The manually relayed Backend/Data review of exact head `bf8fb1f...` returned
+`REQUEST_CHANGES` for two material defects within B2/B3 and end-to-end B1/B4:
+the DB-to-Auth authority race and non-transitive writer detection. Correcting
+those findings with the v3 lease/fence and positive routine inventory remains
+inside this same active bounded authority. This authority remains active only
+for publishing/reconciling those artifacts in the existing PR, updating its
+description/evidence and completing the required exact-head validation record.
+It does not turn a candidate statement into specialist PASS or authorize the
+next lifecycle transition.
 
 This `ACTIVE_AUTHORITY` is for producing a corrected reviewable GitHub candidate in the existing T3A change set. It is not production mutation authority.
 

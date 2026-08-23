@@ -1,6 +1,6 @@
 # FECH.AI — SFJM Current Material State
 
-**Status:** `MATERIAL_RECORDED_STATE / T3A_CORRECTED_CANDIDATE / EXACT_HEAD_REVIEWS_PENDING / SECURITY_GO_DENIED / DOCUMENTATION_ONLY`
+**Status:** `MATERIAL_RECORDED_STATE / T3A_CORRECTED_AFTER_BACKEND_REQUEST_CHANGES / NEW_EXACT_HEAD_REVIEWS_PENDING / SECURITY_GO_DENIED / DOCUMENTATION_ONLY`
 **Updated:** `2026-08-23`
 **Repository:** `wagnerjfjunior/fecha.ai`
 
@@ -132,24 +132,34 @@ rollback that restores the exact prior boundary
 
 The initial candidate at PR head
 `45ad27668835b6458b52d2fb592cfa36b5589726` received material B1-B4
-findings. The same T3A change set now contains a corrected v2 candidate:
+findings. A later exact-head Backend/Data review of
+`bf8fb1f4ab043226de3c77763b9b425a13b0261e` was validly relayed manually and
+returned `REQUEST_CHANGES`: its HIGH-1 identified the DB-commit-to-Auth race;
+HIGH-2 rejected the direct `prosrc` writer regex as non-transitive. The same
+T3A change set now contains a corrected v3 candidate:
 
 ```text
-versioned criar-usuario Edge baseline + hardened reset path
-public.t3_prepare_admin_password_reset(uuid) migration
+versioned criar-usuario Edge baseline + hardened leased reset path
+caller-bound public.t3_prepare_admin_password_reset(uuid)
+durable reset lease + snapshot-independent unique-index probes + three authority-table fencing triggers
+service-role-only exact lease release after proven Auth success
+exact authority-table ACL pinning + service_role TRUNCATE revocation
+positive full non-system routine inventory instead of writer regex
 exact fail-closed trust-anchor preflight/postflight
-transaction-bound T1 direct-guard interoperability
+lease-bound T1 direct-guard interoperability
 revocation of authenticated UPDATE(must_change_password)
-exact drift-aware rollback to the pre-T3A T1 guard
+exact drift-aware rollback requiring an empty locked lease table
 B1-B4 evidence and coverage matrix
 ```
 
 Corrected candidate fingerprints:
 
 ```text
-T3 RPC: 6f2acb633adc81994394be52d9ca18b9
-T3-aware direct guard: f2cbf4762b5f5b2d6c6eb56fcf0edc2b
-rollback-restored pre-T3A direct guard: 99477024e337de5645dd042a30f8cf78
+T3 prepare prosrc: 91fc82deadc0d18e871e43a812c8d6dd
+T3 release prosrc: a51c5b360c5d8a3684a97271460ec249
+T3 fence guard prosrc: bd611e591aa2d951b178853f78caaa65
+T3-aware direct guard prosrc: 951da8a6ac6e934828f06ab1513778fa
+rollback-restored pre-T3A pg_get_functiondef: 99477024e337de5645dd042a30f8cf78
 ```
 
 These are candidate facts, not exact-head specialist PASS or runtime proof. The
@@ -207,34 +217,49 @@ reviewed hardened Edge first
 ### B2 — trust-anchor preflight: CANDIDATE ADDRESSED
 
 The migration holds the three authority-bearing tables in SHARE mode and
-requires exact roles, authority-column types, immediate unique
-identity indexes, RLS/FORCE, authenticated/anon grant surfaces, the single
-`corretores_update` and `times_update` policies with exact expressions,
-authority/helper fingerprints, enabled T1/audit triggers and absence of an
-unexpected password writer or T3 context-key collision.
+requires exact postgres/client-role attributes, client memberships and public
+schema CREATE/USAGE surface, authority-column types,
+immediate unique identity indexes, RLS/FORCE, grant/policy surfaces,
+authority/helper/legacy-writer fingerprints, exact complete authority-trigger
+inventory, the exact seven-policy inventory
+`1cb8f611f86778af0f60c78f2ffc70b0` and absence of authority-table rewrite
+rules. It
+replaces the negative writer regex with an exact positive inventory of every
+non-system routine except the separately-pinned direct T1 guard: 264 routines /
+`b1f0919df8a0acaca7bbea2b928b0ffe`, including 122 authenticated-effective
+SECURITY DEFINER routines / `7faa376a403c69239d9606559cf9c2db`.
 
 ### B3 — drift-safe rollback: CANDIDATE ADDRESSED
 
-Before any replacement, drop or grant, rollback holds the authority tables in
-SHARE mode and verifies the exact T3 RPC, T3-aware guard, required columns and
-identity indexes, `auth.uid()`, helper owners/security/config/ACLs, unchanged
-T1/audit triggers, policies and exact post-T3A grant surface. Drift stops the transaction.
-It restores guard MD5 `99477024e337de5645dd042a30f8cf78`, drops the proven
-T3 function without `IF EXISTS`, restores only the prior column grant and never
-rewrites user/Auth state.
+Before any replacement, drop or grant, rollback locks the three authority tables
+and the lease table in SHARE mode. An active/unresolved lease stops rollback. It
+verifies the exact lease table, prepare/release/fence functions, three fencing
+triggers, T3-aware guard, client roles, full positive routine inventory,
+T1/audit objects, policies and grants. It restores guard MD5
+`99477024e337de5645dd042a30f8cf78`, drops only proven T3 objects without
+`IF EXISTS`, restores only the prior column grant and never rewrites user/Auth
+state.
 
 ### B4 — T1 guard interoperability: CANDIDATE ADDRESSED
 
-The existing direct trigger remains enabled. After strict authorization and row
-locks, the T3 RPC binds a transaction-local context to
-`auth.uid():target.user_id:txid_current()`. The direct guard accepts only the
-postgres-effective, real-actor, exact-target, same-transaction transition from
-not-true to `must_change_password=true`, with other protected columns unchanged.
-The remaining T1 body is the pre-T3A contract.
+Both existing T1 triggers remain enabled. The RPC serializes `admins`,
+`corretores` and `times` with one fixed-order SHARE ROW EXCLUSIVE acquisition,
+creates a random durable lease with unique actor/target/team keys, and binds
+the T1 transition to
+`lease_id:auth.uid():target.user_id:txid_current()`. Three enabled T3 triggers
+use short insert/delete uniqueness probes so even a pre-lease MVCC snapshot
+cannot miss a conflicting actor/target/team fence. They keep those authority
+rows stable until the Auth call succeeds and the exact service-role release
+commits. Prepare uses the same probes to reject cross-role lease overlap.
+Because TRUNCATE bypasses row triggers, its exact authority-table
+privilege is removed from service_role while T3A is active. The direct guard denies every other
+password-state writer except the established active self-service true-to-false
+completion. Non-password T1 behavior remains established.
 
-No B1-B4 candidate statement is a specialist PASS. The next gate is review of
-one resolved final exact head; do not open another PR or carry the initial
-head's review outcome.
+The Backend/Data `REQUEST_CHANGES` on `bf8fb1f...` is historical material input,
+not closure for the changed head. No B1-B4 candidate statement is a specialist
+PASS. The next gate is a repeated Backend/Data review of one new resolved exact
+head; AppSec follows only after Backend/Data closure.
 
 ## 7. Material blockers
 
@@ -277,8 +302,9 @@ Those remain separate lifecycle/runtime decisions and require their applicable e
 ## 9. Semantic next action
 
 ```text
-Finalize the corrected B1-B4 candidate in the existing T3A change set, then run
-the two required reviews on one live-resolved exact head.
+Publish and reconcile the v3 correction in the existing T3A change set, repeat
+Backend/Data on the new live-resolved exact head, then run independent AppSec
+only after Backend/Data closure.
 ```
 
 Required sequence for the next conversation:
