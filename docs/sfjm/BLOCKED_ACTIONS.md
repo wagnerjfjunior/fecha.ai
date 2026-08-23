@@ -1,114 +1,110 @@
 # FECH.AI — SFJM Blocked Actions
 
-**Status:** `MATERIAL_BLOCKER_VIEW / FAIL_CLOSED / DOCUMENTATION_ONLY`  
-**Updated:** `2026-08-09`  
+**Status:** `MATERIAL_BLOCKER_VIEW / T3A_CORRECTION / FAIL_CLOSED / DOCUMENTATION_ONLY`  
+**Updated:** `2026-08-23`  
 **Repository:** `wagnerjfjunior/fecha.ai`
 
 ## 1. Authority
 
-This file is a thin material-blocker view. The principal durable operational state is:
+This is a thin blocker view. Principal durable operational state:
 
 ```text
 docs/sfjm/CURRENT_STATE.md
 ```
 
-Do not use this file as a frozen GitHub lifecycle snapshot.
+Resolve live lifecycle before acting.
 
-## 2. Product and security blocks
+## 2. Product/security blocks
 
-The following remain blocked unless exact material evidence and authority change their state:
+The following remain blocked unless material evidence and applicable Product Authority change their state:
 
 ```text
 Security Go
-F1-02 acceptance
 broad paid commercialization
-WDP increase without verified governance acceptance
-PR-03 implementation before material eligibility
-administrative password-state redesign without separate server-side contract
+F1-02 final acceptance
+T3A Ready
+T3A merge
+T3A Supabase production application
+T3A Edge production deployment
+T3A production adversarial/cross-tenant execution without exact runtime authority
+T3B frontend password cutover before T3A backend is safely applied/deployed/validated
+WDP increase without governance acceptance
 ```
 
-Controlled beta does not waive security, isolation, privacy or LGPD requirements.
+## 3. T3A blockers required in the existing change set
 
-## 3. PR-03 material predicates
-
-PR-03 remains blocked while one or more of these predicates is true:
+Do not create another T3A PR merely to address these blockers.
 
 ```text
-post-deploy functional proof is incomplete
-post-deploy runtime fail-closed proof is incomplete
-repository-wide direct-write/call-site inventory does not yet confirm that no required direct update remains
-EditarCorretorModal lacks a safe server-side disposition
-cutover observation has not yet confirmed that no legitimate flow depends on direct UPDATE
-controlled RPCs have not yet been individually inventoried and tested for continuity under direct-UPDATE revocation
+B1 — unsafe rollout order in the initial candidate
+B2 — incomplete trust-anchor preflight
+B3 — rollback not sufficiently drift-safe
+B4 — incompatibility with the live T1 direct-compatibility guard for gestor password-state transition
 ```
 
-Do not require legacy direct UPDATE denial as a circular precondition for creating the PR whose purpose is to revoke that direct UPDATE. Denial is acceptance evidence after the revocation change exists and is applied under separate authority.
+The corrected head must close all four before Ready can even be considered.
 
-## 4. Closed-cycle protection
+## 4. Explicitly prohibited workaround classes
 
-Without a new material invalidation event, do not:
+Do not resolve T3A by:
 
 ```text
-reopen completed PR-01 work
-reopen PR-02 / PR #108 merely to recover historical paperwork
-repeat exact-head gates merely for unanimity
-reapply or modify the narrow password-state RPC as part of continuity work
-create a closure PR solely to record another closure merge
+disabling or bypassing T1 triggers
+broadening authenticated UPDATE on public.corretores
+restoring client authority over must_change_password
+trusting client-provided empresa_id/role/flags/time/ownership
+using service_role identity as a substitute for auth.uid() authorization
+exposing T3 RPC to anon/PUBLIC/service_role
+normalizing production users to fit the code
+trial-and-error SQL in production
+mixing unrelated user-creation redesign into password-reset hardening
 ```
 
-Historical missing provenance must be handled under `NO_RETROACTIVE_GATE_REPLAY`.
+Any correction that makes the immediate test pass while weakening tenant isolation, authority derivation or rollback is `BLOCKING`, not an acceptable shortcut.
 
-## 5. Scope blocks for SFJM continuity work
+## 5. T1/T2 closed-cycle protection
 
-SFJM documentation work does not authorize changes to:
+Do not reopen T1/T2 as independent programs without a new material invalidation event.
+
+Current T3A work may inspect/revalidate the minimum T1/T2 objects necessary for compatibility, including the live T1 guards and the current App password-reset callsite.
+
+Do not:
 
 ```text
-frontend/runtime
-Supabase
-migrations
-RPC bodies
-Auth
-RLS
-policies
-grants
-roles
-data
-Edge Functions
-Vercel configuration
-GitHub Actions
-Builders
-production
-PR-03 implementation
-EditarCorretorModal implementation
+redo T2 status smoke merely for repetition
+rewrite T1 status authority rules to make T3 easier
+change App.jsx inside T3A
 ```
 
-## 6. Live lifecycle is not a material blocker by itself
+## 6. Lifecycle separation
 
-Do not persist blockers such as:
+The following remain distinct decisions:
 
 ```text
-PR is Draft
-main SHA is X
-head is Y
-mergeability is Z
+corrective GitHub commit
+exact-head specialist PASS
+Ready
+merge
+Supabase migration application
+Edge deployment
+runtime smoke
+rollback execution
+Security Go
 ```
 
-as durable blocker truth.
-
-Resolve lifecycle live. Record only the semantic consequence when it changes a material decision.
+One does not imply the next.
 
 ## 7. Removal rule
 
-Remove a material blocker only when evidence identifies, as applicable:
+Remove a blocker only when the record identifies:
 
 ```text
-claim resolved
-object/environment validated
-material authority
-validator/evidence
+exact corrected object/ref
+material evidence
+validator/gate
 residual risk
-rollback or containment
+rollback/containment
 new semantic next action
 ```
 
-A lifecycle transition alone does not remove a semantic security blocker unless it actually satisfies the blocker condition.
+A green build or mergeability result alone does not remove a security blocker.
