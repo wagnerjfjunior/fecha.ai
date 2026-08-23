@@ -1,75 +1,88 @@
 # FECH.AI — SFJM Current Product/Security Handoff
 
-**Status:** `THIN_HANDOFF_POINTER / MATERIAL_STATE_FIRST / LIVE_LIFECYCLE_RESOLUTION`  
-**Updated:** `2026-08-08`  
+**Status:** `THIN_HANDOFF_POINTER / T3A_ACTIVE_CORRECTION / LIVE_LIFECYCLE_RESOLUTION`  
+**Updated:** `2026-08-23`  
 **Repository:** `wagnerjfjunior/fecha.ai`
 
 ## 1. Purpose
 
-This file is a thin product/security continuity pointer. It must not duplicate the current material state, GitHub lifecycle, authorization ledger or evidence-freshness ledger.
+This is the thin product/security handoff pointer. It does not replace the material state, authority ledger, evidence-freshness ledger or live GitHub/Supabase evidence.
 
 ## 2. Read these authorities
 
-Material current state:
-
 ```text
 docs/sfjm/CURRENT_STATE.md
-```
+→ durable material product/security state
 
-Semantic next action:
-
-```text
 docs/sfjm/NEXT_SAFE_ACTION.md
-```
+→ current semantic continuation
 
-Material blockers:
-
-```text
 docs/sfjm/BLOCKED_ACTIONS.md
-```
+→ material blockers/prohibitions
 
-Authority/provenance:
-
-```text
 docs/sfjm/AUTHORIZATIONS.md
-```
+→ active/consumed authority boundaries
 
-Evidence validity/invalidation:
-
-```text
 docs/sfjm/EVIDENCE_FRESHNESS.md
-```
+→ evidence anchors and invalidation
 
-SFJM protocol and authority map:
-
-```text
 docs/sfjm/INDEX.md
+→ SFJM protocol
 ```
 
-## 3. Live lifecycle rule
+## 3. Current semantic handoff
+
+The current workstream is:
 
 ```text
-GitHub lifecycle → RESOLVE LIVE BEFORE ACTING
+T3A — Administrative Password Reset Multi-Tenant Authority Boundary
+STATE: ACTIVE CORRECTION
 ```
 
-Do not rely on this handoff for:
+The next conversation must continue the **existing** T3A change set rather than restart the design or open another PR for the same blocker set.
+
+Material blockers to carry forward:
 
 ```text
-current main SHA
-PR Open/Closed
-Draft/Ready
-current head/base
-checks
-reviews
-threads
-mergeability
-workflow status
-current deployment status
+B1 safe rollout ordering
+B2 trust-anchor preflight
+B3 drift-safe rollback
+B4 T1 guard interoperability
 ```
 
-Resolve those objects live and combine them with `MATERIAL_RECORDED_STATE` before any sensitive action.
+The current T3A candidate is not eligible for Ready/merge/deploy/application until those blockers are corrected and independently validated on the final exact head.
 
-## 4. Builder separation
+## 4. New-conversation reconstruction order
+
+```text
+1. resolve FECH.AI main live
+2. read docs/bootstrap/INDEX.md
+3. resolve SES roles needed for Backend/Data and AppSec
+4. read common Modus Operandi + governance/SFJM
+5. resolve the active T3A PR live
+6. because this 2026-08-23 SFJM transition is PR_HEAD_ONLY until merge, read the SFJM files from the active T3A head
+7. resolve current Supabase/Edge read-only anchors material to B1-B4
+8. continue from docs/sfjm/NEXT_SAFE_ACTION.md
+```
+
+Do not use this handoff as a frozen source for current main/head/check/review/deployment state.
+
+## 5. Anti-loop / anti-workaround handoff
+
+The next conversation must not:
+
+```text
+restart T1/T2 without a material invalidation event
+open another T3A PR merely because the head changes
+weaken T1 triggers to make T3A pass
+use broad grants/client authority as a shortcut
+apply production changes before final exact-head gates and separate runtime authorization
+leave the PR description materially stale after corrective implementation
+```
+
+The objective is one corrected T3A change set, one independently validated final head, one explicit rollout plan and one executable drift-safe rollback.
+
+## 6. Builder separation
 
 Specialist Builder continuity remains separate:
 
@@ -77,31 +90,19 @@ Specialist Builder continuity remains separate:
 docs/sfjm/handoffs/BUILDERS_CURRENT.md
 ```
 
-This product/security handoff must not silently overwrite Builder continuity, and Builder documentation movement must not force a product/security SFJM update without a material product/security event.
+No Builder mutation is implied by this handoff.
 
-## 5. No recursive closure
+## 7. Handoff acceptance
 
-A future documentation-only continuity merge that changes no material product/security meaning is self-closing.
-
-```text
-merge
-→ resolve new main live
-→ compare material meaning
-→ if unchanged: continue
-→ NO follow-up PR merely to record the merge
-```
-
-## 6. Handoff acceptance
-
-A new conversation must be able to:
+A successful new conversation should be able to reconstruct:
 
 ```text
-resolve main live
-read bootstrap
-read SFJM protocol
-read CURRENT_STATE
-resolve any live object needed for the next decision
-continue without stale continuity caused only by a newer SHA
+T1 applied and preserved
+T2 positive status cutover proven in bounded production smoke
+T3A not applied/deployed
+existing T3A candidate requires B1-B4 correction
+current corrective GitHub authority exists, but Ready/merge/production remain separate gates
+next action is correction + exact-head Backend/Data + independent AppSec validation
 ```
 
-If a handoff requires rewriting this file merely because GitHub lifecycle advanced, the handoff design has regressed.
+If those facts cannot be reconstructed from live evidence + SFJM, stop and declare the specific continuity gap rather than guessing.
