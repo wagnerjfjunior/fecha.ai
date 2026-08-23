@@ -1,12 +1,12 @@
 # FECH.AI — SFJM Evidence Freshness
 
-**Status:** `CLAIM_ANCHOR_INVALIDATION_LEDGER / DOCUMENTATION_ONLY`  
-**Updated:** `2026-08-21`  
+**Status:** `CLAIM_ANCHOR_INVALIDATION_LEDGER / T3A_TRANSITION / DOCUMENTATION_ONLY`  
+**Updated:** `2026-08-23`  
 **Repository:** `wagnerjfjunior/fecha.ai`
 
 ## 1. Freshness model
 
-Evidence freshness is evaluated by:
+Evaluate each material claim by:
 
 ```text
 claim
@@ -16,201 +16,239 @@ environment
 invalidation event
 ```
 
-Do not infer freshness or staleness from `main` movement alone.
+Do not infer freshness from `main` movement alone.
 
-Versioned, merged, deployed, applied and runtime-tested states are distinct evidence classes.
+```text
+VERSIONED != MERGED != APPLIED != DEPLOYED != RUNTIME_TESTED
+```
 
-## 2. Durable claims and anchors
-
-### PR-01 narrow RPC
+## 2. T1 status-boundary production anchor
 
 Claim:
 
 ```text
-public.marcar_senha_inicial_definida() exists as the F1-02 narrow self-service password-state RPC contract.
+T1 corretor status authority boundary is applied in Supabase production and remains a material dependency for T3A.
 ```
 
-Environment and migration anchor:
+Environment:
 
 ```text
 Supabase project: uobxxgzshrmbtjfdolxd
 Environment: production
-Migration: 20260727080929 / f1_02_password_state_rpc / APPLIED
-Evidence source: docs/security/evidence/2026-07-27-pr103-operational-closure-with-residual-risk.md
+Migration record:
+  version: 20260822192552
+  name: f1_02_harden_status_corretor_rpc
 ```
 
-Durable evidence boundary recorded by the completed PR-01 cycle for that exact project/environment includes:
+Fresh read-only production revalidation on 2026-08-23 established:
 
 ```text
-no caller-selected target identifier
-auth.uid() actor derivation
-authenticated positive smoke established
-immediate repeated-call idempotency established
+public.t3_prepare_admin_password_reset(uuid): ABSENT
+public.marcar_senha_inicial_definida() md5:
+  2a7b28d4bb6342a99d075c4d3c49af4d
+authenticated UPDATE columns on public.corretores:
+  apto_para_receber
+  ativo
+  must_change_password
+T1 triggers:
+  trg_t1_guard_corretores_authority_update: PRESENT / ENABLED
+  trg_t1_guard_corretores_direct_compat_update: PRESENT / ENABLED
 ```
 
-This PR-01 evidence is scoped to `uobxxgzshrmbtjfdolxd / production`. It must not be carried to another Supabase project or environment without fresh validation of the applicable catalog/runtime claim.
+Additional live function anchors observed during T3A red-team:
 
-Invalidate/revalidate the affected claim after a material RPC signature/body/owner/search_path/grant change, relevant Auth/RLS/policy/role change, project/environment replacement, contradictory runtime evidence or other security finding.
+```text
+t1_guard_corretores_authority_update() md5:
+  5e69ae5cb6717f634d758cfd5c1cd7a6
 
-### PR-02 frontend cutover
+t1_guard_corretores_direct_compat_update() md5:
+  99477024e337de5645dd042a30f8cf78
+
+audit_trail_log_corretores_critical_update() md5:
+  3fdaca39d55f348ca36f796023f3260b
+```
+
+Material T3A interaction:
+
+```text
+t1_guard_corretores_direct_compat_update()
+currently denies gestor-originated must_change_password transitions.
+```
+
+Invalidate/revalidate the affected T3A compatibility claim if either T1 guard body, trigger binding/enabled state, corretores ACL/policy, relevant role contract or T3A design changes.
+
+## 3. T2 frontend status-cutover anchor
 
 Claim:
 
 ```text
-the mandatory-password frontend cutover was implemented and merged with a static fail-closed contract.
+the active App.jsx status-edit flow routes ativo/apto_para_receber through atualizar_status_corretor rather than the prior direct status PATCH.
 ```
 
-Code anchor:
+GitHub code anchor at transition time:
 
 ```text
-src/App.jsx blob:
-2541813e6af44f4e8112296b7d9666df9320db5d
+main commit: 037232fe3da37a749ab980f783af92ff15e2baf2
+src/App.jsx blob: de7cf84f416409624533e3002c54d8432b35be61
 ```
 
-Merge anchor:
+Controlled positive runtime smoke evidence from the current operating session established:
 
 ```text
-f4f77e2a159ec190173dc771b189909f589e9f91
+apto isolated toggle + restoration: PASS
+ativo isolated toggle + restoration: PASS
+combined ativo/apto toggle + restoration: PASS
+unchanged field represented as null in isolated RPC calls: PASS
+RPC responses: ok=true
+captured direct status PATCH: ZERO
 ```
 
-Production deployment record:
+Evidence limitation:
 
 ```text
-GitHub deployment id: 5701587582
-environment: Production
-status: success
+HAR/runtime evidence was inspected in the operating conversation and is not yet a canonical repository artifact.
+This proves the bounded positive flows observed, not an exhaustive role/cross-tenant adversarial matrix.
 ```
 
-Evidence boundary:
+Invalidate/revalidate after material `src/App.jsx` blob change in the status flow, status RPC contract/ACL change, contradictory runtime evidence or relevant deployment replacement.
 
-```text
-IMPLEMENTED / MERGED / PRODUCTION DEPLOYMENT RECORDED
-!=
-POST-DEPLOY FUNCTIONAL PROOF COMPLETE
-```
-
-The deployment record proves a Production deployment event for the merge anchor. It does not prove the mandatory-password flow succeeded interactively or that runtime failure behavior was exercised.
-
-Invalidate/revalidate the affected frontend claim after relevant code/dependency/workflow change, deployment of a different code object for the decision being made, contradictory runtime evidence or a new material security finding.
-
-### PR-03 App.jsx bounded direct-write / call-site inventory
+## 4. Administrative password residual anchor
 
 Claim:
 
 ```text
-the current protected App.jsx source was freshly read in full and its direct-write call sites were inventoried as one bounded evidence component of the PR-03 eligibility question.
+the current App.jsx still contains a stale administrative post-reset direct write of must_change_password=false.
 ```
 
-Code anchor:
+Anchor:
 
 ```text
-repository: wagnerjfjunior/fecha.ai
-ref used for the audit: 51a15d5abdfb8ce62d5903272eb2855917a8d456
-path: src/App.jsx
-blob: 2541813e6af44f4e8112296b7d9666df9320db5d
-size: 327255 bytes
-lines: 5902
+src/App.jsx blob: de7cf84f416409624533e3002c54d8432b35be61
+callsite: EditarCorretorModal.redefinirSenha()
 ```
 
-Retrieval/coverage anchor:
+This remains a T3A/T3B dependency. It must not be interpreted as legitimate authority merely because the code exists.
+
+Invalidate after that callsite/blob changes.
+
+## 5. T3A initial candidate anchor and review invalidation
+
+Initial reviewed candidate object anchors:
 
 ```text
-fresh GitHub bounded line retrieval
-continuous coverage: 1–5902
-stable blob across accepted ranges: YES
-post-EOF probe from line 5903: EMPTY
-coverage: INTEGRAL_READ
+supabase/functions/criar-usuario/index.ts
+  blob: 84c6f23d115cdae966b377f76289a03e5940b45c
+
+supabase/migrations/20260822211600_t3_admin_password_reset_boundary.sql
+  blob: 6ab6b94433032d594236257c456a196fd2935b44
+
+supabase/rollback/20260822211600_t3_admin_password_reset_boundary_rollback.sql
+  blob: 25723b9d13af9d9a0df82772ca2c8c9cd8ab771c
+
+initial exact PR head reviewed:
+  d51340766c3eb8bc3fa0977d327ce229218aaaa3
 ```
 
-Durable bounded result:
+Review result on that initial candidate:
 
 ```text
-App.jsx direct-write/call-site inventory: ESTABLISHED
+REQUEST CHANGES
 
-active App.jsx direct PATCH paths confirmed in EditarCorretorModal:
-1. public.corretores -> ativo, apto_para_receber
-2. public.corretores -> must_change_password=false after administrative reset_password
-
-repository-wide direct-write/call-site inventory:
-NOT YET ESTABLISHED
+B1 safe rollout ordering: FAIL
+B2 trust-anchor preflight: FAIL
+B3 drift-safe rollback: FAIL
+B4 T1 guard interoperability: newly discovered BLOCKING
 ```
 
-Evidence record:
+Any corrective change to a material T3A artifact invalidates the prior exact-head gate by design. The next gate must resolve the new live head and read the final material files again.
+
+Do not preserve a partial PASS across head movement.
+
+## 6. Live trust-anchor observations used by T3A review
+
+Read-only production evidence on 2026-08-23 established, without PII:
 
 ```text
-docs/audits/architecture/2026-08-21-a1-a2-as-is-callsite-and-app-integral-read-baseline.md
+admins authenticated INSERT/UPDATE/DELETE: absent
+corretores authenticated broad UPDATE: absent
+corretores authority-bearing columns role/empresa_id/user_id/time_id/is_admin_local/is_gestor: not directly authenticated-updatable
+times authenticated table UPDATE: present and therefore materially dependent on RLS/policy semantics
+times_update policy: one permissive UPDATE policy observed
+RLS/FORCE on required authority tables: previously established and must be revalidated by final T3A preflight
 ```
 
-This result is static/versioned and bounded to the recovered App.jsx plus the other explicitly inspected A1/A2 sources. It does not prove exhaustive repository-wide direct-write absence, current production grants/RLS behavior or implementation authority.
-
-Invalidate/revalidate the App.jsx claim after a material `src/App.jsx` blob change, relevant administrative component/data-access path change, contradictory repository evidence or other material source change affecting the bounded inventory.
-
-## 3. Remaining unestablished material claims
+Observed helper fingerprints relevant to the current `times` policy trust chain:
 
 ```text
-post-deploy functional smoke: NOT ESTABLISHED
-post-deploy runtime fail-closed evidence: NOT ESTABLISHED
-refreshed repository-wide direct-write/call-site inventory confirming no required direct update remains: NOT ESTABLISHED
-safe server-side disposition for EditarCorretorModal: NOT ESTABLISHED
-cutover observation confirming no legitimate flow depends on direct UPDATE: NOT ESTABLISHED
-controlled RPC inventory and individual continuity testing for direct-UPDATE revocation: NOT ESTABLISHED
+is_root() md5: 465c04885d729e63f1a1d4458fc2a1b0
+is_admin_local() md5: 64b982da412f62c324aa2dde210eea0c
+my_corretor_id() md5: c8f243d33d42837c46236625a74c3fb7
+my_empresa_id() md5: 7d7a73d22953d547a103f89c7b676906
 ```
 
-The App.jsx inventory is no longer an evidence gap. The broader repository-wide predicate remains open until its source universe, enumeration/search method, coverage and limitations are explicitly established.
+These are review anchors, not a permanent guarantee. The corrected migration must fail closed against material drift in the authority chain it relies upon.
 
-These remaining items are evidence/disposition gaps, not proof of failure beyond the bounded claim stated.
+## 7. Production Edge baseline
 
-## 4. Historical provenance claims
-
-Missing historical gate/authority provenance must be represented as:
+At transition time:
 
 ```text
-GATE_PROVENANCE_NOT_RECORDED
-AUTHORITY_PROVENANCE_NOT_RECORDED
+slug: criar-usuario
+version: 17
+status: ACTIVE
+verify_jwt: false
+ezbr_sha256: 679643d42dc944cc810580807f4b1a2f5a78ff30a0ce0d67f0713817b2eeb47f
 ```
 
-unless affirmative canonical evidence supports a stronger classification.
+The live v17 code validates the Bearer manually, but its administrative reset path changes the Auth password without setting `must_change_password=true` server-side.
 
-These provenance gaps do not invalidate later independently established lifecycle facts by themselves.
+This fact is the reason rollout order is security-sensitive.
 
-## 5. Invalidation rules
+Invalidate after any Edge version/runtime change.
 
-Material invalidation events include, within the affected scope:
+## 8. Unestablished claims
+
+At this transition, do not claim:
 
 ```text
-code/object change relevant to the claim
-dependency or workflow change relevant to the claim
-RPC contract/ACL/security-boundary change
-environment/deployment change relevant to the claim
+corrected T3A candidate exists: NOT YET ESTABLISHED
+T3A Backend/Data exact-head PASS: NOT ESTABLISHED
+T3A independent AppSec exact-head PASS: NOT ESTABLISHED
+T3A applied to Supabase production: NO
+hardened T3A Edge deployed: NO
+T3A positive/negative/cross-tenant production smoke: NOT EXECUTED
+T3A rollback runtime-tested: NOT EXECUTED
+T3B frontend password cutover: NOT IMPLEMENTED
+Security Go: DENIED
+```
+
+## 9. Invalidation rules
+
+Material invalidation events include:
+
+```text
+material code/object change
+RPC/ACL/policy/grant/trigger change
+Edge runtime/version change
+relevant App frontend change
 contradictory runtime evidence
-new material security finding
-material product/security decision changing acceptance
+new security finding
+change in product authority contract
 ```
 
 Not invalidation events by themselves:
 
 ```text
-main SHA changes only
-documentation-only closure merge
-unrelated Builder documentation merge
+main SHA movement only
+documentation-only lifecycle movement
 new conversation
 specialist change
-request to repeat an unchanged gate
+request to repeat an unchanged exact-head gate
 ```
 
-A documentation-only change that preserves an anchored code/runtime object does not invalidate that object's evidence merely because the repository tip advanced.
+## 10. AUDIT_LOOP_BLOCKED
 
-## 6. AUDIT_LOOP_BLOCKED
-
-A request to repeat an existing validation must identify:
-
-```text
-nominal gate or claim
-prior anchor
-exact changed evidence
-triggered invalidation rule
-minimum required revalidation scope
-```
+A repeated audit must identify the prior anchor, exact changed evidence and affected proof obligation.
 
 Without a material invalidation event:
 
@@ -218,8 +256,4 @@ Without a material invalidation event:
 AUDIT_LOOP_BLOCKED
 ```
 
-## 7. Update rule
-
-Update this ledger when a durable claim, anchor, environment boundary or invalidation condition changes materially.
-
-Do not update it merely to keep a current `main` SHA, PR state or other volatile lifecycle snapshot synchronized.
+After a material T3A corrective commit, revalidate only the affected exact-head T3A gate and its dependencies; do not reopen unrelated completed work.
