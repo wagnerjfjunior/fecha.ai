@@ -1,6 +1,6 @@
 # FECH.AI — SFJM Authorizations
 
-**Status:** `AUTHORITY_PROVENANCE_LEDGER / T3A_V4_SAME_PR_CORRECTIVE_AUTHORITY_ACTIVE / POST_READY_MATERIAL_INVALIDATION / FAIL_CLOSED / DOCUMENTATION_ONLY`
+**Status:** `AUTHORITY_PROVENANCE_LEDGER / PR127_MERGED / EDGE_FIRST_PARTIALLY_CONSUMED / POST_MERGE_AUDIT_V5_GITHUB_AUTHORITY_ACTIVE / PRODUCTION_GATES_SEPARATE`
 **Updated:** `2026-08-24`
 **Repository:** `wagnerjfjunior/fecha.ai`
 
@@ -34,7 +34,47 @@ perform read-only Backend/Data + AppSec-oriented review
 
 Those consumed authorities do not authorize Ready, merge, Supabase application or Edge deployment.
 
-## 3. ACTIVE_AUTHORITY — T3A corrective GitHub work
+## 3. ACTIVE_AUTHORITY — post-merge audit compatibility GitHub correction
+
+PR #127 was ultimately approved on exact head
+`a5c92617f372599a234c0147aad13a90649348d7`, merged as
+`610bdd3c4b5ab208f7ffe177d9d32a2184aa9d87`, and its exact Edge was deployed as
+production `criar-usuario` v18 under later separate authorities. The authorized
+fail-before-Auth call proved the security ordering but exposed a new runtime
+finding: live `public.audit_logs` requires legacy NOT NULL fields `acao` and
+`entidade`, while the v18 Edge insert supplied only the modern fields.
+
+On `2026-08-24`, after the exact next action and its limits were stated,
+Product Authority authorized that next action. Durable bounded interpretation:
+
+```text
+Repository: wagnerjfjunior/fecha.ai
+Corrective base: main 610bdd3c4b5ab208f7ffe177d9d32a2184aa9d87
+Corrective branch: security/t3a-audit-schema-compatibility
+Authorized GitHub-side work only:
+  correct criar-usuario audit compatibility while preserving v4 authority
+  pin the complete live audit relation in T3A migration/postflight
+  revoke authenticated direct audit INSERT and preserve SELECT
+  make rollback verify and restore the exact legacy audit grant/state
+  update directly-related evidence and SFJM continuity
+  create one new Draft PR from merged main for this post-merge runtime finding
+  update that Draft PR description to the final exact head
+  perform read-only validation and prepare exact-head manual specialist bundles
+Required gates:
+  Backend/Data static exact-head review
+  independent AppSec static exact-head review only after Backend/Data closure
+  stop in Draft before Ready
+```
+
+This new Draft PR is necessary because PR #127 is already merged. It is not an
+alternate T3A PR for B1-B4, does not reopen those closed findings, and is not a
+workaround. The material invalidation is the post-merge audit-schema runtime
+evidence.
+
+This authority does **not** authorize a migration, further Edge deployment,
+runtime request, Auth/data mutation, rollback, Ready, merge or Security Go.
+
+## 4. CONSUMED_AUTHORITY — PR #127 correction, reviews and merge
 
 On 2026-08-23 Product Authority directed that the identified T3A problems be corrected, with the stated final objective of a secure app/database implementation and a functional rollback, while explicitly requiring governance, DevSecOps, specialist validation, deep/red-team analysis, no workarounds and avoidance of PR loops.
 
@@ -43,7 +83,7 @@ Durable bounded interpretation:
 ```text
 Repository: wagnerjfjunior/fecha.ai
 Workstream: T3A administrative password-reset multi-tenant authority boundary
-Existing change set: continue the current T3A branch/PR; do not open another T3A PR merely for the same blocker set
+Existing change set at that time: continue the current T3A branch/PR; do not open another T3A PR merely for the same blocker set
 Authorized GitHub-side work:
   correct Edge/migration/rollback/evidence artifacts required to resolve material T3A blockers
   update directly-related T3A/SFJM documentation needed for accurate continuity
@@ -83,8 +123,8 @@ manual response SHA-256:
   1ab2b39d52536b0ba92cd25df4d91b808f25abd08be0c5de72146113c7cda544
 ```
 
-Correcting all of these findings in the same PR remains inside this active
-bounded authority. It covers publishing/reconciling the corrected artifacts,
+Correcting all of these findings in the same PR was inside that bounded
+authority. It covered publishing/reconciling the corrected artifacts,
 updating the existing PR description/evidence and completing the required
 exact-head validation record. It does not turn a candidate statement into
 specialist PASS or authorize the next lifecycle transition.
@@ -108,14 +148,14 @@ preparation RPC could be called directly, creating durable fenced state without
 the Edge Auth password mutation or a caller-accessible release. The PR was
 returned to Draft and was not merged.
 
-This is a material invalidation event. The prior exact-head specialist approvals
-and the unconsumed merge transition cannot be carried to a changed v4 head. The
-existing active corrective authority covers the same-PR Edge-proof, migration,
-rollback, evidence and SFJM correction required to close that finding. A new
-exact-head Backend/Data review followed by independent AppSec is required; a new
-Ready/merge transition remains separate after those gates.
+That material invalidation caused a same-PR v4 correction. Integral manual
+Backend/Data and independent AppSec reviews both returned `APPROVE` with no
+findings on exact head `a5c92617f372599a234c0147aad13a90649348d7` / tree
+`87872aac22b36437b7fb66f3614905e8df94f5ee`. Product Authority then explicitly
+authorized merge of PR #127, and that authority was consumed by merge commit
+`610bdd3c4b5ab208f7ffe177d9d32a2184aa9d87`.
 
-This `ACTIVE_AUTHORITY` is for producing a corrected reviewable GitHub candidate in the existing T3A change set. It is not production mutation authority.
+No Supabase migration or Edge deployment was implied by that merge authority.
 
 ### Temporary specialist execution channel — manual while Router is frozen
 
@@ -146,7 +186,20 @@ application_security -> application-security-assurance-specialist
 Manual specialist output must identify the repository, PR, exact head, material
 files read and verdict. It cannot authorize Ready, merge or production.
 
-## 4. CONSUMED_AUTHORITY — SFJM new-conversation transition
+### Consumed post-merge rollout authorities
+
+Product Authority later authorized the Edge-first rollout separately from the
+T3A migration and smoke. The exact reviewed Edge was deployed as v18; migration
+remained unapplied. Product Authority then authorized temporary use of the
+authenticated session for one fail-before-Auth call against a nonexistent or
+dedicated safe target. Because the browser appeared frozen, three UI submissions
+were emitted; all three failed closed and none reached an Auth update. This
+bounded runtime authority is consumed and does not authorize another call.
+
+The audit POST 400 observed in those calls is the material event supporting the
+new active GitHub-only authority in §3. It is not authority to deploy its fix.
+
+## 5. CONSUMED_AUTHORITY — SFJM new-conversation transition
 
 On 2026-08-23 Product Authority explicitly requested use of SFJM to transition the work to a new conversation.
 
@@ -154,15 +207,15 @@ This authorizes the bounded documentation update necessary to preserve current T
 
 The transition documentation authority is consumed by publishing these SFJM updates. It does not create a new runtime/lifecycle permission.
 
-## 5. Actions still requiring separate exact authority
+## 6. Actions still requiring separate exact authority
 
 The current corrective authority does **not** authorize these transitions by implication:
 
 ```text
-mark PR Ready
-merge PR
+mark the new corrective PR Ready
+merge the new corrective PR
 apply T3A migration to Supabase production
-deploy criar-usuario Edge to production
+deploy another criar-usuario Edge version to production
 execute production data normalization
 execute destructive/adversarial production testing
 execute rollback
@@ -174,7 +227,7 @@ WDP change
 
 When applicable, each must be separately authorized after its prerequisite evidence/gate is established.
 
-## 6. Production-testing boundary
+## 7. Production-testing boundary
 
 Read-only production evidence gathering remains permitted when required by the active review/correction and when it does not expose PII unnecessarily.
 
@@ -186,7 +239,7 @@ no production-as-lab
 no cross-tenant mutation test without explicit bounded authority
 ```
 
-## 7. Historical authority provenance
+## 8. Historical authority provenance
 
 Where later lifecycle is independently established but exact historical authority evidence was not canonically recovered, use:
 
@@ -196,7 +249,7 @@ AUTHORITY_PROVENANCE_NOT_RECORDED
 
 Do not rewrite that as `UNAUTHORIZED` without affirmative evidence, and do not replay historical gates unless current safety materially requires it.
 
-## 8. Update rule
+## 9. Update rule
 
 Update this ledger only when durable authority meaning changes.
 

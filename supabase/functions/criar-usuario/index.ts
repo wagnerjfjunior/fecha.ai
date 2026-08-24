@@ -1,6 +1,6 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 
-// FECH.AI — T3A-v4
+// FECH.AI — T3A-v5
 // reset_password authority is derived server-side by public.t3_prepare_admin_password_reset().
 // Before that caller-JWT RPC can mint a durable lease, the Edge must obtain an
 // opaque, one-time proof from a service-role-only issuer. The proof establishes
@@ -9,7 +9,8 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 // remain the exclusive actor/tenant/role authority. The durable lease then
 // fences the reviewed authority rows until the Auth mutation has
 // completed and the service-role client releases that exact lease.
-// The user-creation path below intentionally preserves the v17 behavior in this change.
+// The user-creation path below preserves the v17 authority semantics. Its audit
+// insert shares the same live legacy/modern audit_logs compatibility contract.
 
 // ─── CORS restrito ao domínio da app ─────────────────────────────────────────
 const ALLOWED_ORIGINS = [
@@ -60,14 +61,44 @@ function normalizeUuid(value: unknown): string | null {
     : null
 }
 
+function normalizeInet(value: string | null): string | null {
+  const candidate = value?.trim() ?? ''
+  if (!candidate) return null
+
+  const ipv4Parts = candidate.split('.')
+  if (
+    ipv4Parts.length === 4 &&
+    ipv4Parts.every((part) => /^\d{1,3}$/.test(part) && Number(part) <= 255)
+  ) {
+    return ipv4Parts.map((part) => String(Number(part))).join('.')
+  }
+
+  // URL parsing gives a conservative IPv6 syntax check without accepting a
+  // hostname. Preserve the original address string for PostgreSQL inet.
+  if (candidate.includes(':') && /^[0-9a-f:.]+$/i.test(candidate)) {
+    try {
+      new URL(`http://[${candidate}]`)
+      return candidate
+    } catch {
+      return null
+    }
+  }
+
+  return null
+}
+
 Deno.serve(async (req: Request) => {
   const cors = getCorsHeaders(req)
 
   if (req.method === 'OPTIONS') return new Response('ok', { headers: cors })
 
   // ─── Rate limiting ────────────────────────────────────────────────────────
-  const clientIp = req.headers.get('x-forwarded-for') ?? req.headers.get('x-real-ip') ?? 'unknown'
-  if (!checkRateLimit(clientIp)) {
+  const forwardedFor = req.headers.get('x-forwarded-for')
+  const rawClientIp = (
+    forwardedFor?.split(',')[0] ?? req.headers.get('x-real-ip') ?? ''
+  ).trim() || null
+  const clientIp = normalizeInet(rawClientIp)
+  if (!checkRateLimit(rawClientIp ?? 'unknown')) {
     return json({ error: 'Muitas requisições. Aguarde 1 minuto.' }, 429, cors)
   }
 
@@ -112,23 +143,37 @@ Deno.serve(async (req: Request) => {
       .single()
 
     // ═══════════════════════════════════════════════════════════════════════
-    // AÇÃO: RESET DE SENHA — T3A-v4 / MULTI-TENANT AUTHORITY BOUNDARY
+    // AÇÃO: RESET DE SENHA — T3A-v5 / MULTI-TENANT AUTHORITY BOUNDARY
     // ═══════════════════════════════════════════════════════════════════════
     if (body.action === 'reset_password') {
       const logId = `audit-${Date.now()}-${Math.random().toString(36).slice(2)}`
-      await admin.from('audit_logs').insert({
+      const { user_id: requestedUserId, password } = body
+      const userId = normalizeUuid(requestedUserId)
+      const auditAttempt = { status: 'attempt', action: 'reset_password' }
+      const { error: auditInsertError } = await admin.from('audit_logs').insert({
         id: logId,
         empresa_id: callerProfile?.empresa_id ?? null,
         action: 'password_reset_attempt',
         actor_id: caller.id,
         actor_email: caller.email,
+        target_user_id: userId,
         target_email: null,
         ip_address: clientIp,
-        payload: { status: 'attempt', action: 'reset_password' },
+        payload: auditAttempt,
+        ator_user_id: caller.id,
+        ator_corretor_id: callerProfile?.id ?? null,
+        acao: 'password_reset_attempt',
+        entidade: 'auth.users',
+        entidade_id: userId,
+        depois: auditAttempt,
+        ip: rawClientIp,
       })
 
-      const { user_id: requestedUserId, password } = body
-      const userId = normalizeUuid(requestedUserId)
+      // A reset without its server-authored audit anchor is not allowed to
+      // reach proof issuance, caller preparation or the external Auth write.
+      if (auditInsertError) {
+        return json({ error: 'Não foi possível concluir a redefinição de senha.' }, 500, cors)
+      }
 
       if (!userId || typeof password !== 'string' || password.length < 8) {
         return json({ error: 'user_id e senha temporária de no mínimo 8 caracteres são obrigatórios.' }, 400, cors)
@@ -159,7 +204,10 @@ Deno.serve(async (req: Request) => {
 
       if (edgeProofError || !edgeProofId) {
         await admin.from('audit_logs')
-          .update({ payload: { status: 'edge_proof_unavailable', action: 'reset_password' } })
+          .update({
+            payload: { status: 'edge_proof_unavailable', action: 'reset_password' },
+            depois: { status: 'edge_proof_unavailable', action: 'reset_password' },
+          })
           .eq('id', logId)
 
         // The rollout is Edge-first. While the proof issuer is absent, or if
@@ -206,7 +254,10 @@ Deno.serve(async (req: Request) => {
         !leaseId
       ) {
         await admin.from('audit_logs')
-          .update({ payload: { status: 'denied', action: 'reset_password' } })
+          .update({
+            payload: { status: 'denied', action: 'reset_password' },
+            depois: { status: 'denied', action: 'reset_password' },
+          })
           .eq('id', logId)
 
         // Deliberately generic: do not reveal whether a target exists in
@@ -238,7 +289,10 @@ Deno.serve(async (req: Request) => {
         authData.user.id !== userId
       ) {
         await admin.from('audit_logs')
-          .update({ payload: { status: 'auth_result_unresolved', action: 'reset_password' } })
+          .update({
+            payload: { status: 'auth_result_unresolved', action: 'reset_password' },
+            depois: { status: 'auth_result_unresolved', action: 'reset_password' },
+          })
           .eq('id', logId)
 
         // A transport/runtime/Auth error can be ambiguous. Keep the durable
@@ -270,7 +324,10 @@ Deno.serve(async (req: Request) => {
 
       if (releaseError || released !== true) {
         await admin.from('audit_logs')
-          .update({ payload: { status: 'lease_release_unresolved', action: 'reset_password' } })
+          .update({
+            payload: { status: 'lease_release_unresolved', action: 'reset_password' },
+            depois: { status: 'lease_release_unresolved', action: 'reset_password' },
+          })
           .eq('id', logId)
 
         // Auth success was proven before release was attempted. A lost release
@@ -280,7 +337,10 @@ Deno.serve(async (req: Request) => {
       }
 
       await admin.from('audit_logs')
-        .update({ payload: { status: 'success', user_id: authData.user.id } })
+        .update({
+          payload: { status: 'success', user_id: authData.user.id },
+          depois: { status: 'success', user_id: authData.user.id },
+        })
         .eq('id', logId)
 
       return json({ ok: true, user_id: authData.user.id }, 200, cors)
@@ -298,7 +358,11 @@ Deno.serve(async (req: Request) => {
     }
 
     const logId = `audit-${Date.now()}-${Math.random().toString(36).slice(2)}`
-    await admin.from('audit_logs').insert({
+    const userCreationAuditAttempt = {
+      status: 'attempt',
+      action: body.action ?? 'create',
+    }
+    const { error: auditInsertError } = await admin.from('audit_logs').insert({
       id: logId,
       empresa_id: callerProfile?.empresa_id ?? null,
       action: 'user_creation_attempt',
@@ -306,8 +370,20 @@ Deno.serve(async (req: Request) => {
       actor_email: caller.email,
       target_email: body.email ?? null,
       ip_address: clientIp,
-      payload: { status: 'attempt', action: body.action ?? 'create' },
+      payload: userCreationAuditAttempt,
+      ator_user_id: caller.id,
+      ator_corretor_id: callerProfile?.id ?? null,
+      acao: 'user_creation_attempt',
+      entidade: 'auth.users',
+      depois: userCreationAuditAttempt,
+      ip: rawClientIp,
     })
+
+    // Preserve the established creation authority rules while preventing an
+    // administrative Auth mutation from proceeding without an audit anchor.
+    if (auditInsertError) {
+      return json({ error: 'Não foi possível iniciar a criação do usuário.' }, 500, cors)
+    }
 
     const { nome, email, is_admin_local_novo, is_gestor_novo, time_id } = body
     const password = body.password ?? body.senha
@@ -373,7 +449,10 @@ Deno.serve(async (req: Request) => {
     })
     if (authError) {
       await admin.from('audit_logs')
-        .update({ payload: { status: 'failed', error: authError.message } })
+        .update({
+          payload: { status: 'failed', error: authError.message },
+          depois: { status: 'failed', error: authError.message },
+        })
         .eq('id', logId)
       throw authError
     }
@@ -398,14 +477,20 @@ Deno.serve(async (req: Request) => {
       // Rollback: remover do auth se o insert no banco falhar
       await admin.auth.admin.deleteUser(authData.user.id)
       await admin.from('audit_logs')
-        .update({ payload: { status: 'rollback', error: dbError.message } })
+        .update({
+          payload: { status: 'rollback', error: dbError.message },
+          depois: { status: 'rollback', error: dbError.message },
+        })
         .eq('id', logId)
       throw dbError
     }
 
     // ─── Atualizar log com sucesso ─────────────────────────────────────────
     await admin.from('audit_logs')
-      .update({ payload: { status: 'success', user_id: authData.user.id } })
+      .update({
+        payload: { status: 'success', user_id: authData.user.id },
+        depois: { status: 'success', user_id: authData.user.id },
+      })
       .eq('id', logId)
 
     return json({ ok: true, user_id: authData.user.id }, 200, cors)

@@ -1,4 +1,4 @@
--- FECH.AI — T3A-v4
+-- FECH.AI — T3A-v5
 -- Administrative Password Reset Multi-Tenant Authority Boundary
 --
 -- Safe rollout after a separate production authorization:
@@ -20,10 +20,16 @@
 
 begin;
 
--- Hold authority-bearing table data and table DDL stable for the complete
--- preflight -> mutation -> postflight transaction. SHARE permits concurrent
--- reads but blocks ordinary writes while the exact boundary is being changed.
-lock table public.admins, public.corretores, public.times in share mode;
+-- Hold authority-bearing data/DDL and the server-authored audit relation stable
+-- for the complete preflight -> mutation -> postflight transaction. Existing
+-- authority writers can reach audit_logs through their audit triggers, so keep
+-- the established authority -> audit relation-lock direction. Edge audit and
+-- proof calls are separate committed HTTP transactions and hold no reciprocal
+-- relation lock. SHARE permits reads but blocks ordinary writes.
+lock table public.admins,
+           public.corretores,
+           public.times,
+           public.audit_logs in share mode;
 
 -- =============================================================================
 -- 1. EXACT FAIL-CLOSED TRUST-ANCHOR PREFLIGHT
@@ -206,7 +212,8 @@ begin
   if pg_catalog.to_regprocedure('auth.uid()') is null
      or pg_catalog.to_regclass('public.admins') is null
      or pg_catalog.to_regclass('public.corretores') is null
-     or pg_catalog.to_regclass('public.times') is null then
+     or pg_catalog.to_regclass('public.times') is null
+     or pg_catalog.to_regclass('public.audit_logs') is null then
     raise exception 'T3A_PREFLIGHT_REQUIRED_OBJECT_MISSING';
   end if;
 
@@ -258,8 +265,8 @@ begin
   end if;
 
   if exists (
-    select 1
-    from pg_catalog.pg_proc as p
+       select 1
+       from pg_catalog.pg_proc as p
     where lower(
       coalesce(p.prosrc,'') || E'\n' || coalesce(p.prosqlbody::text,'')
     ) like '%fechai.t3_admin_password_reset_context%'
@@ -448,6 +455,185 @@ begin
            or c.relforcerowsecurity is distinct from true)
   ) then
     raise exception 'T3A_PREFLIGHT_RLS_FORCE_DRIFT';
+  end if;
+
+  -- Pin the complete live audit relation consumed by criar-usuario before any
+  -- proof, lease or Auth mutation. This closes the runtime gap where legacy
+  -- NOT NULL columns existed but were absent from the reviewed Edge insert.
+  with audit_meta as (
+    select c.relkind::text as relkind,
+           c.relpersistence::text as relpersistence,
+           pg_catalog.pg_get_userbyid(c.relowner) as owner_name,
+           c.relrowsecurity,
+           c.relforcerowsecurity
+    from pg_catalog.pg_class as c
+    where c.oid='public.audit_logs'::regclass
+  ),
+  audit_acl_items as (
+    select
+      case when acl.grantee=0 then 'PUBLIC'
+           else pg_catalog.pg_get_userbyid(acl.grantee) end as grantee,
+      pg_catalog.pg_get_userbyid(acl.grantor) as grantor,
+      acl.privilege_type,
+      acl.is_grantable
+    from pg_catalog.pg_class as c
+    cross join lateral pg_catalog.aclexplode(
+      coalesce(c.relacl,pg_catalog.acldefault('r',c.relowner))
+    ) as acl
+    where c.oid='public.audit_logs'::regclass
+  ),
+  audit_columns as (
+    select a.attnum,
+           a.attname,
+           pg_catalog.format_type(a.atttypid,a.atttypmod) as data_type,
+           a.attnotnull,
+           coalesce(pg_catalog.pg_get_expr(d.adbin,d.adrelid),'') as default_expr,
+           coalesce((
+             select pg_catalog.string_agg(
+               pg_catalog.format(
+                 '%s>%s:%s:%s',
+                 case when acl.grantee=0 then 'PUBLIC'
+                      else pg_catalog.pg_get_userbyid(acl.grantee) end,
+                 pg_catalog.pg_get_userbyid(acl.grantor),
+                 acl.privilege_type,
+                 acl.is_grantable
+               ),
+               ',' order by acl.grantee,acl.grantor,
+                            acl.privilege_type,acl.is_grantable
+             )
+             from pg_catalog.aclexplode(a.attacl) as acl
+           ),'') as acl_text
+    from pg_catalog.pg_attribute as a
+    left join pg_catalog.pg_attrdef as d
+      on d.adrelid=a.attrelid and d.adnum=a.attnum
+    where a.attrelid='public.audit_logs'::regclass
+      and a.attnum>0 and not a.attisdropped
+  ),
+  audit_constraints as (
+    select c.conname,
+           c.contype::text as contype,
+           pg_catalog.pg_get_constraintdef(c.oid,true) as definition
+    from pg_catalog.pg_constraint as c
+    where c.conrelid='public.audit_logs'::regclass
+  ),
+  audit_indexes as (
+    select i.indexrelid::regclass::text as index_name,
+           pg_catalog.pg_get_indexdef(i.indexrelid) as definition
+    from pg_catalog.pg_index as i
+    where i.indrelid='public.audit_logs'::regclass
+  ),
+  audit_policies as (
+    select p.polname,
+           p.polcmd,
+           p.polpermissive,
+           coalesce((
+             select pg_catalog.string_agg(
+               case when role_item.role_oid=0 then 'PUBLIC'
+                    else pg_catalog.pg_get_userbyid(role_item.role_oid) end,
+               ',' order by role_item.role_oid
+             )
+             from pg_catalog.unnest(p.polroles) as role_item(role_oid)
+           ),'') as roles,
+           coalesce(pg_catalog.pg_get_expr(p.polqual,p.polrelid),'') as using_expr,
+           coalesce(
+             pg_catalog.pg_get_expr(p.polwithcheck,p.polrelid),''
+           ) as check_expr
+    from pg_catalog.pg_policy as p
+    where p.polrelid='public.audit_logs'::regclass
+  ),
+  audit_parts as (
+    select
+      (select pg_catalog.concat_ws(
+         '|','metadata',relkind,relpersistence,owner_name,
+         relrowsecurity,relforcerowsecurity
+       ) from audit_meta) as metadata_part,
+      (select pg_catalog.concat_ws(
+         '|','acl',pg_catalog.count(*),
+         pg_catalog.md5(pg_catalog.string_agg(
+           pg_catalog.format(
+             '%s>%s:%s:%s',grantee,grantor,privilege_type,is_grantable
+           ),
+           ',' order by grantee,grantor,privilege_type,is_grantable
+         ))
+       ) from audit_acl_items) as acl_part,
+      (select pg_catalog.concat_ws(
+         '|','columns',pg_catalog.count(*),
+         pg_catalog.md5(pg_catalog.string_agg(
+           pg_catalog.format(
+             '%s|%s|%s|%s|%s',
+             attnum,attname,data_type,attnotnull,default_expr
+           ),
+           E'\n' order by attnum
+         ))
+       ) from audit_columns) as columns_part,
+      (select pg_catalog.concat_ws(
+         '|','column_acl',pg_catalog.count(*),
+         pg_catalog.md5(pg_catalog.string_agg(
+           pg_catalog.format('%s.%s|%s',attnum,attname,acl_text),
+           E'\n' order by attnum
+         ))
+       ) from audit_columns) as column_acl_part,
+      (select pg_catalog.concat_ws(
+         '|','constraints',pg_catalog.count(*),
+         pg_catalog.md5(pg_catalog.string_agg(
+           pg_catalog.format('%s|%s|%s',conname,contype,definition),
+           E'\n' order by conname
+         ))
+       ) from audit_constraints) as constraints_part,
+      (select pg_catalog.concat_ws(
+         '|','indexes',pg_catalog.count(*),
+         pg_catalog.md5(pg_catalog.string_agg(
+           pg_catalog.format('%s|%s',index_name,definition),
+           E'\n' order by index_name
+         ))
+       ) from audit_indexes) as indexes_part,
+      (select pg_catalog.concat_ws(
+         '|','policies',pg_catalog.count(*),
+         pg_catalog.md5(pg_catalog.string_agg(
+           pg_catalog.concat_ws(
+             '|',polname,polcmd,polpermissive,roles,using_expr,check_expr
+           ),
+           E'\n' order by polname
+         ))
+       ) from audit_policies) as policies_part
+  )
+  select pg_catalog.md5(pg_catalog.concat_ws(
+           E'\n',metadata_part,acl_part,columns_part,column_acl_part,
+           constraints_part,indexes_part,policies_part
+         ))
+    into v_md5
+  from audit_parts;
+
+  if v_md5 is distinct from '5d3b70257c57f5956032e83131effabb' then
+    raise exception 'T3A_PREFLIGHT_AUDIT_RELATION_DRIFT';
+  end if;
+
+  if not pg_catalog.has_table_privilege(
+       v_service_role_oid,'public.audit_logs','SELECT'
+     )
+     or not pg_catalog.has_table_privilege(
+       v_service_role_oid,'public.audit_logs','INSERT'
+     )
+     or not pg_catalog.has_table_privilege(
+       v_service_role_oid,'public.audit_logs','UPDATE'
+     )
+     or not pg_catalog.has_table_privilege(
+       v_authenticated_oid,'public.audit_logs','SELECT'
+     )
+     or not pg_catalog.has_table_privilege(
+       v_authenticated_oid,'public.audit_logs','INSERT'
+     )
+     or pg_catalog.has_table_privilege(
+       v_authenticated_oid,'public.audit_logs','UPDATE'
+     )
+     or pg_catalog.has_table_privilege(
+       v_authenticated_oid,'public.audit_logs','DELETE'
+     )
+     or pg_catalog.has_table_privilege(v_anon_oid,'public.audit_logs','SELECT')
+     or pg_catalog.has_table_privilege(v_anon_oid,'public.audit_logs','INSERT')
+     or pg_catalog.has_table_privilege(v_anon_oid,'public.audit_logs','UPDATE')
+     or pg_catalog.has_table_privilege(v_anon_oid,'public.audit_logs','DELETE') then
+    raise exception 'T3A_PREFLIGHT_AUDIT_EFFECTIVE_PRIVILEGE_DRIFT';
   end if;
 
   -- Pin the complete authority-table ACLs, including service_role. The later
@@ -1907,6 +2093,11 @@ comment on function public.t3_release_admin_password_reset_lease(uuid,uuid,uuid)
 revoke update (must_change_password)
   on table public.corretores from authenticated;
 
+-- Administrative password reset audit is authored by the Edge through its
+-- service-role client. An authenticated caller must not be able to forge a
+-- server audit row directly through PostgREST.
+revoke insert on table public.audit_logs from authenticated;
+
 -- Row fencing covers service-role INSERT/UPDATE/DELETE. TRUNCATE does not run
 -- row triggers, so remove only that operation for the three authority tables.
 revoke truncate on table public.admins, public.corretores, public.times
@@ -2843,8 +3034,185 @@ begin
          coalesce(p.prosrc,'') || E'\n' || coalesce(p.prosqlbody::text,'')
        ) like '%fechai.t3_admin_password_reset_context%'
          and p.oid not in (v_t3_oid,v_guard_oid,v_fence_oid)
-     ) then
+  ) then
     raise exception 'T3A_POSTFLIGHT_CONTEXT_KEY_COLLISION';
+  end if;
+
+  with audit_meta as (
+    select c.relkind::text as relkind,
+           c.relpersistence::text as relpersistence,
+           pg_catalog.pg_get_userbyid(c.relowner) as owner_name,
+           c.relrowsecurity,
+           c.relforcerowsecurity
+    from pg_catalog.pg_class as c
+    where c.oid='public.audit_logs'::regclass
+  ),
+  audit_acl_items as (
+    select
+      case when acl.grantee=0 then 'PUBLIC'
+           else pg_catalog.pg_get_userbyid(acl.grantee) end as grantee,
+      pg_catalog.pg_get_userbyid(acl.grantor) as grantor,
+      acl.privilege_type,
+      acl.is_grantable
+    from pg_catalog.pg_class as c
+    cross join lateral pg_catalog.aclexplode(
+      coalesce(c.relacl,pg_catalog.acldefault('r',c.relowner))
+    ) as acl
+    where c.oid='public.audit_logs'::regclass
+  ),
+  audit_columns as (
+    select a.attnum,
+           a.attname,
+           pg_catalog.format_type(a.atttypid,a.atttypmod) as data_type,
+           a.attnotnull,
+           coalesce(pg_catalog.pg_get_expr(d.adbin,d.adrelid),'') as default_expr,
+           coalesce((
+             select pg_catalog.string_agg(
+               pg_catalog.format(
+                 '%s>%s:%s:%s',
+                 case when acl.grantee=0 then 'PUBLIC'
+                      else pg_catalog.pg_get_userbyid(acl.grantee) end,
+                 pg_catalog.pg_get_userbyid(acl.grantor),
+                 acl.privilege_type,
+                 acl.is_grantable
+               ),
+               ',' order by acl.grantee,acl.grantor,
+                            acl.privilege_type,acl.is_grantable
+             )
+             from pg_catalog.aclexplode(a.attacl) as acl
+           ),'') as acl_text
+    from pg_catalog.pg_attribute as a
+    left join pg_catalog.pg_attrdef as d
+      on d.adrelid=a.attrelid and d.adnum=a.attnum
+    where a.attrelid='public.audit_logs'::regclass
+      and a.attnum>0 and not a.attisdropped
+  ),
+  audit_constraints as (
+    select c.conname,
+           c.contype::text as contype,
+           pg_catalog.pg_get_constraintdef(c.oid,true) as definition
+    from pg_catalog.pg_constraint as c
+    where c.conrelid='public.audit_logs'::regclass
+  ),
+  audit_indexes as (
+    select i.indexrelid::regclass::text as index_name,
+           pg_catalog.pg_get_indexdef(i.indexrelid) as definition
+    from pg_catalog.pg_index as i
+    where i.indrelid='public.audit_logs'::regclass
+  ),
+  audit_policies as (
+    select p.polname,
+           p.polcmd,
+           p.polpermissive,
+           coalesce((
+             select pg_catalog.string_agg(
+               case when role_item.role_oid=0 then 'PUBLIC'
+                    else pg_catalog.pg_get_userbyid(role_item.role_oid) end,
+               ',' order by role_item.role_oid
+             )
+             from pg_catalog.unnest(p.polroles) as role_item(role_oid)
+           ),'') as roles,
+           coalesce(pg_catalog.pg_get_expr(p.polqual,p.polrelid),'') as using_expr,
+           coalesce(
+             pg_catalog.pg_get_expr(p.polwithcheck,p.polrelid),''
+           ) as check_expr
+    from pg_catalog.pg_policy as p
+    where p.polrelid='public.audit_logs'::regclass
+  ),
+  audit_parts as (
+    select
+      (select pg_catalog.concat_ws(
+         '|','metadata',relkind,relpersistence,owner_name,
+         relrowsecurity,relforcerowsecurity
+       ) from audit_meta) as metadata_part,
+      (select pg_catalog.concat_ws(
+         '|','acl',pg_catalog.count(*),
+         pg_catalog.md5(pg_catalog.string_agg(
+           pg_catalog.format(
+             '%s>%s:%s:%s',grantee,grantor,privilege_type,is_grantable
+           ),
+           ',' order by grantee,grantor,privilege_type,is_grantable
+         ))
+       ) from audit_acl_items) as acl_part,
+      (select pg_catalog.concat_ws(
+         '|','columns',pg_catalog.count(*),
+         pg_catalog.md5(pg_catalog.string_agg(
+           pg_catalog.format(
+             '%s|%s|%s|%s|%s',
+             attnum,attname,data_type,attnotnull,default_expr
+           ),
+           E'\n' order by attnum
+         ))
+       ) from audit_columns) as columns_part,
+      (select pg_catalog.concat_ws(
+         '|','column_acl',pg_catalog.count(*),
+         pg_catalog.md5(pg_catalog.string_agg(
+           pg_catalog.format('%s.%s|%s',attnum,attname,acl_text),
+           E'\n' order by attnum
+         ))
+       ) from audit_columns) as column_acl_part,
+      (select pg_catalog.concat_ws(
+         '|','constraints',pg_catalog.count(*),
+         pg_catalog.md5(pg_catalog.string_agg(
+           pg_catalog.format('%s|%s|%s',conname,contype,definition),
+           E'\n' order by conname
+         ))
+       ) from audit_constraints) as constraints_part,
+      (select pg_catalog.concat_ws(
+         '|','indexes',pg_catalog.count(*),
+         pg_catalog.md5(pg_catalog.string_agg(
+           pg_catalog.format('%s|%s',index_name,definition),
+           E'\n' order by index_name
+         ))
+       ) from audit_indexes) as indexes_part,
+      (select pg_catalog.concat_ws(
+         '|','policies',pg_catalog.count(*),
+         pg_catalog.md5(pg_catalog.string_agg(
+           pg_catalog.concat_ws(
+             '|',polname,polcmd,polpermissive,roles,using_expr,check_expr
+           ),
+           E'\n' order by polname
+         ))
+       ) from audit_policies) as policies_part
+  )
+  select pg_catalog.md5(pg_catalog.concat_ws(
+           E'\n',metadata_part,acl_part,columns_part,column_acl_part,
+           constraints_part,indexes_part,policies_part
+         ))
+    into v_table_acl_md5
+  from audit_parts;
+
+  if v_table_acl_md5 is distinct from
+       '1b1a381796f273b503cd4c41d34a3688' then
+    raise exception 'T3A_POSTFLIGHT_AUDIT_RELATION_DRIFT';
+  end if;
+
+  if not pg_catalog.has_table_privilege(
+       v_service_role_oid,'public.audit_logs','SELECT'
+     )
+     or not pg_catalog.has_table_privilege(
+       v_service_role_oid,'public.audit_logs','INSERT'
+     )
+     or not pg_catalog.has_table_privilege(
+       v_service_role_oid,'public.audit_logs','UPDATE'
+     )
+     or not pg_catalog.has_table_privilege(
+       v_authenticated_oid,'public.audit_logs','SELECT'
+     )
+     or pg_catalog.has_table_privilege(
+       v_authenticated_oid,'public.audit_logs','INSERT'
+     )
+     or pg_catalog.has_table_privilege(
+       v_authenticated_oid,'public.audit_logs','UPDATE'
+     )
+     or pg_catalog.has_table_privilege(
+       v_authenticated_oid,'public.audit_logs','DELETE'
+     )
+     or pg_catalog.has_table_privilege(v_anon_oid,'public.audit_logs','SELECT')
+     or pg_catalog.has_table_privilege(v_anon_oid,'public.audit_logs','INSERT')
+     or pg_catalog.has_table_privilege(v_anon_oid,'public.audit_logs','UPDATE')
+     or pg_catalog.has_table_privilege(v_anon_oid,'public.audit_logs','DELETE') then
+    raise exception 'T3A_POSTFLIGHT_AUDIT_EFFECTIVE_PRIVILEGE_DRIFT';
   end if;
 
   if exists (

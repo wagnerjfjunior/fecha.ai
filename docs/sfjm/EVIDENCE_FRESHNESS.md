@@ -1,6 +1,6 @@
 # FECH.AI — SFJM Evidence Freshness
 
-**Status:** `CLAIM_ANCHOR_INVALIDATION_LEDGER / T3A_V4_POST_READY_P2_CORRECTION / NEW_EXACT_HEAD_REVIEWS_PENDING / DOCUMENTATION_ONLY`
+**Status:** `CLAIM_ANCHOR_INVALIDATION_LEDGER / PR127_MERGED / EDGE_V18_DEPLOYED / B1_RUNTIME_PASS / AUDIT_SCHEMA_RUNTIME_INVALIDATION / V5_REVIEWS_PENDING`
 **Updated:** `2026-08-24`
 **Repository:** `wagnerjfjunior/fecha.ai`
 
@@ -307,8 +307,68 @@ authority-table non-internal trigger inventory:
   authority-table rewrite rules count 0
 ```
 
-The final corrective commit/head and Git blob anchors must be resolved live;
-the hashes above do not establish either specialist review.
+Those were v4 candidate anchors. They were later resolved and reviewed as
+recorded below.
+
+### Post-merge v4 approval and runtime anchors
+
+```text
+repository: wagnerjfjunior/fecha.ai
+PR: #127
+final reviewed source head: a5c92617f372599a234c0147aad13a90649348d7
+final reviewed source tree: 87872aac22b36437b7fb66f3614905e8df94f5ee
+Backend/Data: APPROVE / findings none / static exact-head only
+Backend/Data bundle: 95463 bytes / SHA-256 0b22d6e9f9f1f8e3d184254876a25ed985e8f054423a44acf3dd5b5f9f9570a6
+AppSec: APPROVE / findings none / independent static exact-head only
+AppSec bundle: 95986 bytes / SHA-256 7bde681c36639ee332e6e527c53c1b76fbfccaa7d74d090b2c64a64eea08da8f
+merge commit / main: 610bdd3c4b5ab208f7ffe177d9d32a2184aa9d87
+```
+
+The reviews authenticated byte-preserving exact-head bundles and read all 12
+required PR/T1 payloads through EOF. They authorize no runtime by themselves.
+
+Separate rollout evidence:
+
+```text
+criar-usuario production: v18 / ACTIVE / verify_jwt=false
+Git blob: ec62997bc357b550feda5027051fe507fe9184fa
+SHA-256: 11719575bce92c85422eb5d3a78ad26a5d683c47202e6db8032f3e13d5a254a7
+T3A migration: NOT APPLIED
+issuer/prepare/release/proof/lease objects: ABSENT
+bounded fail-before-Auth calls: 3 UI submissions / each Edge 500
+Auth admin update calls: 0
+target password fingerprint / updated_at: unchanged
+B1 fail-before-Auth: PASS
+```
+
+Each runtime submission showed `audit_logs POST 400` before the absent issuer
+RPC 404. Live read-only catalog evidence established:
+
+```text
+audit_logs columns: 20
+required no-default legacy columns: acao, entidade
+ip_address: inet
+owner: postgres
+RLS / FORCE RLS: true / true
+complete baseline relation fingerprint: 5d3b70257c57f5956032e83131effabb
+hypothetical exact post-authenticated-INSERT-revoke fingerprint:
+  1b1a381796f273b503cd4c41d34a3688
+authenticated effective privileges: SELECT + INSERT baseline
+service_role effective privileges: SELECT + INSERT + UPDATE
+```
+
+This is a material invalidation only for the Edge audit compatibility and the
+new audit ACL/preflight/rollback domain. It does not reopen unchanged T1/T2 or
+the approved v4 actor/tenant/proof/lease design. The v5 Edge, migration,
+rollback and related evidence must receive new exact-head Backend/Data then
+independent AppSec review. The v5 commit/head/blob anchors must be resolved live
+after publication.
+
+V5 relation-lock ordering follows established in-transaction writers:
+`authority -> audit` for migration and
+`proof -> authority -> lease -> audit` for rollback. Edge audit and proof calls
+are separate committed HTTP transactions, so they do not introduce the reverse
+held-lock pair.
 
 ## 6. Live trust-anchor observations used by T3A review
 
@@ -351,17 +411,21 @@ guards. These remain review anchors, not runtime proof.
 
 ## 7. Production Edge baseline
 
-At transition time:
+Current production Edge:
 
 ```text
 slug: criar-usuario
-version: 17
+version: 18
 status: ACTIVE
 verify_jwt: false
-ezbr_sha256: 679643d42dc944cc810580807f4b1a2f5a78ff30a0ce0d67f0713817b2eeb47f
+Git blob: ec62997bc357b550feda5027051fe507fe9184fa
+SHA-256: 11719575bce92c85422eb5d3a78ad26a5d683c47202e6db8032f3e13d5a254a7
 ```
 
-The live v17 code validates the Bearer manually, but its administrative reset path changes the Auth password without setting `must_change_password=true` server-side.
+The v18 code validates the Bearer manually and is fail-closed on the absent
+proof issuer. Its runtime audit INSERT is incompatible with the live legacy
+NOT NULL columns, so rollout is stopped before migration. The versioned v17
+source remains the separately-gated Edge rollback anchor.
 
 This fact is the reason rollout order is security-sensitive.
 
@@ -369,15 +433,17 @@ Invalidate after any Edge version/runtime change.
 
 ## 8. Unestablished claims
 
-At this transition, claim only the corrected candidate state and do not claim:
+At this transition, do not claim:
 
 ```text
-corrected T3A v4 candidate artifacts: RECORDED IN CHANGE SET
-corrected final live PR head: MUST BE RESOLVED AFTER COMMIT
-T3A Backend/Data exact-head PASS: NOT ESTABLISHED
-T3A independent AppSec exact-head PASS: NOT ESTABLISHED
+T3A v4 exact-head approval/merge: ESTABLISHED as recorded above
+T3A-v5 candidate artifacts: RECORDED IN CORRECTIVE CHANGE SET
+T3A-v5 final live PR head: MUST BE RESOLVED AFTER COMMIT
+T3A-v5 Backend/Data exact-head PASS: NOT ESTABLISHED
+T3A-v5 independent AppSec exact-head PASS: NOT ESTABLISHED
 T3A applied to Supabase production: NO
-hardened T3A Edge deployed: NO
+v18 hardened Edge deployed: YES, but audit compatibility blocker remains
+v5 Edge deployed: NO
 T3A positive/negative/cross-tenant production smoke: NOT EXECUTED
 T3A rollback runtime-tested: NOT EXECUTED
 T3B frontend password cutover: NOT IMPLEMENTED

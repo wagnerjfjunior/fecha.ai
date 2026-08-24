@@ -1,6 +1,6 @@
 # FECH.AI — SFJM Blocked Actions
 
-**Status:** `MATERIAL_BLOCKER_VIEW / T3A_V4_POST_READY_P2_CORRECTION / NEW_EXACT_HEAD_REVIEWS_PENDING / FAIL_CLOSED / DOCUMENTATION_ONLY`
+**Status:** `MATERIAL_BLOCKER_VIEW / PR127_MERGED / B1_RUNTIME_PASS / AUDIT_SCHEMA_DRIFT_OPEN / V5_EXACT_HEAD_REVIEWS_PENDING / FAIL_CLOSED`
 **Updated:** `2026-08-24`
 **Repository:** `wagnerjfjunior/fecha.ai`
 
@@ -22,18 +22,18 @@ The following remain blocked unless material evidence and applicable Product Aut
 Security Go
 broad paid commercialization
 F1-02 final acceptance
-T3A Ready
-T3A merge
+new T3A-v5 corrective PR Ready
+new T3A-v5 corrective PR merge
 T3A Supabase production application
-T3A Edge production deployment
+further T3A Edge production deployment
 T3A production adversarial/cross-tenant execution without exact runtime authority
 T3B frontend password cutover before T3A backend is safely applied/deployed/validated
 WDP increase without governance acceptance
 ```
 
-## 3. Initial T3A blocker lineage and current gate
+## 3. Closed B1-B4 lineage and current audit gate
 
-Do not create another T3A PR merely to address these blockers.
+Do not reopen B1-B4 or create another PR merely to relitigate them.
 
 ```text
 B1 — unsafe rollout order in the initial candidate
@@ -55,23 +55,41 @@ After separately-authorized Ready, the GitHub Codex review opened material P2
 to the prepare RPC could commit a durable lease and `must_change_password=true`
 without the Edge Auth mutation; only service_role could release that lease, and
 the T1/T3 guards would then prevent ordinary completion. The PR was returned to
-Draft without merge. T3A-v4 now requires a service-role-only, opaque, one-time
+Draft at that point. T3A-v4 then required a service-role-only, opaque, one-time
 Edge-presence proof that the caller-JWT prepare RPC must consume before locks,
-lease creation or password-state mutation. The changed head has no valid
-specialist PASS.
+lease creation or password-state mutation.
+
+Integral Backend/Data and independent AppSec reviews subsequently approved
+exact head `a5c92617f372599a234c0147aad13a90649348d7` / tree
+`87872aac22b36437b7fb66f3614905e8df94f5ee` with no findings. PR #127 merged as
+`610bdd3c4b5ab208f7ffe177d9d32a2184aa9d87`. The exact Edge was deployed as
+production v18, and the bounded fail-before-Auth calls all returned 500 without
+any Auth update. B1 is runtime PASS; B2-B4 remain approved static contracts and
+are not reopened absent a material change in their domains.
+
+The same runtime evidence opened one new blocker:
+
+```text
+AUDIT_SCHEMA_COMPATIBILITY
+v18 POST /rest/v1/audit_logs -> 400
+live required fields omitted by v18: acao, entidade
+ip_address live type: inet
+audit anchor not created, although issuer 404 still prevented Auth
+```
 
 Current blocking gate:
 
 ```text
-publish/resolve the new v4 corrective PR head in PR #127
+publish/resolve one v5 audit-compatibility Draft PR from merged main
 -> integral material-file read + coverage reconciliation
 -> repeat Backend/Data exact-head review and obtain PASS
 -> independent AppSec exact-head PASS
--> STOP in Draft before a new Ready/merge transition
+-> STOP in Draft before Ready
 ```
 
 Any material correction after either review invalidates both head-bound results
-as applicable; do not open another T3A PR merely because the head advances.
+as applicable. The new PR is justified only by the post-merge runtime finding;
+it is not a duplicate vehicle for the old B1-B4 blockers.
 
 ## 4. Explicitly prohibited workaround classes
 
@@ -89,6 +107,9 @@ letting a direct authenticated prepare call create durable state without an
 normalizing production users to fit the code
 trial-and-error SQL in production
 mixing unrelated user-creation redesign into password-reset hardening
+ignoring an audit INSERT failure and continuing to proof/Auth
+dropping/relaxing legacy audit NOT NULL columns to fit the Edge
+leaving authenticated direct audit INSERT as a forgeable server-audit surface
 using a frontend/server timeout as lease authority or automatic expiry
 releasing an unresolved lease after an ambiguous Auth result
 ```

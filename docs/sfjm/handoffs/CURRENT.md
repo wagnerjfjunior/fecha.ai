@@ -1,6 +1,6 @@
 # FECH.AI — SFJM Current Product/Security Handoff
 
-**Status:** `THIN_HANDOFF_POINTER / T3A_V4_POST_READY_P2_CORRECTION / NEW_EXACT_HEAD_REVIEWS_PENDING / LIVE_LIFECYCLE_RESOLUTION`
+**Status:** `THIN_HANDOFF_POINTER / PR127_MERGED / EDGE_V18_DEPLOYED / B1_RUNTIME_PASS / AUDIT_V5_CORRECTION / NEW_EXACT_HEAD_REVIEWS_PENDING`
 **Updated:** `2026-08-24`
 **Repository:** `wagnerjfjunior/fecha.ai`
 
@@ -36,10 +36,12 @@ The current workstream is:
 
 ```text
 T3A — Administrative Password Reset Multi-Tenant Authority Boundary
-STATE: V4 POST-READY DIRECT-RPC CORRECTION / NEW EXACT-HEAD REVIEWS PENDING
+STATE: V4 MERGED / EDGE-FIRST B1 PASS / POST-MERGE AUDIT V5 REVIEWS PENDING
 ```
 
-The next conversation must continue the **existing** T3A change set rather than restart the design or open another PR for the same blocker set.
+The next conversation must continue the single post-merge v5 audit correction,
+not restart B1-B4 or open duplicate PRs. PR #127 is already merged, so one new
+Draft PR is required for the runtime-discovered audit incompatibility.
 
 Corrected domains to reconcile on the final exact head:
 
@@ -58,14 +60,22 @@ membership/options, aggregate and complete `public` ACL correction at
 After separately-authorized Ready, GitHub Codex opened material P2
 `DIRECT_RPC_CAN_MINT_UNRELEASABLE_LEASE`: direct authenticated prepare access
 could create a durable fence without an Edge Auth mutation or caller-accessible
-release. PR #127 returned to Draft without merge. The same-PR v4 candidate now
+release. PR #127 returned to Draft at that point. The same-PR v4 candidate then
 adds a service-role-only opaque one-time Edge-proof issuer; the caller-JWT
 prepare must consume the matching unexpired actor+target proof before locks,
 lease creation or password-state mutation. It also makes rollback block live
 proofs/leases and clean only expired inert proofs after complete exact
-preflight. The material change invalidates the prior approvals as final-head
-gates. New Backend/Data and then independent AppSec exact-head reviews are
-required before any new Ready/merge transition.
+preflight. Fresh Backend/Data and independent AppSec reviews approved exact
+head `a5c92617...` / tree `87872aac...`; PR #127 merged as `610bdd3c...`.
+
+The exact Edge was deployed as production v18 while T3A SQL remained absent.
+Three UI submissions during the bounded fail-before-Auth exercise all returned
+500 with no Auth update, proving B1. They also showed audit INSERT 400 because
+live `audit_logs` requires `acao` and `entidade` and types `ip_address` as
+`inet`. V5 supplies the dual audit schema, fails before proof/Auth on audit
+failure, pins the complete audit relation, revokes authenticated audit INSERT,
+and makes rollback restore it exactly. These changed bytes require new
+Backend/Data then independent AppSec exact-head review.
 
 ## 4. New-conversation reconstruction order
 
@@ -74,11 +84,11 @@ required before any new Ready/merge transition.
 2. read docs/bootstrap/INDEX.md
 3. resolve SES roles needed for Backend/Data and AppSec
 4. read common Modus Operandi + governance/SFJM
-5. resolve the active T3A PR live
-6. because this 2026-08-23 SFJM transition is PR_HEAD_ONLY until merge, read the SFJM files from the active T3A head
-7. confirm current Supabase/Edge read-only anchors material to B1-B4
-8. resolve the v4 corrective PR head, reconcile evidence/coverage, repeat Backend/Data and only after closure run independent AppSec
-9. stop in Draft before a new Ready/merge transition
+5. resolve the active v5 corrective PR live
+6. because this transition is PR_HEAD_ONLY until merge, read SFJM from its exact head
+7. confirm current Supabase/Edge read-only anchors material to audit + B1-B4 dependencies
+8. reconcile the v5 exact head/evidence/coverage, repeat Backend/Data and only after closure run independent AppSec
+9. stop in Draft before Ready
 ```
 
 The SES Router is temporarily frozen because the in-project Action path is not
@@ -94,7 +104,7 @@ The next conversation must not:
 
 ```text
 restart T1/T2 without a material invalidation event
-open another T3A PR merely because the head changes
+open another duplicate T3A PR merely because the v5 head changes
 weaken T1 triggers to make T3A pass
 use broad grants/client authority as a shortcut
 apply production changes before final exact-head gates and separate runtime authorization
@@ -120,12 +130,12 @@ A successful new conversation should be able to reconstruct:
 ```text
 T1 applied and preserved
 T2 positive status cutover proven in bounded production smoke
-T3A not applied/deployed
-existing T3A v4 candidate preserves B1-B4/HIGH-1 closure and adds the
-post-Ready direct-RPC Edge-proof boundary
-prior v3 Backend/Data/AppSec approvals are recorded but invalidated for the changed material head
-current corrective GitHub authority exists, but new Ready/merge/production remain separate gates
-next action is v4 exact-head reconciliation + Backend/Data + independent AppSec validation
+PR #127 v4 merged at main 610bdd3c; T3A migration not applied
+production Edge v18 deployed; B1 fail-before-Auth PASS; no target Auth mutation
+audit POST 400 is the new blocker; live requires acao/entidade and inet
+v5 candidate preserves approved B1-B4/HIGH-1 and corrects audit compatibility
+current corrective GitHub authority exists; deploy/migration/Ready/merge remain separate
+next action is v5 exact-head reconciliation + Backend/Data + independent AppSec
 ```
 
 If those facts cannot be reconstructed from live evidence + SFJM, stop and declare the specific continuity gap rather than guessing.
