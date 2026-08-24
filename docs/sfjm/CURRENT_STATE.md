@@ -1,6 +1,6 @@
 # FECH.AI — SFJM Current Material State
 
-**Status:** `MATERIAL_RECORDED_STATE / T3A_V4_POST_READY_P2_CORRECTION / NEW_EXACT_HEAD_REVIEWS_PENDING / SECURITY_GO_DENIED / DOCUMENTATION_ONLY`
+**Status:** `MATERIAL_RECORDED_STATE / PR127_MERGED / EDGE_V18_DEPLOYED / B1_RUNTIME_PASS / AUDIT_SCHEMA_DRIFT_OPEN / V5_REVIEWS_PENDING / SECURITY_GO_DENIED`
 **Updated:** `2026-08-24`
 **Repository:** `wagnerjfjunior/fecha.ai`
 
@@ -10,7 +10,11 @@ This file is the principal authority for durable product/security operational me
 
 It intentionally does not freeze volatile GitHub lifecycle facts such as current `main`, PR Draft/Ready, current head, checks, reviews, threads, mergeability or deployment state. Resolve those live before acting.
 
-This transition is being written on the active T3A change set. Until that change set is merged, this updated SFJM content is `PR_HEAD_ONLY`; a new conversation must bootstrap from live `main`, then resolve the active T3A PR/head live and read the SFJM files from that exact head before continuing T3A work.
+This transition is being written on the post-merge T3A-v5 audit-compatibility
+change set. Until that corrective change set is merged, this updated SFJM
+content is `PR_HEAD_ONLY`; a new conversation must bootstrap from live `main`,
+then resolve the active corrective PR/head live and read the SFJM files from
+that exact head before continuing.
 
 ## 2. Product context
 
@@ -149,8 +153,8 @@ authenticated user could call the preparation RPC directly through PostgREST,
 commit a non-expiring lease and `must_change_password=true`, skip the Edge Auth
 password mutation, and lack access to the service-role-only release. The T1/T3
 fence would then also block ordinary self-service completion. The PR was
-returned to Draft without merge, and the same T3A change set now contains the
-v4 correction:
+returned to Draft at that point, and the same T3A change set added the v4
+correction:
 
 ```text
 versioned criar-usuario Edge baseline + hardened leased reset path
@@ -172,7 +176,12 @@ exact drift-aware rollback blocking live proofs/leases and cleaning only expired
 B1-B4 evidence and coverage matrix
 ```
 
-Corrected candidate fingerprints:
+Fresh integral Backend/Data and independent AppSec reviews approved exact head
+`a5c92617f372599a234c0147aad13a90649348d7` / tree
+`87872aac22b36437b7fb66f3614905e8df94f5ee` with no findings. PR #127 then
+merged as main commit `610bdd3c4b5ab208f7ffe177d9d32a2184aa9d87`.
+
+Merged v4 fingerprints:
 
 ```text
 T3 proof issuer prosrc: 87f8d7f0c96ce4ae52fed9e2bc4bdcdd
@@ -183,10 +192,46 @@ T3-aware direct guard prosrc: 951da8a6ac6e934828f06ab1513778fa
 rollback-restored pre-T3A pg_get_functiondef: 99477024e337de5645dd042a30f8cf78
 ```
 
-These are candidate facts, not exact-head specialist PASS or runtime proof. The
-final corrective commit/head must be resolved live before review.
+These are approved static v4 facts, not proof that the migration is applied.
 
-The production Edge remains the pre-T3A `criar-usuario` v17 at this transition point. T3A RPC is absent in production. No T3A migration has been applied and no T3A Edge has been deployed.
+The separately-authorized Edge-first rollout deployed the exact merged source
+as production `criar-usuario` v18 (`verify_jwt=false`, Git blob
+`ec62997bc357b550feda5027051fe507fe9184fa`, SHA-256
+`11719575bce92c85422eb5d3a78ad26a5d683c47202e6db8032f3e13d5a254a7`).
+T3A issuer/prepare/release/proof/lease objects remain absent and the migration
+has not been applied.
+
+The bounded fail-before-Auth UI exercise emitted three submissions while the
+browser appeared frozen. All three followed the same platform sequence:
+
+```text
+caller Auth GET 200
+caller profile GET 200
+audit_logs INSERT 400
+proof issuer RPC 404
+audit_logs PATCH 204 with no matching row
+Edge response 500
+no admin Auth update; target password fingerprint and updated_at unchanged
+```
+
+B1 is runtime PASS. The audit INSERT 400 is a new material blocker: live
+`audit_logs` requires `acao` and `entidade`, and `ip_address` is `inet`.
+T3A-v5 corrects only that audit-compatibility/integrity domain while preserving
+the approved v4 authority boundary:
+
+```text
+Edge supplies modern + legacy audit columns in reset and creation paths
+Edge requires the audit insert before proof/prepare/Auth
+client IP is conservative for inet; raw value is stored only in legacy text ip
+migration pins complete audit metadata/ACL/columns/constraints/indexes/policies
+baseline audit fingerprint 5d3b70257c57f5956032e83131effabb
+post-revoke fingerprint 1b1a381796f273b503cd4c41d34a3688
+authenticated audit INSERT revoked; authenticated SELECT preserved
+rollback locks audit after proof/authority/lease and restores/verifies the exact legacy INSERT grant
+```
+
+The v5 exact head has no Backend/Data or AppSec verdict yet. No v5 Edge deploy,
+migration, additional runtime call or rollback has been authorized or executed.
 
 ### Static authority contract preserved
 
@@ -220,22 +265,27 @@ GESTOR
 
 Same-company membership alone is insufficient for gestor authority.
 
-## 6. T3A B1-B4 corrective candidate state
+## 6. T3A B1-B4 state and v5 audit correction
 
-The findings remain historical invalidation anchors for the initial head. They
-are addressed in the same PR candidate as follows:
+The findings remain historical invalidation anchors for the initial heads.
+Exact v4 head `a5c92617...` closed them and merged. The v5 audit change does not
+reopen T1/T2 or alter the actor/tenant/lease contract, but its changed material
+bytes require exact-head review of affected dependencies.
 
-### B1 — safe rollout ordering: CANDIDATE ADDRESSED
+### B1 — safe rollout ordering: V18 RUNTIME PASS / V5 RETEST PENDING
 
 ```text
-reviewed hardened Edge first
--> proof issuer absent: reset_password fails closed before prepare/Auth mutation
+v18 reviewed hardened Edge deployed first: DONE
+-> proof issuer absent: reset_password failed closed before Auth: PASS
+-> audit insert returned 400: NEW BLOCKER
+reviewed v5 Edge next under separate authority
+-> audit insert must succeed, issuer remain absent, no Auth mutation
 -> reviewed migration
 -> catalog/ACL/fingerprint validation
 -> separately-authorized bounded smoke
 ```
 
-### B2 — trust-anchor preflight: CANDIDATE ADDRESSED
+### B2 — trust-anchor preflight: V4 APPROVED / V5 AUDIT ANCHOR PENDING REVIEW
 
 The migration holds the three authority-bearing tables in SHARE mode and
 requires exact postgres/client/authenticator/pg_database_owner attributes; the complete
@@ -264,10 +314,16 @@ attestation. Only authenticated can execute prepare. Prepare still
 derives its actor exclusively from `auth.uid()` and consumes the exact
 actor+target proof using PostgreSQL time before any durable state.
 
-### B3 — drift-safe rollback: CANDIDATE ADDRESSED
+V5 additionally locks `audit_logs` after the authority relations and pins the complete live relation
+under baseline fingerprint `5d3b70257c57f5956032e83131effabb`, then verifies
+post-revoke fingerprint `1b1a381796f273b503cd4c41d34a3688` and exact
+effective privileges. This audit delta is not specialist-approved yet.
+
+### B3 — drift-safe rollback: V4 APPROVED / V5 AUDIT REVERSAL PENDING REVIEW
 
 Before any replacement, drop or grant, rollback locks the proof table, three
-authority tables and lease table in the same fixed proof→authority→lease writer
+authority tables, lease table and audit table in fixed
+proof→authority→lease→audit writer
 order and in SHARE mode. An unexpired proof or any active/unresolved lease stops
 rollback. It verifies the exact proof/lease
 tables, issuer/prepare/release/fence functions, three fencing
@@ -280,7 +336,11 @@ expired inert proofs, prove the locked proof table empty, restore guard MD5
 `IF EXISTS`, restore only the prior column grant and leave user/Auth state
 untouched.
 
-### B4 — T1 guard interoperability: CANDIDATE ADDRESSED
+V5 also requires the exact post-T3A audit fingerprint/privileges before any
+cleanup, restores authenticated INSERT only after the full preflight, and
+verifies the exact baseline fingerprint afterward.
+
+### B4 — T1 guard interoperability: V4 APPROVED / UNCHANGED
 
 Both existing T1 triggers remain enabled. Before the durable path begins, the
 caller-JWT RPC must consume an unexpired opaque proof whose actor equals
@@ -304,21 +364,21 @@ The prior Backend/Data `REQUEST_CHANGES` results remain historical inputs. The
 later Backend/Data and AppSec approvals on `fcb7dfc2...` are anchored by
 SHA-256 `8b6bf96691b7337df95f0350ac5028a4aeb85e6cab917ec56383fc8e083ac0dc`
 and `1df5df13786f7ba767340cca2ca546aeddbf92e81a307a48aef3107fc0cf64ca`.
-They remain evidence about v3 but are invalid as final-head gates after the
-material direct-RPC finding and v4 correction. No v4 B1-B4 candidate statement
-is a specialist PASS. The next gate is repeated Backend/Data review of one new
-resolved exact head; AppSec follows only after Backend/Data closure.
+They remain evidence about v3 but were invalidated by the direct-RPC finding.
+The later exact-head v4 reviews on `a5c92617...` are the valid merged anchor.
+The next gate is Backend/Data review of one resolved v5 exact head; independent
+AppSec follows only after Backend/Data closure.
 
 ## 7. Material blockers
 
-Until Backend/Data and independent AppSec both pass on one exact v4 head and
-the later lifecycle/runtime authorities are separately granted:
+Until Backend/Data and independent AppSec both pass on one exact v5 corrective
+head and the later lifecycle/runtime authorities are separately granted:
 
 ```text
-T3A Ready: BLOCKED
-T3A merge: BLOCKED
+v5 corrective PR Ready: BLOCKED
+v5 corrective PR merge: BLOCKED
 T3A Supabase application: BLOCKED
-T3A Edge deployment: BLOCKED
+further T3A Edge deployment: BLOCKED
 T3A production smoke: BLOCKED without separate exact runtime authority
 T3B frontend password cutover: BLOCKED on T3A backend deployment/validation
 Security Go: DENIED
@@ -329,22 +389,17 @@ A green Vercel build does not satisfy these gates.
 
 ## 8. Current Product Authority and limits
 
-Product Authority has authorized continued corrective work on the existing T3A
-branch/PR to resolve the identified security/backend blockers under FECH.AI
-governance, without workarounds or scope-evasive fixes.
-
-That authority covers GitHub-side corrective implementation/evidence necessary
-to produce a reviewable T3A candidate on the existing change set. Ready was
-previously authorized and consumed on the v3 candidate, then reversed to Draft
-when the material P2 appeared. Merge was not performed. Neither the old
-exact-head approvals nor the old lifecycle transition carry across the material
-v4 correction.
+Product Authority has authorized GitHub-side correction of the post-merge audit
+compatibility finding, directly-related SFJM/evidence, creation of one Draft PR
+from merged main and preparation of the manual exact-head review bundles. PR
+#127 merge, Edge v18 deployment and the bounded fail-before-Auth call are
+consumed authorities; they do not carry forward to v5 runtime.
 
 It does **not** collapse the separate gates for:
 
 ```text
-Ready
-merge
+v5 Ready
+v5 merge
 Supabase production migration/application
 Edge production deployment
 production data mutation
@@ -357,9 +412,9 @@ Those remain separate lifecycle/runtime decisions and require their applicable e
 ## 9. Semantic next action
 
 ```text
-Publish and reconcile the v4 Edge-proof correction in existing PR #127, repeat
-Backend/Data on the new live-resolved exact head, then run independent AppSec
-only after Backend/Data closure.
+Publish and reconcile the v5 audit-compatibility correction in one new Draft PR
+from merged main, repeat Backend/Data on its live-resolved exact head, then run
+independent AppSec only after Backend/Data closure.
 ```
 
 Required sequence for the next conversation:
@@ -367,10 +422,10 @@ Required sequence for the next conversation:
 ```text
 1. resolve FECH.AI main live
 2. bootstrap normally
-3. resolve active T3A PR live and exact current head
+3. resolve active v5 corrective PR live and exact current head
 4. read SFJM from that PR head because this transition is PR_HEAD_ONLY until merge
 5. confirm the corrective commit is the resolved PR head
-6. update the existing PR description/evidence for that exact head
+6. update the corrective PR description/evidence for that exact head
 7. read final material files integral to EOF
 8. reconcile the B1-B4 coverage matrix
 9. run Backend/Data exact-head review
@@ -398,7 +453,8 @@ Do not:
 
 ```text
 create a workaround that weakens T1
-create another PR for the same T3A blocker set
+create another duplicate PR to relitigate B1-B4; the single post-merge v5 audit
+  PR is justified only by the new runtime finding
 apply SQL merely to see whether it works
 use production as an offensive laboratory
 normalize real users/data as part of T3A

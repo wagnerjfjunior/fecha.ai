@@ -1,20 +1,32 @@
-# FECH.AI — T3A-v4 Administrative Password Reset Multi-Tenant Authority Boundary
+# FECH.AI — T3A-v5 Administrative Password Reset Audit Compatibility Correction
 
-**Status:** `POST_READY_P2_CORRECTED / EDGE_PROOF_BOUNDARY_CANDIDATE / EXACT_HEAD_REVIEWS_REQUIRED / NOT_APPLIED / NOT_DEPLOYED / NOT_READY / NOT_MERGED`
+**Status:** `PR127_MERGED / EDGE_V18_DEPLOYED / B1_FAIL_BEFORE_AUTH_PASS / AUDIT_SCHEMA_DRIFT_OPEN / V5_EXACT_HEAD_REVIEWS_REQUIRED / MIGRATION_NOT_APPLIED / SECURITY_GO_DENIED`
 **Initial evidence date:** `2026-08-22`
 **Corrective evidence dates:** `2026-08-23`, `2026-08-24`
 **Repository:** `wagnerjfjunior/fecha.ai`
-**Base main:** `037232fe3da37a749ab980f783af92ff15e2baf2`
-**Branch:** `security/t3a-admin-password-reset-boundary`
+**Original PR base:** `037232fe3da37a749ab980f783af92ff15e2baf2`
+**Merged PR:** `#127`
+**Reviewed/merged source head:** `a5c92617f372599a234c0147aad13a90649348d7`
+**Reviewed/merged source tree:** `87872aac22b36437b7fb66f3614905e8df94f5ee`
+**Merge commit / corrective base:** `610bdd3c4b5ab208f7ffe177d9d32a2184aa9d87`
+**Corrective branch:** `security/t3a-audit-schema-compatibility`
 **Initial blocked PR head:** `45ad27668835b6458b52d2fb592cfa36b5589726`
 **Backend/Data reviewed heads:** `bf8fb1f4ab043226de3c77763b9b425a13b0261e`, `4631325827a76152ba554bece2a59da9eb1bb662`
 **Last fully approved head before post-Ready finding:** `fcb7dfc2f5f2259926556652fa9cfd3443d0c214`
 **Last fully approved tree before post-Ready finding:** `4dcaf2d4b6aa1248801e455def811e50ff04e414`
 
-This document records the same-PR correction of the material post-Ready finding
-`DIRECT_RPC_CAN_MINT_UNRELEASABLE_LEASE`. The next exact head must be resolved
-live after commit. No verdict from an earlier head carries forward in the
-affected Edge-proof / lease-origin domain.
+PR #127 subsequently closed `DIRECT_RPC_CAN_MINT_UNRELEASABLE_LEASE`, received
+fresh Backend/Data and independent AppSec approval on exact head `a5c92617...`,
+and was merged. The separately-authorized Edge-first rollout deployed that
+exact Edge as production version 18 and established fail-before-Auth. The same
+runtime calls exposed a new, narrower incompatibility: the versioned audit
+insert omitted live legacy NOT NULL columns `acao` and `entidade`.
+
+T3A-v5 is a post-merge correction of that newly observed runtime drift. A new
+Draft PR is necessary because PR #127 is merged; it is not an alternate PR or
+workaround for the already closed B1-B4 blockers. Prior approvals remain valid
+evidence for the unchanged v4 boundary, but they do not approve the changed
+Edge/audit ACL/fingerprint domain on the v5 exact head.
 
 ## 1. Authorized and prohibited scope
 
@@ -33,45 +45,77 @@ T3A changes only the administrative password-reset boundary:
   Auth password mutation;
 - `must_change_password=true` is established before Auth mutation;
 - the stale direct authenticated password-state grant is revoked;
+- the Edge writes both the modern and established legacy audit columns and
+  fails before proof/Auth if that server-authored audit anchor cannot be made;
+- the migration pins the complete live `audit_logs` relation and removes
+  authenticated direct INSERT so client callers cannot forge server audit rows;
 - both existing T1 triggers remain enabled;
 - the exact pre-T3A T1 direct guard has a drift-aware restoration path;
-- the live `criar-usuario` v17 baseline remains the Edge rollback anchor.
+- the versioned `criar-usuario` v17 source remains the Edge rollback anchor.
 
 This change does not authorize or perform:
 
 - an `App.jsx` change;
 - a production migration or runtime mutation;
-- an Edge production deployment;
+- a further Edge production deployment;
 - a smoke or rollback execution;
 - Ready, merge or Security Go;
 - a broad grant, trigger disablement, data normalization or frontend authority.
 
 ## 2. LIVE_RESOLVED_STATE and MATERIAL_RECORDED_STATE
 
-Read-only production state reconciled on `2026-08-23`:
+Read-only production state and bounded runtime evidence reconciled on
+`2026-08-24`:
 
 ```text
 Supabase project: uobxxgzshrmbtjfdolxd / ACTIVE_HEALTHY / PostgreSQL 17
 latest material migration: 20260822192552 f1_02_harden_status_corretor_rpc
-public.t3_prepare_admin_password_reset(uuid): ABSENT
 public.t3_prepare_admin_password_reset(uuid,uuid): ABSENT
 public.t3_issue_admin_password_reset_edge_proof(uuid,uuid): ABSENT
 public.t3_admin_password_reset_edge_proofs: ABSENT
 public.t3_admin_password_reset_leases: ABSENT
-criar-usuario: v17 / ACTIVE / verify_jwt=false
-live Edge ezbr_sha256: 679643d42dc944cc810580807f4b1a2f5a78ff30a0ce0d67f0713817b2eeb47f
+criar-usuario: v18 / ACTIVE / verify_jwt=false
+live Edge Git blob: ec62997bc357b550feda5027051fe507fe9184fa
+live Edge SHA-256: 11719575bce92c85422eb5d3a78ad26a5d683c47202e6db8032f3e13d5a254a7
 T3A migration applied: NO
-T3A hardened Edge deployed: NO
+PR #127: MERGED
+B1 fail-before-Auth runtime proof: PASS
+audit schema compatibility: OPEN
 ```
 
-The v17 source remains versioned at:
+The bounded reset attempt against an inactive dedicated test target emitted
+three submissions while the browser appeared frozen. Each submission produced
+the same fail-closed platform sequence:
 
 ```text
-commit: 23ba5d03e146e50cb510c065e70e2c8e5ed9794a
-path: supabase/functions/criar-usuario/index.ts
+GET /auth/v1/user -> 200
+GET /rest/v1/corretores -> 200
+POST /rest/v1/audit_logs -> 400
+POST /rest/v1/rpc/t3_issue_admin_password_reset_edge_proof -> 404
+PATCH /rest/v1/audit_logs -> 204 (no row matched)
+Edge POST -> 500
 ```
 
-No PII was needed or returned by catalog reconciliation.
+Auth logs contained only caller validation (`GET /user`), not an admin Auth
+update. The target Auth `updated_at` and password fingerprint were unchanged;
+there were zero target Auth mutations in the reset window. Therefore B1 is
+runtime-proven for v18, while the failed audit anchor remains a material rollout
+blocker.
+
+Live `public.audit_logs` has 20 columns. `acao` and `entidade` are NOT NULL with
+no default, and `ip_address` is `inet`. Complete relation fingerprints are:
+
+```text
+pre-T3A baseline: 5d3b70257c57f5956032e83131effabb
+post-T3A after authenticated INSERT revocation: 1b1a381796f273b503cd4c41d34a3688
+```
+
+T3A-v5 supplies both modern and legacy audit fields, validates audit insertion
+before proof/prepare/Auth, conservatively normalizes the `inet` value, pins the
+complete audit relation/ACL/policy/index/constraint surface in migration and
+rollback, revokes authenticated INSERT during T3A, and restores that exact
+legacy grant on rollback. No SQL, migration, further Edge deploy or runtime
+mutation was performed while preparing this candidate. No PII was required.
 
 ## 3. Exact-head review lineage
 
@@ -140,30 +184,38 @@ authorized root/admin_local/gestor calls prepare directly through PostgREST
 -> actor/target/team authority rows remain fenced pending privileged recovery
 ```
 
-The PR was returned to Draft without merge. T3A-v4 closes the direct-call path
+The PR was returned to Draft without merge at that point. T3A-v4 closes the direct-call path
 with a service-role-only opaque one-time Edge-proof issuer and a caller-JWT
 prepare that must atomically consume the matching unexpired proof before any
 lock, lease or password-state mutation. The proof is not actor authority; all
 root/admin_local/gestor, company, target and team decisions remain inside the
-prepare RPC under `auth.uid()`. This material change invalidates the earlier
-approvals in the affected domain and requires new exact-head Backend/Data and
-AppSec reviews.
+prepare RPC under `auth.uid()`.
+
+Fresh integral Backend/Data and independent AppSec reviews then approved exact
+head `a5c92617f372599a234c0147aad13a90649348d7` / tree
+`87872aac22b36437b7fb66f3614905e8df94f5ee` with no findings. PR #127 was
+merged as `610bdd3c4b5ab208f7ffe177d9d32a2184aa9d87`. Those approvals remain the
+unchanged v4 authority-boundary anchor. The audit compatibility code and audit
+ACL/fingerprint changes in v5 are a new material review domain.
 
 ## 4. B1 — safe rollout and failure ordering
 
-The required order under separate production authorities remains:
+The v4 Edge-first step was separately authorized and completed. Production v18
+failed before Auth on absent proof RPCs, but its audit insert returned 400. The
+remaining fail-closed order, each runtime transition separately authorized, is:
 
 ```text
-1. deploy the exact reviewed hardened Edge
-2. while the proof issuer and prepare RPCs are absent, prove reset_password
-   fails before Auth mutation
-3. apply the exact reviewed T3A migration
-4. validate catalog, roles, routine inventory, ACLs, grants, policies,
+1. approve one exact v5 corrective head by Backend/Data then independent AppSec
+2. deploy that exact reviewed v5 Edge while issuer/prepare remain absent
+3. prove audit INSERT succeeds, issuer returns absent/404 and no Auth mutation occurs
+4. apply the exact reviewed T3A migration only under a later authority
+5. validate catalog, roles, routine inventory, ACLs, grants, policies,
    proof/lease tables, all T1/T3 triggers and body fingerprints
-5. run separately-authorized positive/negative/cross-tenant/concurrency smoke
+6. run separately-authorized positive/negative/cross-tenant/concurrency smoke
 ```
 
-The Edge first calls the service-role-only
+The v5 Edge first requires a successful service-role audit insert containing
+both modern and legacy fields. Only then does it call the service-role-only
 `t3_issue_admin_password_reset_edge_proof` RPC, then passes the normalized proof
 only to the caller-JWT `t3_prepare_admin_password_reset` RPC before
 `auth.admin.updateUserById`. Missing issuer/prepare RPC, proof mismatch/expiry,
@@ -188,12 +240,13 @@ transport ambiguity occurs only after proven Auth success and is reconciled as
 described in §8. A stuck lease is an availability incident requiring separate
 recovery authority, not an authorization gap.
 
-The inverse migration-first order remains prohibited while v17 is live.
+The inverse migration-first order remains prohibited while v18 is live.
 
 ## 5. B2 — exact positive trust-anchor preflight
 
-The migration holds `admins`, `corretores` and `times` in `SHARE` mode
-through preflight, DDL and postflight. Before mutation it verifies:
+The migration holds `admins`, `corretores`, `times` and then `audit_logs` in
+`SHARE` mode through preflight, DDL and postflight. The authority-to-audit order
+matches existing audit-trigger writers. Before mutation it verifies:
 
 - exact postgres/client-role attributes plus exact `authenticator`
   NOINHERIT/login and `pg_database_owner` NOLOGIN attributes;
@@ -204,6 +257,10 @@ through preflight, DDL and postflight. Before mutation it verifies:
 - `auth.uid()` owner, security mode, volatility, return/signature, body and
   effective EXECUTE surface;
 - authority tables, exact required column types, RLS and FORCE RLS;
+- the complete live `audit_logs` metadata, table/column ACLs, all 20 columns,
+  constraints, indexes and policies under baseline fingerprint
+  `5d3b70257c57f5956032e83131effabb`, plus exact effective client/service
+  privileges;
 - valid, ready, immediate, non-partial, single-column unique identity indexes;
 - exact complete table ACLs and authenticated column grants for `admins`,
   `corretores` and `times`, including the established service-role surface;
@@ -465,9 +522,11 @@ success, does not retry blindly and requires state reconciliation.
 
 ## 9. B3 — drift-safe rollback
 
-Rollback begins by locking the proof table, the three authority tables and the
-lease table in that fixed `proof -> authority -> lease` order and in `SHARE`
-mode. This matches the writer order and avoids a reciprocal relation-lock cycle.
+Rollback begins by locking the proof table, three authority tables, lease table
+and audit table in fixed `proof -> authority -> lease -> audit` order and in
+`SHARE` mode. This matches prepare plus existing authority-audit trigger writer
+direction and avoids a reciprocal relation-lock cycle. Edge audit and proof
+HTTP calls commit separately and do not hold the opposite lock pair.
 It stops before destructive work when:
 
 - an unexpired Edge proof exists;
@@ -482,6 +541,8 @@ It stops before destructive work when:
   complete `public` ACL, `auth.uid()`, helpers, legacy writer, audit objects,
   policies, grants, indexes, context use or positive full routine inventory
   including the zero-aggregate assertion differs.
+- the complete post-T3A audit relation differs from fingerprint
+  `1b1a381796f273b503cd4c41d34a3688` or authenticated INSERT has reappeared.
 
 Only after the complete exact preflight does it remove proofs older than the
 same two-minute validity boundary and prove the locked proof table empty. It
@@ -494,8 +555,9 @@ restore exact pre-T3A direct guard (99477024...)
 -> drop exact empty proof table
 -> drop exact empty lease table
 -> restore only authenticated UPDATE(must_change_password)
+-> restore only the pinned legacy authenticated audit INSERT grant
 -> restore only the pinned service_role TRUNCATE baseline on the three tables
--> verify exact pre-T3A guard/grant/policy/inventory and T3 absence
+-> verify exact pre-T3A guard/grant/policy/inventory/audit fingerprint and T3 absence
 ```
 
 No business row or Auth credential is rewritten. Database rollback remains
@@ -506,12 +568,14 @@ is a later separately-authorized step.
 
 | Blocker / invariant | Corrective artifact | Candidate result | Runtime result |
 |---|---|---|---|
-| B1 Edge-first rollout | Edge fail-before-Auth on absent proof issuer/prepare + documented order | addressed | not executed |
-| B2 trust-anchor preflight | exact full role graph + public schema ACL + all routine kinds | addressed after second Backend findings | not applied |
-| B3 drift-safe rollback | same exact anchors + no live proof/lease + expired inert proof cleanup after full preflight + exact reversal | addressed after second Backend findings and v4 | not executed |
-| B4 T1 interoperability | both T1 triggers + exact leased transitions | addressed | not executed |
-| DB→Auth authority continuity | durable lease + snapshot-independent unique-index probes + 3 fencing triggers + service-role TRUNCATE removal + success-only release | addressed after Backend HIGH-1 | not runtime-tested |
-| direct PostgREST prepare / stranded lease | service-role-only one-time Edge proof consumed before lease/write | addressed after post-Ready P2 | not runtime-tested |
+| B1 Edge-first rollout | v18 fail-before-Auth on absent proof issuer/prepare + required v5 audit-first retest | v4 approved; v5 audit correction pending review | v18 PASS / no Auth mutation; audit 400 open |
+| B2 trust-anchor preflight | exact full role graph + public schema ACL + all routine kinds + complete audit relation fingerprints | v4 approved; v5 audit anchor pending review | T3A migration not applied |
+| B3 drift-safe rollback | same exact anchors + proof→authority→lease→audit order + no live proof/lease + exact grant reversal | v4 approved; v5 audit reversal pending review | not executed |
+| B4 T1 interoperability | both T1 triggers + exact leased transitions | approved and unchanged from v4 | not executed |
+| DB→Auth authority continuity | durable lease + snapshot-independent unique-index probes + 3 fencing triggers + service-role TRUNCATE removal + success-only release | approved and unchanged from v4 | not runtime-tested |
+| direct PostgREST prepare / stranded lease | service-role-only one-time Edge proof consumed before lease/write | approved and unchanged from v4 | issuer absent; no direct runtime bypass tested |
+| audit schema compatibility | dual modern/legacy Edge insert + normalized inet + fail-before-proof/Auth + exact audit fingerprints | v5 candidate | v18 POST 400; v5 not deployed |
+| audit integrity | revoke authenticated INSERT; preserve authenticated SELECT; exact rollback restore | v5 candidate | not applied |
 | actor=`auth.uid()` | caller JWT prepare RPC | preserved | not runtime-tested |
 | tenant/company server-side | strict DB predicates | preserved | not runtime-tested |
 | cross-company isolation | strict predicates + generic denial + fence | preserved | not runtime-tested |
@@ -520,13 +584,17 @@ is a later separately-authorized step.
 | T1/T2 | no T1 disable; no T2 change | preserved | not reopened |
 | frontend scope | no `App.jsx` diff | preserved | n/a |
 
-“Addressed” is a candidate statement, not specialist PASS, deployment proof,
-Ready authority or Security Go.
+“v5 candidate” is not specialist PASS, deployment proof, Ready authority or
+Security Go. The v4 approval remains exact-head evidence only for unchanged
+bytes/domains.
 
 ## 11. Required later acceptance matrix
 
 ```text
 Edge-first while proof issuer/prepare absent        FAIL CLOSED / NO AUTH MUTATION
+v5 Edge audit anchor while proof RPCs absent         INSERT + STATUS PATCH / NO AUTH MUTATION
+malformed/unavailable audit anchor                   FAIL BEFORE PROOF / NO AUTH MUTATION
+direct authenticated audit INSERT after migration   DENY
 direct prepare without valid Edge proof             DENY / NO LEASE / NO FLAG WRITE
 random/expired/wrong-actor/wrong-target proof       DENY / NO LEASE / NO FLAG WRITE
 abandoned pre-prepare proof                         INERT / NO FENCE / SERVER CLEANUP
@@ -570,6 +638,11 @@ Performed on the candidate source:
   check;
 - source checks for no broad grant, no T1 disable, no `IF EXISTS` rollback
   erasure and no `App.jsx` change.
+- read-only live confirmation of all 20 audit columns and types, exact required
+  legacy fields, ACL/policy/index/constraint inventories and complete baseline /
+  hypothetical post-revoke fingerprints;
+- TypeScript syntax, whitespace, SQL lexical/dollar-quote/parenthesis and
+  top-level transaction balance for the v5 correction.
 
 Not performed:
 
@@ -577,11 +650,11 @@ Not performed:
   stopped on the repository's pre-existing `package.json` / `pnpm-lock.yaml`
   specifier mismatch; neither manifest nor lockfile was changed;
 - migration or rollback execution on PostgreSQL 17;
-- Edge deployment or runtime request;
+- v5 Edge deployment or v5 runtime request;
 - production smoke/concurrency test;
 - Ready, merge or Security Go.
 
-Required next gates on one new resolved exact head:
+Required next gates on one new resolved v5 exact head:
 
 ```text
 1. integral material-file read and coverage reconciliation
@@ -590,4 +663,4 @@ Required next gates on one new resolved exact head:
 4. stop before Ready pending separate Product Authority
 ```
 
-T3A-v4 grants none of the remaining lifecycle or production authorities.
+T3A-v5 grants none of the remaining lifecycle or production authorities.

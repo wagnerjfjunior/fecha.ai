@@ -1,6 +1,6 @@
 # FECH.AI — SFJM Next Safe Action
 
-**Status:** `SEMANTIC_NEXT_ACTION_VIEW / T3A_V4_POST_READY_P2_CORRECTION / PUBLISH_AND_REPEAT_EXACT_HEAD_REVIEWS / DOCUMENTATION_ONLY`
+**Status:** `SEMANTIC_NEXT_ACTION_VIEW / PR127_MERGED / AUDIT_SCHEMA_V5_CORRECTION / PUBLISH_DRAFT_AND_REPEAT_EXACT_HEAD_REVIEWS`
 **Updated:** `2026-08-24`
 **Repository:** `wagnerjfjunior/fecha.ai`
 
@@ -14,38 +14,34 @@ docs/sfjm/CURRENT_STATE.md
 
 Resolve GitHub/Supabase lifecycle live before acting.
 
-Because the 2026-08-23 transition update is currently on the active T3A change set, a new conversation must bootstrap from live `main`, then resolve the active T3A PR/head and read this file from that exact head until the change set is merged.
+Because this 2026-08-24 transition is on the post-merge v5 corrective change
+set, a new conversation must bootstrap from live `main`, then resolve the active
+v5 corrective PR/head and read this file from that exact head until merge.
 
 ## 2. Single current semantic next action
 
 ```text
-Publish/reconcile the T3A-v4 Edge-proof correction for the valid post-Ready P2
-on `fcb7dfc2...`, resolve the new live exact head in existing PR #127, and
-repeat Backend/Data. Only after Backend/Data closure, obtain the independent
-AppSec exact-head review.
+Publish/reconcile the T3A-v5 audit-schema compatibility correction in one new
+Draft PR from merged main `610bdd3c...`, resolve its live exact head, and obtain
+Backend/Data exact-head review. Only after Backend/Data closure, obtain the
+independent AppSec exact-head review. Stop in Draft.
 ```
 
-Corrected candidate domains to reconcile on that exact head:
+Changed domains to reconcile on that exact head:
 
 ```text
-B1 safe rollout order
-B2 trust-anchor preflight
-B3 drift-safe rollback
-B4 T1 guard interoperability
-DB-commit-to-Auth authority continuity through a durable lease/fence whose
-unique-index probes remain effective across pre-lease MVCC snapshots
-exact authority-table ACL transition with service_role TRUNCATE removed
-positive non-system routine inventory replacing the rejected writer regex
-all routine kinds with an explicit positive zero non-system aggregate assertion
-full role-membership graph including grantor/admin/inherit/set options
-exact database/public owner + complete public schema ACL inventory
-service-role-only opaque one-time Edge-presence proof issuer
-caller-JWT prepare consumes exact actor+target proof using PostgreSQL time
-proof consumption before authority locks, durable lease or password-state write
-direct authenticated prepare without a valid proof fails with no durable state
-rollback blocks live proofs and leases, then removes only expired inert proofs
-after the complete exact preflight
+Edge dual modern/legacy audit insert for reset and creation paths
+audit insert must succeed before proof/prepare/Auth
+conservative inet normalization plus legacy text IP
+complete live audit relation fingerprint in migration pre/postflight
+authenticated audit INSERT revoked while authenticated SELECT remains
+rollback proof→authority→lease→audit order
+rollback exact post-T3 fingerprint + exact legacy INSERT restoration
+unchanged v4 B1-B4/actor/tenant/proof/lease/T1 contracts
 ```
+
+PR #127 is merged. The one new Draft PR is justified by the post-merge runtime
+finding and is not a duplicate/workaround PR for B1-B4.
 
 ## 3. Exact-head closure sequence
 
@@ -54,16 +50,18 @@ The next conversation should:
 ```text
 1. resolve FECH.AI main live
 2. execute canonical bootstrap and specialist resolution
-3. resolve the active T3A PR live: base/head/state/changed files/checks/reviews/threads
-4. read CURRENT_STATE + this file from the exact active T3A head
-5. confirm the corrected Edge/migration/rollback/evidence/SFJM artifacts are the resolved PR head
+3. resolve the active v5 corrective PR live: base/head/state/changed files/checks/reviews/threads
+4. read CURRENT_STATE + this file from the exact corrective head
+5. confirm the v5 Edge/migration/rollback/evidence/SFJM artifacts are that head
 6. preserve T1/T2 contracts and confirm App.jsx has no T3A diff
-7. update the existing PR description so it matches that final head
+7. update the corrective PR description so it matches that final head
 8. read every final material artifact to EOF and reconcile the coverage matrix
-9. prepare a new exact-head Backend/Data prompt that includes the prior review lineages, the post-Ready direct-RPC exploit and the v4 Edge-proof correction; Product Authority submits it manually to backend-data-platform-specialist and returns the integral response
+9. prepare an exact-head Backend/Data prompt that includes the approved v4
+   lineage, v18 fail-before-Auth PASS, audit POST 400 and v5 correction; Product
+   Authority submits it manually and returns the integral response
 10. after Backend/Data closure, repeat independently with application-security-assurance-specialist
 11. record the manual exact-head outcomes without inventing a Gateway receipt or carrying a prior-head PASS
-12. stop in Draft before a new Ready/merge transition
+12. stop in Draft before Ready
 ```
 
 Head changes invalidate prior exact-head gates. Do not carry a PASS across a corrective commit.
@@ -79,16 +77,17 @@ This section is a proof obligation, not deployment authorization.
 The intended fail-closed rollout is:
 
 ```text
-reviewed hardened Edge deployed first
-→ proof issuer absent: administrative reset fails closed without prepare/Auth
+reviewed v5 Edge deployed while proof issuer remains absent
+→ audit row is created with modern + legacy fields
+→ proof issuer absent: audit status is updated and reset fails before Auth
 → apply reviewed migration
-→ validate function/ACL/grants/triggers/fingerprints, empty proof/lease tables,
+→ validate function/ACL/grants/triggers/audit fingerprints, empty proof/lease tables,
   complete role/schema anchors and all-kind positive routine inventory
 → controlled positive/negative/cross-tenant smoke
 → confirm direct must_change_password client write cannot bypass boundary
 ```
 
-Do not use the inverse order while the v17 reset behavior remains live.
+Do not use the inverse order while the audit-incompatible v18 remains live.
 
 ## 5. Required rollback semantics
 
@@ -98,15 +97,16 @@ Rollback must be executable and drift-aware:
 
 ```text
 validate exact T3A proof issuer/prepare/release/fence functions, proof/lease
-tables/triggers and fixed proof→authority→lease rollback lock order,
+tables/triggers and fixed proof→authority→lease→audit rollback lock order,
 complete role/schema anchors, all-kind positive routine inventory and expected
-grant state
+grant state plus complete post-T3 audit relation fingerprint
 validate exact T3A-modified T1 guard fingerprint when applicable
 require the locked lease table and all unexpired proofs to be empty; otherwise STOP
 if drift: STOP
 after the complete exact preflight, delete only expired inert proofs and prove
   the locked proof table is empty
-otherwise restore database boundary to reviewed pre-T3A contract
+otherwise restore database boundary and authenticated audit INSERT to the
+  reviewed pre-T3A contract and verify the exact baseline audit fingerprint
 while hardened Edge remains deployed and proof issuer is absent: reset fails closed
 then restore the versioned v17 Edge baseline only under explicit rollback authority
 verify runtime/catalog after rollback
@@ -124,7 +124,9 @@ broadening authenticated UPDATE
 trusting empresa/role/flags/time from client
 making service_role the caller identity for the T3 authorization RPC
 granting prepare EXECUTE to anon/PUBLIC/service_role
-silently changing user-creation semantics
+continuing to proof/Auth after an audit INSERT error
+weakening audit NOT NULL/RLS/ACL contracts instead of matching them
+changing user-creation authority/tenant semantics beyond shared audit compatibility
 using production trial-and-error as implementation validation
 ```
 
