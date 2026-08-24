@@ -1,7 +1,7 @@
 # FECH.AI — SFJM Evidence Freshness
 
-**Status:** `CLAIM_ANCHOR_INVALIDATION_LEDGER / T3A_V3_AFTER_SECOND_BACKEND_REQUEST_CHANGES / REPEAT_BACKEND_EXACT_HEAD_REVIEW_PENDING / DOCUMENTATION_ONLY`
-**Updated:** `2026-08-23`
+**Status:** `CLAIM_ANCHOR_INVALIDATION_LEDGER / T3A_V4_POST_READY_P2_CORRECTION / NEW_EXACT_HEAD_REVIEWS_PENDING / DOCUMENTATION_ONLY`
+**Updated:** `2026-08-24`
 **Repository:** `wagnerjfjunior/fecha.ai`
 
 ## 1. Freshness model
@@ -44,6 +44,9 @@ Fresh read-only production revalidation on 2026-08-23 established:
 
 ```text
 public.t3_prepare_admin_password_reset(uuid): ABSENT
+public.t3_prepare_admin_password_reset(uuid,uuid): ABSENT
+public.t3_issue_admin_password_reset_edge_proof(uuid,uuid): ABSENT
+public.t3_admin_password_reset_edge_proofs: ABSENT
 public.marcar_senha_inicial_definida() md5:
   2a7b28d4bb6342a99d075c4d3c49af4d
 authenticated UPDATE columns on public.corretores:
@@ -204,15 +207,40 @@ manual response SHA-256:
 ```
 
 This is fresh evidence about `46313258...` and materially accepts the v3
-lease/fence concurrency analysis. The current membership/aggregate/schema
-correction changes the head, so the response is not a final-head PASS. AppSec
-remains blocked until a repeated Backend/Data review closes the new exact head.
-
-Corrected v3 candidate body/inventory anchors now recorded in this change set:
+lease/fence concurrency analysis. The membership/aggregate/schema correction
+then reached exact head `fcb7dfc2f5f2259926556652fa9cfd3443d0c214` / tree
+`4dcaf2d4b6aa1248801e455def811e50ff04e414`. Integral Backend/Data and
+independent AppSec review both returned `APPROVE`:
 
 ```text
-public.t3_prepare_admin_password_reset(uuid):
-  prosrc md5 91fc82deadc0d18e871e43a812c8d6dd
+Backend/Data response SHA-256:
+  8b6bf96691b7337df95f0350ac5028a4aeb85e6cab917ec56383fc8e083ac0dc
+AppSec response SHA-256:
+  1df5df13786f7ba767340cca2ca546aeddbf92e81a307a48aef3107fc0cf64ca
+```
+
+After separately-authorized Ready, the GitHub Codex review opened material P2
+`DIRECT_RPC_CAN_MINT_UNRELEASABLE_LEASE`. Source validation confirmed that the
+authenticated one-argument prepare RPC was directly callable through
+PostgREST, could commit the durable lease and `must_change_password=true`
+without an Auth mutation, and exposed no release path to that caller. The PR
+was returned to Draft without merge. This finding invalidates both `fcb7dfc2...`
+approvals as final-head gates in the affected domain.
+
+T3A-v4 changes Edge, migration, rollback and evidence so the service-role-only
+issuer mints an opaque actor+target Edge-presence proof and the caller-JWT
+two-argument prepare consumes that exact unexpired proof before any locks,
+lease or password-state write. The changed head requires a fresh Backend/Data
+review and, only after closure, independent AppSec.
+
+Corrected v4 candidate body/inventory anchors now recorded in this change set:
+
+```text
+public.t3_issue_admin_password_reset_edge_proof(uuid,uuid):
+  prosrc md5 87f8d7f0c96ce4ae52fed9e2bc4bdcdd
+
+public.t3_prepare_admin_password_reset(uuid,uuid):
+  prosrc md5 f9bd114c7eb77313e22861816b8a88f5
 
 public.t3_release_admin_password_reset_lease(uuid,uuid,uuid):
   prosrc md5 a51c5b360c5d8a3684a97271460ec249
@@ -244,9 +272,25 @@ database/public schema:
   complete effective ACL count 7 / md5 e2ad94b6bfb9b0cb8c4980459fd55a6e
 
 lease-table constraint shape:
-  unique lease_id + actor_user_id + target_user_id + non-null authority_time_id
+  unique lease_id, actor_user_id and target_user_id; authority_time_id unique when non-null
   fencing check uses transactional unique-index probes, not snapshot-only SELECT
   prepare probes actor/target/team and rejects cross-role subject overlap
+
+Edge-proof boundary:
+  issuer EXECUTE: service_role only
+  trust claim: server-credential handshake, not exact Edge-binary attestation
+  prepare EXECUTE: authenticated only
+  proof table: postgres-owned / RLS + FORCE / no client table grants or policies
+  unique proof + actor; exact target bound in row; no target-wide reservation
+  prior same-actor proof rotated; PostgreSQL statement time; two-minute validity
+  prepare atomically consumes exact proof before any durable state
+  random/missing/expired/wrong-actor/wrong-target proof fails closed
+
+rollback proof handling:
+  SHARE-lock in fixed proof -> authority -> lease writer order
+  any unexpired proof or any lease: STOP
+  only after complete exact preflight: delete expired inert proofs
+  prove locked proof table empty before exact object removal
 
 authority-table ACL transition:
   complete ACL fingerprints pinned before/after
@@ -301,7 +345,7 @@ my_empresa_id() md5: 7d7a73d22953d547a103f89c7b676906
 ```
 
 The old direct-literal result is not proof against wrappers, dynamic SQL or
-transitive callees. The v3 migration therefore pins the full positive routine
+transitive callees. The v4 migration therefore pins the full positive routine
 inventory and enforces the password-state transition at the enabled T1/T3
 guards. These remain review anchors, not runtime proof.
 
@@ -328,7 +372,7 @@ Invalidate after any Edge version/runtime change.
 At this transition, claim only the corrected candidate state and do not claim:
 
 ```text
-corrected T3A v3 candidate artifacts: RECORDED IN CHANGE SET
+corrected T3A v4 candidate artifacts: RECORDED IN CHANGE SET
 corrected final live PR head: MUST BE RESOLVED AFTER COMMIT
 T3A Backend/Data exact-head PASS: NOT ESTABLISHED
 T3A independent AppSec exact-head PASS: NOT ESTABLISHED

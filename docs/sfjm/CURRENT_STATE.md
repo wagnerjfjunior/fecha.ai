@@ -1,7 +1,7 @@
 # FECH.AI — SFJM Current Material State
 
-**Status:** `MATERIAL_RECORDED_STATE / T3A_CORRECTED_AFTER_SECOND_BACKEND_REQUEST_CHANGES / REPEAT_BACKEND_EXACT_HEAD_REVIEW_PENDING / SECURITY_GO_DENIED / DOCUMENTATION_ONLY`
-**Updated:** `2026-08-23`
+**Status:** `MATERIAL_RECORDED_STATE / T3A_V4_POST_READY_P2_CORRECTION / NEW_EXACT_HEAD_REVIEWS_PENDING / SECURITY_GO_DENIED / DOCUMENTATION_ONLY`
+**Updated:** `2026-08-24`
 **Repository:** `wagnerjfjunior/fecha.ai`
 
 ## 1. Authority rule
@@ -54,6 +54,9 @@ Current production read-only revalidation on 2026-08-23 established:
 
 ```text
 public.t3_prepare_admin_password_reset(uuid): ABSENT
+public.t3_prepare_admin_password_reset(uuid,uuid): ABSENT
+public.t3_issue_admin_password_reset_edge_proof(uuid,uuid): ABSENT
+public.t3_admin_password_reset_edge_proofs: ABSENT
 T1 triggers on public.corretores: PRESENT / ENABLED
 authenticated UPDATE columns on public.corretores exactly:
   apto_para_receber
@@ -130,21 +133,31 @@ rollback that restores the exact prior boundary
 
 ### Current implementation lineage
 
-The initial candidate at PR head
-`45ad27668835b6458b52d2fb592cfa36b5589726` received material B1-B4
-findings. A later exact-head Backend/Data review of
-`bf8fb1f4ab043226de3c77763b9b425a13b0261e` was validly relayed manually and
-returned `REQUEST_CHANGES`: its HIGH-1 identified the DB-commit-to-Auth race;
-HIGH-2 rejected the direct `prosrc` writer regex as non-transitive. The next v3
-head `4631325827a76152ba554bece2a59da9eb1bb662` received a second integral
-manual Backend/Data review: B1/B4 passed statically and HIGH-1 closed, but B2/B3
-failed because the role-membership check was unilateral, the routine inventory
-omitted aggregates, and the `public` schema ACL was not complete. The same T3A
-change set now contains the correction for those three findings:
+The initial candidate at PR head `45ad2766...` received material B1-B4
+findings. Backend/Data review of `bf8fb1f...` then identified the
+DB-commit-to-Auth authority race and rejected the non-transitive writer regex.
+The v3 lease/fence head `46313258...` closed that race and passed B1/B4
+statically, but still lacked complete membership/options, aggregate and
+`public` ACL closure. The corrected exact head
+`fcb7dfc2f5f2259926556652fa9cfd3443d0c214` / tree
+`4dcaf2d4b6aa1248801e455def811e50ff04e414` received integral manual
+Backend/Data `APPROVE` and independent AppSec `APPROVE`.
+
+After Product Authority separately authorized Ready, the GitHub Codex review
+opened material P2 `DIRECT_RPC_CAN_MINT_UNRELEASABLE_LEASE`. An authorized
+authenticated user could call the preparation RPC directly through PostgREST,
+commit a non-expiring lease and `must_change_password=true`, skip the Edge Auth
+password mutation, and lack access to the service-role-only release. The T1/T3
+fence would then also block ordinary self-service completion. The PR was
+returned to Draft without merge, and the same T3A change set now contains the
+v4 correction:
 
 ```text
 versioned criar-usuario Edge baseline + hardened leased reset path
-caller-bound public.t3_prepare_admin_password_reset(uuid)
+service-role-only public.t3_issue_admin_password_reset_edge_proof(uuid,uuid)
+caller-bound public.t3_prepare_admin_password_reset(uuid,uuid)
+opaque one-time actor+target proof consumed before locks/lease/password state
+PostgreSQL-only two-minute proof freshness; no frontend time or authority input
 durable reset lease + snapshot-independent unique-index probes + three authority-table fencing triggers
 service-role-only exact lease release after proven Auth success
 exact authority-table ACL pinning + service_role TRUNCATE revocation
@@ -155,14 +168,15 @@ all pg_proc routine kinds + explicit zero non-system aggregate assertion
 exact fail-closed trust-anchor preflight/postflight
 lease-bound T1 direct-guard interoperability
 revocation of authenticated UPDATE(must_change_password)
-exact drift-aware rollback requiring an empty locked lease table
+exact drift-aware rollback blocking live proofs/leases and cleaning only expired inert proofs after full preflight
 B1-B4 evidence and coverage matrix
 ```
 
 Corrected candidate fingerprints:
 
 ```text
-T3 prepare prosrc: 91fc82deadc0d18e871e43a812c8d6dd
+T3 proof issuer prosrc: 87f8d7f0c96ce4ae52fed9e2bc4bdcdd
+T3 prepare prosrc: f9bd114c7eb77313e22861816b8a88f5
 T3 release prosrc: a51c5b360c5d8a3684a97271460ec249
 T3 fence guard prosrc: bd611e591aa2d951b178853f78caaa65
 T3-aware direct guard prosrc: 951da8a6ac6e934828f06ab1513778fa
@@ -215,7 +229,7 @@ are addressed in the same PR candidate as follows:
 
 ```text
 reviewed hardened Edge first
--> RPC absent: reset_password fails closed before Auth mutation
+-> proof issuer absent: reset_password fails closed before prepare/Auth mutation
 -> reviewed migration
 -> catalog/ACL/fingerprint validation
 -> separately-authorized bounded smoke
@@ -241,22 +255,38 @@ separately-pinned direct T1 guard: 264 routines /
 SECURITY DEFINER routines / `7faa376a403c69239d9606559cf9c2db`, with an
 explicit positive non-system aggregate count of zero.
 
+The proof issuer/table and two-argument prepare signature are absent before the
+migration and are pinned after it by exact owner, SECURITY DEFINER/search path,
+signature, source, comment, ACL, table shape, constraints, RLS/FORCE, empty
+policy/trigger/rewrite inventory and empty postflight state. Only service_role
+can execute the issuer; this is a server-credential handshake, not exact binary
+attestation. Only authenticated can execute prepare. Prepare still
+derives its actor exclusively from `auth.uid()` and consumes the exact
+actor+target proof using PostgreSQL time before any durable state.
+
 ### B3 — drift-safe rollback: CANDIDATE ADDRESSED
 
-Before any replacement, drop or grant, rollback locks the three authority tables
-and the lease table in SHARE mode. An active/unresolved lease stops rollback. It
-verifies the exact lease table, prepare/release/fence functions, three fencing
+Before any replacement, drop or grant, rollback locks the proof table, three
+authority tables and lease table in the same fixed proof→authority→lease writer
+order and in SHARE mode. An unexpired proof or any active/unresolved lease stops
+rollback. It verifies the exact proof/lease
+tables, issuer/prepare/release/fence functions, three fencing
 triggers, T3-aware guard, client/authenticator roles, the complete membership
 graph, database/schema ownership, complete `public` ACL and all-kind positive
 routine inventory including the zero-aggregate assertion, T1/audit objects,
-policies and grants. It restores guard MD5
-`99477024e337de5645dd042a30f8cf78`, drops only proven T3 objects without
-`IF EXISTS`, restores only the prior column grant and never rewrites user/Auth
-state.
+policies and grants. Only after the complete exact preflight does it delete
+expired inert proofs, prove the locked proof table empty, restore guard MD5
+`99477024e337de5645dd042a30f8cf78`, drop only proven T3 objects without
+`IF EXISTS`, restore only the prior column grant and leave user/Auth state
+untouched.
 
 ### B4 — T1 guard interoperability: CANDIDATE ADDRESSED
 
-Both existing T1 triggers remain enabled. The RPC serializes `admins`,
+Both existing T1 triggers remain enabled. Before the durable path begins, the
+caller-JWT RPC must consume an unexpired opaque proof whose actor equals
+`auth.uid()` and whose target equals the requested target. A direct caller
+without that service-role-issued Edge-presence proof fails before locks, lease
+creation or password-state mutation. The RPC then serializes `admins`,
 `corretores` and `times` with one fixed-order SHARE ROW EXCLUSIVE acquisition,
 creates a random durable lease with unique actor/target/team keys, and binds
 the T1 transition to
@@ -270,17 +300,18 @@ privilege is removed from service_role while T3A is active. The direct guard den
 password-state writer except the established active self-service true-to-false
 completion. Non-password T1 behavior remains established.
 
-The Backend/Data `REQUEST_CHANGES` results on `bf8fb1f...` and `46313258...` are
-historical material inputs, not closure for the changed head. The second review
-response is anchored by SHA-256
-`1ab2b39d52536b0ba92cd25df4d91b808f25abd08be0c5de72146113c7cda544`.
-No B1-B4 candidate statement is a specialist PASS. The next gate is a repeated
-Backend/Data review of one new resolved exact head; AppSec follows only after
-Backend/Data closure.
+The prior Backend/Data `REQUEST_CHANGES` results remain historical inputs. The
+later Backend/Data and AppSec approvals on `fcb7dfc2...` are anchored by
+SHA-256 `8b6bf96691b7337df95f0350ac5028a4aeb85e6cab917ec56383fc8e083ac0dc`
+and `1df5df13786f7ba767340cca2ca546aeddbf92e81a307a48aef3107fc0cf64ca`.
+They remain evidence about v3 but are invalid as final-head gates after the
+material direct-RPC finding and v4 correction. No v4 B1-B4 candidate statement
+is a specialist PASS. The next gate is repeated Backend/Data review of one new
+resolved exact head; AppSec follows only after Backend/Data closure.
 
 ## 7. Material blockers
 
-Until Backend/Data and independent AppSec both pass on one exact final head and
+Until Backend/Data and independent AppSec both pass on one exact v4 head and
 the later lifecycle/runtime authorities are separately granted:
 
 ```text
@@ -298,9 +329,16 @@ A green Vercel build does not satisfy these gates.
 
 ## 8. Current Product Authority and limits
 
-Product Authority has authorized continued corrective work on the existing T3A branch/PR to resolve the identified security/backend blockers under FECH.AI governance, without workarounds or scope-evasive fixes.
+Product Authority has authorized continued corrective work on the existing T3A
+branch/PR to resolve the identified security/backend blockers under FECH.AI
+governance, without workarounds or scope-evasive fixes.
 
-That authority covers GitHub-side corrective implementation/evidence necessary to produce a reviewable T3A candidate on the existing change set.
+That authority covers GitHub-side corrective implementation/evidence necessary
+to produce a reviewable T3A candidate on the existing change set. Ready was
+previously authorized and consumed on the v3 candidate, then reversed to Draft
+when the material P2 appeared. Merge was not performed. Neither the old
+exact-head approvals nor the old lifecycle transition carry across the material
+v4 correction.
 
 It does **not** collapse the separate gates for:
 
@@ -319,7 +357,7 @@ Those remain separate lifecycle/runtime decisions and require their applicable e
 ## 9. Semantic next action
 
 ```text
-Publish and reconcile the v3 correction in the existing T3A change set, repeat
+Publish and reconcile the v4 Edge-proof correction in existing PR #127, repeat
 Backend/Data on the new live-resolved exact head, then run independent AppSec
 only after Backend/Data closure.
 ```
@@ -337,7 +375,7 @@ Required sequence for the next conversation:
 8. reconcile the B1-B4 coverage matrix
 9. run Backend/Data exact-head review
 10. run independent AppSec exact-head review without inheriting the first review
-11. stop before Ready unless Product Authority separately authorizes Ready
+11. stop in Draft before a new Ready/merge transition
 ```
 
 Temporary specialist-channel fact:

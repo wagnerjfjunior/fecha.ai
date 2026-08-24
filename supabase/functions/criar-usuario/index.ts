@@ -1,9 +1,14 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 
-// FECH.AI — T3A-v3
+// FECH.AI — T3A-v4
 // reset_password authority is derived server-side by public.t3_prepare_admin_password_reset().
-// A durable database lease fences the reviewed authority rows until the Auth
-// mutation has completed and the service-role client releases that exact lease.
+// Before that caller-JWT RPC can mint a durable lease, the Edge must obtain an
+// opaque, one-time proof from a service-role-only issuer. The proof establishes
+// only that the trusted server-only handshake was traversed; it is not binary
+// attestation or actor authority. auth.uid() and server-side database state
+// remain the exclusive actor/tenant/role authority. The durable lease then
+// fences the reviewed authority rows until the Auth mutation has
+// completed and the service-role client releases that exact lease.
 // The user-creation path below intentionally preserves the v17 behavior in this change.
 
 // ─── CORS restrito ao domínio da app ─────────────────────────────────────────
@@ -107,7 +112,7 @@ Deno.serve(async (req: Request) => {
       .single()
 
     // ═══════════════════════════════════════════════════════════════════════
-    // AÇÃO: RESET DE SENHA — T3A-v3 / MULTI-TENANT AUTHORITY BOUNDARY
+    // AÇÃO: RESET DE SENHA — T3A-v4 / MULTI-TENANT AUTHORITY BOUNDARY
     // ═══════════════════════════════════════════════════════════════════════
     if (body.action === 'reset_password') {
       const logId = `audit-${Date.now()}-${Math.random().toString(36).slice(2)}`
@@ -129,6 +134,40 @@ Deno.serve(async (req: Request) => {
         return json({ error: 'user_id e senha temporária de no mínimo 8 caracteres são obrigatórios.' }, 400, cors)
       }
 
+      // Mint an opaque one-time proof through the service-role-only issuer.
+      // This proof is not actor authority and does not authorize the target.
+      // The caller-JWT prepare RPC below consumes it and still derives the
+      // actor exclusively from auth.uid() plus server-side database state.
+      // A direct PostgREST caller cannot mint a durable lease without first
+      // crossing the service-role-only server handshake used by this Edge.
+      let edgeProofId: string | null = null
+      let edgeProofError: unknown = null
+
+      try {
+        const result = await admin.rpc(
+          't3_issue_admin_password_reset_edge_proof',
+          {
+            p_actor_user_id: caller.id,
+            p_target_user_id: userId,
+          }
+        )
+        edgeProofId = normalizeUuid(result.data)
+        edgeProofError = result.error
+      } catch (caught: unknown) {
+        edgeProofError = caught
+      }
+
+      if (edgeProofError || !edgeProofId) {
+        await admin.from('audit_logs')
+          .update({ payload: { status: 'edge_proof_unavailable', action: 'reset_password' } })
+          .eq('id', logId)
+
+        // The rollout is Edge-first. While the proof issuer is absent, or if
+        // proof issuance is ambiguous, fail before any caller preparation or
+        // Auth mutation.
+        return json({ error: 'Não foi possível concluir a redefinição de senha.' }, 500, cors)
+      }
+
       // Use the caller JWT (not service_role) so auth.uid() inside the
       // SECURITY DEFINER RPC is the real authenticated actor. empresa/role/
       // flags/time/ownership from the request are ignored as authority inputs.
@@ -147,7 +186,10 @@ Deno.serve(async (req: Request) => {
       try {
         const result = await callerDb.rpc(
           't3_prepare_admin_password_reset',
-          { p_target_user_id: userId }
+          {
+            p_target_user_id: userId,
+            p_edge_proof_id: edgeProofId,
+          }
         )
         authorization = result.data
         authorizationError = result.error

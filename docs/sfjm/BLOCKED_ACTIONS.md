@@ -1,7 +1,7 @@
 # FECH.AI — SFJM Blocked Actions
 
-**Status:** `MATERIAL_BLOCKER_VIEW / T3A_V3_AFTER_SECOND_BACKEND_REQUEST_CHANGES / REPEAT_BACKEND_REVIEW_PENDING / FAIL_CLOSED / DOCUMENTATION_ONLY`
-**Updated:** `2026-08-23`
+**Status:** `MATERIAL_BLOCKER_VIEW / T3A_V4_POST_READY_P2_CORRECTION / NEW_EXACT_HEAD_REVIEWS_PENDING / FAIL_CLOSED / DOCUMENTATION_ONLY`
+**Updated:** `2026-08-24`
 **Repository:** `wagnerjfjunior/fecha.ai`
 
 ## 1. Authority
@@ -44,22 +44,30 @@ B4 — incompatibility with the live T1 direct-compatibility guard for gestor pa
 
 The Backend/Data exact-head review of `bf8fb1f...` returned `REQUEST_CHANGES`:
 the DB lock did not span the later Auth side effect and the writer regex was not
-transitive. The v3 candidate at `4631325827a76152ba554bece2a59da9eb1bb662`
-replaced those mechanisms with a durable authority lease/fence and positive
-routine inventory. Its second exact-head review closed HIGH-1 and passed B1/B4,
-but returned `REQUEST_CHANGES` because B2/B3 still omitted the full membership
-graph/options, aggregates, and the complete `public` schema ACL. The current
-correction adds those exact anchors in migration and rollback. Its changed head
-still has no exact-head specialist PASS.
+transitive. The v3 candidate at `46313258...` introduced the durable
+lease/fence and positive inventory, then a same-PR correction closed its
+membership/options, aggregate and complete `public` ACL findings. Exact head
+`fcb7dfc2...` subsequently received Backend/Data and independent AppSec
+`APPROVE`.
+
+After separately-authorized Ready, the GitHub Codex review opened material P2
+`DIRECT_RPC_CAN_MINT_UNRELEASABLE_LEASE`. Direct authenticated PostgREST access
+to the prepare RPC could commit a durable lease and `must_change_password=true`
+without the Edge Auth mutation; only service_role could release that lease, and
+the T1/T3 guards would then prevent ordinary completion. The PR was returned to
+Draft without merge. T3A-v4 now requires a service-role-only, opaque, one-time
+Edge-presence proof that the caller-JWT prepare RPC must consume before locks,
+lease creation or password-state mutation. The changed head has no valid
+specialist PASS.
 
 Current blocking gate:
 
 ```text
-publish/resolve the new v3 corrective PR head
+publish/resolve the new v4 corrective PR head in PR #127
 -> integral material-file read + coverage reconciliation
 -> repeat Backend/Data exact-head review and obtain PASS
 -> independent AppSec exact-head PASS
--> STOP before Ready pending separate Product Authority
+-> STOP in Draft before a new Ready/merge transition
 ```
 
 Any material correction after either review invalidates both head-bound results
@@ -75,7 +83,9 @@ broadening authenticated UPDATE on public.corretores
 restoring client authority over must_change_password
 trusting client-provided empresa_id/role/flags/time/ownership
 using service_role identity as a substitute for auth.uid() authorization
-exposing T3 RPC to anon/PUBLIC/service_role
+exposing the authenticated prepare RPC to anon/PUBLIC/service_role
+letting a direct authenticated prepare call create durable state without an
+  Edge-presence proof
 normalizing production users to fit the code
 trial-and-error SQL in production
 mixing unrelated user-creation redesign into password-reset hardening

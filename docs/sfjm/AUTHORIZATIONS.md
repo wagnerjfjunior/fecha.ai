@@ -1,7 +1,7 @@
 # FECH.AI — SFJM Authorizations
 
-**Status:** `AUTHORITY_PROVENANCE_LEDGER / T3A_CORRECTIVE_GITHUB_AUTHORITY_ACTIVE / FAIL_CLOSED / DOCUMENTATION_ONLY`
-**Updated:** `2026-08-23`
+**Status:** `AUTHORITY_PROVENANCE_LEDGER / T3A_V4_SAME_PR_CORRECTIVE_AUTHORITY_ACTIVE / POST_READY_MATERIAL_INVALIDATION / FAIL_CLOSED / DOCUMENTATION_ONLY`
+**Updated:** `2026-08-24`
 **Repository:** `wagnerjfjunior/fecha.ai`
 
 ## 1. Interpretation rule
@@ -88,6 +88,32 @@ bounded authority. It covers publishing/reconciling the corrected artifacts,
 updating the existing PR description/evidence and completing the required
 exact-head validation record. It does not turn a candidate statement into
 specialist PASS or authorize the next lifecycle transition.
+
+The subsequent v3 candidate at exact head
+`fcb7dfc2f5f2259926556652fa9cfd3443d0c214` / tree
+`4dcaf2d4b6aa1248801e455def811e50ff04e414` received integral manual
+Backend/Data `APPROVE` and independent AppSec `APPROVE`:
+
+```text
+Backend/Data response SHA-256:
+  8b6bf96691b7337df95f0350ac5028a4aeb85e6cab917ec56383fc8e083ac0dc
+AppSec response SHA-256:
+  1df5df13786f7ba767340cca2ca546aeddbf92e81a307a48aef3107fc0cf64ca
+```
+
+Product Authority then separately authorized Ready, review and merge for that
+reviewed candidate. Ready was performed, but the post-Ready GitHub Codex review
+opened material P2 `DIRECT_RPC_CAN_MINT_UNRELEASABLE_LEASE`: the authenticated
+preparation RPC could be called directly, creating durable fenced state without
+the Edge Auth password mutation or a caller-accessible release. The PR was
+returned to Draft and was not merged.
+
+This is a material invalidation event. The prior exact-head specialist approvals
+and the unconsumed merge transition cannot be carried to a changed v4 head. The
+existing active corrective authority covers the same-PR Edge-proof, migration,
+rollback, evidence and SFJM correction required to close that finding. A new
+exact-head Backend/Data review followed by independent AppSec is required; a new
+Ready/merge transition remains separate after those gates.
 
 This `ACTIVE_AUTHORITY` is for producing a corrected reviewable GitHub candidate in the existing T3A change set. It is not production mutation authority.
 

@@ -1,20 +1,20 @@
-# FECH.AI — T3A-v3 Administrative Password Reset Multi-Tenant Authority Boundary
+# FECH.AI — T3A-v4 Administrative Password Reset Multi-Tenant Authority Boundary
 
-**Status:** `CORRECTED_AFTER_SECOND_BACKEND_REQUEST_CHANGES / B1-B4_CANDIDATE_ADDRESSED / REPEAT_BACKEND_EXACT_HEAD_REVIEW_REQUIRED / NOT_APPLIED / NOT_DEPLOYED / NOT_READY / NOT_MERGED`
+**Status:** `POST_READY_P2_CORRECTED / EDGE_PROOF_BOUNDARY_CANDIDATE / EXACT_HEAD_REVIEWS_REQUIRED / NOT_APPLIED / NOT_DEPLOYED / NOT_READY / NOT_MERGED`
 **Initial evidence date:** `2026-08-22`
-**Corrective evidence date:** `2026-08-23`
+**Corrective evidence dates:** `2026-08-23`, `2026-08-24`
 **Repository:** `wagnerjfjunior/fecha.ai`
 **Base main:** `037232fe3da37a749ab980f783af92ff15e2baf2`
 **Branch:** `security/t3a-admin-password-reset-boundary`
 **Initial blocked PR head:** `45ad27668835b6458b52d2fb592cfa36b5589726`
 **Backend/Data reviewed heads:** `bf8fb1f4ab043226de3c77763b9b425a13b0261e`, `4631325827a76152ba554bece2a59da9eb1bb662`
-**Latest reviewed tree:** `843bbc9c9f32f07e97713368e7e472fca9e650cd`
-**Latest manual response SHA-256:** `1ab2b39d52536b0ba92cd25df4d91b808f25abd08be0c5de72146113c7cda544`
+**Last fully approved head before post-Ready finding:** `fcb7dfc2f5f2259926556652fa9cfd3443d0c214`
+**Last fully approved tree before post-Ready finding:** `4dcaf2d4b6aa1248801e455def811e50ff04e414`
 
-This document records the correction after the second valid manually-relayed
-Backend/Data exact-head review returned `REQUEST_CHANGES`. The next exact head
-must be resolved live after commit. No verdict from an earlier head carries
-forward.
+This document records the same-PR correction of the material post-Ready finding
+`DIRECT_RPC_CAN_MINT_UNRELEASABLE_LEASE`. The next exact head must be resolved
+live after commit. No verdict from an earlier head carries forward in the
+affected Edge-proof / lease-origin domain.
 
 ## 1. Authorized and prohibited scope
 
@@ -24,6 +24,11 @@ T3A changes only the administrative password-reset boundary:
 - company, role, flags, team and protected-admin identity come from the server;
 - root / admin_local / gestor authority remains strict;
 - cross-company and missing-target results fail closed without enumeration;
+- only the service-role-only issuer, called internally by the versioned Edge,
+  can mint the opaque proof required before a caller-JWT preparation RPC may
+  create durable state;
+- the proof does not authorize actor/tenant/role/target; `auth.uid()` and
+  server-side database state remain authoritative;
 - a durable database lease fences the authority decision through the external
   Auth password mutation;
 - `must_change_password=true` is established before Auth mutation;
@@ -49,6 +54,9 @@ Read-only production state reconciled on `2026-08-23`:
 Supabase project: uobxxgzshrmbtjfdolxd / ACTIVE_HEALTHY / PostgreSQL 17
 latest material migration: 20260822192552 f1_02_harden_status_corretor_rpc
 public.t3_prepare_admin_password_reset(uuid): ABSENT
+public.t3_prepare_admin_password_reset(uuid,uuid): ABSENT
+public.t3_issue_admin_password_reset_edge_proof(uuid,uuid): ABSENT
+public.t3_admin_password_reset_edge_proofs: ABSENT
 public.t3_admin_password_reset_leases: ABSENT
 criar-usuario: v17 / ACTIVE / verify_jwt=false
 live Edge ezbr_sha256: 679643d42dc944cc810580807f4b1a2f5a78ff30a0ce0d67f0713817b2eeb47f
@@ -108,9 +116,38 @@ HIGH-2: OPEN
 It accepted the durable lease/fence concurrency design and identified three
 remaining positive-closure gaps: unilateral membership checking, omission of
 `prokind='a'` aggregates, and incomplete `public` schema ACL checking. The
-current candidate corrects those three findings. Its changed head invalidates
-the second verdict as a closure result. Backend/Data must review the new exact
-head again before independent AppSec.
+next candidate corrected those three findings. Backend/Data then read all ten
+material files on exact head `fcb7dfc2...` / tree `4dcaf2d4...` and returned
+`APPROVE` with B1-B4 PASS and no findings (manual response SHA-256
+`8b6bf96691b7337df95f0350ac5028a4aeb85e6cab917ec56383fc8e083ac0dc`).
+Independent AppSec authenticated a byte-preserving bundle, read all ten PR
+files plus both T1 supplements to EOF and returned exact-head `APPROVE` (manual
+response SHA-256
+`1df5df13786f7ba767340cca2ca546aeddbf92e81a307a48aef3107fc0cf64ca`).
+
+After Product Authority separately authorized Ready, the GitHub Codex review
+opened unresolved P2 `DIRECT_RPC_CAN_MINT_UNRELEASABLE_LEASE` at the
+`authenticated` grant for the preparation RPC. Integral source validation
+confirmed the exploit path:
+
+```text
+authorized root/admin_local/gestor calls prepare directly through PostgREST
+-> durable no-expiry lease commits
+-> must_change_password=true commits
+-> no Auth password mutation occurs
+-> caller cannot execute the service-role-only release
+-> T3 fence rejects the target's self-service true->false completion
+-> actor/target/team authority rows remain fenced pending privileged recovery
+```
+
+The PR was returned to Draft without merge. T3A-v4 closes the direct-call path
+with a service-role-only opaque one-time Edge-proof issuer and a caller-JWT
+prepare that must atomically consume the matching unexpired proof before any
+lock, lease or password-state mutation. The proof is not actor authority; all
+root/admin_local/gestor, company, target and team decisions remain inside the
+prepare RPC under `auth.uid()`. This material change invalidates the earlier
+approvals in the affected domain and requires new exact-head Backend/Data and
+AppSec reviews.
 
 ## 4. B1 — safe rollout and failure ordering
 
@@ -118,22 +155,28 @@ The required order under separate production authorities remains:
 
 ```text
 1. deploy the exact reviewed hardened Edge
-2. while T3 RPC is absent, prove reset_password fails before Auth mutation
+2. while the proof issuer and prepare RPCs are absent, prove reset_password
+   fails before Auth mutation
 3. apply the exact reviewed T3A migration
 4. validate catalog, roles, routine inventory, ACLs, grants, policies,
-   lease table, all T1/T3 triggers and body fingerprints
+   proof/lease tables, all T1/T3 triggers and body fingerprints
 5. run separately-authorized positive/negative/cross-tenant/concurrency smoke
 ```
 
-The Edge calls the caller-JWT `t3_prepare_admin_password_reset` RPC before
-`auth.admin.updateUserById`. Missing RPC, denial, malformed response or absent
-lease ID returns a generic denial before Auth.
+The Edge first calls the service-role-only
+`t3_issue_admin_password_reset_edge_proof` RPC, then passes the normalized proof
+only to the caller-JWT `t3_prepare_admin_password_reset` RPC before
+`auth.admin.updateUserById`. Missing issuer/prepare RPC, proof mismatch/expiry,
+denial, malformed response or absent lease ID returns a generic failure before
+Auth. The proof never leaves the Edge-to-database path.
 
-The requested target UUID and returned lease UUID are canonicalized and
-validated before comparison/use, preventing equivalent UUID spellings from
-turning a successful preparation into a stranded lease.
+The requested target, returned proof and returned lease UUIDs are canonicalized
+and validated before comparison/use, preventing equivalent UUID spellings from
+creating an ambiguous proof or stranded lease.
 
-If preparation committed but its response is lost, the Edge still performs no
+If proof issuance commits but preparation never succeeds, only an inert bounded
+proof remains; it fences no business row and later server-side cleanup removes
+it after two minutes. If preparation committed but its response is lost, the Edge still performs no
 Auth mutation and cannot guess a lease identity; the durable lease remains for
 separately-authorized recovery.
 
@@ -172,7 +215,7 @@ through preflight, DDL and postflight. Before mutation it verifies:
   function bodies, owners, security modes, configs and ACLs;
 - exact complete authority-table trigger count/bindings, including both T1
   guards and the corretores/times audit triggers, plus absence of rewrite rules;
-- absence of every T3 lease/function/trigger name and context-key collision;
+- absence of every T3 proof/lease/function/trigger name and context-key collision;
 - the exact positive non-system routine inventory described below.
 
 The old direct writer regex is removed. Instead the complete reviewed live
@@ -199,7 +242,9 @@ pins wrappers, dynamic-SQL-capable routines and possible transitive callees even
 when their source does not contain the target table/column literals. The
 explicit zero-aggregate assertion is positive: a newly introduced non-system
 aggregate changes both the routine inventory and aggregate count. Postflight
-and rollback exclude only the exact new T3 functions and separately verify each.
+and rollback exclude only the exact new T3 functions — including the Edge-proof
+issuer — and separately verify each body, signature, owner, config, comment and
+effective ACL.
 
 Role/schema anchors are positive and complete:
 
@@ -280,12 +325,25 @@ auth.uid()
 -> target belongs to actor's own active team in the same empresa
 ```
 
-The RPC accepts only `p_target_user_id`. Frontend company, role, flags, team
-and time are not authority inputs.
+The caller-JWT prepare RPC accepts `p_target_user_id` plus the opaque
+`p_edge_proof_id` received internally from the Edge. The client/frontend never
+supplies the proof. Frontend company, role, flags, team and time are not
+authority inputs.
 
 ## 7. B4 and HIGH-1 closure — leased T1 interoperability
 
-At runtime the preparation RPC first obtains one
+At runtime the service-role-only issuer first creates an opaque proof bound to
+the Edge-verified caller UUID and requested target UUID. The proof table has
+RLS + FORCE RLS, no policies or client/service table privileges, unique proof
+and actor keys, an exact target binding and PostgreSQL-derived creation time.
+Issuance rotates only that same actor's prior proof; there is no target-wide
+reservation an unauthorized caller could use against another actor. The proof
+grants no role, tenant or target authority. The caller-JWT preparation RPC must delete the
+exact matching proof within two server-side minutes before any durable lease or
+password-state mutation. A random, missing, expired, wrong-actor or wrong-target
+proof fails closed.
+
+After proof consumption, the preparation RPC obtains one
 `SHARE ROW EXCLUSIVE` lock, in fixed order, over:
 
 ```text
@@ -353,14 +411,20 @@ Because PostgreSQL `TRUNCATE` does not run row triggers, T3A revokes only
 fingerprints prove both the pre-T3A baseline and the narrowed T3A state. All
 row-level service-role writes remain subject to the fencing triggers.
 
-The service-role release RPC can only delete one exact
+The issuer ACL is a trusted server-credential anchor, not cryptographic
+attestation of an exact Edge binary. The versioned Edge is its intended runtime
+caller; direct anon/authenticated callers have no EXECUTE. The service-role
+proof issuer can create only an inert bounded proof; it cannot
+call the authenticated prepare RPC, derive authority, create a durable lease or
+set password state. The service-role release RPC can only delete one exact
 `lease_id + actor_user_id + target_user_id` row. It cannot create a lease,
 authorize a target, set password state or substitute for `auth.uid()`.
 
 Exact candidate PL/pgSQL `prosrc` fingerprints:
 
 ```text
-t3_prepare_admin_password_reset(uuid):            91fc82deadc0d18e871e43a812c8d6dd
+t3_issue_admin_password_reset_edge_proof(...):    87f8d7f0c96ce4ae52fed9e2bc4bdcdd
+t3_prepare_admin_password_reset(uuid,uuid):        f9bd114c7eb77313e22861816b8a88f5
 t3_release_admin_password_reset_lease(...):        a51c5b360c5d8a3684a97271460ec249
 t3_guard_admin_password_reset_lease():             bd611e591aa2d951b178853f78caaa65
 T3-aware t1_guard_corretores_direct_compat_update: 951da8a6ac6e934828f06ab1513778fa
@@ -379,7 +443,9 @@ These source/catalog assertions are not runtime execution evidence.
 
 ```text
 validate caller JWT
--> caller-scoped RPC derives actor/tenant/role/team server-side
+-> service-role-only issuer mints opaque caller+target Edge proof
+-> caller-scoped RPC consumes proof before durable state
+-> caller-scoped RPC derives actor/tenant/role/team server-side from auth.uid()
 -> serialize authority tables
 -> create durable exact actor + target + optional authority-team lease
 -> set must_change_password=true through both enabled T1/T3 guards
@@ -388,7 +454,10 @@ validate caller JWT
 -> only proven Auth success permits exact service-role lease release
 ```
 
-At no point is service_role the actor. Any Auth ambiguity leaves the lease and
+At no point is service_role the actor. Proof issuance establishes only that the
+server-only issuer ACL was traversed; it does not attest the exact Edge binary.
+Prepare still derives and decides all authority using `auth.uid()` and database
+state. Any Auth ambiguity leaves the lease and
 all material database authority mutations fenced. Release is attempted only
 after proven Auth success; a lost release response may mean either that the
 exact safe release committed or that the lease remains. The Edge claims no
@@ -396,10 +465,14 @@ success, does not retry blindly and requires state reconciliation.
 
 ## 9. B3 — drift-safe rollback
 
-Rollback begins by locking the three authority tables and the lease table in
-`SHARE` mode. It stops before destructive work when:
+Rollback begins by locking the proof table, the three authority tables and the
+lease table in that fixed `proof -> authority -> lease` order and in `SHARE`
+mode. This matches the writer order and avoids a reciprocal relation-lock cycle.
+It stops before destructive work when:
 
+- an unexpired Edge proof exists;
 - a lease exists;
+- the proof table schema/owner/RLS/FORCE/ACL/constraints/comment differs;
 - the lease table schema/owner/RLS/FORCE/ACL/constraints/comment differs;
 - any T3 function body/owner/security/config/ACL/comment differs;
 - the exact seven-trigger T3A authority inventory differs, including any
@@ -410,12 +483,15 @@ Rollback begins by locking the three authority tables and the lease table in
   policies, grants, indexes, context use or positive full routine inventory
   including the zero-aggregate assertion differs.
 
-Only after exact proof and an empty locked lease table does it atomically:
+Only after the complete exact preflight does it remove proofs older than the
+same two-minute validity boundary and prove the locked proof table empty. It
+then atomically:
 
 ```text
 restore exact pre-T3A direct guard (99477024...)
 -> drop the three proven fencing triggers
--> drop exact fence, prepare and service-release functions without IF EXISTS
+-> drop exact fence, proof-issuer, prepare and service-release functions without IF EXISTS
+-> drop exact empty proof table
 -> drop exact empty lease table
 -> restore only authenticated UPDATE(must_change_password)
 -> restore only the pinned service_role TRUNCATE baseline on the three tables
@@ -423,22 +499,23 @@ restore exact pre-T3A direct guard (99477024...)
 ```
 
 No business row or Auth credential is rewritten. Database rollback remains
-first; hardened Edge then fails closed on absent prepare RPC. Restoring Edge v17
+first; hardened Edge then fails closed on absent proof issuer before prepare or Auth. Restoring Edge v17
 is a later separately-authorized step.
 
 ## 10. B1-B4 coverage matrix
 
 | Blocker / invariant | Corrective artifact | Candidate result | Runtime result |
 |---|---|---|---|
-| B1 Edge-first rollout | Edge fail-before-Auth + documented order | addressed | not executed |
+| B1 Edge-first rollout | Edge fail-before-Auth on absent proof issuer/prepare + documented order | addressed | not executed |
 | B2 trust-anchor preflight | exact full role graph + public schema ACL + all routine kinds | addressed after second Backend findings | not applied |
-| B3 drift-safe rollback | same exact anchors + empty locked lease + exact reversal | addressed after second Backend findings | not executed |
+| B3 drift-safe rollback | same exact anchors + no live proof/lease + expired inert proof cleanup after full preflight + exact reversal | addressed after second Backend findings and v4 | not executed |
 | B4 T1 interoperability | both T1 triggers + exact leased transitions | addressed | not executed |
 | DB→Auth authority continuity | durable lease + snapshot-independent unique-index probes + 3 fencing triggers + service-role TRUNCATE removal + success-only release | addressed after Backend HIGH-1 | not runtime-tested |
+| direct PostgREST prepare / stranded lease | service-role-only one-time Edge proof consumed before lease/write | addressed after post-Ready P2 | not runtime-tested |
 | actor=`auth.uid()` | caller JWT prepare RPC | preserved | not runtime-tested |
 | tenant/company server-side | strict DB predicates | preserved | not runtime-tested |
 | cross-company isolation | strict predicates + generic denial + fence | preserved | not runtime-tested |
-| no broad grant | authenticated prepare only; service release only | preserved | not runtime-tested |
+| no broad grant | authenticated prepare requires opaque Edge proof; service issue/release only | preserved | not runtime-tested |
 | no frontend authority | request supplies target/password only | preserved | not runtime-tested |
 | T1/T2 | no T1 disable; no T2 change | preserved | not reopened |
 | frontend scope | no `App.jsx` diff | preserved | n/a |
@@ -449,7 +526,10 @@ Ready authority or Security Go.
 ## 11. Required later acceptance matrix
 
 ```text
-Edge-first while RPC absent                         FAIL CLOSED / NO AUTH MUTATION
+Edge-first while proof issuer/prepare absent        FAIL CLOSED / NO AUTH MUTATION
+direct prepare without valid Edge proof             DENY / NO LEASE / NO FLAG WRITE
+random/expired/wrong-actor/wrong-target proof       DENY / NO LEASE / NO FLAG WRITE
+abandoned pre-prepare proof                         INERT / NO FENCE / SERVER CLEANUP
 root -> authorized target                           ALLOW
 admin_local -> same-company non-root target         ALLOW
 admin_local -> other company/admin identity         DENY
@@ -470,6 +550,8 @@ ambiguous Auth result                                KEEP LEASE / FAIL CLOSED
 definitively rejected/mismatched release             KEEP LEASE / FAIL CLOSED
 ambiguous release response                           NO SUCCESS / RECONCILE EXACT STATE
 rollback with active/unresolved lease                STOP
+rollback with unexpired Edge proof                   STOP
+rollback with expired inert Edge proof               CLEAN AFTER EXACT PREFLIGHT
 rollback after any reviewed routine/object drift     STOP
 ```
 
@@ -508,4 +590,4 @@ Required next gates on one new resolved exact head:
 4. stop before Ready pending separate Product Authority
 ```
 
-T3A-v3 grants none of the remaining lifecycle or production authorities.
+T3A-v4 grants none of the remaining lifecycle or production authorities.

@@ -1,4 +1,4 @@
--- FECH.AI — T3A-v3 exact drift-aware rollback
+-- FECH.AI — T3A-v4 exact drift-aware rollback
 --
 -- Execute only under a separate rollback authority. Required order:
 --   1. run this database rollback after its exact preflight passes;
@@ -7,14 +7,19 @@
 --      criar-usuario v17 baseline and verify its exact runtime fingerprint.
 --
 -- This rollback restores the exact pre-T3A T1 guard and compatibility grant.
--- It refuses to proceed while any durable reset lease exists, then removes the
--- exact fencing objects. It does not rewrite business rows or Auth passwords.
+-- It refuses to proceed while any durable reset lease or unexpired one-time
+-- Edge proof exists. After the complete exact preflight succeeds, it removes
+-- only expired inert proof rows before dropping the proven proof/fencing
+-- objects. It does not rewrite business rows or Auth passwords.
 
 begin;
 
 -- Serialize the exact rollback boundary against ordinary writes and table DDL.
+-- Use the same proof -> authority -> lease order as prepare/fence writers so a
+-- concurrent in-flight call cannot create a reciprocal relation-lock cycle.
 -- SHARE permits reads and is held through post-rollback verification.
-lock table public.admins,
+lock table public.t3_admin_password_reset_edge_proofs,
+           public.admins,
            public.corretores,
            public.times,
            public.t3_admin_password_reset_leases in share mode;
@@ -31,7 +36,10 @@ declare
   v_authenticator_oid oid:=pg_catalog.to_regrole('authenticator');
   v_database_owner_oid oid:=pg_catalog.to_regrole('pg_database_owner');
   v_t3_oid oid:=pg_catalog.to_regprocedure(
-    'public.t3_prepare_admin_password_reset(uuid)'
+    'public.t3_prepare_admin_password_reset(uuid,uuid)'
+  );
+  v_issue_oid oid:=pg_catalog.to_regprocedure(
+    'public.t3_issue_admin_password_reset_edge_proof(uuid,uuid)'
   );
   v_release_oid oid:=pg_catalog.to_regprocedure(
     'public.t3_release_admin_password_reset_lease(uuid,uuid,uuid)'
@@ -44,6 +52,9 @@ declare
   );
   v_lease_rel_oid oid:=pg_catalog.to_regclass(
     'public.t3_admin_password_reset_leases'
+  );
+  v_proof_rel_oid oid:=pg_catalog.to_regclass(
+    'public.t3_admin_password_reset_edge_proofs'
   );
   v_owner oid;
   v_definer boolean;
@@ -73,10 +84,15 @@ begin
      or v_authenticator_oid is null
      or v_database_owner_oid is null
      or v_t3_oid is null
+     or v_issue_oid is null
      or v_release_oid is null
      or v_fence_oid is null
      or v_guard_oid is null
      or v_lease_rel_oid is null
+     or v_proof_rel_oid is null
+     or pg_catalog.to_regprocedure(
+          'public.t3_prepare_admin_password_reset(uuid)'
+        ) is not null
      or pg_catalog.to_regclass('public.admins') is null
      or pg_catalog.to_regclass('public.corretores') is null
      or pg_catalog.to_regclass('public.times') is null then
@@ -251,9 +267,158 @@ begin
     raise exception 'T3A_ROLLBACK_REQUIRED_COLUMN_DRIFT';
   end if;
 
-  -- The SHARE lock above blocks new lease INSERT/DELETE operations throughout
-  -- preflight and reversal. Any existing lease means an Auth side effect may be
-  -- in flight or unresolved, so rollback must stop before removing its fence.
+  if not exists (
+       select 1
+       from pg_catalog.pg_class as c
+       where c.oid=v_proof_rel_oid
+         and c.relkind='r'
+         and c.relpersistence='p'
+         and c.relowner=v_postgres_oid
+         and c.relrowsecurity
+         and c.relforcerowsecurity
+         and not exists (
+           select 1
+           from pg_catalog.aclexplode(
+             coalesce(c.relacl,pg_catalog.acldefault('r',c.relowner))
+           ) as acl
+           where acl.grantee<>v_postgres_oid
+         )
+         and pg_catalog.md5(coalesce((
+           select pg_catalog.string_agg(
+             pg_catalog.format(
+               '%s>%s:%s:%s',
+               case when acl.grantee=0 then 'PUBLIC'
+                    else pg_catalog.pg_get_userbyid(acl.grantee) end,
+               pg_catalog.pg_get_userbyid(acl.grantor),
+               acl.privilege_type,
+               acl.is_grantable
+             ),
+             ',' order by acl.grantee,acl.grantor,
+                          acl.privilege_type,acl.is_grantable
+           )
+           from pg_catalog.aclexplode(
+             coalesce(c.relacl,pg_catalog.acldefault('r',c.relowner))
+           ) as acl
+         ),''))='df15c22895181b78b4b8c47092a334a0'
+     )
+     or (
+       select pg_catalog.count(*)
+       from pg_catalog.pg_attribute as a
+       where a.attrelid=v_proof_rel_oid
+         and a.attnum>0 and not a.attisdropped
+     )<>4
+     or exists (
+       select 1
+       from pg_catalog.pg_attribute as a
+       cross join lateral pg_catalog.aclexplode(a.attacl) as acl
+       where a.attrelid=v_proof_rel_oid
+         and a.attnum>0 and not a.attisdropped
+     )
+     or not exists (
+       select 1 from pg_catalog.pg_attribute as a
+       where a.attrelid=v_proof_rel_oid and a.attname='proof_id'
+         and a.atttypid='uuid'::regtype and a.attnotnull
+         and not a.atthasdef
+     )
+     or not exists (
+       select 1 from pg_catalog.pg_attribute as a
+       where a.attrelid=v_proof_rel_oid and a.attname='actor_user_id'
+         and a.atttypid='uuid'::regtype and a.attnotnull
+         and not a.atthasdef
+     )
+     or not exists (
+       select 1 from pg_catalog.pg_attribute as a
+       where a.attrelid=v_proof_rel_oid and a.attname='target_user_id'
+         and a.atttypid='uuid'::regtype and a.attnotnull
+         and not a.atthasdef
+     )
+     or not exists (
+       select 1
+       from pg_catalog.pg_attribute as a
+       join pg_catalog.pg_attrdef as d
+         on d.adrelid=a.attrelid and d.adnum=a.attnum
+       where a.attrelid=v_proof_rel_oid and a.attname='created_at'
+         and a.atttypid='timestamp with time zone'::regtype
+         and a.attnotnull
+         and pg_catalog.pg_get_expr(d.adbin,d.adrelid)=
+             'statement_timestamp()'
+     )
+     or (
+       select pg_catalog.count(*)
+       from pg_catalog.pg_constraint as c
+       where c.conrelid=v_proof_rel_oid
+     )<>2
+     or (
+       select pg_catalog.count(*)
+       from pg_catalog.pg_index as i
+       where i.indrelid=v_proof_rel_oid
+     )<>2
+     or exists (
+       select 1
+       from pg_catalog.pg_constraint as c
+       join pg_catalog.pg_index as i on i.indexrelid=c.conindid
+       where c.conrelid=v_proof_rel_oid
+         and c.contype in ('p','u')
+         and (
+           not i.indisunique or not i.indisvalid or not i.indisready
+           or not i.indimmediate or i.indpred is not null
+           or i.indexprs is not null or i.indnullsnotdistinct
+           or i.indnkeyatts<>1 or i.indnatts<>1
+         )
+     )
+     or not exists (
+       select 1 from pg_catalog.pg_constraint as c
+       where c.conrelid=v_proof_rel_oid
+         and c.conname='t3_admin_password_reset_edge_proofs_pkey'
+         and c.contype='p' and c.convalidated
+         and not c.condeferrable and not c.condeferred
+         and c.conkey=array[(
+           select a.attnum from pg_catalog.pg_attribute as a
+           where a.attrelid=v_proof_rel_oid and a.attname='proof_id'
+         )]::smallint[]
+     )
+     or not exists (
+       select 1 from pg_catalog.pg_constraint as c
+       where c.conrelid=v_proof_rel_oid
+         and c.conname='t3_admin_password_reset_edge_proofs_actor_user_id_key'
+         and c.contype='u' and c.convalidated
+         and not c.condeferrable and not c.condeferred
+         and c.conkey=array[(
+           select a.attnum from pg_catalog.pg_attribute as a
+           where a.attrelid=v_proof_rel_oid and a.attname='actor_user_id'
+         )]::smallint[]
+     )
+     or exists (
+       select 1 from pg_catalog.pg_policy as p
+       where p.polrelid=v_proof_rel_oid
+     )
+     or exists (
+       select 1 from pg_catalog.pg_trigger as tg
+       where tg.tgrelid=v_proof_rel_oid and not tg.tgisinternal
+     )
+     or exists (
+       select 1 from pg_catalog.pg_rewrite as rw
+       where rw.ev_class=v_proof_rel_oid
+     )
+     or pg_catalog.obj_description(v_proof_rel_oid,'pg_class') is distinct from
+          'T3A-v4 inert one-time Edge-presence proof; PostgreSQL time; no actor authority' then
+    raise exception 'T3A_ROLLBACK_EDGE_PROOF_TABLE_DRIFT';
+  end if;
+
+  if exists (
+    select 1
+    from public.t3_admin_password_reset_edge_proofs as p
+    where p.created_at>=
+          pg_catalog.statement_timestamp()-interval '2 minutes'
+  ) then
+    raise exception 'T3A_ROLLBACK_ACTIVE_EDGE_PROOF';
+  end if;
+
+  -- The SHARE locks above block new proof/lease INSERT/DELETE operations
+  -- throughout preflight and reversal. Expired proofs are inert and are
+  -- removed only after this full preflight succeeds. Any existing lease means
+  -- an Auth side effect may be in flight or unresolved, so rollback must stop
+  -- before removing its fence.
   if not exists (
        select 1
        from pg_catalog.pg_class as c
@@ -563,6 +728,62 @@ begin
   if not exists (
     select 1
     from pg_catalog.pg_proc as p
+    where p.oid=v_issue_oid
+      and p.proowner=v_postgres_oid
+      and p.prokind='f'
+      and p.prosecdef is true
+      and p.proconfig=array['search_path=pg_catalog']::text[]
+      and p.prolang=(
+        select l.oid from pg_catalog.pg_language as l
+        where l.lanname='plpgsql'
+      )
+      and p.prorettype='uuid'::regtype
+      and p.provolatile='v'
+      and p.proparallel='u'
+      and not p.proisstrict and not p.proleakproof and not p.proretset
+      and p.procost=100 and p.prorows=0
+      and p.pronargs=2 and p.pronargdefaults=0
+      and p.proargdefaults is null and p.proallargtypes is null
+      and p.proargmodes is null
+      and p.proargnames=array[
+        'p_actor_user_id','p_target_user_id'
+      ]::text[]
+      and p.provariadic=0::oid and p.prosupport=0::oid
+      and pg_catalog.md5(p.prosrc)='87f8d7f0c96ce4ae52fed9e2bc4bdcdd'
+      and pg_catalog.obj_description(p.oid,'pg_proc')=
+        'T3A-v4 service-role Edge-presence proof only; never actor authority'
+      and not pg_catalog.has_function_privilege(
+                v_authenticated_oid,p.oid,'EXECUTE'
+              )
+      and not pg_catalog.has_function_privilege(v_anon_oid,p.oid,'EXECUTE')
+      and pg_catalog.has_function_privilege(
+            v_service_role_oid,p.oid,'EXECUTE'
+          )
+      and not exists (
+        select 1
+        from pg_catalog.aclexplode(
+          coalesce(p.proacl,pg_catalog.acldefault('f',p.proowner))
+        ) as acl
+        where acl.grantee=0 and acl.privilege_type='EXECUTE'
+      )
+      and not exists (
+        select 1
+        from pg_catalog.aclexplode(
+          coalesce(p.proacl,pg_catalog.acldefault('f',p.proowner))
+        ) as acl
+        where acl.privilege_type='EXECUTE'
+          and (
+            acl.grantee not in (v_postgres_oid,v_service_role_oid)
+            or (acl.grantee=v_service_role_oid and acl.is_grantable)
+          )
+      )
+  ) then
+    raise exception 'T3A_ROLLBACK_EDGE_PROOF_FUNCTION_DRIFT';
+  end if;
+
+  if not exists (
+    select 1
+    from pg_catalog.pg_proc as p
     where p.oid=v_t3_oid
       and p.proowner=v_postgres_oid
       and p.prokind='f'
@@ -577,14 +798,16 @@ begin
       and p.proparallel='u'
       and not p.proisstrict and not p.proleakproof and not p.proretset
       and p.procost=100 and p.prorows=0
-      and p.pronargs=1 and p.pronargdefaults=0
+      and p.pronargs=2 and p.pronargdefaults=0
       and p.proargdefaults is null and p.proallargtypes is null
       and p.proargmodes is null
-      and p.proargnames=array['p_target_user_id']::text[]
+      and p.proargnames=array[
+        'p_target_user_id','p_edge_proof_id'
+      ]::text[]
       and p.provariadic=0::oid and p.prosupport=0::oid
-      and pg_catalog.md5(p.prosrc)='91fc82deadc0d18e871e43a812c8d6dd'
+      and pg_catalog.md5(p.prosrc)='f9bd114c7eb77313e22861816b8a88f5'
       and pg_catalog.obj_description(p.oid,'pg_proc')=
-        'T3A-v3 auth.uid actor; server-derived authority; durable fenced lease before Auth'
+        'T3A-v4 one-time Edge proof; auth.uid actor; durable fenced lease before Auth'
       and pg_catalog.has_function_privilege(
             v_authenticated_oid,p.oid,'EXECUTE'
           )
@@ -1313,7 +1536,9 @@ begin
       and n.nspname not like 'pg_toast%'
       and n.nspname not like 'pg_temp_%'
       and n.nspname not like 'pg_toast_temp_%'
-      and p.oid not in (v_guard_oid,v_t3_oid,v_release_oid,v_fence_oid)
+      and p.oid not in (
+        v_guard_oid,v_t3_oid,v_issue_oid,v_release_oid,v_fence_oid
+      )
   ), serialized as (
     select
       oid,
@@ -1369,6 +1594,25 @@ begin
   end if;
 end;
 $rollback_preflight$;
+
+-- The complete rollback preflight above proved the exact proof table, issuer,
+-- consumer, ACL, TTL semantics and every other protected anchor. With all
+-- writers blocked by the held SHARE lock, remove only proofs that the reviewed
+-- prepare function can no longer consume. This makes abandoned proof cleanup
+-- deterministic without touching any business row or weakening a live proof.
+delete from public.t3_admin_password_reset_edge_proofs as p
+ where p.created_at<
+       pg_catalog.statement_timestamp()-interval '2 minutes';
+
+do $rollback_proof_cleanup$
+begin
+  if exists (
+    select 1 from public.t3_admin_password_reset_edge_proofs
+  ) then
+    raise exception 'T3A_ROLLBACK_EDGE_PROOF_NOT_EMPTY';
+  end if;
+end;
+$rollback_proof_cleanup$;
 
 -- =============================================================================
 -- 2. RESTORE THE EXACT PRE-T3A T1 DIRECT-COMPATIBILITY GUARD
@@ -1531,15 +1775,17 @@ revoke all on function public.t1_guard_corretores_direct_compat_update()
 comment on function public.t1_guard_corretores_direct_compat_update() is
 'F1-02-T1-v3|99477024e337de5645dd042a30f8cf78';
 
--- The preflight proved the exact reviewed T3 objects and an empty locked lease
--- table. Do not use IF EXISTS: absence or drift is a blocker to surface.
+-- The preflight proved the exact reviewed T3 objects and empty locked proof and
+-- lease tables. Do not use IF EXISTS: absence or drift is a blocker to surface.
 drop trigger trg_t3_fence_admin_password_reset_admins on public.admins;
 drop trigger trg_t3_fence_admin_password_reset_corretores on public.corretores;
 drop trigger trg_t3_fence_admin_password_reset_times on public.times;
 
 drop function public.t3_guard_admin_password_reset_lease();
-drop function public.t3_prepare_admin_password_reset(uuid);
+drop function public.t3_prepare_admin_password_reset(uuid,uuid);
+drop function public.t3_issue_admin_password_reset_edge_proof(uuid,uuid);
 drop function public.t3_release_admin_password_reset_lease(uuid,uuid,uuid);
+drop table public.t3_admin_password_reset_edge_proofs;
 drop table public.t3_admin_password_reset_leases;
 
 grant update (must_change_password)
@@ -1592,6 +1838,12 @@ begin
        'public.t3_prepare_admin_password_reset(uuid)'
      ) is not null
      or pg_catalog.to_regprocedure(
+          'public.t3_prepare_admin_password_reset(uuid,uuid)'
+        ) is not null
+     or pg_catalog.to_regprocedure(
+          'public.t3_issue_admin_password_reset_edge_proof(uuid,uuid)'
+        ) is not null
+     or pg_catalog.to_regprocedure(
           'public.t3_release_admin_password_reset_lease(uuid,uuid,uuid)'
         ) is not null
      or pg_catalog.to_regprocedure(
@@ -1599,6 +1851,9 @@ begin
         ) is not null
      or pg_catalog.to_regclass(
           'public.t3_admin_password_reset_leases'
+        ) is not null
+     or pg_catalog.to_regclass(
+          'public.t3_admin_password_reset_edge_proofs'
         ) is not null
      or exists (
        select 1

@@ -1,18 +1,22 @@
--- FECH.AI — T3A-v3
+-- FECH.AI — T3A-v4
 -- Administrative Password Reset Multi-Tenant Authority Boundary
 --
 -- Safe rollout after a separate production authorization:
 --   1. deploy the reviewed hardened Edge first;
---   2. prove reset_password fails closed while this RPC is absent;
+--   2. prove reset_password fails before Auth while the proof/prepare RPCs are absent;
 --   3. apply this migration;
 --   4. validate catalog/ACL/fingerprints;
 --   5. run the separately-authorized bounded smoke matrix.
 --
--- This migration never changes an Auth password. It authorizes one target,
--- prepares must_change_password=true and commits a durable lease before the
--- versioned Edge performs the Auth mutation. T3 fencing triggers keep every
--- material database authority row stable until that exact lease is released.
--- Company, role, flags and team are derived server-side.
+-- This migration never changes an Auth password. It requires a short-lived,
+-- opaque, one-time Edge proof before it authorizes one target, prepares
+-- must_change_password=true and commits a durable lease ahead of the versioned
+-- Edge Auth mutation. The proof establishes only that the service-role-only
+-- server handshake used by the Edge was traversed; it is not exact binary
+-- attestation. auth.uid() and server-side database state remain actor authority.
+-- T3 fencing triggers keep every material database authority row stable until
+-- that exact lease is released. Company, role, flags and team are derived
+-- server-side.
 
 begin;
 
@@ -233,6 +237,12 @@ begin
        'public.t3_prepare_admin_password_reset(uuid)'
      ) is not null
      or pg_catalog.to_regprocedure(
+          'public.t3_prepare_admin_password_reset(uuid,uuid)'
+        ) is not null
+     or pg_catalog.to_regprocedure(
+          'public.t3_issue_admin_password_reset_edge_proof(uuid,uuid)'
+        ) is not null
+     or pg_catalog.to_regprocedure(
           'public.t3_release_admin_password_reset_lease(uuid,uuid,uuid)'
         ) is not null
      or pg_catalog.to_regprocedure(
@@ -240,6 +250,9 @@ begin
         ) is not null
      or pg_catalog.to_regclass(
           'public.t3_admin_password_reset_leases'
+        ) is not null
+     or pg_catalog.to_regclass(
+          'public.t3_admin_password_reset_edge_proofs'
         ) is not null then
     raise exception 'T3A_PREFLIGHT_T3_OBJECT_ALREADY_EXISTS';
   end if;
@@ -1004,6 +1017,91 @@ $preflight$;
 -- =============================================================================
 -- 2. DURABLE CROSS-SYSTEM AUTHORITY LEASE AND FENCING
 -- =============================================================================
+-- A service-role-only issuer creates an opaque one-time proof that is bound to
+-- the already-verified Edge caller id and requested target id. The proof does
+-- not inspect or grant actor authority. The caller-JWT preparation RPC must
+-- consume it using the same auth.uid() before any lease or password-state
+-- mutation. Direct PostgREST calls therefore fail before durable state. This
+-- is a server-credential trust anchor, not attestation of an Edge binary.
+--
+-- Proof time is derived only from PostgreSQL. It is a bounded anti-replay
+-- property, not an actor/tenant/role authority input. An abandoned proof does
+-- not fence any business row and is removed by a later issuer call after two
+-- minutes. The durable lease below deliberately remains non-expiring.
+create table public.t3_admin_password_reset_edge_proofs (
+  proof_id uuid not null,
+  actor_user_id uuid not null,
+  target_user_id uuid not null,
+  created_at timestamp with time zone not null
+    default pg_catalog.statement_timestamp(),
+  constraint t3_admin_password_reset_edge_proofs_pkey
+    primary key (proof_id),
+  constraint t3_admin_password_reset_edge_proofs_actor_user_id_key
+    unique (actor_user_id)
+);
+
+alter table public.t3_admin_password_reset_edge_proofs owner to postgres;
+alter table public.t3_admin_password_reset_edge_proofs enable row level security;
+alter table public.t3_admin_password_reset_edge_proofs force row level security;
+revoke all on table public.t3_admin_password_reset_edge_proofs from public;
+revoke all on table public.t3_admin_password_reset_edge_proofs from anon;
+revoke all on table public.t3_admin_password_reset_edge_proofs from authenticated;
+revoke all on table public.t3_admin_password_reset_edge_proofs from service_role;
+
+comment on table public.t3_admin_password_reset_edge_proofs is
+'T3A-v4 inert one-time Edge-presence proof; PostgreSQL time; no actor authority';
+
+create function public.t3_issue_admin_password_reset_edge_proof(
+  p_actor_user_id uuid,
+  p_target_user_id uuid
+)
+returns uuid
+language plpgsql
+security definer
+set search_path=pg_catalog
+as $function$
+declare
+  v_proof_id uuid;
+  v_now timestamp with time zone:=pg_catalog.statement_timestamp();
+begin
+  if p_actor_user_id is null or p_target_user_id is null then
+    raise exception using errcode='42501',message='EDGE_PROOF_ISSUE_DENIED';
+  end if;
+
+  -- Expired proofs are inert and never authorize or fence anything. Rotate any
+  -- prior proof for this same Edge-verified actor so an abandoned request does
+  -- not block that actor for the full TTL. No target-wide uniqueness is used:
+  -- an unauthorized caller therefore cannot reserve another user's target.
+  delete from public.t3_admin_password_reset_edge_proofs as p
+   where p.created_at < v_now - interval '2 minutes'
+      or p.actor_user_id=p_actor_user_id;
+
+  v_proof_id:=pg_catalog.gen_random_uuid();
+
+  insert into public.t3_admin_password_reset_edge_proofs (
+    proof_id,actor_user_id,target_user_id,created_at
+  ) values (
+    v_proof_id,p_actor_user_id,p_target_user_id,v_now
+  );
+
+  return v_proof_id;
+end;
+$function$;
+
+alter function public.t3_issue_admin_password_reset_edge_proof(uuid,uuid)
+  owner to postgres;
+revoke all on function public.t3_issue_admin_password_reset_edge_proof(uuid,uuid)
+  from public;
+revoke all on function public.t3_issue_admin_password_reset_edge_proof(uuid,uuid)
+  from anon;
+revoke all on function public.t3_issue_admin_password_reset_edge_proof(uuid,uuid)
+  from authenticated;
+grant execute on function public.t3_issue_admin_password_reset_edge_proof(uuid,uuid)
+  to service_role;
+
+comment on function public.t3_issue_admin_password_reset_edge_proof(uuid,uuid) is
+'T3A-v4 service-role Edge-presence proof only; never actor authority';
+
 -- No timeout participates in authority. A lease remains until the exact
 -- service-role-only release RPC proves actor + target + random lease identity.
 -- A crashed Edge therefore leaves an availability incident, never an unfenced
@@ -1421,7 +1519,10 @@ comment on function public.t1_guard_corretores_direct_compat_update() is
 -- =============================================================================
 -- 4. ADMINISTRATIVE PASSWORD-RESET AUTHORITY BOUNDARY
 -- =============================================================================
-create function public.t3_prepare_admin_password_reset(p_target_user_id uuid)
+create function public.t3_prepare_admin_password_reset(
+  p_target_user_id uuid,
+  p_edge_proof_id uuid
+)
 returns jsonb
 language plpgsql
 security definer
@@ -1450,6 +1551,7 @@ declare
   v_probe_lease_id uuid;
   v_probe_user_id uuid;
   v_probe_rows integer;
+  v_proof_rows integer;
   v_rows integer;
 begin
   if v_actor_user_id is null then
@@ -1458,6 +1560,28 @@ begin
 
   if p_target_user_id is null then
     raise exception using errcode='42501',message='TARGET_NOT_AUTHORIZED';
+  end if;
+
+  if p_edge_proof_id is null then
+    raise exception using errcode='42501',message='EDGE_PROOF_REQUIRED';
+  end if;
+
+  -- Consume the exact opaque proof before any authority lock, durable lease or
+  -- password-state mutation. The proof binds the Edge-observed caller id to the
+  -- caller-JWT auth.uid() and target, but does not replace any server-side
+  -- root/admin_local/gestor authorization below. PostgreSQL time is the only
+  -- freshness source; no frontend flag or timestamp participates.
+  delete from public.t3_admin_password_reset_edge_proofs as p
+   where p.proof_id=p_edge_proof_id
+     and p.actor_user_id=v_actor_user_id
+     and p.target_user_id=p_target_user_id
+     and p.created_at<=pg_catalog.statement_timestamp()
+     and p.created_at>=
+           pg_catalog.statement_timestamp()-interval '2 minutes';
+
+  get diagnostics v_proof_rows=row_count;
+  if v_proof_rows<>1 then
+    raise exception using errcode='42501',message='EDGE_PROOF_REQUIRED';
   end if;
 
   -- Serialize reset authorization against authority-table relation-lock
@@ -1714,19 +1838,19 @@ begin
 end;
 $function$;
 
-alter function public.t3_prepare_admin_password_reset(uuid)
+alter function public.t3_prepare_admin_password_reset(uuid,uuid)
   owner to postgres;
-revoke all on function public.t3_prepare_admin_password_reset(uuid)
+revoke all on function public.t3_prepare_admin_password_reset(uuid,uuid)
   from public;
-revoke all on function public.t3_prepare_admin_password_reset(uuid)
+revoke all on function public.t3_prepare_admin_password_reset(uuid,uuid)
   from anon;
-revoke all on function public.t3_prepare_admin_password_reset(uuid)
+revoke all on function public.t3_prepare_admin_password_reset(uuid,uuid)
   from service_role;
-grant execute on function public.t3_prepare_admin_password_reset(uuid)
+grant execute on function public.t3_prepare_admin_password_reset(uuid,uuid)
   to authenticated;
 
-comment on function public.t3_prepare_admin_password_reset(uuid) is
-'T3A-v3 auth.uid actor; server-derived authority; durable fenced lease before Auth';
+comment on function public.t3_prepare_admin_password_reset(uuid,uuid) is
+'T3A-v4 one-time Edge proof; auth.uid actor; durable fenced lease before Auth';
 
 -- service_role may release only the exact opaque lease already authorized by
 -- auth.uid(). It cannot create a lease, select authority, set password state or
@@ -1800,7 +1924,10 @@ declare
   v_authenticator_oid oid:=pg_catalog.to_regrole('authenticator');
   v_database_owner_oid oid:=pg_catalog.to_regrole('pg_database_owner');
   v_t3_oid oid:=pg_catalog.to_regprocedure(
-    'public.t3_prepare_admin_password_reset(uuid)'
+    'public.t3_prepare_admin_password_reset(uuid,uuid)'
+  );
+  v_issue_oid oid:=pg_catalog.to_regprocedure(
+    'public.t3_issue_admin_password_reset_edge_proof(uuid,uuid)'
   );
   v_release_oid oid:=pg_catalog.to_regprocedure(
     'public.t3_release_admin_password_reset_lease(uuid,uuid,uuid)'
@@ -1813,6 +1940,9 @@ declare
   );
   v_lease_rel_oid oid:=pg_catalog.to_regclass(
     'public.t3_admin_password_reset_leases'
+  );
+  v_proof_rel_oid oid:=pg_catalog.to_regclass(
+    'public.t3_admin_password_reset_edge_proofs'
   );
   v_update_columns text[];
   v_routine_count bigint;
@@ -1972,11 +2102,157 @@ begin
   end if;
 
   if v_t3_oid is null
+     or v_issue_oid is null
      or v_release_oid is null
      or v_fence_oid is null
      or v_guard_oid is null
-     or v_lease_rel_oid is null then
+     or v_lease_rel_oid is null
+     or v_proof_rel_oid is null
+     or pg_catalog.to_regprocedure(
+          'public.t3_prepare_admin_password_reset(uuid)'
+        ) is not null then
     raise exception 'T3A_POSTFLIGHT_REQUIRED_FUNCTION_MISSING';
+  end if;
+
+  if not exists (
+       select 1
+       from pg_catalog.pg_class as c
+       where c.oid=v_proof_rel_oid
+         and c.relkind='r'
+         and c.relpersistence='p'
+         and c.relowner=v_postgres_oid
+         and c.relrowsecurity
+         and c.relforcerowsecurity
+         and not exists (
+           select 1
+           from pg_catalog.aclexplode(
+             coalesce(c.relacl,pg_catalog.acldefault('r',c.relowner))
+           ) as acl
+           where acl.grantee<>v_postgres_oid
+         )
+         and pg_catalog.md5(coalesce((
+           select pg_catalog.string_agg(
+             pg_catalog.format(
+               '%s>%s:%s:%s',
+               case when acl.grantee=0 then 'PUBLIC'
+                    else pg_catalog.pg_get_userbyid(acl.grantee) end,
+               pg_catalog.pg_get_userbyid(acl.grantor),
+               acl.privilege_type,
+               acl.is_grantable
+             ),
+             ',' order by acl.grantee,acl.grantor,
+                          acl.privilege_type,acl.is_grantable
+           )
+           from pg_catalog.aclexplode(
+             coalesce(c.relacl,pg_catalog.acldefault('r',c.relowner))
+           ) as acl
+         ),''))='df15c22895181b78b4b8c47092a334a0'
+     )
+     or (
+       select pg_catalog.count(*)
+       from pg_catalog.pg_attribute as a
+       where a.attrelid=v_proof_rel_oid
+         and a.attnum>0 and not a.attisdropped
+     )<>4
+     or exists (
+       select 1
+       from pg_catalog.pg_attribute as a
+       cross join lateral pg_catalog.aclexplode(a.attacl) as acl
+       where a.attrelid=v_proof_rel_oid
+         and a.attnum>0 and not a.attisdropped
+     )
+     or not exists (
+       select 1 from pg_catalog.pg_attribute as a
+       where a.attrelid=v_proof_rel_oid and a.attname='proof_id'
+         and a.atttypid='uuid'::regtype and a.attnotnull
+         and not a.atthasdef
+     )
+     or not exists (
+       select 1 from pg_catalog.pg_attribute as a
+       where a.attrelid=v_proof_rel_oid and a.attname='actor_user_id'
+         and a.atttypid='uuid'::regtype and a.attnotnull
+         and not a.atthasdef
+     )
+     or not exists (
+       select 1 from pg_catalog.pg_attribute as a
+       where a.attrelid=v_proof_rel_oid and a.attname='target_user_id'
+         and a.atttypid='uuid'::regtype and a.attnotnull
+         and not a.atthasdef
+     )
+     or not exists (
+       select 1
+       from pg_catalog.pg_attribute as a
+       join pg_catalog.pg_attrdef as d
+         on d.adrelid=a.attrelid and d.adnum=a.attnum
+       where a.attrelid=v_proof_rel_oid and a.attname='created_at'
+         and a.atttypid='timestamp with time zone'::regtype
+         and a.attnotnull
+         and pg_catalog.pg_get_expr(d.adbin,d.adrelid)=
+             'statement_timestamp()'
+     )
+     or (
+       select pg_catalog.count(*)
+       from pg_catalog.pg_constraint as c
+       where c.conrelid=v_proof_rel_oid
+     )<>2
+     or (
+       select pg_catalog.count(*)
+       from pg_catalog.pg_index as i
+       where i.indrelid=v_proof_rel_oid
+     )<>2
+     or exists (
+       select 1
+       from pg_catalog.pg_constraint as c
+       join pg_catalog.pg_index as i on i.indexrelid=c.conindid
+       where c.conrelid=v_proof_rel_oid
+         and c.contype in ('p','u')
+         and (
+           not i.indisunique or not i.indisvalid or not i.indisready
+           or not i.indimmediate or i.indpred is not null
+           or i.indexprs is not null or i.indnullsnotdistinct
+           or i.indnkeyatts<>1 or i.indnatts<>1
+         )
+     )
+     or not exists (
+       select 1 from pg_catalog.pg_constraint as c
+       where c.conrelid=v_proof_rel_oid
+         and c.conname='t3_admin_password_reset_edge_proofs_pkey'
+         and c.contype='p' and c.convalidated
+         and not c.condeferrable and not c.condeferred
+         and c.conkey=array[(
+           select a.attnum from pg_catalog.pg_attribute as a
+           where a.attrelid=v_proof_rel_oid and a.attname='proof_id'
+         )]::smallint[]
+     )
+     or not exists (
+       select 1 from pg_catalog.pg_constraint as c
+       where c.conrelid=v_proof_rel_oid
+         and c.conname='t3_admin_password_reset_edge_proofs_actor_user_id_key'
+         and c.contype='u' and c.convalidated
+         and not c.condeferrable and not c.condeferred
+         and c.conkey=array[(
+           select a.attnum from pg_catalog.pg_attribute as a
+           where a.attrelid=v_proof_rel_oid and a.attname='actor_user_id'
+         )]::smallint[]
+     )
+     or exists (
+       select 1 from pg_catalog.pg_policy as p
+       where p.polrelid=v_proof_rel_oid
+     )
+     or exists (
+       select 1 from pg_catalog.pg_trigger as tg
+       where tg.tgrelid=v_proof_rel_oid and not tg.tgisinternal
+     )
+     or exists (
+       select 1 from pg_catalog.pg_rewrite as rw
+       where rw.ev_class=v_proof_rel_oid
+     )
+     or exists (
+       select 1 from public.t3_admin_password_reset_edge_proofs
+     )
+     or pg_catalog.obj_description(v_proof_rel_oid,'pg_class') is distinct from
+          'T3A-v4 inert one-time Edge-presence proof; PostgreSQL time; no actor authority' then
+    raise exception 'T3A_POSTFLIGHT_EDGE_PROOF_TABLE_DRIFT';
   end if;
 
   if not exists (
@@ -2152,6 +2428,62 @@ begin
   if not exists (
     select 1
     from pg_catalog.pg_proc as p
+    where p.oid=v_issue_oid
+      and p.proowner=v_postgres_oid
+      and p.prokind='f'
+      and p.prosecdef is true
+      and p.proconfig=array['search_path=pg_catalog']::text[]
+      and p.prolang=(
+        select l.oid from pg_catalog.pg_language as l
+        where l.lanname='plpgsql'
+      )
+      and p.prorettype='uuid'::regtype
+      and p.provolatile='v'
+      and p.proparallel='u'
+      and not p.proisstrict and not p.proleakproof and not p.proretset
+      and p.procost=100 and p.prorows=0
+      and p.pronargs=2 and p.pronargdefaults=0
+      and p.proargdefaults is null and p.proallargtypes is null
+      and p.proargmodes is null
+      and p.proargnames=array[
+        'p_actor_user_id','p_target_user_id'
+      ]::text[]
+      and p.provariadic=0::oid and p.prosupport=0::oid
+      and pg_catalog.md5(p.prosrc)='87f8d7f0c96ce4ae52fed9e2bc4bdcdd'
+      and pg_catalog.obj_description(p.oid,'pg_proc')=
+        'T3A-v4 service-role Edge-presence proof only; never actor authority'
+      and not pg_catalog.has_function_privilege(
+                v_authenticated_oid,p.oid,'EXECUTE'
+              )
+      and not pg_catalog.has_function_privilege(v_anon_oid,p.oid,'EXECUTE')
+      and pg_catalog.has_function_privilege(
+            v_service_role_oid,p.oid,'EXECUTE'
+          )
+      and not exists (
+        select 1
+        from pg_catalog.aclexplode(
+          coalesce(p.proacl,pg_catalog.acldefault('f',p.proowner))
+        ) as acl
+        where acl.grantee=0 and acl.privilege_type='EXECUTE'
+      )
+      and not exists (
+        select 1
+        from pg_catalog.aclexplode(
+          coalesce(p.proacl,pg_catalog.acldefault('f',p.proowner))
+        ) as acl
+        where acl.privilege_type='EXECUTE'
+          and (
+            acl.grantee not in (v_postgres_oid,v_service_role_oid)
+            or (acl.grantee=v_service_role_oid and acl.is_grantable)
+          )
+      )
+  ) then
+    raise exception 'T3A_POSTFLIGHT_EDGE_PROOF_FUNCTION_DRIFT';
+  end if;
+
+  if not exists (
+    select 1
+    from pg_catalog.pg_proc as p
     where p.oid=v_t3_oid
       and p.proowner=v_postgres_oid
       and p.prokind='f'
@@ -2166,14 +2498,16 @@ begin
       and p.proparallel='u'
       and not p.proisstrict and not p.proleakproof and not p.proretset
       and p.procost=100 and p.prorows=0
-      and p.pronargs=1 and p.pronargdefaults=0
+      and p.pronargs=2 and p.pronargdefaults=0
       and p.proargdefaults is null and p.proallargtypes is null
       and p.proargmodes is null
-      and p.proargnames=array['p_target_user_id']::text[]
+      and p.proargnames=array[
+        'p_target_user_id','p_edge_proof_id'
+      ]::text[]
       and p.provariadic=0::oid and p.prosupport=0::oid
-      and pg_catalog.md5(p.prosrc)='91fc82deadc0d18e871e43a812c8d6dd'
+      and pg_catalog.md5(p.prosrc)='f9bd114c7eb77313e22861816b8a88f5'
       and pg_catalog.obj_description(p.oid,'pg_proc')=
-        'T3A-v3 auth.uid actor; server-derived authority; durable fenced lease before Auth'
+        'T3A-v4 one-time Edge proof; auth.uid actor; durable fenced lease before Auth'
       and pg_catalog.has_function_privilege(
             v_authenticated_oid,p.oid,'EXECUTE'
           )
@@ -2786,7 +3120,9 @@ begin
       and n.nspname not like 'pg_toast%'
       and n.nspname not like 'pg_temp_%'
       and n.nspname not like 'pg_toast_temp_%'
-      and p.oid not in (v_guard_oid,v_t3_oid,v_release_oid,v_fence_oid)
+      and p.oid not in (
+        v_guard_oid,v_t3_oid,v_issue_oid,v_release_oid,v_fence_oid
+      )
   ), serialized as (
     select
       oid,
