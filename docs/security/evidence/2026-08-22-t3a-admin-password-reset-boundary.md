@@ -1,6 +1,6 @@
 # FECH.AI — T3A-v5 Administrative Password Reset Audit Compatibility Correction
 
-**Status:** `PR128_MERGED / EDGE_V19_DEPLOYED / B1_V19_FAIL_BEFORE_AUTH_PASS / MIGRATION_ATTEMPT_ABORTED / PLPGSQL_ROLE_ALIAS_COLLISION / CORRECTIVE_EXACT_HEAD_REVIEWS_REQUIRED / SECURITY_GO_DENIED`
+**Status:** `PR128_MERGED / EDGE_V19_DEPLOYED / B1_V19_FAIL_BEFORE_AUTH_PASS / MIGRATION_ATTEMPT_ABORTED / PLPGSQL_ALIAS_CORRECTED / BACKEND_INITIAL_SQL_PASS_DOC_REQUEST_CHANGES / EVIDENCE_RECONCILED / BACKEND_REREVIEW_REQUIRED / SECURITY_GO_DENIED`
 **Initial evidence date:** `2026-08-22`
 **Corrective evidence dates:** `2026-08-23`, `2026-08-24`, `2026-08-25`
 **Repository:** `wagnerjfjunior/fecha.ai`
@@ -18,6 +18,8 @@
 **Backend/Data reviewed heads:** `bf8fb1f4ab043226de3c77763b9b425a13b0261e`, `4631325827a76152ba554bece2a59da9eb1bb662`
 **Last fully approved head before post-Ready finding:** `fcb7dfc2f5f2259926556652fa9cfd3443d0c214`
 **Last fully approved tree before post-Ready finding:** `4dcaf2d4b6aa1248801e455def811e50ff04e414`
+**PR #129 initial Backend/Data reviewed head:** `57b6828aee6d5301cf429bee63f6ff2c6a7d1c42`
+**PR #129 initial Backend/Data response SHA-256:** `6440dddfa3ebabda877138230aff4ffd72eec98f969e2473db81842fa182efb4`
 
 PR #127 subsequently closed `DIRECT_RPC_CAN_MINT_UNRELEASABLE_LEASE`, received
 fresh Backend/Data and independent AppSec approval on exact head `a5c92617...`,
@@ -26,11 +28,12 @@ exact Edge as production version 18 and established fail-before-Auth. The same
 runtime calls exposed a new, narrower incompatibility: the versioned audit
 insert omitted live legacy NOT NULL columns `acao` and `entidade`.
 
-T3A-v5 is a post-merge correction of that newly observed runtime drift. A new
-Draft PR is necessary because PR #127 is merged; it is not an alternate PR or
-workaround for the already closed B1-B4 blockers. Prior approvals remain valid
-evidence for the unchanged v4 boundary, but they do not approve the changed
-Edge/audit ACL/fingerprint domain on the v5 exact head.
+T3A-v5 was the post-merge correction of that newly observed runtime drift. PR
+#128 was necessary because PR #127 was merged; it was not an alternate PR or
+workaround for the already closed B1-B4 blockers. The PR #127 approvals remained
+valid evidence for the unchanged v4 boundary but did not approve the changed
+Edge/audit ACL/fingerprint domain. PR #128 later received the required reviews,
+merge and Edge-first validation recorded in §0.
 
 ## 0. 2026-08-25 production executability finding
 
@@ -86,6 +89,13 @@ grant, trigger, actor/tenant predicate and rollback operation remain unchanged.
 No direct production SQL edit or retry is permitted. The corrected exact head
 requires Backend/Data and then independent AppSec review.
 
+The initial Backend/Data review of PR #129 accepted the SQL alias-collision
+closure and preservation of B1-B4, but returned `REQUEST CHANGES` because the
+current coverage matrix still carried pre-PR128 `v18 / v5 candidate` state.
+The reconciliation below removes that documentary contradiction without
+changing either SQL or any runtime artifact. The resulting exact head requires
+a fresh Backend/Data review before AppSec.
+
 ## 1. Authorized and prohibited scope
 
 T3A changes only the administrative password-reset boundary:
@@ -120,10 +130,12 @@ This change does not authorize or perform:
 - Ready, merge or Security Go;
 - a broad grant, trigger disablement, data normalization or frontend authority.
 
-## 2. LIVE_RESOLVED_STATE and MATERIAL_RECORDED_STATE
+## 2. Historical 2026-08-24 pre-PR128 production snapshot
 
-Read-only production state and bounded runtime evidence reconciled on
-`2026-08-24`:
+The following read-only production state and bounded runtime evidence were
+reconciled on `2026-08-24`, before PR #128 review/merge and the Edge v19
+transition. It is retained as historical lineage and is superseded for current
+state by §0:
 
 ```text
 Supabase project: uobxxgzshrmbtjfdolxd / ACTIVE_HEALTHY / PostgreSQL 17
@@ -259,17 +271,19 @@ ACL/fingerprint changes in v5 are a new material review domain.
 ## 4. B1 — safe rollout and failure ordering
 
 The v4 Edge-first step was separately authorized and completed. Production v18
-failed before Auth on absent proof RPCs, but its audit insert returned 400. The
-remaining fail-closed order, each runtime transition separately authorized, is:
+failed before Auth on absent proof RPCs, but its audit insert returned 400.
+PR #128 then closed that audit incompatibility and the first three rollout
+transitions completed. The reconciled sequence is:
 
 ```text
-1. approve one exact v5 corrective head by Backend/Data then independent AppSec
-2. deploy that exact reviewed v5 Edge while issuer/prepare remain absent
-3. prove audit INSERT succeeds, issuer returns absent/404 and no Auth mutation occurs
-4. apply the exact reviewed T3A migration only under a later authority
-5. validate catalog, roles, routine inventory, ACLs, grants, policies,
-   proof/lease tables, all T1/T3 triggers and body fingerprints
-6. run separately-authorized positive/negative/cross-tenant/concurrency smoke
+1. PR #128 Backend/Data + independent AppSec exact-head approval       DONE
+2. deploy that exact reviewed Edge while issuer/prepare remain absent  DONE / v19
+3. prove audit INSERT + issuer absent/404 + no Auth mutation           PASS
+4. invoke exact reviewed T3A migration under separate authority        ABORTED IN PREFLIGHT / NO DDL
+5. correct the PL/pgSQL role-alias collision in one Draft PR           PR #129 / REVIEW PENDING
+6. apply the final exact reviewed migration under new authority        BLOCKED
+7. validate catalog/roles/routines/ACLs/grants/policies/triggers       BLOCKED
+8. run separately-authorized cross-tenant/concurrency smoke            BLOCKED
 ```
 
 The v5 Edge first requires a successful service-role audit insert containing
@@ -298,7 +312,9 @@ transport ambiguity occurs only after proven Auth success and is reconciled as
 described in §8. A stuck lease is an availability incident requiring separate
 recovery authority, not an authorization gap.
 
-The inverse migration-first order remains prohibited while v18 is live.
+The inverse migration-first order was prohibited while v18 was live. Production
+v19 now preserves the reviewed fail-before-Auth ordering while the corrected
+migration, postflight and later runtime gates remain blocked.
 
 ## 5. B2 — exact positive trust-anchor preflight
 
@@ -624,7 +640,7 @@ is a later separately-authorized step.
 
 ## 10. B1-B4 coverage matrix
 
-| Blocker / invariant | Corrective artifact | Candidate result | Runtime result |
+| Blocker / invariant | Corrective artifact | Recorded result | Runtime result |
 |---|---|---|---|
 | B1 Edge-first rollout | v19 audit-first fail-before-Auth on absent issuer/prepare | PR #128 exact-head reviews approved | v19 PASS / audit committed / no Auth mutation |
 | B2 trust-anchor preflight | exact full role graph + public schema ACL + all routine kinds + complete audit relation fingerprints | semantics approved; alias-only correction pending exact-head review | one application aborted at first role predicate / no DDL |
@@ -632,8 +648,8 @@ is a later separately-authorized step.
 | B4 T1 interoperability | both T1 triggers + exact leased transitions | approved and unchanged from v4 | not executed |
 | DB→Auth authority continuity | durable lease + snapshot-independent unique-index probes + 3 fencing triggers + service-role TRUNCATE removal + success-only release | approved and unchanged from v4 | not runtime-tested |
 | direct PostgREST prepare / stranded lease | service-role-only one-time Edge proof consumed before lease/write | approved and unchanged from v4 | issuer absent; no direct runtime bypass tested |
-| audit schema compatibility | dual modern/legacy Edge insert + normalized inet + fail-before-proof/Auth + exact audit fingerprints | v5 candidate | v18 POST 400; v5 not deployed |
-| audit integrity | revoke authenticated INSERT; preserve authenticated SELECT; exact rollback restore | v5 candidate | not applied |
+| audit schema compatibility | dual modern/legacy Edge insert + normalized inet + fail-before-proof/Auth + exact audit fingerprints | PR #128 Backend/Data + AppSec exact-head approved and merged | v19 PASS / audit committed / no Auth mutation |
+| audit integrity | revoke authenticated INSERT; preserve authenticated SELECT; exact rollback restore | PR #128 exact-head approved; SQL unchanged in PR #129 | migration absent / no DDL applied |
 | actor=`auth.uid()` | caller JWT prepare RPC | preserved | not runtime-tested |
 | tenant/company server-side | strict DB predicates | preserved | not runtime-tested |
 | cross-company isolation | strict predicates + generic denial + fence | preserved | not runtime-tested |
@@ -642,15 +658,16 @@ is a later separately-authorized step.
 | T1/T2 | no T1 disable; no T2 change | preserved | not reopened |
 | frontend scope | no `App.jsx` diff | preserved | n/a |
 
-“v5 candidate” is not specialist PASS, deployment proof, Ready authority or
-Security Go. The v4 approval remains exact-head evidence only for unchanged
-bytes/domains.
+PR #128 exact-head reviews, merge, Edge v19 deployment and the controlled
+fail-before-Auth call close the audit-schema compatibility rollout blocker.
+They do not prove execution of the corrected migration or rollback and do not
+grant PR #129 Ready, merge, a production retry, runtime smoke or Security Go.
 
 ## 11. Required later acceptance matrix
 
 ```text
-Edge-first while proof issuer/prepare absent        FAIL CLOSED / NO AUTH MUTATION
-v5 Edge audit anchor while proof RPCs absent         INSERT + STATUS PATCH / NO AUTH MUTATION
+Edge-first while proof issuer/prepare absent        PASS / FAIL CLOSED / NO AUTH MUTATION
+v19 Edge audit anchor while proof RPCs absent        PASS / INSERT COMMITTED / STATUS RECORDED / NO AUTH MUTATION
 malformed/unavailable audit anchor                   FAIL BEFORE PROOF / NO AUTH MUTATION
 direct authenticated audit INSERT after migration   DENY
 direct prepare without valid Edge proof             DENY / NO LEASE / NO FLAG WRITE
@@ -683,7 +700,7 @@ rollback after any reviewed routine/object drift     STOP
 
 ## 12. Validation performed and remaining gates
 
-Performed on the candidate source:
+Performed across the reviewed lineage and current candidate source:
 
 - read-only production catalog inventory and exact baseline digests;
 - full 21-edge membership graph, exact database/schema ownership, complete
@@ -701,22 +718,31 @@ Performed on the candidate source:
   hypothetical post-revoke fingerprints;
 - TypeScript syntax, whitespace, SQL lexical/dollar-quote/parenthesis and
   top-level transaction balance for the v5 correction.
+- PR #128 exact-head Backend/Data and independent AppSec reviews, merge and
+  deployment of its exact Edge as production v19;
+- one controlled v19 fail-before-Auth request with committed audit status,
+  absent issuer response and no Auth mutation;
+- one separately-authorized migration invocation, aborted by PostgreSQL 17 in
+  the first preflight before T3 DDL;
+- static Backend/Data acceptance of the PR #129 alias correction, followed by
+  `REQUEST CHANGES` only for the now-reconciled evidence-state contradiction.
 
 Not performed:
 
 - local Vite build: dependencies were unavailable and frozen pnpm install
   stopped on the repository's pre-existing `package.json` / `pnpm-lock.yaml`
   specifier mismatch; neither manifest nor lockfile was changed;
-- migration or rollback execution on PostgreSQL 17;
-- v5 Edge deployment or v5 runtime request;
-- production smoke/concurrency test;
-- Ready, merge or Security Go.
+- successful completion/postflight of the corrected migration on PostgreSQL 17;
+- rollback execution;
+- any Edge deployment or runtime request after the controlled v19 call;
+- post-migration production smoke/concurrency testing;
+- PR #129 Ready, merge or Security Go.
 
-Required next gates on one new resolved v5 exact head:
+Required next gates on the final resolved PR #129 exact head:
 
 ```text
 1. integral material-file read and coverage reconciliation
-2. repeat Backend/Data exact-head review
+2. repeat Backend/Data exact-head review after this evidence correction
 3. only after Backend/Data closure, independent AppSec exact-head review
 4. stop before Ready pending separate Product Authority
 ```
@@ -752,9 +778,9 @@ proof/lease/fence design
 Required next gates:
 
 ```text
-1. resolve the corrective Draft PR exact head
+1. resolve the final corrective Draft PR exact head
 2. integral read of all changed final artifacts
-3. Backend/Data exact-head review
+3. repeat Backend/Data exact-head review after evidence reconciliation
 4. independent AppSec exact-head review only after Backend/Data closure
 5. stop before Ready
 ```
