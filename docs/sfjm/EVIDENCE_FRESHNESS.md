@@ -1,7 +1,7 @@
 # FECH.AI — SFJM Evidence Freshness
 
-**Status:** `CLAIM_ANCHOR_INVALIDATION_LEDGER / PR127_MERGED / EDGE_V18_DEPLOYED / B1_RUNTIME_PASS / AUDIT_SCHEMA_RUNTIME_INVALIDATION / V5_REVIEWS_PENDING`
-**Updated:** `2026-08-24`
+**Status:** `CLAIM_ANCHOR_INVALIDATION_LEDGER / PR128_MERGED / EDGE_V19_DEPLOYED / B1_V19_RUNTIME_PASS / MIGRATION_EXECUTABILITY_INVALIDATED / PLPGSQL_ALIAS_CORRECTION_PENDING_REVIEW`
+**Updated:** `2026-08-25`
 **Repository:** `wagnerjfjunior/fecha.ai`
 
 ## 1. Freshness model
@@ -370,6 +370,56 @@ V5 relation-lock ordering follows established in-transaction writers:
 are separate committed HTTP transactions, so they do not introduce the reverse
 held-lock pair.
 
+### 5.1 PR #128 merge, Edge v19 proof and migration-abort anchor
+
+```text
+PR #128 reviewed head: b594218dabd9a7beaea3158bb143f5dd2fd71386
+PR #128 reviewed tree: e36a00e671e8c8bce52b2e35f12beed165fad927
+PR #128 merge commit / main: 3c9daf6c49eb937824c2c2b40aba198e2727c4bb
+criar-usuario production: v19 / ACTIVE / verify_jwt=false
+deployment digest: bafdd8e9c4cbf679d877b526703bc1ab791153a14fa1cbeddf69be4726f4c9d0
+single controlled POST: 2026-08-25T17:29:25.608Z / HTTP 500
+audit committed: action=password_reset_attempt / status=edge_proof_unavailable
+target UUID remained absent from auth.users and public.corretores
+Auth logs in the window: caller login/getUser only; no admin password update
+```
+
+Exact SQL application anchor:
+
+```text
+main migration blob: f4413fddd145679077ae68b28b85c98ce439e74e
+migration SHA-256: 9cef9dadae10b1262d78f01fbf30b490342b5cc228fc866c48ace5799777fced
+migration bytes/lines: 134244 / 3550
+main rollback blob: 36513bce970f66e023a50b16148a97bad76e17d7
+rollback SHA-256: 7a8377f7ea4ecff5c36bb665a5e9bcb734b48015792310668d7ff328e81dbba4
+rollback bytes/lines: 106631 / 2785
+application invocations: 1
+result: SQLSTATE 55000 / record "r" is not assigned yet
+migration history entry after failure: ABSENT
+T3 routines/relations after failure: ABSENT
+Edge v19 after failure: ACTIVE
+```
+
+Invalidated claim:
+
+```text
+The reviewed forward/rollback SQL is executable on production PostgreSQL 17.
+```
+
+Bounded cause and correction:
+
+```text
+r record (later FOR-loop target)
++ pg_roles AS r (earlier catalog alias)
+-> r.oid / r.rol* resolves to unassigned record
+-> rename only catalog alias and role-field qualifiers to role_row
+```
+
+This finding does not invalidate B1 v19 runtime ordering, audit compatibility,
+actor/tenant/proof/lease/T1 semantics, or the absence of partial production
+state. It invalidates the final-head executability gate for B2/B3 and requires
+fresh exact-head reviews of both SQL artifacts and related evidence.
+
 ## 6. Live trust-anchor observations used by T3A review
 
 Read-only production evidence on 2026-08-23 established, without PII:
@@ -415,46 +465,40 @@ Current production Edge:
 
 ```text
 slug: criar-usuario
-version: 18
+version: 19
 status: ACTIVE
 verify_jwt: false
-Git blob: ec62997bc357b550feda5027051fe507fe9184fa
-SHA-256: 11719575bce92c85422eb5d3a78ad26a5d683c47202e6db8032f3e13d5a254a7
+deployment digest: bafdd8e9c4cbf679d877b526703bc1ab791153a14fa1cbeddf69be4726f4c9d0
+source merge commit: 3c9daf6c49eb937824c2c2b40aba198e2727c4bb
 ```
 
-The v18 code validates the Bearer manually and is fail-closed on the absent
-proof issuer. Its runtime audit INSERT is incompatible with the live legacy
-NOT NULL columns, so rollout is stopped before migration. The versioned v17
-source remains the separately-gated Edge rollback anchor.
-
-This fact is the reason rollout order is security-sensitive.
-
-Invalidate after any Edge version/runtime change.
+The controlled call established audit-first fail-before-Auth while the issuer
+remains absent. Invalidate after any Edge version/runtime change.
 
 ## 8. Unestablished claims
 
-At this transition, do not claim:
-
 ```text
-T3A v4 exact-head approval/merge: ESTABLISHED as recorded above
-T3A-v5 candidate artifacts: RECORDED IN CORRECTIVE CHANGE SET
-T3A-v5 final live PR head: MUST BE RESOLVED AFTER COMMIT
-T3A-v5 Backend/Data exact-head PASS: NOT ESTABLISHED
-T3A-v5 independent AppSec exact-head PASS: NOT ESTABLISHED
+alias-corrective final PR head: MUST BE RESOLVED AFTER COMMIT
+Backend/Data exact-head PASS on corrected SQL: NOT ESTABLISHED
+independent AppSec exact-head PASS on corrected SQL: NOT ESTABLISHED
 T3A applied to Supabase production: NO
-v18 hardened Edge deployed: YES, but audit compatibility blocker remains
-v5 Edge deployed: NO
-T3A positive/negative/cross-tenant production smoke: NOT EXECUTED
-T3A rollback runtime-tested: NOT EXECUTED
+positive/negative/cross-tenant production smoke: NOT EXECUTED
+rollback runtime-tested: NOT EXECUTED
 T3B frontend password cutover: NOT IMPLEMENTED
 Security Go: DENIED
 ```
 
-While the SES Router is temporarily frozen, a manual specialist result is fresh
-only if the returned response explicitly binds itself to the live repository,
-PR and exact head, identifies the material files read, and contains the complete
-specialist verdict. A prompt alone is not review evidence. Do not fabricate a
-Gateway receipt.
+Established:
+
+```text
+PR #128 merged
+Edge v19 deployed and active
+single v19 fail-before-Auth call PASS
+audit row committed
+no Auth mutation
+single migration invocation aborted before DDL
+no migration history entry or T3 objects after abort
+```
 
 ## 9. Invalidation rules
 

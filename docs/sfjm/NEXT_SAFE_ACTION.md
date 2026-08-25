@@ -1,7 +1,7 @@
 # FECH.AI — SFJM Next Safe Action
 
-**Status:** `SEMANTIC_NEXT_ACTION_VIEW / PR127_MERGED / AUDIT_SCHEMA_V5_CORRECTION / PUBLISH_DRAFT_AND_REPEAT_EXACT_HEAD_REVIEWS`
-**Updated:** `2026-08-24`
+**Status:** `SEMANTIC_NEXT_ACTION_VIEW / PR128_MERGED / EDGE_V19_B1_PASS / PLPGSQL_ALIAS_CORRECTION / EXACT_HEAD_REVIEWS_REQUIRED`
+**Updated:** `2026-08-25`
 **Repository:** `wagnerjfjunior/fecha.ai`
 
 ## 1. Authority
@@ -12,82 +12,53 @@ This file is a thin semantic view. Principal material state:
 docs/sfjm/CURRENT_STATE.md
 ```
 
-Resolve GitHub/Supabase lifecycle live before acting.
-
-Because this 2026-08-24 transition is on the post-merge v5 corrective change
-set, a new conversation must bootstrap from live `main`, then resolve the active
-v5 corrective PR/head and read this file from that exact head until merge.
+Resolve GitHub/Supabase lifecycle live before acting. The alias-correction
+transition is `PR_HEAD_ONLY` until merge; use the exact corrective PR head.
 
 ## 2. Single current semantic next action
 
 ```text
-Publish/reconcile the T3A-v5 audit-schema compatibility correction in one new
-Draft PR from merged main `610bdd3c...`, resolve its live exact head, and obtain
-Backend/Data exact-head review. Only after Backend/Data closure, obtain the
-independent AppSec exact-head review. Stop in Draft.
+Create/reconcile one Draft PR from main 3c9daf6c... that renames only the
+conflicting pg_roles alias in forward and rollback pre/postflight, updates the
+material evidence/SFJM, and obtains Backend/Data exact-head review. Only after
+Backend/Data closure, obtain independent AppSec exact-head review. Stop in Draft.
 ```
 
-Changed domains to reconcile on that exact head:
-
-```text
-Edge dual modern/legacy audit insert for reset and creation paths
-audit insert must succeed before proof/prepare/Auth
-conservative inet normalization plus legacy text IP
-complete live audit relation fingerprint in migration pre/postflight
-authenticated audit INSERT revoked while authenticated SELECT remains
-rollback proof→authority→lease→audit order
-rollback exact post-T3 fingerprint + exact legacy INSERT restoration
-unchanged v4 B1-B4/actor/tenant/proof/lease/T1 contracts
-```
-
-PR #127 is merged. The one new Draft PR is justified by the post-merge runtime
-finding and is not a duplicate/workaround PR for B1-B4.
+The production migration invocation already occurred once and aborted before
+DDL. A second application is not part of this action.
 
 ## 3. Exact-head closure sequence
 
-The next conversation should:
-
 ```text
-1. resolve FECH.AI main live
-2. execute canonical bootstrap and specialist resolution
-3. resolve the active v5 corrective PR live: base/head/state/changed files/checks/reviews/threads
-4. read CURRENT_STATE + this file from the exact corrective head
-5. confirm the v5 Edge/migration/rollback/evidence/SFJM artifacts are that head
-6. preserve T1/T2 contracts and confirm App.jsx has no T3A diff
-7. update the corrective PR description so it matches that final head
-8. read every final material artifact to EOF and reconcile the coverage matrix
-9. prepare an exact-head Backend/Data prompt that includes the approved v4
-   lineage, v18 fail-before-Auth PASS, audit POST 400 and v5 correction; Product
-   Authority submits it manually and returns the integral response
-10. after Backend/Data closure, repeat independently with application-security-assurance-specialist
-11. record the manual exact-head outcomes without inventing a Gateway receipt or carrying a prior-head PASS
-12. stop in Draft before Ready
+1. resolve main 3c9daf6c... live and create the narrow corrective branch
+2. verify SQL sources match live reviewed blobs before editing
+3. change only pg_roles alias r -> role_row and its role-field qualifiers
+4. update evidence/SFJM for PR128 merge, Edge v19 PASS and failed application
+5. resolve the Draft PR exact head and changed-file set
+6. read every changed material artifact through EOF
+7. obtain manual Backend/Data exact-head review
+8. only after Backend/Data closure, obtain independent AppSec review
+9. stop in Draft before Ready
 ```
 
-Head changes invalidate prior exact-head gates. Do not carry a PASS across a corrective commit.
-
-The SES Router is temporarily frozen for this workstream because its Action is
-not available from inside the project. Use the manual copy/paste channel recorded
-in `AUTHORIZATIONS.md` until Product Authority restores the Router.
+Head changes invalidate the two new reviews. The prior v5 approvals remain
+lineage for unchanged domains, not approval of the corrected bytes.
 
 ## 4. Required safe deployment semantics after later approval
 
-This section is a proof obligation, not deployment authorization.
-
-The intended fail-closed rollout is:
+This section is a proof obligation, not deployment or migration authority.
 
 ```text
-reviewed v5 Edge deployed while proof issuer remains absent
-→ audit row is created with modern + legacy fields
-→ proof issuer absent: audit status is updated and reset fails before Auth
-→ apply reviewed migration
-→ validate function/ACL/grants/triggers/audit fingerprints, empty proof/lease tables,
-  complete role/schema anchors and all-kind positive routine inventory
-→ controlled positive/negative/cross-tenant smoke
-→ confirm direct must_change_password client write cannot bypass boundary
+corrected exact head reviewed by Backend/Data + AppSec
+-> separately authorize Ready and merge
+-> resolve merged main and authenticate exact SQL bytes
+-> separately authorize one new migration application
+-> require complete migration postflight/catalog validation
+-> separately authorize bounded smoke
 ```
 
-Do not use the inverse order while the audit-incompatible v18 remains live.
+Production Edge v19 is already active and the audit-first fail-before-Auth
+proof is PASS. No Edge redeploy is part of the alias correction.
 
 ## 5. Required rollback semantics
 
