@@ -1,7 +1,7 @@
 # FECH.AI — SFJM Authorizations
 
-**Status:** `AUTHORITY_PROVENANCE_LEDGER / PR127_MERGED / EDGE_FIRST_PARTIALLY_CONSUMED / POST_MERGE_AUDIT_V5_GITHUB_AUTHORITY_ACTIVE / PRODUCTION_GATES_SEPARATE`
-**Updated:** `2026-08-24`
+**Status:** `AUTHORITY_PROVENANCE_LEDGER / PR128_AND_EDGE_V19_CONSUMED / MIGRATION_ATTEMPT_CONSUMED_FAIL_CLOSED / PLPGSQL_CORRECTIVE_GITHUB_AUTHORITY_ACTIVE / PRODUCTION_GATES_SEPARATE`
+**Updated:** `2026-08-25`
 **Repository:** `wagnerjfjunior/fecha.ai`
 
 ## 1. Interpretation rule
@@ -34,45 +34,56 @@ perform read-only Backend/Data + AppSec-oriented review
 
 Those consumed authorities do not authorize Ready, merge, Supabase application or Edge deployment.
 
-## 3. ACTIVE_AUTHORITY — post-merge audit compatibility GitHub correction
+## 3. ACTIVE_AUTHORITY — PL/pgSQL role-alias corrective Draft PR
 
-PR #127 was ultimately approved on exact head
-`a5c92617f372599a234c0147aad13a90649348d7`, merged as
-`610bdd3c4b5ab208f7ffe177d9d32a2184aa9d87`, and its exact Edge was deployed as
-production `criar-usuario` v18 under later separate authorities. The authorized
-fail-before-Auth call proved the security ordering but exposed a new runtime
-finding: live `public.audit_logs` requires legacy NOT NULL fields `acao` and
-`entidade`, while the v18 Edge insert supplied only the modern fields.
+PR #128 received the required exact-head reviews, merged as
+`3c9daf6c49eb937824c2c2b40aba198e2727c4bb`, and its exact Edge was deployed
+as production v19 under later separate authorities. One controlled call
+returned the expected fail-closed 500, committed the audit row and produced no
+Auth mutation.
 
-On `2026-08-24`, after the exact next action and its limits were stated,
-Product Authority authorized that next action. Durable bounded interpretation:
+Product Authority then separately authorized application of the exact reviewed
+T3A migration. The application tool was invoked once. PostgreSQL aborted the
+transaction in the first preflight with SQLSTATE 55000 because the declared
+record `r` collided with the `pg_roles AS r` alias. No T3 object or migration
+history record was created. That production-application authority is consumed.
+
+On `2026-08-25`, after the failure, rollback confirmation and exact minimal
+correction were stated, Product Authority authorized:
 
 ```text
 Repository: wagnerjfjunior/fecha.ai
-Corrective base: main 610bdd3c4b5ab208f7ffe177d9d32a2184aa9d87
-Corrective branch: security/t3a-audit-schema-compatibility
+Base: live main 3c9daf6c49eb937824c2c2b40aba198e2727c4bb
+Branch: security/t3a-plpgsql-role-alias-collision
 Authorized GitHub-side work only:
-  correct criar-usuario audit compatibility while preserving v4 authority
-  pin the complete live audit relation in T3A migration/postflight
-  revoke authenticated direct audit INSERT and preserve SELECT
-  make rollback verify and restore the exact legacy audit grant/state
-  update directly-related evidence and SFJM continuity
-  create one new Draft PR from merged main for this post-merge runtime finding
-  update that Draft PR description to the final exact head
-  perform read-only validation and prepare exact-head manual specialist bundles
-Required gates:
-  Backend/Data static exact-head review
-  independent AppSec static exact-head review only after Backend/Data closure
+  rename conflicting pg_roles alias r -> role_row in forward pre/postflight
+  apply the identical correction to rollback pre/postflight
+  preserve the later loop record r and every catalog/security expectation
+  update directly-related evidence and SFJM
+  create one Draft PR
+  perform read-only exact-head validation
+  prepare manual Backend/Data and AppSec review material
+Required sequence:
+  Backend/Data exact-head review
+  independent AppSec exact-head review only after Backend/Data closure
   stop in Draft before Ready
 ```
 
-This new Draft PR is necessary because PR #127 is already merged. It is not an
-alternate T3A PR for B1-B4, does not reopen those closed findings, and is not a
-workaround. The material invalidation is the post-merge audit-schema runtime
-evidence.
+Not authorized:
 
-This authority does **not** authorize a migration, further Edge deployment,
-runtime request, Auth/data mutation, rollback, Ready, merge or Security Go.
+```text
+Ready
+merge
+another Supabase migration/application
+Edge deployment
+runtime/Auth call or smoke
+rollback
+Security Go
+```
+
+The former PR #128 audit-correction authority and its later Ready, merge, Edge
+v19 deployment and single runtime-call authorities are consumed. They do not
+carry into this corrective PR or a production retry.
 
 ## 4. CONSUMED_AUTHORITY — PR #127 correction, reviews and merge
 
@@ -209,15 +220,12 @@ The transition documentation authority is consumed by publishing these SFJM upda
 
 ## 6. Actions still requiring separate exact authority
 
-The current corrective authority does **not** authorize these transitions by implication:
-
 ```text
-mark the new corrective PR Ready
-merge the new corrective PR
-apply T3A migration to Supabase production
-deploy another criar-usuario Edge version to production
-execute production data normalization
-execute destructive/adversarial production testing
+mark the alias-corrective PR Ready
+merge the alias-corrective PR
+apply/retry T3A migration in Supabase production
+deploy another Edge version
+execute runtime/Auth or adversarial smoke
 execute rollback
 alter unrelated frontend/runtime
 Security Go
@@ -225,7 +233,7 @@ F1-02 final acceptance
 WDP change
 ```
 
-When applicable, each must be separately authorized after its prerequisite evidence/gate is established.
+The single failed application does not authorize a retry.
 
 ## 7. Production-testing boundary
 

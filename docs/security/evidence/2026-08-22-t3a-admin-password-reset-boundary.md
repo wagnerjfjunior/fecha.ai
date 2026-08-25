@@ -1,15 +1,19 @@
 # FECH.AI — T3A-v5 Administrative Password Reset Audit Compatibility Correction
 
-**Status:** `PR127_MERGED / EDGE_V18_DEPLOYED / B1_FAIL_BEFORE_AUTH_PASS / AUDIT_SCHEMA_DRIFT_OPEN / V5_EXACT_HEAD_REVIEWS_REQUIRED / MIGRATION_NOT_APPLIED / SECURITY_GO_DENIED`
+**Status:** `PR128_MERGED / EDGE_V19_DEPLOYED / B1_V19_FAIL_BEFORE_AUTH_PASS / MIGRATION_ATTEMPT_ABORTED / PLPGSQL_ROLE_ALIAS_COLLISION / CORRECTIVE_EXACT_HEAD_REVIEWS_REQUIRED / SECURITY_GO_DENIED`
 **Initial evidence date:** `2026-08-22`
-**Corrective evidence dates:** `2026-08-23`, `2026-08-24`
+**Corrective evidence dates:** `2026-08-23`, `2026-08-24`, `2026-08-25`
 **Repository:** `wagnerjfjunior/fecha.ai`
 **Original PR base:** `037232fe3da37a749ab980f783af92ff15e2baf2`
 **Merged PR:** `#127`
 **Reviewed/merged source head:** `a5c92617f372599a234c0147aad13a90649348d7`
 **Reviewed/merged source tree:** `87872aac22b36437b7fb66f3614905e8df94f5ee`
-**Merge commit / corrective base:** `610bdd3c4b5ab208f7ffe177d9d32a2184aa9d87`
-**Corrective branch:** `security/t3a-audit-schema-compatibility`
+**PR #127 merge commit:** `610bdd3c4b5ab208f7ffe177d9d32a2184aa9d87`
+**PR #128 reviewed head:** `b594218dabd9a7beaea3158bb143f5dd2fd71386`
+**PR #128 reviewed tree:** `e36a00e671e8c8bce52b2e35f12beed165fad927`
+**PR #128 merge commit / corrective base:** `3c9daf6c49eb937824c2c2b40aba198e2727c4bb`
+**Audit corrective branch:** `security/t3a-audit-schema-compatibility`
+**Executability corrective branch:** `security/t3a-plpgsql-role-alias-collision`
 **Initial blocked PR head:** `45ad27668835b6458b52d2fb592cfa36b5589726`
 **Backend/Data reviewed heads:** `bf8fb1f4ab043226de3c77763b9b425a13b0261e`, `4631325827a76152ba554bece2a59da9eb1bb662`
 **Last fully approved head before post-Ready finding:** `fcb7dfc2f5f2259926556652fa9cfd3443d0c214`
@@ -27,6 +31,60 @@ Draft PR is necessary because PR #127 is merged; it is not an alternate PR or
 workaround for the already closed B1-B4 blockers. Prior approvals remain valid
 evidence for the unchanged v4 boundary, but they do not approve the changed
 Edge/audit ACL/fingerprint domain on the v5 exact head.
+
+## 0. 2026-08-25 production executability finding
+
+PR #128 closed the audit compatibility blocker, received Backend/Data and
+independent AppSec approval, and merged as
+`3c9daf6c49eb937824c2c2b40aba198e2727c4bb`. Its exact Edge was deployed as
+production v19. One controlled call returned HTTP 500 as expected, committed a
+`password_reset_attempt` audit row with `status=edge_proof_unavailable`, and
+produced no Auth mutation.
+
+Product Authority then separately authorized one application of the exact
+reviewed migration. It was invoked once and PostgreSQL 17 aborted at the first
+role-attribute predicate:
+
+```text
+SQLSTATE 55000
+record "r" is not assigned yet
+```
+
+The transaction had only acquired relation locks and entered the first
+preflight `DO` block. It had not reached any T3 DDL. Post-failure read-only
+verification established:
+
+```text
+T3 migration history entry: ABSENT
+T3 routines: ABSENT
+T3 relations: ABSENT
+target auth.users row: ABSENT
+production Edge v19: ACTIVE
+audit rows for the controlled target: exactly 1
+```
+
+Root cause exists in four material blocks:
+
+```text
+forward preflight
+forward postflight
+rollback preflight
+rollback postrollback
+```
+
+Each block declares `r record` for later `FOR r IN` loops and also aliases
+`pg_catalog.pg_roles AS r`. PostgreSQL resolves `r.oid` and `r.rol*` to the
+unassigned record. The correction changes only:
+
+```text
+pg_roles AS r       -> pg_roles AS role_row
+r.oid / r.rol*      -> role_row.oid / role_row.rol*
+```
+
+The `r record` loop target and every expected value, digest, DDL statement,
+grant, trigger, actor/tenant predicate and rollback operation remain unchanged.
+No direct production SQL edit or retry is permitted. The corrected exact head
+requires Backend/Data and then independent AppSec review.
 
 ## 1. Authorized and prohibited scope
 
@@ -568,9 +626,9 @@ is a later separately-authorized step.
 
 | Blocker / invariant | Corrective artifact | Candidate result | Runtime result |
 |---|---|---|---|
-| B1 Edge-first rollout | v18 fail-before-Auth on absent proof issuer/prepare + required v5 audit-first retest | v4 approved; v5 audit correction pending review | v18 PASS / no Auth mutation; audit 400 open |
-| B2 trust-anchor preflight | exact full role graph + public schema ACL + all routine kinds + complete audit relation fingerprints | v4 approved; v5 audit anchor pending review | T3A migration not applied |
-| B3 drift-safe rollback | same exact anchors + proof→authority→lease→audit order + no live proof/lease + exact grant reversal | v4 approved; v5 audit reversal pending review | not executed |
+| B1 Edge-first rollout | v19 audit-first fail-before-Auth on absent issuer/prepare | PR #128 exact-head reviews approved | v19 PASS / audit committed / no Auth mutation |
+| B2 trust-anchor preflight | exact full role graph + public schema ACL + all routine kinds + complete audit relation fingerprints | semantics approved; alias-only correction pending exact-head review | one application aborted at first role predicate / no DDL |
+| B3 drift-safe rollback | same exact anchors + proof→authority→lease→audit order + no live proof/lease + exact grant reversal | semantics approved; same alias-only correction pending exact-head review | not executed |
 | B4 T1 interoperability | both T1 triggers + exact leased transitions | approved and unchanged from v4 | not executed |
 | DB→Auth authority continuity | durable lease + snapshot-independent unique-index probes + 3 fencing triggers + service-role TRUNCATE removal + success-only release | approved and unchanged from v4 | not runtime-tested |
 | direct PostgREST prepare / stranded lease | service-role-only one-time Edge proof consumed before lease/write | approved and unchanged from v4 | issuer absent; no direct runtime bypass tested |
@@ -664,3 +722,42 @@ Required next gates on one new resolved v5 exact head:
 ```
 
 T3A-v5 grants none of the remaining lifecycle or production authorities.
+
+## 13. Alias-correction coverage and remaining gates
+
+Changed material scope:
+
+```text
+supabase/migrations/20260822211600_t3_admin_password_reset_boundary.sql
+  12 pg_roles aliases + 96 role-field qualifiers renamed
+supabase/rollback/20260822211600_t3_admin_password_reset_boundary_rollback.sql
+  12 pg_roles aliases + 96 role-field qualifiers renamed
+directly-related evidence/SFJM only
+```
+
+Explicitly unchanged:
+
+```text
+criar-usuario Edge source
+App.jsx
+T1/T2 migrations
+function bodies created by T3A
+catalog fingerprints and expected counts/digests
+grants, policies, trigger definitions and lock order
+actor=auth.uid()
+server-derived tenant/company/role/team
+proof/lease/fence design
+```
+
+Required next gates:
+
+```text
+1. resolve the corrective Draft PR exact head
+2. integral read of all changed final artifacts
+3. Backend/Data exact-head review
+4. independent AppSec exact-head review only after Backend/Data closure
+5. stop before Ready
+```
+
+Ready, merge, production migration retry, smoke, rollback and Security Go
+remain separately blocked.

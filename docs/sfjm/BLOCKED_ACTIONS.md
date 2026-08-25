@@ -1,7 +1,7 @@
 # FECH.AI — SFJM Blocked Actions
 
-**Status:** `MATERIAL_BLOCKER_VIEW / PR127_MERGED / B1_RUNTIME_PASS / AUDIT_SCHEMA_DRIFT_OPEN / V5_EXACT_HEAD_REVIEWS_PENDING / FAIL_CLOSED`
-**Updated:** `2026-08-24`
+**Status:** `MATERIAL_BLOCKER_VIEW / PR128_MERGED / EDGE_V19_B1_PASS / T3A_SQL_ALIAS_COLLISION / CORRECTIVE_REVIEWS_PENDING / FAIL_CLOSED`
+**Updated:** `2026-08-25`
 **Repository:** `wagnerjfjunior/fecha.ai`
 
 ## 1. Authority
@@ -16,80 +16,54 @@ Resolve live lifecycle before acting.
 
 ## 2. Product/security blocks
 
-The following remain blocked unless material evidence and applicable Product Authority change their state:
-
 ```text
 Security Go
 broad paid commercialization
 F1-02 final acceptance
-new T3A-v5 corrective PR Ready
-new T3A-v5 corrective PR merge
-T3A Supabase production application
-further T3A Edge production deployment
-T3A production adversarial/cross-tenant execution without exact runtime authority
-T3B frontend password cutover before T3A backend is safely applied/deployed/validated
+alias-corrective PR Ready
+alias-corrective PR merge
+new T3A Supabase production application
+T3A runtime/adversarial/cross-tenant smoke
+rollback execution
+T3B frontend password cutover
 WDP increase without governance acceptance
 ```
 
-## 3. Closed B1-B4 lineage and current audit gate
+## 3. Closed lineage and current runtime executability gate
 
-Do not reopen B1-B4 or create another PR merely to relitigate them.
+PR #127 closed the B1-B4 authority-design blockers and merged. PR #128 closed
+the post-merge audit-schema incompatibility, received Backend/Data and
+independent AppSec approval on head
+`b594218dabd9a7beaea3158bb143f5dd2fd71386`, and merged as
+`3c9daf6c49eb937824c2c2b40aba198e2727c4bb`.
 
-```text
-B1 — unsafe rollout order in the initial candidate
-B2 — incomplete trust-anchor preflight
-B3 — rollback not sufficiently drift-safe
-B4 — incompatibility with the live T1 direct-compatibility guard for gestor password-state transition
-```
-
-The Backend/Data exact-head review of `bf8fb1f...` returned `REQUEST_CHANGES`:
-the DB lock did not span the later Auth side effect and the writer regex was not
-transitive. The v3 candidate at `46313258...` introduced the durable
-lease/fence and positive inventory, then a same-PR correction closed its
-membership/options, aggregate and complete `public` ACL findings. Exact head
-`fcb7dfc2...` subsequently received Backend/Data and independent AppSec
-`APPROVE`.
-
-After separately-authorized Ready, the GitHub Codex review opened material P2
-`DIRECT_RPC_CAN_MINT_UNRELEASABLE_LEASE`. Direct authenticated PostgREST access
-to the prepare RPC could commit a durable lease and `must_change_password=true`
-without the Edge Auth mutation; only service_role could release that lease, and
-the T1/T3 guards would then prevent ordinary completion. The PR was returned to
-Draft at that point. T3A-v4 then required a service-role-only, opaque, one-time
-Edge-presence proof that the caller-JWT prepare RPC must consume before locks,
-lease creation or password-state mutation.
-
-Integral Backend/Data and independent AppSec reviews subsequently approved
-exact head `a5c92617f372599a234c0147aad13a90649348d7` / tree
-`87872aac22b36437b7fb66f3614905e8df94f5ee` with no findings. PR #127 merged as
-`610bdd3c4b5ab208f7ffe177d9d32a2184aa9d87`. The exact Edge was deployed as
-production v18, and the bounded fail-before-Auth calls all returned 500 without
-any Auth update. B1 is runtime PASS; B2-B4 remain approved static contracts and
-are not reopened absent a material change in their domains.
-
-The same runtime evidence opened one new blocker:
+Production Edge v19 then proved:
 
 ```text
-AUDIT_SCHEMA_COMPATIBILITY
-v18 POST /rest/v1/audit_logs -> 400
-live required fields omitted by v18: acao, entidade
-ip_address live type: inet
-audit anchor not created, although issuer 404 still prevented Auth
+single POST
+audit row committed with status=edge_proof_unavailable
+Edge HTTP 500
+no Auth mutation
+B1 runtime PASS
 ```
+
+The separately-authorized exact migration invocation failed in the first
+preflight with SQLSTATE 55000 because PL/pgSQL record variable `r` collided
+with `pg_roles AS r`. The transaction aborted before DDL; no T3 objects or
+migration record exist. The rollback source contains the same collision.
 
 Current blocking gate:
 
 ```text
-publish/resolve one v5 audit-compatibility Draft PR from merged main
--> integral material-file read + coverage reconciliation
--> repeat Backend/Data exact-head review and obtain PASS
+one alias-only corrective Draft PR
+-> integral final-file read and exact diff
+-> Backend/Data exact-head PASS
 -> independent AppSec exact-head PASS
--> STOP in Draft before Ready
+-> STOP before Ready
 ```
 
-Any material correction after either review invalidates both head-bound results
-as applicable. The new PR is justified only by the post-merge runtime finding;
-it is not a duplicate vehicle for the old B1-B4 blockers.
+This is a new runtime executability finding. It does not reopen T1/T2, the
+multi-tenant actor contract, proof/lease design or audit compatibility.
 
 ## 4. Explicitly prohibited workaround classes
 

@@ -79,46 +79,46 @@ begin
   -- never accepted as T3 actor authority. authenticator is the NOINHERIT login
   -- role that may SET the exact client roles through the pinned graph below.
   if not exists (
-       select 1 from pg_catalog.pg_roles as r
-       where r.oid=v_postgres_oid
-         and not r.rolsuper and r.rolinherit and r.rolcreaterole
-         and r.rolcreatedb and r.rolcanlogin and r.rolreplication
-         and r.rolbypassrls
+       select 1 from pg_catalog.pg_roles as role_row
+       where role_row.oid=v_postgres_oid
+         and not role_row.rolsuper and role_row.rolinherit and role_row.rolcreaterole
+         and role_row.rolcreatedb and role_row.rolcanlogin and role_row.rolreplication
+         and role_row.rolbypassrls
      )
      or not exists (
-       select 1 from pg_catalog.pg_roles as r
-       where r.oid=v_authenticated_oid
-         and r.rolinherit and not r.rolsuper and not r.rolcreaterole
-         and not r.rolcreatedb and not r.rolcanlogin
-         and not r.rolreplication and not r.rolbypassrls
+       select 1 from pg_catalog.pg_roles as role_row
+       where role_row.oid=v_authenticated_oid
+         and role_row.rolinherit and not role_row.rolsuper and not role_row.rolcreaterole
+         and not role_row.rolcreatedb and not role_row.rolcanlogin
+         and not role_row.rolreplication and not role_row.rolbypassrls
      )
      or not exists (
-       select 1 from pg_catalog.pg_roles as r
-       where r.oid=v_anon_oid
-         and r.rolinherit and not r.rolsuper and not r.rolcreaterole
-         and not r.rolcreatedb and not r.rolcanlogin
-         and not r.rolreplication and not r.rolbypassrls
+       select 1 from pg_catalog.pg_roles as role_row
+       where role_row.oid=v_anon_oid
+         and role_row.rolinherit and not role_row.rolsuper and not role_row.rolcreaterole
+         and not role_row.rolcreatedb and not role_row.rolcanlogin
+         and not role_row.rolreplication and not role_row.rolbypassrls
      )
      or not exists (
-       select 1 from pg_catalog.pg_roles as r
-       where r.oid=v_service_role_oid
-         and r.rolinherit and not r.rolsuper and not r.rolcreaterole
-         and not r.rolcreatedb and not r.rolcanlogin
-         and not r.rolreplication and r.rolbypassrls
+       select 1 from pg_catalog.pg_roles as role_row
+       where role_row.oid=v_service_role_oid
+         and role_row.rolinherit and not role_row.rolsuper and not role_row.rolcreaterole
+         and not role_row.rolcreatedb and not role_row.rolcanlogin
+         and not role_row.rolreplication and role_row.rolbypassrls
      )
      or not exists (
-       select 1 from pg_catalog.pg_roles as r
-       where r.oid=v_authenticator_oid
-         and not r.rolinherit and not r.rolsuper and not r.rolcreaterole
-         and not r.rolcreatedb and r.rolcanlogin
-         and not r.rolreplication and not r.rolbypassrls
+       select 1 from pg_catalog.pg_roles as role_row
+       where role_row.oid=v_authenticator_oid
+         and not role_row.rolinherit and not role_row.rolsuper and not role_row.rolcreaterole
+         and not role_row.rolcreatedb and role_row.rolcanlogin
+         and not role_row.rolreplication and not role_row.rolbypassrls
      )
      or not exists (
-       select 1 from pg_catalog.pg_roles as r
-       where r.oid=v_database_owner_oid
-         and r.rolinherit and not r.rolsuper and not r.rolcreaterole
-         and not r.rolcreatedb and not r.rolcanlogin
-         and not r.rolreplication and not r.rolbypassrls
+       select 1 from pg_catalog.pg_roles as role_row
+       where role_row.oid=v_database_owner_oid
+         and role_row.rolinherit and not role_row.rolsuper and not role_row.rolcreaterole
+         and not role_row.rolcreatedb and not role_row.rolcanlogin
+         and not role_row.rolreplication and not role_row.rolbypassrls
      )
      or pg_catalog.has_schema_privilege(
           v_authenticated_oid,'public','CREATE'
@@ -2168,46 +2168,46 @@ begin
   end if;
 
   if not exists (
-       select 1 from pg_catalog.pg_roles as r
-       where r.oid=v_postgres_oid
-         and not r.rolsuper and r.rolinherit and r.rolcreaterole
-         and r.rolcreatedb and r.rolcanlogin and r.rolreplication
-         and r.rolbypassrls
+       select 1 from pg_catalog.pg_roles as role_row
+       where role_row.oid=v_postgres_oid
+         and not role_row.rolsuper and role_row.rolinherit and role_row.rolcreaterole
+         and role_row.rolcreatedb and role_row.rolcanlogin and role_row.rolreplication
+         and role_row.rolbypassrls
      )
      or not exists (
-       select 1 from pg_catalog.pg_roles as r
-       where r.oid=v_authenticated_oid
-         and r.rolinherit and not r.rolsuper and not r.rolcreaterole
-         and not r.rolcreatedb and not r.rolcanlogin
-         and not r.rolreplication and not r.rolbypassrls
+       select 1 from pg_catalog.pg_roles as role_row
+       where role_row.oid=v_authenticated_oid
+         and role_row.rolinherit and not role_row.rolsuper and not role_row.rolcreaterole
+         and not role_row.rolcreatedb and not role_row.rolcanlogin
+         and not role_row.rolreplication and not role_row.rolbypassrls
      )
      or not exists (
-       select 1 from pg_catalog.pg_roles as r
-       where r.oid=v_anon_oid
-         and r.rolinherit and not r.rolsuper and not r.rolcreaterole
-         and not r.rolcreatedb and not r.rolcanlogin
-         and not r.rolreplication and not r.rolbypassrls
+       select 1 from pg_catalog.pg_roles as role_row
+       where role_row.oid=v_anon_oid
+         and role_row.rolinherit and not role_row.rolsuper and not role_row.rolcreaterole
+         and not role_row.rolcreatedb and not role_row.rolcanlogin
+         and not role_row.rolreplication and not role_row.rolbypassrls
      )
      or not exists (
-       select 1 from pg_catalog.pg_roles as r
-       where r.oid=v_service_role_oid
-         and r.rolinherit and not r.rolsuper and not r.rolcreaterole
-         and not r.rolcreatedb and not r.rolcanlogin
-         and not r.rolreplication and r.rolbypassrls
+       select 1 from pg_catalog.pg_roles as role_row
+       where role_row.oid=v_service_role_oid
+         and role_row.rolinherit and not role_row.rolsuper and not role_row.rolcreaterole
+         and not role_row.rolcreatedb and not role_row.rolcanlogin
+         and not role_row.rolreplication and role_row.rolbypassrls
      )
      or not exists (
-       select 1 from pg_catalog.pg_roles as r
-       where r.oid=v_authenticator_oid
-         and not r.rolinherit and not r.rolsuper and not r.rolcreaterole
-         and not r.rolcreatedb and r.rolcanlogin
-         and not r.rolreplication and not r.rolbypassrls
+       select 1 from pg_catalog.pg_roles as role_row
+       where role_row.oid=v_authenticator_oid
+         and not role_row.rolinherit and not role_row.rolsuper and not role_row.rolcreaterole
+         and not role_row.rolcreatedb and role_row.rolcanlogin
+         and not role_row.rolreplication and not role_row.rolbypassrls
      )
      or not exists (
-       select 1 from pg_catalog.pg_roles as r
-       where r.oid=v_database_owner_oid
-         and r.rolinherit and not r.rolsuper and not r.rolcreaterole
-         and not r.rolcreatedb and not r.rolcanlogin
-         and not r.rolreplication and not r.rolbypassrls
+       select 1 from pg_catalog.pg_roles as role_row
+       where role_row.oid=v_database_owner_oid
+         and role_row.rolinherit and not role_row.rolsuper and not role_row.rolcreaterole
+         and not role_row.rolcreatedb and not role_row.rolcanlogin
+         and not role_row.rolreplication and not role_row.rolbypassrls
      )
      or pg_catalog.has_schema_privilege(
           v_authenticated_oid,'public','CREATE'
