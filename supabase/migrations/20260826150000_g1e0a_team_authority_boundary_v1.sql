@@ -4,6 +4,13 @@
 -- Business rule v1: one active gestor -> one active time; admin_local creates teams by selecting an active gestor from the same tenant.
 -- Out of scope: Root/Admin Global contract, role transitions, tenant membership migration, frontend labels, production execution.
 
+BEGIN;
+
+-- Serialize FECH.AI DDL for this exact criar_time boundary through commit.
+-- Any later FECH.AI hotfix/migration replacing public.criar_time(text,uuid)
+-- must acquire the same transaction-scoped advisory lock before fingerprinting/replacement.
+SELECT pg_advisory_xact_lock(134, 20260826);
+
 -- Fail closed on drift local to this boundary before locking mutable team state.
 DO $preflight_static$
 DECLARE
@@ -39,8 +46,10 @@ BEGIN
 END
 $preflight_static$;
 
--- Close the preflight race: no structural writer may commit between integrity validation and hardening.
-LOCK TABLE public.times IN SHARE ROW EXCLUSIVE MODE;
+-- Close data-preflight races across both sides of the team/gestor relationship.
+-- SHARE ROW EXCLUSIVE conflicts with ordinary INSERT/UPDATE/DELETE writers and
+-- remains held until COMMIT because this migration is explicitly transactional.
+LOCK TABLE public.corretores, public.times IN SHARE ROW EXCLUSIVE MODE;
 
 DO $preflight_data$
 BEGIN
@@ -77,6 +86,30 @@ CREATE UNIQUE INDEX uq_times_one_active_team_per_gestor_v1
   ON public.times (gestor_id)
   WHERE coalesce(ativo, true) = true;
 
+-- Re-check the function baseline immediately before replacement while the
+-- boundary advisory lock is held, closing stale-baseline drift inside this migration.
+DO $pre_replace$
+DECLARE
+  v_functiondef_md5 text;
+  v_owner text;
+  v_security_definer boolean;
+BEGIN
+  SELECT md5(pg_get_functiondef(p.oid)), pg_get_userbyid(p.proowner), p.prosecdef
+  INTO v_functiondef_md5, v_owner, v_security_definer
+  FROM pg_proc p
+  JOIN pg_namespace n ON n.oid = p.pronamespace
+  WHERE n.nspname = 'public'
+    AND p.proname = 'criar_time'
+    AND pg_get_function_identity_arguments(p.oid) = 'p_nome text, p_gestor_id uuid';
+
+  IF v_functiondef_md5 IS DISTINCT FROM 'a74a3f995af604cdf32571ff2fdb83ab'
+     OR v_owner IS DISTINCT FROM 'postgres'
+     OR v_security_definer IS DISTINCT FROM true THEN
+    RAISE EXCEPTION 'G1E0A_PRE_REPLACE_CRIAR_TIME_BASELINE_DRIFT';
+  END IF;
+END
+$pre_replace$;
+
 CREATE OR REPLACE FUNCTION public.criar_time(
   p_nome text,
   p_gestor_id uuid DEFAULT NULL::uuid
@@ -89,6 +122,9 @@ AS $function$
 DECLARE
   v_actor_id uuid;
   v_actor_empresa_id uuid;
+  v_actor_role text;
+  v_actor_is_admin_local boolean;
+  v_actor_ativo boolean;
   v_gestor_id uuid;
   v_gestor_empresa_id uuid;
   v_empresa_id uuid;
@@ -102,19 +138,36 @@ BEGIN
 
   v_root := public.is_root();
 
-  SELECT c.id, c.empresa_id
-  INTO v_actor_id, v_actor_empresa_id
+  -- Lock the caller profile through the INSERT so authority/status revocation
+  -- serializes with this operation for non-root admin_local actors.
+  SELECT
+    c.id,
+    c.empresa_id,
+    c.role,
+    c.is_admin_local,
+    c.ativo
+  INTO
+    v_actor_id,
+    v_actor_empresa_id,
+    v_actor_role,
+    v_actor_is_admin_local,
+    v_actor_ativo
   FROM public.corretores c
   WHERE c.user_id = auth.uid()
-    AND coalesce(c.ativo, true) = true
-  LIMIT 1;
+  LIMIT 1
+  FOR SHARE;
 
-  IF NOT v_root AND (v_actor_id IS NULL OR v_actor_empresa_id IS NULL) THEN
-    RETURN jsonb_build_object('error', 'actor_not_found');
-  END IF;
+  IF NOT v_root THEN
+    IF v_actor_id IS NULL
+       OR v_actor_empresa_id IS NULL
+       OR v_actor_ativo IS DISTINCT FROM true THEN
+      RETURN jsonb_build_object('error', 'actor_not_found');
+    END IF;
 
-  IF NOT (v_root OR public.is_admin_local()) THEN
-    RETURN jsonb_build_object('error', 'forbidden');
+    IF v_actor_role IS DISTINCT FROM 'admin_local'
+       OR v_actor_is_admin_local IS DISTINCT FROM true THEN
+      RETURN jsonb_build_object('error', 'forbidden');
+    END IF;
   END IF;
 
   v_nome := nullif(btrim(p_nome), '');
@@ -218,6 +271,7 @@ DECLARE
   v_owner text;
   v_security_definer boolean;
   v_search_path text;
+  v_indexdef text;
 BEGIN
   SELECT md5(p.prosrc), pg_get_userbyid(p.proowner), p.prosecdef, array_to_string(p.proconfig, ',')
   INTO v_hardened_prosrc_md5, v_owner, v_security_definer, v_search_path
@@ -227,7 +281,7 @@ BEGIN
     AND p.proname = 'criar_time'
     AND pg_get_function_identity_arguments(p.oid) = 'p_nome text, p_gestor_id uuid';
 
-  IF v_hardened_prosrc_md5 IS DISTINCT FROM '5e0a3f880ba7a1bc795687642a3554cc'
+  IF v_hardened_prosrc_md5 IS DISTINCT FROM '845a539d2e0beed2e9a777bb80ec9ee9'
      OR v_owner IS DISTINCT FROM 'postgres'
      OR v_security_definer IS DISTINCT FROM true
      OR v_search_path IS DISTINCT FROM 'search_path=pg_catalog, public' THEN
@@ -249,8 +303,24 @@ BEGIN
     RAISE EXCEPTION 'G1E0A_POSTFLIGHT_DIRECT_TIMES_DML_PRESENT';
   END IF;
 
-  IF to_regclass('public.uq_times_one_active_team_per_gestor_v1') IS NULL THEN
-    RAISE EXCEPTION 'G1E0A_POSTFLIGHT_CARDINALITY_INDEX_MISSING';
+  IF EXISTS (
+    SELECT 1
+    FROM pg_attribute a
+    WHERE a.attrelid = 'public.times'::regclass
+      AND a.attnum > 0
+      AND NOT a.attisdropped
+      AND has_column_privilege('authenticated', 'public.times', a.attname, 'UPDATE')
+  ) THEN
+    RAISE EXCEPTION 'G1E0A_POSTFLIGHT_COLUMN_UPDATE_PRESENT';
+  END IF;
+
+  SELECT pg_get_indexdef(i.indexrelid)
+  INTO v_indexdef
+  FROM pg_index i
+  WHERE i.indexrelid = to_regclass('public.uq_times_one_active_team_per_gestor_v1');
+
+  IF v_indexdef IS DISTINCT FROM 'CREATE UNIQUE INDEX uq_times_one_active_team_per_gestor_v1 ON public.times USING btree (gestor_id) WHERE (COALESCE(ativo, true) = true)' THEN
+    RAISE EXCEPTION 'G1E0A_POSTFLIGHT_CARDINALITY_INDEX_DRIFT';
   END IF;
 
   IF EXISTS (
@@ -279,3 +349,5 @@ BEGIN
   END IF;
 END
 $postflight$;
+
+COMMIT;
