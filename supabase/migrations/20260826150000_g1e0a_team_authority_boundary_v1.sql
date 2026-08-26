@@ -4,8 +4,8 @@
 -- Business rule v1: one active gestor -> one active time; admin_local creates teams by selecting an active gestor from the same tenant.
 -- Out of scope: Root/Admin Global contract, role transitions, tenant membership migration, frontend labels, production execution.
 
--- Fail closed on drift local to this boundary.
-DO $preflight$
+-- Fail closed on drift local to this boundary before locking mutable team state.
+DO $preflight_static$
 DECLARE
   v_functiondef_md5 text;
   v_owner text;
@@ -36,7 +36,14 @@ BEGIN
   IF to_regclass('public.uq_times_one_active_team_per_gestor_v1') IS NOT NULL THEN
     RAISE EXCEPTION 'G1E0A_PREFLIGHT_INDEX_ALREADY_EXISTS';
   END IF;
+END
+$preflight_static$;
 
+-- Close the preflight race: no structural writer may commit between integrity validation and hardening.
+LOCK TABLE public.times IN SHARE ROW EXCLUSIVE MODE;
+
+DO $preflight_data$
+BEGIN
   IF EXISTS (
     SELECT 1
     FROM public.times t
@@ -55,20 +62,17 @@ BEGIN
       AND (
         c.id IS NULL
         OR c.empresa_id IS DISTINCT FROM t.empresa_id
-        OR coalesce(c.is_gestor, false) IS DISTINCT FROM true
-        OR coalesce(c.ativo, true) IS DISTINCT FROM true
+        OR c.is_gestor IS DISTINCT FROM true
+        OR c.ativo IS DISTINCT FROM true
       )
   ) THEN
     RAISE EXCEPTION 'G1E0A_PREFLIGHT_ACTIVE_TIME_INTEGRITY_MISMATCH';
   END IF;
 END
-$preflight$;
-
--- Prevent races between the integrity check and the new cardinality invariant.
-LOCK TABLE public.times IN SHARE ROW EXCLUSIVE MODE;
+$preflight_data$;
 
 -- BUSINESS_RULE_V1: a gestor may own at most one active team.
--- NULL ativo is treated as active for compatibility with existing coalesce(..., true) semantics.
+-- NULL times.ativo is treated as active for compatibility with existing team semantics.
 CREATE UNIQUE INDEX uq_times_one_active_team_per_gestor_v1
   ON public.times (gestor_id)
   WHERE coalesce(ativo, true) = true;
@@ -122,17 +126,18 @@ BEGIN
     RETURN jsonb_build_object('error', 'gestor_required');
   END IF;
 
-  -- New team ownership is intentionally limited to a pure, active gestor profile.
-  -- Existing legacy mixed-role records are not rewritten by this migration.
+  -- Lock the exact gestor row through the INSERT so role/status changes serialize with team creation.
+  -- New team ownership is intentionally limited to a pure, explicitly active gestor profile.
   SELECT c.id, c.empresa_id
   INTO v_gestor_id, v_gestor_empresa_id
   FROM public.corretores c
   WHERE c.id = p_gestor_id
     AND c.role = 'gestor'
-    AND coalesce(c.is_gestor, false) = true
-    AND coalesce(c.is_admin_local, false) = false
-    AND coalesce(c.ativo, true) = true
-  LIMIT 1;
+    AND c.is_gestor IS TRUE
+    AND c.is_admin_local IS FALSE
+    AND c.ativo IS TRUE
+  LIMIT 1
+  FOR SHARE;
 
   IF v_gestor_id IS NULL OR v_gestor_empresa_id IS NULL THEN
     RETURN jsonb_build_object('error', 'gestor_not_found');
@@ -208,7 +213,25 @@ REVOKE ALL PRIVILEGES ON FUNCTION public.criar_time(text, uuid) FROM PUBLIC, ano
 GRANT EXECUTE ON FUNCTION public.criar_time(text, uuid) TO authenticated, service_role;
 
 DO $postflight$
+DECLARE
+  v_hardened_prosrc_md5 text;
+  v_owner text;
+  v_security_definer boolean;
 BEGIN
+  SELECT md5(p.prosrc), pg_get_userbyid(p.proowner), p.prosecdef
+  INTO v_hardened_prosrc_md5, v_owner, v_security_definer
+  FROM pg_proc p
+  JOIN pg_namespace n ON n.oid = p.pronamespace
+  WHERE n.nspname = 'public'
+    AND p.proname = 'criar_time'
+    AND pg_get_function_identity_arguments(p.oid) = 'p_nome text, p_gestor_id uuid';
+
+  IF v_hardened_prosrc_md5 IS DISTINCT FROM '5e0a3f880ba7a1bc795687642a3554cc'
+     OR v_owner IS DISTINCT FROM 'postgres'
+     OR v_security_definer IS DISTINCT FROM true THEN
+    RAISE EXCEPTION 'G1E0A_POSTFLIGHT_CRIAR_TIME_DEFINITION_DRIFT';
+  END IF;
+
   IF NOT has_function_privilege('authenticated', 'public.criar_time(text,uuid)', 'EXECUTE') THEN
     RAISE EXCEPTION 'G1E0A_POSTFLIGHT_AUTHENTICATED_EXECUTE_MISSING';
   END IF;
@@ -236,6 +259,21 @@ BEGIN
     HAVING count(*) > 1
   ) THEN
     RAISE EXCEPTION 'G1E0A_POSTFLIGHT_DUPLICATE_ACTIVE_GESTOR';
+  END IF;
+
+  IF EXISTS (
+    SELECT 1
+    FROM public.times t
+    LEFT JOIN public.corretores c ON c.id = t.gestor_id
+    WHERE coalesce(t.ativo, true) = true
+      AND (
+        c.id IS NULL
+        OR c.empresa_id IS DISTINCT FROM t.empresa_id
+        OR c.is_gestor IS DISTINCT FROM true
+        OR c.ativo IS DISTINCT FROM true
+      )
+  ) THEN
+    RAISE EXCEPTION 'G1E0A_POSTFLIGHT_ACTIVE_TIME_INTEGRITY_MISMATCH';
   END IF;
 END
 $postflight$;
