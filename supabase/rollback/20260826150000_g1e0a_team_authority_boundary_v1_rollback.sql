@@ -7,9 +7,10 @@ DECLARE
   v_hardened_prosrc_md5 text;
   v_owner text;
   v_security_definer boolean;
+  v_search_path text;
 BEGIN
-  SELECT md5(p.prosrc), pg_get_userbyid(p.proowner), p.prosecdef
-  INTO v_hardened_prosrc_md5, v_owner, v_security_definer
+  SELECT md5(p.prosrc), pg_get_userbyid(p.proowner), p.prosecdef, array_to_string(p.proconfig, ',')
+  INTO v_hardened_prosrc_md5, v_owner, v_security_definer, v_search_path
   FROM pg_proc p
   JOIN pg_namespace n ON n.oid = p.pronamespace
   WHERE n.nspname = 'public'
@@ -18,7 +19,8 @@ BEGIN
 
   IF v_hardened_prosrc_md5 IS DISTINCT FROM '5e0a3f880ba7a1bc795687642a3554cc'
      OR v_owner IS DISTINCT FROM 'postgres'
-     OR v_security_definer IS DISTINCT FROM true THEN
+     OR v_security_definer IS DISTINCT FROM true
+     OR v_search_path IS DISTINCT FROM 'search_path=pg_catalog, public' THEN
     RAISE EXCEPTION 'G1E0A_ROLLBACK_PREFLIGHT_CRIAR_TIME_HARDENED_DRIFT';
   END IF;
 
