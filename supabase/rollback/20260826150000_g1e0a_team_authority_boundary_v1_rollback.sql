@@ -1,6 +1,7 @@
--- FECH.AI — rollback G1E0-A Team / Onboarding Authority Boundary v1
+-- FECH.AI — rollback G1E0-A1 Team Creation Authority Boundary v1
 -- Restores the exact pre-G1E0-A criar_time behavior and authenticated direct UPDATE on public.times.
 -- Production execution requires separate explicit rollback authority.
+-- Post-creation lifecycle remains tracked separately in G1E0-A2 / Issue #135.
 
 BEGIN;
 
@@ -14,6 +15,7 @@ DECLARE
   v_security_definer boolean;
   v_search_path text;
   v_indexdef text;
+  v_function_acl text;
 BEGIN
   SELECT md5(p.prosrc), pg_get_userbyid(p.proowner), p.prosecdef, array_to_string(p.proconfig, ',')
   INTO v_hardened_prosrc_md5, v_owner, v_security_definer, v_search_path
@@ -23,11 +25,35 @@ BEGIN
     AND p.proname = 'criar_time'
     AND pg_get_function_identity_arguments(p.oid) = 'p_nome text, p_gestor_id uuid';
 
-  IF v_hardened_prosrc_md5 IS DISTINCT FROM '845a539d2e0beed2e9a777bb80ec9ee9'
+  SELECT string_agg(
+           (CASE
+              WHEN e.grantee = 0 THEN 'PUBLIC'
+              ELSE coalesce(r.rolname, 'OID:' || e.grantee::text)
+            END)
+           || ':' || e.privilege_type || ':' || e.is_grantable::text,
+           ',' ORDER BY
+             (CASE
+                WHEN e.grantee = 0 THEN 'PUBLIC'
+                ELSE coalesce(r.rolname, 'OID:' || e.grantee::text)
+              END),
+             e.privilege_type,
+             e.is_grantable::text
+         )
+  INTO v_function_acl
+  FROM pg_proc p
+  JOIN pg_namespace n ON n.oid = p.pronamespace
+  CROSS JOIN LATERAL aclexplode(coalesce(p.proacl, acldefault('f', p.proowner))) e
+  LEFT JOIN pg_roles r ON r.oid = e.grantee
+  WHERE n.nspname = 'public'
+    AND p.proname = 'criar_time'
+    AND pg_get_function_identity_arguments(p.oid) = 'p_nome text, p_gestor_id uuid';
+
+  IF v_hardened_prosrc_md5 IS DISTINCT FROM 'b61d2abdc52c250315b08002cc0aae06'
      OR v_owner IS DISTINCT FROM 'postgres'
      OR v_security_definer IS DISTINCT FROM true
-     OR v_search_path IS DISTINCT FROM 'search_path=pg_catalog, public' THEN
-    RAISE EXCEPTION 'G1E0A_ROLLBACK_PREFLIGHT_CRIAR_TIME_HARDENED_DRIFT';
+     OR v_search_path IS DISTINCT FROM 'search_path=pg_catalog, public'
+     OR v_function_acl IS DISTINCT FROM 'authenticated:EXECUTE:false,postgres:EXECUTE:false,service_role:EXECUTE:false' THEN
+    RAISE EXCEPTION 'G1E0A_ROLLBACK_PREFLIGHT_CRIAR_TIME_HARDENED_OR_ACL_DRIFT';
   END IF;
 
   SELECT pg_get_indexdef(i.indexrelid)
@@ -37,14 +63,6 @@ BEGIN
 
   IF v_indexdef IS DISTINCT FROM 'CREATE UNIQUE INDEX uq_times_one_active_team_per_gestor_v1 ON public.times USING btree (gestor_id) WHERE (COALESCE(ativo, true) = true)' THEN
     RAISE EXCEPTION 'G1E0A_ROLLBACK_PREFLIGHT_CARDINALITY_INDEX_DRIFT';
-  END IF;
-
-  IF NOT has_function_privilege('authenticated', 'public.criar_time(text,uuid)', 'EXECUTE') THEN
-    RAISE EXCEPTION 'G1E0A_ROLLBACK_PREFLIGHT_AUTHENTICATED_EXECUTE_MISSING';
-  END IF;
-
-  IF has_function_privilege('anon', 'public.criar_time(text,uuid)', 'EXECUTE') THEN
-    RAISE EXCEPTION 'G1E0A_ROLLBACK_PREFLIGHT_ANON_EXECUTE_PRESENT';
   END IF;
 
   IF has_table_privilege('authenticated', 'public.times', 'INSERT')
@@ -159,8 +177,37 @@ BEGIN
 END;
 $function$;
 
--- Restore exact pre-G1E0-A ACL shape for criar_time.
-REVOKE ALL PRIVILEGES ON FUNCTION public.criar_time(text, uuid) FROM PUBLIC, anon, authenticated, service_role;
+-- Restore the function ACL from a closed set, removing every non-owner grantee
+-- before granting only the exact pre-G1E0-A caller role.
+REVOKE ALL PRIVILEGES ON FUNCTION public.criar_time(text, uuid) FROM PUBLIC;
+
+DO $restore_function_acl$
+DECLARE
+  role_row record;
+BEGIN
+  FOR role_row IN
+    SELECT DISTINCT r.rolname
+    FROM pg_proc p
+    JOIN pg_namespace n ON n.oid = p.pronamespace
+    CROSS JOIN LATERAL aclexplode(coalesce(p.proacl, acldefault('f', p.proowner))) e
+    LEFT JOIN pg_roles r ON r.oid = e.grantee
+    WHERE n.nspname = 'public'
+      AND p.proname = 'criar_time'
+      AND pg_get_function_identity_arguments(p.oid) = 'p_nome text, p_gestor_id uuid'
+      AND e.grantee <> 0
+      AND e.grantee <> p.proowner
+  LOOP
+    IF role_row.rolname IS NULL THEN
+      RAISE EXCEPTION 'G1E0A_ROLLBACK_FUNCTION_ACL_UNKNOWN_GRANTEE';
+    END IF;
+    EXECUTE format(
+      'REVOKE ALL PRIVILEGES ON FUNCTION public.criar_time(text, uuid) FROM %I',
+      role_row.rolname
+    );
+  END LOOP;
+END
+$restore_function_acl$;
+
 GRANT EXECUTE ON FUNCTION public.criar_time(text, uuid) TO service_role;
 
 -- Restore the pre-G1E0-A authenticated table UPDATE privilege only.
@@ -169,6 +216,7 @@ GRANT UPDATE ON TABLE public.times TO authenticated;
 DO $postflight$
 DECLARE
   v_functiondef_md5 text;
+  v_function_acl text;
 BEGIN
   SELECT md5(pg_get_functiondef(p.oid))
   INTO v_functiondef_md5
@@ -178,16 +226,32 @@ BEGIN
     AND p.proname = 'criar_time'
     AND pg_get_function_identity_arguments(p.oid) = 'p_nome text, p_gestor_id uuid';
 
-  IF v_functiondef_md5 IS DISTINCT FROM 'a74a3f995af604cdf32571ff2fdb83ab' THEN
-    RAISE EXCEPTION 'G1E0A_ROLLBACK_POSTFLIGHT_CRIAR_TIME_NOT_RESTORED';
-  END IF;
+  SELECT string_agg(
+           (CASE
+              WHEN e.grantee = 0 THEN 'PUBLIC'
+              ELSE coalesce(r.rolname, 'OID:' || e.grantee::text)
+            END)
+           || ':' || e.privilege_type || ':' || e.is_grantable::text,
+           ',' ORDER BY
+             (CASE
+                WHEN e.grantee = 0 THEN 'PUBLIC'
+                ELSE coalesce(r.rolname, 'OID:' || e.grantee::text)
+              END),
+             e.privilege_type,
+             e.is_grantable::text
+         )
+  INTO v_function_acl
+  FROM pg_proc p
+  JOIN pg_namespace n ON n.oid = p.pronamespace
+  CROSS JOIN LATERAL aclexplode(coalesce(p.proacl, acldefault('f', p.proowner))) e
+  LEFT JOIN pg_roles r ON r.oid = e.grantee
+  WHERE n.nspname = 'public'
+    AND p.proname = 'criar_time'
+    AND pg_get_function_identity_arguments(p.oid) = 'p_nome text, p_gestor_id uuid';
 
-  IF has_function_privilege('authenticated', 'public.criar_time(text,uuid)', 'EXECUTE') THEN
-    RAISE EXCEPTION 'G1E0A_ROLLBACK_POSTFLIGHT_AUTHENTICATED_EXECUTE_PRESENT';
-  END IF;
-
-  IF NOT has_function_privilege('service_role', 'public.criar_time(text,uuid)', 'EXECUTE') THEN
-    RAISE EXCEPTION 'G1E0A_ROLLBACK_POSTFLIGHT_SERVICE_ROLE_EXECUTE_MISSING';
+  IF v_functiondef_md5 IS DISTINCT FROM 'a74a3f995af604cdf32571ff2fdb83ab'
+     OR v_function_acl IS DISTINCT FROM 'postgres:EXECUTE:false,service_role:EXECUTE:false' THEN
+    RAISE EXCEPTION 'G1E0A_ROLLBACK_POSTFLIGHT_CRIAR_TIME_OR_ACL_NOT_RESTORED';
   END IF;
 
   IF NOT has_table_privilege('authenticated', 'public.times', 'SELECT')
