@@ -29,10 +29,10 @@ BEGIN
     AND pg_get_function_identity_arguments(p.oid) = 'p_nome text, p_gestor_id uuid';
 
   SELECT string_agg(
-           (CASE WHEN e.grantee = 0 THEN 'PUBLIC' ELSE r.rolname END)
+           (CASE WHEN e.grantee = 0 THEN 'PUBLIC' ELSE coalesce(r.rolname, 'OID:' || e.grantee::text) END)
            || ':' || e.privilege_type || ':' || e.is_grantable::text,
            ',' ORDER BY
-             (CASE WHEN e.grantee = 0 THEN 'PUBLIC' ELSE r.rolname END),
+             (CASE WHEN e.grantee = 0 THEN 'PUBLIC' ELSE coalesce(r.rolname, 'OID:' || e.grantee::text) END),
              e.privilege_type,
              e.is_grantable::text
          )
@@ -108,10 +108,10 @@ BEGIN
     AND pg_get_function_identity_arguments(p.oid) = 'p_nome text, p_gestor_id uuid';
 
   SELECT string_agg(
-           (CASE WHEN e.grantee = 0 THEN 'PUBLIC' ELSE r.rolname END)
+           (CASE WHEN e.grantee = 0 THEN 'PUBLIC' ELSE coalesce(r.rolname, 'OID:' || e.grantee::text) END)
            || ':' || e.privilege_type || ':' || e.is_grantable::text,
            ',' ORDER BY
-             (CASE WHEN e.grantee = 0 THEN 'PUBLIC' ELSE r.rolname END),
+             (CASE WHEN e.grantee = 0 THEN 'PUBLIC' ELSE coalesce(r.rolname, 'OID:' || e.grantee::text) END),
              e.privilege_type,
              e.is_grantable::text
          )
@@ -330,10 +330,10 @@ BEGIN
     AND pg_get_function_identity_arguments(p.oid) = 'p_nome text, p_gestor_id uuid';
 
   SELECT string_agg(
-           (CASE WHEN e.grantee = 0 THEN 'PUBLIC' ELSE r.rolname END)
+           (CASE WHEN e.grantee = 0 THEN 'PUBLIC' ELSE coalesce(r.rolname, 'OID:' || e.grantee::text) END)
            || ':' || e.privilege_type || ':' || e.is_grantable::text,
            ',' ORDER BY
-             (CASE WHEN e.grantee = 0 THEN 'PUBLIC' ELSE r.rolname END),
+             (CASE WHEN e.grantee = 0 THEN 'PUBLIC' ELSE coalesce(r.rolname, 'OID:' || e.grantee::text) END),
              e.privilege_type,
              e.is_grantable::text
          )
