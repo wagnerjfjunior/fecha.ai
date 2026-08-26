@@ -62,7 +62,7 @@ BEGIN
     AND p.proname = 'criar_time'
     AND pg_get_function_identity_arguments(p.oid) = 'p_nome text, p_gestor_id uuid';
 
-  IF v_hardened_prosrc_md5 IS DISTINCT FROM 'b2ae79c74a1ccc2f0f4c37b0dbf057b9'
+  IF v_hardened_prosrc_md5 IS DISTINCT FROM 'cfdbd891104652b0ac850e1c8db05adc'
      OR v_owner IS DISTINCT FROM 'postgres'
      OR v_security_definer IS DISTINCT FROM true
      OR v_search_path IS DISTINCT FROM 'search_path=pg_catalog, public'
@@ -166,12 +166,12 @@ BEGIN
   WHERE c.conrelid = 'public.times'::regclass;
 
   SELECT md5(string_agg(
-           t.tgname || ':' || t.tgenabled::text || ':' || pg_get_triggerdef(t.oid, true),
+           t.tgname || ':' || t.tgisinternal::text || ':' ||
+           t.tgenabled::text || ':' || pg_get_triggerdef(t.oid, true),
            '|' ORDER BY t.tgname))
   INTO v_trigger_md5
   FROM pg_trigger t
-  WHERE t.tgrelid = 'public.times'::regclass
-    AND NOT t.tgisinternal;
+  WHERE t.tgrelid = 'public.times'::regclass;
 
   SELECT md5(string_agg(
            (CASE WHEN e.grantee = 0 THEN 'PUBLIC' ELSE coalesce(r.rolname, 'OID:' || e.grantee::text) END)
@@ -196,7 +196,7 @@ BEGIN
      OR v_policy_md5 IS DISTINCT FROM 'fb7c7a6249e330a0dcd504d77ac59242'
      OR v_index_md5 IS DISTINCT FROM 'db8482cbabfdd2666bcef8a7ad00d401'
      OR v_constraint_md5 IS DISTINCT FROM 'c511b011399f721ea4d5fca492bc3112'
-     OR v_trigger_md5 IS DISTINCT FROM 'f83a33ec94cc8814c08dacb1a287dd3f'
+     OR v_trigger_md5 IS DISTINCT FROM 'e9632ab165c31ec53103730b12b971d1'
      OR v_table_acl_md5 IS DISTINCT FROM '46f5fbdbf33d5175ba92320c78cce8cb'
      OR v_times_owner IS DISTINCT FROM 'postgres'
      OR v_times_rls IS DISTINCT FROM true
@@ -480,12 +480,12 @@ BEGIN
   WHERE c.conrelid = 'public.times'::regclass;
 
   SELECT md5(string_agg(
-           t.tgname || ':' || t.tgenabled::text || ':' || pg_get_triggerdef(t.oid, true),
+           t.tgname || ':' || t.tgisinternal::text || ':' ||
+           t.tgenabled::text || ':' || pg_get_triggerdef(t.oid, true),
            '|' ORDER BY t.tgname))
   INTO v_trigger_md5
   FROM pg_trigger t
-  WHERE t.tgrelid = 'public.times'::regclass
-    AND NOT t.tgisinternal;
+  WHERE t.tgrelid = 'public.times'::regclass;
 
   SELECT md5(string_agg(
            (CASE WHEN e.grantee = 0 THEN 'PUBLIC' ELSE coalesce(r.rolname, 'OID:' || e.grantee::text) END)
@@ -510,7 +510,7 @@ BEGIN
      OR v_policy_md5 IS DISTINCT FROM 'fb7c7a6249e330a0dcd504d77ac59242'
      OR v_index_md5 IS DISTINCT FROM '8e278c0766eeb17730b02ec43284651a'
      OR v_constraint_md5 IS DISTINCT FROM 'c511b011399f721ea4d5fca492bc3112'
-     OR v_trigger_md5 IS DISTINCT FROM 'f83a33ec94cc8814c08dacb1a287dd3f'
+     OR v_trigger_md5 IS DISTINCT FROM 'e9632ab165c31ec53103730b12b971d1'
      OR v_table_acl_md5 IS DISTINCT FROM 'f8ee719b593f56889e2d3728c4527d27'
      OR v_times_owner IS DISTINCT FROM 'postgres'
      OR v_times_rls IS DISTINCT FROM true
