@@ -4634,11 +4634,16 @@ function EditarCorretorModal({ corretor, sb, token, onSalvo, onFechar, session }
         headers: { "Content-Type":"application/json", "Authorization":"Bearer "+token },
         body: JSON.stringify({ action:"reset_password", user_id: corretor.user_id, password: novaSenha }),
       });
-      const data = await r.json();
-      if (data.error) throw new Error(data.error);
-      // Marcar must_change_password = false pois o gestor está definindo
-      await sb.patch("corretores","id=eq."+corretor.id,{must_change_password:false},token);
-      setMsgSenha("✅ Senha redefinida com sucesso!");
+      let data;
+      try {
+        data = await r.json();
+      } catch {
+        throw new Error("Resposta inválida ao redefinir senha.");
+      }
+      if (!r.ok || data?.ok !== true) {
+        throw new Error(data?.error || data?.message || `Erro ao redefinir senha (${r.status})`);
+      }
+      setMsgSenha("✅ Senha temporária redefinida. O usuário deverá alterá-la no próximo login.");
       setNovaSenha("");
     } catch(e) { setMsgSenha("Erro: " + e.message); }
     setLdSenha(false);
