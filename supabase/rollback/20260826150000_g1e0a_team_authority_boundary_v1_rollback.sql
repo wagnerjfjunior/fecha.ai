@@ -3,7 +3,25 @@
 -- Production execution requires separate explicit rollback authority.
 
 DO $preflight$
+DECLARE
+  v_hardened_prosrc_md5 text;
+  v_owner text;
+  v_security_definer boolean;
 BEGIN
+  SELECT md5(p.prosrc), pg_get_userbyid(p.proowner), p.prosecdef
+  INTO v_hardened_prosrc_md5, v_owner, v_security_definer
+  FROM pg_proc p
+  JOIN pg_namespace n ON n.oid = p.pronamespace
+  WHERE n.nspname = 'public'
+    AND p.proname = 'criar_time'
+    AND pg_get_function_identity_arguments(p.oid) = 'p_nome text, p_gestor_id uuid';
+
+  IF v_hardened_prosrc_md5 IS DISTINCT FROM '5e0a3f880ba7a1bc795687642a3554cc'
+     OR v_owner IS DISTINCT FROM 'postgres'
+     OR v_security_definer IS DISTINCT FROM true THEN
+    RAISE EXCEPTION 'G1E0A_ROLLBACK_PREFLIGHT_CRIAR_TIME_HARDENED_DRIFT';
+  END IF;
+
   IF to_regclass('public.uq_times_one_active_team_per_gestor_v1') IS NULL THEN
     RAISE EXCEPTION 'G1E0A_ROLLBACK_PREFLIGHT_CARDINALITY_INDEX_MISSING';
   END IF;
