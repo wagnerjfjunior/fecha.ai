@@ -1,6 +1,6 @@
 # FECH.AI — SFJM Next Safe Action
 
-**Status:** `SEMANTIC_NEXT_ACTION_VIEW / PR128_MERGED / EDGE_V19_B1_PASS / PLPGSQL_ALIAS_CORRECTION / EXACT_HEAD_REVIEWS_REQUIRED`
+**Status:** `SEMANTIC_NEXT_ACTION_VIEW / PR129_MERGED / EDGE_V19_B1_PASS / LIVE_ROUTINE_ANCHOR_REFRESH / EXACT_HEAD_REVIEWS_REQUIRED`
 **Updated:** `2026-08-25`
 **Repository:** `wagnerjfjunior/fecha.ai`
 
@@ -12,33 +12,39 @@ This file is a thin semantic view. Principal material state:
 docs/sfjm/CURRENT_STATE.md
 ```
 
-Resolve GitHub/Supabase lifecycle live before acting. The alias-correction
+Resolve GitHub/Supabase lifecycle live before acting. The anchor-refresh
 transition is `PR_HEAD_ONLY` until merge; use the exact corrective PR head.
 
 ## 2. Single current semantic next action
 
 ```text
-Create/reconcile one Draft PR from main 3c9daf6c... that renames only the
-conflicting pg_roles alias in forward and rollback pre/postflight, updates the
-material evidence/SFJM, and obtains Backend/Data exact-head review. Only after
-Backend/Data closure, obtain independent AppSec exact-head review. Stop in Draft.
+Create/reconcile one Draft PR from main 69f4cfa1... that changes only the four
+complete non-system routine inventory digest literals in forward and rollback
+pre/postflight from the historical reviewed value to current live
+`c299bf087df69f960dd0c611d1486675`, updates the material evidence/SFJM, and
+obtains Backend/Data exact-head review. Only after Backend/Data closure, obtain
+independent AppSec exact-head review. Stop in Draft.
 ```
 
-The production migration invocation already occurred once and aborted before
-DDL. A second application is not part of this action.
+Two separately gated production invocations have aborted before DDL: first on
+the now-corrected PL/pgSQL alias collision, then on the newly detected live
+routine inventory mismatch. No third invocation is part of this Draft/review
+action.
 
 ## 3. Exact-head closure sequence
 
 ```text
-1. resolve main 3c9daf6c... live and create the narrow corrective branch
-2. verify SQL sources match live reviewed blobs before editing
-3. change only pg_roles alias r -> role_row and its role-field qualifiers
-4. update evidence/SFJM for PR128 merge, Edge v19 PASS and failed application
-5. resolve the Draft PR exact head and changed-file set
-6. read every changed material artifact through EOF
-7. obtain manual Backend/Data exact-head review
-8. only after Backend/Data closure, obtain independent AppSec review
-9. stop in Draft before Ready
+1. resolve main 69f4cfa1... live and create the narrow corrective branch
+2. authenticate the PR #129 merged SQL blobs before editing
+3. recompute the complete live routine inventory read-only
+4. change only four full-inventory md5 literals in forward and rollback
+5. preserve count 264, definer subset 122/7faa..., aggregate count 0 and all SQL semantics
+6. update evidence/SFJM for both fail-closed invocations and intact production
+7. resolve the Draft PR exact head and changed-file set
+8. read every changed material artifact through EOF
+9. obtain manual Backend/Data exact-head review
+10. only after Backend/Data closure, obtain independent AppSec review
+11. stop in Draft before Ready
 ```
 
 Head changes invalidate the two new reviews. The prior v5 approvals remain
@@ -49,16 +55,16 @@ lineage for unchanged domains, not approval of the corrected bytes.
 This section is a proof obligation, not deployment or migration authority.
 
 ```text
-corrected exact head reviewed by Backend/Data + AppSec
+anchor-refresh exact head reviewed by Backend/Data + AppSec
 -> separately authorize Ready and merge
 -> resolve merged main and authenticate exact SQL bytes
--> separately authorize one new migration application
+-> exercise the already bounded one-time migration retry authority
 -> require complete migration postflight/catalog validation
 -> separately authorize bounded smoke
 ```
 
 Production Edge v19 is already active and the audit-first fail-before-Auth
-proof is PASS. No Edge redeploy is part of the alias correction.
+proof is PASS. No Edge redeploy is part of the routine-anchor refresh.
 
 ## 5. Required rollback semantics
 
@@ -99,6 +105,8 @@ continuing to proof/Auth after an audit INSERT error
 weakening audit NOT NULL/RLS/ACL contracts instead of matching them
 changing user-creation authority/tenant semantics beyond shared audit compatibility
 using production trial-and-error as implementation validation
+excluding or broadly trusting the changed Supabase helper instead of pinning
+  the complete exact inventory that contains it
 ```
 
 ## 7. No audit loop

@@ -1766,7 +1766,7 @@ begin
 
   if v_routine_count is distinct from 264
      or v_routine_md5 is distinct from
-          'b1f0919df8a0acaca7bbea2b928b0ffe'
+          'c299bf087df69f960dd0c611d1486675'
      or v_authenticated_definer_count is distinct from 122
      or v_authenticated_definer_md5 is distinct from
           '7faa376a403c69239d9606559cf9c2db'
@@ -2772,7 +2772,7 @@ begin
 
   if v_routine_count is distinct from 264
      or v_routine_md5 is distinct from
-          'b1f0919df8a0acaca7bbea2b928b0ffe'
+          'c299bf087df69f960dd0c611d1486675'
      or v_authenticated_definer_count is distinct from 122
      or v_authenticated_definer_md5 is distinct from
           '7faa376a403c69239d9606559cf9c2db'

@@ -1,6 +1,6 @@
-# FECH.AI — T3A-v5 Administrative Password Reset Audit Compatibility Correction
+# FECH.AI — T3A-v6 Live Routine Inventory Anchor Refresh
 
-**Status:** `PR128_MERGED / EDGE_V19_DEPLOYED / B1_V19_FAIL_BEFORE_AUTH_PASS / MIGRATION_ATTEMPT_ABORTED / PLPGSQL_ALIAS_CORRECTED / BACKEND_INITIAL_SQL_PASS_DOC_REQUEST_CHANGES / EVIDENCE_RECONCILED / BACKEND_REREVIEW_REQUIRED / SECURITY_GO_DENIED`
+**Status:** `PR129_MERGED / EDGE_V19_DEPLOYED / B1_V19_FAIL_BEFORE_AUTH_PASS / TWO_MIGRATION_ATTEMPTS_ABORTED_FAIL_CLOSED / LIVE_ROUTINE_ANCHOR_DRIFT / ANCHOR_REFRESH_EXACT_HEAD_REVIEWS_REQUIRED / SECURITY_GO_DENIED`
 **Initial evidence date:** `2026-08-22`
 **Corrective evidence dates:** `2026-08-23`, `2026-08-24`, `2026-08-25`
 **Repository:** `wagnerjfjunior/fecha.ai`
@@ -12,14 +12,20 @@
 **PR #128 reviewed head:** `b594218dabd9a7beaea3158bb143f5dd2fd71386`
 **PR #128 reviewed tree:** `e36a00e671e8c8bce52b2e35f12beed165fad927`
 **PR #128 merge commit / corrective base:** `3c9daf6c49eb937824c2c2b40aba198e2727c4bb`
+**PR #129 reviewed head:** `6f6092aa66352cda3d617897895b0f09019adeea`
+**PR #129 reviewed tree:** `bb13c051b57d1b04a1926cbe886b190cfa89ba37`
+**PR #129 merge commit / anchor-refresh base:** `69f4cfa1bdee331826953b492f25c12b4defc030`
 **Audit corrective branch:** `security/t3a-audit-schema-compatibility`
 **Executability corrective branch:** `security/t3a-plpgsql-role-alias-collision`
+**Routine-anchor corrective branch:** `security/t3a-live-routine-anchor-refresh`
 **Initial blocked PR head:** `45ad27668835b6458b52d2fb592cfa36b5589726`
 **Backend/Data reviewed heads:** `bf8fb1f4ab043226de3c77763b9b425a13b0261e`, `4631325827a76152ba554bece2a59da9eb1bb662`
 **Last fully approved head before post-Ready finding:** `fcb7dfc2f5f2259926556652fa9cfd3443d0c214`
 **Last fully approved tree before post-Ready finding:** `4dcaf2d4b6aa1248801e455def811e50ff04e414`
 **PR #129 initial Backend/Data reviewed head:** `57b6828aee6d5301cf429bee63f6ff2c6a7d1c42`
 **PR #129 initial Backend/Data response SHA-256:** `6440dddfa3ebabda877138230aff4ffd72eec98f969e2473db81842fa182efb4`
+**PR #129 final Backend/Data response SHA-256:** `8d76512eadcaf54085e6109c83eb4a4e3b9499160537c85e741f7113d2b39b0f`
+**PR #129 final AppSec response SHA-256:** `d096c474128e5099a16a90b5c4afc9922ffc4ff593b08680a8990b42177aa1ea`
 
 PR #127 subsequently closed `DIRECT_RPC_CAN_MINT_UNRELEASABLE_LEASE`, received
 fresh Backend/Data and independent AppSec approval on exact head `a5c92617...`,
@@ -35,7 +41,7 @@ valid evidence for the unchanged v4 boundary but did not approve the changed
 Edge/audit ACL/fingerprint domain. PR #128 later received the required reviews,
 merge and Edge-first validation recorded in §0.
 
-## 0. 2026-08-25 production executability finding
+## 0. 2026-08-25 production executability findings
 
 PR #128 closed the audit compatibility blocker, received Backend/Data and
 independent AppSec approval, and merged as
@@ -92,9 +98,88 @@ requires Backend/Data and then independent AppSec review.
 The initial Backend/Data review of PR #129 accepted the SQL alias-collision
 closure and preservation of B1-B4, but returned `REQUEST CHANGES` because the
 current coverage matrix still carried pre-PR128 `v18 / v5 candidate` state.
-The reconciliation below removes that documentary contradiction without
-changing either SQL or any runtime artifact. The resulting exact head requires
-a fresh Backend/Data review before AppSec.
+That evidence contradiction was reconciled without changing either SQL or any
+runtime artifact. Fresh Backend/Data and independent AppSec reviews then
+approved exact head `6f6092aa66352cda3d617897895b0f09019adeea` / tree
+`bb13c051b57d1b04a1926cbe886b190cfa89ba37`, and PR #129 merged as
+`69f4cfa1bdee331826953b492f25c12b4defc030`.
+
+The exact merged migration was then reauthenticated before a separately gated
+second application:
+
+```text
+migration Git blob: 6cc9a1f4419de5e0355954f2cbc6f503f5eb8157
+migration SHA-256: f7d36c397decdc14675b29060f26ca462dae07c62576ab1ccb43c77e7e372181
+migration lines / bytes: 3550 / 135000
+application invocations after PR #129 merge: 1
+```
+
+PostgreSQL passed the corrected role predicates and then stopped in the same
+first preflight at the positive global routine inventory:
+
+```text
+SQLSTATE P0001
+T3A_PREFLIGHT_POSITIVE_ROUTINE_INVENTORY_DRIFT
+PL/pgSQL function inline_code_block line 386 at RAISE
+```
+
+This was not a replay of the alias collision. The preflight detected a new
+catalog event and aborted before T3 DDL. Fresh read-only production queries
+established:
+
+```text
+T3 migration history entry: ABSENT
+T3 proof/lease relations: ABSENT
+T3 issuer/prepare/release routines: ABSENT
+production Edge v19: ACTIVE
+
+reviewed routine baseline:
+  count 264 / full inventory md5 b1f0919df8a0acaca7bbea2b928b0ffe
+current live routine inventory:
+  count 264 / full inventory md5 c299bf087df69f960dd0c611d1486675
+authenticated-effective SECURITY DEFINER subset:
+  count 122 / inventory md5 7faa376a403c69239d9606559cf9c2db
+non-system aggregates:
+  count 0
+```
+
+The only non-system routine whose tuple version is newer than the established
+T1 anchor is the Supabase-owned event-trigger helper:
+
+```text
+extensions.grant_pg_graphql_access()
+owner: supabase_admin
+security mode: SECURITY INVOKER
+event trigger: issue_pg_graphql_access / ddl_command_end / enabled O
+xmin: 7208
+implementation md5: 2f3fa32125a4cd4e597bc8b3c7b55218
+prosrc md5: e2ca36b1a39e090c101c6d0f009b5d20
+normalized ACL:
+  PUBLIC>supabase_admin:EXECUTE:false,
+  supabase_admin>supabase_admin:EXECUTE:false,
+  postgres>supabase_admin:EXECUTE:true
+```
+
+It is not `SECURITY DEFINER`, so the authenticated-effective definer subset
+remained byte-identical. The correction does not whitelist or exclude this
+helper. It refreshes the complete full-catalog digest in all four places so
+the same positive inventory continues to fail closed on any later body,
+owner, language, kind, config, comment or ACL drift:
+
+```text
+forward preflight
+forward postflight
+rollback preflight
+rollback postrollback
+
+b1f0919df8a0acaca7bbea2b928b0ffe
+-> c299bf087df69f960dd0c611d1486675
+```
+
+Counts, the authenticated-effective SECURITY DEFINER digest, the zero
+aggregate assertion and every T3A authority/tenant/proof/lease/audit/T1
+control remain unchanged. No direct production SQL edit or automatic retry
+occurred.
 
 ## 1. Authorized and prohibited scope
 
@@ -124,11 +209,15 @@ T3A changes only the administrative password-reset boundary:
 This change does not authorize or perform:
 
 - an `App.jsx` change;
-- a production migration or runtime mutation;
+- a production migration or runtime mutation during this Draft/review action;
 - a further Edge production deployment;
 - a smoke or rollback execution;
 - Ready, merge or Security Go;
 - a broad grant, trigger disablement, data normalization or frontend authority.
+
+Product Authority separately bounded one later migration invocation after the
+two new exact-head reviews. That later authority does not make this PR, its
+static review or any current GitHub action a production mutation.
 
 ## 2. Historical 2026-08-24 pre-PR128 production snapshot
 
@@ -279,11 +368,15 @@ transitions completed. The reconciled sequence is:
 1. PR #128 Backend/Data + independent AppSec exact-head approval       DONE
 2. deploy that exact reviewed Edge while issuer/prepare remain absent  DONE / v19
 3. prove audit INSERT + issuer absent/404 + no Auth mutation           PASS
-4. invoke exact reviewed T3A migration under separate authority        ABORTED IN PREFLIGHT / NO DDL
-5. correct the PL/pgSQL role-alias collision in one Draft PR           PR #129 / REVIEW PENDING
-6. apply the final exact reviewed migration under new authority        BLOCKED
-7. validate catalog/roles/routines/ACLs/grants/policies/triggers       BLOCKED
-8. run separately-authorized cross-tenant/concurrency smoke            BLOCKED
+4. invoke PR #128 exact migration under separate authority             ABORTED / ALIAS COLLISION / NO DDL
+5. correct alias, review and merge PR #129                             DONE / 69f4cfa1...
+6. invoke exact PR #129 migration once                                 ABORTED / ROUTINE DRIFT / NO DDL
+7. refresh all four full-routine digests to current live inventory     CURRENT DRAFT PR
+8. obtain Backend/Data then independent AppSec exact-head reviews      REQUIRED
+9. resolve Ready/merge as separate GitHub lifecycle gates              BLOCKED
+10. apply the final exact reviewed/merged migration once               AUTHORIZED LATER / PRECONDITIONS OPEN
+11. validate catalog/roles/routines/ACLs/grants/policies/triggers      BLOCKED
+12. run separately-authorized cross-tenant/concurrency smoke           BLOCKED
 ```
 
 The v5 Edge first requires a successful service-role audit insert containing
@@ -358,7 +451,7 @@ config, implementation hash and normalized ACL:
 ```text
 baseline routines, excluding only the separately-pinned direct T1 guard:
   count = 264
-  inventory_md5 = b1f0919df8a0acaca7bbea2b928b0ffe
+  inventory_md5 = c299bf087df69f960dd0c611d1486675
 
 authenticated-effective SECURITY DEFINER subset:
   count = 122
@@ -376,6 +469,12 @@ aggregate changes both the routine inventory and aggregate count. Postflight
 and rollback exclude only the exact new T3 functions — including the Edge-proof
 issuer — and separately verify each body, signature, owner, config, comment and
 effective ACL.
+
+The prior reviewed full-inventory digest
+`b1f0919df8a0acaca7bbea2b928b0ffe` is retained only as historical evidence.
+The current digest `c299bf087df69f960dd0c611d1486675` includes the exact
+live `extensions.grant_pg_graphql_access()` fingerprint rather than excluding
+or broadly trusting that platform helper.
 
 Role/schema anchors are positive and complete:
 
@@ -643,13 +742,13 @@ is a later separately-authorized step.
 | Blocker / invariant | Corrective artifact | Recorded result | Runtime result |
 |---|---|---|---|
 | B1 Edge-first rollout | v19 audit-first fail-before-Auth on absent issuer/prepare | PR #128 exact-head reviews approved | v19 PASS / audit committed / no Auth mutation |
-| B2 trust-anchor preflight | exact full role graph + public schema ACL + all routine kinds + complete audit relation fingerprints | semantics approved; alias-only correction pending exact-head review | one application aborted at first role predicate / no DDL |
-| B3 drift-safe rollback | same exact anchors + proof→authority→lease→audit order + no live proof/lease + exact grant reversal | semantics approved; same alias-only correction pending exact-head review | not executed |
+| B2 trust-anchor preflight | exact full role graph + public schema ACL + all routine kinds + complete audit relation fingerprints | alias fix approved/merged; four full-inventory literals refreshed to the current live digest; exact-head review pending | second application correctly stopped on routine drift / no DDL |
+| B3 drift-safe rollback | same exact anchors + proof→authority→lease→audit order + no live proof/lease + exact grant reversal | alias fix approved/merged; the same live digest refresh is applied to rollback pre/postflight; exact-head review pending | not executed |
 | B4 T1 interoperability | both T1 triggers + exact leased transitions | approved and unchanged from v4 | not executed |
 | DB→Auth authority continuity | durable lease + snapshot-independent unique-index probes + 3 fencing triggers + service-role TRUNCATE removal + success-only release | approved and unchanged from v4 | not runtime-tested |
 | direct PostgREST prepare / stranded lease | service-role-only one-time Edge proof consumed before lease/write | approved and unchanged from v4 | issuer absent; no direct runtime bypass tested |
 | audit schema compatibility | dual modern/legacy Edge insert + normalized inet + fail-before-proof/Auth + exact audit fingerprints | PR #128 Backend/Data + AppSec exact-head approved and merged | v19 PASS / audit committed / no Auth mutation |
-| audit integrity | revoke authenticated INSERT; preserve authenticated SELECT; exact rollback restore | PR #128 exact-head approved; SQL unchanged in PR #129 | migration absent / no DDL applied |
+| audit integrity | revoke authenticated INSERT; preserve authenticated SELECT; exact rollback restore | PR #128 exact-head approved; SQL semantics unchanged by PR #129 and the digest-only refresh | migration absent / no DDL applied |
 | actor=`auth.uid()` | caller JWT prepare RPC | preserved | not runtime-tested |
 | tenant/company server-side | strict DB predicates | preserved | not runtime-tested |
 | cross-company isolation | strict predicates + generic denial + fence | preserved | not runtime-tested |
@@ -660,8 +759,11 @@ is a later separately-authorized step.
 
 PR #128 exact-head reviews, merge, Edge v19 deployment and the controlled
 fail-before-Auth call close the audit-schema compatibility rollout blocker.
-They do not prove execution of the corrected migration or rollback and do not
-grant PR #129 Ready, merge, a production retry, runtime smoke or Security Go.
+They do not prove execution of the migration or rollback and do not grant the
+new anchor-refresh PR Ready, merge, runtime smoke or Security Go. Product
+Authority authorized one later migration retry after the two new exact-head
+reviews; that authority is not exercisable until the reviewed bytes and the
+separate GitHub lifecycle prerequisites are resolved.
 
 ## 11. Required later acceptance matrix
 
@@ -725,7 +827,18 @@ Performed across the reviewed lineage and current candidate source:
 - one separately-authorized migration invocation, aborted by PostgreSQL 17 in
   the first preflight before T3 DDL;
 - static Backend/Data acceptance of the PR #129 alias correction, followed by
-  `REQUEST CHANGES` only for the now-reconciled evidence-state contradiction.
+  `REQUEST CHANGES` only for the then-reconciled evidence-state contradiction;
+- fresh Backend/Data and independent AppSec approval of PR #129 exact head
+  `6f6092aa...`, followed by merge commit `69f4cfa1...`;
+- one reauthenticated application of the exact merged PR #129 migration,
+  aborted fail-closed at `T3A_PREFLIGHT_POSITIVE_ROUTINE_INVENTORY_DRIFT`
+  before DDL;
+- fresh read-only production recomputation of the complete routine inventory
+  (`264 / c299bf087df69f960dd0c611d1486675`), unchanged authenticated-effective
+  SECURITY DEFINER subset (`122 / 7faa376a403c69239d9606559cf9c2db`), zero
+  aggregates and exact changed helper fingerprint;
+- fresh read-only confirmation that no T3 history entry, routine or relation
+  exists and Edge v19 remains active.
 
 Not performed:
 
@@ -736,30 +849,41 @@ Not performed:
 - rollback execution;
 - any Edge deployment or runtime request after the controlled v19 call;
 - post-migration production smoke/concurrency testing;
-- PR #129 Ready, merge or Security Go.
+- anchor-refresh PR Ready, merge or Security Go.
 
-Required next gates on the final resolved PR #129 exact head:
+Required next gates on the final resolved anchor-refresh PR exact head:
 
 ```text
 1. integral material-file read and coverage reconciliation
 2. repeat Backend/Data exact-head review after this evidence correction
 3. only after Backend/Data closure, independent AppSec exact-head review
-4. stop before Ready pending separate Product Authority
+4. stop before Ready; Ready and merge remain separate GitHub lifecycle gates
 ```
 
 T3A-v5 grants none of the remaining lifecycle or production authorities.
 
-## 13. Alias-correction coverage and remaining gates
+## 13. Live routine-anchor refresh coverage and remaining gates
 
 Changed material scope:
 
 ```text
 supabase/migrations/20260822211600_t3_admin_password_reset_boundary.sql
-  12 pg_roles aliases + 96 role-field qualifiers renamed
+  preflight and postflight full routine inventory md5 only
+  candidate Git blob: 1b938b95107bd4f6ab1d14d914438e654fcc1011
+  candidate SHA-256: b9f55d58ea73c723a04075ab639bf1f6910b07d77774dfd5b593010d8de56d77
+  lines / bytes: 3550 / 135000
 supabase/rollback/20260822211600_t3_admin_password_reset_boundary_rollback.sql
-  12 pg_roles aliases + 96 role-field qualifiers renamed
+  preflight and postrollback full routine inventory md5 only
+  candidate Git blob: a9457bc48724cc8406bcec9348a14cbc8b868be3
+  candidate SHA-256: bc8ea4aaca436aa78a25de29b8511d4d15b36a15ece32cc8a85b164153251ba7
+  lines / bytes: 2785 / 107387
 directly-related evidence/SFJM only
 ```
+
+Mechanical reverse substitution of only
+`c299bf087df69f960dd0c611d1486675` back to
+`b1f0919df8a0acaca7bbea2b928b0ffe` reproduces the exact PR #129 merged SQL
+blobs `6cc9a1f...` and `afce77ab...` respectively.
 
 Explicitly unchanged:
 
@@ -767,8 +891,11 @@ Explicitly unchanged:
 criar-usuario Edge source
 App.jsx
 T1/T2 migrations
+the PR #129 role_row alias correction
 function bodies created by T3A
-catalog fingerprints and expected counts/digests
+all catalog fingerprints except the one complete full-routine digest
+routine count, authenticated-effective SECURITY DEFINER count/digest and
+  aggregate count
 grants, policies, trigger definitions and lock order
 actor=auth.uid()
 server-derived tenant/company/role/team
@@ -780,10 +907,12 @@ Required next gates:
 ```text
 1. resolve the final corrective Draft PR exact head
 2. integral read of all changed final artifacts
-3. repeat Backend/Data exact-head review after evidence reconciliation
+3. Backend/Data exact-head review
 4. independent AppSec exact-head review only after Backend/Data closure
 5. stop before Ready
 ```
 
-Ready, merge, production migration retry, smoke, rollback and Security Go
-remain separately blocked.
+Ready and merge remain separate blocked lifecycle gates. One production
+migration retry is authorized only after the two reviews and authentication of
+the final reviewed/merged bytes; smoke, rollback and Security Go remain
+separately blocked.
