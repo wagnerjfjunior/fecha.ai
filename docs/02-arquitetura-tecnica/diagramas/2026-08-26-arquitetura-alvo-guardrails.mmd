@@ -1,0 +1,94 @@
+---
+config:
+  layout: elk
+---
+flowchart TB
+    USERS["Usuários<br/>Corretor • Gestor • Admin • Root"] --> DELIVERY["Vercel / Web App<br/>entrega e roteamento"]
+
+    subgraph FRONTEND["FRONTEND SEGMENTADO — mesmo produto e repositório"]
+        direction TB
+        SHELL["AppShell fino<br/>Providers • Router • Guards • Error Boundary • Suspense<br/>sem regra de negócio, autorização ou DML"]
+
+        subgraph FEATURES["Features verticais — API pública própria"]
+            direction TB
+            subgraph COMMERCIAL["Operação comercial"]
+                direction LR
+                LEADS["LeadOps • CRM<br/>Funil • Carteira"]
+                DIALER["Discador • PME<br/>Mensageria"]
+                OPERATIONS["Produção • Histórico<br/>Dashboards"]
+            end
+            subgraph PLATFORM_FEATURES["Plataforma e expansão"]
+                direction LR
+                ADMIN["Admin • Times<br/>Tenant Provisioning<br/>após contratos server-side"]
+                MESA["MesaCliente<br/>Tabelas • Propostas<br/>trilha isolada"]
+                GROWTH["Integrações<br/>ADS/CAPI • SEO<br/>Tracking"]
+            end
+        end
+
+        APP["Camada de aplicação<br/>casos de uso • hooks • schemas/DTOs • cache"]
+        GATEWAY["Gateway de dados único e tipado<br/>queries/commands • Result/AppError • tipos gerados<br/>sem PATCH/DML sensível direto"]
+
+        SHELL --> LEADS
+        SHELL --> DIALER
+        SHELL --> OPERATIONS
+        SHELL --> ADMIN
+        SHELL --> MESA
+        SHELL --> GROWTH
+
+        LEADS --> APP
+        DIALER --> APP
+        OPERATIONS --> APP
+        ADMIN --> APP
+        MESA --> APP
+        GROWTH --> APP
+        APP --> GATEWAY
+    end
+
+    DELIVERY --> SHELL
+
+    subgraph SERVER["FRONTEIRA SERVER-SIDE — autoridade"]
+        direction TB
+        SERVER_API["BFF/API • RPCs estreitas • Edge Functions"]
+        AUTHZ["Derivar e validar no servidor<br/>auth.uid() • tenant/empresa • perfil/role<br/>ownership • elegibilidade"]
+        POLICY["RLS • policies • grants mínimos<br/>idempotência • auditoria • fail-closed"]
+        SERVER_API --> AUTHZ --> POLICY
+    end
+
+    GATEWAY --> SERVER_API
+    POLICY --> PLATFORM["Supabase<br/>Auth • PostgreSQL • Storage<br/>dados isolados por tenant/empresa"]
+
+    SERVER_API --> INTEGRATION["Adaptadores de integração<br/>webhooks • normalização • deduplicação • consentimento"]
+    INTEGRATION --> EXTERNAL["WABA / e-mail • portais • Make/n8n<br/>Meta • Google • Stape"]
+
+    subgraph GUARDRAILS["GUARDRAILS TRANSVERSAIS"]
+        direction LR
+        CI["CI determinístico<br/>frozen install • lint • testes • build<br/>architecture guard"]
+        OBS["Observabilidade<br/>logs seguros • métricas • alertas • auditoria"]
+        RELEASE["Entrega segura<br/>feature flag • canário • rollback"]
+        GATES["Gates independentes<br/>arquitetura • Supabase • CI/CD • domínio"]
+    end
+
+    CI -.->|protege| SHELL
+    OBS -.->|observa| SERVER_API
+    RELEASE -.->|controla| SHELL
+    GATES -.->|valida| POLICY
+
+    subgraph MIGRATION["MIGRAÇÃO PROGRESSIVA — temporária"]
+        direction LR
+        LEGACY["App.jsx legado<br/>baseline congelada"] --> ADAPTER["Legacy Adapter<br/>rota reversível"] --> SHELL
+        LEGACY --> SAFETY["Caracterização<br/>feature flag • canário"] --> MIGRATED["Feature vertical<br/>com equivalência comprovada"] --> RETIRE["Remover trecho legado"]
+    end
+
+    classDef boundary stroke:#818cf8,fill:#eef2ff,stroke-width:2px
+    classDef temporary stroke:#fb923c,fill:#fff7ed,stroke-width:2px,stroke-dasharray:6 4
+    classDef platform stroke:#2dd4bf,fill:#f0fdfa,stroke-width:2px
+    classDef feature stroke:#a78bfa,fill:#f5f3ff
+    classDef guardrail stroke:#4ade80,fill:#f0fdf4
+    classDef external stroke:#f87171,fill:#fef2f2
+
+    class SHELL,GATEWAY,SERVER_API,AUTHZ,POLICY boundary
+    class LEGACY,ADAPTER,SAFETY,MIGRATED,RETIRE temporary
+    class PLATFORM platform
+    class LEADS,DIALER,OPERATIONS,ADMIN,MESA,GROWTH feature
+    class CI,OBS,RELEASE,GATES guardrail
+    class EXTERNAL external

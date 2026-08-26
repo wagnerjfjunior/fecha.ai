@@ -1,0 +1,125 @@
+flowchart LR
+
+  U[Usuário] --> AUTH[Login / Sessão]
+
+AUTH --> APP[App.jsx\nOrquestrador principal]
+
+
+  APP --> PW{must_change_password?}
+
+PW -- Sim --> TSO[TrocarSenhaObrigatoria]
+
+  PW -- Não --> HOME[Home / Navegação]
+
+
+TSO --> CP[changePassword\nSupabase Auth]
+
+
+CP --> RPCPW[RPC\nmarcar_senha_inicial_definida]
+
+
+RPCPW --> OKPW{retorno === true?}
+
+  OKPW -- Sim --> HOME
+  OKPW -- Não --> ERRPW[Erro / fail-closed]
+
+  HOME --> ROLE{Perfil / Papel}
+
+
+ROLE --> COR[Corretor]
+
+
+ROLE --> GES[Gestor / Admin]
+
+
+  COR --> DISC[DiscadorTab]
+  COR --> PROD[ProducaoTab]
+
+COR --> CART[CarteiraTab]
+
+  COR --> HIST[HistoricoTab]
+
+COR --> EMAIL[EmailTab]
+
+  COR --> DASH[DashboardTab]
+
+  GES --> GTAB[GestorTab]
+
+GES --> TIMES[TimesTab]
+
+
+GES --> EDIT[EditarCorretorModal]
+
+
+GES --> ROOTP[RootPanel]
+
+
+  DISC --> R1[RPCs\nproximo_lead\nregistrar_feedback\nsolicitar_lote\navaliar_lista]
+
+PROD --> R2[RPCs\nminha_producao\nget_funil_stats_corretor]
+
+
+CART --> R3[RPC\nminha_carteira]
+
+  HIST --> R4[RPC\nrelatorio_historico_corretor]
+  EMAIL --> R5[RPCs\nmeus_leads_email\nregistrar_mensagem]
+
+DASH --> R6[RPCs\nget_dashboard_stats\nget_stats_horario\nget_funil_stats\nget_listas_ativas]
+
+  GTAB --> R7[RPC\nget_dashboard_gestor]
+
+
+TIMES --> RT1[RPCs\nget_meus_times\nget_corretores_time\natualizar_time_corretor\natualizar_status_corretor\ncriar_time]
+
+  TIMES --> EDGE[Edge Function\ncriar-usuario\naction=reset_password]
+
+  EDIT --> RP[RPC\natualizar_perfil_corretor]
+
+EDIT --> PATCH1[DIRECT PATCH\ncorretores.ativo\ncorretores.apto_para_receber]
+
+  EDIT --> EDGE
+
+EDIT --> PATCH2[DIRECT PATCH\ncorretores.must_change_password=false]
+
+
+
+APP --> SB[Cliente Supabase interno\nquery / patch / insert / rpc]
+
+  R1 --> SB
+  R2 --> SB
+  R3 --> SB
+  R4 --> SB
+
+R5 --> SB
+
+  R6 --> SB
+  R7 --> SB
+
+RT1 --> SB
+
+
+RP --> SB
+
+  RPCPW --> SB
+
+PATCH1 --> SB
+
+
+PATCH2 --> SB
+
+
+
+SB --> DB[(Supabase PostgreSQL\ncorretores / leads / times / listas / funil)]
+
+  CP --> SAUTH[(Supabase Auth)]
+  EDGE --> SAUTH
+
+EDGE --> DB
+
+
+  PATCH1 -. residual F1-02 .-> RISK[Hardening pendente]
+
+PATCH2 -. residual F1-02 .-> RISK
+
+
+RISK --> NEXT[Próximo ciclo\nserver-side disposition\n+ remover direct UPDATE\n+ smoke runtime\n+ preparar PR-03]
