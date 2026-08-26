@@ -1,6 +1,6 @@
 # FECH.AI — SFJM Authorizations
 
-**Status:** `AUTHORITY_PROVENANCE_LEDGER / PR128_AND_EDGE_V19_CONSUMED / MIGRATION_ATTEMPT_CONSUMED_FAIL_CLOSED / PLPGSQL_CORRECTIVE_GITHUB_AUTHORITY_ACTIVE / PRODUCTION_GATES_SEPARATE`
+**Status:** `AUTHORITY_PROVENANCE_LEDGER / PR129_MERGE_CONSUMED / TWO_MIGRATION_ATTEMPTS_CONSUMED_FAIL_CLOSED / ROUTINE_ANCHOR_GITHUB_AUTHORITY_ACTIVE / ONE_LATER_APPLICATION_BOUNDED / OTHER_GATES_SEPARATE`
 **Updated:** `2026-08-25`
 **Repository:** `wagnerjfjunior/fecha.ai`
 
@@ -34,31 +34,41 @@ perform read-only Backend/Data + AppSec-oriented review
 
 Those consumed authorities do not authorize Ready, merge, Supabase application or Edge deployment.
 
-## 3. ACTIVE_AUTHORITY — PL/pgSQL role-alias corrective Draft PR
+## 3. ACTIVE_AUTHORITY — live routine inventory anchor refresh
 
-PR #128 received the required exact-head reviews, merged as
-`3c9daf6c49eb937824c2c2b40aba198e2727c4bb`, and its exact Edge was deployed
-as production v19 under later separate authorities. One controlled call
-returned the expected fail-closed 500, committed the audit row and produced no
-Auth mutation.
+PR #129 closed the PL/pgSQL role-alias collision, received fresh exact-head
+Backend/Data and independent AppSec approval, and merged as
+`69f4cfa1bdee331826953b492f25c12b4defc030`. The exact merged migration was
+then invoked once under the applicable production authority. It advanced past
+the alias correction and aborted fail-closed at
+`T3A_PREFLIGHT_POSITIVE_ROUTINE_INVENTORY_DRIFT` before DDL. No migration
+history entry or T3 object exists. That second application authority is
+consumed; no automatic retry occurred.
 
-Product Authority then separately authorized application of the exact reviewed
-T3A migration. The application tool was invoked once. PostgreSQL aborted the
-transaction in the first preflight with SQLSTATE 55000 because the declared
-record `r` collided with the `pg_roles AS r` alias. No T3 object or migration
-history record was created. That production-application authority is consumed.
+Fresh read-only production evidence isolated the current full-inventory anchor:
 
-On `2026-08-25`, after the failure, rollback confirmation and exact minimal
-correction were stated, Product Authority authorized:
+```text
+historical reviewed full routine digest: b1f0919df8a0acaca7bbea2b928b0ffe
+current live full routine digest:       c299bf087df69f960dd0c611d1486675
+routine count: 264 -> 264
+authenticated SECURITY DEFINER subset:
+  122 / 7faa376a403c69239d9606559cf9c2db -> UNCHANGED
+aggregate count: 0 -> 0
+changed live helper: extensions.grant_pg_graphql_access()
+```
+
+On `2026-08-25`, Product Authority authorized:
 
 ```text
 Repository: wagnerjfjunior/fecha.ai
-Base: live main 3c9daf6c49eb937824c2c2b40aba198e2727c4bb
-Branch: security/t3a-plpgsql-role-alias-collision
-Authorized GitHub-side work only:
-  rename conflicting pg_roles alias r -> role_row in forward pre/postflight
-  apply the identical correction to rollback pre/postflight
-  preserve the later loop record r and every catalog/security expectation
+Base: live main 69f4cfa1bdee331826953b492f25c12b4defc030
+Branch: security/t3a-live-routine-anchor-refresh
+Authorized GitHub-side work:
+  update the complete live routine inventory anchor in forward migration
+    preflight and postflight
+  apply the identical anchor refresh to rollback preflight and postrollback
+  preserve the routine count, authenticated-effective SECURITY DEFINER
+    count/digest, aggregate count and every other SQL/security expectation
   update directly-related evidence and SFJM
   create one Draft PR
   perform read-only exact-head validation
@@ -69,21 +79,24 @@ Required sequence:
   stop in Draft before Ready
 ```
 
-Not authorized:
+Product Authority also bounded exactly one later production migration
+application after the two exact-head reviews. This is active but not yet
+exercisable: it requires authentication of the final reviewed/merged SQL bytes
+and resolution of the separate Ready/merge lifecycle gates. It does not permit
+trial-and-error, a different head, automatic retry or more than one invocation.
+
+Not included in this current action:
 
 ```text
 Ready
 merge
-another Supabase migration/application
 Edge deployment
 runtime/Auth call or smoke
 rollback
 Security Go
 ```
 
-The former PR #128 audit-correction authority and its later Ready, merge, Edge
-v19 deployment and single runtime-call authorities are consumed. They do not
-carry into this corrective PR or a production retry.
+The former PR #128 and PR #129 GitHub/production authorities are consumed.
 
 ## 4. CONSUMED_AUTHORITY — PR #127 correction, reviews and merge
 
@@ -207,8 +220,9 @@ dedicated safe target. Because the browser appeared frozen, three UI submissions
 were emitted; all three failed closed and none reached an Auth update. This
 bounded runtime authority is consumed and does not authorize another call.
 
-The audit POST 400 observed in those calls is the material event supporting the
-new active GitHub-only authority in §3. It is not authority to deploy its fix.
+The audit POST 400 observed in those calls was the material event supporting
+the now-consumed PR #128 GitHub correction. It was not authority to deploy its
+fix.
 
 ## 5. CONSUMED_AUTHORITY — SFJM new-conversation transition
 
@@ -218,12 +232,13 @@ This authorizes the bounded documentation update necessary to preserve current T
 
 The transition documentation authority is consumed by publishing these SFJM updates. It does not create a new runtime/lifecycle permission.
 
-## 6. Actions still requiring separate exact authority
+## 6. Actions still requiring separate exact authority or open preconditions
 
 ```text
-mark the alias-corrective PR Ready
-merge the alias-corrective PR
-apply/retry T3A migration in Supabase production
+mark the anchor-refresh PR Ready
+merge the anchor-refresh PR
+exercise the one authorized T3A production retry before both exact-head reviews,
+  final-byte authentication and required GitHub lifecycle resolution
 deploy another Edge version
 execute runtime/Auth or adversarial smoke
 execute rollback
@@ -233,7 +248,9 @@ F1-02 final acceptance
 WDP change
 ```
 
-The single failed application does not authorize a retry.
+Neither failed application created an automatic retry. The single future
+invocation exists only because Product Authority explicitly granted it in §3,
+subject to the recorded reviews, exact-byte and lifecycle preconditions.
 
 ## 7. Production-testing boundary
 

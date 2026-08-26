@@ -1,6 +1,6 @@
 # FECH.AI — SFJM Blocked Actions
 
-**Status:** `MATERIAL_BLOCKER_VIEW / PR128_MERGED / EDGE_V19_B1_PASS / T3A_SQL_ALIAS_COLLISION / CORRECTIVE_REVIEWS_PENDING / FAIL_CLOSED`
+**Status:** `MATERIAL_BLOCKER_VIEW / PR129_MERGED / EDGE_V19_B1_PASS / T3A_LIVE_ROUTINE_ANCHOR_DRIFT / ANCHOR_REFRESH_REVIEWS_PENDING / FAIL_CLOSED`
 **Updated:** `2026-08-25`
 **Repository:** `wagnerjfjunior/fecha.ai`
 
@@ -20,16 +20,16 @@ Resolve live lifecycle before acting.
 Security Go
 broad paid commercialization
 F1-02 final acceptance
-alias-corrective PR Ready
-alias-corrective PR merge
-new T3A Supabase production application
+anchor-refresh PR Ready
+anchor-refresh PR merge
+one authorized T3A Supabase production retry until its review/lifecycle preconditions close
 T3A runtime/adversarial/cross-tenant smoke
 rollback execution
 T3B frontend password cutover
 WDP increase without governance acceptance
 ```
 
-## 3. Closed lineage and current runtime executability gate
+## 3. Closed lineage and current live-anchor gate
 
 PR #127 closed the B1-B4 authority-design blockers and merged. PR #128 closed
 the post-merge audit-schema incompatibility, received Backend/Data and
@@ -47,15 +47,30 @@ no Auth mutation
 B1 runtime PASS
 ```
 
-The separately-authorized exact migration invocation failed in the first
+The first separately-authorized exact migration invocation failed in the first
 preflight with SQLSTATE 55000 because PL/pgSQL record variable `r` collided
 with `pg_roles AS r`. The transaction aborted before DDL; no T3 objects or
 migration record exist. The rollback source contains the same collision.
 
+PR #129 corrected only that collision, received fresh Backend/Data and
+independent AppSec approval on exact head
+`6f6092aa66352cda3d617897895b0f09019adeea`, and merged as
+`69f4cfa1bdee331826953b492f25c12b4defc030`.
+
+The exact merged migration was then invoked once. It advanced past the alias
+defect and aborted at
+`T3A_PREFLIGHT_POSITIVE_ROUTINE_INVENTORY_DRIFT`. Production remained intact:
+no T3 history entry, routine or relation exists, and Edge v19 remains active.
+The complete live routine count remained 264, but its digest moved from
+`b1f0919d...` to `c299bf08...`; the authenticated-effective SECURITY DEFINER
+subset remained exactly `122 / 7faa376a...` and aggregate count remained zero.
+The changed routine is the Supabase-owned SECURITY INVOKER event-trigger helper
+`extensions.grant_pg_graphql_access()`.
+
 Current blocking gate:
 
 ```text
-one alias-only corrective Draft PR
+one four-literal routine-anchor corrective Draft PR
 -> integral final-file read and exact diff
 -> Backend/Data exact-head PASS
 -> independent AppSec exact-head PASS
@@ -80,6 +95,8 @@ letting a direct authenticated prepare call create durable state without an
   Edge-presence proof
 normalizing production users to fit the code
 trial-and-error SQL in production
+excluding/whitelisting the changed helper to make the hash pass instead of
+  pinning the complete current inventory
 mixing unrelated user-creation redesign into password-reset hardening
 ignoring an audit INSERT failure and continuing to proof/Auth
 dropping/relaxing legacy audit NOT NULL columns to fit the Edge

@@ -1,6 +1,6 @@
 # FECH.AI — SFJM Evidence Freshness
 
-**Status:** `CLAIM_ANCHOR_INVALIDATION_LEDGER / PR128_MERGED / EDGE_V19_DEPLOYED / B1_V19_RUNTIME_PASS / MIGRATION_EXECUTABILITY_INVALIDATED / PLPGSQL_ALIAS_CORRECTION_PENDING_REVIEW`
+**Status:** `CLAIM_ANCHOR_INVALIDATION_LEDGER / PR129_MERGED / EDGE_V19_DEPLOYED / B1_V19_RUNTIME_PASS / SECOND_MIGRATION_ATTEMPT_FAIL_CLOSED / LIVE_ROUTINE_ANCHOR_REFRESH_PENDING_REVIEW`
 **Updated:** `2026-08-25`
 **Repository:** `wagnerjfjunior/fecha.ai`
 
@@ -254,7 +254,7 @@ T3-aware t1_guard_corretores_direct_compat_update():
 exact pre-T3A guard restored by rollback:
   pg_get_functiondef md5 99477024e337de5645dd042a30f8cf78
 
-positive non-system routine baseline excluding the direct guard:
+historical reviewed non-system routine baseline excluding the direct guard:
   count 264 / inventory md5 b1f0919df8a0acaca7bbea2b928b0ffe
 
 authenticated-effective SECURITY DEFINER subset:
@@ -420,6 +420,89 @@ actor/tenant/proof/lease/T1 semantics, or the absence of partial production
 state. It invalidates the final-head executability gate for B2/B3 and requires
 fresh exact-head reviews of both SQL artifacts and related evidence.
 
+### 5.2 PR #129 merge and live routine-inventory drift anchor
+
+PR #129 closed the collision above and reached:
+
+```text
+final reviewed head: 6f6092aa66352cda3d617897895b0f09019adeea
+final reviewed tree: bb13c051b57d1b04a1926cbe886b190cfa89ba37
+Backend/Data: APPROVE / findings none / static exact-head only
+Backend/Data response SHA-256:
+  8d76512eadcaf54085e6109c83eb4a4e3b9499160537c85e741f7113d2b39b0f
+AppSec: APPROVE / findings none / independent static exact-head only
+AppSec response SHA-256:
+  d096c474128e5099a16a90b5c4afc9922ffc4ff593b08680a8990b42177aa1ea
+merge commit / main: 69f4cfa1bdee331826953b492f25c12b4defc030
+```
+
+Exact merged source anchors:
+
+```text
+migration blob: 6cc9a1f4419de5e0355954f2cbc6f503f5eb8157
+migration SHA-256: f7d36c397decdc14675b29060f26ca462dae07c62576ab1ccb43c77e7e372181
+migration lines / bytes: 3550 / 135000
+rollback blob: afce77ab693a1fbbac10fdd70bd87032a7c8f0b2
+rollback SHA-256: 4271782a67961705098cb1cb932799d5e7b19855678612ff2ac6845e8770164b
+rollback lines / bytes: 2785 / 107387
+Edge source blob: 866257371dcc85d22ae54cae3593b3e49a132d8e
+```
+
+The exact migration was applied once after that merge. It passed the corrected
+role predicates and stopped before DDL:
+
+```text
+SQLSTATE P0001
+T3A_PREFLIGHT_POSITIVE_ROUTINE_INVENTORY_DRIFT
+PL/pgSQL function inline_code_block line 386 at RAISE
+migration history entry after failure: ABSENT
+T3 routines/relations after failure: ABSENT
+Edge v19 after failure: ACTIVE
+```
+
+Fresh read-only recomputation on `2026-08-25`:
+
+```text
+complete non-system routine inventory excluding direct T1 guard:
+  count 264 / md5 c299bf087df69f960dd0c611d1486675
+authenticated-effective SECURITY DEFINER subset:
+  count 122 / md5 7faa376a403c69239d9606559cf9c2db
+non-system aggregate count: 0
+```
+
+The count, definer subset and aggregate count are unchanged. The only
+non-system routine with tuple version newer than the established T1 anchor is:
+
+```text
+extensions.grant_pg_graphql_access()
+owner: supabase_admin
+security mode: SECURITY INVOKER
+config: search_path=""
+event trigger: issue_pg_graphql_access / ddl_command_end / enabled O
+xmin: 7208
+implementation md5: 2f3fa32125a4cd4e597bc8b3c7b55218
+prosrc md5: e2ca36b1a39e090c101c6d0f009b5d20
+normalized ACL:
+  PUBLIC>supabase_admin:EXECUTE:f,
+  supabase_admin>supabase_admin:EXECUTE:f,
+  postgres>supabase_admin:EXECUTE:t
+```
+
+The anchor refresh includes this exact helper inside the complete inventory;
+it does not add an exclusion. Change all four full-inventory digest literals
+from historical `b1f0919d...` to current `c299bf08...`. Any later routine
+body/owner/language/kind/config/comment/ACL drift still changes the digest and
+stops migration or rollback.
+
+Candidate SQL blob anchors after that four-literal substitution:
+
+```text
+migration: 1b938b95107bd4f6ab1d14d914438e654fcc1011
+  SHA-256 b9f55d58ea73c723a04075ab639bf1f6910b07d77774dfd5b593010d8de56d77
+rollback: a9457bc48724cc8406bcec9348a14cbc8b868be3
+  SHA-256 bc8ea4aaca436aa78a25de29b8511d4d15b36a15ece32cc8a85b164153251ba7
+```
+
 ## 6. Live trust-anchor observations used by T3A review
 
 Read-only production evidence on 2026-08-23 established, without PII:
@@ -478,9 +561,9 @@ remains absent. Invalidate after any Edge version/runtime change.
 ## 8. Unestablished claims
 
 ```text
-alias-corrective final PR head: MUST BE RESOLVED AFTER COMMIT
-Backend/Data exact-head PASS on corrected SQL: NOT ESTABLISHED
-independent AppSec exact-head PASS on corrected SQL: NOT ESTABLISHED
+anchor-refresh final PR head: MUST BE RESOLVED AFTER COMMIT
+Backend/Data exact-head PASS on refreshed anchor: NOT ESTABLISHED
+independent AppSec exact-head PASS on refreshed anchor: NOT ESTABLISHED
 T3A applied to Supabase production: NO
 positive/negative/cross-tenant production smoke: NOT EXECUTED
 rollback runtime-tested: NOT EXECUTED
@@ -492,12 +575,17 @@ Established:
 
 ```text
 PR #128 merged
+PR #129 merged
 Edge v19 deployed and active
 single v19 fail-before-Auth call PASS
 audit row committed
 no Auth mutation
-single migration invocation aborted before DDL
-no migration history entry or T3 objects after abort
+first migration invocation aborted on alias collision before DDL
+PR #129 exact-head Backend/Data + AppSec approvals
+second migration invocation aborted on positive routine inventory drift before DDL
+current live routine inventory 264 / c299bf087df69f960dd0c611d1486675
+authenticated definer subset and aggregate count unchanged
+no migration history entry or T3 objects after either abort
 ```
 
 ## 9. Invalidation rules

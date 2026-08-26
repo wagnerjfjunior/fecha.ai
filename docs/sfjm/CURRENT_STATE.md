@@ -1,6 +1,6 @@
 # FECH.AI — SFJM Current Material State
 
-**Status:** `MATERIAL_RECORDED_STATE / PR128_MERGED / EDGE_V19_DEPLOYED / B1_V19_RUNTIME_PASS / T3A_MIGRATION_FAIL_CLOSED / PLPGSQL_ROLE_ALIAS_COLLISION / CORRECTIVE_PR_REVIEWS_REQUIRED / SECURITY_GO_DENIED`
+**Status:** `MATERIAL_RECORDED_STATE / PR129_MERGED / EDGE_V19_DEPLOYED / B1_V19_RUNTIME_PASS / TWO_T3A_MIGRATION_ATTEMPTS_FAIL_CLOSED / LIVE_ROUTINE_ANCHOR_DRIFT / ANCHOR_REFRESH_REVIEWS_REQUIRED / SECURITY_GO_DENIED`
 **Updated:** `2026-08-25`
 **Repository:** `wagnerjfjunior/fecha.ai`
 
@@ -10,7 +10,13 @@ This file is the principal authority for durable product/security operational me
 
 It intentionally does not freeze volatile GitHub lifecycle facts such as current `main`, PR Draft/Ready, current head, checks, reviews, threads, mergeability or deployment state. Resolve those live before acting.
 
-This transition records a new runtime executability blocker discovered only when the exact reviewed T3A migration was invoked in production under separate Product Authority. The transaction aborted in its first preflight before any T3 object was created. The corrective SQL/evidence/SFJM change set is `PR_HEAD_ONLY` until merged; resolve its live PR/head and read these files from that exact head before continuing.
+This transition records the second distinct production preflight event. PR #129
+corrected the prior PL/pgSQL alias collision, passed fresh exact-head reviews and
+merged. The next exact migration invocation advanced beyond that defect and the
+positive routine inventory detected a new live catalog digest. PostgreSQL again
+aborted before any T3 object was created. The routine-anchor refresh is
+`PR_HEAD_ONLY` until merged; resolve its live PR/head and read these files from
+that exact head before continuing.
 
 ### 1.1 Latest production transition — 2026-08-25
 
@@ -23,19 +29,50 @@ Edge deployment digest: bafdd8e9c4cbf679d877b526703bc1ab791153a14fa1cbeddf69be47
 single controlled v19 fail-before-Auth call: HTTP 500 / EXPECTED_FAIL_CLOSED
 audit row: COMMITTED / status=edge_proof_unavailable
 target Auth mutation: NONE
-T3A migration application: ATTEMPTED ONCE / ABORTED FAIL-CLOSED
+first T3A migration application: ABORTED / PLPGSQL ROLE-ALIAS COLLISION
+PR #129: MERGED
+PR #129 reviewed head: 6f6092aa66352cda3d617897895b0f09019adeea
+PR #129 merge commit / main: 69f4cfa1bdee331826953b492f25c12b4defc030
+second T3A migration application: ABORTED / POSITIVE ROUTINE INVENTORY DRIFT
 T3A migration history entry: ABSENT
 T3A routines/relations after abort: ABSENT
 ```
 
-The application error was:
+The first application error was:
 
 ```text
 SQLSTATE 55000
 record "r" is not assigned yet
 ```
 
-Both forward and rollback declare a PL/pgSQL loop record `r record` and also used `r` as the `pg_roles` table alias. PostgreSQL resolved `r.oid` / `r.rol*` against the unassigned record before its later loops. The narrow correction renames only those catalog aliases/references to `role_row` in both preflight and postflight blocks of both SQL artifacts. It does not change catalog expectations, grants, authority predicates, T1/T2, Edge code, App.jsx, business data or Auth state.
+PR #129 renamed only those aliases/references to `role_row` in forward and
+rollback pre/postflight. The second application then stopped at:
+
+```text
+SQLSTATE P0001
+T3A_PREFLIGHT_POSITIVE_ROUTINE_INVENTORY_DRIFT
+PL/pgSQL function inline_code_block line 386 at RAISE
+```
+
+Fresh live recomputation established:
+
+```text
+complete non-system routine inventory excluding the separately-pinned T1 guard:
+  reviewed baseline: count 264 / md5 b1f0919df8a0acaca7bbea2b928b0ffe
+  current live:      count 264 / md5 c299bf087df69f960dd0c611d1486675
+authenticated-effective SECURITY DEFINER subset:
+  count 122 / md5 7faa376a403c69239d9606559cf9c2db / UNCHANGED
+non-system aggregates: count 0 / UNCHANGED
+```
+
+The only non-system routine newer than the established T1 anchor is
+`extensions.grant_pg_graphql_access()`, owned by `supabase_admin`,
+`SECURITY INVOKER`, bound to enabled event trigger `issue_pg_graphql_access`,
+with implementation MD5 `2f3fa32125a4cd4e597bc8b3c7b55218`. The narrow
+correction changes only the four complete routine-inventory digest literals in
+forward and rollback. It does not exclude the helper or relax the inventory,
+and it does not change counts, the authenticated definer subset, grants,
+authority predicates, T1/T2, Edge code, App.jsx, business data or Auth state.
 
 ## 2. Product context
 
@@ -259,6 +296,14 @@ fail-before-Auth path. The later separately-authorized migration invocation
 then exposed the PL/pgSQL alias collision recorded in §1.1; it aborted before
 DDL and created no migration-history entry.
 
+PR #129 corrected only that collision, received both exact-head approvals and
+merged as `69f4cfa1bdee331826953b492f25c12b4defc030`. The exact merged migration
+was then invoked once and advanced to the positive routine inventory, which
+detected live digest `c299bf087df69f960dd0c611d1486675` instead of the
+historical reviewed `b1f0919df8a0acaca7bbea2b928b0ffe`. It again aborted
+before DDL with no history entry or T3 object. The current digest-only refresh
+is the new bounded review domain.
+
 ### Static authority contract preserved
 
 ```text
@@ -291,35 +336,35 @@ GESTOR
 
 Same-company membership alone is insufficient for gestor authority.
 
-## 6. T3A B1-B4 state after the runtime executability finding
+## 6. T3A B1-B4 state after the live routine-anchor finding
 
-The new finding is bounded to PL/pgSQL name resolution in the exact trust-anchor
-preflight/postflight source. It does not reopen the already established actor,
-tenant, proof, lease, audit or T1 logic.
+The alias defect is closed by PR #129. The new finding is a genuine positive
+inventory mismatch in the exact trust-anchor preflight. It does not reopen the
+already established actor, tenant, proof, lease, audit or T1 logic.
 
-| Domain | Current result | Effect of alias correction |
+| Domain | Current result | Effect of anchor refresh |
 |---|---|---|
 | B1 safe rollout ordering | v19 runtime PASS: one POST 500, audit committed, no Auth mutation | unchanged |
-| B2 trust-anchor preflight | runtime BLOCKED before evaluating the first role predicate because `r` resolved to the unassigned record | rename only the `pg_roles` alias to `role_row` in forward pre/postflight |
-| B3 drift-safe rollback | not executed; static source contains the same collision in rollback pre/postflight | apply the same alias-only correction before any rollback may be considered executable |
+| B2 trust-anchor preflight | alias correction passed; the positive routine inventory then detected current live drift and stopped before DDL | refresh the exact full-inventory digest in forward pre/postflight; preserve count, definer subset and aggregate anchors |
+| B3 drift-safe rollback | not executed; rollback must recognize the same exact live baseline before and after reversal | apply the identical full-inventory digest refresh in rollback pre/postflight |
 | B4 T1 interoperability | approved static contract; migration never reached DDL | unchanged |
 | Multi-tenant / actor boundary | server-derived company/role/team and `auth.uid()` actor | unchanged |
 | Edge / frontend | production Edge v19; no App.jsx change | unchanged |
 
-The failed application is a material invalidation of the SQL executability
-claim, not an authority bypass and not a partial deployment. Exact-head
-Backend/Data review must precede independent AppSec review on the corrected
-Draft PR.
+The second failed application is evidence that B2 failed closed on a new live
+event, not an authority bypass, not a repeat of the alias defect and not a
+partial deployment. Exact-head Backend/Data review must precede independent
+AppSec review on the corrected Draft PR.
 
 ## 7. Material blockers
 
-Until the alias-only correction receives Backend/Data and independent AppSec
+Until the digest-only correction receives Backend/Data and independent AppSec
 approval on one exact head and later lifecycle/runtime authorities are granted:
 
 ```text
 corrective PR Ready: BLOCKED
 corrective PR merge: BLOCKED
-new T3A Supabase application: BLOCKED
+new T3A Supabase application: AUTHORIZED ONCE AFTER REVIEWS / CURRENTLY BLOCKED BY PRECONDITIONS
 T3A runtime smoke: BLOCKED
 rollback execution: BLOCKED
 T3B frontend password cutover: BLOCKED
@@ -332,35 +377,43 @@ the attempt and fails before Auth while the issuer/prepare RPCs are absent.
 
 ## 8. Current Product Authority and limits
 
-Product Authority separately authorized one exact production migration
+Product Authority separately authorized the first production migration
 application after the v19 fail-before-Auth proof. That authority was consumed
-by the single failed invocation; no automatic retry occurred.
+by the alias-collision abort. After PR #129 review/merge, the later conditional
+production authority was consumed by the second fail-closed invocation. No
+automatic retry occurred after either event.
 
-After the error and exact rollback verification were reported, Product
-Authority authorized only:
+After the routine inventory mismatch and intact-production verification were
+reported, Product Authority authorized:
 
 ```text
-create one narrow corrective Draft PR from main 3c9daf6c...
-change the pg_roles alias collision in forward and rollback
+create one narrow corrective Draft PR from live main 69f4cfa1...
+refresh only the four complete non-system routine inventory digest literals
+  from b1f0919d... to current live c299bf08...
 update directly-related evidence/SFJM
 perform read-only validation
 prepare exact-head specialist review material
+obtain Backend/Data exact-head review, then independent AppSec exact-head review
+after those reviews and resolution of the separate GitHub lifecycle
+  prerequisites, apply the authenticated final migration exactly once
 ```
 
-This authority does not include Ready, merge, another Supabase application,
-runtime/Auth call, smoke, rollback or Security Go.
+The one production retry is not exercisable during this Draft/review action.
+Ready and merge remain separate unresolved lifecycle gates. Edge deploy,
+runtime/Auth smoke, rollback and Security Go are not included.
 
 ## 9. Semantic next action
 
 ```text
-Publish the alias-only forward/rollback correction in one Draft PR from live
-main, resolve its exact head, read all changed material through EOF, obtain
-Backend/Data exact-head review and then independent AppSec exact-head review.
-Stop in Draft before Ready.
+Publish the four-literal forward/rollback routine-anchor refresh in one Draft
+PR from live main, resolve its exact head, read all changed material through
+EOF, obtain Backend/Data exact-head review and then independent AppSec
+exact-head review. Stop in Draft before Ready.
 ```
 
-No T1/T2 review is reopened. The later production retry, if ever authorized,
-must use the exact merged/reviewed SQL and remains a separate gate.
+No T1/T2 review is reopened. The one later production retry is already bounded
+by Product Authority but may use only the authenticated final reviewed/merged
+SQL after the separate GitHub lifecycle gates are resolved.
 
 ## 10. Handoff prohibitions
 
@@ -368,8 +421,8 @@ Do not:
 
 ```text
 create a workaround that weakens T1
-create another duplicate PR to relitigate B1-B4; the single post-merge v5 audit
-  PR is justified only by the new runtime finding
+create another duplicate PR to relitigate B1-B4; this one post-PR129 anchor
+  refresh is justified only by the newly observed live routine digest
 apply SQL merely to see whether it works
 use production as an offensive laboratory
 normalize real users/data as part of T3A
