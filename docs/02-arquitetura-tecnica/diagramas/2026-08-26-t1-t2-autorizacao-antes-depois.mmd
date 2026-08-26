@@ -1,0 +1,46 @@
+flowchart LR
+  subgraph BEFORE[ANTES — risco maior]
+    U1[Usuário no painel] --> A1[src/App.jsx]
+    A1 --> P1[PATCH direto em public.corretores]
+    P1 --> R1[RLS / policy ampla]
+    R1 --> B1[(Supabase/Postgres)]
+  end
+
+  subgraph AFTER[AGORA — T1/T2]
+    U2[Usuário no painel] --> A2[src/App.jsx]
+    A2 --> RPC[RPC atualizar_status_corretor]
+    RPC --> AUTH["auth.uid() + perfil ativo"]
+    AUTH --> ROLE{Autoridade}
+
+    ROLE -->|Root/Admin| ADM[Validar tenant/empresa]
+    ROLE -->|Gestor| GST[Validar gestor + time ativo + corretor comum]
+    ROLE -->|Sem permissão| DENY[Negar alteração]
+
+    ADM --> OP1[Permitir ativo / apto]
+    GST --> OP2[Permitir somente apto_para_receber]
+    GST --> DENY2[Negar ativo e alvo fora do próprio time]
+
+    OP1 --> GUARD[Triggers / guards de autoridade]
+    OP2 --> GUARD
+    GUARD --> UPD[UPDATE condicionado e revalidado]
+    UPD --> B2[(Supabase/Postgres)]
+  end
+
+  subgraph HARDENING[Controles adicionados]
+    H1[Root estrito via public.admins]
+    H2[Proteção de role / empresa_id / time_id / user_id]
+    H3[Locks FOR SHARE + recheck]
+    H4[Grants de UPDATE reduzidos]
+    H5[Rollback fail-closed]
+  end
+
+  AFTER -. reforçado por .-> HARDENING
+
+  subgraph NEXT[Próximos passos]
+    N1[T3/T4 — harden criar-usuario e reset_password]
+    N2[Remover PATCH direto de must_change_password]
+    N3[PR-03 — revogar direct UPDATE residual]
+    N4[Smoke funcional + AppSec final]
+  end
+
+  AFTER --> NEXT
