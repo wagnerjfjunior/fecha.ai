@@ -887,7 +887,7 @@ BEGIN
      OR v_policy_helper_md5 IS DISTINCT FROM '00084c2cbf8512632939f1bfaaf2ccc6'
      OR v_times_relhasrules IS DISTINCT FROM false
      OR v_rewrite_count IS DISTINCT FROM 0
-     OR v_index_md5 IS DISTINCT FROM '5e9a69c74d42a66bccc775fbf251d504'
+     OR v_index_md5 IS DISTINCT FROM 'db8482cbabfdd2666bcef8a7ad00d401'
      OR v_constraint_md5 IS DISTINCT FROM 'c511b011399f721ea4d5fca492bc3112'
      OR v_trigger_md5 IS DISTINCT FROM 'e9632ab165c31ec53103730b12b971d1'
      OR v_trigger_dependency_md5 IS DISTINCT FROM '51885dbc71117560e94e452ac67a3dce'
