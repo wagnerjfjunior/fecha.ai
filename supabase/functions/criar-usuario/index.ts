@@ -509,6 +509,10 @@ Deno.serve(async (req: Request) => {
       email,
       password,
       email_confirm: true,
+      app_metadata: {
+        fechai_creation_flow: 'g1e0a2_1',
+        fechai_creation_audit_id: logId,
+      },
     })
     if (authError || !authData.user?.id) {
       await admin.from('audit_logs')
@@ -518,6 +522,59 @@ Deno.serve(async (req: Request) => {
         })
         .eq('id', logId)
       return json({ error: 'Não foi possível concluir a criação do usuário.' }, 400, cors)
+    }
+
+    // Establish a durable recovery anchor BEFORE profile creation. At least one
+    // durable channel must bind the Auth user_id to this creation attempt:
+    // (a) admin-only Auth app_metadata carrying the audit correlation id; or
+    // (b) the already-created audit_logs row updated with target_user_id.
+    //
+    // This guarantees that a later profile failure + unresolved Auth deletion
+    // cannot enter the compensation path without a previously established
+    // recoverable correlation anchor.
+    const authMetadataAnchorConfirmed =
+      authData.user.app_metadata?.fechai_creation_flow === 'g1e0a2_1' &&
+      authData.user.app_metadata?.fechai_creation_audit_id === logId
+
+    const pendingAnchorPayload = {
+      status: 'auth_created_profile_pending',
+      stage: 'profile_pending',
+      recovery_user_id: authData.user.id,
+      recovery_required_if_stale: true,
+    }
+
+    const { error: pendingAnchorError } = await admin.from('audit_logs')
+      .update({
+        target_user_id: authData.user.id,
+        payload: pendingAnchorPayload,
+        depois: pendingAnchorPayload,
+      })
+      .eq('id', logId)
+
+    const databaseAnchorConfirmed = !pendingAnchorError
+    const durableRecoveryAnchorConfirmed =
+      authMetadataAnchorConfirmed || databaseAnchorConfirmed
+
+    if (!durableRecoveryAnchorConfirmed) {
+      let deleteConfirmed = false
+      try {
+        const deletion = await admin.auth.admin.deleteUser(authData.user.id)
+        deleteConfirmed = !deletion.error
+      } catch {
+        deleteConfirmed = false
+      }
+
+      if (!deleteConfirmed) {
+        // The original audit attempt row was proven durable before Auth create
+        // and still carries target_email + correlation id. We do not proceed to
+        // profile creation without a user_id-bound durable anchor.
+        console.error('A2_1_DURABLE_ANCHOR_UNRESOLVED', {
+          audit_id: logId,
+          user_id: authData.user.id,
+        })
+      }
+
+      return json({ error: 'Não foi possível concluir a criação do usuário.' }, 500, cors)
     }
 
     // Final organizational authority is caller-bound. This client carries the
@@ -610,9 +667,14 @@ Deno.serve(async (req: Request) => {
         })
 
         if (fallbackAuditError) {
-          console.error('AUTH_COMPENSATION_AUDIT_UNRESOLVED', {
+          // The compensation status update itself could not be persisted, but
+          // profile creation was allowed only after durableRecoveryAnchorConfirmed.
+          // Recovery can still correlate the Auth identity through app_metadata
+          // and/or the pre-bound audit row.
+          console.error('AUTH_COMPENSATION_STATUS_WRITE_FAILED', {
             audit_id: logId,
             user_id: authData.user.id,
+            durable_anchor_preestablished: true,
           })
         }
       }
