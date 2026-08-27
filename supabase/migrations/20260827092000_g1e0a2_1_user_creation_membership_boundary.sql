@@ -95,7 +95,8 @@ BEGIN
     FROM public.times t
     WHERE t.id = NEW.time_id
       AND t.empresa_id = NEW.empresa_id
-      AND t.ativo IS TRUE;
+      AND t.ativo IS TRUE
+    FOR SHARE;
 
     IF NOT FOUND THEN
       RAISE EXCEPTION 'A2_1_TARGET_NOT_AVAILABLE';
@@ -130,6 +131,8 @@ BEGIN
   RETURN NEW;
 END
 $function$;
+
+ALTER FUNCTION public.a2_1_assert_corretor_creation_invariants() OWNER TO postgres;
 
 REVOKE ALL ON FUNCTION public.a2_1_assert_corretor_creation_invariants() FROM PUBLIC;
 REVOKE ALL ON FUNCTION public.a2_1_assert_corretor_creation_invariants() FROM anon;
@@ -274,7 +277,7 @@ BEGIN
 
     IF NOT v_is_root
        AND v_actor_role = 'gestor'
-       AND v_time_gestor_id <> v_actor_id THEN
+       AND v_time_gestor_id IS DISTINCT FROM v_actor_id THEN
       RAISE EXCEPTION 'A2_1_TARGET_NOT_AVAILABLE';
     END IF;
   ELSE
@@ -317,6 +320,8 @@ BEGIN
 END
 $function$;
 
+ALTER FUNCTION public.a2_1_create_corretor_profile(uuid,text,text,text,uuid,uuid) OWNER TO postgres;
+
 REVOKE ALL ON FUNCTION public.a2_1_create_corretor_profile(uuid,text,text,text,uuid,uuid) FROM PUBLIC;
 REVOKE ALL ON FUNCTION public.a2_1_create_corretor_profile(uuid,text,text,text,uuid,uuid) FROM anon;
 REVOKE ALL ON FUNCTION public.a2_1_create_corretor_profile(uuid,text,text,text,uuid,uuid) FROM service_role;
@@ -346,6 +351,32 @@ BEGIN
       AND NOT tgisinternal
   ) THEN
     RAISE EXCEPTION 'A2.1 postflight: invariant trigger missing or disabled';
+  END IF;
+
+  IF NOT EXISTS (
+    SELECT 1
+    FROM pg_proc p
+    JOIN pg_namespace n ON n.oid = p.pronamespace
+    WHERE n.nspname='public'
+      AND p.proname='a2_1_create_corretor_profile'
+      AND pg_get_userbyid(p.proowner)='postgres'
+      AND p.prosecdef IS TRUE
+      AND coalesce(p.proconfig, ARRAY[]::text[]) @> ARRAY['search_path=pg_catalog, public']::text[]
+  ) THEN
+    RAISE EXCEPTION 'A2.1 postflight: RPC owner/security/search_path mismatch';
+  END IF;
+
+  IF NOT EXISTS (
+    SELECT 1
+    FROM pg_proc p
+    JOIN pg_namespace n ON n.oid = p.pronamespace
+    WHERE n.nspname='public'
+      AND p.proname='a2_1_assert_corretor_creation_invariants'
+      AND pg_get_userbyid(p.proowner)='postgres'
+      AND p.prosecdef IS TRUE
+      AND coalesce(p.proconfig, ARRAY[]::text[]) @> ARRAY['search_path=pg_catalog, public']::text[]
+  ) THEN
+    RAISE EXCEPTION 'A2.1 postflight: invariant owner/security/search_path mismatch';
   END IF;
 
   IF has_function_privilege('anon', 'public.a2_1_create_corretor_profile(uuid,text,text,text,uuid,uuid)', 'EXECUTE')
