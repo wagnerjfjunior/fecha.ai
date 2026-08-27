@@ -132,13 +132,13 @@ Deno.serve(async (req: Request) => {
     // Estes valores NÃO são a authority boundary do reset_password T3A.
     const { data: callerProfile } = await admin
       .from('corretores')
-      .select('id, empresa_id, is_admin_local, is_gestor, nome, email')
+      .select('id, empresa_id, role, ativo, is_admin_local, is_gestor, nome, email')
       .eq('user_id', caller.id)
       .single()
 
     const { data: adminData } = await admin
       .from('admins')
-      .select('id, nome, email')
+      .select('id, nome, email, ativo, role')
       .eq('user_id', caller.id)
       .single()
 
@@ -351,7 +351,7 @@ Deno.serve(async (req: Request) => {
     // Organizational authority is finalized by a caller-JWT RPC. service_role
     // remains operational only for Auth administration and server-authored audit.
     // ═══════════════════════════════════════════════════════════════════════
-    const isRoot = !!adminData
+    const isRoot = !!adminData && adminData.ativo === true && adminData.role === 'admin_global'
     const isAdminLocal = callerProfile?.is_admin_local === true
     const isGestor = callerProfile?.is_gestor === true
 
@@ -367,7 +367,10 @@ Deno.serve(async (req: Request) => {
         return json({ error: 'Não foi possível validar sua autorização.' }, 403, cors)
       }
 
-      const callerRole = (callerProfile as { role?: string }).role
+      const callerRole = callerProfile.role
+      if (callerProfile.ativo !== true) {
+        return json({ error: 'Não foi possível validar sua autorização.' }, 403, cors)
+      }
       if (
         (isAdminLocal && callerRole !== 'admin_local') ||
         (!isAdminLocal && isGestor && callerRole !== 'gestor')
