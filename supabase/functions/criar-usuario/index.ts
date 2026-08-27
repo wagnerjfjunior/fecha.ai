@@ -577,6 +577,56 @@ Deno.serve(async (req: Request) => {
       return json({ error: 'Não foi possível concluir a criação do usuário.' }, 500, cors)
     }
 
+    // Bind this exact server-authored creation attempt to a short-lived,
+    // one-time database proof. Only service_role may mint it. The caller-JWT
+    // RPC must consume the proof and still performs all actor/tenant/role/Time
+    // authorization from auth.uid() + locked DB state.
+    let creationProofId: string | null = null
+    let creationProofError: unknown = null
+
+    try {
+      const result = await admin.rpc(
+        'a2_1_issue_user_creation_edge_proof',
+        {
+          p_actor_user_id: caller.id,
+          p_target_user_id: authData.user.id,
+          p_audit_id: logId,
+        }
+      )
+      creationProofId = normalizeUuid(result.data)
+      creationProofError = result.error
+    } catch (caught: unknown) {
+      creationProofError = caught
+    }
+
+    if (creationProofError || !creationProofId) {
+      let compensationConfirmed = false
+      try {
+        const deletion = await admin.auth.admin.deleteUser(authData.user.id)
+        compensationConfirmed = !deletion.error
+      } catch {
+        compensationConfirmed = false
+      }
+
+      const proofFailurePayload = {
+        status: compensationConfirmed
+          ? 'edge_proof_unavailable_compensation_confirmed'
+          : 'edge_proof_unavailable_auth_compensation_unresolved',
+        stage: 'creation_edge_proof',
+        recovery_user_id: compensationConfirmed ? null : authData.user.id,
+      }
+
+      await admin.from('audit_logs')
+        .update({
+          target_user_id: authData.user.id,
+          payload: proofFailurePayload,
+          depois: proofFailurePayload,
+        })
+        .eq('id', logId)
+
+      return json({ error: 'Não foi possível concluir a criação do usuário.' }, 500, cors)
+    }
+
     // Final organizational authority is caller-bound. This client carries the
     // real caller JWT so auth.uid() inside the SECURITY DEFINER RPC is decisive.
     const callerDb = createClient(
@@ -601,6 +651,8 @@ Deno.serve(async (req: Request) => {
           p_target_role: targetRole,
           p_time_id: timeId,
           p_empresa_id_intent: empresaIdTarget,
+          p_edge_proof_id: creationProofId,
+          p_audit_id: logId,
         }
       )
       profileResult = result.data
@@ -690,13 +742,66 @@ Deno.serve(async (req: Request) => {
       return json({ error: 'Não foi possível concluir a criação do usuário.' }, 500, cors)
     }
 
-    await admin.from('audit_logs')
+    const terminalSuccessPayload = {
+      status: 'success',
+      stage: 'profile_create',
+      user_id: authData.user.id,
+      recovery_required_if_stale: false,
+    }
+
+    const { data: terminalAuditRow, error: terminalAuditError } = await admin
+      .from('audit_logs')
       .update({
         target_user_id: authData.user.id,
-        payload: { status: 'success', user_id: authData.user.id },
-        depois: { status: 'success', user_id: authData.user.id },
+        payload: terminalSuccessPayload,
+        depois: terminalSuccessPayload,
       })
       .eq('id', logId)
+      .select('id')
+      .maybeSingle()
+
+    let terminalAuditConfirmed =
+      !terminalAuditError && terminalAuditRow?.id === logId
+
+    if (!terminalAuditConfirmed) {
+      const fallbackAuditId = `audit-${Date.now()}-${Math.random().toString(36).slice(2)}`
+      const { error: fallbackAuditError } = await admin.from('audit_logs').insert({
+        id: fallbackAuditId,
+        empresa_id: callerProfile?.empresa_id ?? null,
+        action: 'user_creation_success_audit_recovery',
+        actor_id: caller.id,
+        actor_email: caller.email,
+        target_user_id: authData.user.id,
+        target_email: email.trim(),
+        ip_address: clientIp,
+        payload: {
+          ...terminalSuccessPayload,
+          original_audit_id: logId,
+          terminal_audit_recovery: true,
+        },
+        ator_user_id: caller.id,
+        ator_corretor_id: callerProfile?.id ?? null,
+        acao: 'user_creation_success_audit_recovery',
+        entidade: 'auth.users',
+        entidade_id: authData.user.id,
+        depois: {
+          ...terminalSuccessPayload,
+          original_audit_id: logId,
+          terminal_audit_recovery: true,
+        },
+        ip: rawClientIp,
+      })
+
+      terminalAuditConfirmed = !fallbackAuditError
+    }
+
+    if (!terminalAuditConfirmed) {
+      console.error('A2_1_TERMINAL_AUDIT_UNRESOLVED', {
+        audit_id: logId,
+        user_id: authData.user.id,
+      })
+      return json({ error: 'Não foi possível concluir a criação do usuário.' }, 500, cors)
+    }
 
     return json({ ok: true, user_id: authData.user.id }, 200, cors)
 
