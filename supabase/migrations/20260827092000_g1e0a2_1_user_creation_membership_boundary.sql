@@ -350,8 +350,15 @@ BEGIN
 
   IF has_function_privilege('anon', 'public.a2_1_create_corretor_profile(uuid,text,text,text,uuid,uuid)', 'EXECUTE')
      OR has_function_privilege('service_role', 'public.a2_1_create_corretor_profile(uuid,text,text,text,uuid,uuid)', 'EXECUTE')
-     OR has_function_privilege('public', 'public.a2_1_create_corretor_profile(uuid,text,text,text,uuid,uuid)', 'EXECUTE')
-     OR NOT has_function_privilege('authenticated', 'public.a2_1_create_corretor_profile(uuid,text,text,text,uuid,uuid)', 'EXECUTE') THEN
+     OR NOT has_function_privilege('authenticated', 'public.a2_1_create_corretor_profile(uuid,text,text,text,uuid,uuid)', 'EXECUTE')
+     OR EXISTS (
+       SELECT 1
+       FROM information_schema.routine_privileges
+       WHERE specific_schema='public'
+         AND routine_name='a2_1_create_corretor_profile'
+         AND grantee='PUBLIC'
+         AND privilege_type='EXECUTE'
+     ) THEN
     RAISE EXCEPTION 'A2.1 postflight: RPC ACL mismatch';
   END IF;
 
