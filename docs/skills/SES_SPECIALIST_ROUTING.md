@@ -1,15 +1,17 @@
 # FECH.AI — SES Specialist Routing
 
-**Status:** `CANONICAL_V0_1 / SES_RUNTIME_GATEWAY_ROUTING`
+**Status:** `CANONICAL_V0_2 / SES_SPECIALIST_ROUTING / CURRENT_MANUAL_HANDOFF_COMPATIBLE`
 **SES repository:** `wagnerjfjunior/Specialist-Engineering-System`
 
 ## Purpose
 
 Define which FECH.AI project roles are currently routed through certified SES specialists. This file does not copy SES specialist instructions and does not replace FECH.AI project truth, authority, continuity or local rules.
 
-For every mapped role, resolve SES `main` live before material work and use the SES Project Registry, FECH.AI Project Adapter, Runtime Enforcement Gateway contract, Archetype Registry and current certification ledger.
+For every mapped role, resolve SES `main` live before material work and use the SES Project Registry, FECH.AI Project Adapter, Archetype Registry, current certification ledger and the current SES specialist-handoff contract when consultation transport is material. Do not infer current Gateway/Router operational acceptance from historical evidence.
 
 ## Current adopted roles
+
+The current SES adoption matrix and FECH.AI Project Adapter record these ten adopted roles:
 
 ```text
 documentation_audit
@@ -31,7 +33,29 @@ backend_data
 application_security
 → application-security-assurance-specialist
 → local rules: resolve FECH.AI security/project rules through bootstrap; no dedicated project-local override is declared here
+
+seo_strategy
+→ seo-strategy-governance-specialist
+→ local rules: resolve FECH.AI search/product/commercial rules through bootstrap and current project sources
+
+technical_seo
+→ technical-seo-specialist
+→ local rules: resolve FECH.AI technical/search implementation truth through bootstrap and current project sources
+
+content_semantic_seo
+→ content-semantic-seo-specialist
+→ local rules: resolve FECH.AI content, brand, product, commercial, legal and factual truth through bootstrap and current project sources
+
+seo_analytics_growth
+→ seo-analytics-growth-specialist
+→ local rules: resolve FECH.AI KPIs, conversion definitions, analytics properties, consent/privacy/legal rules and business-value truth through bootstrap and current project sources
+
+paid_search_sem
+→ paid-search-sem-specialist
+→ local rules: resolve FECH.AI ad accounts, budgets, billing, conversion definitions, tracking/consent/privacy/legal rules, campaign targets and spend/publication authority through bootstrap and current project sources
 ```
+
+`backend_data` remains adopted in FECH.AI. Local SEO and Authority & Digital PR are not added here while they remain SES TARGET / certification pending and not yet eligible for explicit adoption.
 
 ## Routing precedence
 
@@ -44,7 +68,7 @@ CURRENT ROLE ROUTING
 
 Historical evidence remains historical; do not rewrite old records.
 
-For FECH.AI specialist domains not mapped above, continue using `docs/skills/fechai-gpt-registry.md` and existing project-local routing until a certified SES archetype is explicitly adopted.
+For FECH.AI specialist domains not mapped above, continue using `docs/skills/fechai-gpt-registry.md` and existing project-local routing until a certified SES archetype is explicitly adopted. The legacy registry is not the routing authority for any role listed above.
 
 Do not infer a replacement for GPT4/GPT5 or any other local specialist merely because a related SES archetype may exist later.
 
@@ -59,7 +83,7 @@ explicit project = FECH.AI
 → exact ROLE -> ARCHETYPE_ID
 → SES archetypes/REGISTRY.md
 → current certification eligibility
-→ ROUTABLE / fail closed
+→ resolve current SES handoff/transport semantics when consultation is required
 → resolve FECH.AI main live
 → FECH.AI bootstrap
 → mapped local rules when applicable
@@ -68,7 +92,7 @@ explicit project = FECH.AI
 → specialist work
 ```
 
-`ROUTABLE` is not execution proof and does not grant mutation authority.
+`SPECIALIST_AVAILABLE`, `ADOPTED` and a prepared handoff are not execution proof and do not grant mutation authority.
 
 ## Fail closed
 
@@ -80,7 +104,7 @@ SPECIALIST_ROLE_NOT_ADOPTED
 ARCHETYPE_NOT_RESOLVED
 ARCHETYPE_NOT_ACTIVE
 SPECIALIST_NOT_CERTIFIED
-RUNTIME_FINGERPRINT_STALE_OR_UNSUPPORTED
+SPECIALIST_RUNTIME_OR_TRANSPORT_UNAVAILABLE
 PROJECT_BOOTSTRAP_UNRESOLVED
 ```
 

@@ -8,7 +8,7 @@
 
 SFJM is the transversal continuity layer for FECH.AI. It preserves durable operational meaning between conversations, specialists, audits and execution cycles without copying volatile GitHub lifecycle into multiple Markdown authorities.
 
-SFJM is not a product feature, security boundary, business authority or substitute for GitHub, Supabase, Vercel, runtime evidence, the B0 governance baseline or specialist validation.
+SFJM is not a product feature, security boundary, business authority or substitute for GitHub, Supabase, Vercel, runtime evidence, the B0 governance baseline, SES specialist routing or specialist validation.
 
 ## 2. Core state separation
 
@@ -96,7 +96,7 @@ Before sensitive FECH.AI work:
 
 1. resolve `main` live;
 2. read `docs/bootstrap/INDEX.md`;
-3. resolve the canonical specialist skill through `docs/skills/fechai-gpt-registry.md` when a specialist is involved;
+3. when a specialist is involved, read `docs/skills/SES_SPECIALIST_ROUTING.md`; for a mapped SES role resolve SES live + FECH.AI Project Adapter + exact archetype/certification, and use `docs/skills/fechai-gpt-registry.md` only for domains not mapped to SES or for explicit legacy continuity;
 4. read the common Modus Operandi;
 5. read governance when applicable;
 6. read this index;

@@ -1,6 +1,6 @@
 # FECH.AI — Bootstrap Index
 
-**Status:** `BOOTSTRAP_INDEX_V3 / SES_RUNTIME_GATEWAY_ROUTING / CANONICAL_SKILL_RESOLUTION`  
+**Status:** `BOOTSTRAP_INDEX_V4 / SES_SPECIALIST_ROUTING / CANONICAL_SKILL_RESOLUTION`  
 **Atualizado em:** `2026-08-20`  
 **Repositório:** `wagnerjfjunior/fecha.ai`
 
@@ -68,7 +68,7 @@ Regras:
 - backup de Instructions é somente recuperação, não skill e não contexto operacional;
 - não buscar nem ler backups durante o bootstrap normal;
 - entrada apontando para caminho inexistente é `BLOCKING`;
-- `ROUTABLE != EXECUTED` e `PROJECT_CONTEXT_READY != AUTHORIZED_TO_MUTATE`.
+- `SPECIALIST_AVAILABLE != EXECUTED`, `ADOPTED != EXECUTED` e `PROJECT_CONTEXT_READY != AUTHORIZED_TO_MUTATE`.
 
 Quando SES routing, Builder, skill, registry ou handoff divergirem:
 
@@ -200,7 +200,7 @@ SFJM não substitui bootstrap, routing SES, registry ou evidência live.
 1. Resolver FECH.AI main live.
 2. Ler este INDEX.
 3. Ler SES_SPECIALIST_ROUTING.md.
-4. Para role SES adotado: resolver SES main + Project Adapter + archetype + certificação + regra local aplicável.
+4. Para role SES adotado: resolver SES main + current adoption pointer quando material + Project Adapter + archetype + certificação + current handoff/transport semantics quando aplicável + regra local aplicável.
 5. Para domínio não adotado: resolver a skill project-local pelo registry FECH.AI.
 6. Ler os documentos comuns de bootstrap, incluindo o Modus Operandi.
 7. Ler governança quando entrega/aceite estiverem envolvidos.
