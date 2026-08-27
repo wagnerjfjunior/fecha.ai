@@ -21,8 +21,10 @@ BEGIN
       'A2.1 rollback blocked: safe alternate boundary or fail-closed creation not confirmed';
   END IF;
 
-  IF to_regprocedure('public.a2_1_create_corretor_profile(uuid,text,text,text,uuid,uuid)') IS NULL
-     OR to_regprocedure('public.a2_1_assert_corretor_creation_invariants()') IS NULL THEN
+  IF to_regprocedure('public.a2_1_create_corretor_profile(uuid,text,text,text,uuid,uuid,uuid,text)') IS NULL
+     OR to_regprocedure('public.a2_1_assert_corretor_creation_invariants()') IS NULL
+     OR to_regprocedure('public.a2_1_issue_user_creation_edge_proof(uuid,uuid,text)') IS NULL
+     OR to_regclass('public.a2_1_user_creation_edge_proofs') IS NULL THEN
     RAISE EXCEPTION 'A2.1 rollback preflight: expected forward objects missing';
   END IF;
 
@@ -76,14 +78,18 @@ $gate$;
 
 DROP TRIGGER trg_a2_1_assert_corretor_creation_invariants ON public.corretores;
 DROP FUNCTION public.a2_1_assert_corretor_creation_invariants();
-DROP FUNCTION public.a2_1_create_corretor_profile(uuid,text,text,text,uuid,uuid);
+DROP FUNCTION public.a2_1_create_corretor_profile(uuid,text,text,text,uuid,uuid,uuid,text);
+DROP FUNCTION public.a2_1_issue_user_creation_edge_proof(uuid,uuid,text);
+DROP TABLE public.a2_1_user_creation_edge_proofs;
 
 DO $postflight$
 DECLARE
   v_md5 text;
 BEGIN
-  IF to_regprocedure('public.a2_1_create_corretor_profile(uuid,text,text,text,uuid,uuid)') IS NOT NULL
-     OR to_regprocedure('public.a2_1_assert_corretor_creation_invariants()') IS NOT NULL THEN
+  IF to_regprocedure('public.a2_1_create_corretor_profile(uuid,text,text,text,uuid,uuid,uuid,text)') IS NOT NULL
+     OR to_regprocedure('public.a2_1_assert_corretor_creation_invariants()') IS NOT NULL
+     OR to_regprocedure('public.a2_1_issue_user_creation_edge_proof(uuid,uuid,text)') IS NOT NULL
+     OR to_regclass('public.a2_1_user_creation_edge_proofs') IS NOT NULL THEN
     RAISE EXCEPTION 'A2.1 rollback postflight: target functions still exist';
   END IF;
 
