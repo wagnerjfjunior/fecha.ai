@@ -568,26 +568,60 @@ Deno.serve(async (req: Request) => {
         ? 'compensation_confirmed'
         : 'auth_compensation_unresolved'
 
-      await admin.from('audit_logs')
+      const compensationAuditPayload = {
+        status: compensationStatus,
+        stage: 'profile_create',
+        recovery_user_id: compensationConfirmed ? null : authData.user.id,
+      }
+
+      const { error: compensationAuditError } = await admin.from('audit_logs')
         .update({
           target_user_id: authData.user.id,
-          payload: {
-            status: compensationStatus,
-            stage: 'profile_create',
-            recovery_user_id: compensationConfirmed ? null : authData.user.id,
-          },
-          depois: {
-            status: compensationStatus,
-            stage: 'profile_create',
-            recovery_user_id: compensationConfirmed ? null : authData.user.id,
-          },
+          payload: compensationAuditPayload,
+          depois: compensationAuditPayload,
         })
         .eq('id', logId)
 
-      if (!compensationConfirmed && compensationError) {
+      if (compensationAuditError) {
+        const fallbackAuditId = `audit-${Date.now()}-${Math.random().toString(36).slice(2)}`
+        const { error: fallbackAuditError } = await admin.from('audit_logs').insert({
+          id: fallbackAuditId,
+          empresa_id: callerProfile?.empresa_id ?? null,
+          action: 'user_creation_compensation_unresolved',
+          actor_id: caller.id,
+          actor_email: caller.email,
+          target_user_id: authData.user.id,
+          target_email: email.trim(),
+          ip_address: clientIp,
+          payload: {
+            ...compensationAuditPayload,
+            audit_anchor_recovery: true,
+          },
+          ator_user_id: caller.id,
+          ator_corretor_id: callerProfile?.id ?? null,
+          acao: 'user_creation_compensation_unresolved',
+          entidade: 'auth.users',
+          entidade_id: authData.user.id,
+          depois: {
+            ...compensationAuditPayload,
+            audit_anchor_recovery: true,
+          },
+          ip: rawClientIp,
+        })
+
+        if (fallbackAuditError) {
+          console.error('AUTH_COMPENSATION_AUDIT_UNRESOLVED', {
+            audit_id: logId,
+            user_id: authData.user.id,
+          })
+        }
+      }
+
+      if (!compensationConfirmed) {
         console.error('AUTH_COMPENSATION_UNRESOLVED', {
           audit_id: logId,
           user_id: authData.user.id,
+          compensation_error: compensationError ? 'present' : 'ambiguous',
         })
       }
 
