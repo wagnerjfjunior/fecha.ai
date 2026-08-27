@@ -508,10 +508,17 @@ BEGIN
     RAISE EXCEPTION 'A2.1 postflight: proof issuer owner/security/search_path mismatch';
   END IF;
 
-  IF has_function_privilege('PUBLIC', 'public.a2_1_issue_user_creation_edge_proof(uuid,uuid,text)', 'EXECUTE')
-     OR has_function_privilege('anon', 'public.a2_1_issue_user_creation_edge_proof(uuid,uuid,text)', 'EXECUTE')
+  IF has_function_privilege('anon', 'public.a2_1_issue_user_creation_edge_proof(uuid,uuid,text)', 'EXECUTE')
      OR has_function_privilege('authenticated', 'public.a2_1_issue_user_creation_edge_proof(uuid,uuid,text)', 'EXECUTE')
-     OR NOT has_function_privilege('service_role', 'public.a2_1_issue_user_creation_edge_proof(uuid,uuid,text)', 'EXECUTE') THEN
+     OR NOT has_function_privilege('service_role', 'public.a2_1_issue_user_creation_edge_proof(uuid,uuid,text)', 'EXECUTE')
+     OR EXISTS (
+       SELECT 1
+       FROM information_schema.routine_privileges
+       WHERE specific_schema='public'
+         AND routine_name='a2_1_issue_user_creation_edge_proof'
+         AND grantee='PUBLIC'
+         AND privilege_type='EXECUTE'
+     ) THEN
     RAISE EXCEPTION 'A2.1 postflight: proof issuer ACL mismatch';
   END IF;
 
