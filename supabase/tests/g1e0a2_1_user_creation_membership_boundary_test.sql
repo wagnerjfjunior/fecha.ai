@@ -8,13 +8,15 @@ BEGIN;
 
 DO $catalog$
 DECLARE
-  v_rpc oid := to_regprocedure('public.a2_1_create_corretor_profile(uuid,text,text,text,uuid,uuid)');
+  v_rpc oid := to_regprocedure('public.a2_1_create_corretor_profile(uuid,text,text,text,uuid,uuid,uuid,text)');
   v_guard oid := to_regprocedure('public.a2_1_assert_corretor_creation_invariants()');
+  v_issue oid := to_regprocedure('public.a2_1_issue_user_creation_edge_proof(uuid,uuid,text)');
+  v_proof_table regclass := to_regclass('public.a2_1_user_creation_edge_proofs');
   v_security_definer boolean;
   v_config text[];
 BEGIN
-  IF v_rpc IS NULL OR v_guard IS NULL THEN
-    RAISE EXCEPTION 'A2.1 test: expected functions missing';
+  IF v_rpc IS NULL OR v_guard IS NULL OR v_issue IS NULL OR v_proof_table IS NULL THEN
+    RAISE EXCEPTION 'A2.1 test: expected functions/proof table missing';
   END IF;
 
   SELECT prosecdef, proconfig INTO v_security_definer, v_config
@@ -64,6 +66,49 @@ BEGIN
       AND privilege_type='EXECUTE'
   ) THEN
     RAISE EXCEPTION 'A2.1 test: PUBLIC execute is open';
+  END IF;
+
+  IF (SELECT pg_get_userbyid(proowner) FROM pg_proc WHERE oid=v_issue) IS DISTINCT FROM 'postgres'
+     OR NOT (SELECT prosecdef FROM pg_proc WHERE oid=v_issue)
+     OR NOT (
+       'search_path=pg_catalog' = ANY(
+         coalesce((SELECT proconfig FROM pg_proc WHERE oid=v_issue), ARRAY[]::text[])
+       )
+     ) THEN
+    RAISE EXCEPTION 'A2.1 test: proof issuer owner/security/search_path mismatch';
+  END IF;
+
+  IF has_function_privilege('anon', v_issue, 'EXECUTE')
+     OR has_function_privilege('authenticated', v_issue, 'EXECUTE')
+     OR NOT has_function_privilege('service_role', v_issue, 'EXECUTE')
+     OR EXISTS (
+       SELECT 1
+       FROM information_schema.routine_privileges
+       WHERE specific_schema='public'
+         AND routine_name='a2_1_issue_user_creation_edge_proof'
+         AND grantee='PUBLIC'
+         AND privilege_type='EXECUTE'
+     ) THEN
+    RAISE EXCEPTION 'A2.1 test: proof issuer ACL mismatch';
+  END IF;
+
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_class pc
+    WHERE pc.oid=v_proof_table
+      AND pg_get_userbyid(pc.relowner)='postgres'
+      AND pc.relrowsecurity IS TRUE
+      AND pc.relforcerowsecurity IS TRUE
+  ) THEN
+    RAISE EXCEPTION 'A2.1 test: proof table metadata mismatch';
+  END IF;
+
+  IF has_table_privilege('anon', v_proof_table, 'SELECT')
+     OR has_table_privilege('authenticated', v_proof_table, 'SELECT')
+     OR has_table_privilege('service_role', v_proof_table, 'SELECT')
+     OR has_table_privilege('anon', v_proof_table, 'INSERT')
+     OR has_table_privilege('authenticated', v_proof_table, 'INSERT')
+     OR has_table_privilege('service_role', v_proof_table, 'INSERT') THEN
+    RAISE EXCEPTION 'A2.1 test: proof table direct privilege mismatch';
   END IF;
 
   IF NOT EXISTS (
@@ -257,6 +302,8 @@ DECLARE
   v_foreign_time_id uuid;
   v_probe_user_id uuid;
   v_probe_email text;
+  v_proof_id uuid;
+  v_audit_id text;
   v_reached_insert boolean := false;
   v_denied boolean := false;
 BEGIN
@@ -281,9 +328,40 @@ BEGIN
 
   PERFORM set_config('request.jwt.claim.sub', v_actor_user_id::text, true);
 
-  -- Positive: own active Time passes authorization and reaches INSERT.
+  -- Direct PostgREST-style call without a server-issued proof must fail before
+  -- organizational authorization/INSERT.
+  v_denied := false;
+  BEGIN
+    PERFORM public.a2_1_create_corretor_profile(
+      gen_random_uuid(),
+      'A2.1 direct bypass probe',
+      'a2-1-direct-' || gen_random_uuid()::text || '@invalid.test',
+      'corretor',
+      v_own_time_id,
+      v_empresa_id,
+      gen_random_uuid(),
+      'a2-1-direct-no-proof'
+    );
+  EXCEPTION WHEN others THEN
+    IF SQLERRM = 'A2_1_EDGE_PROOF_REQUIRED' THEN
+      v_denied := true;
+    ELSE
+      RAISE;
+    END IF;
+  END;
+
+  IF NOT v_denied THEN
+    RAISE EXCEPTION 'A2.1 test: direct RPC without Edge proof was accepted';
+  END IF;
+
+  -- Positive: own active Time with a bound server proof passes authorization
+  -- and reaches INSERT.
   v_probe_user_id := gen_random_uuid();
   v_probe_email := 'a2-1-rpc-own-' || v_probe_user_id::text || '@invalid.test';
+  v_audit_id := 'a2-1-rpc-own-' || gen_random_uuid()::text;
+  v_proof_id := public.a2_1_issue_user_creation_edge_proof(
+    v_actor_user_id, v_probe_user_id, v_audit_id
+  );
   BEGIN
     PERFORM public.a2_1_create_corretor_profile(
       v_probe_user_id,
@@ -291,7 +369,9 @@ BEGIN
       v_probe_email,
       'corretor',
       v_own_time_id,
-      v_empresa_id
+      v_empresa_id,
+      v_proof_id,
+      v_audit_id
     );
   EXCEPTION
     WHEN foreign_key_violation THEN
@@ -320,14 +400,21 @@ BEGIN
   RETURNING id INTO v_other_time_id;
 
   v_denied := false;
+  v_probe_user_id := gen_random_uuid();
+  v_audit_id := 'a2-1-rpc-other-' || gen_random_uuid()::text;
+  v_proof_id := public.a2_1_issue_user_creation_edge_proof(
+    v_actor_user_id, v_probe_user_id, v_audit_id
+  );
   BEGIN
     PERFORM public.a2_1_create_corretor_profile(
-      gen_random_uuid(),
+      v_probe_user_id,
       'A2.1 RPC other Time probe',
       'a2-1-rpc-other-' || gen_random_uuid()::text || '@invalid.test',
       'corretor',
       v_other_time_id,
-      v_empresa_id
+      v_empresa_id,
+      v_proof_id,
+      v_audit_id
     );
   EXCEPTION WHEN others THEN
     IF SQLERRM = 'A2_1_TARGET_NOT_AVAILABLE' THEN
@@ -347,14 +434,21 @@ BEGIN
   RETURNING id INTO v_inactive_time_id;
 
   v_denied := false;
+  v_probe_user_id := gen_random_uuid();
+  v_audit_id := 'a2-1-rpc-inactive-' || gen_random_uuid()::text;
+  v_proof_id := public.a2_1_issue_user_creation_edge_proof(
+    v_actor_user_id, v_probe_user_id, v_audit_id
+  );
   BEGIN
     PERFORM public.a2_1_create_corretor_profile(
-      gen_random_uuid(),
+      v_probe_user_id,
       'A2.1 RPC inactive Time probe',
       'a2-1-rpc-inactive-' || gen_random_uuid()::text || '@invalid.test',
       'corretor',
       v_inactive_time_id,
-      v_empresa_id
+      v_empresa_id,
+      v_proof_id,
+      v_audit_id
     );
   EXCEPTION WHEN others THEN
     IF SQLERRM = 'A2_1_TARGET_NOT_AVAILABLE' THEN
@@ -393,15 +487,22 @@ BEGIN
     RETURNING id INTO v_foreign_time_id;
 
     v_denied := false;
-    BEGIN
-      PERFORM public.a2_1_create_corretor_profile(
-        gen_random_uuid(),
-        'A2.1 RPC foreign Time probe',
-        'a2-1-rpc-foreign-' || gen_random_uuid()::text || '@invalid.test',
-        'corretor',
-        v_foreign_time_id,
-        v_empresa_id
-      );
+  v_probe_user_id := gen_random_uuid();
+  v_audit_id := 'a2-1-rpc-foreign-' || gen_random_uuid()::text;
+  v_proof_id := public.a2_1_issue_user_creation_edge_proof(
+    v_actor_user_id, v_probe_user_id, v_audit_id
+  );
+  BEGIN
+    PERFORM public.a2_1_create_corretor_profile(
+      v_probe_user_id,
+      'A2.1 RPC foreign Time probe',
+      'a2-1-rpc-foreign-' || gen_random_uuid()::text || '@invalid.test',
+      'corretor',
+      v_foreign_time_id,
+      v_empresa_id,
+      v_proof_id,
+      v_audit_id
+    );
     EXCEPTION WHEN others THEN
       IF SQLERRM = 'A2_1_TARGET_NOT_AVAILABLE' THEN
         v_denied := true;
@@ -430,9 +531,18 @@ BEGIN
   END IF;
 
   IF position(
+    'DELETE FROM public.a2_1_user_creation_edge_proofs'
+    IN pg_get_functiondef(
+      'public.a2_1_create_corretor_profile(uuid,text,text,text,uuid,uuid,uuid,text)'::regprocedure
+    )
+  ) = 0 THEN
+    RAISE EXCEPTION 'A2.1 test: RPC does not consume Edge proof';
+  END IF;
+
+  IF position(
     'v_time_gestor_id IS DISTINCT FROM v_actor_id'
     IN pg_get_functiondef(
-      'public.a2_1_create_corretor_profile(uuid,text,text,text,uuid,uuid)'::regprocedure
+      'public.a2_1_create_corretor_profile(uuid,text,text,text,uuid,uuid,uuid,text)'::regprocedure
     )
   ) = 0 THEN
     RAISE EXCEPTION 'A2.1 test: Gestor ownership predicate is not null-safe';
@@ -485,8 +595,10 @@ ROLLBACK;
 -- 4. Gestor -> Gestor/Admin Local -> DENY.
 -- 5. Corretor actor -> DENY.
 -- 6. Contradictory role booleans / malformed UUID -> DENY before Auth create.
--- 7. Stale Edge prevalidation with Time/ownership change -> RPC DENY.
--- 8. DB/RPC reject + Auth delete success -> COMPENSATION_CONFIRMED.
--- 9. DB/RPC reject + Auth delete failed/ambiguous ->
+-- 7. Direct RPC without a valid actor+target+audit Edge proof -> DENY.
+-- 8. Stale Edge prevalidation with Time/ownership change -> RPC DENY.
+-- 9. DB/RPC reject + Auth delete success -> COMPENSATION_CONFIRMED.
+-- 10. DB/RPC reject + Auth delete failed/ambiguous ->
 --    AUTH_COMPENSATION_UNRESOLVED, durable audit, no success, no blind retry.
--- 10. Supported ROOT provisioning regression remains valid.
+-- 11. Terminal success audit update failure -> durable fallback before HTTP 200.
+-- 12. Supported ROOT provisioning regression remains valid.
