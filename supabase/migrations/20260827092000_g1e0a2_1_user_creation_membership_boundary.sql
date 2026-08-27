@@ -6,13 +6,19 @@
 
 BEGIN;
 
+-- Freeze creation/membership writers before inspecting legacy state and keep
+-- the checked state stable through trigger/proof/RPC installation.
+LOCK TABLE public.corretores, public.times IN SHARE ROW EXCLUSIVE MODE;
+
 DO $preflight$
 DECLARE
   v_bad integer;
   v_md5 text;
 BEGIN
-  IF to_regprocedure('public.a2_1_create_corretor_profile(uuid,text,text,text,uuid,uuid)') IS NOT NULL
-     OR to_regprocedure('public.a2_1_assert_corretor_creation_invariants()') IS NOT NULL THEN
+  IF to_regprocedure('public.a2_1_create_corretor_profile(uuid,text,text,text,uuid,uuid,uuid,text)') IS NOT NULL
+     OR to_regprocedure('public.a2_1_assert_corretor_creation_invariants()') IS NOT NULL
+     OR to_regprocedure('public.a2_1_issue_user_creation_edge_proof(uuid,uuid,text)') IS NOT NULL
+     OR to_regclass('public.a2_1_user_creation_edge_proofs') IS NOT NULL THEN
     RAISE EXCEPTION 'A2.1 preflight: target objects already exist';
   END IF;
 
@@ -144,13 +150,87 @@ AFTER INSERT ON public.corretores
 FOR EACH ROW
 EXECUTE FUNCTION public.a2_1_assert_corretor_creation_invariants();
 
+CREATE TABLE public.a2_1_user_creation_edge_proofs (
+  proof_id uuid NOT NULL,
+  actor_user_id uuid NOT NULL,
+  target_user_id uuid NOT NULL,
+  audit_id text NOT NULL,
+  created_at timestamp with time zone NOT NULL
+    DEFAULT pg_catalog.statement_timestamp(),
+  CONSTRAINT a2_1_user_creation_edge_proofs_pkey PRIMARY KEY (proof_id),
+  CONSTRAINT a2_1_user_creation_edge_proofs_actor_user_id_key UNIQUE (actor_user_id)
+);
+
+ALTER TABLE public.a2_1_user_creation_edge_proofs OWNER TO postgres;
+ALTER TABLE public.a2_1_user_creation_edge_proofs ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.a2_1_user_creation_edge_proofs FORCE ROW LEVEL SECURITY;
+REVOKE ALL ON TABLE public.a2_1_user_creation_edge_proofs FROM PUBLIC;
+REVOKE ALL ON TABLE public.a2_1_user_creation_edge_proofs FROM anon;
+REVOKE ALL ON TABLE public.a2_1_user_creation_edge_proofs FROM authenticated;
+REVOKE ALL ON TABLE public.a2_1_user_creation_edge_proofs FROM service_role;
+
+COMMENT ON TABLE public.a2_1_user_creation_edge_proofs
+IS 'G1E0-A2.1 inert one-time Edge-presence proof bound to actor, Auth target and audit correlation; never actor authority.';
+
+CREATE OR REPLACE FUNCTION public.a2_1_issue_user_creation_edge_proof(
+  p_actor_user_id uuid,
+  p_target_user_id uuid,
+  p_audit_id text
+)
+RETURNS uuid
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = pg_catalog
+AS $function$
+DECLARE
+  v_proof_id uuid;
+  v_now timestamp with time zone := pg_catalog.statement_timestamp();
+BEGIN
+  IF p_actor_user_id IS NULL
+     OR p_target_user_id IS NULL
+     OR nullif(pg_catalog.btrim(p_audit_id), '') IS NULL THEN
+    RAISE EXCEPTION 'A2_1_EDGE_PROOF_ISSUE_DENIED';
+  END IF;
+
+  DELETE FROM public.a2_1_user_creation_edge_proofs p
+   WHERE p.created_at < v_now - interval '2 minutes'
+      OR p.actor_user_id = p_actor_user_id;
+
+  v_proof_id := pg_catalog.gen_random_uuid();
+
+  INSERT INTO public.a2_1_user_creation_edge_proofs(
+    proof_id, actor_user_id, target_user_id, audit_id, created_at
+  ) VALUES (
+    v_proof_id, p_actor_user_id, p_target_user_id, p_audit_id, v_now
+  );
+
+  RETURN v_proof_id;
+END
+$function$;
+
+ALTER FUNCTION public.a2_1_issue_user_creation_edge_proof(uuid,uuid,text)
+  OWNER TO postgres;
+REVOKE ALL ON FUNCTION public.a2_1_issue_user_creation_edge_proof(uuid,uuid,text)
+  FROM PUBLIC;
+REVOKE ALL ON FUNCTION public.a2_1_issue_user_creation_edge_proof(uuid,uuid,text)
+  FROM anon;
+REVOKE ALL ON FUNCTION public.a2_1_issue_user_creation_edge_proof(uuid,uuid,text)
+  FROM authenticated;
+GRANT EXECUTE ON FUNCTION public.a2_1_issue_user_creation_edge_proof(uuid,uuid,text)
+  TO service_role;
+
+COMMENT ON FUNCTION public.a2_1_issue_user_creation_edge_proof(uuid,uuid,text)
+IS 'G1E0-A2.1 service-role-only one-time Edge proof issuer; proof presence is not actor authority.';
+
 CREATE OR REPLACE FUNCTION public.a2_1_create_corretor_profile(
   p_new_user_id uuid,
   p_nome text,
   p_email text,
   p_target_role text,
-  p_time_id uuid DEFAULT NULL,
-  p_empresa_id_intent uuid DEFAULT NULL
+  p_time_id uuid,
+  p_empresa_id_intent uuid,
+  p_edge_proof_id uuid,
+  p_audit_id text
 )
 RETURNS jsonb
 LANGUAGE plpgsql
@@ -176,6 +256,7 @@ DECLARE
   v_time_ativo boolean;
   v_created_id uuid;
   v_actor_count integer;
+  v_proof_rows integer;
 BEGIN
   IF v_actor_uid IS NULL THEN
     RAISE EXCEPTION 'A2_1_NOT_AUTHORIZED';
@@ -184,8 +265,27 @@ BEGIN
   IF p_new_user_id IS NULL
      OR nullif(btrim(p_nome), '') IS NULL
      OR nullif(btrim(p_email), '') IS NULL
-     OR p_target_role NOT IN ('corretor', 'gestor', 'admin_local') THEN
+     OR p_target_role NOT IN ('corretor', 'gestor', 'admin_local')
+     OR p_edge_proof_id IS NULL
+     OR nullif(btrim(p_audit_id), '') IS NULL THEN
     RAISE EXCEPTION 'A2_1_INVALID_REQUEST';
+  END IF;
+
+  -- Consume the exact one-time server-issued proof before any organizational
+  -- authorization or INSERT. The proof only proves traversal of the trusted
+  -- Edge workflow and binds actor + newly-created Auth UUID + audit correlation.
+  -- All actual authority still derives below from auth.uid() and DB state.
+  DELETE FROM public.a2_1_user_creation_edge_proofs p
+   WHERE p.proof_id = p_edge_proof_id
+     AND p.actor_user_id = v_actor_uid
+     AND p.target_user_id = p_new_user_id
+     AND p.audit_id = p_audit_id
+     AND p.created_at <= pg_catalog.statement_timestamp()
+     AND p.created_at >= pg_catalog.statement_timestamp() - interval '2 minutes';
+
+  GET DIAGNOSTICS v_proof_rows = ROW_COUNT;
+  IF v_proof_rows <> 1 THEN
+    RAISE EXCEPTION 'A2_1_EDGE_PROOF_REQUIRED';
   END IF;
 
   -- ROOT authority remains the existing active admins/admin_global contract.
@@ -320,15 +420,15 @@ BEGIN
 END
 $function$;
 
-ALTER FUNCTION public.a2_1_create_corretor_profile(uuid,text,text,text,uuid,uuid) OWNER TO postgres;
+ALTER FUNCTION public.a2_1_create_corretor_profile(uuid,text,text,text,uuid,uuid,uuid,text) OWNER TO postgres;
 
-REVOKE ALL ON FUNCTION public.a2_1_create_corretor_profile(uuid,text,text,text,uuid,uuid) FROM PUBLIC;
-REVOKE ALL ON FUNCTION public.a2_1_create_corretor_profile(uuid,text,text,text,uuid,uuid) FROM anon;
-REVOKE ALL ON FUNCTION public.a2_1_create_corretor_profile(uuid,text,text,text,uuid,uuid) FROM service_role;
-GRANT EXECUTE ON FUNCTION public.a2_1_create_corretor_profile(uuid,text,text,text,uuid,uuid) TO authenticated;
+REVOKE ALL ON FUNCTION public.a2_1_create_corretor_profile(uuid,text,text,text,uuid,uuid,uuid,text) FROM PUBLIC;
+REVOKE ALL ON FUNCTION public.a2_1_create_corretor_profile(uuid,text,text,text,uuid,uuid,uuid,text) FROM anon;
+REVOKE ALL ON FUNCTION public.a2_1_create_corretor_profile(uuid,text,text,text,uuid,uuid,uuid,text) FROM service_role;
+GRANT EXECUTE ON FUNCTION public.a2_1_create_corretor_profile(uuid,text,text,text,uuid,uuid,uuid,text) TO authenticated;
 
-COMMENT ON FUNCTION public.a2_1_create_corretor_profile(uuid,text,text,text,uuid,uuid)
-IS 'G1E0-A2.1 caller-JWT creation boundary. Actor authority derives from auth.uid() and locked database state.';
+COMMENT ON FUNCTION public.a2_1_create_corretor_profile(uuid,text,text,text,uuid,uuid,uuid,text)
+IS 'G1E0-A2.1 caller-JWT creation boundary. Requires one-time Edge proof; actor authority derives from auth.uid() and locked database state.';
 
 COMMENT ON FUNCTION public.a2_1_assert_corretor_creation_invariants()
 IS 'G1E0-A2.1 INSERT-only organizational invariant. Does not repair or govern existing-row lifecycle transitions.';
@@ -337,8 +437,10 @@ DO $postflight$
 DECLARE
   v_md5 text;
 BEGIN
-  IF to_regprocedure('public.a2_1_create_corretor_profile(uuid,text,text,text,uuid,uuid)') IS NULL
-     OR to_regprocedure('public.a2_1_assert_corretor_creation_invariants()') IS NULL THEN
+  IF to_regprocedure('public.a2_1_create_corretor_profile(uuid,text,text,text,uuid,uuid,uuid,text)') IS NULL
+     OR to_regprocedure('public.a2_1_assert_corretor_creation_invariants()') IS NULL
+     OR to_regprocedure('public.a2_1_issue_user_creation_edge_proof(uuid,uuid,text)') IS NULL
+     OR to_regclass('public.a2_1_user_creation_edge_proofs') IS NULL THEN
     RAISE EXCEPTION 'A2.1 postflight: expected functions missing';
   END IF;
 
@@ -379,9 +481,9 @@ BEGIN
     RAISE EXCEPTION 'A2.1 postflight: invariant owner/security/search_path mismatch';
   END IF;
 
-  IF has_function_privilege('anon', 'public.a2_1_create_corretor_profile(uuid,text,text,text,uuid,uuid)', 'EXECUTE')
-     OR has_function_privilege('service_role', 'public.a2_1_create_corretor_profile(uuid,text,text,text,uuid,uuid)', 'EXECUTE')
-     OR NOT has_function_privilege('authenticated', 'public.a2_1_create_corretor_profile(uuid,text,text,text,uuid,uuid)', 'EXECUTE')
+  IF has_function_privilege('anon', 'public.a2_1_create_corretor_profile(uuid,text,text,text,uuid,uuid,uuid,text)', 'EXECUTE')
+     OR has_function_privilege('service_role', 'public.a2_1_create_corretor_profile(uuid,text,text,text,uuid,uuid,uuid,text)', 'EXECUTE')
+     OR NOT has_function_privilege('authenticated', 'public.a2_1_create_corretor_profile(uuid,text,text,text,uuid,uuid,uuid,text)', 'EXECUTE')
      OR EXISTS (
        SELECT 1
        FROM information_schema.routine_privileges
@@ -391,6 +493,48 @@ BEGIN
          AND privilege_type='EXECUTE'
      ) THEN
     RAISE EXCEPTION 'A2.1 postflight: RPC ACL mismatch';
+  END IF;
+
+  IF NOT EXISTS (
+    SELECT 1
+    FROM pg_proc p
+    JOIN pg_namespace n ON n.oid=p.pronamespace
+    WHERE n.nspname='public'
+      AND p.proname='a2_1_issue_user_creation_edge_proof'
+      AND pg_get_userbyid(p.proowner)='postgres'
+      AND p.prosecdef IS TRUE
+      AND coalesce(p.proconfig, ARRAY[]::text[]) @> ARRAY['search_path=pg_catalog']::text[]
+  ) THEN
+    RAISE EXCEPTION 'A2.1 postflight: proof issuer owner/security/search_path mismatch';
+  END IF;
+
+  IF has_function_privilege('PUBLIC', 'public.a2_1_issue_user_creation_edge_proof(uuid,uuid,text)', 'EXECUTE')
+     OR has_function_privilege('anon', 'public.a2_1_issue_user_creation_edge_proof(uuid,uuid,text)', 'EXECUTE')
+     OR has_function_privilege('authenticated', 'public.a2_1_issue_user_creation_edge_proof(uuid,uuid,text)', 'EXECUTE')
+     OR NOT has_function_privilege('service_role', 'public.a2_1_issue_user_creation_edge_proof(uuid,uuid,text)', 'EXECUTE') THEN
+    RAISE EXCEPTION 'A2.1 postflight: proof issuer ACL mismatch';
+  END IF;
+
+  IF NOT EXISTS (
+    SELECT 1
+    FROM pg_class c
+    WHERE c.oid='public.a2_1_user_creation_edge_proofs'::regclass
+      AND pg_get_userbyid(c.relowner)='postgres'
+      AND c.relrowsecurity IS TRUE
+      AND c.relforcerowsecurity IS TRUE
+  ) THEN
+    RAISE EXCEPTION 'A2.1 postflight: proof table metadata mismatch';
+  END IF;
+
+  IF has_table_privilege('PUBLIC','public.a2_1_user_creation_edge_proofs','SELECT')
+     OR has_table_privilege('anon','public.a2_1_user_creation_edge_proofs','SELECT')
+     OR has_table_privilege('authenticated','public.a2_1_user_creation_edge_proofs','SELECT')
+     OR has_table_privilege('service_role','public.a2_1_user_creation_edge_proofs','SELECT')
+     OR has_table_privilege('PUBLIC','public.a2_1_user_creation_edge_proofs','INSERT')
+     OR has_table_privilege('anon','public.a2_1_user_creation_edge_proofs','INSERT')
+     OR has_table_privilege('authenticated','public.a2_1_user_creation_edge_proofs','INSERT')
+     OR has_table_privilege('service_role','public.a2_1_user_creation_edge_proofs','INSERT') THEN
+    RAISE EXCEPTION 'A2.1 postflight: proof table privilege mismatch';
   END IF;
 
   SELECT md5(pg_get_triggerdef(t.oid, true)) INTO v_md5
