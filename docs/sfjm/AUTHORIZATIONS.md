@@ -294,7 +294,9 @@ This authorizes the bounded documentation update necessary to preserve current T
 
 The transition documentation authority is consumed by publishing these SFJM updates. It does not create a new runtime/lifecycle permission.
 
-## 6. Actions still requiring separate exact authority or open preconditions
+## 6. Historical actions requiring separate authority — not current grants
+
+This section preserves historical gating context only. It does not define the current next action and none of the historical items below is executable from this ledger without fresh live resolution and, where mutative, fresh explicit Product Authority authorization.
 
 ```text
 mark the anchor-refresh PR Ready
