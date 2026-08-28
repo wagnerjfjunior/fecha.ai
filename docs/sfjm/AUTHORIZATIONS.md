@@ -1,12 +1,12 @@
 # FECH.AI — SFJM Authorizations
 
-**Status:** `AUTHORITY_PROVENANCE_LEDGER / M0_DOC_RECONCILIATION_ACTIVE / PRIOR_ROUTINE_ANCHOR_AUTHORITY_NOT_REUSABLE`
+**Status:** `AUTHORITY_PROVENANCE_LEDGER / M0_DOC_WRITE_AUTHORITY_CONSUMED / DRAFT_149_STOP_BEFORE_READY / PRIOR_ROUTINE_ANCHOR_AUTHORITY_NOT_REUSABLE`
 **Updated:** `2026-08-28`
 **Repository:** `wagnerjfjunior/fecha.ai`
 
 ## 0. Current authority reconciliation — 2026-08-28
 
-Product Authority explicitly authorized one bounded documentation-only transition:
+Product Authority explicitly authorized one bounded documentation-only transition. Its **write authority is consumed** by publication of Draft PR #149; read-only exact-head validation does not grant any new mutation authority:
 
 ```text
 Repository: wagnerjfjunior/fecha.ai
@@ -61,7 +61,7 @@ perform read-only Backend/Data + AppSec-oriented review
 
 Those consumed authorities do not authorize Ready, merge, Supabase application or Edge deployment.
 
-## 3. ACTIVE_AUTHORITY — live routine inventory anchor refresh
+## 3. HISTORICAL_AUTHORITY_RECORD — live routine inventory anchor refresh
 
 PR #129 closed the PL/pgSQL role-alias collision, received fresh exact-head
 Backend/Data and independent AppSec approval, and merged as
@@ -106,8 +106,8 @@ Required sequence:
   stop in Draft before Ready
 ```
 
-Product Authority also bounded exactly one later production migration
-application after the two exact-head reviews. This is active but not yet
+At that historical transition, Product Authority also bounded exactly one later production migration
+application after the two exact-head reviews. That historical statement is not current operational authority and is not reusable without a fresh explicit grant. At the time it was recorded it was not yet
 exercisable: it requires authentication of the final reviewed/merged SQL bytes
 and resolution of the separate Ready/merge lifecycle gates. It does not permit
 trial-and-error, a different head, automatic retry or more than one invocation.
