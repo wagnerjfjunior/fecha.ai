@@ -36,14 +36,13 @@ If exact-head validation is already recorded for the current head and no materia
   merge NOT authorized
 
 #139 ACTIVE
-  head observed at M0 reconciliation: 32003e75a28e235fb454d39e3e4459d0f03acb2b
-  6 live review threads with isResolved=false
-  severity: 3 P1 + 3 P2
+  material review findings are recorded as dated evidence in EVIDENCE_FRESHNESS
+  resolve current head, review and thread state live before any lifecycle decision
   no approval/merge authority is inferred
 
-#140 ACTIVE / DRAFT
-  head observed at M0 reconciliation: 3aed206883d7aa7ac76c8d48ffb09d677c848bba
+#140 ACTIVE
   versioned config is STATIC evidence
+  resolve Draft/Ready/head live
   runtime Action/Builder application must be proven separately
 
 #131 STALE_CONTINUITY
