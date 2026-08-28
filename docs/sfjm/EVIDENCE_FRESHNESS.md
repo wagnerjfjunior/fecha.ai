@@ -32,14 +32,47 @@ severity: 3 P1 + 3 P2
 class: LIVE_GITHUB_METADATA
 ```
 
-M0 specialist evidence:
+M0 specialist evidence — pre-publication analytical reconciliation:
 
 ```text
-manual documentation-auditor consultation: INFORMATION_SUPPLIED / MANUAL_COPY_PASTE
-result: M0 analytical reconciliation sufficient for its read-only purpose
-limitation in specialist surface: thread resolved/unresolved flags not exposed there
-gap closure: independent live GitHub review-thread metadata established 6 unresolved
+consultation channel: MANUAL_COPY_PASTE
+specialist role: documentation_audit -> documentation-auditor
+specialist response class: INFORMATION_SUPPLIED / MANUAL_SPECIALIST_OUTPUT
+response artifact SHA-256:
+  a866de230f09dd6c8ca90005f848d0febe40e0eb70fa8af0863902306512866c
+
+reviewed project anchor:
+  repository: wagnerjfjunior/fecha.ai
+  main: 8ad6b7ec493b363922168e22afd188577bdfa5c9
+  Issues: #141 / #142
+
+reviewed open-PR universe at that time:
+  #139 / #140 / #131 / #124 / #120
+
+reviewed continuity scope:
+  docs/sfjm/INDEX.md
+  docs/sfjm/CURRENT_STATE.md
+  docs/sfjm/NEXT_SAFE_ACTION.md
+  docs/sfjm/AUTHORIZATIONS.md
+  plus the material SFJM continuity evidence needed for the M0 reconciliation
+
+specialist effective-scope result:
+  M0 analytical reconciliation: SUFFICIENT
+  Supabase: NOT_ACCESSED
+  SQL: NOT_EXECUTED
+  runtime: NOT_ACCESSED_OR_MUTATED
+
+specialist limitation:
+  its available GitHub REST evidence surface did not expose authoritative
+  review-thread resolved/unresolved flags for PR #139
+
+independent gap closure after the specialist response:
+  live GitHub review-thread metadata on 2026-08-28 established
+  #139 head 32003e75a28e235fb454d39e3e4459d0f03acb2b
+  6 threads / 6 isResolved=false / 3 P1 + 3 P2
 ```
+
+This manual specialist artifact validates the **M0 analytical reconciliation**, not the later exact-head contents of PR #149. PR #149 receives its own independent exact-head read/diff/review validation and must not inherit specialist PASS by implication.
 
 Evidence semantics:
 
