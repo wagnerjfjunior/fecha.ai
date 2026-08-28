@@ -1,6 +1,6 @@
 # FECH.AI — SFJM Next Safe Action
 
-**Status:** `SECURITY_TO_SCALE_2026 / M0_DOCUMENTATION_RECONCILIATION_DRAFT / STOP_BEFORE_READY`
+**Status:** `SECURITY_TO_SCALE_2026 / M0_RECONCILIATION_PUBLISHED_AS_DRAFT / NO_FURTHER_MUTATION_AUTHORIZED`
 **Updated:** `2026-08-28`
 **Repository:** `wagnerjfjunior/fecha.ai`
 
@@ -17,28 +17,32 @@ Resolve GitHub live before acting. Tool capability is not authorization.
 ## 2. Single current semantic next action
 
 ```text
-Complete read-only exact-head validation of the single M0 documentation-only
-Draft PR that reconciles SFJM to Security-to-Scale 2026, Issues #141/#142,
-current main 8ad6b7ec493b363922168e22afd188577bdfa5c9, the validated open-PR
-classification and the corrected evidence matrix.
+Perform/confirm read-only exact-head validation of Draft PR #149 and then STOP.
 
-After that validation, STOP IN DRAFT.
-Any Ready or merge decision requires a new explicit Product Authority authorization.
+After exact-head validation, the next transition is a Product Authority decision
+on whether to authorize a later lifecycle step for PR #149. No Ready, merge,
+M1 implementation, PR #139 correction, Supabase/runtime action or legacy-PR
+closure is authorized by the current grant.
 ```
 
-This action does not authorize starting M1 implementation, correcting PR #139, applying PR #140 to a Builder/runtime, closing legacy PRs, Supabase access/mutation, deployment or runtime testing.
+If the exact-head validation is already recorded in the active conversation, do not repeat it without a material invalidation event; remain stopped in Draft pending a separate Product Authority instruction.
 
 ## 3. Current workstream boundaries
 
 ```text
+#149 ACTIVE / DOCUMENTATION_ONLY_DRAFT
+  M0 SFJM publication artifact
+  resolve head live
+  stop before Ready
+
 #139 ACTIVE
-  head observed: 32003e75a28e235fb454d39e3e4459d0f03acb2b
+  head observed at M0 reconciliation: 32003e75a28e235fb454d39e3e4459d0f03acb2b
   6 live review threads with isResolved=false
   severity: 3 P1 + 3 P2
   no approval/merge authority is inferred
 
 #140 ACTIVE / DRAFT
-  head observed: 3aed206883d7aa7ac76c8d48ffb09d677c848bba
+  head observed at M0 reconciliation: 3aed206883d7aa7ac76c8d48ffb09d677c848bba
   versioned config is STATIC evidence
   runtime Action/Builder application must be proven separately
 
@@ -47,7 +51,7 @@ This action does not authorize starting M1 implementation, correcting PR #139, a
 #120 SUPERSEDED
 ```
 
-Do not close, merge, rebase or rewrite the legacy PRs as part of this documentation reconciliation.
+Do not close, merge, rebase or rewrite legacy PRs as part of this documentation reconciliation.
 
 ## 4. Anti-loop
 
