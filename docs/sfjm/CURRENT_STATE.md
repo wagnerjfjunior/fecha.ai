@@ -57,7 +57,7 @@ PR #130 merged, followed by later material transitions including #134, #136, #13
 Current program authority is Issues #141/#142. Implementation/evidence workstreams #139/#140 remain active, while #149 is the documentation-only M0 publication artifact.
 ```
 
-Do not infer that this documentation reconciliation approves #139, proves #140 runtime application, validates the current live Supabase catalog, grants Security Go, authorizes commercialization, or authorizes any lifecycle/runtime mutation.
+Do not infer that this documentation reconciliation approves #139, proves #140 runtime application, validates the current live Supabase catalog, grants Security Go, authorizes commercialization, or authorizes any **further** lifecycle/runtime mutation. PR #149 Ready is a separately authorized and executed lifecycle transition; merge remains unauthorized.
 
 ## 1. Authority rule
 
