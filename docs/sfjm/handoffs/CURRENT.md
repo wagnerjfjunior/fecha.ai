@@ -43,12 +43,12 @@ M0 analytical reconciliation received independent read-only documentation-specia
   stop before merge
 
 #139 ACTIVE
-  head: 32003e75a28e235fb454d39e3e4459d0f03acb2b
-  6 review threads / 6 isResolved=false / 3 P1 + 3 P2
+  material review findings exist in the M0 evidence ledger
+  resolve current head/reviews/threads live before lifecycle action
 
-#140 ACTIVE / DRAFT
-  head: 3aed206883d7aa7ac76c8d48ffb09d677c848bba
+#140 ACTIVE
   static config/docs do not independently prove Builder/runtime application
+  resolve current head and Draft/Ready state live
 
 #131 STALE_CONTINUITY
   head: b9cb671e6fae8125a12b31454395b2a418e7cd17
@@ -108,7 +108,7 @@ M0 #142 is analytically reconciled
 #139 and #140 are ACTIVE
 #131/#124 are STALE_CONTINUITY
 #120 is SUPERSEDED
-#139 has 6 live unresolved review threads at the recorded head
+#139 has material review findings recorded as dated evidence; current head/thread state must be resolved live
 Security Go remains denied
 broad paid commercialization remains blocked
 SFJM is continuity, not runtime/database authority
