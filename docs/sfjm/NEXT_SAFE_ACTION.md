@@ -1,130 +1,62 @@
 # FECH.AI — SFJM Next Safe Action
 
-**Status:** `SEMANTIC_NEXT_ACTION_VIEW / PR129_MERGED / EDGE_V19_B1_PASS / LIVE_ROUTINE_ANCHOR_REFRESH / EXACT_HEAD_REVIEWS_REQUIRED`
-**Updated:** `2026-08-25`
+**Status:** `SECURITY_TO_SCALE_2026 / M0_DOCUMENTATION_RECONCILIATION_DRAFT / STOP_BEFORE_READY`
+**Updated:** `2026-08-28`
 **Repository:** `wagnerjfjunior/fecha.ai`
 
 ## 1. Authority
 
-This file is a thin semantic view. Principal material state:
+This is the thin semantic continuation view. Principal state:
 
 ```text
 docs/sfjm/CURRENT_STATE.md
 ```
 
-Resolve GitHub/Supabase lifecycle live before acting. The anchor-refresh
-transition is `PR_HEAD_ONLY` until merge; use the exact corrective PR head.
+Resolve GitHub live before acting. Tool capability is not authorization.
 
 ## 2. Single current semantic next action
 
 ```text
-Create/reconcile one Draft PR from main 69f4cfa1... that changes only the four
-complete non-system routine inventory digest literals in forward and rollback
-pre/postflight from the historical reviewed value to current live
-`c299bf087df69f960dd0c611d1486675`, updates the material evidence/SFJM, and
-obtains Backend/Data exact-head review. Only after Backend/Data closure, obtain
-independent AppSec exact-head review. Stop in Draft.
+Complete read-only exact-head validation of the single M0 documentation-only
+Draft PR that reconciles SFJM to Security-to-Scale 2026, Issues #141/#142,
+current main 8ad6b7ec493b363922168e22afd188577bdfa5c9, the validated open-PR
+classification and the corrected evidence matrix.
+
+After that validation, STOP IN DRAFT.
+Any Ready or merge decision requires a new explicit Product Authority authorization.
 ```
 
-Two separately gated production invocations have aborted before DDL: first on
-the now-corrected PL/pgSQL alias collision, then on the newly detected live
-routine inventory mismatch. No third invocation is part of this Draft/review
-action.
+This action does not authorize starting M1 implementation, correcting PR #139, applying PR #140 to a Builder/runtime, closing legacy PRs, Supabase access/mutation, deployment or runtime testing.
 
-## 3. Exact-head closure sequence
+## 3. Current workstream boundaries
 
 ```text
-1. resolve main 69f4cfa1... live and create the narrow corrective branch
-2. authenticate the PR #129 merged SQL blobs before editing
-3. recompute the complete live routine inventory read-only
-4. change only four full-inventory md5 literals in forward and rollback
-5. preserve count 264, definer subset 122/7faa..., aggregate count 0 and all SQL semantics
-6. update evidence/SFJM for both fail-closed invocations and intact production
-7. resolve the Draft PR exact head and changed-file set
-8. read every changed material artifact through EOF
-9. obtain manual Backend/Data exact-head review
-10. only after Backend/Data closure, obtain independent AppSec review
-11. stop in Draft before Ready
+#139 ACTIVE
+  head observed: 32003e75a28e235fb454d39e3e4459d0f03acb2b
+  6 live review threads with isResolved=false
+  severity: 3 P1 + 3 P2
+  no approval/merge authority is inferred
+
+#140 ACTIVE / DRAFT
+  head observed: 3aed206883d7aa7ac76c8d48ffb09d677c848bba
+  versioned config is STATIC evidence
+  runtime Action/Builder application must be proven separately
+
+#131 STALE_CONTINUITY
+#124 STALE_CONTINUITY
+#120 SUPERSEDED
 ```
 
-Head changes invalidate the two new reviews. The prior v5 approvals remain
-lineage for unchanged domains, not approval of the corrected bytes.
+Do not close, merge, rebase or rewrite the legacy PRs as part of this documentation reconciliation.
 
-## 4. Required safe deployment semantics after later approval
+## 4. Anti-loop
 
-This section is a proof obligation, not deployment or migration authority.
+M0 analytical reconciliation has already been completed and independently reviewed. Do not start another broad M0 audit absent a material invalidation event.
 
 ```text
-anchor-refresh exact head reviewed by Backend/Data + AppSec
--> separately authorize Ready and merge
--> resolve merged main and authenticate exact SQL bytes
--> exercise the already bounded one-time migration retry authority
--> require complete migration postflight/catalog validation
--> separately authorize bounded smoke
+unchanged evidence + repeated broad reconciliation = AUDIT_LOOP_BLOCKED
 ```
 
-Production Edge v19 is already active and the audit-first fail-before-Auth
-proof is PASS. No Edge redeploy is part of the routine-anchor refresh.
+## 5. Update rule
 
-## 5. Required rollback semantics
-
-This section is a proof obligation, not rollback authorization.
-
-Rollback must be executable and drift-aware:
-
-```text
-validate exact T3A proof issuer/prepare/release/fence functions, proof/lease
-tables/triggers and fixed proof→authority→lease→audit rollback lock order,
-complete role/schema anchors, all-kind positive routine inventory and expected
-grant state plus complete post-T3 audit relation fingerprint
-validate exact T3A-modified T1 guard fingerprint when applicable
-require the locked lease table and all unexpired proofs to be empty; otherwise STOP
-if drift: STOP
-after the complete exact preflight, delete only expired inert proofs and prove
-  the locked proof table is empty
-otherwise restore database boundary and authenticated audit INSERT to the
-  reviewed pre-T3A contract and verify the exact baseline audit fingerprint
-while hardened Edge remains deployed and proof issuer is absent: reset fails closed
-then restore the versioned v17 Edge baseline only under explicit rollback authority
-verify runtime/catalog after rollback
-```
-
-Rollback must not rewrite real user password-state data merely to recreate old presentation state.
-
-## 6. Anti-workaround requirements
-
-The correction must not solve T3A by:
-
-```text
-disabling T1 triggers
-broadening authenticated UPDATE
-trusting empresa/role/flags/time from client
-making service_role the caller identity for the T3 authorization RPC
-granting prepare EXECUTE to anon/PUBLIC/service_role
-continuing to proof/Auth after an audit INSERT error
-weakening audit NOT NULL/RLS/ACL contracts instead of matching them
-changing user-creation authority/tenant semantics beyond shared audit compatibility
-using production trial-and-error as implementation validation
-excluding or broadly trusting the changed Supabase helper instead of pinning
-  the complete exact inventory that contains it
-```
-
-## 7. No audit loop
-
-Do not reopen T1/T2 as independent workstreams absent new material evidence that invalidates their established scope.
-
-Use their current live contracts only as dependencies to prove T3A compatibility.
-
-A repeated audit on unchanged evidence is:
-
-```text
-AUDIT_LOOP_BLOCKED
-```
-
-## 8. Update rule
-
-Update this file when the semantic next action changes materially, for example
-after an exact-head gate result, application/deployment validation or a new
-material blocker.
-
-Do not update merely for SHA movement or lifecycle-only transitions.
+Update this file only after a material lifecycle, evidence, authorization or program transition changes the unique safe continuation.
