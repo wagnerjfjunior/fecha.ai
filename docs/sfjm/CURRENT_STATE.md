@@ -20,18 +20,18 @@ Broad paid commercialization: BLOCKED
 Supabase/runtime access during M0: NOT EXECUTED
 ```
 
-M0 analytical reconciliation was independently reviewed in read-only mode by the adopted documentation specialist through the manual copy/paste channel and was sufficient for its documentation purpose. A narrow evidence gap in that review concerned GitHub thread-resolution flags; subsequent live GitHub review-thread metadata established all six PR #139 threads as `isResolved=false`.
+M0 analytical reconciliation was independently reviewed in read-only mode by the adopted documentation specialist through the manual copy/paste channel and was sufficient for its documentation purpose. The dated GitHub heads/review-thread observations used by M0 are recorded in `docs/sfjm/EVIDENCE_FRESHNESS.md`; resolve all volatile PR lifecycle facts live before acting.
 
 Current open-PR classification:
 
-| PR | Exact head observed | Classification | Current material meaning |
-|---|---|---|---|
-| #139 | `32003e75a28e235fb454d39e3e4459d0f03acb2b` | `ACTIVE` | user-creation membership boundary; 6 unresolved review threads: 3 P1 + 3 P2 |
-| #140 | `3aed206883d7aa7ac76c8d48ffb09d677c848bba` | `ACTIVE` | Draft read-only Supabase Action/config evidence workstream |
-| #149 | resolve live (self-referential publication PR) | `ACTIVE / DOCUMENTATION_ONLY_READY` | M0 SFJM reconciliation publication; Ready explicitly authorized/executed; merge not authorized |
-| #131 | `b9cb671e6fae8125a12b31454395b2a418e7cd17` | `STALE_CONTINUITY` | historical PR-head-only T3A continuity/evidence; not current live truth |
-| #124 | `5e5cc76dae2da93472643e585d3311c92e79e4e6` | `STALE_CONTINUITY` | older continuity artifact; not the current workstream |
-| #120 | `2b3ea57583f1fa54930191f02dc18c60997b9794` | `SUPERSEDED` | historical criar-usuario v16 baseline |
+| PR | Classification | Current material meaning |
+|---|---|---|
+| #139 | `ACTIVE` | user-creation membership-boundary workstream; material review findings require live re-resolution before lifecycle action |
+| #140 | `ACTIVE` | read-only Supabase Action/config evidence workstream |
+| #149 | `ACTIVE / DOCUMENTATION_ONLY_READY` | M0 SFJM reconciliation publication; Ready authorized/executed; merge not authorized |
+| #131 | `STALE_CONTINUITY` | historical PR-head-only T3A continuity/evidence; not current live truth |
+| #124 | `STALE_CONTINUITY` | older continuity artifact; not the current workstream |
+| #120 | `SUPERSEDED` | historical criar-usuario v16 baseline |
 
 The pre-publication M0 universe contained five open PRs. PR #149 was then created as the authorized M0 documentation-only publication artifact. Product Authority subsequently authorized the Draft -> Ready transition and later bounded documentation commits required to keep the PR coherent through Ready. PR #149 is therefore `ACTIVE / DOCUMENTATION_ONLY_READY`; merge remains a separate unauthorized transition. No currently open PR is classified `NOT_RELEVANT`.
 
@@ -54,7 +54,7 @@ Material continuity invalidation:
 ```text
 The August 25 semantic path PR #129 -> routine-anchor refresh is no longer current.
 PR #130 merged, followed by later material transitions including #134, #136, #137 and #138.
-Current program authority is Issues #141/#142 and the active workstreams are #139/#140.
+Current program authority is Issues #141/#142. Implementation/evidence workstreams #139/#140 remain active, while #149 is the documentation-only M0 publication artifact.
 ```
 
 Do not infer that this documentation reconciliation approves #139, proves #140 runtime application, validates the current live Supabase catalog, grants Security Go, authorizes commercialization, or authorizes any lifecycle/runtime mutation.
