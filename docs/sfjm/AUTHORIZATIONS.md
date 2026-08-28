@@ -1,8 +1,40 @@
 # FECH.AI — SFJM Authorizations
 
-**Status:** `AUTHORITY_PROVENANCE_LEDGER / PR149_READY_AUTHORIZED / BOUNDED_DOC_COMMITS_TO_READY / MERGE_NOT_AUTHORIZED / PRIOR_ROUTINE_ANCHOR_AUTHORITY_NOT_REUSABLE`
+**Status:** `AUTHORITY_PROVENANCE_LEDGER / M0_TO_M1_TRANSITION_AUTHORIZED_THROUGH_MERGE / M1_READ_ONLY_ACTIVE / MUTATIVE_SECURITY_WORK_NOT_AUTHORIZED`
 **Updated:** `2026-08-28`
 **Repository:** `wagnerjfjunior/fecha.ai`
+
+## 0. Current M0 -> M1 transition authority — 2026-08-28
+
+After PR #149 was merge-validated, Product Authority explicitly authorized the safe next path and stated that the assistant has authorization through merge, while requiring the `sfjm-workspace` dashboard to be updated when materially necessary.
+
+Bounded operational interpretation:
+
+```text
+Authorized now:
+  close M0 tracking after proven completion
+  create/maintain the M1 tracking work item
+  update canonical SFJM for the M0 -> M1 transition
+  create the bounded documentation PR
+  make correction commits required by review
+  transition that documentation PR through Ready and merge when gates pass
+  synchronize sfjm-workspace visualization after canonical transition
+  execute M1 evidence acquisition in READ_ONLY mode
+
+Not authorized by this grant:
+  DDL/DML
+  migration application
+  Supabase mutation
+  Auth/user/business-data mutation
+  deploy
+  production offensive testing
+  implementation of database/security simplification
+  Security Go
+  paid commercialization
+  automatic lifecycle advancement of #139 or #140
+```
+
+M1 read-only evidence acquisition does not itself authorize a later remediation PR. Any mutative implementation wave must be separately scoped to its exact risk/object and preserve rollback/gate requirements.
 
 ## 0. Current authority reconciliation — 2026-08-28
 

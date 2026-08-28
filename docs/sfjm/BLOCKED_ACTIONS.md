@@ -1,18 +1,18 @@
 # FECH.AI — SFJM Blocked Actions
 
-**Status:** `SECURITY_TO_SCALE_2026 / M0_RECONCILED / CURRENT_BLOCKERS / FAIL_CLOSED`
+**Status:** `SECURITY_TO_SCALE_2026 / M1_ACTIVE / READ_ONLY_BASELINE / FAIL_CLOSED`
 **Updated:** `2026-08-28`
 **Repository:** `wagnerjfjunior/fecha.ai`
 
 ## 1. Authority
 
-This is the thin blocker view. Principal state:
+This is a thin blocker view. Principal state:
 
 ```text
 docs/sfjm/CURRENT_STATE.md
 ```
 
-Resolve live lifecycle and exact heads before acting.
+Resolve volatile GitHub/environment facts live before acting.
 
 ## 2. Product/security blocks
 
@@ -23,81 +23,60 @@ Security Go
 broad paid commercialization
 F1-02 final acceptance
 WDP increase without governance acceptance
-any claim that M0 equals live-database or runtime validation
+any claim that M1 static evidence equals current live DB/runtime proof
 any unbounded production/security testing
 ```
 
-## 3. PR #139 — active implementation blocker
+## 3. M1 mutation blocks
 
-M0 recorded material review findings for PR #139. Their dated exact-head/thread evidence belongs in:
-
-```text
-docs/sfjm/EVIDENCE_FRESHNESS.md
-```
-
-Before any #139 lifecycle action, resolve its current head, reviews, thread-resolution state, checks and scope live.
-
-Durable blocker rule:
+M1 evidence acquisition is READ_ONLY FIRST. Until a later explicitly authorized implementation wave:
 
 ```text
-#139 may not advance on the basis of draft=false, mergeable=true,
-preview/build success or historical specialist approvals.
-All material findings affecting the current head must be closed/revalidated
-before a later lifecycle authorization can be considered.
+DDL / DML
+migration application
+Supabase mutation
+Auth/user/business-data mutation
+Edge/Vercel deploy
+production offensive/adversarial mutation tests
+database simplification implementation
+privilege/RLS/policy/grant changes
+secret/config mutation
+Security Go
 ```
 
-A head change requires bounded revalidation of materially affected findings; it does not authorize a broad audit loop.
-
-## 4. PR #140 — evidence provenance boundary
-
-PR #140 remains `ACTIVE`; resolve its current head and Draft/Ready lifecycle state live before acting.
+## 4. Active PR workstreams
 
 ```text
-versioned OpenAPI/config/docs = STATIC / PR_HEAD_ONLY
-runtime Action execution = must be independently evidenced
-Builder application = separate state
+#139 ACTIVE
+  resolve current head/reviews/threads/checks live
+  material findings affecting the current head must be closed/revalidated
+  M1 does not authorize #139 lifecycle advancement
+
+#140 ACTIVE
+  static versioned config does not prove runtime Action/Builder state
+  M1 may use independently proven read-only capability evidence
+  M1 does not authorize #140 lifecycle advancement
 ```
 
-Do not promote the PR description alone into current runtime proof.
-
-## 5. Legacy continuity PRs
+Legacy continuity classification remains:
 
 ```text
-#131 = STALE_CONTINUITY
-#124 = STALE_CONTINUITY
-#120 = SUPERSEDED
+#131 STALE_CONTINUITY
+#124 STALE_CONTINUITY
+#120 SUPERSEDED
 ```
 
-Their classification does not authorize closure, merge, rebase or deletion. Preserve historical evidence provenance until a separately authorized hygiene action.
+Their classification does not authorize closure, merge, rebase or deletion.
 
-## 6. PR #149 — M0 documentation publication
-
-PR #149 is `ACTIVE / DOCUMENTATION_ONLY_READY`. Product Authority explicitly authorized the Draft -> Ready transition and later bounded documentation commits necessary to preserve continuity through Ready.
-
-Blocked without separate Product Authority authorization:
+## 5. Evidence/lifecycle separation
 
 ```text
-merge
-deploy
-Supabase
-runtime
-closing old PRs
-starting implementation work merely because the documentation PR is Ready
+STATIC != LIVE != RUNTIME
+VERSIONED != MERGED != APPLIED != DEPLOYED != RUNTIME_TESTED
+MERGEABLE != APPROVED
+LIVE_DATABASE_VALIDATED != SECURITY_GO
 ```
 
-## 7. Lifecycle separation
+## 6. Removal rule
 
-```text
-documentation reconciliation
-!= exact-head validation
-!= Ready
-!= merge
-!= deploy
-!= Supabase application
-!= runtime validation
-!= Security Go
-```
-
-## 8. Removal rule
-
-Remove a blocker only when the exact object/ref, material evidence, validator/gate, residual risk and next safe action are recorded. Mergeability or a green build alone never removes a security blocker.
+Remove a blocker only when the record identifies the exact object/ref, material evidence, validator/gate, residual risk, rollback/containment where relevant and the new semantic next action.

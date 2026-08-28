@@ -1,8 +1,48 @@
 # FECH.AI — SFJM Evidence Freshness
 
-**Status:** `SECURITY_TO_SCALE_2026 / M0_EVIDENCE_RECONCILED / HISTORICAL_LEDGER_PRESERVED`
+**Status:** `SECURITY_TO_SCALE_2026 / M1_ENTRY_EVIDENCE / M0_HISTORICAL_LEDGER_PRESERVED`
 **Updated:** `2026-08-28`
 **Repository:** `wagnerjfjunior/fecha.ai`
+
+## 0. Current M1 entry evidence — 2026-08-28
+
+Current transition evidence:
+
+```text
+FECH.AI main:
+  e1c9800c0cb4904d0950afb94766c6e840bf575e
+
+Issue #141:
+  OPEN / Security-to-Scale 2026
+
+Issue #142:
+  CLOSED / completed / M0
+
+PR #149:
+  MERGED
+  final reviewed head:
+    11041d8df99228b9fc119cbbb9e81c6d859a3fb6
+  merge commit:
+    e1c9800c0cb4904d0950afb94766c6e840bf575e
+  merged final SFJM blob parity:
+    6 / 6 PASS
+
+Issue #150:
+  OPEN / M1 Security Truth Baseline
+```
+
+Evidence effect:
+
+```text
+M0 analytical/documentation reconciliation = CLOSED historical milestone
+M1 current live database truth = NOT YET ESTABLISHED
+M1 current privileged-surface truth = NOT YET ESTABLISHED
+M1 dependency/vulnerability truth = NOT YET ESTABLISHED
+M1 infrastructure/secrets attack-surface truth = NOT YET ESTABLISHED
+Security Go = NOT GRANTED
+```
+
+The M0 evidence map below is historical-at-capture. Do not present its dated PR heads, thread counts or database observations as current M1 truth without live re-resolution.
 
 ## 0. M0 current evidence map — 2026-08-28
 
