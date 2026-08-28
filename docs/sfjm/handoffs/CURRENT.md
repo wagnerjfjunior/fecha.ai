@@ -51,13 +51,13 @@ M0 analytical reconciliation received independent read-only documentation-specia
   resolve current head and Draft/Ready state live
 
 #131 STALE_CONTINUITY
-  head: b9cb671e6fae8125a12b31454395b2a418e7cd17
+  resolve live if its historical evidence is needed
 
 #124 STALE_CONTINUITY
-  head: 5e5cc76dae2da93472643e585d3311c92e79e4e6
+  resolve live if its historical evidence is needed
 
 #120 SUPERSEDED
-  head: 2b3ea57583f1fa54930191f02dc18c60997b9794
+  resolve live if its historical evidence is needed
 ```
 
 No legacy PR closure is authorized by this classification.
