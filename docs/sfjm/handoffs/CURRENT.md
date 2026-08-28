@@ -37,6 +37,9 @@ M0 analytical reconciliation received independent read-only documentation-specia
 ## 4. Current open-PR map
 
 ```text
+#149 ACTIVE / DOCUMENTATION_ONLY_DRAFT
+  M0 SFJM publication artifact; resolve head live; stop before Ready
+
 #139 ACTIVE
   head: 32003e75a28e235fb454d39e3e4459d0f03acb2b
   6 review threads / 6 isResolved=false / 3 P1 + 3 P2
@@ -86,7 +89,7 @@ closing legacy PRs
 automatic start of unrelated implementation
 ```
 
-The Draft PR must receive read-only exact-head validation and then stop before Ready.
+The documentation write grant is consumed by publication of Draft PR #149. Read-only exact-head validation remains required; after it, stop before Ready. No further mutation is authorized by that grant.
 
 ## 7. Anti-loop
 
