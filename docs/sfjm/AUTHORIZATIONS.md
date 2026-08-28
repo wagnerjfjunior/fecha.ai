@@ -299,8 +299,9 @@ The transition documentation authority is consumed by publishing these SFJM upda
 ```text
 mark the anchor-refresh PR Ready
 merge the anchor-refresh PR
-exercise the one authorized T3A production retry before both exact-head reviews,
-  final-byte authentication and required GitHub lifecycle resolution
+any future T3A production migration invocation without a fresh explicit
+  Product Authority authorization bound to the then-current exact objects,
+  environment, rollback and validation plan
 deploy another Edge version
 execute runtime/Auth or adversarial smoke
 execute rollback
@@ -310,9 +311,11 @@ F1-02 final acceptance
 WDP change
 ```
 
-Neither failed application created an automatic retry. The single future
-invocation exists only because Product Authority explicitly granted it in §3,
-subject to the recorded reviews, exact-byte and lifecycle preconditions.
+Neither failed application created an automatic retry. No future production
+invocation exists under current authority. The historical §3 grant is provenance
+only and is not reusable; any later T3A production migration invocation requires
+a fresh explicit Product Authority authorization for the then-current exact
+objects and environment.
 
 ## 7. Production-testing boundary
 
