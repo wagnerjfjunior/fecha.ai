@@ -68,7 +68,9 @@ Do not promote the PR description alone into current runtime proof.
 
 Their classification does not authorize closure, merge, rebase or deletion. Preserve historical evidence provenance until a separately authorized hygiene action.
 
-## 6. This M0 documentation PR
+## 6. PR #149 — M0 documentation publication
+
+PR #149 is `ACTIVE / DOCUMENTATION_ONLY_DRAFT` and must remain Draft after exact-head validation.
 
 Blocked without separate Product Authority authorization:
 
