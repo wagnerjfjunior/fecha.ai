@@ -1,8 +1,63 @@
 # FECH.AI — SFJM Evidence Freshness
 
-**Status:** `CLAIM_ANCHOR_INVALIDATION_LEDGER / PR129_MERGED / EDGE_V19_DEPLOYED / B1_V19_RUNTIME_PASS / SECOND_MIGRATION_ATTEMPT_FAIL_CLOSED / LIVE_ROUTINE_ANCHOR_REFRESH_PENDING_REVIEW`
-**Updated:** `2026-08-25`
+**Status:** `SECURITY_TO_SCALE_2026 / M0_EVIDENCE_RECONCILED / HISTORICAL_LEDGER_PRESERVED`
+**Updated:** `2026-08-28`
 **Repository:** `wagnerjfjunior/fecha.ai`
+
+## 0. M0 current evidence map — 2026-08-28
+
+This section is the current evidence-class reconciliation. The older sections below are preserved as historical claim/anchor lineage. They do not become current merely because they remain versioned.
+
+Current GitHub anchors observed:
+
+```text
+main: 8ad6b7ec493b363922168e22afd188577bdfa5c9
+Issue #141: OPEN
+Issue #142: OPEN
+#139: 32003e75a28e235fb454d39e3e4459d0f03acb2b / ACTIVE
+#140: 3aed206883d7aa7ac76c8d48ffb09d677c848bba / ACTIVE
+#131: b9cb671e6fae8125a12b31454395b2a418e7cd17 / STALE_CONTINUITY
+#124: 5e5cc76dae2da93472643e585d3311c92e79e4e6 / STALE_CONTINUITY
+#120: 2b3ea57583f1fa54930191f02dc18c60997b9794 / SUPERSEDED
+```
+
+PR #139 review-thread evidence:
+
+```text
+source: live GitHub review-thread metadata
+threads observed: 6
+isResolved=false: 6
+severity: 3 P1 + 3 P2
+class: LIVE_GITHUB_METADATA
+```
+
+M0 specialist evidence:
+
+```text
+manual documentation-auditor consultation: INFORMATION_SUPPLIED / MANUAL_COPY_PASTE
+result: M0 analytical reconciliation sufficient for its read-only purpose
+limitation in specialist surface: thread resolved/unresolved flags not exposed there
+gap closure: independent live GitHub review-thread metadata established 6 unresolved
+```
+
+Evidence semantics:
+
+| Class | Required basis | Does not prove |
+|---|---|---|
+| `STATIC_IMPLEMENTATION_REVIEW` | exact-head source/diff/final-file review | applied DB, deployment or runtime |
+| `LIVE_DATABASE_VALIDATED` | direct bounded live DB/catalog observation | runtime paths or future state |
+| `CONTROLLED_RUNTIME_PASS` | actually executed bounded behavior | untested paths or Security Go |
+| `NOT_EXECUTED` | planned/versioned without execution proof | behavioral PASS |
+| `PR_HEAD_ONLY` | evidence only on an unmerged PR head | current canonical main/live truth |
+
+```text
+STATIC != LIVE
+LIVE != RUNTIME
+RUNTIME_BOUNDED != SECURITY_GO
+PR_BODY_CLAIM != INDEPENDENT_PROOF
+```
+
+No Supabase or runtime operation was executed as part of M0. Historical production/catalog evidence below is therefore `LIVE_AT_CAPTURE`, not a fresh 2026-08-28 live-database validation.
 
 ## 1. Freshness model
 
