@@ -21,28 +21,30 @@ The following remain blocked:
 ```text
 Security Go
 broad paid commercialization
+F1-02 final acceptance
+WDP increase without governance acceptance
 any claim that M0 equals live-database or runtime validation
 any unbounded production/security testing
 ```
 
 ## 3. PR #139 — active implementation blocker
 
-Observed exact head:
+M0 recorded material review findings for PR #139. Their dated exact-head/thread evidence belongs in:
 
 ```text
-32003e75a28e235fb454d39e3e4459d0f03acb2b
+docs/sfjm/EVIDENCE_FRESHNESS.md
 ```
 
-Live GitHub review-thread metadata establishes:
+Before any #139 lifecycle action, resolve its current head, reviews, thread-resolution state, checks and scope live.
+
+Durable blocker rule:
 
 ```text
-6 review threads
-6 isResolved=false
-3 P1
-3 P2
+#139 may not advance on the basis of draft=false, mergeable=true,
+preview/build success or historical specialist approvals.
+All material findings affecting the current head must be closed/revalidated
+before a later lifecycle authorization can be considered.
 ```
-
-Therefore no approval, merge, deployment or Supabase-application conclusion may be inferred from `draft=false`, `mergeable=true`, preview/build success or historical specialist approvals on other heads.
 
 A head change requires bounded revalidation of materially affected findings; it does not authorize a broad audit loop.
 
