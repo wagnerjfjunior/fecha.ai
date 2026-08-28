@@ -1,8 +1,35 @@
 # FECH.AI — SFJM Authorizations
 
-**Status:** `AUTHORITY_PROVENANCE_LEDGER / PR129_MERGE_CONSUMED / TWO_MIGRATION_ATTEMPTS_CONSUMED_FAIL_CLOSED / ROUTINE_ANCHOR_GITHUB_AUTHORITY_ACTIVE / ONE_LATER_APPLICATION_BOUNDED / OTHER_GATES_SEPARATE`
-**Updated:** `2026-08-25`
+**Status:** `AUTHORITY_PROVENANCE_LEDGER / M0_DOC_RECONCILIATION_ACTIVE / PRIOR_ROUTINE_ANCHOR_AUTHORITY_NOT_REUSABLE`
+**Updated:** `2026-08-28`
 **Repository:** `wagnerjfjunior/fecha.ai`
+
+## 0. Current authority reconciliation — 2026-08-28
+
+Product Authority explicitly authorized one bounded documentation-only transition:
+
+```text
+Repository: wagnerjfjunior/fecha.ai
+Purpose: reconcile M0 / Issue #142 into canonical SFJM continuity
+Branch/PR: one Draft PR only
+Allowed:
+  update only necessary SFJM continuity documentation
+  create the branch and Draft PR
+  perform read-only exact-head validation
+Not authorized:
+  Ready
+  merge
+  deploy
+  Supabase
+  runtime
+  SQL
+  closing/rebasing/merging legacy PRs
+  unrelated implementation
+```
+
+The August 25 §3 record labeled `ACTIVE_AUTHORITY — live routine inventory anchor refresh` is preserved below as historical authority provenance but is **not reusable as current operational authority**. Subsequent material lifecycle transitions, including PR #130 and later program changes, invalidate its use as the present next-action grant. Any future runtime, Supabase, Ready, merge or implementation action requires fresh exact Product Authority authorization.
+
+This section does not retroactively relabel historical execution as unauthorized. It only prevents stale continuity from being replayed as current authority.
 
 ## 1. Interpretation rule
 
