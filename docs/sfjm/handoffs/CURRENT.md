@@ -1,6 +1,6 @@
 # FECH.AI — SFJM Current Product/Security Handoff
 
-**Status:** `SECURITY_TO_SCALE_2026 / M0_RECONCILED / CURRENT_HANDOFF / STOP_BEFORE_READY`
+**Status:** `SECURITY_TO_SCALE_2026 / M0_RECONCILED / PR149_READY / CURRENT_HANDOFF / STOP_BEFORE_MERGE`
 **Updated:** `2026-08-28`
 **Repository:** `wagnerjfjunior/fecha.ai`
 
@@ -37,8 +37,10 @@ M0 analytical reconciliation received independent read-only documentation-specia
 ## 4. Current open-PR map
 
 ```text
-#149 ACTIVE / DOCUMENTATION_ONLY_DRAFT
-  M0 SFJM publication artifact; resolve head live; stop before Ready
+#149 ACTIVE / DOCUMENTATION_ONLY_READY
+  M0 SFJM publication artifact; resolve head live
+  Ready explicitly authorized/executed
+  stop before merge
 
 #139 ACTIVE
   head: 32003e75a28e235fb454d39e3e4459d0f03acb2b
@@ -75,12 +77,11 @@ No Supabase or runtime action was performed during M0.
 
 ## 6. Current authorized transition
 
-Product Authority authorized exactly one documentation-only M0 reconciliation Draft PR limited to necessary SFJM continuity files.
+Product Authority authorized the documentation-only M0 reconciliation PR, then separately authorized Draft -> Ready, and subsequently authorized bounded continuity commits required to leave PR #149 coherent and Ready.
 
-Explicitly excluded:
+Current exclusions:
 
 ```text
-Ready
 merge
 deploy
 Supabase
@@ -89,7 +90,7 @@ closing legacy PRs
 automatic start of unrelated implementation
 ```
 
-The documentation write grant is consumed by publication of Draft PR #149. Read-only exact-head validation remains required; after it, stop before Ready. No further mutation is authorized by that grant.
+The original publication grant was consumed by creating Draft PR #149. A later Product Authority grant authorized the Ready transition, and the current bounded grant authorizes only the continuity commits needed to leave the same PR coherent and Ready. After final exact-head validation confirms Ready, that bounded write grant is consumed and the handoff stops before merge.
 
 ## 7. Anti-loop
 
