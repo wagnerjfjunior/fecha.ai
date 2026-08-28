@@ -1,6 +1,6 @@
 # FECH.AI — SFJM Authorizations
 
-**Status:** `AUTHORITY_PROVENANCE_LEDGER / M0_DOC_WRITE_AUTHORITY_CONSUMED / DRAFT_149_STOP_BEFORE_READY / PRIOR_ROUTINE_ANCHOR_AUTHORITY_NOT_REUSABLE`
+**Status:** `AUTHORITY_PROVENANCE_LEDGER / PR149_READY_AUTHORIZED / BOUNDED_DOC_COMMITS_TO_READY / MERGE_NOT_AUTHORIZED / PRIOR_ROUTINE_ANCHOR_AUTHORITY_NOT_REUSABLE`
 **Updated:** `2026-08-28`
 **Repository:** `wagnerjfjunior/fecha.ai`
 
@@ -30,6 +30,41 @@ Not authorized:
 The August 25 §3 record labeled `ACTIVE_AUTHORITY — live routine inventory anchor refresh` is preserved below as historical authority provenance but is **not reusable as current operational authority**. Subsequent material lifecycle transitions, including PR #130 and later program changes, invalidate its use as the present next-action grant. Any future runtime, Supabase, Ready, merge or implementation action requires fresh exact Product Authority authorization.
 
 This section does not retroactively relabel historical execution as unauthorized. It only prevents stale continuity from being replayed as current authority.
+
+## 0.1. PR #149 Ready and bounded correction authority — 2026-08-28
+
+After Draft PR #149 was published and exact-head documentation validation passed, Product Authority separately authorized:
+
+```text
+1. transition PR #149 from Draft to Ready;
+2. after that transition exposed stale continuity wording, make new documentation
+   commits as necessary until the same PR is coherent and remains Ready.
+```
+
+Bounded scope of the current grant:
+
+```text
+Repository: wagnerjfjunior/fecha.ai
+PR: #149
+Branch: docs/sfjm-m0-security-to-scale-reconciliation
+Allowed:
+  modify only the same necessary SFJM continuity files already in PR #149
+  record the authorized/executed Ready lifecycle transition
+  perform read-only exact-head validation after the corrections
+  mark Ready again only if the corrective commits cause the PR to become Draft
+Stop condition:
+  PR #149 OPEN / READY on the validated final head
+Not authorized:
+  merge
+  deploy
+  Supabase
+  SQL
+  runtime/Auth testing
+  closing/rebasing/merging legacy PRs
+  unrelated implementation
+```
+
+The Draft -> Ready authority was consumed by the successful transition. The bounded documentation-correction authority is consumed when final exact-head validation confirms PR #149 is coherent and Ready. It grants no merge authority.
 
 ## 1. Interpretation rule
 
