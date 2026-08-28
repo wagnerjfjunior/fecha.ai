@@ -1,8 +1,70 @@
 # FECH.AI — SFJM Authorizations
 
-**Status:** `AUTHORITY_PROVENANCE_LEDGER / PR129_MERGE_CONSUMED / TWO_MIGRATION_ATTEMPTS_CONSUMED_FAIL_CLOSED / ROUTINE_ANCHOR_GITHUB_AUTHORITY_ACTIVE / ONE_LATER_APPLICATION_BOUNDED / OTHER_GATES_SEPARATE`
-**Updated:** `2026-08-25`
+**Status:** `AUTHORITY_PROVENANCE_LEDGER / PR149_READY_AUTHORIZED / BOUNDED_DOC_COMMITS_TO_READY / MERGE_NOT_AUTHORIZED / PRIOR_ROUTINE_ANCHOR_AUTHORITY_NOT_REUSABLE`
+**Updated:** `2026-08-28`
 **Repository:** `wagnerjfjunior/fecha.ai`
+
+## 0. Current authority reconciliation — 2026-08-28
+
+Product Authority explicitly authorized one bounded documentation-only transition. Its **write authority is consumed** by publication of Draft PR #149; read-only exact-head validation does not grant any new mutation authority:
+
+```text
+Repository: wagnerjfjunior/fecha.ai
+Purpose: reconcile M0 / Issue #142 into canonical SFJM continuity
+Branch/PR: one Draft PR only
+Allowed:
+  update only necessary SFJM continuity documentation
+  create the branch and Draft PR
+  perform read-only exact-head validation
+Not authorized:
+  Ready
+  merge
+  deploy
+  Supabase
+  runtime
+  SQL
+  closing/rebasing/merging legacy PRs
+  unrelated implementation
+```
+
+The August 25 §3 record labeled `ACTIVE_AUTHORITY — live routine inventory anchor refresh` is preserved below as historical authority provenance but is **not reusable as current operational authority**. Subsequent material lifecycle transitions, including PR #130 and later program changes, invalidate its use as the present next-action grant. Any future runtime, Supabase, Ready, merge or implementation action requires fresh exact Product Authority authorization.
+
+This section does not retroactively relabel historical execution as unauthorized. It only prevents stale continuity from being replayed as current authority.
+
+## 0.1. PR #149 Ready and bounded correction authority — 2026-08-28
+
+After Draft PR #149 was published and exact-head documentation validation passed, Product Authority separately authorized:
+
+```text
+1. transition PR #149 from Draft to Ready;
+2. after that transition exposed stale continuity wording, make new documentation
+   commits as necessary until the same PR is coherent and remains Ready.
+```
+
+Bounded scope of the current grant:
+
+```text
+Repository: wagnerjfjunior/fecha.ai
+PR: #149
+Branch: docs/sfjm-m0-security-to-scale-reconciliation
+Allowed:
+  modify only the same necessary SFJM continuity files already in PR #149
+  record the authorized/executed Ready lifecycle transition
+  perform read-only exact-head validation after the corrections
+  mark Ready again only if the corrective commits cause the PR to become Draft
+Stop condition:
+  PR #149 OPEN / READY on the validated final head
+Not authorized:
+  merge
+  deploy
+  Supabase
+  SQL
+  runtime/Auth testing
+  closing/rebasing/merging legacy PRs
+  unrelated implementation
+```
+
+The Draft -> Ready authority was consumed by the successful transition. The bounded documentation-correction authority is consumed when final exact-head validation confirms PR #149 is coherent and Ready. It grants no merge authority.
 
 ## 1. Interpretation rule
 
@@ -34,7 +96,7 @@ perform read-only Backend/Data + AppSec-oriented review
 
 Those consumed authorities do not authorize Ready, merge, Supabase application or Edge deployment.
 
-## 3. ACTIVE_AUTHORITY — live routine inventory anchor refresh
+## 3. HISTORICAL_AUTHORITY_RECORD — live routine inventory anchor refresh
 
 PR #129 closed the PL/pgSQL role-alias collision, received fresh exact-head
 Backend/Data and independent AppSec approval, and merged as
@@ -79,8 +141,8 @@ Required sequence:
   stop in Draft before Ready
 ```
 
-Product Authority also bounded exactly one later production migration
-application after the two exact-head reviews. This is active but not yet
+At that historical transition, Product Authority also bounded exactly one later production migration
+application after the two exact-head reviews. That historical statement is not current operational authority and is not reusable without a fresh explicit grant. At the time it was recorded it was not yet
 exercisable: it requires authentication of the final reviewed/merged SQL bytes
 and resolution of the separate Ready/merge lifecycle gates. It does not permit
 trial-and-error, a different head, automatic retry or more than one invocation.
@@ -232,13 +294,16 @@ This authorizes the bounded documentation update necessary to preserve current T
 
 The transition documentation authority is consumed by publishing these SFJM updates. It does not create a new runtime/lifecycle permission.
 
-## 6. Actions still requiring separate exact authority or open preconditions
+## 6. Historical actions requiring separate authority — not current grants
+
+This section preserves historical gating context only. It does not define the current next action and none of the historical items below is executable from this ledger without fresh live resolution and, where mutative, fresh explicit Product Authority authorization.
 
 ```text
 mark the anchor-refresh PR Ready
 merge the anchor-refresh PR
-exercise the one authorized T3A production retry before both exact-head reviews,
-  final-byte authentication and required GitHub lifecycle resolution
+any future T3A production migration invocation without a fresh explicit
+  Product Authority authorization bound to the then-current exact objects,
+  environment, rollback and validation plan
 deploy another Edge version
 execute runtime/Auth or adversarial smoke
 execute rollback
@@ -248,9 +313,11 @@ F1-02 final acceptance
 WDP change
 ```
 
-Neither failed application created an automatic retry. The single future
-invocation exists only because Product Authority explicitly granted it in §3,
-subject to the recorded reviews, exact-byte and lifecycle preconditions.
+Neither failed application created an automatic retry. No future production
+invocation exists under current authority. The historical §3 grant is provenance
+only and is not reusable; any later T3A production migration invocation requires
+a fresh explicit Product Authority authorization for the then-current exact
+objects and environment.
 
 ## 7. Production-testing boundary
 

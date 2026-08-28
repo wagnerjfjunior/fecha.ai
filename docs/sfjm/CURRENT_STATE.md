@@ -1,8 +1,63 @@
 # FECH.AI — SFJM Current Material State
 
-**Status:** `MATERIAL_RECORDED_STATE / PR129_MERGED / EDGE_V19_DEPLOYED / B1_V19_RUNTIME_PASS / TWO_T3A_MIGRATION_ATTEMPTS_FAIL_CLOSED / LIVE_ROUTINE_ANCHOR_DRIFT / ANCHOR_REFRESH_REVIEWS_REQUIRED / SECURITY_GO_DENIED`
-**Updated:** `2026-08-25`
+**Status:** `SECURITY_TO_SCALE_2026 / M0_RECONCILED / OPEN_PRS_CLASSIFIED / STALE_CONTINUITY_CORRECTED / SECURITY_GO_DENIED`
+**Updated:** `2026-08-28`
 **Repository:** `wagnerjfjunior/fecha.ai`
+
+## 0. Current Security-to-Scale / M0 reconciliation — 2026-08-28
+
+This section is the current semantic override for continuity. Where older sections below conflict with this section, preserve them as historical lineage only and do not execute their former next actions.
+
+Canonical anchors at reconciliation:
+
+```text
+Program: Issue #141 — Security-to-Scale 2026 / OPEN
+M0: Issue #142 — truth, open PR and evidence reconciliation / OPEN
+FECH.AI live main observed: 8ad6b7ec493b363922168e22afd188577bdfa5c9
+Environment classification: Pilot Production multi-tenant / multi-company
+Security Go: NOT GRANTED
+Broad paid commercialization: BLOCKED
+Supabase/runtime access during M0: NOT EXECUTED
+```
+
+M0 analytical reconciliation was independently reviewed in read-only mode by the adopted documentation specialist through the manual copy/paste channel and was sufficient for its documentation purpose. The dated GitHub heads/review-thread observations used by M0 are recorded in `docs/sfjm/EVIDENCE_FRESHNESS.md`; resolve all volatile PR lifecycle facts live before acting.
+
+Current open-PR classification:
+
+| PR | Classification | Current material meaning |
+|---|---|---|
+| #139 | `ACTIVE` | user-creation membership-boundary workstream; material review findings require live re-resolution before lifecycle action |
+| #140 | `ACTIVE` | read-only Supabase Action/config evidence workstream |
+| #149 | `ACTIVE / DOCUMENTATION_ONLY_READY` | M0 SFJM reconciliation publication; Ready authorized/executed; merge not authorized |
+| #131 | `STALE_CONTINUITY` | historical PR-head-only T3A continuity/evidence; not current live truth |
+| #124 | `STALE_CONTINUITY` | older continuity artifact; not the current workstream |
+| #120 | `SUPERSEDED` | historical criar-usuario v16 baseline |
+
+The pre-publication M0 universe contained five open PRs. PR #149 was then created as the authorized M0 documentation-only publication artifact. Product Authority subsequently authorized the Draft -> Ready transition and later bounded documentation commits required to keep the PR coherent through Ready. PR #149 is therefore `ACTIVE / DOCUMENTATION_ONLY_READY`; merge remains a separate unauthorized transition. No currently open PR is classified `NOT_RELEVANT`.
+
+Current evidence-strength rules:
+
+```text
+STATIC_IMPLEMENTATION_REVIEW != LIVE_DATABASE_VALIDATED
+LIVE_DATABASE_VALIDATED != CONTROLLED_RUNTIME_PASS
+CONTROLLED_RUNTIME_PASS != SECURITY_GO
+PR_HEAD_ONLY != CURRENT_LIVE_DATABASE_TRUTH
+VERSIONED != MERGED != APPLIED != DEPLOYED != RUNTIME_TESTED
+MERGEABLE != APPROVED
+VERCEL_SUCCESS != SECURITY_PASS
+```
+
+Historical exact-head specialist approvals remain valid only as static evidence for the exact objects reviewed. Historical live/catalog observations remain live-at-capture evidence and must be revalidated after material invalidation. Planned/versioned tests without durable execution evidence remain `NOT_EXECUTED`.
+
+Material continuity invalidation:
+
+```text
+The August 25 semantic path PR #129 -> routine-anchor refresh is no longer current.
+PR #130 merged, followed by later material transitions including #134, #136, #137 and #138.
+Current program authority is Issues #141/#142. Implementation/evidence workstreams #139/#140 remain active, while #149 is the documentation-only M0 publication artifact.
+```
+
+Do not infer that this documentation reconciliation approves #139, proves #140 runtime application, validates the current live Supabase catalog, grants Security Go, authorizes commercialization, or authorizes any **further** lifecycle/runtime mutation. PR #149 Ready is a separately authorized and executed lifecycle transition; merge remains unauthorized.
 
 ## 1. Authority rule
 

@@ -1,155 +1,103 @@
 # FECH.AI — SFJM Blocked Actions
 
-**Status:** `MATERIAL_BLOCKER_VIEW / PR129_MERGED / EDGE_V19_B1_PASS / T3A_LIVE_ROUTINE_ANCHOR_DRIFT / ANCHOR_REFRESH_REVIEWS_PENDING / FAIL_CLOSED`
-**Updated:** `2026-08-25`
+**Status:** `SECURITY_TO_SCALE_2026 / M0_RECONCILED / CURRENT_BLOCKERS / FAIL_CLOSED`
+**Updated:** `2026-08-28`
 **Repository:** `wagnerjfjunior/fecha.ai`
 
 ## 1. Authority
 
-This is a thin blocker view. Principal durable operational state:
+This is the thin blocker view. Principal state:
 
 ```text
 docs/sfjm/CURRENT_STATE.md
 ```
 
-Resolve live lifecycle before acting.
+Resolve live lifecycle and exact heads before acting.
 
 ## 2. Product/security blocks
+
+The following remain blocked:
 
 ```text
 Security Go
 broad paid commercialization
 F1-02 final acceptance
-anchor-refresh PR Ready
-anchor-refresh PR merge
-one authorized T3A Supabase production retry until its review/lifecycle preconditions close
-T3A runtime/adversarial/cross-tenant smoke
-rollback execution
-T3B frontend password cutover
 WDP increase without governance acceptance
+any claim that M0 equals live-database or runtime validation
+any unbounded production/security testing
 ```
 
-## 3. Closed lineage and current live-anchor gate
+## 3. PR #139 — active implementation blocker
 
-PR #127 closed the B1-B4 authority-design blockers and merged. PR #128 closed
-the post-merge audit-schema incompatibility, received Backend/Data and
-independent AppSec approval on head
-`b594218dabd9a7beaea3158bb143f5dd2fd71386`, and merged as
-`3c9daf6c49eb937824c2c2b40aba198e2727c4bb`.
-
-Production Edge v19 then proved:
+M0 recorded material review findings for PR #139. Their dated exact-head/thread evidence belongs in:
 
 ```text
-single POST
-audit row committed with status=edge_proof_unavailable
-Edge HTTP 500
-no Auth mutation
-B1 runtime PASS
+docs/sfjm/EVIDENCE_FRESHNESS.md
 ```
 
-The first separately-authorized exact migration invocation failed in the first
-preflight with SQLSTATE 55000 because PL/pgSQL record variable `r` collided
-with `pg_roles AS r`. The transaction aborted before DDL; no T3 objects or
-migration record exist. The rollback source contains the same collision.
+Before any #139 lifecycle action, resolve its current head, reviews, thread-resolution state, checks and scope live.
 
-PR #129 corrected only that collision, received fresh Backend/Data and
-independent AppSec approval on exact head
-`6f6092aa66352cda3d617897895b0f09019adeea`, and merged as
-`69f4cfa1bdee331826953b492f25c12b4defc030`.
-
-The exact merged migration was then invoked once. It advanced past the alias
-defect and aborted at
-`T3A_PREFLIGHT_POSITIVE_ROUTINE_INVENTORY_DRIFT`. Production remained intact:
-no T3 history entry, routine or relation exists, and Edge v19 remains active.
-The complete live routine count remained 264, but its digest moved from
-`b1f0919d...` to `c299bf08...`; the authenticated-effective SECURITY DEFINER
-subset remained exactly `122 / 7faa376a...` and aggregate count remained zero.
-The changed routine is the Supabase-owned SECURITY INVOKER event-trigger helper
-`extensions.grant_pg_graphql_access()`.
-
-Current blocking gate:
+Durable blocker rule:
 
 ```text
-one four-literal routine-anchor corrective Draft PR
--> integral final-file read and exact diff
--> Backend/Data exact-head PASS
--> independent AppSec exact-head PASS
--> STOP before Ready
+#139 may not advance on the basis of draft=false, mergeable=true,
+preview/build success or historical specialist approvals.
+All material findings affecting the current head must be closed/revalidated
+before a later lifecycle authorization can be considered.
 ```
 
-This is a new runtime executability finding. It does not reopen T1/T2, the
-multi-tenant actor contract, proof/lease design or audit compatibility.
+A head change requires bounded revalidation of materially affected findings; it does not authorize a broad audit loop.
 
-## 4. Explicitly prohibited workaround classes
+## 4. PR #140 — evidence provenance boundary
 
-Do not resolve T3A by:
+PR #140 remains `ACTIVE`; resolve its current head and Draft/Ready lifecycle state live before acting.
 
 ```text
-disabling or bypassing T1 triggers
-broadening authenticated UPDATE on public.corretores
-restoring client authority over must_change_password
-trusting client-provided empresa_id/role/flags/time/ownership
-using service_role identity as a substitute for auth.uid() authorization
-exposing the authenticated prepare RPC to anon/PUBLIC/service_role
-letting a direct authenticated prepare call create durable state without an
-  Edge-presence proof
-normalizing production users to fit the code
-trial-and-error SQL in production
-excluding/whitelisting the changed helper to make the hash pass instead of
-  pinning the complete current inventory
-mixing unrelated user-creation redesign into password-reset hardening
-ignoring an audit INSERT failure and continuing to proof/Auth
-dropping/relaxing legacy audit NOT NULL columns to fit the Edge
-leaving authenticated direct audit INSERT as a forgeable server-audit surface
-using a frontend/server timeout as lease authority or automatic expiry
-releasing an unresolved lease after an ambiguous Auth result
+versioned OpenAPI/config/docs = STATIC / PR_HEAD_ONLY
+runtime Action execution = must be independently evidenced
+Builder application = separate state
 ```
 
-Any correction that makes the immediate test pass while weakening tenant isolation, authority derivation or rollback is `BLOCKING`, not an acceptable shortcut.
+Do not promote the PR description alone into current runtime proof.
 
-## 5. T1/T2 closed-cycle protection
-
-Do not reopen T1/T2 as independent programs without a new material invalidation event.
-
-Current T3A work may inspect/revalidate the minimum T1/T2 objects necessary for compatibility, including the live T1 guards and the current App password-reset callsite.
-
-Do not:
+## 5. Legacy continuity PRs
 
 ```text
-redo T2 status smoke merely for repetition
-rewrite T1 status authority rules to make T3 easier
-change App.jsx inside T3A
+#131 = STALE_CONTINUITY
+#124 = STALE_CONTINUITY
+#120 = SUPERSEDED
 ```
 
-## 6. Lifecycle separation
+Their classification does not authorize closure, merge, rebase or deletion. Preserve historical evidence provenance until a separately authorized hygiene action.
 
-The following remain distinct decisions:
+## 6. PR #149 — M0 documentation publication
+
+PR #149 is `ACTIVE / DOCUMENTATION_ONLY_READY`. Product Authority explicitly authorized the Draft -> Ready transition and later bounded documentation commits necessary to preserve continuity through Ready.
+
+Blocked without separate Product Authority authorization:
 
 ```text
-corrective GitHub commit
-exact-head specialist PASS
-Ready
 merge
-Supabase migration application
-Edge deployment
-runtime smoke
-rollback execution
-Security Go
+deploy
+Supabase
+runtime
+closing old PRs
+starting implementation work merely because the documentation PR is Ready
 ```
 
-One does not imply the next.
-
-## 7. Removal rule
-
-Remove a blocker only when the record identifies:
+## 7. Lifecycle separation
 
 ```text
-exact corrected object/ref
-material evidence
-validator/gate
-residual risk
-rollback/containment
-new semantic next action
+documentation reconciliation
+!= exact-head validation
+!= Ready
+!= merge
+!= deploy
+!= Supabase application
+!= runtime validation
+!= Security Go
 ```
 
-A green build or mergeability result alone does not remove a security blocker.
+## 8. Removal rule
+
+Remove a blocker only when the exact object/ref, material evidence, validator/gate, residual risk and next safe action are recorded. Mergeability or a green build alone never removes a security blocker.
