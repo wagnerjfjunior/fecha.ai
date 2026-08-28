@@ -1,8 +1,62 @@
 # FECH.AI — SFJM Current Material State
 
-**Status:** `MATERIAL_RECORDED_STATE / PR129_MERGED / EDGE_V19_DEPLOYED / B1_V19_RUNTIME_PASS / TWO_T3A_MIGRATION_ATTEMPTS_FAIL_CLOSED / LIVE_ROUTINE_ANCHOR_DRIFT / ANCHOR_REFRESH_REVIEWS_REQUIRED / SECURITY_GO_DENIED`
-**Updated:** `2026-08-25`
+**Status:** `SECURITY_TO_SCALE_2026 / M0_RECONCILED / OPEN_PRS_CLASSIFIED / STALE_CONTINUITY_CORRECTED / SECURITY_GO_DENIED`
+**Updated:** `2026-08-28`
 **Repository:** `wagnerjfjunior/fecha.ai`
+
+## 0. Current Security-to-Scale / M0 reconciliation — 2026-08-28
+
+This section is the current semantic override for continuity. Where older sections below conflict with this section, preserve them as historical lineage only and do not execute their former next actions.
+
+Canonical anchors at reconciliation:
+
+```text
+Program: Issue #141 — Security-to-Scale 2026 / OPEN
+M0: Issue #142 — truth, open PR and evidence reconciliation / OPEN
+FECH.AI live main observed: 8ad6b7ec493b363922168e22afd188577bdfa5c9
+Environment classification: Pilot Production multi-tenant / multi-company
+Security Go: NOT GRANTED
+Broad paid commercialization: BLOCKED
+Supabase/runtime access during M0: NOT EXECUTED
+```
+
+M0 analytical reconciliation was independently reviewed in read-only mode by the adopted documentation specialist through the manual copy/paste channel and was sufficient for its documentation purpose. A narrow evidence gap in that review concerned GitHub thread-resolution flags; subsequent live GitHub review-thread metadata established all six PR #139 threads as `isResolved=false`.
+
+Current open-PR classification:
+
+| PR | Exact head observed | Classification | Current material meaning |
+|---|---|---|---|
+| #139 | `32003e75a28e235fb454d39e3e4459d0f03acb2b` | `ACTIVE` | user-creation membership boundary; 6 unresolved review threads: 3 P1 + 3 P2 |
+| #140 | `3aed206883d7aa7ac76c8d48ffb09d677c848bba` | `ACTIVE` | Draft read-only Supabase Action/config evidence workstream |
+| #131 | `b9cb671e6fae8125a12b31454395b2a418e7cd17` | `STALE_CONTINUITY` | historical PR-head-only T3A continuity/evidence; not current live truth |
+| #124 | `5e5cc76dae2da93472643e585d3311c92e79e4e6` | `STALE_CONTINUITY` | older continuity artifact; not the current workstream |
+| #120 | `2b3ea57583f1fa54930191f02dc18c60997b9794` | `SUPERSEDED` | historical criar-usuario v16 baseline |
+
+No currently open PR is classified `NOT_RELEVANT`.
+
+Current evidence-strength rules:
+
+```text
+STATIC_IMPLEMENTATION_REVIEW != LIVE_DATABASE_VALIDATED
+LIVE_DATABASE_VALIDATED != CONTROLLED_RUNTIME_PASS
+CONTROLLED_RUNTIME_PASS != SECURITY_GO
+PR_HEAD_ONLY != CURRENT_LIVE_DATABASE_TRUTH
+VERSIONED != MERGED != APPLIED != DEPLOYED != RUNTIME_TESTED
+MERGEABLE != APPROVED
+VERCEL_SUCCESS != SECURITY_PASS
+```
+
+Historical exact-head specialist approvals remain valid only as static evidence for the exact objects reviewed. Historical live/catalog observations remain live-at-capture evidence and must be revalidated after material invalidation. Planned/versioned tests without durable execution evidence remain `NOT_EXECUTED`.
+
+Material continuity invalidation:
+
+```text
+The August 25 semantic path PR #129 -> routine-anchor refresh is no longer current.
+PR #130 merged, followed by later material transitions including #134, #136, #137 and #138.
+Current program authority is Issues #141/#142 and the active workstreams are #139/#140.
+```
+
+Do not infer that this documentation reconciliation approves #139, proves #140 runtime application, validates the current live Supabase catalog, grants Security Go, authorizes commercialization, or authorizes any lifecycle/runtime mutation.
 
 ## 1. Authority rule
 
