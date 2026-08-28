@@ -70,18 +70,17 @@ Their classification does not authorize closure, merge, rebase or deletion. Pres
 
 ## 6. PR #149 — M0 documentation publication
 
-PR #149 is `ACTIVE / DOCUMENTATION_ONLY_DRAFT` and must remain Draft after exact-head validation.
+PR #149 is `ACTIVE / DOCUMENTATION_ONLY_READY`. Product Authority explicitly authorized the Draft -> Ready transition and later bounded documentation commits necessary to preserve continuity through Ready.
 
 Blocked without separate Product Authority authorization:
 
 ```text
-Ready
 merge
 deploy
 Supabase
 runtime
 closing old PRs
-starting implementation work merely because the documentation PR exists
+starting implementation work merely because the documentation PR is Ready
 ```
 
 ## 7. Lifecycle separation
