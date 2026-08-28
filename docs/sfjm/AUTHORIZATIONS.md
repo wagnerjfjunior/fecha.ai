@@ -1,7 +1,7 @@
 # FECH.AI — SFJM Authorizations
 
-**Status:** `AUTHORITY_PROVENANCE_LEDGER / PR129_MERGE_CONSUMED / TWO_MIGRATION_ATTEMPTS_CONSUMED_FAIL_CLOSED / ROUTINE_ANCHOR_GITHUB_AUTHORITY_ACTIVE / ONE_LATER_APPLICATION_BOUNDED / OTHER_GATES_SEPARATE`
-**Updated:** `2026-08-25`
+**Status:** `AUTHORITY_PROVENANCE_LEDGER / PR130_MERGE_CONSUMED / T3A_PRODUCTION_APPLY_CONSUMED / BOUNDED_RUNTIME_SMOKE_PARTIALLY_CONSUMED / ROLLBACK_NOT_EXECUTED / SECURITY_GO_NOT_EXERCISABLE`
+**Updated:** `2026-08-26`
 **Repository:** `wagnerjfjunior/fecha.ai`
 
 ## 1. Interpretation rule
@@ -11,6 +11,7 @@ Authority is valid only for the exact repository, object, operation, scope, proh
 ```text
 TOOL_CAPABILITY != AUTHORIZATION
 ONE TRANSITION AUTHORITY != NEXT TRANSITION AUTHORITY
+CONDITIONAL AUTHORITY != AUTOMATIC EXECUTION
 ```
 
 Use durable classes:
@@ -18,263 +19,177 @@ Use durable classes:
 ```text
 ACTIVE_AUTHORITY
 CONSUMED_AUTHORITY
+NOT_EXERCISED
 AUTHORITY_PROVENANCE_NOT_RECORDED
 ```
 
-## 2. Consumed T3A setup authorities
+## 2. Current Product Authority context re-supplied on 2026-08-26
 
-Product Authority separately authorized and those bounded actions were consumed:
-
-```text
-create T3A branch security/t3a-admin-password-reset-boundary from the authorized main anchor
-version the live criar-usuario baseline and implement the initial T3A GitHub candidate
-open the T3A Draft PR for review
-perform read-only Backend/Data + AppSec-oriented review
-```
-
-Those consumed authorities do not authorize Ready, merge, Supabase application or Edge deployment.
-
-## 3. ACTIVE_AUTHORITY — live routine inventory anchor refresh
-
-PR #129 closed the PL/pgSQL role-alias collision, received fresh exact-head
-Backend/Data and independent AppSec approval, and merged as
-`69f4cfa1bdee331826953b492f25c12b4defc030`. The exact merged migration was
-then invoked once under the applicable production authority. It advanced past
-the alias correction and aborted fail-closed at
-`T3A_PREFLIGHT_POSITIVE_ROUTINE_INVENTORY_DRIFT` before DDL. No migration
-history entry or T3 object exists. That second application authority is
-consumed; no automatic retry occurred.
-
-Fresh read-only production evidence isolated the current full-inventory anchor:
+The Product Authority re-supplied the prior instruction in the current conversation:
 
 ```text
-historical reviewed full routine digest: b1f0919df8a0acaca7bbea2b928b0ffe
-current live full routine digest:       c299bf087df69f960dd0c611d1486675
-routine count: 264 -> 264
-authenticated SECURITY DEFINER subset:
-  122 / 7faa376a403c69239d9606559cf9c2db -> UNCHANGED
-aggregate count: 0 -> 0
-changed live helper: extensions.grant_pg_graphql_access()
+merge authorized if everything is correct
+Supabase production authorized if everything is correct
+Edge deploy authorized if everything is correct
+runtime smoke authorized if everything is correct
+rollback authorized if everything is correct
+Security Go authorized if everything is correct
 ```
 
-On `2026-08-25`, Product Authority authorized:
+This is conditional authority. Every gate remains fail-closed and transition-specific.
+
+## 3. CONSUMED_AUTHORITY — PR #130 merge
+
+PR #130:
 
 ```text
-Repository: wagnerjfjunior/fecha.ai
-Base: live main 69f4cfa1bdee331826953b492f25c12b4defc030
-Branch: security/t3a-live-routine-anchor-refresh
-Authorized GitHub-side work:
-  update the complete live routine inventory anchor in forward migration
-    preflight and postflight
-  apply the identical anchor refresh to rollback preflight and postrollback
-  preserve the routine count, authenticated-effective SECURITY DEFINER
-    count/digest, aggregate count and every other SQL/security expectation
-  update directly-related evidence and SFJM
-  create one Draft PR
-  perform read-only exact-head validation
-  prepare manual Backend/Data and AppSec review material
-Required sequence:
-  Backend/Data exact-head review
-  independent AppSec exact-head review only after Backend/Data closure
-  stop in Draft before Ready
+head: fd997b6fa552f9423f7a019af58483b2b1a837f1
+merge commit: 03fe960f4ef5715bbe50b6e3d5ec9c0b10167073
 ```
 
-Product Authority also bounded exactly one later production migration
-application after the two exact-head reviews. This is active but not yet
-exercisable: it requires authentication of the final reviewed/merged SQL bytes
-and resolution of the separate Ready/merge lifecycle gates. It does not permit
-trial-and-error, a different head, automatic retry or more than one invocation.
+The merge authority is consumed by the completed merge. It does not authorize a new T3B merge or any unrelated PR.
 
-Not included in this current action:
+## 4. CONSUMED_AUTHORITY — T3A Supabase production application
+
+The exact reviewed migration was applied successfully once to production.
 
 ```text
-Ready
-merge
-Edge deployment
-runtime/Auth call or smoke
-rollback
-Security Go
+project: uobxxgzshrmbtjfdolxd
+migration history: 20260826021346_t3_admin_password_reset_boundary
+result: COMMITTED
 ```
 
-The former PR #128 and PR #129 GitHub/production authorities are consumed.
+This application authority is consumed.
 
-## 4. CONSUMED_AUTHORITY — PR #127 correction, reviews and merge
+```text
+NO AUTOMATIC REAPPLY
+```
 
-On 2026-08-23 Product Authority directed that the identified T3A problems be corrected, with the stated final objective of a secure app/database implementation and a functional rollback, while explicitly requiring governance, DevSecOps, specialist validation, deep/red-team analysis, no workarounds and avoidance of PR loops.
+A later migration or rollback is a distinct production operation even if it belongs to the same broader program.
+
+## 5. NOT_EXERCISED — Edge redeploy after PR #130
+
+Production `criar-usuario` is already:
+
+```text
+version: 19
+status: ACTIVE
+ezbr_sha256: bafdd8e9c4cbf679d877b526703bc1ab791153a14fa1cbeddf69be4726f4c9d0
+```
+
+No Edge byte changed in PR #130 and no redeploy was required after the successful T3A migration.
+
+The conditional Edge-deploy authority was therefore not exercised. It must not be used to redeploy identical bytes merely for repetition.
+
+## 6. BOUNDED runtime-smoke authority and consumption
+
+Runtime evidence now includes:
+
+```text
+one controlled nonexistent-target denial
+one authorized same-company positive reset lineage
+one separate clean same-company positive reset with one client POST / HTTP 200
+```
+
+The clean second target receipt supplied by Product Authority explicitly records:
+
+```text
+CALL_COUNT=1
+RETRY_AUTOMATICO=DESABILITADO
+TOKEN_OUTPUT=NAO
+LOGIN_PASSWORD_OUTPUT=NAO
+NEW_PASSWORD_OUTPUT=NAO
+```
+
+No further automatic reset or retry is authorized by the existence of these prior smoke permissions.
+
+A new cross-company adversarial production smoke must still be target-bound, non-destructive and independently safe before execution.
+
+## 7. NOT_EXERCISED — rollback
+
+Rollback authority was stated conditionally, but rollback was not executed because T3A reached a successful committed production state with zero residual proof/lease rows at reconciliation.
+
+Do not execute rollback merely to demonstrate that a rollback file exists.
+
+Any production rollback test must first establish:
+
+```text
+exact current production anchor
+safe rollback target
+expected user/runtime impact
+reapply/forward recovery path
+zero active leases/unexpired proofs
+post-rollback validation
+explicit decision that the proof value justifies the production disruption
+```
+
+Until then:
+
+```text
+ROLLBACK_AUTHORITY: NOT EXERCISABLE FOR A DEMONSTRATION-ONLY RUN
+```
+
+## 8. Security Go authority is conditional and currently non-exercisable
+
+Product Authority stated that Security Go is authorized if everything is correct.
+
+The condition is not yet satisfied.
+
+Missing material proof includes:
+
+```text
+T3B frontend cutover deployed/runtime-proven
+cross-company adversarial runtime denial
+rollback/recovery proof acceptable to the final F1-02 gate
+final F1-02 acceptance decision
+```
+
+Therefore:
+
+```text
+SECURITY_GO_AUTHORITY: CONDITIONAL
+SECURITY_GO_EXECUTION: BLOCKED BY PRECONDITIONS
+SECURITY_GO: DENIED
+```
+
+## 9. Current documentation-only reconciliation authority
+
+The current conversation explicitly states that the previous session stopped before SFJM was updated and requests continuation with the supplied final context.
 
 Durable bounded interpretation:
 
 ```text
 Repository: wagnerjfjunior/fecha.ai
-Workstream: T3A administrative password-reset multi-tenant authority boundary
-Existing change set at that time: continue the current T3A branch/PR; do not open another T3A PR merely for the same blocker set
-Authorized GitHub-side work:
-  correct Edge/migration/rollback/evidence artifacts required to resolve material T3A blockers
-  update directly-related T3A/SFJM documentation needed for accurate continuity
-  update the existing T3A PR description so it matches the final corrected scope
-  perform read-only validation required to design/review the correction
-Required safeguards:
-  preserve multi-tenant isolation
-  preserve T1/T2 security contracts
-  fail closed
-  no workaround/bypass
-  exact rollback
-  specialist validation on final exact head
+Base: live main 03fe960f4ef5715bbe50b6e3d5ec9c0b10167073
+Authorized now:
+  reconcile the material T3A runtime state in SFJM/evidence
+  create a documentation-only branch
+  create one Draft PR
+Not implied:
+  T3B implementation
+  Ready
+  merge of the new documentation PR
+  production mutation
+  new runtime reset
+  rollback
+  Security Go
 ```
 
-Known required corrective domains at this transition:
+## 10. Stale PR #124
+
+PR #124 remains open/draft on a superseded base and overlaps SFJM files.
+
+No current authority was supplied to close, rebase, rewrite or merge PR #124.
+
+Therefore:
 
 ```text
-B1 safe rollout ordering
-B2 trust-anchor preflight
-B3 drift-safe rollback
-B4 T1 guard interoperability
+PR124_LIFECYCLE_MUTATION: NOT_AUTHORIZED
 ```
 
-The manually relayed Backend/Data review of exact head `bf8fb1f...` returned
-`REQUEST_CHANGES` for the DB-to-Auth authority race and non-transitive writer
-detection. The v3 lease/fence correction was then reviewed at exact head
-`4631325827a76152ba554bece2a59da9eb1bb662` / tree
-`843bbc9c9f32f07e97713368e7e472fca9e650cd`; that second integral manual review
-also returned `REQUEST_CHANGES`, closed HIGH-1, and left B2/B3 open for three
-positive-closure defects:
+Treat it as stale continuity and leave it untouched until Product Authority decides its lifecycle.
 
-```text
-full bidirectional role-membership/options inventory
-all routine kinds, including aggregates or a positive empty aggregate proof
-complete public schema owner/ACL inventory
-manual response SHA-256:
-  1ab2b39d52536b0ba92cd25df4d91b808f25abd08be0c5de72146113c7cda544
-```
-
-Correcting all of these findings in the same PR was inside that bounded
-authority. It covered publishing/reconciling the corrected artifacts,
-updating the existing PR description/evidence and completing the required
-exact-head validation record. It does not turn a candidate statement into
-specialist PASS or authorize the next lifecycle transition.
-
-The subsequent v3 candidate at exact head
-`fcb7dfc2f5f2259926556652fa9cfd3443d0c214` / tree
-`4dcaf2d4b6aa1248801e455def811e50ff04e414` received integral manual
-Backend/Data `APPROVE` and independent AppSec `APPROVE`:
-
-```text
-Backend/Data response SHA-256:
-  8b6bf96691b7337df95f0350ac5028a4aeb85e6cab917ec56383fc8e083ac0dc
-AppSec response SHA-256:
-  1df5df13786f7ba767340cca2ca546aeddbf92e81a307a48aef3107fc0cf64ca
-```
-
-Product Authority then separately authorized Ready, review and merge for that
-reviewed candidate. Ready was performed, but the post-Ready GitHub Codex review
-opened material P2 `DIRECT_RPC_CAN_MINT_UNRELEASABLE_LEASE`: the authenticated
-preparation RPC could be called directly, creating durable fenced state without
-the Edge Auth password mutation or a caller-accessible release. The PR was
-returned to Draft and was not merged.
-
-That material invalidation caused a same-PR v4 correction. Integral manual
-Backend/Data and independent AppSec reviews both returned `APPROVE` with no
-findings on exact head `a5c92617f372599a234c0147aad13a90649348d7` / tree
-`87872aac22b36437b7fb66f3614905e8df94f5ee`. Product Authority then explicitly
-authorized merge of PR #127, and that authority was consumed by merge commit
-`610bdd3c4b5ab208f7ffe177d9d32a2184aa9d87`.
-
-No Supabase migration or Edge deployment was implied by that merge authority.
-
-### Temporary specialist execution channel — manual while Router is frozen
-
-On `2026-08-23`, Product Authority recorded that the SES Router/Action is not
-available when specialist invocation originates inside the project, despite the
-documented intended integration. Repeated live tests did not establish a usable
-in-project Action path, so the Router is temporarily frozen for this workstream.
-
-Until Product Authority restores that channel:
-
-```text
-do not invent or simulate a Gateway receipt
-prepare an exact task/head-bound specialist prompt
-Product Authority submits that prompt manually to the named specialist
-Product Authority returns the specialist response integrally to this thread
-validate that response against the same live exact head before recording it
-run Backend/Data before the independent AppSec review
-```
-
-This is an execution-channel exception, not fuzzy role resolution and not
-mutation authority. The adopted roles remain:
-
-```text
-backend_data -> backend-data-platform-specialist
-application_security -> application-security-assurance-specialist
-```
-
-Manual specialist output must identify the repository, PR, exact head, material
-files read and verdict. It cannot authorize Ready, merge or production.
-
-### Consumed post-merge rollout authorities
-
-Product Authority later authorized the Edge-first rollout separately from the
-T3A migration and smoke. The exact reviewed Edge was deployed as v18; migration
-remained unapplied. Product Authority then authorized temporary use of the
-authenticated session for one fail-before-Auth call against a nonexistent or
-dedicated safe target. Because the browser appeared frozen, three UI submissions
-were emitted; all three failed closed and none reached an Auth update. This
-bounded runtime authority is consumed and does not authorize another call.
-
-The audit POST 400 observed in those calls was the material event supporting
-the now-consumed PR #128 GitHub correction. It was not authority to deploy its
-fix.
-
-## 5. CONSUMED_AUTHORITY — SFJM new-conversation transition
-
-On 2026-08-23 Product Authority explicitly requested use of SFJM to transition the work to a new conversation.
-
-This authorizes the bounded documentation update necessary to preserve current T1/T2/T3A material meaning and next safe action on the existing T3A branch.
-
-The transition documentation authority is consumed by publishing these SFJM updates. It does not create a new runtime/lifecycle permission.
-
-## 6. Actions still requiring separate exact authority or open preconditions
-
-```text
-mark the anchor-refresh PR Ready
-merge the anchor-refresh PR
-exercise the one authorized T3A production retry before both exact-head reviews,
-  final-byte authentication and required GitHub lifecycle resolution
-deploy another Edge version
-execute runtime/Auth or adversarial smoke
-execute rollback
-alter unrelated frontend/runtime
-Security Go
-F1-02 final acceptance
-WDP change
-```
-
-Neither failed application created an automatic retry. The single future
-invocation exists only because Product Authority explicitly granted it in §3,
-subject to the recorded reviews, exact-byte and lifecycle preconditions.
-
-## 7. Production-testing boundary
-
-Read-only production evidence gathering remains permitted when required by the active review/correction and when it does not expose PII unnecessarily.
-
-Active production mutation/testing is not inferred from this ledger. In particular:
-
-```text
-no SQL trial-and-error
-no production-as-lab
-no cross-tenant mutation test without explicit bounded authority
-```
-
-## 8. Historical authority provenance
-
-Where later lifecycle is independently established but exact historical authority evidence was not canonically recovered, use:
-
-```text
-AUTHORITY_PROVENANCE_NOT_RECORDED
-```
-
-Do not rewrite that as `UNAUTHORIZED` without affirmative evidence, and do not replay historical gates unless current safety materially requires it.
-
-## 9. Update rule
+## 11. Update rule
 
 Update this ledger only when durable authority meaning changes.
 

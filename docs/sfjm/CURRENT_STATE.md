@@ -1,78 +1,31 @@
 # FECH.AI — SFJM Current Material State
 
-**Status:** `MATERIAL_RECORDED_STATE / PR129_MERGED / EDGE_V19_DEPLOYED / B1_V19_RUNTIME_PASS / TWO_T3A_MIGRATION_ATTEMPTS_FAIL_CLOSED / LIVE_ROUTINE_ANCHOR_DRIFT / ANCHOR_REFRESH_REVIEWS_REQUIRED / SECURITY_GO_DENIED`
-**Updated:** `2026-08-25`
+**Status:** `MATERIAL_RECORDED_STATE / PR130_MERGED / T3A_PRODUCTION_APPLIED / EDGE_V19_ACTIVE / BOUNDED_NEGATIVE_AND_POSITIVE_RUNTIME_PASS / T3B_FRONTEND_CUTOVER_REQUIRED / SECURITY_GO_DENIED`
+**Updated:** `2026-08-26`
 **Repository:** `wagnerjfjunior/fecha.ai`
 
 ## 1. Authority rule
 
 This file is the principal authority for durable product/security operational meaning.
 
-It intentionally does not freeze volatile GitHub lifecycle facts such as current `main`, PR Draft/Ready, current head, checks, reviews, threads, mergeability or deployment state. Resolve those live before acting.
+It intentionally does not freeze volatile GitHub lifecycle facts. Resolve current `main`, PR state, head, checks, reviews, threads, mergeability and deployment state live before acting.
 
-This transition records the second distinct production preflight event. PR #129
-corrected the prior PL/pgSQL alias collision, passed fresh exact-head reviews and
-merged. The next exact migration invocation advanced beyond that defect and the
-positive routine inventory detected a new live catalog digest. PostgreSQL again
-aborted before any T3 object was created. The routine-anchor refresh is
-`PR_HEAD_ONLY` until merged; resolve its live PR/head and read these files from
-that exact head before continuing.
-
-### 1.1 Latest production transition — 2026-08-25
+Current material transition:
 
 ```text
-PR #128: MERGED
-PR #128 reviewed head: b594218dabd9a7beaea3158bb143f5dd2fd71386
-PR #128 merge commit / main: 3c9daf6c49eb937824c2c2b40aba198e2727c4bb
-criar-usuario production: v19 / ACTIVE / verify_jwt=false
-Edge deployment digest: bafdd8e9c4cbf679d877b526703bc1ab791153a14fa1cbeddf69be4726f4c9d0
-single controlled v19 fail-before-Auth call: HTTP 500 / EXPECTED_FAIL_CLOSED
-audit row: COMMITTED / status=edge_proof_unavailable
-target Auth mutation: NONE
-first T3A migration application: ABORTED / PLPGSQL ROLE-ALIAS COLLISION
-PR #129: MERGED
-PR #129 reviewed head: 6f6092aa66352cda3d617897895b0f09019adeea
-PR #129 merge commit / main: 69f4cfa1bdee331826953b492f25c12b4defc030
-second T3A migration application: ABORTED / POSITIVE ROUTINE INVENTORY DRIFT
-T3A migration history entry: ABSENT
-T3A routines/relations after abort: ABSENT
+T3A administrative password-reset server/data boundary
+-> PR #130 exact-head reviews closed
+-> PR #130 merged
+-> exact T3A migration applied successfully once to Supabase production
+-> catalog postflight established
+-> bounded negative runtime smoke PASS
+-> bounded authorized positive runtime reset PASS
+-> second clean positive target PASS
+-> frontend still performs a stale post-success direct must_change_password write
+-> T3B frontend cutover is now the next technical workstream
 ```
 
-The first application error was:
-
-```text
-SQLSTATE 55000
-record "r" is not assigned yet
-```
-
-PR #129 renamed only those aliases/references to `role_row` in forward and
-rollback pre/postflight. The second application then stopped at:
-
-```text
-SQLSTATE P0001
-T3A_PREFLIGHT_POSITIVE_ROUTINE_INVENTORY_DRIFT
-PL/pgSQL function inline_code_block line 386 at RAISE
-```
-
-Fresh live recomputation established:
-
-```text
-complete non-system routine inventory excluding the separately-pinned T1 guard:
-  reviewed baseline: count 264 / md5 b1f0919df8a0acaca7bbea2b928b0ffe
-  current live:      count 264 / md5 c299bf087df69f960dd0c611d1486675
-authenticated-effective SECURITY DEFINER subset:
-  count 122 / md5 7faa376a403c69239d9606559cf9c2db / UNCHANGED
-non-system aggregates: count 0 / UNCHANGED
-```
-
-The only non-system routine newer than the established T1 anchor is
-`extensions.grant_pg_graphql_access()`, owned by `supabase_admin`,
-`SECURITY INVOKER`, bound to enabled event trigger `issue_pg_graphql_access`,
-with implementation MD5 `2f3fa32125a4cd4e597bc8b3c7b55218`. The narrow
-correction changes only the four complete routine-inventory digest literals in
-forward and rollback. It does not exclude the helper or relax the inventory,
-and it does not change counts, the authenticated definer subset, grants,
-authority predicates, T1/T2, Edge code, App.jsx, business data or Auth state.
+Security Go remains denied because T3B, cross-tenant runtime evidence and rollback/recovery proof remain incomplete.
 
 ## 2. Product context
 
@@ -97,352 +50,259 @@ Client-provided tenant/company/role/flags/ownership are not authority.
 Fail closed on missing or inconsistent identity/tenant/permission evidence.
 ```
 
-No Supabase test database/branch is part of the current operating model. Production remains the only database environment; this increases rollout discipline requirements and does not relax authorization, isolation, rollback or evidence gates.
+## 3. Live GitHub anchor
 
-## 3. T1 — corretor status authority boundary
-
-Material state:
+Latest live `main` resolved for this transition:
 
 ```text
-GitHub: MERGED
-Supabase production: APPLIED
-Production migration record:
-  version: 20260822192552
-  name: f1_02_harden_status_corretor_rpc
-Post-application catalog validation: ESTABLISHED
+main: 03fe960f4ef5715bbe50b6e3d5ec9c0b10167073
+merge: PR #130 — fix(security): refresh T3A live routine inventory anchor
+reviewed head: fd997b6fa552f9423f7a019af58483b2b1a837f1
+reviewed / merge tree: b996a327f9d39968731bc0579f21924a525ef2df
 ```
 
-Current production read-only revalidation on 2026-08-23 established:
+PR #130 had independent exact-head Backend/Data and AppSec static approvals before merge. Those reviews prove the reviewed bytes only; runtime proof is recorded separately below.
+
+## 4. T1 / T2 preserved state
+
+T1 status authority remains applied and is not reopened.
+
+Current production column authority revalidation establishes for `authenticated`:
 
 ```text
-public.t3_prepare_admin_password_reset(uuid): ABSENT
-public.t3_prepare_admin_password_reset(uuid,uuid): ABSENT
-public.t3_issue_admin_password_reset_edge_proof(uuid,uuid): ABSENT
-public.t3_admin_password_reset_edge_proofs: ABSENT
-T1 triggers on public.corretores: PRESENT / ENABLED
-authenticated UPDATE columns on public.corretores exactly:
-  apto_para_receber
-  ativo
-  must_change_password
-public.marcar_senha_inicial_definida() md5:
-  2a7b28d4bb6342a99d075c4d3c49af4d
+UPDATE apto_para_receber: YES
+UPDATE ativo: YES
+UPDATE must_change_password: NO
+UPDATE role: NO
+UPDATE empresa_id: NO
+UPDATE time_id: NO
+UPDATE user_id: NO
+UPDATE is_admin_local: NO
+UPDATE is_gestor: NO
 ```
 
-The T1 strict authority model remains material and must not be weakened by T3A.
+Established T1 triggers remain enabled.
 
-Important T1 interaction discovered during T3A red-team review:
+T2 status-edit frontend cutover remains established for `ativo/apto_para_receber` and is not reopened by T3A.
+
+## 5. T3A — production application state
+
+Supabase production project:
 
 ```text
-trg_t1_guard_corretores_direct_compat_update
-→ protects ativo / apto_para_receber / must_change_password
-→ currently denies gestor-originated must_change_password changes
+uobxxgzshrmbtjfdolxd
 ```
 
-Therefore the first T3A candidate cannot simply execute `UPDATE must_change_password=true` and expect strict gestor resets to work. T3A must interoperate with the existing T1 guard without disabling it, bypassing tenant checks, granting broad UPDATE, trusting the client or weakening existing status protections.
-
-Any T1 guard correction inside T3A must be narrowly bound to the server-authorized T3 password-reset transition, permit only the intended protected transition, and have an exact rollback to the pre-T3A T1 guard contract.
-
-## 4. T2 — frontend status cutover
-
-Material code state:
+Migration application:
 
 ```text
-main code anchor at transition time:
-  commit: 037232fe3da37a749ab980f783af92ff15e2baf2
-  src/App.jsx blob: de7cf84f416409624533e3002c54d8432b35be61
+name: t3_admin_password_reset_boundary
+history version: 20260826021346
+application: SUCCESS / COMMITTED
 ```
 
-The frontend status path was cut over from direct `PATCH public.corretores` for `ativo/apto_para_receber` to `public.atualizar_status_corretor(...)`.
-
-Controlled positive production smoke was executed in the app and captured through HAR evidence in the operating session for:
+Current catalog establishes:
 
 ```text
-apto isolated true -> false -> true: PASS
-ativo isolated true -> false -> true: PASS
-ativo + apto combined false -> true restoration: PASS
-unchanged field sent as null in isolated calls: PASS
-status RPC returned ok=true: PASS
-direct status PATCH observed in the captured flows: ZERO
+public.t3_admin_password_reset_edge_proofs: PRESENT
+public.t3_admin_password_reset_leases: PRESENT
+public.t3_issue_admin_password_reset_edge_proof(uuid,uuid): PRESENT
+public.t3_prepare_admin_password_reset(uuid,uuid): PRESENT
+public.t3_release_admin_password_reset_lease(uuid,uuid,uuid): PRESENT
+proof rows at reconciliation: 0
+lease rows at reconciliation: 0
 ```
 
-This is bounded positive-flow evidence. It is not a broad adversarial certification of every role/tenant combination and does not grant Security Go.
+The release function has three UUID arguments. A two-argument lookup is not the production signature and must not be used as absence evidence.
 
-The administrative password flow remains separate. The current App.jsx still contains the stale post-reset direct write:
+Production Edge:
 
 ```text
-must_change_password=false
+slug: criar-usuario
+version: 19
+status: ACTIVE
+verify_jwt: false
+ezbr_sha256: bafdd8e9c4cbf679d877b526703bc1ab791153a14fa1cbeddf69be4726f4c9d0
 ```
 
-That path is intentionally not T2 and remains part of T3A/T3B closure.
+No Edge redeploy is required by this reconciliation.
 
-## 5. T3A — Administrative Password Reset Multi-Tenant Authority Boundary
+## 6. Runtime evidence
 
-### Objective
+### 6.1 Bounded negative target
 
-Establish a non-bypassable server-side administrative password-reset boundary with:
+Production evidence records one controlled nonexistent-target path:
 
 ```text
-actor derived from auth.uid()
-company/tenant derived server-side
-strict root/admin_local/gestor authority
-cross-company denial
-gestor limited to ordinary broker in own ACTIVE managed team
-target-existence leakage resistance
-must_change_password=true before Auth password mutation
-no authority from client-provided empresa/role/flags/team/ownership
-rollback that restores the exact prior boundary
+audit created_at: 2026-08-26T02:37:06.753706Z
+status: denied
+HTTP observed in the prior runtime receipt: 403
+target Auth user: absent
+target corretor profile: absent
+residual lease: none
 ```
 
-### Current implementation lineage
+This proves a bounded fail-closed negative path. It is not cross-company adversarial coverage.
 
-The initial candidate at PR head `45ad2766...` received material B1-B4
-findings. Backend/Data review of `bf8fb1f...` then identified the
-DB-commit-to-Auth authority race and rejected the non-transitive writer regex.
-The v3 lease/fence head `46313258...` closed that race and passed B1/B4
-statically, but still lacked complete membership/options, aggregate and
-`public` ACL closure. The corrected exact head
-`fcb7dfc2f5f2259926556652fa9cfd3443d0c214` / tree
-`4dcaf2d4b6aa1248801e455def811e50ff04e414` received integral manual
-Backend/Data `APPROVE` and independent AppSec `APPROVE`.
+### 6.2 Authorized positive target lineage
 
-After Product Authority separately authorized Ready, the GitHub Codex review
-opened material P2 `DIRECT_RPC_CAN_MINT_UNRELEASABLE_LEASE`. An authorized
-authenticated user could call the preparation RPC directly through PostgREST,
-commit a non-expiring lease and `must_change_password=true`, skip the Edge Auth
-password mutation, and lack access to the service-role-only release. The T1/T3
-fence would then also block ordinary self-service completion. The PR was
-returned to Draft at that point, and the same T3A change set added the v4
-correction:
+Production audit/Auth reconciliation establishes successful administrative resets at:
 
 ```text
-versioned criar-usuario Edge baseline + hardened leased reset path
-service-role-only public.t3_issue_admin_password_reset_edge_proof(uuid,uuid)
-caller-bound public.t3_prepare_admin_password_reset(uuid,uuid)
-opaque one-time actor+target proof consumed before locks/lease/password state
-PostgreSQL-only two-minute proof freshness; no frontend time or authority input
-durable reset lease + snapshot-independent unique-index probes + three authority-table fencing triggers
-service-role-only exact lease release after proven Auth success
-exact authority-table ACL pinning + service_role TRUNCATE revocation
-positive full non-system routine inventory instead of writer regex
-full role-membership graph/options + authenticator role anchor
-database/public-schema owner + complete public ACL anchor
-all pg_proc routine kinds + explicit zero non-system aggregate assertion
-exact fail-closed trust-anchor preflight/postflight
-lease-bound T1 direct-guard interoperability
-revocation of authenticated UPDATE(must_change_password)
-exact drift-aware rollback blocking live proofs/leases and cleaning only expired inert proofs after full preflight
-B1-B4 evidence and coverage matrix
+2026-08-26T02:42:09.814749Z -> success
+2026-08-26T02:56:29.251336Z -> success on the same target lineage
 ```
 
-Fresh integral Backend/Data and independent AppSec reviews approved exact head
-`a5c92617f372599a234c0147aad13a90649348d7` / tree
-`87872aac22b36437b7fb66f3614905e8df94f5ee` with no findings. PR #127 then
-merged as main commit `610bdd3c4b5ab208f7ffe177d9d32a2184aa9d87`.
+The corresponding Auth user `updated_at` advanced immediately after the later successful event. No residual proof or lease remained at reconciliation.
 
-Merged v4 fingerprints:
+### 6.3 Clean second positive target
+
+The Product Authority supplied the terminal receipt for a separate clean same-company target. Sensitive values were not retained in SFJM.
+
+Client receipt:
 
 ```text
-T3 proof issuer prosrc: 87f8d7f0c96ce4ae52fed9e2bc4bdcdd
-T3 prepare prosrc: f9bd114c7eb77313e22861816b8a88f5
-T3 release prosrc: a51c5b360c5d8a3684a97271460ec249
-T3 fence guard prosrc: bd611e591aa2d951b178853f78caaa65
-T3-aware direct guard prosrc: 951da8a6ac6e934828f06ab1513778fa
-rollback-restored pre-T3A pg_get_functiondef: 99477024e337de5645dd042a30f8cf78
+CALL_COUNT=1
+EDGE_HTTP_STATUS=200
+EDGE_RESPONSE.ok=true
+CLIENT_OBSERVATION=EXPECTED_AUTHORIZED_RESET_SUCCESS
+RETRY_AUTOMATICO=DESABILITADO
+TOKEN_OUTPUT=NAO
+LOGIN_PASSWORD_OUTPUT=NAO
+NEW_PASSWORD_OUTPUT=NAO
 ```
 
-These are approved static v4 facts, not proof that the migration is applied.
-
-The separately-authorized Edge-first rollout deployed the exact merged source
-as production `criar-usuario` v18 (`verify_jwt=false`, Git blob
-`ec62997bc357b550feda5027051fe507fe9184fa`, SHA-256
-`11719575bce92c85422eb5d3a78ad26a5d683c47202e6db8032f3e13d5a254a7`).
-T3A issuer/prepare/release/proof/lease objects remain absent and the migration
-has not been applied.
-
-The bounded fail-before-Auth UI exercise emitted three submissions while the
-browser appeared frozen. All three followed the same platform sequence:
+Independent production reconciliation establishes:
 
 ```text
-caller Auth GET 200
-caller profile GET 200
-audit_logs INSERT 400
-proof issuer RPC 404
-audit_logs PATCH 204 with no matching row
-Edge response 500
-no admin Auth update; target password fingerprint and updated_at unchanged
+audit created_at: 2026-08-26T03:00:25.365562Z
+status: success
+Auth updated_at: 2026-08-26T03:00:25.618661Z
+corretor profile: present
+residual proof rows: 0
+residual lease rows: 0
 ```
 
-B1 is runtime PASS. The audit INSERT 400 is a new material blocker: live
-`audit_logs` requires `acao` and `entidade`, and `ip_address` is `inet`.
-T3A-v5 corrects only that audit-compatibility/integrity domain while preserving
-the approved v4 authority boundary:
+Verdict for the bounded same-company authorized server path:
 
 ```text
-Edge supplies modern + legacy audit columns in reset and creation paths
-Edge requires the audit insert before proof/prepare/Auth
-client IP is conservative for inet; raw value is stored only in legacy text ip
-migration pins complete audit metadata/ACL/columns/constraints/indexes/policies
-baseline audit fingerprint 5d3b70257c57f5956032e83131effabb
-post-revoke fingerprint 1b1a381796f273b503cd4c41d34a3688
-authenticated audit INSERT revoked; authenticated SELECT preserved
-rollback locks audit after proof/authority/lease and restores/verifies the exact legacy INSERT grant
+PASS
 ```
 
-The v5 audit correction received Backend/Data and independent AppSec exact-head
-approval at `b594218dabd9a7beaea3158bb143f5dd2fd71386`, merged through PR #128 as
-`3c9daf6c49eb937824c2c2b40aba198e2727c4bb`, and its exact Edge was deployed
-as production v19. One controlled call proved the corrected audit-first
-fail-before-Auth path. The later separately-authorized migration invocation
-then exposed the PL/pgSQL alias collision recorded in §1.1; it aborted before
-DDL and created no migration-history entry.
+This does not establish cross-company adversarial runtime coverage, rollback execution, recovery proof or Security Go.
 
-PR #129 corrected only that collision, received both exact-head approvals and
-merged as `69f4cfa1bdee331826953b492f25c12b4defc030`. The exact merged migration
-was then invoked once and advanced to the positive routine inventory, which
-detected live digest `c299bf087df69f960dd0c611d1486675` instead of the
-historical reviewed `b1f0919df8a0acaca7bbea2b928b0ffe`. It again aborted
-before DDL with no history entry or T3 object. The current digest-only refresh
-is the new bounded review domain.
+## 7. T3B — current frontend blocker
 
-### Static authority contract preserved
+Current `main` App anchor:
 
 ```text
-ROOT
-  public.admins
-  role='admin_global'
-  ativo=true
-
-ADMIN_LOCAL
-  corretores.role='admin_local'
-  is_admin_local=true
-  ativo=true
-  target same empresa
-  target not protected root/admin identity
-  is_gestor is not an admin-local authority prerequisite
-
-GESTOR
-  corretores.role='gestor'
-  is_gestor=true
-  is_admin_local=false
-  ativo=true
-  target same empresa
-  target role='corretor'
-  target not admin/gestor
-  target has no public.admins identity
-  target ACTIVE managed team
-  team.empresa_id = actor.empresa_id
-  team.gestor_id = actor.id
+src/App.jsx blob: de7cf84f416409624533e3002c54d8432b35be61
+callsite: EditarCorretorModal.redefinirSenha()
 ```
 
-Same-company membership alone is insufficient for gestor authority.
-
-## 6. T3A B1-B4 state after the live routine-anchor finding
-
-The alias defect is closed by PR #129. The new finding is a genuine positive
-inventory mismatch in the exact trust-anchor preflight. It does not reopen the
-already established actor, tenant, proof, lease, audit or T1 logic.
-
-| Domain | Current result | Effect of anchor refresh |
-|---|---|---|
-| B1 safe rollout ordering | v19 runtime PASS: one POST 500, audit committed, no Auth mutation | unchanged |
-| B2 trust-anchor preflight | alias correction passed; the positive routine inventory then detected current live drift and stopped before DDL | refresh the exact full-inventory digest in forward pre/postflight; preserve count, definer subset and aggregate anchors |
-| B3 drift-safe rollback | not executed; rollback must recognize the same exact live baseline before and after reversal | apply the identical full-inventory digest refresh in rollback pre/postflight |
-| B4 T1 interoperability | approved static contract; migration never reached DDL | unchanged |
-| Multi-tenant / actor boundary | server-derived company/role/team and `auth.uid()` actor | unchanged |
-| Edge / frontend | production Edge v19; no App.jsx change | unchanged |
-
-The second failed application is evidence that B2 failed closed on a new live
-event, not an authority bypass, not a repeat of the alias defect and not a
-partial deployment. Exact-head Backend/Data review must precede independent
-AppSec review on the corrected Draft PR.
-
-## 7. Material blockers
-
-Until the digest-only correction receives Backend/Data and independent AppSec
-approval on one exact head and later lifecycle/runtime authorities are granted:
+The current flow is:
 
 ```text
-corrective PR Ready: BLOCKED
-corrective PR merge: BLOCKED
-new T3A Supabase application: AUTHORIZED ONCE AFTER REVIEWS / CURRENTLY BLOCKED BY PRECONDITIONS
-T3A runtime smoke: BLOCKED
-rollback execution: BLOCKED
-T3B frontend password cutover: BLOCKED
+POST criar-usuario action=reset_password
+-> Edge returns success
+-> frontend executes direct PATCH public.corretores must_change_password=false
+-> authenticated no longer has UPDATE privilege on must_change_password
+-> PATCH fails
+-> catch displays an error even though Auth reset already succeeded
+```
+
+This is the observed explanation for the apparent UI error after a successful backend reset.
+
+The stale direct write is not legitimate authority and must not be re-enabled. T3B must remove the direct patch and align UX/local state with the server-owned `must_change_password=true` contract for an administrator-issued temporary password.
+
+## 8. Stale continuity — PR #124
+
+PR #124 is live as:
+
+```text
+OPEN / DRAFT
+base SHA: 827f8591bfe4eee595a1aa22e169dcf6465f7fa3
+head: 5e5cc76dae2da93472643e585d3311c92e79e4e6
+mergeable: false
+```
+
+It edits overlapping SFJM files for an earlier PR-03 inventory state and predates the T1/T2/T3A material transitions.
+
+Classification:
+
+```text
+STALE_CONTINUITY / SUPERSEDED_FOR_CURRENT_SFJM
+```
+
+Do not merge, rebase or reuse PR #124 as the T3A/T3B continuity vehicle without a separate explicit decision. Its historical inventory evidence remains historical.
+
+## 9. Material blockers
+
+```text
+T3A migration reapplication: BLOCKED / already applied
+repeat password reset on already-proven test targets: BLOCKED / unnecessary
+Edge v19 redeploy: BLOCKED / unnecessary absent material Edge change
+T3B frontend cutover: NOT YET IMPLEMENTED
+cross-company adversarial runtime proof: NOT ESTABLISHED
+rollback execution/runtime proof: NOT ESTABLISHED
+recovery-path proof: NOT ESTABLISHED
 Security Go: DENIED
-Broad paid commercialization: BLOCKED
+F1-02 final acceptance: BLOCKED
+broad paid commercialization: BLOCKED
 ```
 
-Production remains in the intended Edge-first fail-closed state: v19 can record
-the attempt and fails before Auth while the issuer/prepare RPCs are absent.
+## 10. Current Product Authority and limits
 
-## 8. Current Product Authority and limits
-
-Product Authority separately authorized the first production migration
-application after the v19 fail-before-Auth proof. That authority was consumed
-by the alias-collision abort. After PR #129 review/merge, the later conditional
-production authority was consumed by the second fail-closed invocation. No
-automatic retry occurred after either event.
-
-After the routine inventory mismatch and intact-production verification were
-reported, Product Authority authorized:
+The Product Authority re-supplied the prior authorization context in the current conversation:
 
 ```text
-create one narrow corrective Draft PR from live main 69f4cfa1...
-refresh only the four complete non-system routine inventory digest literals
-  from b1f0919d... to current live c299bf08...
-update directly-related evidence/SFJM
-perform read-only validation
-prepare exact-head specialist review material
-obtain Backend/Data exact-head review, then independent AppSec exact-head review
-after those reviews and resolution of the separate GitHub lifecycle
-  prerequisites, apply the authenticated final migration exactly once
+merge if all gates are satisfied
+Supabase production if all gates are satisfied
+Edge deploy if all gates are satisfied
+runtime smoke if all gates are satisfied
+rollback if all gates are satisfied
+Security Go if all gates are satisfied
 ```
 
-The one production retry is not exercisable during this Draft/review action.
-Ready and merge remain separate unresolved lifecycle gates. Edge deploy,
-runtime/Auth smoke, rollback and Security Go are not included.
+Durable interpretation is fail-closed and transition-specific:
 
-## 9. Semantic next action
+- PR #130 merge: already consumed;
+- successful T3A production migration application: already consumed;
+- Edge redeploy after PR #130: not required and therefore not exercised;
+- bounded runtime smoke: partially exercised and evidenced above; no automatic retry is authorized merely because prior smoke authority existed;
+- rollback: not executed because the successful state did not require recovery; production rollback must not be run merely to demonstrate capability without a separately safe test plan;
+- Security Go: not exercisable while recorded proof obligations remain incomplete.
+
+## 11. Semantic next action
 
 ```text
-Publish the four-literal forward/rollback routine-anchor refresh in one Draft
-PR from live main, resolve its exact head, read all changed material through
-EOF, obtain Backend/Data exact-head review and then independent AppSec
-exact-head review. Stop in Draft before Ready.
+T3B FRONTEND CUTOVER
+
+Create one narrow frontend Draft PR from live main that changes only the
+EditarCorretorModal administrative reset success path:
+
+- keep the existing Edge reset call;
+- require explicit HTTP/JSON success;
+- remove the direct PATCH must_change_password=false;
+- do not restore authenticated UPDATE(must_change_password);
+- preserve server-side actor/tenant/role/team authority;
+- make the UI report success when the Edge returned the reviewed success contract;
+- refresh/local-update the broker state so the temporary-password state is represented correctly;
+- no Supabase migration, Edge change or unrelated App.jsx refactor.
 ```
 
-No T1/T2 review is reopened. The one later production retry is already bounded
-by Product Authority but may use only the authenticated final reviewed/merged
-SQL after the separate GitHub lifecycle gates are resolved.
+Before any T3B Ready/merge/deploy, re-resolve exact head and perform the required frontend/security/domain validation.
 
-## 10. Handoff prohibitions
+## 12. Do not reopen
 
-Do not:
+Absent a new material invalidation event, do not reopen:
 
 ```text
-create a workaround that weakens T1
-create another duplicate PR to relitigate B1-B4; this one post-PR129 anchor
-  refresh is justified only by the newly observed live routine digest
-apply SQL merely to see whether it works
-use production as an offensive laboratory
-normalize real users/data as part of T3A
-alter App.jsx in T3A
-change criar-usuario user-creation semantics outside what is strictly necessary for reset boundary compatibility
-claim production PASS from static code
-mark Security Go
+T1 status authority design
+T2 ativo/apto frontend cutover
+PR #130 routine-anchor static review
+successful T3A migration application
+bounded successful T3A same-company runtime path
 ```
 
-## 11. Material update triggers
-
-Update this file when durable meaning changes, including:
-
-```text
-B1-B4 corrected or materially changed
-new exact-head specialist gate outcome
-T3A application/deployment/runtime validation
-T3B eligibility change
-rollback evidence materially changes
-Security Go/F1-02 acceptance changes
-```
-
-Do not update solely because a SHA advanced, a Draft became Ready, or a documentation-only lifecycle event occurred without semantic effect.
+A repeated audit on unchanged evidence is `AUDIT_LOOP_BLOCKED`.

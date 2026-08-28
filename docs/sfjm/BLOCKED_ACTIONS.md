@@ -1,7 +1,7 @@
 # FECH.AI — SFJM Blocked Actions
 
-**Status:** `MATERIAL_BLOCKER_VIEW / PR129_MERGED / EDGE_V19_B1_PASS / T3A_LIVE_ROUTINE_ANCHOR_DRIFT / ANCHOR_REFRESH_REVIEWS_PENDING / FAIL_CLOSED`
-**Updated:** `2026-08-25`
+**Status:** `MATERIAL_BLOCKER_VIEW / T3A_APPLIED / BOUNDED_RUNTIME_PASS / T3B_REQUIRED / SECURITY_GO_DENIED`
+**Updated:** `2026-08-26`
 **Repository:** `wagnerjfjunior/fecha.ai`
 
 ## 1. Authority
@@ -14,132 +14,101 @@ docs/sfjm/CURRENT_STATE.md
 
 Resolve live lifecycle before acting.
 
-## 2. Product/security blocks
+## 2. Closed T3A blockers
+
+The following prior blockers are closed for the reviewed/applied T3A bytes:
+
+```text
+PR #130 exact-head Backend/Data review
+PR #130 independent AppSec review
+PR #130 merge
+routine-anchor drift correction
+T3A production migration application
+post-application catalog existence/postflight
+bounded nonexistent-target denial
+bounded same-company authorized positive reset
+second clean same-company positive reset
+```
+
+These closures do not imply Security Go.
+
+## 3. Current product/security blocks
 
 ```text
 Security Go
-broad paid commercialization
 F1-02 final acceptance
-anchor-refresh PR Ready
-anchor-refresh PR merge
-one authorized T3A Supabase production retry until its review/lifecycle preconditions close
-T3A runtime/adversarial/cross-tenant smoke
-rollback execution
-T3B frontend password cutover
+broad paid commercialization
+T3B frontend password-reset cutover Ready/merge/deploy until implemented and reviewed
+cross-company adversarial runtime claim until actually executed with a safe bounded target
+rollback-runtime claim until actually proven in an appropriate safe environment/plan
+recovery-path claim for ambiguous Auth/release outcomes until tested/validated
 WDP increase without governance acceptance
 ```
 
-## 3. Closed lineage and current live-anchor gate
-
-PR #127 closed the B1-B4 authority-design blockers and merged. PR #128 closed
-the post-merge audit-schema incompatibility, received Backend/Data and
-independent AppSec approval on head
-`b594218dabd9a7beaea3158bb143f5dd2fd71386`, and merged as
-`3c9daf6c49eb937824c2c2b40aba198e2727c4bb`.
-
-Production Edge v19 then proved:
+## 4. Explicitly blocked redundant actions
 
 ```text
-single POST
-audit row committed with status=edge_proof_unavailable
-Edge HTTP 500
-no Auth mutation
-B1 runtime PASS
+reapply T3A migration merely to reconfirm success
+redeploy Edge v19 when bytes/runtime are unchanged
+repeat password resets on already-proven targets merely for reassurance
+restore authenticated UPDATE(must_change_password)
+weaken T1/T3 guards to make the frontend PATCH succeed
+run production rollback merely as a demonstration without a safe rollback/reapply plan
 ```
 
-The first separately-authorized exact migration invocation failed in the first
-preflight with SQLSTATE 55000 because PL/pgSQL record variable `r` collided
-with `pg_roles AS r`. The transaction aborted before DDL; no T3 objects or
-migration record exist. The rollback source contains the same collision.
+The current UI error must be fixed by removing the stale frontend protected-field write, not by restoring client authority.
 
-PR #129 corrected only that collision, received fresh Backend/Data and
-independent AppSec approval on exact head
-`6f6092aa66352cda3d617897895b0f09019adeea`, and merged as
-`69f4cfa1bdee331826953b492f25c12b4defc030`.
+## 5. T3B current blocker
 
-The exact merged migration was then invoked once. It advanced past the alias
-defect and aborted at
-`T3A_PREFLIGHT_POSITIVE_ROUTINE_INVENTORY_DRIFT`. Production remained intact:
-no T3 history entry, routine or relation exists, and Edge v19 remains active.
-The complete live routine count remained 264, but its digest moved from
-`b1f0919d...` to `c299bf08...`; the authenticated-effective SECURITY DEFINER
-subset remained exactly `122 / 7faa376a...` and aggregate count remained zero.
-The changed routine is the Supabase-owned SECURITY INVOKER event-trigger helper
-`extensions.grant_pg_graphql_access()`.
-
-Current blocking gate:
+Current App flow after successful Edge reset:
 
 ```text
-one four-literal routine-anchor corrective Draft PR
--> integral final-file read and exact diff
--> Backend/Data exact-head PASS
--> independent AppSec exact-head PASS
--> STOP before Ready
+HTTP 200 / ok=true
+-> stale direct PATCH corretores.must_change_password=false
+-> authenticated UPDATE privilege on must_change_password = false
+-> PATCH fails
+-> UI reports error after successful Auth mutation
 ```
 
-This is a new runtime executability finding. It does not reopen T1/T2, the
-multi-tenant actor contract, proof/lease design or audit compatibility.
-
-## 4. Explicitly prohibited workaround classes
-
-Do not resolve T3A by:
+Required correction class:
 
 ```text
-disabling or bypassing T1 triggers
-broadening authenticated UPDATE on public.corretores
-restoring client authority over must_change_password
-trusting client-provided empresa_id/role/flags/time/ownership
-using service_role identity as a substitute for auth.uid() authorization
-exposing the authenticated prepare RPC to anon/PUBLIC/service_role
-letting a direct authenticated prepare call create durable state without an
-  Edge-presence proof
-normalizing production users to fit the code
-trial-and-error SQL in production
-excluding/whitelisting the changed helper to make the hash pass instead of
-  pinning the complete current inventory
-mixing unrelated user-creation redesign into password-reset hardening
-ignoring an audit INSERT failure and continuing to proof/Auth
-dropping/relaxing legacy audit NOT NULL columns to fit the Edge
-leaving authenticated direct audit INSERT as a forgeable server-audit surface
-using a frontend/server timeout as lease authority or automatic expiry
-releasing an unresolved lease after an ambiguous Auth result
+frontend-only T3B cutover
 ```
 
-Any correction that makes the immediate test pass while weakening tenant isolation, authority derivation or rollback is `BLOCKING`, not an acceptable shortcut.
+No Supabase migration or Edge change belongs to this correction unless a new material finding proves otherwise.
 
-## 5. T1/T2 closed-cycle protection
+## 6. Stale continuity blocker — PR #124
 
-Do not reopen T1/T2 as independent programs without a new material invalidation event.
-
-Current T3A work may inspect/revalidate the minimum T1/T2 objects necessary for compatibility, including the live T1 guards and the current App password-reset callsite.
-
-Do not:
+PR #124 remains `OPEN / DRAFT`, is based on old main `827f8591...`, is `mergeable=false`, and edits overlapping SFJM files for an earlier PR-03 state.
 
 ```text
-redo T2 status smoke merely for repetition
-rewrite T1 status authority rules to make T3 easier
-change App.jsx inside T3A
+PR #124 merge: BLOCKED AS STALE_CONTINUITY
+PR #124 reuse for T3B: BLOCKED
 ```
 
-## 6. Lifecycle separation
+Do not close, rebase or rewrite it without separate lifecycle authority. Its historical evidence remains historical.
+
+## 7. Lifecycle separation
 
 The following remain distinct decisions:
 
 ```text
-corrective GitHub commit
-exact-head specialist PASS
-Ready
-merge
-Supabase migration application
-Edge deployment
-runtime smoke
-rollback execution
+T3B implementation
+T3B exact-head review
+T3B Ready
+T3B merge
+T3B deploy
+T3B runtime smoke
+cross-company adversarial smoke
+rollback/recovery proof
+F1-02 final acceptance
 Security Go
 ```
 
 One does not imply the next.
 
-## 7. Removal rule
+## 8. Removal rule
 
 Remove a blocker only when the record identifies:
 
@@ -152,4 +121,4 @@ rollback/containment
 new semantic next action
 ```
 
-A green build or mergeability result alone does not remove a security blocker.
+A successful build, mergeability result or same-company positive reset alone does not remove the remaining Security Go blockers.

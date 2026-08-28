@@ -1,130 +1,121 @@
 # FECH.AI — SFJM Next Safe Action
 
-**Status:** `SEMANTIC_NEXT_ACTION_VIEW / PR129_MERGED / EDGE_V19_B1_PASS / LIVE_ROUTINE_ANCHOR_REFRESH / EXACT_HEAD_REVIEWS_REQUIRED`
-**Updated:** `2026-08-25`
+**Status:** `SEMANTIC_NEXT_ACTION_VIEW / T3A_APPLIED_AND_BOUNDED_RUNTIME_PASS / T3B_FRONTEND_CUTOVER_NEXT / SECURITY_GO_DENIED`
+**Updated:** `2026-08-26`
 **Repository:** `wagnerjfjunior/fecha.ai`
 
 ## 1. Authority
 
-This file is a thin semantic view. Principal material state:
+This is a thin semantic view. Principal material state:
 
 ```text
 docs/sfjm/CURRENT_STATE.md
 ```
 
-Resolve GitHub/Supabase lifecycle live before acting. The anchor-refresh
-transition is `PR_HEAD_ONLY` until merge; use the exact corrective PR head.
+Resolve GitHub/Supabase lifecycle live before acting.
 
 ## 2. Single current semantic next action
 
 ```text
-Create/reconcile one Draft PR from main 69f4cfa1... that changes only the four
-complete non-system routine inventory digest literals in forward and rollback
-pre/postflight from the historical reviewed value to current live
-`c299bf087df69f960dd0c611d1486675`, updates the material evidence/SFJM, and
-obtains Backend/Data exact-head review. Only after Backend/Data closure, obtain
-independent AppSec exact-head review. Stop in Draft.
+T3B FRONTEND CUTOVER
 ```
 
-Two separately gated production invocations have aborted before DDL: first on
-the now-corrected PL/pgSQL alias collision, then on the newly detected live
-routine inventory mismatch. No third invocation is part of this Draft/review
-action.
+Create one narrow frontend Draft PR from the current live `main` that corrects only `EditarCorretorModal.redefinirSenha()`.
 
-## 3. Exact-head closure sequence
+Current observed contract:
 
 ```text
-1. resolve main 69f4cfa1... live and create the narrow corrective branch
-2. authenticate the PR #129 merged SQL blobs before editing
-3. recompute the complete live routine inventory read-only
-4. change only four full-inventory md5 literals in forward and rollback
-5. preserve count 264, definer subset 122/7faa..., aggregate count 0 and all SQL semantics
-6. update evidence/SFJM for both fail-closed invocations and intact production
-7. resolve the Draft PR exact head and changed-file set
-8. read every changed material artifact through EOF
-9. obtain manual Backend/Data exact-head review
-10. only after Backend/Data closure, obtain independent AppSec review
-11. stop in Draft before Ready
+Edge reset_password returns HTTP 200 / { ok: true, user_id }
+-> T3A server-side flow has already set must_change_password=true
+-> Auth password mutation succeeds
+-> lease is released
+-> frontend then attempts direct PATCH must_change_password=false
+-> authenticated lacks UPDATE privilege on must_change_password
+-> frontend catch reports an error after a successful reset
 ```
 
-Head changes invalidate the two new reviews. The prior v5 approvals remain
-lineage for unchanged domains, not approval of the corrected bytes.
-
-## 4. Required safe deployment semantics after later approval
-
-This section is a proof obligation, not deployment or migration authority.
+Required T3B delta:
 
 ```text
-anchor-refresh exact head reviewed by Backend/Data + AppSec
--> separately authorize Ready and merge
--> resolve merged main and authenticate exact SQL bytes
--> exercise the already bounded one-time migration retry authority
--> require complete migration postflight/catalog validation
--> separately authorize bounded smoke
+preserve existing criar-usuario Edge call
+require explicit response.ok / HTTP success contract
+remove direct PATCH public.corretores must_change_password=false
+do not broaden authenticated grants
+do not add client-supplied authority fields
+do not change Edge, migration, rollback, T1 or T2
+represent successful administrator-issued reset as temporary-password state
+refresh or locally reconcile UI state without a direct protected-field write
 ```
 
-Production Edge v19 is already active and the audit-first fail-before-Auth
-proof is PASS. No Edge redeploy is part of the routine-anchor refresh.
-
-## 5. Required rollback semantics
-
-This section is a proof obligation, not rollback authorization.
-
-Rollback must be executable and drift-aware:
+## 3. Exact current anchors
 
 ```text
-validate exact T3A proof issuer/prepare/release/fence functions, proof/lease
-tables/triggers and fixed proof→authority→lease→audit rollback lock order,
-complete role/schema anchors, all-kind positive routine inventory and expected
-grant state plus complete post-T3 audit relation fingerprint
-validate exact T3A-modified T1 guard fingerprint when applicable
-require the locked lease table and all unexpired proofs to be empty; otherwise STOP
-if drift: STOP
-after the complete exact preflight, delete only expired inert proofs and prove
-  the locked proof table is empty
-otherwise restore database boundary and authenticated audit INSERT to the
-  reviewed pre-T3A contract and verify the exact baseline audit fingerprint
-while hardened Edge remains deployed and proof issuer is absent: reset fails closed
-then restore the versioned v17 Edge baseline only under explicit rollback authority
-verify runtime/catalog after rollback
+main: 03fe960f4ef5715bbe50b6e3d5ec9c0b10167073
+src/App.jsx blob: de7cf84f416409624533e3002c54d8432b35be61
+Edge criar-usuario: v19 / ACTIVE
+ezbr_sha256: bafdd8e9c4cbf679d877b526703bc1ab791153a14fa1cbeddf69be4726f4c9d0
+T3A migration history: 20260826021346_t3_admin_password_reset_boundary
 ```
 
-Rollback must not rewrite real user password-state data merely to recreate old presentation state.
+These anchors must be re-resolved before T3B branch creation.
 
-## 6. Anti-workaround requirements
+## 4. T3B proof obligations
 
-The correction must not solve T3A by:
+Before Ready:
 
 ```text
-disabling T1 triggers
-broadening authenticated UPDATE
-trusting empresa/role/flags/time from client
-making service_role the caller identity for the T3 authorization RPC
-granting prepare EXECUTE to anon/PUBLIC/service_role
-continuing to proof/Auth after an audit INSERT error
-weakening audit NOT NULL/RLS/ACL contracts instead of matching them
-changing user-creation authority/tenant semantics beyond shared audit compatibility
-using production trial-and-error as implementation validation
-excluding or broadly trusting the changed Supabase helper instead of pinning
-  the complete exact inventory that contains it
+1. exact App.jsx callsite/diff validated
+2. no direct must_change_password PATCH remains in the administrative reset success path
+3. Edge success is not converted into a false client error
+4. Edge failure/403/500 still reports failure
+5. no frontend change can declare tenant/company/role/team authority
+6. no Supabase/Edge/runtime file outside the bounded frontend scope changes
+7. build/checks pass
+8. rollback is a simple revert of the frontend PR
+9. independent security/domain review is bound to the final exact head
 ```
+
+After a separately authorized deploy, run only the minimum positive/negative UI smoke necessary to prove the corrected presentation path. Do not reset already-proven test accounts merely for repetition.
+
+## 5. Remaining Security Go proof obligations
+
+T3A same-company positive and nonexistent-target negative runtime evidence is established, but Security Go remains denied until the applicable F1-02/M1 proof boundary is complete.
+
+Still not established:
+
+```text
+T3B deployed/runtime-proven
+cross-company adversarial runtime denial
+rollback runtime proof or an approved equivalent isolated proof
+recovery behavior for unresolved Auth/release outcomes
+final F1-02 acceptance decision
+```
+
+Do not relabel static assurance or bounded same-company smoke as full Security Go.
+
+## 6. Stale PR handling
+
+PR #124 is an older Draft that edits overlapping SFJM files from a superseded state and is currently mergeable=false.
+
+```text
+PR #124 -> STALE_CONTINUITY / DO NOT USE FOR T3B
+```
+
+Do not rebase or merge it into the current T3A/T3B track without a separate explicit decision.
 
 ## 7. No audit loop
 
-Do not reopen T1/T2 as independent workstreams absent new material evidence that invalidates their established scope.
+Do not repeat:
 
-Use their current live contracts only as dependencies to prove T3A compatibility.
+```text
+PR #130 exact-head static reviews
+T3A migration application
+same successful target reset merely for reassurance
+T1/T2 audits without a material invalidation event
+```
 
-A repeated audit on unchanged evidence is:
+Without new material evidence, repeated work is:
 
 ```text
 AUDIT_LOOP_BLOCKED
 ```
-
-## 8. Update rule
-
-Update this file when the semantic next action changes materially, for example
-after an exact-head gate result, application/deployment validation or a new
-material blocker.
-
-Do not update merely for SHA movement or lifecycle-only transitions.
