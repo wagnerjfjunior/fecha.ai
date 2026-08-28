@@ -50,7 +50,7 @@ A head change requires bounded revalidation of materially affected findings; it 
 
 ## 4. PR #140 — evidence provenance boundary
 
-PR #140 remains `ACTIVE / DRAFT`.
+PR #140 remains `ACTIVE`; resolve its current head and Draft/Ready lifecycle state live before acting.
 
 ```text
 versioned OpenAPI/config/docs = STATIC / PR_HEAD_ONLY
