@@ -58,25 +58,21 @@ begin
 end;
 $$;
 
-create or replace function pg_temp.appsec_expect_denied(
+create or replace function pg_temp.appsec_expect_rls_denied(
   p_sql text,
   p_context text
 )
 returns void
 language plpgsql
 security invoker
-as $$
+as $
 declare
   v_denied boolean := false;
 begin
   begin
     execute p_sql;
   exception
-    when foreign_key_violation then
-      v_denied := true;
     when insufficient_privilege then
-      v_denied := true;
-    when check_violation then
       v_denied := true;
     when with_check_option_violation then
       v_denied := true;
@@ -84,12 +80,12 @@ begin
 
   if not v_denied then
     raise exception
-      'APPSEC-M1-003 ASSERT FAILED: expected denial for [%]. SQL: %',
+      'APPSEC-M1-003 ASSERT FAILED: expected authorization/RLS denial for [%]. SQL: %',
       p_context,
       p_sql;
   end if;
 end;
-$$;
+$;
 
 -- ---------------------------------------------------------------------------
 -- Catalog verification.
@@ -421,24 +417,28 @@ begin
     );
 
     -- Negative 5:
-    -- simultaneous empresa_id + foreign relationship rewrite.
+    -- fully internally-consistent tenant reassignment attempt.
     --
-    -- The composite FK for corretor alone could become internally consistent
-    -- if both values move together; the authenticated tenant boundary and/or
-    -- the remaining tenant-aware relationships must still deny the tenant
-    -- rewrite. Either authorization denial or an integrity constraint denial
-    -- is acceptable, but silent success is not.
-    perform pg_temp.appsec_expect_denied(
+    -- Make every APPSEC composite relationship either valid for tenant B
+    -- (corretor_id) or legitimately NULL (time_id/lista_id/lote_id), so an
+    -- APPSEC foreign key cannot accidentally provide the denial. The expected
+    -- failure must come from authorization/RLS semantics, proving that an
+    -- authenticated actor cannot move the visible lead to another tenant even
+    -- when the new relationship graph is internally tenant-consistent.
+    perform pg_temp.appsec_expect_rls_denied(
       format(
         'update public.leads
             set empresa_id = %L,
-                corretor_id = %L
+                corretor_id = %L,
+                time_id = null,
+                lista_id = null,
+                lote_id = null
           where id = %L',
         v_foreign_corretor_empresa,
         v_foreign_corretor,
         v_lead_id
       ),
-      'authenticated simultaneous empresa_id + foreign corretor_id rewrite'
+      'authenticated fully-consistent tenant-B reassignment'
     );
 
     execute 'reset role';
