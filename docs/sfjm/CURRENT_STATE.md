@@ -1,8 +1,99 @@
 # FECH.AI — SFJM Current Material State
 
-**Status:** `SECURITY_TO_SCALE_2026 / M0_CLOSED / M1_SECURITY_TRUTH_BASELINE_ACTIVE / SECURITY_GO_DENIED`
-**Updated:** `2026-08-28`
+**Status:** `SECURITY_TO_SCALE_2026 / M1_ACTIVE / APPSEC_M1_003_PUBLIC_LEADS_COMPLETE / SECURITY_GO_DENIED`
+**Updated:** `2026-08-30`
 **Repository:** `wagnerjfjunior/fecha.ai`
+
+## 0.0 Current material override — APPSEC-M1-003 / public.leads closure — 2026-08-30
+
+This section supersedes older continuity wording only for the bounded
+`APPSEC-M1-003 / public.leads` slice. Historical M1 entry authority remains
+historical and is not rewritten.
+
+Canonical GitHub anchors:
+
+```text
+repository: wagnerjfjunior/fecha.ai
+PR #152: CLOSED / MERGED
+reviewed exact head: 6964ad993b0deddd85fcf4ff7711929b4d956285
+merge commit / current main at closure:
+  30f4d40acbe0a1f026df9c29451607d6fa361d11
+
+merged migration:
+  supabase/migrations/20260830030000_appsec_m1_003_leads_tenant_integrity.sql
+  blob: 9e3aec05d3f52987c391dd2a67f0acbb9879e7a8
+
+merged rollback:
+  supabase/rollback/20260830030000_appsec_m1_003_leads_tenant_integrity_rollback.sql
+  blob: 862038db253206061666bf5f2b8a4b12011f1c41
+
+merged test:
+  supabase/tests/appsec-m1-003/leads_tenant_integrity.sql
+  blob: a813274e9865cb4da9095fc69aadd55182664278
+
+PR-head -> merged-main artifact parity: PASS
+```
+
+Production application evidence:
+
+```text
+Supabase project: uobxxgzshrmbtjfdolxd
+migration application: SUCCESS
+repository migration version: 20260830030000
+applied ledger version: 20260830184834
+ledger name:
+  20260830030000_appsec_m1_003_leads_tenant_integrity
+
+4 parent UNIQUE (id, empresa_id): PRESENT / VALIDATED
+4 public.leads composite tenant-aware FKs: PRESENT / VALIDATED
+
+RLS / FORCE RLS:
+  public.leads: true / true
+  public.corretores: true / true
+  public.times: true / true
+  public.listas: true / true
+  public.lotes: true / true
+
+public.leads rows: 5691
+corretor/empresa mismatch: 0
+time/empresa mismatch: 0
+lista/empresa mismatch: 0
+lote/empresa mismatch: 0
+```
+
+Independent post-application AppSec result:
+
+```text
+PUBLIC_LEADS_SLICE_STATUS =
+  IMPLEMENTATION_COMPLETE_WITH_EXPLICIT_RUNTIME_EVIDENCE_LIMITATION
+
+FINAL_POST_APPLICATION_VERDICT =
+  APPSEC_M1_003_PUBLIC_LEADS_POST_APPLICATION_PASS_WITH_RESIDUAL_RUNTIME_EVIDENCE_LIMITATION
+
+NEW_FINDINGS = NONE
+BLOCKERS = NONE
+```
+
+Documentation Auditor supplemental gate:
+
+```text
+SUPPLEMENTAL_EVIDENCE_ADMISSION_STATUS = ADMITTED / BOUNDED_SPECIALIST_RESULT
+POST_APPLICATION_APPSEC_VERDICT_STATUS = ESTABLISHED
+PREVIOUS_DOCUMENTATION_BLOCKER_STATUS = CLOSED
+FINAL_DOCUMENTATION_GATE_VERDICT = PASS
+```
+
+Residuals that remain intentionally open:
+
+```text
+CONTROLLED_RUNTIME_NEGATIVE_PASS = NOT_ESTABLISHED
+MIGRATION_LEDGER_PROVENANCE = NON_BLOCKING_PROVENANCE_RESIDUAL
+SECURITY_GO = NOT_GRANTED
+```
+
+No production adversarial test was executed. No migration-ledger history was
+rewritten. This bounded closure does not close M1, does not grant Security Go,
+and does not authorize or start another APPSEC-M1-003 slice.
 
 ## 0. Current Security-to-Scale transition — M0 closed / M1 active — 2026-08-28
 

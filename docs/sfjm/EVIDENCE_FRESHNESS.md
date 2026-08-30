@@ -1,8 +1,123 @@
 # FECH.AI — SFJM Evidence Freshness
 
-**Status:** `SECURITY_TO_SCALE_2026 / M1_ENTRY_EVIDENCE / M0_HISTORICAL_LEDGER_PRESERVED`
-**Updated:** `2026-08-28`
+**Status:** `SECURITY_TO_SCALE_2026 / M1_POST_APPLICATION_EVIDENCE / PUBLIC_LEADS_SLICE_COMPLETE / M0_HISTORY_PRESERVED`
+**Updated:** `2026-08-30`
 **Repository:** `wagnerjfjunior/fecha.ai`
+
+## 0.0 APPSEC-M1-003 / public.leads post-application evidence — 2026-08-30
+
+Evidence classes below are bounded to this slice and capture only the
+post-application transition.
+
+### GitHub exact-object evidence
+
+```text
+class: MERGED_VERSIONED_EXACT_OBJECT
+repository: wagnerjfjunior/fecha.ai
+PR #152: CLOSED / MERGED
+reviewed exact head: 6964ad993b0deddd85fcf4ff7711929b4d956285
+merge commit: 30f4d40acbe0a1f026df9c29451607d6fa361d11
+
+migration blob:
+  9e3aec05d3f52987c391dd2a67f0acbb9879e7a8
+rollback blob:
+  862038db253206061666bf5f2b8a4b12011f1c41
+test blob:
+  a813274e9865cb4da9095fc69aadd55182664278
+
+merged artifact parity: PASS
+```
+
+### Direct production database evidence
+
+Captured read-only after the separately authorized production application:
+
+```text
+class: LIVE_DATABASE_VALIDATED
+environment: Supabase production
+project: uobxxgzshrmbtjfdolxd
+
+apply result: success = true
+
+validated UNIQUE constraints:
+  uq_appsec_m1_003_corretores_id_empresa_id
+  uq_appsec_m1_003_times_id_empresa_id
+  uq_appsec_m1_003_listas_id_empresa_id
+  uq_appsec_m1_003_lotes_id_empresa_id
+
+validated composite foreign keys:
+  fk_appsec_m1_003_leads_corretor_empresa
+  fk_appsec_m1_003_leads_time_empresa
+  fk_appsec_m1_003_leads_lista_empresa
+  fk_appsec_m1_003_leads_lote_empresa
+
+RLS / FORCE RLS preserved on:
+  public.leads
+  public.corretores
+  public.times
+  public.listas
+  public.lotes
+
+public.leads rows: 5691
+four relationship tenant mismatches: 0 / 0 / 0 / 0
+```
+
+Migration ledger provenance:
+
+```text
+repository filename version: 20260830030000
+applied ledger version: 20260830184834
+ledger name:
+  20260830030000_appsec_m1_003_leads_tenant_integrity
+
+classification:
+  NON_BLOCKING_PROVENANCE_RESIDUAL
+```
+
+The version-number divergence must not be rewritten into migration history.
+Applied SQL identity is independently tied to the verified merged migration
+blob above.
+
+### Specialist evidence
+
+Application Security Assurance Specialist post-application delta:
+
+```text
+LIVE_DATABASE_CONTROL_PRESENT = PROVEN
+RLS_PRESERVATION_STATUS = PASS
+DATA_COMPATIBILITY_STATUS = PASS
+CONTROLLED_RUNTIME_NEGATIVE_TEST_STATUS =
+  NOT_ESTABLISHED / ACCEPTED_EVIDENCE_LIMITATION_FOR_THIS_WORKSTREAM
+BLOCKERS = NONE
+PUBLIC_LEADS_SLICE_STATUS =
+  IMPLEMENTATION_COMPLETE_WITH_EXPLICIT_RUNTIME_EVIDENCE_LIMITATION
+FINAL_POST_APPLICATION_VERDICT =
+  APPSEC_M1_003_PUBLIC_LEADS_POST_APPLICATION_PASS_WITH_RESIDUAL_RUNTIME_EVIDENCE_LIMITATION
+```
+
+Documentation Auditor supplemental gate:
+
+```text
+SUPPLEMENTAL_EVIDENCE_ADMISSION_STATUS = ADMITTED / BOUNDED_SPECIALIST_RESULT
+POST_APPLICATION_APPSEC_VERDICT_STATUS = ESTABLISHED
+PREVIOUS_DOCUMENTATION_BLOCKER_STATUS = CLOSED
+PUBLIC_LEADS_CONTINUITY_STATUS =
+  POST_APPLICATION_BOUNDED_RECONCILIATION_MAY_PROCEED
+BLOCKERS = NONE
+FINAL_DOCUMENTATION_GATE_VERDICT = PASS
+```
+
+### Explicit evidence limitations
+
+```text
+CONTROLLED_RUNTIME_NEGATIVE_PASS = NOT_ESTABLISHED
+TEST_ARTIFACT_VERSIONED != TEST_EXECUTED
+LIVE_DATABASE_VALIDATED != CONTROLLED_RUNTIME_PASS
+SECURITY_GO = NOT_GRANTED
+```
+
+No production adversarial write was executed and no isolated staging/LAB/
+Preview environment was created for this workstream.
 
 ## 0. Current M1 entry evidence — 2026-08-28
 
