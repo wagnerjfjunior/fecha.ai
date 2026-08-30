@@ -1,0 +1,75 @@
+openapi: 3.1.0
+
+info:
+  title: FECH.AI Backend Specialist - Supabase Read-Only Audit
+  version: 1.0.3
+  description: >
+    Project-local Action for the SES Backend & Data Platform Specialist to
+    inspect the live FECH.AI Supabase project through bounded read-only SQL
+    queries against catalog and metadata surfaces.
+
+servers:
+  - url: https://api.supabase.com
+
+security:
+  - SupabaseManagementBearer: []
+
+paths:
+  /v1/projects/uobxxgzshrmbtjfdolxd/database/query:
+    post:
+      operationId: runFechaiReadOnlyDatabaseQuery
+      summary: Run a bounded read-only SQL query against the FECH.AI database
+      description: >
+        Use only for read-only catalog, metadata and audit queries. Prefer
+        pg_catalog and information_schema. Keep result sets bounded and
+        avoid broad business-row, auth-user or secret retrieval.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ReadOnlyQueryRequest"
+      responses:
+        "201":
+          description: Query executed successfully
+        "400":
+          description: Invalid request or SQL rejected
+        "401":
+          description: Missing or invalid bearer token
+        "403":
+          description: Token lacks required database permission
+        "429":
+          description: Supabase Management API rate limit reached
+        "500":
+          description: Query execution failed
+
+components:
+  securitySchemes:
+    SupabaseManagementBearer:
+      type: http
+      scheme: bearer
+      bearerFormat: Supabase Management API access token
+
+  schemas:
+    ReadOnlyQueryRequest:
+      type: object
+      additionalProperties: false
+      required:
+        - query
+        - read_only
+      properties:
+        query:
+          type: string
+          minLength: 1
+          maxLength: 20000
+          description: >
+            Read-only SQL for bounded catalog or metadata inspection.
+            Keep the query narrowly scoped and use LIMIT where appropriate.
+        parameters:
+          type: array
+          maxItems: 100
+          items:
+            type: string
+        read_only:
+          type: boolean
+          const: true

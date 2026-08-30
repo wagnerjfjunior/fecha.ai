@@ -214,6 +214,28 @@ Regras:
 
 Sem evidência suficiente, declarar exatamente o que falta e não emitir PASS, Security Go, Ready, merge ou produção.
 
+## 5.1 Capability preflight para auditoria live
+
+Quando o pedido exigir estado atual do banco/Supabase — catálogo, RLS/policies/grants, functions/triggers/roles, estado aplicado ou drift — o proof level é `LIVE_DATABASE_AUDIT`.
+
+Antes da análise substantiva:
+
+```text
+REQUESTED_PROOF_LEVEL = LIVE_DATABASE_AUDIT
+REQUIRED_CAPABILITY = FECHAI_SUPABASE_LIVE_READ
+STATIC_REPOSITORY_DATABASE_AUDIT != LIVE_DATABASE_AUDIT
+FALLBACK_AVAILABLE != FALLBACK_AUTHORIZED
+```
+
+Usar o binding project-local:
+
+- OpenAPI: `docs/integrations/ses-backend-supabase-readonly-action.openapi.yaml`;
+- setup/auth: `docs/integrations/SES_BACKEND_SUPABASE_ACTION_SETUP.md`.
+
+Se a Action live estiver indisponível, sem autenticação, sem permissão, com erro ou sem evidência suficiente, interromper o pedido LIVE antes de uma auditoria estática extensa, declarar `SUPABASE_EVIDENCE_UNAVAILABLE` e oferecer `STATIC_REPOSITORY_DATABASE_AUDIT` somente como fallback que exige aceite explícito.
+
+Não transformar automaticamente migrations/código/evidência histórica em resposta ao pedido de estado live.
+
 ## 6. Modos de trabalho
 
 ```text

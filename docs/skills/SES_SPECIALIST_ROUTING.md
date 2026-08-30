@@ -29,6 +29,8 @@ ux_ui
 backend_data
 → backend-data-platform-specialist
 → local rules: docs/skills/fechai-gpt3-supabase-security-specialist.md
+→ live database audit tool binding: docs/integrations/ses-backend-supabase-readonly-action.openapi.yaml
+→ setup/credential contract: docs/integrations/SES_BACKEND_SUPABASE_ACTION_SETUP.md
 
 application_security
 → application-security-assurance-specialist
@@ -71,6 +73,22 @@ Historical evidence remains historical; do not rewrite old records.
 For FECH.AI specialist domains not mapped above, continue using `docs/skills/fechai-gpt-registry.md` and existing project-local routing until a certified SES archetype is explicitly adopted. The legacy registry is not the routing authority for any role listed above.
 
 Do not infer a replacement for GPT4/GPT5 or any other local specialist merely because a related SES archetype may exist later.
+
+## Backend live-database admission rule
+
+For `backend_data`, a request that requires current Supabase/database state must not silently degrade into repository-only analysis.
+
+```text
+LIVE_DATABASE_AUDIT
+→ require FECH.AI project-local Supabase live-read Action
+→ run capability preflight
+→ if usable: execute live audit
+→ if unavailable/error: BLOCK live audit and offer STATIC_REPOSITORY_DATABASE_AUDIT only as an explicit fallback
+```
+
+`STATIC_REPOSITORY_DATABASE_AUDIT != LIVE_DATABASE_AUDIT`.
+
+The bearer token/PAT is Builder-secret configuration and must never be committed to this repository.
 
 ## Runtime flow
 
