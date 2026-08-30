@@ -1,7 +1,7 @@
 # FECH.AI — SFJM Evidence Freshness
 
-**Status:** `SECURITY_TO_SCALE_2026 / M1_ENTRY_EVIDENCE / M0_HISTORICAL_LEDGER_PRESERVED`
-**Updated:** `2026-08-28`
+**Status:** `SECURITY_TO_SCALE_2026 / M1_POST_APPLICATION_EVIDENCE / PUBLIC_LEADS_SLICE_COMPLETE / M0_HISTORY_PRESERVED`
+**Updated:** `2026-08-30`
 **Repository:** `wagnerjfjunior/fecha.ai`
 
 ## 0. Current M1 entry evidence — 2026-08-28
