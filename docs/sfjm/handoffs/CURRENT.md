@@ -37,6 +37,42 @@ broad paid commercialization: BLOCKED
 ```
 
 ## 4. Current workstreams
+## 3.1 Current material transition — APPSEC-M1-003 / public.leads — 2026-08-30
+
+```text
+PR #152: CLOSED / MERGED
+reviewed exact head: 6964ad993b0deddd85fcf4ff7711929b4d956285
+merge commit / main at closure:
+  30f4d40acbe0a1f026df9c29451607d6fa361d11
+
+production migration: APPLIED / SUCCESS_CONFIRMED
+catalog control: LIVE_DATABASE_CONTROL_PRESENT = PROVEN
+RLS preservation: PASS
+data compatibility: PASS
+
+public.leads slice:
+  IMPLEMENTATION_COMPLETE_WITH_EXPLICIT_RUNTIME_EVIDENCE_LIMITATION
+
+AppSec final post-application verdict:
+  APPSEC_M1_003_PUBLIC_LEADS_POST_APPLICATION_PASS_WITH_RESIDUAL_RUNTIME_EVIDENCE_LIMITATION
+
+Documentation Auditor gate:
+  PASS
+```
+
+Preserve:
+
+```text
+CONTROLLED_RUNTIME_NEGATIVE_PASS = NOT_ESTABLISHED
+MIGRATION_LEDGER_PROVENANCE = NON_BLOCKING_PROVENANCE_RESIDUAL
+SECURITY_GO = NOT_GRANTED
+```
+
+The original M1 READ_ONLY-first entry authority remains historical provenance.
+The later implementation, merge, automatic Vercel side effect and production
+migration application were separately authorized transitions and must not be
+retroactively collapsed into the original M1 grant.
+
 
 ```text
 #150 ACTIVE / M1
