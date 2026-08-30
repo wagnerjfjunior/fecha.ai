@@ -1,7 +1,7 @@
 # FECH.AI — SFJM Current Material State
 
-**Status:** `SECURITY_TO_SCALE_2026 / M0_CLOSED / M1_SECURITY_TRUTH_BASELINE_ACTIVE / SECURITY_GO_DENIED`
-**Updated:** `2026-08-28`
+**Status:** `SECURITY_TO_SCALE_2026 / M1_ACTIVE / APPSEC_M1_003_PUBLIC_LEADS_COMPLETE / SECURITY_GO_DENIED`
+**Updated:** `2026-08-30`
 **Repository:** `wagnerjfjunior/fecha.ai`
 
 ## 0. Current Security-to-Scale transition — M0 closed / M1 active — 2026-08-28
