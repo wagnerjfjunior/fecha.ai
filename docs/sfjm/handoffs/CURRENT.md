@@ -1,7 +1,7 @@
 # FECH.AI — SFJM Current Product/Security Handoff
 
-**Status:** `SECURITY_TO_SCALE_2026 / M0_CLOSED / M1_ACTIVE / READ_ONLY_BASELINE`
-**Updated:** `2026-08-28`
+**Status:** `SECURITY_TO_SCALE_2026 / M1_ACTIVE / PUBLIC_LEADS_SLICE_COMPLETE / STOP_BEFORE_NEXT_LIFECYCLE_GATE`
+**Updated:** `2026-08-30`
 **Repository:** `wagnerjfjunior/fecha.ai`
 
 ## 1. Purpose
@@ -79,12 +79,18 @@ Use manual copy/paste specialist transport when the SES runtime channel is unava
 ## 6. Immediate handoff
 
 ```text
-Execute Issue #150 M1-A READ_ONLY:
-LIVE DB x current GitHub main x applied migration ledger cross-check,
-including current privileged-surface inventory.
+The APPSEC-M1-003 / public.leads implementation slice is closed at the
+implementation/catalog layer with explicit residual evidence limitations.
 
-No DDL/DML, migration application, deploy, runtime/Auth mutation,
-production offensive testing or Security Go.
+Current authorized continuity action:
+  publish this bounded documentation reconciliation in one Draft PR
+  validate the exact PR head
+  STOP BEFORE READY
+
+Do not start another APPSEC-M1-003 slice under this documentation action.
+Do not perform production adversarial testing.
+Do not mutate migration ledger history.
+Security Go remains denied.
 ```
 
 ## 7. Dashboard separation
