@@ -115,6 +115,7 @@ begin
       v_missing;
   end if;
 
+  -- leads.corretor_id must be type-compatible with corretores.id.
   select a.atttypid, a.atttypmod
     into v_left_type, v_left_typmod
   from pg_catalog.pg_attribute a
@@ -137,6 +138,7 @@ begin
       'APPSEC_M1_003_PREFLIGHT_TYPE_MISMATCH: leads.corretor_id <> corretores.id';
   end if;
 
+  -- leads.time_id must be type-compatible with times.id.
   select a.atttypid, a.atttypmod
     into v_left_type, v_left_typmod
   from pg_catalog.pg_attribute a
@@ -159,6 +161,7 @@ begin
       'APPSEC_M1_003_PREFLIGHT_TYPE_MISMATCH: leads.time_id <> times.id';
   end if;
 
+  -- leads.lista_id must be type-compatible with listas.id.
   select a.atttypid, a.atttypmod
     into v_left_type, v_left_typmod
   from pg_catalog.pg_attribute a
@@ -181,6 +184,7 @@ begin
       'APPSEC_M1_003_PREFLIGHT_TYPE_MISMATCH: leads.lista_id <> listas.id';
   end if;
 
+  -- leads.lote_id must be type-compatible with lotes.id.
   select a.atttypid, a.atttypmod
     into v_left_type, v_left_typmod
   from pg_catalog.pg_attribute a
@@ -203,6 +207,7 @@ begin
       'APPSEC_M1_003_PREFLIGHT_TYPE_MISMATCH: leads.lote_id <> lotes.id';
   end if;
 
+  -- Tenant key types must be compatible for every composite reference.
   select a.atttypid, a.atttypmod
     into v_left_type, v_left_typmod
   from pg_catalog.pg_attribute a
@@ -269,61 +274,84 @@ begin
 end;
 $appsec_preflight$;
 
+-- ---------------------------------------------------------------------------
+-- 2. Application-time compatibility preflight.
+--    Fail closed. Never repair or rewrite business data.
+-- ---------------------------------------------------------------------------
+
 do $appsec_compatibility$
 begin
   if exists (
     select 1
     from public.leads l
-    join public.corretores c on c.id = l.corretor_id
+    join public.corretores c
+      on c.id = l.corretor_id
     where l.corretor_id is not null
       and c.empresa_id is distinct from l.empresa_id
   ) then
-    raise exception 'APPSEC_M1_003_PREEXISTING_DATA_MISMATCH: leads.corretor_id';
+    raise exception
+      'APPSEC_M1_003_PREEXISTING_DATA_MISMATCH: leads.corretor_id';
   end if;
 
   if exists (
     select 1
     from public.leads l
-    join public.times t on t.id = l.time_id
+    join public.times t
+      on t.id = l.time_id
     where l.time_id is not null
       and t.empresa_id is distinct from l.empresa_id
   ) then
-    raise exception 'APPSEC_M1_003_PREEXISTING_DATA_MISMATCH: leads.time_id';
+    raise exception
+      'APPSEC_M1_003_PREEXISTING_DATA_MISMATCH: leads.time_id';
   end if;
 
   if exists (
     select 1
     from public.leads l
-    join public.listas li on li.id = l.lista_id
+    join public.listas li
+      on li.id = l.lista_id
     where l.lista_id is not null
       and li.empresa_id is distinct from l.empresa_id
   ) then
-    raise exception 'APPSEC_M1_003_PREEXISTING_DATA_MISMATCH: leads.lista_id';
+    raise exception
+      'APPSEC_M1_003_PREEXISTING_DATA_MISMATCH: leads.lista_id';
   end if;
 
   if exists (
     select 1
     from public.leads l
-    join public.lotes lo on lo.id = l.lote_id
+    join public.lotes lo
+      on lo.id = l.lote_id
     where l.lote_id is not null
       and lo.empresa_id is distinct from l.empresa_id
   ) then
-    raise exception 'APPSEC_M1_003_PREEXISTING_DATA_MISMATCH: leads.lote_id';
+    raise exception
+      'APPSEC_M1_003_PREEXISTING_DATA_MISMATCH: leads.lote_id';
   end if;
 end;
 $appsec_compatibility$;
+
+-- ---------------------------------------------------------------------------
+-- 3. Supporting tenant-aware UNIQUE constraints.
+--    If a deterministic APPSEC name already exists it must match exactly;
+--    otherwise fail rather than silently accepting name collision/drift.
+-- ---------------------------------------------------------------------------
 
 do $appsec_unique_constraints$
 declare
   v_def text;
 begin
-  select pg_catalog.pg_get_constraintdef(c.oid, true) into v_def
+  select pg_catalog.pg_get_constraintdef(c.oid, true)
+    into v_def
   from pg_catalog.pg_constraint c
   where c.conrelid = 'public.corretores'::regclass
     and c.conname = 'uq_appsec_m1_003_corretores_id_empresa_id';
+
   if found then
     if v_def <> 'UNIQUE (id, empresa_id)' then
-      raise exception 'APPSEC_M1_003_CONSTRAINT_NAME_COLLISION: uq_appsec_m1_003_corretores_id_empresa_id = %', v_def;
+      raise exception
+        'APPSEC_M1_003_CONSTRAINT_NAME_COLLISION: uq_appsec_m1_003_corretores_id_empresa_id = %',
+        v_def;
     end if;
   else
     alter table public.corretores
@@ -331,13 +359,17 @@ begin
       unique (id, empresa_id);
   end if;
 
-  select pg_catalog.pg_get_constraintdef(c.oid, true) into v_def
+  select pg_catalog.pg_get_constraintdef(c.oid, true)
+    into v_def
   from pg_catalog.pg_constraint c
   where c.conrelid = 'public.times'::regclass
     and c.conname = 'uq_appsec_m1_003_times_id_empresa_id';
+
   if found then
     if v_def <> 'UNIQUE (id, empresa_id)' then
-      raise exception 'APPSEC_M1_003_CONSTRAINT_NAME_COLLISION: uq_appsec_m1_003_times_id_empresa_id = %', v_def;
+      raise exception
+        'APPSEC_M1_003_CONSTRAINT_NAME_COLLISION: uq_appsec_m1_003_times_id_empresa_id = %',
+        v_def;
     end if;
   else
     alter table public.times
@@ -345,13 +377,17 @@ begin
       unique (id, empresa_id);
   end if;
 
-  select pg_catalog.pg_get_constraintdef(c.oid, true) into v_def
+  select pg_catalog.pg_get_constraintdef(c.oid, true)
+    into v_def
   from pg_catalog.pg_constraint c
   where c.conrelid = 'public.listas'::regclass
     and c.conname = 'uq_appsec_m1_003_listas_id_empresa_id';
+
   if found then
     if v_def <> 'UNIQUE (id, empresa_id)' then
-      raise exception 'APPSEC_M1_003_CONSTRAINT_NAME_COLLISION: uq_appsec_m1_003_listas_id_empresa_id = %', v_def;
+      raise exception
+        'APPSEC_M1_003_CONSTRAINT_NAME_COLLISION: uq_appsec_m1_003_listas_id_empresa_id = %',
+        v_def;
     end if;
   else
     alter table public.listas
@@ -359,13 +395,17 @@ begin
       unique (id, empresa_id);
   end if;
 
-  select pg_catalog.pg_get_constraintdef(c.oid, true) into v_def
+  select pg_catalog.pg_get_constraintdef(c.oid, true)
+    into v_def
   from pg_catalog.pg_constraint c
   where c.conrelid = 'public.lotes'::regclass
     and c.conname = 'uq_appsec_m1_003_lotes_id_empresa_id';
+
   if found then
     if v_def <> 'UNIQUE (id, empresa_id)' then
-      raise exception 'APPSEC_M1_003_CONSTRAINT_NAME_COLLISION: uq_appsec_m1_003_lotes_id_empresa_id = %', v_def;
+      raise exception
+        'APPSEC_M1_003_CONSTRAINT_NAME_COLLISION: uq_appsec_m1_003_lotes_id_empresa_id = %',
+        v_def;
     end if;
   else
     alter table public.lotes
@@ -375,20 +415,29 @@ begin
 end;
 $appsec_unique_constraints$;
 
+-- ---------------------------------------------------------------------------
+-- 4. Tenant-aware leads foreign keys.
+--    Create NOT VALID first; validate explicitly before transaction commit.
+-- ---------------------------------------------------------------------------
+
 do $appsec_foreign_keys$
 declare
   v_def text;
 begin
-  select pg_catalog.pg_get_constraintdef(c.oid, true) into v_def
+  select pg_catalog.pg_get_constraintdef(c.oid, true)
+    into v_def
   from pg_catalog.pg_constraint c
   where c.conrelid = 'public.leads'::regclass
     and c.conname = 'fk_appsec_m1_003_leads_corretor_empresa';
+
   if found then
     if v_def not in (
       'FOREIGN KEY (corretor_id, empresa_id) REFERENCES corretores(id, empresa_id)',
       'FOREIGN KEY (corretor_id, empresa_id) REFERENCES corretores(id, empresa_id) NOT VALID'
     ) then
-      raise exception 'APPSEC_M1_003_CONSTRAINT_NAME_COLLISION: fk_appsec_m1_003_leads_corretor_empresa = %', v_def;
+      raise exception
+        'APPSEC_M1_003_CONSTRAINT_NAME_COLLISION: fk_appsec_m1_003_leads_corretor_empresa = %',
+        v_def;
     end if;
   else
     alter table public.leads
@@ -398,16 +447,20 @@ begin
       not valid;
   end if;
 
-  select pg_catalog.pg_get_constraintdef(c.oid, true) into v_def
+  select pg_catalog.pg_get_constraintdef(c.oid, true)
+    into v_def
   from pg_catalog.pg_constraint c
   where c.conrelid = 'public.leads'::regclass
     and c.conname = 'fk_appsec_m1_003_leads_time_empresa';
+
   if found then
     if v_def not in (
       'FOREIGN KEY (time_id, empresa_id) REFERENCES times(id, empresa_id)',
       'FOREIGN KEY (time_id, empresa_id) REFERENCES times(id, empresa_id) NOT VALID'
     ) then
-      raise exception 'APPSEC_M1_003_CONSTRAINT_NAME_COLLISION: fk_appsec_m1_003_leads_time_empresa = %', v_def;
+      raise exception
+        'APPSEC_M1_003_CONSTRAINT_NAME_COLLISION: fk_appsec_m1_003_leads_time_empresa = %',
+        v_def;
     end if;
   else
     alter table public.leads
@@ -417,16 +470,20 @@ begin
       not valid;
   end if;
 
-  select pg_catalog.pg_get_constraintdef(c.oid, true) into v_def
+  select pg_catalog.pg_get_constraintdef(c.oid, true)
+    into v_def
   from pg_catalog.pg_constraint c
   where c.conrelid = 'public.leads'::regclass
     and c.conname = 'fk_appsec_m1_003_leads_lista_empresa';
+
   if found then
     if v_def not in (
       'FOREIGN KEY (lista_id, empresa_id) REFERENCES listas(id, empresa_id)',
       'FOREIGN KEY (lista_id, empresa_id) REFERENCES listas(id, empresa_id) NOT VALID'
     ) then
-      raise exception 'APPSEC_M1_003_CONSTRAINT_NAME_COLLISION: fk_appsec_m1_003_leads_lista_empresa = %', v_def;
+      raise exception
+        'APPSEC_M1_003_CONSTRAINT_NAME_COLLISION: fk_appsec_m1_003_leads_lista_empresa = %',
+        v_def;
     end if;
   else
     alter table public.leads
@@ -436,16 +493,20 @@ begin
       not valid;
   end if;
 
-  select pg_catalog.pg_get_constraintdef(c.oid, true) into v_def
+  select pg_catalog.pg_get_constraintdef(c.oid, true)
+    into v_def
   from pg_catalog.pg_constraint c
   where c.conrelid = 'public.leads'::regclass
     and c.conname = 'fk_appsec_m1_003_leads_lote_empresa';
+
   if found then
     if v_def not in (
       'FOREIGN KEY (lote_id, empresa_id) REFERENCES lotes(id, empresa_id)',
       'FOREIGN KEY (lote_id, empresa_id) REFERENCES lotes(id, empresa_id) NOT VALID'
     ) then
-      raise exception 'APPSEC_M1_003_CONSTRAINT_NAME_COLLISION: fk_appsec_m1_003_leads_lote_empresa = %', v_def;
+      raise exception
+        'APPSEC_M1_003_CONSTRAINT_NAME_COLLISION: fk_appsec_m1_003_leads_lote_empresa = %',
+        v_def;
     end if;
   else
     alter table public.leads
@@ -457,16 +518,28 @@ begin
 end;
 $appsec_foreign_keys$;
 
-alter table public.leads validate constraint fk_appsec_m1_003_leads_corretor_empresa;
-alter table public.leads validate constraint fk_appsec_m1_003_leads_time_empresa;
-alter table public.leads validate constraint fk_appsec_m1_003_leads_lista_empresa;
-alter table public.leads validate constraint fk_appsec_m1_003_leads_lote_empresa;
+alter table public.leads
+  validate constraint fk_appsec_m1_003_leads_corretor_empresa;
+
+alter table public.leads
+  validate constraint fk_appsec_m1_003_leads_time_empresa;
+
+alter table public.leads
+  validate constraint fk_appsec_m1_003_leads_lista_empresa;
+
+alter table public.leads
+  validate constraint fk_appsec_m1_003_leads_lote_empresa;
+
+-- ---------------------------------------------------------------------------
+-- 5. Postflight.
+-- ---------------------------------------------------------------------------
 
 do $appsec_postflight$
 declare
   v_count integer;
 begin
-  select count(*) into v_count
+  select count(*)
+    into v_count
   from pg_catalog.pg_constraint c
   where (
       c.conrelid = 'public.corretores'::regclass
@@ -488,11 +561,15 @@ begin
       and c.conname = 'uq_appsec_m1_003_lotes_id_empresa_id'
       and c.contype = 'u'
     );
+
   if v_count <> 4 then
-    raise exception 'APPSEC_M1_003_POSTFLIGHT_UNIQUE_CONSTRAINT_COUNT: expected 4, found %', v_count;
+    raise exception
+      'APPSEC_M1_003_POSTFLIGHT_UNIQUE_CONSTRAINT_COUNT: expected 4, found %',
+      v_count;
   end if;
 
-  select count(*) into v_count
+  select count(*)
+    into v_count
   from pg_catalog.pg_constraint c
   where c.conrelid = 'public.leads'::regclass
     and c.contype = 'f'
@@ -503,8 +580,11 @@ begin
       'fk_appsec_m1_003_leads_lista_empresa',
       'fk_appsec_m1_003_leads_lote_empresa'
     );
+
   if v_count <> 4 then
-    raise exception 'APPSEC_M1_003_POSTFLIGHT_VALIDATED_FK_COUNT: expected 4, found %', v_count;
+    raise exception
+      'APPSEC_M1_003_POSTFLIGHT_VALIDATED_FK_COUNT: expected 4, found %',
+      v_count;
   end if;
 end;
 $appsec_postflight$;
