@@ -65,7 +65,7 @@ create or replace function pg_temp.appsec_expect_rls_denied(
 returns void
 language plpgsql
 security invoker
-as $
+as $$
 declare
   v_denied boolean := false;
 begin
@@ -85,7 +85,7 @@ begin
       p_sql;
   end if;
 end;
-$;
+$$;
 
 -- ---------------------------------------------------------------------------
 -- Catalog verification.
