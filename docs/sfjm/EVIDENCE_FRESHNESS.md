@@ -1,8 +1,158 @@
 # FECH.AI — SFJM Evidence Freshness
 
-**Status:** `SECURITY_TO_SCALE_2026 / M1_POST_APPLICATION_EVIDENCE / PUBLIC_LEADS_SLICE_COMPLETE / M0_HISTORY_PRESERVED`
-**Updated:** `2026-08-30`
+**Status:** `SECURITY_TO_SCALE_2026 / M1_FINAL_EVIDENCE_RECONCILED / REMEDIATION_PROGRAM_ACTIVE / SECURITY_GO_DENIED`
+**Updated:** `2026-08-31`
 **Repository:** `wagnerjfjunior/fecha.ai`
+
+
+## 0.00 M1 final adjudication evidence override — 2026-08-31
+
+This is the current evidence override for M1 final-baseline semantics. Older
+evidence remains valid only for its capture time and bounded subject.
+
+### Backend/Data final adjudication
+
+```text
+class: BOUNDED_INDEPENDENT_SPECIALIST_RESULT
+transport: MANUAL_COPY_PASTE
+specialist: backend-data-platform-specialist
+project ref:
+  a15dde5067c716b0ab3c9342855069c1fc00bcd0
+SES ref:
+  7da0dbe7ce5c3fb0d1ea63a7fb61d74ce77481f5
+context: READY
+live database capability: ACTUALLY_EXECUTED / READ_ONLY
+
+verdict:
+  BACKEND_DATA_M1_BASELINE_PASS_WITH_RESIDUAL_RISKS
+
+blockers to M1 baseline closure:
+  NONE_FROM_BACKEND_DATA
+
+missing evidence required before M1 close:
+  NONE_FROM_BACKEND_DATA
+```
+
+Current privileged-surface correction admitted from live read-only verification:
+
+```text
+SECURITY DEFINER total = 136
+authenticated executable = 124
+authenticated executable with bounded mutation keywords = 49
+anon executable = 22
+anon executable with bounded mutation keywords = 9
+PUBLIC executable = 1
+```
+
+Obsolete `48 / 8` mutation-keyword counts must not be republished.
+
+### Independent Application Security final adjudication
+
+```text
+class: BOUNDED_INDEPENDENT_SPECIALIST_RESULT
+transport: MANUAL_COPY_PASTE
+specialist: application-security-assurance-specialist
+project ref:
+  a15dde5067c716b0ab3c9342855069c1fc00bcd0
+SES ref:
+  7da0dbe7ce5c3fb0d1ea63a7fb61d74ce77481f5
+scope: TARGETED_DELTA_VERIFICATION_ONLY / PASSIVE_READ_ONLY
+
+verdict:
+  APPSEC_M1_BASELINE_PASS_WITH_RESIDUAL_RISKS
+
+blockers to M1 baseline closure:
+  NONE_IDENTIFIED
+
+missing evidence required before M1 close:
+  NONE_IDENTIFIED
+
+Security Go:
+  DENIED
+```
+
+AppSec independently confirmed the final M1 finding set and rejected stronger
+unsupported claims such as:
+
+```text
+22 anon RPCs = 22 exploitable vulnerabilities
+M1-C-F01 = proven cross-tenant lead leakage
+Vite advisory = proven FECH.AI production exploitation
+localStorage alone = exploit
+verify_jwt=false alone = unauthenticated Edge vulnerability
+visible Supabase anon/publishable config = privileged secret leak
+```
+
+### Documentation Auditor final gate
+
+```text
+class: BOUNDED_INDEPENDENT_DOCUMENTATION_GATE
+transport: MANUAL_COPY_PASTE
+specialist: documentation-auditor
+project ref:
+  a15dde5067c716b0ab3c9342855069c1fc00bcd0
+SES ref:
+  7da0dbe7ce5c3fb0d1ea63a7fb61d74ce77481f5
+
+verdict:
+  DOCUMENTATION_M1_CLOSURE_PASS_WITH_BOUNDED_RESIDUALS
+
+cross-specialist consistency:
+  CONSISTENT
+
+Issue #150 exit criteria:
+  SATISFIED_FOR_BASELINE_CLOSURE
+
+additional technical re-audit:
+  NO / AUDIT_LOOP_BLOCKED
+
+Issue #150 closure eligibility:
+  ELIGIBLE_AFTER_BOUNDED_CANONICAL_RECONCILIATION
+```
+
+### Final evidence interpretation
+
+```text
+M1_SECURITY_TRUTH_BASELINE = COMPLETE
+SECURITY_GO = DENIED
+KNOWN_FINDINGS = OPEN / MOVE_TO_BOUNDED_REMEDIATION
+REMEDIATION_PROGRAM = ACTIVE
+```
+
+The following are explicit limitations, not PASS claims:
+
+```text
+CONTROLLED_RUNTIME_NEGATIVE_PASS = NOT_ESTABLISHED
+no active cross-tenant production negative testing
+no proxy production POST
+no token manipulation
+no credential attack testing
+no production offensive testing
+Vite production exploitability prerequisites = NOT_ESTABLISHED
+Worker upstream runtime behavior = NOT_ACTIVELY_TESTED
+public.leads controlled runtime negative PASS = NOT_ESTABLISHED
+
+STATIC_IMPLEMENTATION_REVIEW
+!= LIVE_DATABASE_VALIDATED
+!= CONTROLLED_RUNTIME_PASS
+```
+
+### Current lifecycle freshness
+
+```text
+#141 = OPEN
+#150 = OPEN pending separately authorized closure
+#140 = CLOSED / MERGED
+  merge commit c0d993ebe574f644af4f83cc25630fb8c1bd41ad
+#139 = OPEN / READY / STALE_REVALIDATION_REQUIRED
+  no fresh approval is derived from M1 closure
+```
+
+Invalidate this final M1 evidence only on a material event affecting the
+relevant proof obligation: database/control drift, code/runtime change on a
+confirmed finding, contradictory specialist/runtime evidence, changed
+authorization model, or a new security finding. Mere conversation change or
+documentation-only lifecycle movement does not reopen the technical M1 audit.
 
 ## 0.0 APPSEC-M1-003 / public.leads post-application evidence — 2026-08-30
 
