@@ -1,12 +1,17 @@
 # FECH.AI — SFJM Current Product/Security Handoff
 
-**Status:** `SECURITY_TO_SCALE_2026 / M1_ACTIVE / PUBLIC_LEADS_SLICE_COMPLETE / STOP_BEFORE_NEXT_LIFECYCLE_GATE`
-**Updated:** `2026-08-30`
+**Status:** `SECURITY_TO_SCALE_2026 / M1_SECURITY_TRUTH_BASELINE_COMPLETE / ISSUE_150_CLOSURE_PENDING / REMEDIATION_PROGRAM_ACTIVE / SECURITY_GO_DENIED`
+**Updated:** `2026-08-31`
 **Repository:** `wagnerjfjunior/fecha.ai`
 
 ## 1. Purpose
 
-This is the thin current handoff pointer. It does not replace live GitHub, Supabase/runtime evidence, bootstrap, specialist routing, the authority ledger or evidence-freshness ledger.
+This is the thin current handoff pointer. It does not replace live GitHub,
+Supabase/runtime evidence, bootstrap, specialist routing, authority or the
+evidence-freshness ledger.
+
+Historical M1 and public.leads lineage remains preserved in
+`docs/sfjm/CURRENT_STATE.md` and `docs/sfjm/EVIDENCE_FRESHNESS.md`.
 
 ## 2. Reconstruct in this order
 
@@ -14,136 +19,154 @@ This is the thin current handoff pointer. It does not replace live GitHub, Supab
 1. resolve wagnerjfjunior/fecha.ai main live
 2. read docs/bootstrap/INDEX.md
 3. read docs/skills/SES_SPECIALIST_ROUTING.md
-4. resolve the adopted SES role/archetype/certification/local rule applicable to the task
+4. resolve the adopted SES role/archetype/certification/local rule
 5. read the common Modus Operandi
 6. read governance when applicable
 7. read docs/sfjm/INDEX.md and current SFJM views
 8. resolve Issues #141 and #150 live
-9. resolve active PRs and exact heads live when material
-10. validate only the evidence required by the current M1 work packet
+9. resolve any PR/branch/head involved in the next bounded lifecycle
+10. do not reopen M1 technical acquisition without a material invalidation event
 ```
 
 ## 3. Current program state
 
 ```text
-#141 Security-to-Scale 2026: OPEN
-#142 M0: CLOSED / completed
-#149 M0 SFJM publication: MERGED
-main at M1 entry: e1c9800c0cb4904d0950afb94766c6e840bf575e
-#150 M1 Security Truth Baseline: OPEN
+#141 Security-to-Scale 2026:
+  OPEN
 
-Security Go: NOT GRANTED
-broad paid commercialization: BLOCKED
+#150 M1 Security Truth Baseline:
+  technical/evidence exit criteria SATISFIED
+  OPEN pending separately authorized Issue closure
+
+M1_SECURITY_TRUTH_BASELINE:
+  COMPLETE
+
+REMEDIATION_PROGRAM:
+  ACTIVE
+
+Security Go:
+  DENIED / NOT_GRANTED
+
+broad paid commercialization:
+  BLOCKED
 ```
 
-## 4. Current workstreams
-## 3.1 Current material transition — APPSEC-M1-003 / public.leads — 2026-08-30
+## 4. Final M1 gates
 
 ```text
-PR #152: CLOSED / MERGED
-reviewed exact head: 6964ad993b0deddd85fcf4ff7711929b4d956285
-merge commit / main at closure:
-  30f4d40acbe0a1f026df9c29451607d6fa361d11
+Backend/Data:
+  BACKEND_DATA_M1_BASELINE_PASS_WITH_RESIDUAL_RISKS
 
-production migration: APPLIED / SUCCESS_CONFIRMED
-catalog control: LIVE_DATABASE_CONTROL_PRESENT = PROVEN
-RLS preservation: PASS
-data compatibility: PASS
+Application Security:
+  APPSEC_M1_BASELINE_PASS_WITH_RESIDUAL_RISKS
 
-public.leads slice:
-  IMPLEMENTATION_COMPLETE_WITH_EXPLICIT_RUNTIME_EVIDENCE_LIMITATION
+Documentation Auditor:
+  DOCUMENTATION_M1_CLOSURE_PASS_WITH_BOUNDED_RESIDUALS
 
-AppSec final post-application verdict:
-  APPSEC_M1_003_PUBLIC_LEADS_POST_APPLICATION_PASS_WITH_RESIDUAL_RUNTIME_EVIDENCE_LIMITATION
+blockers to M1 baseline closure:
+  NONE
 
-Documentation Auditor gate:
-  PASS
+additional technical re-audit:
+  NO / AUDIT_LOOP_BLOCKED
 ```
 
 Preserve:
 
 ```text
+M1_FINDING_DISCOVERED != M1_FINDING_REMEDIATED
+M1_BASELINE_COMPLETE != SECURITY_GO
+STATIC_IMPLEMENTATION_REVIEW != LIVE_DATABASE_VALIDATED
+LIVE_DATABASE_VALIDATED != CONTROLLED_RUNTIME_PASS
+```
+
+## 5. Current finding set
+
+```text
+M1-B-F01  ANON_PRIVILEGED_RPC_EXECUTION_SURFACE
+M1-C-F01  FUNIL_TENANT_RELATIONSHIP_INTEGRITY_GAP  [P0]
+           no proven cross-tenant lead leakage claim
+MIGRATION_PROVENANCE_GAP
+M1-D-F01  DEPENDENCY_REPRODUCIBILITY_GAP
+M1-D-F02  VITE_6_4_2_KNOWN_AFFECTED_VERSION
+M1-E-F01  LIVE_EDGE_FUNCTION_NOT_VERSIONED
+M1-E-F02  BROWSER_SESSION_REFRESH_TOKEN_EXPOSURE_SURFACE
+M1-E-F03  EXTERNAL_WORKER_PROXY_AUTHORITY_GAP
+M1-E-F04  LEAKED_PASSWORD_PROTECTION_DISABLED
+```
+
+All remain unresolved according to their classifications. M1 closure does not
+remediate them.
+
+## 6. Evidence limitations
+
+```text
 CONTROLLED_RUNTIME_NEGATIVE_PASS = NOT_ESTABLISHED
-MIGRATION_LEDGER_PROVENANCE = NON_BLOCKING_PROVENANCE_RESIDUAL
-SECURITY_GO = NOT_GRANTED
+production negative/offensive testing = PROHIBITED
+Vite production exploitability = NOT_ESTABLISHED
+Worker runtime abuse / PII leak / tenant crossover = NOT_PROVEN
+public.leads controlled runtime negative PASS = NOT_ESTABLISHED
 ```
 
-The original M1 READ_ONLY-first entry authority remains historical provenance.
-The later implementation, merge, automatic Vercel side effect and production
-migration application were separately authorized transitions and must not be
-retroactively collapsed into the original M1 grant.
-
+## 7. Current lifecycle reconciliation
 
 ```text
-#150 ACTIVE / M1
-  READ_ONLY FIRST
-  current truth baseline before simplification/implementation
+#140:
+  CLOSED / MERGED
+  merge commit c0d993ebe574f644af4f83cc25630fb8c1bd41ad
 
-#139 ACTIVE
-  user-creation membership-boundary implementation
-  lifecycle/findings resolve live
-  not advanced by M1 authority
+#139:
+  OPEN / READY
+  head 32003e75a28e235fb454d39e3e4459d0f03acb2b
+  STALE_REVALIDATION_REQUIRED
+  M1 closure grants NO fresh approval
 
-#140 ACTIVE
-  read-only Supabase Action/config evidence workstream
-  static config != runtime capability
-  lifecycle resolve live
+#131:
+  STALE_CONTINUITY
 
-#131 STALE_CONTINUITY
-#124 STALE_CONTINUITY
-#120 SUPERSEDED
+#124:
+  STALE_CONTINUITY
+
+#120:
+  SUPERSEDED
 ```
 
-## 5. M1 owner sequence
+## 8. Single next safe action
 
 ```text
-backend_data
-  -> backend-data-platform-specialist
-  -> current live DB/platform truth
+P0 — M1-C-F01 / FUNIL TENANT INTEGRITY
 
-application_security
-  -> application-security-assurance-specialist
-  -> independent security interpretation of proven surfaces
-
-documentation_audit
-  -> documentation-auditor
-  -> evidence reconciliation / overclaim gate / M1 handoff
+DESIGN / PROOF PLAN FIRST
+NO IMPLEMENTATION UNDER THIS DOCUMENTATION AUTHORITY
 ```
 
-Use manual copy/paste specialist transport when the SES runtime channel is unavailable. Do not claim a Gateway receipt unless one was actually returned.
+The design/proof plan must define:
 
-## 6. Immediate handoff
+- the tenant-aware database invariant;
+- correct `mover_funil` tenant attribution;
+- explicit handling decision for existing anomalous rows without silent cleanup;
+- preservation of RLS/FORCE RLS;
+- rollback;
+- static/live verification obligations;
+- runtime-negative proof only if separately authorized and feasible without
+  production negative testing.
+
+## 9. Prohibited carry-over
+
+Do not derive authorization from this handoff for:
 
 ```text
-The APPSEC-M1-003 / public.leads implementation slice is closed at the
-implementation/catalog layer with explicit residual evidence limitations.
-
-Current authorized continuity action:
-  publish this bounded documentation reconciliation in one Draft PR
-  validate the exact PR head
-  STOP BEFORE READY
-
-Do not start another APPSEC-M1-003 slice under this documentation action.
-Do not perform production adversarial testing.
-Do not mutate migration ledger history.
-Security Go remains denied.
+Ready / merge / deploy
+Supabase / Auth / migration / data mutation
+cleanup of anomalous funil rows
+production negative testing
+staging / LAB / second Supabase project / Preview Branch / local isolated env
+Security Go
+broad paid commercialization
+Issue #141 closure
+fresh #139 approval
+reopening public.leads
 ```
 
-## 7. Dashboard separation
-
-`wagnerjfjunior/sfjm-workspace` is the visualization/continuity dashboard. It must reflect this material M0 -> M1 transition after canonical state is merged, but it is not authority for FECH.AI product/security truth.
-
-## 8. Handoff acceptance
-
-A continuation is correct only if it reconstructs:
-
-```text
-M0 is closed
-M1 #150 is active and READ_ONLY FIRST
-main is resolved live rather than trusted from this snapshot
-#139/#140 remain separate active workstreams
-Security Go remains denied
-commercial broad paid launch remains blocked
-M1 must distinguish STATIC / LIVE / RUNTIME
-SFJM workspace is visualization, not canonical truth
-```
+Issue #150 closure requires a separate explicit Product Authority action after
+the bounded M1 documentation reconciliation reaches its own authorized lifecycle
+gate.
