@@ -41,12 +41,11 @@ set local statement_timeout = '60s';
 do $m1_c_f01_baseline$
 declare
   v_count integer;
+  v_policy_total integer;
   v_md5 text;
-  v_acl text;
   v_owner text;
   v_prosecdef boolean;
   v_proconfig text[];
-  v_relacl text;
   v_rls boolean;
   v_force boolean;
 begin
@@ -57,20 +56,76 @@ begin
     raise exception 'M1_C_F01_PREFLIGHT_MISSING_REQUIRED_RELATION';
   end if;
 
-  select pg_get_userbyid(c.relowner), c.relrowsecurity, c.relforcerowsecurity,
-         c.relacl::text
-    into v_owner, v_rls, v_force, v_relacl
+  select pg_get_userbyid(c.relowner), c.relrowsecurity, c.relforcerowsecurity
+    into v_owner, v_rls, v_force
   from pg_catalog.pg_class c
   where c.oid = 'public.funil_movimentacoes'::regclass;
 
   if v_owner is distinct from 'postgres'
      or v_rls is distinct from true
-     or v_force is distinct from true
-     or v_relacl is distinct from
-        '{postgres=arwdDxtm/postgres,service_role=arwdDxtm/postgres,authenticated=ar/postgres}' then
+     or v_force is distinct from true then
     raise exception
-      'M1_C_F01_PREFLIGHT_FUNIL_MOV_BOUNDARY_DRIFT owner=% rls=% force=% acl=%',
-      v_owner, v_rls, v_force, v_relacl;
+      'M1_C_F01_PREFLIGHT_FUNIL_MOV_BOUNDARY_DRIFT owner=% rls=% force=%',
+      v_owner, v_rls, v_force;
+  end if;
+
+  -- Compare ACLs as unordered semantic grantee/privilege sets.
+  if exists (
+    with expected(grantee, privilege_type) as (
+      values
+        ('postgres','INSERT'),
+        ('postgres','SELECT'),
+        ('postgres','UPDATE'),
+        ('postgres','DELETE'),
+        ('postgres','TRUNCATE'),
+        ('postgres','REFERENCES'),
+        ('postgres','TRIGGER'),
+        ('postgres','MAINTAIN'),
+        ('service_role','INSERT'),
+        ('service_role','SELECT'),
+        ('service_role','UPDATE'),
+        ('service_role','DELETE'),
+        ('service_role','REFERENCES'),
+        ('service_role','TRIGGER'),
+        ('service_role','MAINTAIN'),
+        ('authenticated','INSERT'),
+        ('authenticated','SELECT')
+    ),
+    actual as (
+      select
+        case when x.grantee=0 then 'PUBLIC' else r.rolname::text end as grantee,
+        x.privilege_type
+      from pg_catalog.pg_class c
+      cross join lateral pg_catalog.aclexplode(c.relacl) x
+      left join pg_catalog.pg_roles r on r.oid=x.grantee
+      where c.oid='public.funil_movimentacoes'::regclass
+    )
+    (
+      select grantee, privilege_type from actual
+      except
+      select grantee, privilege_type from expected
+    )
+    union all
+    (
+      select grantee, privilege_type from expected
+      except
+      select grantee, privilege_type from actual
+    )
+  ) then
+    raise exception
+      'M1_C_F01_PREFLIGHT_FUNIL_MOV_ACL_SEMANTIC_DRIFT';
+  end if;
+
+  select count(*)
+    into v_policy_total
+  from pg_catalog.pg_policies p
+  where p.schemaname='public'
+    and p.tablename='funil_movimentacoes';
+
+  if v_policy_total <> 2 then
+    raise exception
+      'M1_C_F01_PREFLIGHT_POLICY_SET_DRIFT expected_total=2 found=%',
+      v_policy_total;
   end if;
 
   select count(*)
@@ -78,11 +133,13 @@ begin
   from pg_catalog.pg_policies p
   where p.schemaname='public'
     and p.tablename='funil_movimentacoes'
+    and p.roles = '{public}'::name[]
     and (
       (
         p.policyname='funil_mov_insert'
         and p.permissive='PERMISSIVE'
         and p.cmd='INSERT'
+        and p.qual is null
         and p.with_check='(is_root() OR (corretor_id = my_corretor_id()))'
       )
       or
@@ -91,12 +148,13 @@ begin
         and p.permissive='PERMISSIVE'
         and p.cmd='SELECT'
         and p.qual='(is_root() OR (corretor_id = my_corretor_id()))'
+        and p.with_check is null
       )
     );
 
   if v_count <> 2 then
     raise exception
-      'M1_C_F01_PREFLIGHT_POLICY_DRIFT expected=2 found=%',
+      'M1_C_F01_PREFLIGHT_POLICY_DEFINITION_DRIFT expected_matches=2 found=%',
       v_count;
   end if;
 
@@ -104,9 +162,8 @@ begin
     md5(pg_catalog.pg_get_functiondef(p.oid)),
     pg_get_userbyid(p.proowner),
     p.prosecdef,
-    p.proconfig,
-    p.proacl::text
-  into v_md5, v_owner, v_prosecdef, v_proconfig, v_acl
+    p.proconfig
+  into v_md5, v_owner, v_prosecdef, v_proconfig
   from pg_catalog.pg_proc p
   join pg_catalog.pg_namespace n on n.oid=p.pronamespace
   where n.nspname='public'
@@ -117,21 +174,54 @@ begin
   if v_md5 is distinct from 'eaf0a69a4f85b3c8268c6c4d2d370111'
      or v_owner is distinct from 'postgres'
      or v_prosecdef is distinct from true
-     or v_proconfig is distinct from array['search_path=public']::text[]
-     or v_acl is distinct from
-        '{postgres=X/postgres,service_role=X/postgres,authenticated=X/postgres}' then
+     or v_proconfig is distinct from array['search_path=public']::text[] then
     raise exception
-      'M1_C_F01_PREFLIGHT_MOVER_FUNIL_DRIFT md5=% owner=% definer=% config=% acl=%',
-      v_md5, v_owner, v_prosecdef, v_proconfig, v_acl;
+      'M1_C_F01_PREFLIGHT_MOVER_FUNIL_DRIFT md5=% owner=% definer=% config=%',
+      v_md5, v_owner, v_prosecdef, v_proconfig;
+  end if;
+
+  if exists (
+    with expected(grantee, privilege_type) as (
+      values
+        ('postgres','EXECUTE'),
+        ('service_role','EXECUTE'),
+        ('authenticated','EXECUTE')
+    ),
+    actual as (
+      select
+        case when x.grantee=0 then 'PUBLIC' else r.rolname::text end as grantee,
+        x.privilege_type
+      from pg_catalog.pg_proc p
+      join pg_catalog.pg_namespace n on n.oid=p.pronamespace
+      cross join lateral pg_catalog.aclexplode(p.proacl) x
+      left join pg_catalog.pg_roles r on r.oid=x.grantee
+      where n.nspname='public'
+        and p.proname='mover_funil'
+        and pg_catalog.pg_get_function_identity_arguments(p.oid)=
+            'p_lead_id uuid, p_estagio_id uuid, p_observacao text'
+    )
+    (
+      select grantee, privilege_type from actual
+      except
+      select grantee, privilege_type from expected
+    )
+    union all
+    (
+      select grantee, privilege_type from expected
+      except
+      select grantee, privilege_type from actual
+    )
+  ) then
+    raise exception
+      'M1_C_F01_PREFLIGHT_MOVER_FUNIL_ACL_SEMANTIC_DRIFT';
   end if;
 
   select
     md5(pg_catalog.pg_get_functiondef(p.oid)),
     pg_get_userbyid(p.proowner),
     p.prosecdef,
-    p.proconfig,
-    p.proacl::text
-  into v_md5, v_owner, v_prosecdef, v_proconfig, v_acl
+    p.proconfig
+  into v_md5, v_owner, v_prosecdef, v_proconfig
   from pg_catalog.pg_proc p
   join pg_catalog.pg_namespace n on n.oid=p.pronamespace
   where n.nspname='public'
@@ -142,12 +232,46 @@ begin
   if v_md5 is distinct from '5ffe44e37519a624db32ee6789193700'
      or v_owner is distinct from 'postgres'
      or v_prosecdef is distinct from true
-     or v_proconfig is distinct from array['search_path=public']::text[]
-     or v_acl is distinct from
-        '{postgres=X/postgres,service_role=X/postgres,authenticated=X/postgres}' then
+     or v_proconfig is distinct from array['search_path=public']::text[] then
     raise exception
-      'M1_C_F01_PREFLIGHT_MOVER_FUNIL_BATCH_DRIFT md5=% owner=% definer=% config=% acl=%',
-      v_md5, v_owner, v_prosecdef, v_proconfig, v_acl;
+      'M1_C_F01_PREFLIGHT_MOVER_FUNIL_BATCH_DRIFT md5=% owner=% definer=% config=%',
+      v_md5, v_owner, v_prosecdef, v_proconfig;
+  end if;
+
+  if exists (
+    with expected(grantee, privilege_type) as (
+      values
+        ('postgres','EXECUTE'),
+        ('service_role','EXECUTE'),
+        ('authenticated','EXECUTE')
+    ),
+    actual as (
+      select
+        case when x.grantee=0 then 'PUBLIC' else r.rolname::text end as grantee,
+        x.privilege_type
+      from pg_catalog.pg_proc p
+      join pg_catalog.pg_namespace n on n.oid=p.pronamespace
+      cross join lateral pg_catalog.aclexplode(p.proacl) x
+      left join pg_catalog.pg_roles r on r.oid=x.grantee
+      where n.nspname='public'
+        and p.proname='mover_funil_batch'
+        and pg_catalog.pg_get_function_identity_arguments(p.oid)=
+            'p_lead_ids uuid[], p_estagio_id uuid, p_observacao text'
+    )
+    (
+      select grantee, privilege_type from actual
+      except
+      select grantee, privilege_type from expected
+    )
+    union all
+    (
+      select grantee, privilege_type from expected
+      except
+      select grantee, privilege_type from actual
+    )
+  ) then
+    raise exception
+      'M1_C_F01_PREFLIGHT_MOVER_FUNIL_BATCH_ACL_SEMANTIC_DRIFT';
   end if;
 
   select md5(pg_catalog.pg_get_functiondef(p.oid))
