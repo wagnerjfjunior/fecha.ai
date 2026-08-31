@@ -1,8 +1,165 @@
 # FECH.AI — SFJM Current Material State
 
-**Status:** `SECURITY_TO_SCALE_2026 / M1_ACTIVE / APPSEC_M1_003_PUBLIC_LEADS_COMPLETE / SECURITY_GO_DENIED`
-**Updated:** `2026-08-30`
+**Status:** `SECURITY_TO_SCALE_2026 / M1_SECURITY_TRUTH_BASELINE_COMPLETE / REMEDIATION_PROGRAM_ACTIVE / SECURITY_GO_DENIED`
+**Updated:** `2026-08-31`
 **Repository:** `wagnerjfjunior/fecha.ai`
+
+
+## 0.00 Current semantic override — M1 Security Truth Baseline complete — 2026-08-31
+
+This section supersedes older `M1_ACTIVE`, acquisition-oriented and
+pre-final-adjudication wording for **current continuity only**. Historical
+sections below remain lineage and are not rewritten as if they had always known
+the final M1 outcome.
+
+Canonical lifecycle anchors at this reconciliation:
+
+```text
+repository: wagnerjfjunior/fecha.ai
+main before this documentation lifecycle:
+  a15dde5067c716b0ab3c9342855069c1fc00bcd0
+
+#141 Security-to-Scale 2026:
+  OPEN
+
+#150 M1 Security Truth Baseline:
+  OPEN at documentation-PR authorization
+  ELIGIBLE_FOR_SEPARATELY_AUTHORIZED_CLOSURE
+
+#140:
+  CLOSED / MERGED
+  merge commit: c0d993ebe574f644af4f83cc25630fb8c1bd41ad
+
+#139:
+  OPEN / READY
+  head: 32003e75a28e235fb454d39e3e4459d0f03acb2b
+  STALE_REVALIDATION_REQUIRED
+  NO_FRESH_APPROVAL_FROM_M1_CLOSURE
+```
+
+Final independent specialist adjudication:
+
+```text
+Backend/Data:
+  BACKEND_DATA_M1_BASELINE_PASS_WITH_RESIDUAL_RISKS
+
+Application Security:
+  APPSEC_M1_BASELINE_PASS_WITH_RESIDUAL_RISKS
+
+Documentation Auditor:
+  DOCUMENTATION_M1_CLOSURE_PASS_WITH_BOUNDED_RESIDUALS
+
+BLOCKERS_TO_M1_BASELINE_CLOSURE:
+  NONE
+
+ADDITIONAL_TECHNICAL_REAUDIT_REQUIRED:
+  NO / AUDIT_LOOP_BLOCKED
+```
+
+Current semantic state:
+
+```text
+M1_SECURITY_TRUTH_BASELINE = COMPLETE
+SECURITY_GO = DENIED / NOT_GRANTED
+REMEDIATION_PROGRAM = ACTIVE
+BROAD_PAID_COMMERCIALIZATION = BLOCKED
+
+M1_FINDING_DISCOVERED != M1_FINDING_REMEDIATED
+M1_BASELINE_COMPLETE != SECURITY_GO
+```
+
+Final confirmed M1 finding set:
+
+```text
+M1-B-F01
+  ANON_PRIVILEGED_RPC_EXECUTION_SURFACE
+  CONFIRMED attack-surface / least-privilege gap
+  current live counts:
+    SECURITY DEFINER total = 136
+    authenticated executable = 124
+    authenticated executable with bounded mutation keywords = 49
+    anon executable = 22
+    anon executable with bounded mutation keywords = 9
+    PUBLIC executable = 1
+  ANON_EXECUTABLE != ANONYMOUSLY_EXPLOITABLE
+
+M1-C-F01
+  FUNIL_TENANT_RELATIONSHIP_INTEGRITY_GAP
+  CONFIRMED / HIGH / P0
+  BLOCKING_FOR_SECURITY_GO
+  NOT_BLOCKING_FOR_M1_BASELINE_CLOSURE
+  no proven cross-tenant lead leakage claim
+
+MIGRATION_PROVENANCE_GAP
+  live ledger rows = 143
+  versioned GitHub migration files = 56
+  ACCEPTABLE_WITH_RESIDUAL_RISK_FOR_M1_BASELINE
+  NOT "87 missing controls"
+  no silent migration-history rewrite
+
+M1-D-F01
+  DEPENDENCY_REPRODUCIBILITY_GAP
+  CONFIRMED supply-chain / reproducibility debt
+
+M1-D-F02
+  VITE_6_4_2_KNOWN_AFFECTED_VERSION
+  GHSA-fx2h-pf6j-xcff
+  upgrade required
+  production exploitability / compromise = NOT_ESTABLISHED
+
+M1-E-F01
+  LIVE_EDGE_FUNCTION_NOT_VERSIONED
+  assistente-ai v10 live; source absent from current main
+  assurance / traceability gap
+
+M1-E-F02
+  BROWSER_SESSION_REFRESH_TOKEN_EXPOSURE_SURFACE
+  CONFIRMED material current finding
+  localStorage itself != exploit
+
+M1-E-F03
+  EXTERNAL_WORKER_PROXY_AUTHORITY_GAP
+  CONFIRMED material static finding
+  runtime abuse / PII leak / tenant crossover / exploitation = NOT_PROVEN
+
+M1-E-F04
+  LEAKED_PASSWORD_PROTECTION_DISABLED
+  CONFIRMED Auth hardening gap
+```
+
+Evidence limitations intentionally preserved:
+
+```text
+CONTROLLED_RUNTIME_NEGATIVE_PASS = NOT_ESTABLISHED
+no active cross-tenant production negative testing
+no proxy production POST
+no token manipulation
+no credential attack testing
+no production offensive testing
+Vite production exploitability prerequisites = NOT_ESTABLISHED
+Worker upstream runtime behavior = NOT_ACTIVELY_TESTED
+public.leads controlled runtime negative PASS = NOT_ESTABLISHED
+
+STATIC_IMPLEMENTATION_REVIEW
+!= LIVE_DATABASE_VALIDATED
+!= CONTROLLED_RUNTIME_PASS
+```
+
+The bounded `APPSEC-M1-003 / public.leads` implementation/catalog closure
+remains valid with its explicit runtime-evidence limitation and must not be
+reopened without a material invalidation event.
+
+The single next remediation action is defined in
+`docs/sfjm/NEXT_SAFE_ACTION.md`:
+
+```text
+P0 — M1-C-F01 / FUNIL TENANT INTEGRITY
+DESIGN / PROOF PLAN FIRST
+```
+
+No implementation, cleanup, Supabase mutation, production negative test,
+Security Go, #139 approval or Issue #150 closure is authorized by this
+documentation state alone.
 
 ## 0.0 Current material override — APPSEC-M1-003 / public.leads closure — 2026-08-30
 
