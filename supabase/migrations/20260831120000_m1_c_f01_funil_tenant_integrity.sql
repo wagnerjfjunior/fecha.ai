@@ -71,46 +71,47 @@ begin
 
   -- Compare ACLs as unordered semantic grantee/privilege sets.
   if exists (
-    with expected(grantee, privilege_type) as (
+    with expected(grantee, privilege_type, is_grantable) as (
       values
-        ('postgres','INSERT'),
-        ('postgres','SELECT'),
-        ('postgres','UPDATE'),
-        ('postgres','DELETE'),
-        ('postgres','TRUNCATE'),
-        ('postgres','REFERENCES'),
-        ('postgres','TRIGGER'),
-        ('postgres','MAINTAIN'),
-        ('service_role','INSERT'),
-        ('service_role','SELECT'),
-        ('service_role','UPDATE'),
-        ('service_role','DELETE'),
-        ('service_role','TRUNCATE'),
-        ('service_role','REFERENCES'),
-        ('service_role','TRIGGER'),
-        ('service_role','MAINTAIN'),
-        ('authenticated','INSERT'),
-        ('authenticated','SELECT')
+        ('postgres','INSERT',false),
+        ('postgres','SELECT',false),
+        ('postgres','UPDATE',false),
+        ('postgres','DELETE',false),
+        ('postgres','TRUNCATE',false),
+        ('postgres','REFERENCES',false),
+        ('postgres','TRIGGER',false),
+        ('postgres','MAINTAIN',false),
+        ('service_role','INSERT',false),
+        ('service_role','SELECT',false),
+        ('service_role','UPDATE',false),
+        ('service_role','DELETE',false),
+        ('service_role','TRUNCATE',false),
+        ('service_role','REFERENCES',false),
+        ('service_role','TRIGGER',false),
+        ('service_role','MAINTAIN',false),
+        ('authenticated','INSERT',false),
+        ('authenticated','SELECT',false)
     ),
     actual as (
       select
         case when x.grantee=0 then 'PUBLIC' else r.rolname::text end as grantee,
-        x.privilege_type
+        x.privilege_type,
+        x.is_grantable
       from pg_catalog.pg_class c
       cross join lateral pg_catalog.aclexplode(c.relacl) x
       left join pg_catalog.pg_roles r on r.oid=x.grantee
       where c.oid='public.funil_movimentacoes'::regclass
     )
     (
-      select grantee, privilege_type from actual
+      select grantee, privilege_type, is_grantable from actual
       except
-      select grantee, privilege_type from expected
+      select grantee, privilege_type, is_grantable from expected
     )
     union all
     (
-      select grantee, privilege_type from expected
+      select grantee, privilege_type, is_grantable from expected
       except
-      select grantee, privilege_type from actual
+      select grantee, privilege_type, is_grantable from actual
     )
   ) then
     raise exception
@@ -182,16 +183,17 @@ begin
   end if;
 
   if exists (
-    with expected(grantee, privilege_type) as (
+    with expected(grantee, privilege_type, is_grantable) as (
       values
-        ('postgres','EXECUTE'),
-        ('service_role','EXECUTE'),
-        ('authenticated','EXECUTE')
+        ('postgres','EXECUTE',false),
+        ('service_role','EXECUTE',false),
+        ('authenticated','EXECUTE',false)
     ),
     actual as (
       select
         case when x.grantee=0 then 'PUBLIC' else r.rolname::text end as grantee,
-        x.privilege_type
+        x.privilege_type,
+        x.is_grantable
       from pg_catalog.pg_proc p
       join pg_catalog.pg_namespace n on n.oid=p.pronamespace
       cross join lateral pg_catalog.aclexplode(p.proacl) x
@@ -202,15 +204,15 @@ begin
             'p_lead_id uuid, p_estagio_id uuid, p_observacao text'
     )
     (
-      select grantee, privilege_type from actual
+      select grantee, privilege_type, is_grantable from actual
       except
-      select grantee, privilege_type from expected
+      select grantee, privilege_type, is_grantable from expected
     )
     union all
     (
-      select grantee, privilege_type from expected
+      select grantee, privilege_type, is_grantable from expected
       except
-      select grantee, privilege_type from actual
+      select grantee, privilege_type, is_grantable from actual
     )
   ) then
     raise exception
@@ -240,16 +242,17 @@ begin
   end if;
 
   if exists (
-    with expected(grantee, privilege_type) as (
+    with expected(grantee, privilege_type, is_grantable) as (
       values
-        ('postgres','EXECUTE'),
-        ('service_role','EXECUTE'),
-        ('authenticated','EXECUTE')
+        ('postgres','EXECUTE',false),
+        ('service_role','EXECUTE',false),
+        ('authenticated','EXECUTE',false)
     ),
     actual as (
       select
         case when x.grantee=0 then 'PUBLIC' else r.rolname::text end as grantee,
-        x.privilege_type
+        x.privilege_type,
+        x.is_grantable
       from pg_catalog.pg_proc p
       join pg_catalog.pg_namespace n on n.oid=p.pronamespace
       cross join lateral pg_catalog.aclexplode(p.proacl) x
@@ -260,15 +263,15 @@ begin
             'p_lead_ids uuid[], p_estagio_id uuid, p_observacao text'
     )
     (
-      select grantee, privilege_type from actual
+      select grantee, privilege_type, is_grantable from actual
       except
-      select grantee, privilege_type from expected
+      select grantee, privilege_type, is_grantable from expected
     )
     union all
     (
-      select grantee, privilege_type from expected
+      select grantee, privilege_type, is_grantable from expected
       except
-      select grantee, privilege_type from actual
+      select grantee, privilege_type, is_grantable from actual
     )
   ) then
     raise exception
