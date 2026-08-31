@@ -85,6 +85,7 @@ begin
         ('service_role','SELECT'),
         ('service_role','UPDATE'),
         ('service_role','DELETE'),
+        ('service_role','TRUNCATE'),
         ('service_role','REFERENCES'),
         ('service_role','TRIGGER'),
         ('service_role','MAINTAIN'),
