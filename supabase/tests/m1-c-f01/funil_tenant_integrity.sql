@@ -176,11 +176,11 @@ do $m1_c_f01_authz_proof$
 declare
   v_rls boolean;
   v_force boolean;
-  v_acl text;
   v_count integer;
+  v_policy_total integer;
 begin
-  select c.relrowsecurity, c.relforcerowsecurity, c.relacl::text
-    into v_rls, v_force, v_acl
+  select c.relrowsecurity, c.relforcerowsecurity
+    into v_rls, v_force
   from pg_catalog.pg_class c
   where c.oid='public.funil_movimentacoes'::regclass;
 
@@ -191,11 +191,63 @@ begin
       v_rls, v_force;
   end if;
 
-  if v_acl is distinct from
-     '{postgres=arwdDxtm/postgres,service_role=arwdDxtm/postgres,authenticated=ar/postgres}' then
+  -- Exact semantic table ACL set, independent of aclitem[] ordering.
+  if exists (
+    with expected(grantee, privilege_type) as (
+      values
+        ('postgres','INSERT'),
+        ('postgres','SELECT'),
+        ('postgres','UPDATE'),
+        ('postgres','DELETE'),
+        ('postgres','TRUNCATE'),
+        ('postgres','REFERENCES'),
+        ('postgres','TRIGGER'),
+        ('postgres','MAINTAIN'),
+        ('service_role','INSERT'),
+        ('service_role','SELECT'),
+        ('service_role','UPDATE'),
+        ('service_role','DELETE'),
+        ('service_role','REFERENCES'),
+        ('service_role','TRIGGER'),
+        ('service_role','MAINTAIN'),
+        ('authenticated','INSERT'),
+        ('authenticated','SELECT')
+    ),
+    actual as (
+      select
+        case when x.grantee=0 then 'PUBLIC' else r.rolname::text end as grantee,
+        x.privilege_type
+      from pg_catalog.pg_class c
+      cross join lateral pg_catalog.aclexplode(c.relacl) x
+      left join pg_catalog.pg_roles r on r.oid=x.grantee
+      where c.oid='public.funil_movimentacoes'::regclass
+    )
+    (
+      select grantee, privilege_type from actual
+      except
+      select grantee, privilege_type from expected
+    )
+    union all
+    (
+      select grantee, privilege_type from expected
+      except
+      select grantee, privilege_type from actual
+    )
+  ) then
     raise exception
-      'M1_C_F01_PROOF_TABLE_ACL_DRIFT acl=%',
-      v_acl;
+      'M1_C_F01_PROOF_TABLE_ACL_SEMANTIC_DRIFT';
+  end if;
+
+  select count(*)
+    into v_policy_total
+  from pg_catalog.pg_policies p
+  where p.schemaname='public'
+    and p.tablename='funil_movimentacoes';
+
+  if v_policy_total <> 2 then
+    raise exception
+      'M1_C_F01_PROOF_POLICY_SET_DRIFT expected_total=2 found=%',
+      v_policy_total;
   end if;
 
   select count(*)
@@ -203,11 +255,13 @@ begin
   from pg_catalog.pg_policies p
   where p.schemaname='public'
     and p.tablename='funil_movimentacoes'
+    and p.roles = '{public}'::name[]
     and (
       (
         p.policyname='funil_mov_insert'
         and p.permissive='PERMISSIVE'
         and p.cmd='INSERT'
+        and p.qual is null
         and p.with_check='(is_root() OR (corretor_id = my_corretor_id()))'
       )
       or
@@ -216,17 +270,18 @@ begin
         and p.permissive='PERMISSIVE'
         and p.cmd='SELECT'
         and p.qual='(is_root() OR (corretor_id = my_corretor_id()))'
+        and p.with_check is null
       )
     );
 
   if v_count <> 2 then
     raise exception
-      'M1_C_F01_PROOF_POLICY_DRIFT expected=2 found=%',
+      'M1_C_F01_PROOF_POLICY_DEFINITION_DRIFT expected_matches=2 found=%',
       v_count;
   end if;
 
   -- This P0 does not claim the policy is complete same-tenant authorization.
-  -- It only verifies the policy was not silently broadened/changed.
+  -- It proves only that the approved policy set was not widened or changed.
 end;
 $m1_c_f01_authz_proof$;
 
@@ -293,6 +348,15 @@ begin
       'M1_C_F01_PROOF_MOVER_FUNIL_ANON_EXECUTE_PRESENT';
   end if;
 
+  if not has_function_privilege(
+       'service_role',
+       'public.mover_funil(uuid,uuid,text)',
+       'EXECUTE'
+     ) then
+    raise exception
+      'M1_C_F01_PROOF_MOVER_FUNIL_SERVICE_EXECUTE_MISSING';
+  end if;
+
   if has_function_privilege(
        'authenticated',
        'public.mover_funil_batch(uuid[],uuid,text)',
@@ -309,6 +373,78 @@ begin
      ) then
     raise exception
       'M1_C_F01_PROOF_LEGACY_BATCH_SERVICE_EXECUTE_UNEXPECTEDLY_REMOVED';
+  end if;
+
+  -- Exact semantic function ACL sets: reject unexpected grantees/privileges.
+  if exists (
+    with expected(grantee, privilege_type) as (
+      values
+        ('postgres','EXECUTE'),
+        ('service_role','EXECUTE'),
+        ('authenticated','EXECUTE')
+    ),
+    actual as (
+      select
+        case when x.grantee=0 then 'PUBLIC' else r.rolname::text end as grantee,
+        x.privilege_type
+      from pg_catalog.pg_proc p
+      join pg_catalog.pg_namespace n on n.oid=p.pronamespace
+      cross join lateral pg_catalog.aclexplode(p.proacl) x
+      left join pg_catalog.pg_roles r on r.oid=x.grantee
+      where n.nspname='public'
+        and p.proname='mover_funil'
+        and pg_catalog.pg_get_function_identity_arguments(p.oid)=
+            'p_lead_id uuid, p_estagio_id uuid, p_observacao text'
+    )
+    (
+      select grantee, privilege_type from actual
+      except
+      select grantee, privilege_type from expected
+    )
+    union all
+    (
+      select grantee, privilege_type from expected
+      except
+      select grantee, privilege_type from actual
+    )
+  ) then
+    raise exception
+      'M1_C_F01_PROOF_MOVER_FUNIL_ACL_SEMANTIC_DRIFT';
+  end if;
+
+  if exists (
+    with expected(grantee, privilege_type) as (
+      values
+        ('postgres','EXECUTE'),
+        ('service_role','EXECUTE')
+    ),
+    actual as (
+      select
+        case when x.grantee=0 then 'PUBLIC' else r.rolname::text end as grantee,
+        x.privilege_type
+      from pg_catalog.pg_proc p
+      join pg_catalog.pg_namespace n on n.oid=p.pronamespace
+      cross join lateral pg_catalog.aclexplode(p.proacl) x
+      left join pg_catalog.pg_roles r on r.oid=x.grantee
+      where n.nspname='public'
+        and p.proname='mover_funil_batch'
+        and pg_catalog.pg_get_function_identity_arguments(p.oid)=
+            'p_lead_ids uuid[], p_estagio_id uuid, p_observacao text'
+    )
+    (
+      select grantee, privilege_type from actual
+      except
+      select grantee, privilege_type from expected
+    )
+    union all
+    (
+      select grantee, privilege_type from expected
+      except
+      select grantee, privilege_type from actual
+    )
+  ) then
+    raise exception
+      'M1_C_F01_PROOF_MOVER_FUNIL_BATCH_ACL_SEMANTIC_DRIFT';
   end if;
 end;
 $m1_c_f01_writer_proof$;
