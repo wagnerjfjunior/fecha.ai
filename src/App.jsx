@@ -4040,7 +4040,7 @@ function UploadTab({ sb, token }) {
                     <button onClick={()=>setVisTargets(visMembros.map(m=>({target_type:m.tipo,target_id:m.id})))}
                       style={{fontSize:11,color:"#2563eb",background:"none",border:"none",cursor:"pointer",fontWeight:600}}>Todos</button>
                     <button onClick={()=>setVisTargets([])}
-                      style={{fontSize:11,color:"#dc2626",background:"none",border:"none",cursor:"pointer",fontWeight:600}}>Nenhum</button>
+                      style={{fontSize:11,color:"#dc2626",background:"none",border:"none",cursor:"pointer",fontWeight:600}}>Usar padrão</button>
                   </div>
                 </div>
                 {visLd&&<div style={{padding:20,textAlign:"center",color:"#94a3b8",fontSize:13}}>Carregando membros...</div>}
@@ -4192,6 +4192,11 @@ function VisibilidadePanel({ lista, sb, token, onFechar }) {
 
   const salvar = async () => {
     setSalvando(true); setMsg("");
+    if (modoSelecionar && targets.length === 0) {
+      setMsg("❌ Selecione ao menos um corretor ou use o escopo padrão.");
+      setSalvando(false);
+      return;
+    }
     try {
       const r = await sb.rpc("gerenciar_visibilidade_lista",{
         p_lista_id: lista.id,
@@ -4282,8 +4287,8 @@ function VisibilidadePanel({ lista, sb, token, onFechar }) {
                     <div style={{display:"flex",gap:10}}>
                       <button onClick={()=>setTargets(membros.map(m=>({target_type:m.tipo,target_id:m.id})))}
                         style={{fontSize:11,color:"#2563eb",background:"none",border:"none",cursor:"pointer",fontWeight:600}}>Todos</button>
-                      <button onClick={()=>setTargets([])}
-                        style={{fontSize:11,color:"#dc2626",background:"none",border:"none",cursor:"pointer",fontWeight:600}}>Nenhum</button>
+                      <button onClick={()=>{ setTargets([]); setModoSelecionar(false); }}
+                        style={{fontSize:11,color:"#dc2626",background:"none",border:"none",cursor:"pointer",fontWeight:600}}>Usar padrão</button>
                     </div>
                   )}
                 </div>
