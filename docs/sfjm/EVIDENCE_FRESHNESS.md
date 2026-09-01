@@ -1,8 +1,111 @@
 # FECH.AI — SFJM Evidence Freshness
 
-**Status:** `SECURITY_TO_SCALE_2026 / M1_FINAL_EVIDENCE_RECONCILED / REMEDIATION_PROGRAM_ACTIVE / SECURITY_GO_DENIED`
-**Updated:** `2026-08-31`
+**Status:** `SECURITY_TO_SCALE_2026 / F1_02_B3_POST_APPLICATION_PROVEN / REMEDIATION_PROGRAM_ACTIVE / SECURITY_GO_DENIED`
+**Updated:** `2026-09-01`
 **Repository:** `wagnerjfjunior/fecha.ai`
+
+## 0.000 F1-02/B3 post-application evidence override — 2026-09-01
+
+This is the freshest bounded evidence record for F1-02/B3 and supersedes older
+B3/M1-C-F01 freshness wording when conflicting.
+
+### GitHub evidence
+
+```text
+repository: wagnerjfjunior/fecha.ai
+PR #157: CLOSED / MERGED
+reviewed head: 6f22afeb723414d87e5481d80196a2c99789e4b1
+merge/main anchor: 035f57e29d64c0cca26048a925a790459bd9976c
+forward blob: f18f6ae194c8810282345497ff4e637e3236c45a
+rollback blob: cf9a0119d5b3ccd6e19daa28523fcca64b712b41
+proof blob: e101b62c7638392be06090fdc81030bb01f9d7a6
+```
+
+Coverage for the three merged B3 artifacts at the application gate:
+`INTEGRAL_READ`. PR lifecycle and final blob identities were independently
+resolved live.
+
+### Production application evidence
+
+```text
+Supabase project: uobxxgzshrmbtjfdolxd / Discador-MesaCliente
+environment: Pilot Production
+application count: 1
+application result: success=true
+ledger version: 20260901074722
+ledger name: f1_02_b3_revoke_direct_funnel_history_insert
+rollback: NOT EXECUTED
+```
+
+### Independent post-application live catalog evidence
+
+```text
+authenticated INSERT: false
+authenticated effective column INSERT: false
+authenticated SELECT: true
+funil_mov_insert: absent
+RLS: true
+FORCE RLS: true
+service_role expected table privileges: preserved
+postgres expected table privileges: preserved
+foreign keys: 9 / 9 validated
+non-internal triggers: 0
+rows: 610
+empresa_id NULL: 0
+lead mismatch: 0
+corretor mismatch: 0
+current-stage mismatch: 0
+previous-stage mismatch: 0
+four controlled-writer definition/ACL/EXECUTE fingerprints: preserved
+```
+
+No business-row payload or PII was captured.
+
+### Read-only proof
+
+The exact merged proof blob
+`e101b62c7638392be06090fdc81030bb01f9d7a6` executed after application,
+inside its versioned `BEGIN READ ONLY ... ROLLBACK` boundary, and completed
+without exception.
+
+```text
+READ_ONLY_PROOF = PASS
+RUNTIME_NEGATIVE_PASS = NOT ESTABLISHED
+```
+
+### Independent AppSec adjudication
+
+The Application Security Assurance Specialist result was manually relayed after
+the fresh post-application evidence:
+
+```text
+VERDICT = PASS
+POST_APPLICATION_APPSEC_PASS = YES
+B3_CATALOG_REMEDIATION = ESTABLISHED
+EXACT_REVIEWED_ARTIFACT_APPLIED = YES
+READ_ONLY_PROOF = PASS
+BLOCKING = NONE
+REQUIRED_CORRECTION = NONE
+ROLLBACK_REQUIRED = NO
+F1_02_B3_STATUS =
+  REMEDIATED — MERGED + APPLIED + READ_ONLY_CATALOG_PROVEN
+RUNTIME_NEGATIVE_PASS = NOT ESTABLISHED
+SECURITY_GO = DENIED
+```
+
+This is specialist-result provenance relayed through the project conversation;
+it is not relabeled as a Gateway runtime receipt.
+
+### Invalidation
+
+Revalidate B3 proportionally if any material event changes the relevant grant,
+policy, table/RLS state, FKs, controlled writers, rollback state, applied
+migration provenance or the exact production environment. A future
+runtime-negative test adds evidence but does not retroactively invalidate this
+bounded catalog PASS unless it discovers a material contradiction.
+
+Issue #150 is live `CLOSED / completed`. Issue #141 remains live `OPEN`.
+
 
 
 ## 0.00 M1 final adjudication evidence override — 2026-08-31
