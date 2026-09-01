@@ -1,5 +1,74 @@
 # FECH.AI — SFJM Current Product/Security Handoff
 
+## 0.0000 Current handoff override — B2 closed / B4 next — 2026-09-01
+
+This section is the current handoff authority when older B2-next sections below
+conflict. Preserve older material as lineage only.
+
+```text
+repository: wagnerjfjunior/fecha.ai
+post-merge main: fe83383971fe852e1fc91eada824253c818ef3e7
+PR #159: CLOSED / MERGED
+F1-02/B2: REMEDIATED — MERGED + APPLIED + READ_ONLY_CATALOG_PROVEN
+
+Supabase project:
+  uobxxgzshrmbtjfdolxd / Discador-MesaCliente
+
+migration:
+  f1_02_b2_revoke_direct_crm_writes
+  applied exactly once
+  artifact blob: 1feea4ae8c2d368092331f217f8a8ba10d82cbcc
+
+rollback:
+  NOT EXECUTED
+  artifact blob: 7ae92125c780276933a0bc091a6982c95c21b9ee
+
+read-only proof:
+  PASS
+  artifact blob: 0f7e94ca9cde77868197c23950cc3f5c85fcbea9
+
+post-application direct-write boundary:
+  leads authenticated INSERT=false
+  leads authenticated UPDATE=false
+  lotes authenticated UPDATE=false
+  times direct authenticated write remains absent
+
+compatibility writers:
+  11 reviewed writers preserved
+
+gerenciar_lista:
+  remains unavailable to authenticated / anon / PUBLIC
+
+RUNTIME_NEGATIVE_PASS:
+  NOT ESTABLISHED
+
+SECURITY_GO:
+  DENIED
+```
+
+Current handoff:
+
+```text
+closed bounded slice:
+  F1-02/B2 — EXCESSIVE DIRECT CRM WRITES
+  REMEDIATED — MERGED + APPLIED + READ_ONLY_CATALOG_PROVEN
+
+next bounded risk:
+  F1-02/B4 — LIST ACL CROSS-TENANT TARGET RISK / PR-06
+
+next action:
+  TARGET DESIGN + AUTHORIZATION MATRIX FIRST
+
+required specialists before implementation:
+  Architecture
+  AppSec
+  LeadOps
+```
+
+Do not infer B4 implementation authority, runtime-negative PASS or Security Go
+from this handoff.
+
+
 **Status:** `SECURITY_TO_SCALE_2026 / F1_02_B3_REMEDIATED / B2_NEXT / SECURITY_GO_DENIED`
 **Updated:** `2026-09-01`
 **Repository:** `wagnerjfjunior/fecha.ai`

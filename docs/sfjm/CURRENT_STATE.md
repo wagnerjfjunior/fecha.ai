@@ -1,5 +1,69 @@
 # FECH.AI — SFJM Current Material State
 
+## 0.0000 Current semantic override — F1-02/B2 post-application closure — 2026-09-01
+
+This section is the current semantic authority for the bounded F1-02/B2
+finding and supersedes older B2-next wording below when it conflicts.
+Historical sections remain lineage only and must not be replayed as current
+authority.
+
+```text
+repository: wagnerjfjunior/fecha.ai
+post-merge main: fe83383971fe852e1fc91eada824253c818ef3e7
+PR #159: CLOSED / MERGED
+F1-02/B2: REMEDIATED — MERGED + APPLIED + READ_ONLY_CATALOG_PROVEN
+
+Supabase project:
+  uobxxgzshrmbtjfdolxd / Discador-MesaCliente
+
+migration:
+  f1_02_b2_revoke_direct_crm_writes
+  applied exactly once
+  artifact blob: 1feea4ae8c2d368092331f217f8a8ba10d82cbcc
+
+rollback:
+  NOT EXECUTED
+  artifact blob: 7ae92125c780276933a0bc091a6982c95c21b9ee
+
+read-only proof:
+  PASS
+  artifact blob: 0f7e94ca9cde77868197c23950cc3f5c85fcbea9
+
+post-application direct-write boundary:
+  leads authenticated INSERT=false
+  leads authenticated UPDATE=false
+  lotes authenticated UPDATE=false
+  times direct authenticated write remains absent
+
+compatibility writers:
+  11 reviewed writers preserved
+
+gerenciar_lista:
+  remains unavailable to authenticated / anon / PUBLIC
+
+RUNTIME_NEGATIVE_PASS:
+  NOT ESTABLISHED
+
+SECURITY_GO:
+  DENIED
+```
+
+### Current single next remediation action
+
+```text
+F1-02/B4 — LIST ACL CROSS-TENANT TARGET RISK / PR-06
+
+TARGET DESIGN + AUTHORIZATION MATRIX FIRST
+
+required specialist participation before implementation:
+  Architecture
+  AppSec
+  LeadOps
+```
+
+No B4 implementation authority is established by this documentation update.
+
+
 **Status:** `SECURITY_TO_SCALE_2026 / M1_SECURITY_TRUTH_BASELINE_COMPLETE / F1_02_B3_REMEDIATED / REMEDIATION_PROGRAM_ACTIVE / SECURITY_GO_DENIED`
 **Updated:** `2026-09-01`
 **Repository:** `wagnerjfjunior/fecha.ai`
