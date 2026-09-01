@@ -103,6 +103,9 @@ begin
   if not pg_catalog.has_table_privilege(
        'authenticated', 'public.funil_movimentacoes', 'INSERT'
      )
+     or not pg_catalog.has_any_column_privilege(
+       'authenticated', 'public.funil_movimentacoes', 'INSERT'
+     )
      or not pg_catalog.has_table_privilege(
        'authenticated', 'public.funil_movimentacoes', 'SELECT'
      ) then
