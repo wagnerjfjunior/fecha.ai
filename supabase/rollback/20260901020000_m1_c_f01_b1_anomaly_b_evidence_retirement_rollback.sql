@@ -106,6 +106,8 @@ declare
   v_recomputed_digest bytea;
   v_restored_digest_input jsonb;
   v_restored_digest bytea;
+  v_current_lead_digest bytea;
+  v_active_history_count bigint;
 
   v_inserted integer;
   v_restored_id uuid;
@@ -215,6 +217,31 @@ begin
      or v_evidence.source_previous_stage_id is not null
      or v_evidence.previous_stage_empresa_id is not null then
     raise exception 'B1_ROLLBACK_PARENT_CONTEXT_DRIFT';
+  end if;
+
+  -- B1-BD-03: the lead must still be byte-logically identical to the row
+  -- fingerprint captured by the B1 forward artifact. Tenant equality alone is
+  -- insufficient to authorize restoration after intervening lead changes.
+  v_current_lead_digest :=
+    extensions.digest(
+      pg_catalog.convert_to(pg_catalog.to_jsonb(v_lead)::text, 'UTF8'),
+      'sha256'
+    );
+
+  if v_current_lead_digest is distinct from v_evidence.lead_row_digest then
+    raise exception 'B1_ROLLBACK_LEAD_FINGERPRINT_DRIFT';
+  end if;
+
+  -- B was the only adjudicated movement for this lead and B1 retired it.
+  -- Any subsequent/intervening movement changes the historical context and
+  -- makes exact restoration unsafe.
+  select count(*)
+  into v_active_history_count
+  from public.funil_movimentacoes fm
+  where fm.lead_id = v_evidence.source_lead_id;
+
+  if v_active_history_count <> 0 then
+    raise exception 'B1_ROLLBACK_ACTIVE_LEAD_HISTORY_DRIFT';
   end if;
 
   -- Restore ONLY the exact original active movement. The affected lead is never
