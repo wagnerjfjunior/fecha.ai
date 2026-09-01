@@ -23,6 +23,8 @@ declare
   v_acl_md5 text;
   v_expected_definition_md5 text;
   v_expected_acl_md5 text;
+  v_role text;
+  v_privilege text;
 begin
   if pg_catalog.to_regclass('public.funil_movimentacoes') is null then
     raise exception 'F1_02_B3_PROOF_TABLE_MISSING';
@@ -42,11 +44,33 @@ begin
     raise exception 'F1_02_B3_PROOF_AUTHENTICATED_INSERT_PRESENT';
   end if;
 
+  if pg_catalog.has_any_column_privilege(
+       'authenticated', 'public.funil_movimentacoes', 'INSERT'
+     ) then
+    raise exception 'F1_02_B3_PROOF_AUTHENTICATED_COLUMN_INSERT_PRESENT';
+  end if;
+
   if not pg_catalog.has_table_privilege(
        'authenticated', 'public.funil_movimentacoes', 'SELECT'
      ) then
     raise exception 'F1_02_B3_PROOF_AUTHENTICATED_SELECT_MISSING';
   end if;
+
+  foreach v_role in array array['service_role', 'postgres']
+  loop
+    foreach v_privilege in array array[
+      'SELECT', 'INSERT', 'UPDATE', 'DELETE', 'TRUNCATE',
+      'REFERENCES', 'TRIGGER', 'MAINTAIN'
+    ]
+    loop
+      if not pg_catalog.has_table_privilege(
+           v_role, 'public.funil_movimentacoes', v_privilege
+         ) then
+        raise exception 'F1_02_B3_PROOF_PRIVILEGED_ROLE_ACL_DRIFT role=% privilege=%',
+          v_role, v_privilege;
+      end if;
+    end loop;
+  end loop;
 
   if exists (
     select 1 from pg_catalog.pg_policies p
