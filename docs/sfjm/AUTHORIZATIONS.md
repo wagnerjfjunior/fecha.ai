@@ -1,8 +1,89 @@
 # FECH.AI — SFJM Authorizations
 
-**Status:** `AUTHORITY_PROVENANCE_LEDGER / M0_TO_M1_TRANSITION_AUTHORIZED_THROUGH_MERGE / M1_READ_ONLY_ACTIVE / MUTATIVE_SECURITY_WORK_NOT_AUTHORIZED`
-**Updated:** `2026-08-28`
+**Status:** `AUTHORITY_PROVENANCE_LEDGER / F1_02_B3_APPLICATION_CONSUMED / B3_SFJM_DRAFT_RECONCILIATION`
+**Updated:** `2026-09-01`
 **Repository:** `wagnerjfjunior/fecha.ai`
+
+## 0.00 CONSUMED_AUTHORITY — F1-02/B3 PR #157 lifecycle and production application — 2026-09-01
+
+The following separate Product Authority grants were exercised only for their
+bounded transitions and are now consumed:
+
+```text
+PR #157 Ready:
+  exact head 6f22afeb723414d87e5481d80196a2c99789e4b1
+  CONSUMED
+
+PR #157 merge:
+  exact head 6f22afeb723414d87e5481d80196a2c99789e4b1
+  merge commit 035f57e29d64c0cca26048a925a790459bd9976c
+  CONSUMED
+
+F1-02/B3 Supabase application:
+  project uobxxgzshrmbtjfdolxd / Discador-MesaCliente
+  merged main 035f57e29d64c0cca26048a925a790459bd9976c
+  exact forward blob f18f6ae194c8810282345497ff4e637e3236c45a
+  authorized invocations: 1
+  actual successful invocations: 1
+  CONSUMED
+
+Post-application merged READ_ONLY proof:
+  blob e101b62c7638392be06090fdc81030bb01f9d7a6
+  executed once after application
+  PASS
+```
+
+The production grant did not authorize and does not retroactively authorize:
+
+```text
+automatic retry
+rollback
+runtime-negative production test
+Auth mutation
+unrelated data/function/RPC mutation
+new migration
+Security Go
+broad paid commercialization
+```
+
+No part of these consumed grants is reusable for F1-02/B2.
+
+## 0.01 BOUNDED DOCUMENTATION AUTHORITY — B3 SFJM reconciliation Draft PR — 2026-09-01
+
+Product Authority separately authorized this documentation-only transition from
+exact base:
+
+```text
+repository: wagnerjfjunior/fecha.ai
+base: 035f57e29d64c0cca26048a925a790459bd9976c
+branch: docs/sfjm-f1-02-b3-closure-20260901
+purpose:
+  record B3 catalog remediation closure
+  preserve RUNTIME_NEGATIVE_PASS = NOT ESTABLISHED
+  preserve SECURITY_GO = DENIED
+  record B3 application authority as consumed
+  correct Issue #150 continuity to CLOSED
+  keep Issue #141 OPEN
+  set F1-02/B2 direct CRM writes as next safe action
+allowed:
+  only strictly necessary SFJM documentation
+  one documentation branch
+  one Draft PR
+  read-only exact-head validation
+not authorized:
+  Ready
+  merge
+  Supabase mutation
+  runtime
+  deploy
+  code/migration/Auth/data changes
+  Security Go
+```
+
+The write authority for this bounded documentation transition is exhausted by
+publication of its Draft PR. Draft publication does not create Ready or merge
+authority.
+
 
 ## 0. Current M0 -> M1 transition authority — 2026-08-28
 

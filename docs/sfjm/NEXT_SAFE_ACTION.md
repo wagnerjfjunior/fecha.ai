@@ -1,141 +1,102 @@
 # FECH.AI — SFJM Next Safe Action
 
-**Status:** `SECURITY_TO_SCALE_2026 / M1_BASELINE_COMPLETE / P0_FUNIL_TENANT_INTEGRITY_DESIGN_PROOF_PLAN`
-**Updated:** `2026-08-31`
+**Status:** `SECURITY_TO_SCALE_2026 / F1_02_B3_REMEDIATED / B2_DIRECT_CRM_WRITES_NEXT`
+**Updated:** `2026-09-01`
 **Repository:** `wagnerjfjunior/fecha.ai`
 
 ## 1. Authority
 
-This is the thin semantic continuation view. Principal state:
+This is the thin semantic continuation view. Principal durable state remains:
 
 ```text
 docs/sfjm/CURRENT_STATE.md
 ```
 
-Resolve GitHub and environment state live before acting.
+Resolve live GitHub and environment state again before any sensitive action.
+
+## 2. Current closed slice
 
 ```text
-TOOL_CAPABILITY != AUTHORIZATION
-M1_BASELINE_COMPLETE != SECURITY_GO
-DESIGN_APPROVED != IMPLEMENTATION_AUTHORIZED
-```
+F1-02/B3:
+  REMEDIATED — MERGED + APPLIED + READ_ONLY_CATALOG_PROVEN
 
-## 2. Single current semantic next action
+PR #157:
+  CLOSED / MERGED
 
-```text
-P0 — M1-C-F01 / FUNIL TENANT INTEGRITY
+merge/main anchor:
+  035f57e29d64c0cca26048a925a790459bd9976c
 
-DESIGN / PROOF PLAN FIRST
-```
+Supabase application:
+  SUCCESS / one authorized invocation
 
-Do not implement or mutate production under this action.
+post-application AppSec:
+  PASS
 
-The bounded design/proof plan must define:
-
-1. tenant-aware database invariants for `funil_movimentacoes` relationships;
-2. the correct server/data-side source of `empresa_id`;
-3. correction of `mover_funil` tenant attribution;
-4. treatment options for the currently observed anomalous rows, with
-   NO silent cleanup;
-5. preservation of RLS and FORCE RLS;
-6. required UNIQUE/FK/trigger/RPC interactions, if any, without assuming a
-   preferred mechanism before design review;
-7. migration/application preflight and postflight requirements;
-8. simple rollback and rollback stop conditions;
-9. static and live read-only proof obligations;
-10. controlled runtime-negative proof only when separately authorized and
-    feasible under the production-safety model.
-
-## 3. Known defect boundary
-
-Current M1 evidence establishes:
-
-```text
-public.funil_movimentacoes:
-  rows observed = 611
-  empresa_id NULL = 1
-  non-null movement-vs-lead tenant mismatch = 0
-  non-null movement-vs-corretor tenant mismatch = 1
-  non-null movement-vs-current-stage tenant mismatch = 1
-
-mover_funil(uuid,uuid,text):
-  SECURITY DEFINER
-  authenticated EXECUTE = true
-  anon EXECUTE = false
-  validates several tenant conditions
-  currently omits empresa_id from funil_movimentacoes INSERT
-
-funil_mov_insert policy:
-  is_root() OR corretor_id = my_corretor_id()
-
-tenant-aware relationship invariant:
+RUNTIME_NEGATIVE_PASS:
   NOT ESTABLISHED
+
+Security Go:
+  DENIED
 ```
 
-Do not overstate this as proven cross-tenant lead leakage.
+Do not reopen B3 merely because runtime-negative testing remains unexecuted.
+That residual is explicitly preserved and is not a prerequisite for the bounded
+catalog-remediation PASS.
 
-## 4. Required specialist sequence for this new risk
+## 3. Single current semantic next action
 
 ```text
-1. backend_data -> backend-data-platform-specialist
-   bounded target design / invariant / rollback / proof obligations
+F1-02/B2 — EXCESSIVE DIRECT CRM WRITES
 
-2. application_security -> application-security-assurance-specialist
-   independent target-security review before implementation authority
-
-3. implementation
-   only after a separate exact Product Authority authorization
-
-4. post-fix AppSec retest
-   only against the implemented exact ref/evidence
+TARGET DESIGN / CALL-SITE + LIVE CONTRACT RECONSTRUCTION FIRST
 ```
 
-This is a new remediation lifecycle. It is not a continuation of M1 technical
-acquisition.
+Fresh bounded live evidence established that the exposure still exists:
 
-## 5. Explicit prohibitions
+```text
+public.leads:
+  authenticated INSERT=true
+  authenticated UPDATE=true
+  authenticated DELETE=false
 
-Under the current documentation/continuity authority:
+public.lotes:
+  authenticated INSERT=false
+  authenticated UPDATE=true
+  authenticated DELETE=false
+```
+
+Before any revoke or migration proposal:
+
+1. resolve live `main`;
+2. reconstruct exact frontend/backend/RPC callers for `public.leads` and
+   `public.lotes`;
+3. reconstruct the current table/RLS/grant/policy/column-ACL contract;
+4. identify which direct writes are actually required by live product flows;
+5. map controlled RPC alternatives and tenant/ownership invariants;
+6. obtain Backend/Data target-design review;
+7. obtain independent AppSec review;
+8. only then request a separate exact Product Authority implementation grant.
+
+## 4. Explicit prohibitions under this continuity action
 
 ```text
 NO DDL/DML
 NO migration application
 NO Supabase mutation
 NO Auth mutation
-NO anomalous-row cleanup
-NO runtime/frontend code change
-NO deploy
-NO production negative/offensive testing
-NO staging/LAB
-NO second Supabase project
-NO Preview Branch
-NO local isolated environment
+NO runtime-negative production test
+NO rollback
 NO Security Go
 NO broad paid commercialization
-NO fresh #139 approval
-NO reopening public.leads
+NO reopening F1-02/B3
+NO closing Issue #141
 ```
 
-## 6. M1 anti-loop
-
-M1 technical adjudication is complete:
+## 5. Issue state
 
 ```text
-Backend/Data = PASS_WITH_RESIDUAL_RISKS
-AppSec = PASS_WITH_RESIDUAL_RISKS
-Documentation = PASS_WITH_BOUNDED_RESIDUALS
-additional technical re-audit = AUDIT_LOOP_BLOCKED
+Issue #141 — Security-to-Scale 2026: OPEN
+Issue #150 — Security Truth Baseline: CLOSED / completed
 ```
 
-Reopen M1 acquisition only after a material invalidation event affecting a
-specific proof obligation.
-
-## 7. Issue lifecycle boundary
-
-Issue #150 is eligible for closure as the completed Security Truth Baseline only
-after the bounded canonical reconciliation is accepted through its separately
-authorized lifecycle.
-
-Issue #141 remains OPEN.
-
-Security Go remains DENIED.
+F1-02 final acceptance remains separate and is not granted by B3 closure.

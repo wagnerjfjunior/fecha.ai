@@ -1,8 +1,81 @@
 # FECH.AI — SFJM Current Product/Security Handoff
 
-**Status:** `SECURITY_TO_SCALE_2026 / M1_SECURITY_TRUTH_BASELINE_COMPLETE / ISSUE_150_CLOSURE_PENDING / REMEDIATION_PROGRAM_ACTIVE / SECURITY_GO_DENIED`
-**Updated:** `2026-08-31`
+**Status:** `SECURITY_TO_SCALE_2026 / F1_02_B3_REMEDIATED / B2_NEXT / SECURITY_GO_DENIED`
+**Updated:** `2026-09-01`
 **Repository:** `wagnerjfjunior/fecha.ai`
+
+## 0.000 Current handoff override — B3 closed / B2 next — 2026-09-01
+
+This section is the current handoff authority when older sections below
+conflict. Preserve older material as lineage; do not replay stale lifecycle or
+authorization.
+
+```text
+Program #141: OPEN
+M1 baseline #150: CLOSED / completed
+F1-02: ACTIVE REMEDIATION
+B3: REMEDIATED — MERGED + APPLIED + READ_ONLY_CATALOG_PROVEN
+post-application AppSec: PASS
+RUNTIME_NEGATIVE_PASS: NOT ESTABLISHED
+Security Go: DENIED
+broad paid commercialization: BLOCKED
+```
+
+Current GitHub/database anchors:
+
+```text
+FECH.AI main at B3 closure:
+  035f57e29d64c0cca26048a925a790459bd9976c
+PR #157:
+  CLOSED / MERGED
+Supabase B3 ledger version:
+  20260901074722
+```
+
+### Do not reopen
+
+Do not reopen B3 design, PR #157 review, application or catalog proof merely
+because runtime-negative testing was not authorized. A material contradictory
+event is required to invalidate this closure.
+
+### Single next handoff
+
+```text
+F1-02/B2 — EXCESSIVE DIRECT CRM WRITES
+TARGET DESIGN / CALL-SITE + LIVE CONTRACT RECONSTRUCTION FIRST
+```
+
+Current bounded evidence:
+
+```text
+public.leads:
+  authenticated INSERT=true
+  authenticated UPDATE=true
+
+public.lotes:
+  authenticated UPDATE=true
+```
+
+The next specialist path is Backend/Data target-design reconstruction followed
+by independent AppSec review. No implementation authority exists from this
+handoff.
+
+### Explicit boundaries
+
+```text
+NO Supabase mutation
+NO runtime-negative production test
+NO rollback
+NO Ready/merge from this handoff
+NO Security Go
+NO broad paid commercialization
+NO Issue #141 closure
+```
+
+For unrelated active workstreams and historical decisions, use
+`docs/sfjm/CURRENT_STATE.md` plus live evidence; this override changes only
+the B3 closure / #150 lifecycle / next-action meaning.
+
 
 ## 1. Purpose
 

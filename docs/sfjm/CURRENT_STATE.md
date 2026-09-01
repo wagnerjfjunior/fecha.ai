@@ -1,8 +1,95 @@
 # FECH.AI — SFJM Current Material State
 
-**Status:** `SECURITY_TO_SCALE_2026 / M1_SECURITY_TRUTH_BASELINE_COMPLETE / REMEDIATION_PROGRAM_ACTIVE / SECURITY_GO_DENIED`
-**Updated:** `2026-08-31`
+**Status:** `SECURITY_TO_SCALE_2026 / M1_SECURITY_TRUTH_BASELINE_COMPLETE / F1_02_B3_REMEDIATED / REMEDIATION_PROGRAM_ACTIVE / SECURITY_GO_DENIED`
+**Updated:** `2026-09-01`
 **Repository:** `wagnerjfjunior/fecha.ai`
+
+## 0.000 Current semantic override — F1-02/B3 catalog remediation closed — 2026-09-01
+
+This section is the current semantic authority for the bounded F1-02/B3 finding
+and supersedes older current-state wording below when it conflicts. Historical
+sections remain lineage only.
+
+```text
+Program: Issue #141 — Security-to-Scale 2026 / OPEN
+M1 baseline: Issue #150 — Security Truth Baseline / CLOSED / completed
+F1-02: ACTIVE REMEDIATION
+F1-02/B3: REMEDIATED — MERGED + APPLIED + READ_ONLY_CATALOG_PROVEN
+RUNTIME_NEGATIVE_PASS: NOT ESTABLISHED
+SECURITY_GO: DENIED
+BROAD_PAID_COMMERCIALIZATION: BLOCKED
+```
+
+Canonical GitHub anchors:
+
+```text
+repository: wagnerjfjunior/fecha.ai
+PR #157: CLOSED / MERGED
+reviewed head: 6f22afeb723414d87e5481d80196a2c99789e4b1
+merge commit / main at B3 application:
+  035f57e29d64c0cca26048a925a790459bd9976c
+forward blob:
+  f18f6ae194c8810282345497ff4e637e3236c45a
+rollback blob:
+  cf9a0119d5b3ccd6e19daa28523fcca64b712b41
+read-only proof blob:
+  e101b62c7638392be06090fdc81030bb01f9d7a6
+```
+
+Production/catalog closure:
+
+```text
+Supabase project: uobxxgzshrmbtjfdolxd / Discador-MesaCliente
+migration ledger version: 20260901074722
+migration name: f1_02_b3_revoke_direct_funnel_history_insert
+application: SUCCESS / ONE AUTHORIZED INVOCATION
+authenticated direct INSERT on public.funil_movimentacoes: REVOKED
+authenticated effective column INSERT: ABSENT
+funil_mov_insert: ABSENT
+authenticated SELECT: PRESERVED
+RLS / FORCE RLS: PRESERVED
+validated FKs: 9 / 9
+tenant rows observed: 610
+tenant mismatches: 0
+controlled-writer fingerprints / ACL / EXECUTE boundary: PRESERVED
+post-application merged read-only proof: PASS
+independent post-application AppSec verdict: PASS
+rollback required: NO
+```
+
+The bounded AppSec verdict establishes only the catalog/static remediation.
+No runtime-negative production test was authorized or executed. It does not
+grant Security Go, broader application security, commercial readiness or final
+F1-02 acceptance.
+
+### Current single next remediation action
+
+```text
+F1-02/B2 — EXCESSIVE DIRECT CRM WRITES
+TARGET DESIGN / CALL-SITE + LIVE CONTRACT RECONSTRUCTION FIRST
+```
+
+Fresh bounded read-only catalog evidence immediately preceding this
+reconciliation established:
+
+```text
+public.leads:
+  RLS=true / FORCE RLS=true
+  authenticated INSERT=true
+  authenticated UPDATE=true
+  authenticated DELETE=false
+
+public.lotes:
+  RLS=true / FORCE RLS=true
+  authenticated INSERT=false
+  authenticated UPDATE=true
+  authenticated DELETE=false
+```
+
+This B2 observation proves that direct CRM write exposure remains material. It
+does not authorize REVOKE, migration design, implementation, Supabase mutation
+or runtime-negative testing.
+
 
 
 ## 0.00 Current semantic override — M1 Security Truth Baseline complete — 2026-08-31
