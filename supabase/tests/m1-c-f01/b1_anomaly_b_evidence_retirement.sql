@@ -263,11 +263,16 @@ begin
     raise exception 'B1_PROOF_FORBIDDEN_TRIGGER_FUNCTION_EXECUTE_PRESENT';
   end if;
 
+  -- B1-BD-02: prove trigger identity AND semantics. PostgreSQL tgtype bitmask:
+  -- ROW=1, BEFORE=2, DELETE=8, UPDATE=16 => exact expected value 27.
   select count(*)
   into v_trigger_count
   from pg_catalog.pg_trigger t
   where not t.tgisinternal
     and t.tgenabled <> 'D'
+    and t.tgfoid =
+      'forensic_evidence.reject_immutable_mutation()'::pg_catalog.regprocedure
+    and t.tgtype = 27
     and (
       (
         t.tgrelid =
@@ -283,7 +288,7 @@ begin
     );
 
   if v_trigger_count <> 2 then
-    raise exception 'B1_PROOF_IMMUTABILITY_TRIGGER_DRIFT';
+    raise exception 'B1_PROOF_IMMUTABILITY_TRIGGER_BINDING_OR_SEMANTICS_DRIFT';
   end if;
 end;
 $b1_proof_structure$;
@@ -343,7 +348,9 @@ begin
      or v_evidence.disposition_authority_ref is distinct from
         'PA-FECHAI-M1-C-F01-B1-20260901-01'
      or v_evidence.retention_state is distinct from
-        'INDEFINITE_PENDING_SEPARATE_RETENTION_POLICY' then
+        'INDEFINITE_PENDING_SEPARATE_RETENTION_POLICY'
+     or v_evidence.population_cutoff_at is null
+     or v_evidence.population_cutoff_at < v_evidence.source_created_at then
     raise exception 'B1_PROOF_EVIDENCE_CONTRACT_DRIFT';
   end if;
 
@@ -435,7 +442,7 @@ begin
   select count(*)
   into v_total_now
   from public.funil_movimentacoes fm
-  where fm.created_at <= v_evidence.disposition_at;
+  where fm.created_at <= v_evidence.population_cutoff_at;
 
   select
     count(*),
@@ -452,7 +459,7 @@ begin
   into v_unrelated_count_now, v_unrelated_digest_now
   from public.funil_movimentacoes fm
   where fm.id <> v_evidence.source_movement_id
-    and fm.created_at <= v_evidence.disposition_at;
+    and fm.created_at <= v_evidence.population_cutoff_at;
 
   if v_total_now <> v_evidence.movement_total_before - 1
      or v_unrelated_count_now <> v_evidence.unrelated_movements_count_before
@@ -507,10 +514,20 @@ declare
   v_role_setting text;
 begin
   v_db_schemas :=
-    pg_catalog.current_setting('pgrst.db_schemas', true);
+    nullif(
+      pg_catalog.btrim(
+        pg_catalog.current_setting('pgrst.db_schemas', true)
+      ),
+      ''
+    );
 
   v_extra_search_path :=
-    pg_catalog.current_setting('pgrst.db_extra_search_path', true);
+    nullif(
+      pg_catalog.btrim(
+        pg_catalog.current_setting('pgrst.db_extra_search_path', true)
+      ),
+      ''
+    );
 
   if v_db_schemas is not null
      and 'forensic_evidence' = any(
@@ -547,25 +564,29 @@ $b1_proof_known_api_exposure$;
 
 with api_observation as (
   select
-    pg_catalog.current_setting('pgrst.db_schemas', true) as db_schemas,
-    pg_catalog.current_setting('pgrst.db_extra_search_path', true)
-      as extra_search_path,
-    exists (
-      select 1
-      from pg_catalog.pg_db_role_setting s
-      cross join lateral unnest(s.setconfig) cfg(value)
-      where cfg.value like 'pgrst.db_schemas=%'
-         or cfg.value like 'pgrst.db_extra_search_path=%'
-    ) as catalog_config_observed
+    nullif(
+      pg_catalog.btrim(
+        pg_catalog.current_setting('pgrst.db_schemas', true)
+      ),
+      ''
+    ) as authoritative_db_schemas
 ),
 api_status as (
   select
     case
-      when db_schemas is not null
-        or extra_search_path is not null
-        or catalog_config_observed
-      then 'API_NON_EXPOSURE_ESTABLISHED_FOR_OBSERVED_DB_CONFIG'
-      else 'API_NON_EXPOSURE_NOT_ESTABLISHED'
+      -- B1-BD-01: only a directly observed authoritative exposed-schema list
+      -- can establish bounded non-exposure. db_extra_search_path or generic
+      -- catalog PostgREST settings can never upgrade this to PASS.
+      when authoritative_db_schemas is null
+        then 'API_NON_EXPOSURE_NOT_ESTABLISHED'
+      when 'forensic_evidence' = any(
+        pg_catalog.regexp_split_to_array(
+          pg_catalog.replace(authoritative_db_schemas, '"', ''),
+          '\s*,\s*'
+        )
+      )
+        then 'API_EXPOSURE_DETECTED'
+      else 'API_NON_EXPOSURE_ESTABLISHED_FOR_OBSERVED_DB_SCHEMAS'
     end as api_non_exposure_status
   from api_observation
 )
@@ -573,7 +594,7 @@ select
   api_non_exposure_status,
   case
     when api_non_exposure_status =
-      'API_NON_EXPOSURE_ESTABLISHED_FOR_OBSERVED_DB_CONFIG'
+      'API_NON_EXPOSURE_ESTABLISHED_FOR_OBSERVED_DB_SCHEMAS'
     then 'B1_DISPOSITION_COMPLETION_ESTABLISHED'
     else 'DISPOSITION_COMPLETION_NOT_ESTABLISHED'
   end as completion_receipt
