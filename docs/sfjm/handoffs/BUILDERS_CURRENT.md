@@ -796,3 +796,44 @@ If this remediation is later canonical on `main` and all material findings are c
 - any subsequent product rearchitecture remains a separate scope requiring its own explicit authorization and specialist gates.
 
 No Product PASS, Runtime PASS or Security Go follows from this closure.
+
+## 13. LeadOps SES migration continuity — 2026-09-01
+
+The LeadOps Builder/identity lane has been migrated from project-local GPT7 identity to the reusable SES specialist while preserving FECH.AI-local rules and historical evidence.
+
+```text
+SES ARCHETYPE:
+lead-operations-crm-specialist
+
+CANONICAL NAME:
+SES — Lead Operations & CRM Specialist
+
+SES KERNEL BLOB:
+37a36c1ff1e97c920246db590aa3ebef0e99f040
+
+SES CERTIFICATION:
+CERTIFIED_FOR_ANY_PROJECT = YES
+
+FECH.AI ROLE:
+lead_operations
+
+PROJECT_LOCAL_RULES:
+docs/skills/fechai-gpt7-leadops-crm-discador.md
+
+LEGACY_CONTINUITY:
+GPT7 — FECH.AI LeadOps CRM Discador Specialist
+```
+
+Operational transport remains manual copy/paste according to the current SES manual-specialist handoff model. FECH.AI does not invoke this specialist by direct in-project `@` routing as a required execution path.
+
+Preserve:
+
+```text
+SES_SPECIALIST_IDENTITY != GPT7_LEGACY_IDENTITY
+PROJECT_LOCAL_RULES != UNIVERSAL_ARCHETYPE
+SPECIALIST_SELECTED != SPECIALIST_EXECUTED
+MANUAL_COPY_PASTE != AUTOMATED_RUNTIME_INVOCATION
+CERTIFIED_FOR_ANY_PROJECT != AUTHORIZED_TO_MUTATE
+```
+
+This Builder-continuity update is separate from product/security SFJM state. It does not change F1-02/B4 product-security meaning, Security Go, runtime evidence or deployment state.
