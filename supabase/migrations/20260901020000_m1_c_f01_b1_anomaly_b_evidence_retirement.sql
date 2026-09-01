@@ -186,6 +186,7 @@ create table forensic_evidence.movement_disposition_evidence (
   historical_truth_status text not null,
   disposition_authority_ref text not null,
   disposition_at timestamptz not null default pg_catalog.transaction_timestamp(),
+  population_cutoff_at timestamptz not null,
   implementation_ref text not null,
   actor_identity text not null,
   purpose text not null,
@@ -402,6 +403,7 @@ declare
   v_deleted integer;
   v_actor_identity text;
   v_disposition_at timestamptz := pg_catalog.transaction_timestamp();
+  v_population_cutoff timestamptz;
 begin
   -- Re-lock/revalidate exact source row after evidence boundary creation.
   select *
@@ -458,6 +460,19 @@ begin
     raise exception 'B1_EXEC_MOVEMENT_HISTORY_CARDINALITY_DRIFT';
   end if;
 
+  -- B1-BD-04: establish the proof population only after the movement-table
+  -- write-serialization lock is held. transaction_timestamp() is intentionally
+  -- NOT used as the population cutoff because it predates lock acquisition.
+  v_population_cutoff := pg_catalog.clock_timestamp();
+
+  if exists (
+    select 1
+    from public.funil_movimentacoes fm
+    where fm.created_at > v_population_cutoff
+  ) then
+    raise exception 'B1_EXEC_POST_LOCK_POPULATION_CUTOFF_DRIFT';
+  end if;
+
   if exists (
     select 1
     from forensic_evidence.movement_disposition_evidence e
@@ -489,7 +504,7 @@ begin
   select count(*)
   into v_total_before
   from public.funil_movimentacoes fm
-  where fm.created_at <= v_disposition_at;
+  where fm.created_at <= v_population_cutoff;
 
   select
     count(*),
@@ -506,7 +521,7 @@ begin
   into v_unrelated_count_before, v_unrelated_digest_before
   from public.funil_movimentacoes fm
   where fm.id <> v_movement.id
-    and fm.created_at <= v_disposition_at;
+    and fm.created_at <= v_population_cutoff;
 
   v_source_snapshot := pg_catalog.jsonb_build_object(
     'id', v_movement.id,
@@ -580,6 +595,7 @@ begin
     historical_truth_status,
     disposition_authority_ref,
     disposition_at,
+    population_cutoff_at,
     implementation_ref,
     actor_identity,
     purpose,
@@ -612,6 +628,7 @@ begin
     'NOT_ESTABLISHED',
     'PA-FECHAI-M1-C-F01-B1-20260901-01',
     v_disposition_at,
+    v_population_cutoff,
     'migration:20260901020000_m1_c_f01_b1_anomaly_b_evidence_retirement',
     v_actor_identity,
     'M1-C-F01 B1 preserve contradictory movement evidence and retire exact active relation',
@@ -687,7 +704,7 @@ begin
   select count(*)
   into v_total_after
   from public.funil_movimentacoes fm
-  where fm.created_at <= v_disposition_at;
+  where fm.created_at <= v_population_cutoff;
 
   select
     count(*),
@@ -704,7 +721,7 @@ begin
   into v_unrelated_count_after, v_unrelated_digest_after
   from public.funil_movimentacoes fm
   where fm.id <> v_movement.id
-    and fm.created_at <= v_disposition_at;
+    and fm.created_at <= v_population_cutoff;
 
   if v_total_after <> v_total_before - 1
      or v_unrelated_count_after <> v_unrelated_count_before
