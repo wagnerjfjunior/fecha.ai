@@ -272,7 +272,11 @@ O estado reconciliado é limitado à configuração e ao comportamento do Builde
 Nome: FECH.AI LeadOps CRM Discador Specialist
 Skill: docs/skills/fechai-gpt7-leadops-crm-discador.md
 Grupo: A
-Skill version: v2.0 / GROUP_A_RECONCILED
+Skill version: v2.1 / PROJECT_LOCAL_RULES / SES_LEAD_OPERATIONS_ADOPTED
+SES role: lead_operations
+SES archetype: lead-operations-crm-specialist
+Routing authority: docs/skills/SES_SPECIALIST_ROUTING.md
+Legacy continuity: GPT7 / FECH.AI LeadOps CRM Discador Specialist
 Knowledge: EMPTY
 Actions: GitHub
 ```
