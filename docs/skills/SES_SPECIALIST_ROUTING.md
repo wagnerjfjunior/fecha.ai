@@ -11,7 +11,7 @@ For every mapped role, resolve SES `main` live before material work and use the 
 
 ## Current adopted roles
 
-The current SES adoption matrix and FECH.AI Project Adapter record these ten adopted roles:
+The current SES adoption matrix and FECH.AI Project Adapter record these eleven adopted roles:
 
 ```text
 documentation_audit
@@ -31,6 +31,11 @@ backend_data
 → local rules: docs/skills/fechai-gpt3-supabase-security-specialist.md
 → live database audit tool binding: docs/integrations/ses-backend-supabase-readonly-action.openapi.yaml
 → setup/credential contract: docs/integrations/SES_BACKEND_SUPABASE_ACTION_SETUP.md
+
+lead_operations
+→ lead-operations-crm-specialist
+→ local rules: docs/skills/fechai-gpt7-leadops-crm-discador.md
+→ legacy continuity: GPT7 / FECH.AI LeadOps CRM Discador Specialist
 
 application_security
 → application-security-assurance-specialist
@@ -61,7 +66,7 @@ paid_search_sem
 
 ## Routing precedence
 
-For the roles above, the SES `ARCHETYPE_ID` is the current reusable specialist identity. Historical FECH.AI labels such as `GPT0`, `GPT1`, `GPT1.5`, `GPT2` and `GPT3` remain continuity/project-local skill references only and must not override the adopted SES archetype.
+For the roles above, the SES `ARCHETYPE_ID` is the current reusable specialist identity. Historical FECH.AI labels such as `GPT0`, `GPT1`, `GPT1.5`, `GPT2`, `GPT3` and `GPT7` remain continuity/project-local skill references only and must not override the adopted SES archetype.
 
 ```text
 CURRENT ROLE ROUTING
