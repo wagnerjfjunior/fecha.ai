@@ -1,5 +1,349 @@
 # FECH.AI — SFJM Current Material State
 
+## 0.00000 Current material override — F1-02 / PR-07 implementation authorized — 2026-09-02
+
+This section is the current MATERIAL_RECORDED_STATE authority when older B2/B4-next
+or pre-PR-07 sections below conflict. Historical sections remain lineage only.
+
+### Program / environment
+
+\`\`\`text
+repository: wagnerjfjunior/fecha.ai
+authoritative Git main at this transition:
+  020594a2bb66fed5b6ab38f2d015878a7ef54d71
+
+environment:
+  Pilot Production / multi-tenant / multiempresa
+
+Program #141 — Security-to-Scale 2026:
+  OPEN
+
+current program track:
+  M1 / F1-02 remediation
+
+Security Go:
+  DENIED
+
+broad paid commercialization:
+  BLOCKED
+\`\`\`
+
+### Closed material slice — F1-02/B4 / PR-06
+
+\`\`\`text
+PR #162:
+  CLOSED / MERGED
+
+merge commit / current main anchor:
+  020594a2bb66fed5b6ab38f2d015878a7ef54d71
+
+approved final PR head:
+  89c049cec92d1a74fd3011088581c3bf1b4e5a8a
+
+forward migration repository artifact:
+  supabase/migrations/20260901175000_f1_02_b4_list_acl_tenant_integrity.sql
+  blob ccb3b406e848e13edb7ac123691f812ec00f5fe7
+
+rollback artifact:
+  supabase/rollback/20260901175000_f1_02_b4_list_acl_tenant_integrity_rollback.sql
+  blob 805dbdb95f309aa072921b98f03b829a11f4e815
+  NOT EXECUTED
+
+read-only proof:
+  supabase/tests/f1-02-b4/list_acl_tenant_integrity.sql
+  blob 13c21a7a747406b3e17baefdbd26105e7a90e527
+  PASS
+
+Supabase application:
+  SUCCESS
+  project uobxxgzshrmbtjfdolxd / Discador-MesaCliente
+  execution registry version 20260901222707
+  execution name f1_02_b4_list_acl_tenant_integrity
+
+B4 semantic status:
+  REMEDIATED — MERGED + APPLIED + READ_ONLY_CATALOG_PROVEN
+
+RUNTIME_NEGATIVE_PASS:
+  NOT ESTABLISHED
+\`\`\`
+
+Do not reopen B4 without a material invalidation event.
+
+### PR-07 — current active bounded implementation
+
+Product/technical design gates are closed:
+
+\`\`\`text
+LeadOps:
+  PASS
+  GLOBAL_FUNNEL_STAGES_REQUIRED_NOW=NO
+  TENANT_ONLY_STAGE_MODEL_APPROVED=YES
+  COMPANY_WITHOUT_STAGES_FAILS_CLOSED=YES
+  ROOT ordinary stage/import/feedback authority=NO
+  READY_FOR_PR07_TECHNICAL_DESIGN=YES
+
+Backend/Data:
+  PASS
+  BACKEND_DATA_IMPLEMENTATION_DESIGN_APPROVED=YES
+  READY_FOR_APPSEC_DESIGN_AUDIT=YES
+
+Application Security:
+  PASS WITH RESIDUAL RISK
+  APPSEC_PR07_DESIGN_APPROVED=YES
+  READY_FOR_BOUNDED_IMPLEMENTATION_AUTHORIZATION=YES
+  BLOCKING=NONE
+\`\`\`
+
+Product Authority then explicitly authorized bounded implementation from the exact
+main above.
+
+Technical branch created under that authority:
+
+\`\`\`text
+security/f1-02-input-and-read-integrity
+base:
+  020594a2bb66fed5b6ab38f2d015878a7ef54d71
+
+state at this SFJM reconciliation:
+  branch exists
+  no PR-07 technical artifact has yet been published on the branch
+  Draft PR not yet opened
+\`\`\`
+
+Authorized technical files EXACTLY:
+
+\`\`\`text
+supabase/migrations/20260902091600_f1_02_pr07_funnel_reads_crm_payloads.sql
+supabase/rollback/20260902091600_f1_02_pr07_funnel_reads_crm_payloads_rollback.sql
+supabase/tests/f1-02-pr07/funnel_reads_crm_payloads.sql
+\`\`\`
+
+Explicitly NOT in PR-07:
+
+\`\`\`text
+src/App.jsx
+Auth
+Edge Functions
+Vercel
+Issue #133 implementation
+Issue #135 implementation
+production Supabase application
+production data mutation
+Ready
+merge
+deploy
+Security Go
+\`\`\`
+
+App.jsx change is not required by the approved design. If a later material
+compatibility contradiction proves otherwise, stop and obtain a new bounded scope;
+do not silently expand PR-07.
+
+### PR-07 approved security contract
+
+\`\`\`text
+listar_funil_estagios:
+  tenant-only
+  no global stage capability
+  no session/no profile/inactive/ROOT -> []
+  actor company derived server-side
+  own-company stages only
+  deterministic ordem,id ordering
+  array-compatible result; no App.jsx change
+
+importar_leads_batch:
+  active authenticated non-ROOT actor
+  tenant/list derived and validated server-side
+  max 100 items per RPC
+  exact 13-field payload allowlist
+  complete structural validation before first write
+  dedicated idempotency state
+  key (empresa_id,sessao_id)
+  same session/different list -> deterministic rejection
+  same session/different payload -> deterministic rejection
+  non-PII SHA-256 request fingerprint
+  canonical replay result = validos/invalidos/duplicados
+  no logs.sessao_id redesign
+  no claim that cross-session lead duplicate races are solved
+
+idempotency object:
+  internal-only
+  PUBLIC/anon/authenticated direct DML denied
+  ENABLE RLS
+  FORCE RLS
+  no client policies
+  composite (lista_id,empresa_id) FK to listas(id,empresa_id)
+  existing listas UNIQUE(id,empresa_id) already observed live
+  control metadata only; no lead payload/PII
+
+registrar_feedback:
+  active authenticated non-ROOT actor
+  strict public.lead_feedback_tipo validation before any write
+  NULL/empty/unknown/malformed denied
+  lead ownership = id + corretor_id + empresa_id
+  valid lead/status/funnel/history/lot behavior preserved atomically
+
+SECURITY DEFINER:
+  retained for the three RPCs
+  target search_path=pg_catalog
+  all non-pg_catalog application/auth/extension objects fully qualified
+
+grants:
+  PUBLIC EXECUTE revoked
+  anon EXECUTE revoked
+  authenticated EXECUTE preserved
+  service_role EXECUTE preserved temporarily with residual risk
+\`\`\`
+
+Live preflight additionally established:
+
+\`\`\`text
+public.listas:
+  UNIQUE(id,empresa_id) exists
+
+pgcrypto:
+  extension 1.3 installed in extensions schema
+  extensions.digest(text,text) available
+  SHA-256 request fingerprint is technically available without schema expansion
+\`\`\`
+
+### PR-07 residual risks preserved
+
+\`\`\`text
+service_role EXECUTE:
+  preserve temporarily
+  later evidence-driven caller reconstruction required before revoke
+
+cross-session duplicate-lead concurrency:
+  not solved/claimed by PR-07
+
+RUNTIME_NEGATIVE_PASS:
+  NOT ESTABLISHED
+
+SECURITY_GO:
+  DENIED
+\`\`\`
+
+### Finite critical path
+
+The accepted execution model is finite and anti-loop:
+
+\`\`\`text
+PR-07
+-> PR-08 executable negative/security matrix
+-> PR-09 F1-02 close-out
+-> M2 Database Simplification & Optimization Plan
+-> M3 Backend Authority Contract Freeze
+-> M4 Frontend Modularization / App.jsx Extraction
+-> M5 Integrated Security / Reliability Validation
+-> M6 Security Go Candidate / Commercial Readiness
+\`\`\`
+
+No new finding creates a phase automatically. Every new finding must be classified:
+
+\`\`\`text
+A — BLOCKS CURRENT TASK
+B — BLOCKS CURRENT MILESTONE EXIT
+C — REQUIRED BEFORE SECURITY GO
+D — PLANNED / FUTURE
+\`\`\`
+
+If evidence does not prove class A, it does not interrupt the active task.
+
+Completed work does not return to TODO without a material invalidation event.
+
+### WBS planning baseline
+
+These are planning estimates accepted for program visibility, not clocked timesheets:
+
+\`\`\`text
+estimated consumed/completed work:
+  140h
+
+estimated remaining critical path:
+  692h
+
+bounded pre-Security-Go backlog:
+  116h
+
+planned/future backlog:
+  104h
+\`\`\`
+
+Milestone estimates:
+
+\`\`\`text
+M0 Program Control / Truth Reconciliation:
+  36h / completed planning baseline
+
+M1 Security Truth Baseline / F1-02:
+  168h total planning baseline
+  B1 18h completed
+  B2 28h completed
+  B3 24h completed
+  B4 34h completed
+  PR-07 36h active
+  PR-08 22h pending
+  PR-09 6h pending
+
+M2:
+  116h pending
+
+M3:
+  152h pending
+
+M4:
+  172h pending
+
+M5:
+  128h pending
+
+M6:
+  60h pending
+\`\`\`
+
+### Bounded pre-Security-Go backlog — does not interrupt PR-07 automatically
+
+\`\`\`text
+BG-01 OC-01 leaked-password control — 14h
+BG-02 harden three Root RPC grants — 10h
+BG-03 version baseline of critical helpers — 18h
+BG-04 Root/Admin Global contract rollout / Issue #133 — 32h
+BG-05 Team Lifecycle Authority / Issue #135 — 24h
+BG-06 explicit audited Root support mode by tenant — 18h
+\`\`\`
+
+### Planned/future backlog
+
+\`\`\`text
+PL-01 global funnel-stage capability, only if product later requires it — 20h
+PL-02 import/UX enhancements beyond security scope — 16h
+PL-03 broader App.jsx cleanup beyond approved vertical slices — 24h
+PL-04 observability/dashboard polish — 16h
+PL-05 CRM productivity/UX improvements — 28h
+\`\`\`
+
+### Current single safe action
+
+\`\`\`text
+Continue PR-07 on existing branch security/f1-02-input-and-read-integrity:
+
+1. implement only the three authorized artifacts;
+2. perform static/read-only validation;
+3. open one Draft PR;
+4. resolve exact PR head and changed files;
+5. obtain Backend/Data exact-head implementation review;
+6. obtain independent AppSec exact-head implementation review;
+7. stop before Ready until separate Product Authority authorization.
+\`\`\`
+
+The parallel SFJM documentation reconciliation is continuity-only and must not
+become a prerequisite loop for technical PR-07 execution.
+
+Older sections naming B2 or B4 as the current next action are superseded by this
+override and must not be replayed.
+
+
 ## 0.0000 Current semantic override — F1-02/B2 post-application closure — 2026-09-01
 
 This section is the current semantic authority for the bounded F1-02/B2
