@@ -56,7 +56,7 @@ BEGIN
   FOR v_public_exec IN
     SELECT EXISTS (
       SELECT 1
-      FROM pg_catalog.aclexplode(pg_catalog.coalesce(p.proacl, pg_catalog.acldefault('f', p.proowner))) e
+      FROM pg_catalog.aclexplode(coalesce(p.proacl, pg_catalog.acldefault('f', p.proowner))) e
       WHERE e.grantee = 0
         AND e.privilege_type = 'EXECUTE'
     )
@@ -220,14 +220,14 @@ BEGIN
   INTO v_empresa_id
   FROM public.corretores c
   WHERE c.user_id = auth.uid()
-    AND pg_catalog.coalesce(c.ativo, true) = true
+    AND coalesce(c.ativo, true) = true
     AND c.empresa_id IS NOT NULL;
 
   IF v_empresa_id IS NULL THEN
     RETURN '[]'::jsonb;
   END IF;
 
-  RETURN pg_catalog.coalesce(
+  RETURN coalesce(
     (
       SELECT pg_catalog.jsonb_agg(
         pg_catalog.jsonb_build_object(
@@ -288,7 +288,7 @@ BEGIN
   INTO v_corretor_id, v_empresa_id
   FROM public.corretores c
   WHERE c.user_id = auth.uid()
-    AND pg_catalog.coalesce(c.ativo, true) = true
+    AND coalesce(c.ativo, true) = true
     AND c.empresa_id IS NOT NULL;
 
   IF v_corretor_id IS NULL OR v_empresa_id IS NULL THEN
@@ -365,19 +365,19 @@ BEGIN
       RETURN pg_catalog.jsonb_build_object('error', 'Lead contém tipo de campo inválido');
     END IF;
 
-    IF pg_catalog.char_length(pg_catalog.coalesce(v_lead->>'email', '')) > 320
-       OR pg_catalog.char_length(pg_catalog.coalesce(v_lead->>'telefone_origem_1', '')) > 64
-       OR pg_catalog.char_length(pg_catalog.coalesce(v_lead->>'telefone_origem_2', '')) > 64
-       OR pg_catalog.char_length(pg_catalog.coalesce(v_lead->>'telefone_escolhido', '')) > 64
-       OR pg_catalog.char_length(pg_catalog.coalesce(v_lead->>'telefone_e164', '')) > 64
-       OR pg_catalog.char_length(pg_catalog.coalesce(v_lead->>'nome', '')) > 500
-       OR pg_catalog.char_length(pg_catalog.coalesce(v_lead->>'endereco', '')) > 500
-       OR pg_catalog.char_length(pg_catalog.coalesce(v_lead->>'zona', '')) > 255
-       OR pg_catalog.char_length(pg_catalog.coalesce(v_lead->>'fornecedor', '')) > 255
-       OR pg_catalog.char_length(pg_catalog.coalesce(v_lead->>'tipo_telefone', '')) > 64
-       OR pg_catalog.char_length(pg_catalog.coalesce(v_lead->>'pais_telefone', '')) > 64
-       OR pg_catalog.char_length(pg_catalog.coalesce(v_lead->>'ligar', '')) > 64
-       OR pg_catalog.char_length(pg_catalog.coalesce(v_lead->>'whatsapp', '')) > 64 THEN
+    IF pg_catalog.char_length(coalesce(v_lead->>'email', '')) > 320
+       OR pg_catalog.char_length(coalesce(v_lead->>'telefone_origem_1', '')) > 64
+       OR pg_catalog.char_length(coalesce(v_lead->>'telefone_origem_2', '')) > 64
+       OR pg_catalog.char_length(coalesce(v_lead->>'telefone_escolhido', '')) > 64
+       OR pg_catalog.char_length(coalesce(v_lead->>'telefone_e164', '')) > 64
+       OR pg_catalog.char_length(coalesce(v_lead->>'nome', '')) > 500
+       OR pg_catalog.char_length(coalesce(v_lead->>'endereco', '')) > 500
+       OR pg_catalog.char_length(coalesce(v_lead->>'zona', '')) > 255
+       OR pg_catalog.char_length(coalesce(v_lead->>'fornecedor', '')) > 255
+       OR pg_catalog.char_length(coalesce(v_lead->>'tipo_telefone', '')) > 64
+       OR pg_catalog.char_length(coalesce(v_lead->>'pais_telefone', '')) > 64
+       OR pg_catalog.char_length(coalesce(v_lead->>'ligar', '')) > 64
+       OR pg_catalog.char_length(coalesce(v_lead->>'whatsapp', '')) > 64 THEN
       RETURN pg_catalog.jsonb_build_object('error', 'Lead excede limite de tamanho');
     END IF;
   END LOOP;
@@ -503,7 +503,7 @@ BEGIN
       v_lead->>'nome',
       v_lead->>'email',
       v_lead->>'endereco',
-      pg_catalog.nullif(pg_catalog.btrim(v_lead->>'zona'), ''),
+      nullif(pg_catalog.btrim(v_lead->>'zona'), ''),
       v_lead->>'telefone_origem_1',
       v_lead->>'telefone_origem_2',
       v_lead->>'telefone_escolhido',
@@ -621,7 +621,7 @@ BEGIN
   INTO v_corretor_id, v_empresa_id
   FROM public.corretores c
   WHERE c.user_id = auth.uid()
-    AND pg_catalog.coalesce(c.ativo, true) = true
+    AND coalesce(c.ativo, true) = true
     AND c.empresa_id IS NOT NULL;
 
   IF v_corretor_id IS NULL OR v_empresa_id IS NULL THEN
@@ -670,7 +670,7 @@ BEGIN
   END IF;
 
   IF v_iniciado_em IS NOT NULL THEN
-    v_tempo := pg_catalog.extract(epoch FROM (pg_catalog.now() - v_iniciado_em))::int;
+    v_tempo := extract(epoch FROM (pg_catalog.now() - v_iniciado_em))::int;
   ELSE
     v_tempo := null;
   END IF;
@@ -721,7 +721,7 @@ BEGIN
     END;
 
   IF v_feedback_text = 'chamada_caiu' THEN
-    v_tentativas_caiu := pg_catalog.coalesce(v_tentativas_caiu, 0) + 1;
+    v_tentativas_caiu := coalesce(v_tentativas_caiu, 0) + 1;
 
     IF v_tentativas_caiu < 3 THEN
       v_tecnico_pendente := true;
@@ -1074,7 +1074,7 @@ BEGIN
     SELECT 1
     FROM pg_catalog.pg_class c
     CROSS JOIN LATERAL pg_catalog.aclexplode(
-      pg_catalog.coalesce(c.relacl, pg_catalog.acldefault('r', c.relowner))
+      coalesce(c.relacl, pg_catalog.acldefault('r', c.relowner))
     ) e
     WHERE c.oid = 'public.importar_leads_batch_idempotency'::pg_catalog.regclass
       AND e.grantee = 0
@@ -1143,7 +1143,7 @@ BEGIN
     SELECT 1
     FROM pg_catalog.pg_proc p
     CROSS JOIN LATERAL pg_catalog.aclexplode(
-      pg_catalog.coalesce(p.proacl, pg_catalog.acldefault('f', p.proowner))
+      coalesce(p.proacl, pg_catalog.acldefault('f', p.proowner))
     ) e
     WHERE p.oid IN (
       'public.listar_funil_estagios()'::pg_catalog.regprocedure,
