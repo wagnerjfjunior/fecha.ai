@@ -444,6 +444,11 @@ BEGIN
     END IF;
 
     IF pg_catalog.jsonb_typeof(v_existing_result) IS DISTINCT FROM 'object'
+       OR NOT (v_existing_result ?& ARRAY['validos','invalidos','duplicados']::text[])
+       OR (
+         SELECT pg_catalog.count(*)
+         FROM pg_catalog.jsonb_object_keys(v_existing_result)
+       ) <> 3
        OR pg_catalog.jsonb_typeof(v_existing_result->'validos') IS DISTINCT FROM 'number'
        OR pg_catalog.jsonb_typeof(v_existing_result->'invalidos') IS DISTINCT FROM 'number'
        OR pg_catalog.jsonb_typeof(v_existing_result->'duplicados') IS DISTINCT FROM 'number' THEN
@@ -571,7 +576,7 @@ BEGIN
 EXCEPTION
   WHEN others THEN
     -- PL/pgSQL rolls back all persistent changes made in this block before
-    -- entering the handler. Do not expose SQLERRM to an untrusted client.
+    -- entering the handler. Do not expose database error details to an untrusted client.
     RETURN pg_catalog.jsonb_build_object('error', 'Erro interno');
 END;
 $function$;
