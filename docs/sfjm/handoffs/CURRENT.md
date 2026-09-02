@@ -1,5 +1,128 @@
 # FECH.AI — SFJM Current Product/Security Handoff
 
+## 0.00000 Current handoff override — B4 closed / PR-07 implementation active — 2026-09-02
+
+This is the current handoff authority when older B2/B4-next sections below conflict.
+
+\`\`\`text
+repository:
+  wagnerjfjunior/fecha.ai
+
+main:
+  020594a2bb66fed5b6ab38f2d015878a7ef54d71
+
+environment:
+  Pilot Production / multi-tenant / multiempresa
+
+Program #141:
+  OPEN
+
+Security Go:
+  DENIED
+
+broad paid commercialization:
+  BLOCKED
+\`\`\`
+
+Closed current slice:
+
+\`\`\`text
+F1-02/B4 / PR-06:
+  REMEDIATED
+  MERGED
+  APPLIED
+  READ_ONLY_CATALOG_PROVEN
+  RUNTIME_NEGATIVE_PASS=NOT ESTABLISHED
+\`\`\`
+
+Current active slice:
+
+\`\`\`text
+F1-02 / J3 / PR-07
+security: harden funnel reads and CRM payloads
+
+LeadOps:
+  PASS
+
+Backend/Data:
+  PASS
+
+AppSec:
+  PASS WITH RESIDUAL RISK
+
+bounded implementation:
+  AUTHORIZED
+
+technical branch:
+  security/f1-02-input-and-read-integrity
+  created from exact main 020594a2bb66fed5b6ab38f2d015878a7ef54d71
+
+technical files:
+  not yet published at this reconciliation
+
+Draft PR:
+  not yet opened
+\`\`\`
+
+Exact allowed technical files:
+
+\`\`\`text
+supabase/migrations/20260902091600_f1_02_pr07_funnel_reads_crm_payloads.sql
+supabase/rollback/20260902091600_f1_02_pr07_funnel_reads_crm_payloads_rollback.sql
+supabase/tests/f1-02-pr07/funnel_reads_crm_payloads.sql
+\`\`\`
+
+Do not alter App.jsx in the current approved PR-07 design.
+
+Current single handoff:
+
+\`\`\`text
+implement exact three-file PR-07 candidate
+-> validate
+-> open Draft
+-> Backend/Data exact-head review
+-> independent AppSec exact-head review
+-> STOP before Ready
+\`\`\`
+
+After PR-07, the finite critical path is:
+
+\`\`\`text
+PR-08 -> PR-09 -> M2 -> M3 -> M4 -> M5 -> M6
+\`\`\`
+
+Bounded pre-Security-Go backlog remains parked and does not interrupt the current
+task without a material class-A finding:
+
+\`\`\`text
+OC-01 leaked-password control
+Root RPC grant hardening
+critical-helper baseline versioning
+Issue #133 Root/Admin Global rollout
+Issue #135 Team Lifecycle Authority
+explicit Root support mode
+\`\`\`
+
+Explicit prohibitions:
+
+\`\`\`text
+NO Ready
+NO merge
+NO deploy
+NO production Supabase application
+NO Auth/data mutation
+NO hostile production tests
+NO Security Go
+NO broad paid commercialization
+NO reopening B4 without material invalidation
+NO reopening LeadOps/Backend/Data design gates without material invalidation
+\`\`\`
+
+Do not use lifecycle movement of the documentation-only SFJM reconciliation as a
+reason to create another continuity PR. NO_RECURSIVE_LIFECYCLE_RECONCILIATION
+remains in force.
+
+
 ## 0.0000 Current handoff override — B2 closed / B4 next — 2026-09-01
 
 This section is the current handoff authority when older B2-next sections below
