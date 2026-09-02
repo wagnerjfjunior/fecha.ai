@@ -1,5 +1,216 @@
 # FECH.AI — SFJM Evidence Freshness
 
+## 0.00000 Current evidence freshness override — PR-07 implementation baseline — 2026-09-02
+
+This section supersedes older current-anchor claims when they conflict.
+
+### GitHub / SES anchors
+
+\`\`\`text
+FECH.AI repository:
+  wagnerjfjunior/fecha.ai
+
+FECH.AI main:
+  020594a2bb66fed5b6ab38f2d015878a7ef54d71
+  LIVE_RESOLVED / GITHUB_VERSIONED
+
+src/App.jsx:
+  blob 34f64560082210145277e8f625830c694d186d87
+  inspected call-site evidence
+  APP_JSX_CHANGE_REQUIRED=NO for approved PR-07 design
+
+SES repository:
+  wagnerjfjunior/Specialist-Engineering-System
+
+SES main:
+  285b08206d334971b182e2d46646ba0b6938bdfe
+
+FECH.AI Project Adapter:
+  projects/fechai/PROJECT_ADAPTER.md
+  blob 9fe7ca47fc7c95386675650661341759861fb3f1
+
+application_security archetype registry:
+  blob bc62034d3bad78c301ac8eedb639522109c10086
+  ACTIVE
+
+certification ledger:
+  blob 8111c68fa79afe4b95b1b8b05f762d9c63d7ba08
+  application-security-assurance-specialist=YES
+\`\`\`
+
+### B4 closed evidence
+
+\`\`\`text
+PR #162 final approved head:
+  89c049cec92d1a74fd3011088581c3bf1b4e5a8a
+
+merge/main:
+  020594a2bb66fed5b6ab38f2d015878a7ef54d71
+
+migration blob:
+  ccb3b406e848e13edb7ac123691f812ec00f5fe7
+
+rollback blob:
+  805dbdb95f309aa072921b98f03b829a11f4e815
+
+proof blob:
+  13c21a7a747406b3e17baefdbd26105e7a90e527
+
+Supabase execution:
+  project uobxxgzshrmbtjfdolxd / Discador-MesaCliente
+  registry version 20260901222707
+  f1_02_b4_list_acl_tenant_integrity
+
+catalog proof:
+  PASS
+
+B4:
+  MERGED + APPLIED + READ_ONLY_CATALOG_PROVEN
+
+RUNTIME_NEGATIVE_PASS:
+  NOT ESTABLISHED
+\`\`\`
+
+### PR-07 live RPC baselines
+
+Observed live against project
+\`uobxxgzshrmbtjfdolxd / Discador-MesaCliente\`:
+
+\`\`\`text
+public.listar_funil_estagios():
+  md5 8ca0d3dd61fbe00c20f591dbe3dae6f8
+
+public.importar_leads_batch(uuid,jsonb,text):
+  md5 8f8f2c8b8593a54068783c7ddd4a84ee
+
+public.registrar_feedback(uuid,text,text):
+  md5 3a6282c898199abc6c497a8cdfb5d16f
+
+all three:
+  owner postgres
+  SECURITY DEFINER=true
+  search_path=public
+  PUBLIC/anon EXECUTE absent
+  authenticated/service_role EXECUTE present
+\`\`\`
+
+Additional current live evidence:
+
+\`\`\`text
+funil_estagios:
+  10 rows
+  0 global/null-company rows
+  empresa_id NOT NULL
+
+corretores.user_id:
+  UNIQUE
+
+logs:
+  57 import_batch rows
+  current textual session identifier stored in detalhes
+  logs.sessao_id uuid remains unused by those 57 import rows
+
+listas:
+  UNIQUE(id,empresa_id) exists
+  candidate key is available for PR-07 composite tenant FK
+
+pgcrypto:
+  version 1.3
+  schema extensions
+  extensions.digest(text,text) available
+\`\`\`
+
+### Specialist design gates
+
+Manually transferred specialist outputs are INFORMATION_SUPPLIED and were
+reconciled against the same live technical baseline. They are not runtime proof.
+
+\`\`\`text
+LeadOps:
+  PASS
+  PR-07 product contract approved
+
+Backend/Data:
+  PASS
+  implementation design approved
+  App.jsx change not required
+
+Application Security:
+  PASS WITH RESIDUAL RISK
+  design approved
+  ready for bounded implementation authorization
+\`\`\`
+
+Material AppSec requirements include:
+
+\`\`\`text
+idempotency internal table:
+  direct client DML denied
+  RLS + FORCE RLS
+  no client policies
+
+composite (lista_id,empresa_id) integrity
+
+same-session/different-list rejection
+
+same-session/different-payload rejection
+
+SHA-256 non-PII request fingerprint
+
+complete payload validation before first write
+
+ROOT denial before tenant/list/read/write paths
+
+strict feedback enum validation before mutation
+
+search_path=pg_catalog with fully qualified non-pg_catalog objects
+
+service_role EXECUTE preserved temporarily with residual risk
+\`\`\`
+
+### Current implementation anchor
+
+\`\`\`text
+authorized technical base:
+  020594a2bb66fed5b6ab38f2d015878a7ef54d71
+
+technical branch:
+  security/f1-02-input-and-read-integrity
+
+branch creation:
+  ESTABLISHED
+
+technical file contents:
+  NOT YET PUBLISHED at the moment of this SFJM reconciliation
+
+technical Draft PR:
+  NOT YET OPEN
+\`\`\`
+
+### Invalidation rules
+
+Revalidate affected gates after any material event such as:
+
+\`\`\`text
+main/base drift before publication
+target RPC body/grant/schema change
+change to approved three-file technical scope
+App.jsx compatibility contradiction
+new cross-tenant/ROOT/idempotency/feedback finding
+specialist exact-head implementation finding
+production object change before later application
+\`\`\`
+
+Do not invalidate completed B4 or the PR-07 product/design decisions merely
+because a new conversation begins or a documentation-only PR advances lifecycle.
+
+Without a material invalidation event:
+
+\`\`\`text
+AUDIT_LOOP_BLOCKED
+\`\`\`
+
+
 ## 0.0000 F1-02/B2 post-application evidence override — 2026-09-01
 
 This is the freshest bounded evidence record for F1-02/B2 and supersedes older
