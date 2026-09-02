@@ -300,7 +300,7 @@ BEGIN
   FROM public.listas li
   WHERE li.id = p_lista_id
     AND li.empresa_id = v_empresa_id
-  FOR SHARE;
+  FOR KEY SHARE;
 
   IF v_lista_id IS NULL THEN
     RETURN pg_catalog.jsonb_build_object('error', 'Lista não encontrada ou sem permissão');
