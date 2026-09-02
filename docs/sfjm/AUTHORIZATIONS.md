@@ -1,5 +1,122 @@
 # FECH.AI — SFJM Authorizations
 
+## 0.00000 ACTIVE_AUTHORITY — F1-02 / PR-07 bounded implementation — 2026-09-02
+
+Product Authority explicitly authorized GitHub-side implementation from:
+
+\`\`\`text
+repository:
+  wagnerjfjunior/fecha.ai
+
+exact base:
+  020594a2bb66fed5b6ab38f2d015878a7ef54d71
+
+branch:
+  security/f1-02-input-and-read-integrity
+\`\`\`
+
+Authorized files EXACTLY:
+
+\`\`\`text
+supabase/migrations/20260902091600_f1_02_pr07_funnel_reads_crm_payloads.sql
+supabase/rollback/20260902091600_f1_02_pr07_funnel_reads_crm_payloads_rollback.sql
+supabase/tests/f1-02-pr07/funnel_reads_crm_payloads.sql
+\`\`\`
+
+Authorized actions:
+
+\`\`\`text
+create the named branch from the exact base
+implement exactly the LeadOps + Backend/Data + AppSec approved PR-07 contract
+perform read-only/static validation
+open one Draft PR
+\`\`\`
+
+The branch creation has been exercised successfully.
+
+At the time of this SFJM reconciliation:
+
+\`\`\`text
+technical files published:
+  NONE YET
+
+technical Draft PR:
+  NOT YET OPEN
+\`\`\`
+
+Explicitly NOT authorized by this grant:
+
+\`\`\`text
+src/App.jsx modification
+any file outside the three exact paths
+Supabase live mutation/application
+production data mutation
+Auth
+Edge Functions
+Vercel
+Issue #133 implementation
+Issue #135 implementation
+Ready
+merge
+deploy
+rollback execution
+hostile production testing
+Security Go
+\`\`\`
+
+This authority remains usable only for the still-unconsumed bounded GitHub-side
+implementation/Draft publication. It does not advance any later lifecycle gate.
+
+## 0.00001 ACTIVE/CONSUMING_AUTHORITY — bounded SFJM reconciliation — 2026-09-02
+
+Product Authority separately authorized one documentation/continuity reconciliation
+to record the material state established in the current conversation.
+
+Purpose:
+
+\`\`\`text
+reconcile B4 closure
+record PR-07 Product + Backend/Data + AppSec gates
+record PR-07 bounded implementation authority
+record exact refs/evidence/residual risks
+record finite critical path/WBS/backlogs
+replace stale B2/B4 next-action continuity
+preserve prohibitions and single next safe action
+\`\`\`
+
+This authority is separate from the technical PR-07 scope.
+
+Allowed:
+
+\`\`\`text
+one documentation-only branch:
+  docs/sfjm-pr07-reconciliation-20260902
+
+update only necessary docs/sfjm continuity files
+open one Draft documentation PR
+perform read-only validation
+\`\`\`
+
+Not authorized:
+
+\`\`\`text
+runtime code
+src/App.jsx
+Supabase
+Auth
+migrations/application
+production data
+technical PR-07 scope expansion
+Ready
+merge
+deploy
+Security Go
+\`\`\`
+
+This documentation authority is consumed by publication of the bounded Draft PR.
+A later Ready or merge requires separate authority.
+
+
 ## 0.0000 Consumed authority record — F1-02/B2 closure — 2026-09-01
 
 The bounded authorities used to version, merge and apply F1-02/B2 have been

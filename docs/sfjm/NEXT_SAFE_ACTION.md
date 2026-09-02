@@ -1,5 +1,96 @@
 # FECH.AI — SFJM Next Safe Action
 
+## 0.00000 Current semantic next action override — PR-07 implementation — 2026-09-02
+
+Older B2/B4-next sections below are superseded and remain historical lineage only.
+
+\`\`\`text
+repository:
+  wagnerjfjunior/fecha.ai
+
+authoritative main at authorization:
+  020594a2bb66fed5b6ab38f2d015878a7ef54d71
+
+current active bounded task:
+  F1-02 / J3 / PR-07
+  security: harden funnel reads and CRM payloads
+
+gates:
+  LeadOps PASS
+  Backend/Data PASS
+  AppSec PASS WITH RESIDUAL RISK
+  implementation design approved
+  bounded implementation authorized by Product Authority
+
+technical branch:
+  security/f1-02-input-and-read-integrity
+
+state at this reconciliation:
+  branch created from exact authorized main
+  no technical file published yet
+  Draft PR not yet opened
+\`\`\`
+
+Single next safe action:
+
+\`\`\`text
+Implement ONLY:
+
+1. supabase/migrations/20260902091600_f1_02_pr07_funnel_reads_crm_payloads.sql
+2. supabase/rollback/20260902091600_f1_02_pr07_funnel_reads_crm_payloads_rollback.sql
+3. supabase/tests/f1-02-pr07/funnel_reads_crm_payloads.sql
+
+then:
+  validate exact branch state
+  open one Draft PR
+  obtain Backend/Data exact-head review
+  obtain independent AppSec exact-head review
+  STOP before Ready
+\`\`\`
+
+Do not change:
+
+\`\`\`text
+src/App.jsx
+Auth
+Edge Functions
+Vercel
+Issue #133 implementation
+Issue #135 implementation
+Supabase live
+production data
+other migrations/files
+\`\`\`
+
+Not authorized:
+
+\`\`\`text
+Ready
+merge
+deploy
+production migration application
+rollback execution
+hostile production testing
+Security Go
+broad paid commercialization
+\`\`\`
+
+Critical path after PR-07:
+
+\`\`\`text
+PR-08 -> PR-09 -> M2 -> M3 -> M4 -> M5 -> M6
+\`\`\`
+
+Bounded pre-Security-Go and planned backlogs remain parked in
+\`docs/sfjm/CURRENT_STATE.md\`; they do not interrupt PR-07 unless a new material
+finding proves they are class A / BLOCKS CURRENT TASK.
+
+\`\`\`text
+RUNTIME_NEGATIVE_PASS=NOT ESTABLISHED
+SECURITY_GO=DENIED
+\`\`\`
+
+
 ## 0.000 Current semantic next action override — 2026-09-01
 
 The previously recorded "B2 next" action is consumed and superseded.
