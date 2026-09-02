@@ -237,29 +237,29 @@ SELECT pg_catalog.jsonb_build_object(
     pg_catalog.has_function_privilege('service_role','public.registrar_feedback(uuid,text,text)','EXECUTE'),
 
   'stage_contract_signals', pg_catalog.jsonb_build_object(
-    'explicit_root_denial', pg_catalog.position('public.is_root()' IN defs.stage_def) > 0,
-    'tenant_filter', pg_catalog.position('fe.empresa_id = v_empresa_id' IN defs.stage_def) > 0,
-    'no_global_branch', pg_catalog.position('empresa_id IS NULL' IN defs.stage_def) = 0,
-    'deterministic_order', pg_catalog.position('ORDER BY fe.ordem ASC, fe.id ASC' IN defs.stage_def) > 0
+    'explicit_root_denial', pg_catalog.strpos(defs.stage_def, 'public.is_root()') > 0,
+    'tenant_filter', pg_catalog.strpos(defs.stage_def, 'fe.empresa_id = v_empresa_id') > 0,
+    'no_global_branch', pg_catalog.strpos(defs.stage_def, 'empresa_id IS NULL') = 0,
+    'deterministic_order', pg_catalog.strpos(defs.stage_def, 'ORDER BY fe.ordem ASC, fe.id ASC') > 0
   ),
 
   'import_contract_signals', pg_catalog.jsonb_build_object(
-    'explicit_root_denial', pg_catalog.position('public.is_root()' IN defs.import_def) > 0,
-    'idempotency_table', pg_catalog.position('public.importar_leads_batch_idempotency' IN defs.import_def) > 0,
-    'sha256_digest', pg_catalog.position('extensions.digest' IN defs.import_def) > 0
-                     AND pg_catalog.position('sha256' IN defs.import_def) > 0,
-    'session_list_mismatch', pg_catalog.position('SESSION_LIST_MISMATCH' IN defs.import_def) > 0,
-    'session_payload_mismatch', pg_catalog.position('SESSION_PAYLOAD_MISMATCH' IN defs.import_def) > 0,
-    'incomplete_state_denial', pg_catalog.position('IDEMPOTENCY_INCOMPLETE' IN defs.import_def) > 0,
-    'server_batch_limit_100', pg_catalog.position('jsonb_array_length(p_leads) > 100' IN defs.import_def) > 0,
-    'generic_sqlerrm_not_returned', pg_catalog.position('SQLERRM' IN defs.import_def) = 0
+    'explicit_root_denial', pg_catalog.strpos(defs.import_def, 'public.is_root()') > 0,
+    'idempotency_table', pg_catalog.strpos(defs.import_def, 'public.importar_leads_batch_idempotency') > 0,
+    'sha256_digest', pg_catalog.strpos(defs.import_def, 'extensions.digest') > 0
+                     AND pg_catalog.strpos(defs.import_def, 'sha256') > 0,
+    'session_list_mismatch', pg_catalog.strpos(defs.import_def, 'SESSION_LIST_MISMATCH') > 0,
+    'session_payload_mismatch', pg_catalog.strpos(defs.import_def, 'SESSION_PAYLOAD_MISMATCH') > 0,
+    'incomplete_state_denial', pg_catalog.strpos(defs.import_def, 'IDEMPOTENCY_INCOMPLETE') > 0,
+    'server_batch_limit_100', pg_catalog.strpos(defs.import_def, 'jsonb_array_length(p_leads) > 100') > 0,
+    'generic_sqlerrm_not_returned', pg_catalog.strpos(defs.import_def, 'SQLERRM') = 0
   ),
 
   'feedback_contract_signals', pg_catalog.jsonb_build_object(
-    'explicit_root_denial', pg_catalog.position('public.is_root()' IN defs.feedback_def) > 0,
-    'strict_enum_cast', pg_catalog.position('v_feedback_text::public.lead_feedback_tipo' IN defs.feedback_def) > 0,
-    'no_invalid_cast_null_continue', pg_catalog.position('v_feedback_tipo := null' IN pg_catalog.lower(defs.feedback_def)) = 0,
-    'trusted_text_branching', pg_catalog.position('v_feedback_text := v_feedback_tipo::text' IN defs.feedback_def) > 0
+    'explicit_root_denial', pg_catalog.strpos(defs.feedback_def, 'public.is_root()') > 0,
+    'strict_enum_cast', pg_catalog.strpos(defs.feedback_def, 'v_feedback_text::public.lead_feedback_tipo') > 0,
+    'no_invalid_cast_null_continue', pg_catalog.strpos(pg_catalog.lower(defs.feedback_def), 'v_feedback_tipo := null') = 0,
+    'trusted_text_branching', pg_catalog.strpos(defs.feedback_def, 'v_feedback_text := v_feedback_tipo::text') > 0
   ),
 
   'functions', fs.functions,
