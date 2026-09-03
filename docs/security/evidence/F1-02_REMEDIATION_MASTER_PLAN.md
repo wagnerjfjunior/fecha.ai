@@ -807,6 +807,129 @@ INVALID FEEDBACK: REJECTED BEFORE WRITE
 ROLLBACK AND REAPPLY: TESTED
 ```
 
+### J3 Product Authority bounded-residual closure exception — 2026-09-02
+
+This section records an explicit Product Authority governance exception. It does
+not rewrite the canonical J3 exit criteria above and must not be read as proof
+that those original criteria were fully satisfied.
+
+Canonical anchor at the decision:
+
+```text
+repository: wagnerjfjunior/fecha.ai
+exact main: 1449bee4b708a9211a099c52ff573cf52d44ef1c
+this master-plan blob before reconciliation:
+  ea161050c535b848ff927133830984f543c1104d
+
+PR #163:
+  CLOSED / MERGED
+  merge commit: 1449bee4b708a9211a099c52ff573cf52d44ef1c
+
+Supabase project:
+  uobxxgzshrmbtjfdolxd / Discador-MesaCliente
+
+PR-07 migration:
+  APPLIED
+  migration ledger version: 20260902225240
+  name: f1_02_pr07_funnel_reads_crm_payloads
+```
+
+Evidence state accepted by Product Authority:
+
+```text
+evidence reference:
+  docs/sfjm/EVIDENCE_FRESHNESS.md
+  current J3/PR-07 operating-session runtime evidence override
+
+evidence class:
+  OPERATING_SESSION_RUNTIME_EVIDENCE
+
+raw per-case execution receipt:
+  NOT_VERSIONED
+
+canonical executable PR-08 receipt:
+  NOT_ESTABLISHED
+
+source runtime plan / proof file:
+  supabase/tests/f1-02-pr07/funnel_reads_crm_payloads.sql
+  blob 55bef23b5a7103e9935ca6eb63a066d3db23dc6e
+  remains versioned with runtime cases marked NOT_EXECUTED and is not
+  retroactively relabeled as the runtime receipt.
+
+operating-session reported PASS cases:
+  STG-001..007
+  IMP-001
+  IMP-002
+  IMP-004..012
+  IMP-SESSION-LIST-MISMATCH
+  IMP-SESSION-PAYLOAD-MISMATCH
+  IMP-CLAIMANT-ROLLBACK
+  IMP-INCOMPLETE-STATE
+  FDB-001..011
+
+bounded catalog/runtime summaries:
+  post-application catalog: OPERATING_SESSION_REPORTED_PASS
+  runtime-negative cases above: OPERATING_SESSION_REPORTED_PASS
+  sequential idempotency/replay: OPERATING_SESSION_REPORTED_PASS
+  claimant rollback: OPERATING_SESSION_REPORTED_PASS
+  cross-tenant runtime negatives: OPERATING_SESSION_REPORTED_PASS
+  feedback runtime: OPERATING_SESSION_REPORTED_PASS
+
+true-concurrency infrastructure capability:
+  PROVEN
+  evidence type: operating-session capability probe
+  raw probe receipt: NOT_VERSIONED
+
+IMP-003 true-concurrency business-RPC runtime:
+  NOT_DETERMINED
+  reason: concurrent PostgreSQL sessions were proven, but the concurrent
+  business-RPC submission was blocked by the OpenAI tool safety layer before
+  SQL reached PostgreSQL.
+
+migration rollback/reapply / ROL-PR07:
+  NOT_DETERMINED
+  reason: Product Authority decisions prohibit LAB, second Supabase project,
+  Preview Branch and production migration rollback testing.
+
+control failure observed:
+  NO
+```
+
+These operating-session results are accepted only as bounded continuity
+evidence. They do not convert the versioned proof file into an executed
+artifact, do not satisfy PR-08's future executable-receipt requirement and do
+not allow an unversioned raw receipt to be inferred where none exists.
+
+Product Authority decision:
+
+```text
+CANONICAL_J3_EXIT_SATISFIED = NO
+J3_GOVERNANCE_CLOSURE_BY_PRODUCT_AUTHORITY_EXCEPTION = YES
+
+J3 = CLOSED WITH BOUNDED RESIDUAL EVIDENCE
+      — PRODUCT AUTHORITY EXCEPTION
+
+IMP_003_RUNTIME_STATUS = NOT_DETERMINED
+ROLLBACK_REAPPLY_STATUS = NOT_DETERMINED
+SECURITY_GO = NOT_GRANTED
+```
+
+This exception:
+
+- does not declare IMP-003 PASS;
+- does not declare rollback/reapply PASS;
+- does not change either obligation to PROVEN;
+- does not establish satisfaction of the original canonical J3 exit contract;
+- does not authorize LAB, a second Supabase project, Preview Branch or
+  production migration rollback testing;
+- does not authorize deploy, new Supabase mutation, Auth changes, broad paid
+  commercialization or Security Go;
+- preserves both proof obligations as residual evidence items requiring retest
+  if a future executable and explicitly authorized path becomes available.
+
+The next phase is J4 / PR-08. Entry into J4 requires its own bounded scope and
+authorization gate; this J3 exception does not authorize PR-08 implementation.
+
 ## 15. J4 — consolidated testing and gate
 
 ### PR-08 — repeatable executable test matrix
@@ -1148,4 +1271,37 @@ No checkpoint or WDP is earned by this plan alone.
 
 ## 23. Immediate next safe action
 
-Audit this PR-00 documentation baseline at its exact final head. After it passes and is merged, request cost confirmation for the single isolated Supabase Branch. Do not begin PR-01 or any Supabase mutation before the plan and lab strategy are accepted.
+The earlier PR-00 / isolated-lab next action is consumed and superseded by the
+2026-09-02 Product Authority J3 bounded-residual exception recorded in this
+document.
+
+Standing Product Authority constraints are:
+
+```text
+NO LAB
+NO SECOND SUPABASE PROJECT
+NO PREVIEW BRANCH
+NO PRODUCTION MIGRATION ROLLBACK TEST
+```
+
+Therefore:
+
+- do not request cost confirmation for a Supabase Branch;
+- do not create or propose an isolated LAB as the current next action;
+- do not reinterpret IMP-003 or rollback/reapply as PASS;
+- preserve both obligations as `NOT_DETERMINED`;
+- do not grant Security Go.
+
+The single current next safe action is:
+
+```text
+J4 / PR-08 — REPEATABLE EXECUTABLE SECURITY MATRIX
+SCOPE / EVIDENCE-COVERAGE / PROHIBITIONS RECONSTRUCTION FIRST
+SEPARATE PRODUCT AUTHORITY IMPLEMENTATION GATE REQUIRED
+```
+
+Any older lab-oriented planning language in this historical master plan is
+superseded where it conflicts with the standing Product Authority constraints
+above. This does not silently waive J4 or final F1-02 proof obligations; those
+must be explicitly reconciled at the J4 gate before implementation or final
+acceptance.

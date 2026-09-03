@@ -1,5 +1,63 @@
 # FECH.AI — SFJM Next Safe Action
 
+## 0.0000 Current semantic next action override — J4/PR-08 gate — 2026-09-02
+
+J3 is closed only by explicit Product Authority bounded-residual exception.
+
+```text
+repository: wagnerjfjunior/fecha.ai
+decision anchor main: 1449bee4b708a9211a099c52ff573cf52d44ef1c
+PR #163: CLOSED / MERGED
+PR-07 migration: APPLIED / ledger 20260902225240
+
+CANONICAL_J3_EXIT_SATISFIED: NO
+J3_GOVERNANCE_CLOSURE_BY_PRODUCT_AUTHORITY_EXCEPTION: YES
+
+IMP-003 concurrent business-RPC runtime: NOT_DETERMINED
+migration rollback/reapply: NOT_DETERMINED
+Security Go: DENIED / NOT_GRANTED
+```
+
+Current provenance and authority anchors:
+
+```text
+runtime evidence:
+  docs/sfjm/EVIDENCE_FRESHNESS.md
+  class = OPERATING_SESSION_RUNTIME_EVIDENCE
+  raw per-case execution receipt = NOT_VERSIONED
+  canonical executable PR-08 receipt = NOT_ESTABLISHED
+
+Product Authority J3 exception / current authority boundary:
+  docs/sfjm/AUTHORIZATIONS.md
+```
+
+The single current next safe action is:
+
+```text
+J4 / PR-08 — REPEATABLE EXECUTABLE SECURITY MATRIX
+
+SCOPE/GATE RECONSTRUCTION FIRST.
+
+Resolve the exact J4 requirements against the evidence already produced,
+identify executable versus residual proof obligations, preserve the standing
+NO-LAB / NO-production-rollback decisions, and request a separate bounded
+Product Authority implementation authorization before creating or changing
+PR-08 artifacts.
+```
+
+Explicitly prohibited by this continuation record:
+
+```text
+NO automatic PR-08 implementation
+NO Supabase mutation
+NO migration rollback/reapply in production
+NO LAB / second Supabase project / Preview Branch
+NO Auth mutation
+NO deploy
+NO Security Go
+NO broad paid commercialization
+```
+
 ## 0.000 Current semantic next action override — 2026-09-01
 
 The previously recorded "B2 next" action is consumed and superseded.

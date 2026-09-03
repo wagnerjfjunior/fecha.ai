@@ -1,5 +1,68 @@
 # FECH.AI — SFJM Current Material State
 
+## 0.00000 Current semantic override — J3 bounded-residual closure — 2026-09-02
+
+This section is the current semantic authority for F1-02/J3 and supersedes
+older B2/B4-next wording below when it conflicts. Historical sections remain
+lineage only.
+
+```text
+repository: wagnerjfjunior/fecha.ai
+decision anchor main: 1449bee4b708a9211a099c52ff573cf52d44ef1c
+PR #163: CLOSED / MERGED
+PR-07 migration: APPLIED
+Supabase ledger version: 20260902225240
+
+evidence class: OPERATING_SESSION_RUNTIME_EVIDENCE
+evidence reference: docs/sfjm/EVIDENCE_FRESHNESS.md
+raw per-case execution receipt: NOT_VERSIONED
+canonical executable PR-08 receipt: NOT_ESTABLISHED
+
+post-application catalog: OPERATING_SESSION_REPORTED_PASS
+runtime-negative cases: OPERATING_SESSION_REPORTED_PASS
+sequential idempotency/replay: OPERATING_SESSION_REPORTED_PASS
+claimant rollback: OPERATING_SESSION_REPORTED_PASS
+cross-tenant runtime negatives: OPERATING_SESSION_REPORTED_PASS
+feedback runtime: OPERATING_SESSION_REPORTED_PASS
+true-concurrency infrastructure capability: PROVEN
+
+IMP-003 concurrent business-RPC runtime: NOT_DETERMINED
+migration rollback/reapply: NOT_DETERMINED
+control failure observed: NO
+
+CANONICAL_J3_EXIT_SATISFIED: NO
+J3_GOVERNANCE_CLOSURE_BY_PRODUCT_AUTHORITY_EXCEPTION: YES
+J3: CLOSED WITH BOUNDED RESIDUAL EVIDENCE
+SECURITY_GO: DENIED / NOT_GRANTED
+```
+
+The Product Authority exception does not convert either missing proof
+obligation to PASS or PROVEN. IMP-003 was blocked before SQL reached
+PostgreSQL by the OpenAI tool safety layer. Migration rollback/reapply remains
+unexecuted because the standing Product Authority rules are:
+
+```text
+NO LAB
+NO SECOND SUPABASE PROJECT
+NO PREVIEW BRANCH
+NO PRODUCTION MIGRATION ROLLBACK TEST
+```
+
+Both obligations remain residual evidence items and must be retested if a
+future executable and explicitly authorized path becomes available.
+
+### Current single next phase gate
+
+```text
+J4 / PR-08 — REPEATABLE EXECUTABLE SECURITY MATRIX
+
+NEXT SAFE ACTION:
+reconstruct exact J4/PR-08 scope, current evidence coverage and prohibited
+areas, then obtain a separate Product Authority implementation authorization.
+
+NO PR-08 implementation authority is inherited from the J3 exception.
+```
+
 ## 0.0000 Current semantic override — F1-02/B2 post-application closure — 2026-09-01
 
 This section is the current semantic authority for the bounded F1-02/B2
