@@ -282,7 +282,7 @@ async function main() {
     "...serverInheritedEnv",
     "PGHOST:u.hostname",
     "PGPORT:u.port||\"5432\"",
-    "PGDATABASE:u.pathname.replace(/^\\\\//,\"\")",
+    "PGDATABASE:u.pathname.replace(/^\\//,\"\")",
     "PGUSER:decodeURIComponent",
     "PGPASSWORD:decodeURIComponent",
     "PGSSLMODE:u.searchParams.get(\"sslmode\")||\"require\""
