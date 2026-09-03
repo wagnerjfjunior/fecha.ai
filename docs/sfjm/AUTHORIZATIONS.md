@@ -1,5 +1,17 @@
 # FECH.AI — SFJM Authorizations
 
+## 0.000000000000 Product Authority — PR #166 sixth bounded observer-completeness correction — 2026-09-03
+
+Authorized parent: `c2922bc952741202b8f57505db755d112bd47d82`.
+
+Authorized scope: only `PR166-J4-V5-OBSERVABILITY-ORACLE-001`, limited to the seven PR-08 v7 files already approved. The canonical logical-state restoration finding remains CLOSED STATICALLY and is not reopened.
+
+Authorized publication: one commit on `test/f1-02-negative-security-matrix`.
+
+Prohibited: runtime/Auth matrix, SQL, rollback/reapply, production smoke, Supabase/Auth mutation, deploy, Ready, merge, OC-01, PR-09 and Security Go.
+
+Preserved: `IMP-003 = NOT_DETERMINED`, `ROLLBACK_REAPPLY = NOT_DETERMINED`, `SECURITY_GO = NOT_GRANTED`, all runtime result fields `NOT_EXECUTED`.
+
 ## 0.00000000000 Product Authority — PR #166 fifth bounded root-invariant correction grant — 2026-09-03
 
 Authorization source:

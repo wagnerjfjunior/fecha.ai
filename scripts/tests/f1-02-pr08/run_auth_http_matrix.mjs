@@ -158,6 +158,33 @@ async function main() {
     }
     throw new Error("PR08_VAR_SET_REQUIRED");
   }
+  const UUID_RE=/^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+  function normalizedUuidListFromVar(name) {
+    const raw=valueFromVar(name);
+    let values;
+    if(Array.isArray(raw)) values=raw;
+    else if(typeof raw==="string"){
+      const trimmed=raw.trim();
+      if(!trimmed) throw new Error("PR08_UUID_SET_REQUIRED:"+name);
+      try {
+        const parsed=JSON.parse(trimmed);
+        values=Array.isArray(parsed)?parsed:trimmed.split(",").map(x=>x.trim()).filter(Boolean);
+      } catch {
+        values=trimmed.split(",").map(x=>x.trim()).filter(Boolean);
+      }
+    } else throw new Error("PR08_UUID_SET_REQUIRED:"+name);
+    const normalized=values.map(v=>String(v).trim().toLowerCase());
+    for(const v of normalized) if(!UUID_RE.test(v)) throw new Error("PR08_UUID_SET_VALUE_INVALID:"+name);
+    if(new Set(normalized).size!==normalized.length) throw new Error("PR08_UUID_SET_DUPLICATE:"+name);
+    return normalized.sort();
+  }
+  function normalizedUuidRows(output,label) {
+    if(!output) return [];
+    const values=String(output).split("\n").map(x=>x.trim().toLowerCase()).filter(Boolean);
+    for(const v of values) if(!UUID_RE.test(v)) throw new Error(label+"_UUID_INVALID");
+    if(new Set(values).size!==values.length) throw new Error(label+"_UUID_DUPLICATE");
+    return values.sort();
+  }
   function anyTrue(row,clauses) {
     return clauses.some(c=>{
       if (Object.prototype.hasOwnProperty.call(c,"equals")) return row?.[c.field]===c.equals;
@@ -221,6 +248,21 @@ async function main() {
           "PR08_TOPOLOGY_SERVER_ZERO_ROWS"
         ));
         if(n!==0) throw new Error("PR08_TOPOLOGY_ASSERTION_FAILED:"+id);
+      } else if(check.assertion?.mode==="SERVER_ROW_IDS_EQUAL_VAR_SET") {
+        ensureServerContext();
+        const a=check.assertion;
+        const allowed=a.table==="public.funil_estagios" && a.id_column==="id" && a.where_column==="empresa_id";
+        if(!allowed) throw new Error("PR08_TOPOLOGY_SERVER_SET_TARGET_FORBIDDEN:"+id);
+        if(!a.where_var||!a.expected_ids_var) throw new Error("PR08_TOPOLOGY_SERVER_SET_VARIABLES_REQUIRED:"+id);
+        const parts=String(a.table).split(".");
+        if(parts.length!==2) throw new Error("PR08_TOPOLOGY_SERVER_TABLE_INVALID:"+id);
+        const qualified=parts.map(qident).join(".");
+        const expected=normalizedUuidListFromVar(a.expected_ids_var);
+        const actual=normalizedUuidRows(serverExec(
+          "SELECT "+qident(a.id_column)+"::text FROM "+qualified+" WHERE "+qident(a.where_column)+"="+sqlUuidVar(a.where_var)+" ORDER BY "+qident(a.id_column)+"::text;",
+          "PR08_TOPOLOGY_SERVER_ROW_IDS"
+        ),"PR08_TOPOLOGY_SERVER_ROW_IDS");
+        if(actual.length!==expected.length||actual.some((v,i)=>v!==expected[i])) throw new Error("PR08_TOPOLOGY_ASSERTION_FAILED:"+id);
       } else if(["VARIABLE_NOT_EQUAL","FIXTURE_BOOLEAN_TRUE"].includes(check.assertion?.mode)) {
         if(!topologyAssertionPass(check.assertion,null)) throw new Error("PR08_TOPOLOGY_ASSERTION_FAILED:"+id);
       } else {

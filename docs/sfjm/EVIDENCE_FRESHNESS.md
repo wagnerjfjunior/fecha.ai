@@ -1,5 +1,24 @@
 # FECH.AI — SFJM Evidence Freshness
 
+## 0.000000000000 PR-08 sixth bounded correction — observer completeness v7 — 2026-09-03
+
+Parent: `c2922bc952741202b8f57505db755d112bd47d82`.
+
+Static implementation contract:
+- matrix `fechai.f1-02.pr08.matrix.v7`;
+- 98 records / 56 topology checks / 72 server case plans;
+- observer identity binding preserved;
+- ZERO_ROWS absence remains owner-side;
+- own/foreign funnel-stage complete sets use `SERVER_ROW_IDS_EQUAL_VAR_SET`;
+- generic validator forbids observer REST `ZERO_ROWS` / `ROW_IDS_EQUAL_VAR_SET`;
+- no runtime/Auth/SQL/rollback/smoke execution;
+- no Supabase/Auth mutation;
+- canonical restoration v6 remains unchanged and closed for this scope.
+
+Residual states remain `IMP-003 = NOT_DETERMINED`, `ROLLBACK_REAPPLY = NOT_DETERMINED`, `SECURITY_GO = NOT_GRANTED`.
+
+New exact head must be resolved after publication; no PASS/Ready is implied by this implementation event.
+
 ## 0.00000000000 PR-08 fifth bounded root-invariant correction — v6 static closure — 2026-09-03
 
 Parent exact head:

@@ -1,5 +1,5 @@
 {
-  "schema": "fechai.f1-02.pr08.matrix.v6",
+  "schema": "fechai.f1-02.pr08.matrix.v7",
   "title": "FECH.AI F1-02 / J4 / PR-08 repeatable executable security matrix",
   "implementation_status": "VERSIONED_HARNESS_NOT_EXECUTED",
   "base_application_commit": "9d05c64281c2aeeae9d67b139eab674720184fb1",
@@ -10167,30 +10167,26 @@
       },
       {
         "check_id": "TOPO-OWN-STAGE-SET",
-        "request": {
-          "method": "GET",
-          "path_template": "/rest/v1/funil_estagios?empresa_id=eq.${ACTOR_EMPRESA_ID}&select=id,ordem&order=ordem.asc,id.asc",
-          "auth_token_var": "EVIDENCE_OBSERVER_TOKEN",
-          "headers_template": {},
-          "body_template": null
-        },
+        "request": null,
         "assertion": {
-          "mode": "ROW_IDS_EQUAL_VAR_SET",
-          "var": "OWN_STAGE_IDS"
+          "mode": "SERVER_ROW_IDS_EQUAL_VAR_SET",
+          "table": "public.funil_estagios",
+          "id_column": "id",
+          "where_column": "empresa_id",
+          "where_var": "ACTOR_EMPRESA_ID",
+          "expected_ids_var": "OWN_STAGE_IDS"
         }
       },
       {
         "check_id": "TOPO-FOREIGN-STAGE-SET",
-        "request": {
-          "method": "GET",
-          "path_template": "/rest/v1/funil_estagios?empresa_id=eq.${FOREIGN_EMPRESA_ID}&select=id",
-          "auth_token_var": "EVIDENCE_OBSERVER_TOKEN",
-          "headers_template": {},
-          "body_template": null
-        },
+        "request": null,
         "assertion": {
-          "mode": "ROW_IDS_EQUAL_VAR_SET",
-          "var": "FOREIGN_STAGE_IDS"
+          "mode": "SERVER_ROW_IDS_EQUAL_VAR_SET",
+          "table": "public.funil_estagios",
+          "id_column": "id",
+          "where_column": "empresa_id",
+          "where_var": "FOREIGN_EMPRESA_ID",
+          "expected_ids_var": "FOREIGN_STAGE_IDS"
         }
       },
       {

@@ -14,7 +14,7 @@ async function main() {
   const counts={TOTAL:matrix.records.length};
   const ids=new Set();
 
-  if(matrix.schema!=="fechai.f1-02.pr08.matrix.v6") throw new Error("MATRIX_SCHEMA_DRIFT");
+  if(matrix.schema!=="fechai.f1-02.pr08.matrix.v7") throw new Error("MATRIX_SCHEMA_DRIFT");
   if(matrix.execution_contract?.failure_isolation!=="ALL_MUTATION_CAPABLE_HTTP_CASES_HAVE_SERVER_LIFECYCLE") throw new Error("FAILURE_ISOLATION_CONTRACT_MISSING");
   if(matrix.execution_contract?.cleanup_global_verification!=="CANONICAL_PUBLIC_RELATION_ROWS_PLUS_SEQUENCES_SHA256_MUST_EQUAL_ORIGINAL") throw new Error("GLOBAL_CLEANUP_HASH_CONTRACT_MISSING");
   if(matrix.execution_contract?.cleanup_fail_stop!=="NO_NEXT_CASE_AFTER_UNRESTORED_STATE") throw new Error("CLEANUP_FAIL_STOP_CONTRACT_MISSING");
@@ -44,9 +44,14 @@ async function main() {
 
   for(const check of topologyChecks){
     if(!check.check_id||!check.assertion?.mode) throw new Error("TOPOLOGY_CHECK_INVALID");
-    if(["VARIABLE_NOT_EQUAL","FIXTURE_BOOLEAN_TRUE","SERVER_ROOT_AUTHORITY","SERVER_ZERO_ROWS_BY_UUID"].includes(check.assertion.mode)){
+    if(check.request?.auth_token_var==="EVIDENCE_OBSERVER_TOKEN"&&["ZERO_ROWS","ROW_IDS_EQUAL_VAR_SET"].includes(check.assertion.mode)) throw new Error("OBSERVER_COMPLETENESS_ASSERTION_FORBIDDEN:"+check.check_id);
+    if(["VARIABLE_NOT_EQUAL","FIXTURE_BOOLEAN_TRUE","SERVER_ROOT_AUTHORITY","SERVER_ZERO_ROWS_BY_UUID","SERVER_ROW_IDS_EQUAL_VAR_SET"].includes(check.assertion.mode)){
       if(check.request!==null) throw new Error("NON_HTTP_TOPOLOGY_REQUEST_MUST_BE_NULL:"+check.check_id);
       if(check.assertion.mode==="SERVER_ZERO_ROWS_BY_UUID"){const allowed=new Set(["public.corretores:user_id","public.funil_estagios:empresa_id"]);if(!allowed.has(check.assertion.table+":"+check.assertion.column)||!check.assertion.var) throw new Error("SERVER_ZERO_ROWS_TARGET_INVALID:"+check.check_id);}
+      if(check.assertion.mode==="SERVER_ROW_IDS_EQUAL_VAR_SET"){
+        const a=check.assertion;
+        if(a.table!=="public.funil_estagios"||a.id_column!=="id"||a.where_column!=="empresa_id"||!a.where_var||!a.expected_ids_var) throw new Error("SERVER_ROW_IDS_SET_TARGET_INVALID:"+check.check_id);
+      }
     } else {
       if(!check.request?.path_template) throw new Error("TOPOLOGY_REQUEST_MISSING:"+check.check_id);
       if(!check.request.path_template.startsWith("/")||check.request.path_template.startsWith("//")||/^[a-z]+:/i.test(check.request.path_template)) throw new Error("TOPOLOGY_ABSOLUTE_PATH:"+check.check_id);
@@ -139,6 +144,14 @@ async function main() {
   for(const use of tokenUsages){if(negativeTokenVars.has(use.token)) continue;const needed=tokenNeeds[use.token];if(!needed) throw new Error("UNBOUND_VERSIONED_TOKEN_SURFACE:"+use.surface+":"+use.id+":"+use.token);if(use.token==="EVIDENCE_OBSERVER_TOKEN") for(const d of needed) if(!globalDeps.has(d)) throw new Error("OBSERVER_BINDING_NOT_GLOBAL:"+d);}
   if(topologyChecks.length!==56) throw new Error("TOPOLOGY_COUNT_DRIFT:"+topologyChecks.length);
   for(const id of ["TOPO-ZERO-STAGE-COMPANY","TOPO-NO-PROFILE"]){const c=topologyChecks.find(x=>x.check_id===id);if(c?.request!==null||c?.assertion?.mode!=="SERVER_ZERO_ROWS_BY_UUID") throw new Error("ABSENCE_PROOF_NOT_OWNER_SIDE:"+id);}
+  const completeSetContracts={
+    "TOPO-OWN-STAGE-SET":{where_var:"ACTOR_EMPRESA_ID",expected_ids_var:"OWN_STAGE_IDS"},
+    "TOPO-FOREIGN-STAGE-SET":{where_var:"FOREIGN_EMPRESA_ID",expected_ids_var:"FOREIGN_STAGE_IDS"}
+  };
+  for(const [id,expectedContract] of Object.entries(completeSetContracts)){
+    const c=topologyChecks.find(x=>x.check_id===id),a=c?.assertion;
+    if(c?.request!==null||a?.mode!=="SERVER_ROW_IDS_EQUAL_VAR_SET"||a.table!=="public.funil_estagios"||a.id_column!=="id"||a.where_column!=="empresa_id"||a.where_var!==expectedContract.where_var||a.expected_ids_var!==expectedContract.expected_ids_var) throw new Error("COMPLETE_SET_PROOF_NOT_OWNER_SIDE:"+id);
+  }
   for(const [k,v] of Object.entries(expected)) if(counts[k]!==v) throw new Error("COUNT_MISMATCH:"+k+":"+counts[k]+"!="+v);
 
   // STG-001 must truly be unauthenticated.
@@ -199,6 +212,8 @@ async function main() {
   const runnerNeedles=[
     "runTopologyPreflight(record)",
     "SERVER_ROOT_AUTHORITY",
+    "SERVER_ROW_IDS_EQUAL_VAR_SET",
+    "normalizedUuidListFromVar",
     "FIXTURE_BOOLEAN_TRUE",
     "recordApplicable",
     'pass_fail:"NOT_APPLICABLE"',

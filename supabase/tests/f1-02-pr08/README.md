@@ -6,7 +6,7 @@ Base application snapshot:
 
     9d05c64281c2aeeae9d67b139eab674720184fb1
 
-## PR-08 v6 closure architecture
+## PR-08 v7 closure architecture
 
     MATRIX: 98 VERSIONED CASES
     TOPOLOGY CHECKS: 56
@@ -21,7 +21,7 @@ Base application snapshot:
 
 ## Anti-loop closure rule
 
-PR-08 v6 treats the test harness itself as a security-sensitive subsystem.
+PR-08 v7 treats the test harness itself as a security-sensitive subsystem.
 The harness is closed by invariant classes instead of repeated per-test patches:
 
 1. every mutation-capable HTTP case, including DENY cases, has a server lifecycle;
@@ -33,7 +33,8 @@ The harness is closed by invariant classes instead of repeated per-test patches:
 7. protected evidence tables remain inaccessible to client REST/JWT;
 8. owner-side evidence is isolated non-production only and cannot widen grants/RLS/policies;
 9. the evidence observer is globally identity-bound, while absence proofs use owner-side zero-row evidence under the BYPASSRLS preflight;
-10. restoration fingerprints canonicalize logical public relation multisets plus sequence state rather than hashing raw data-dump row order.
+10. restoration fingerprints canonicalize logical public relation multisets plus sequence state rather than hashing raw data-dump row order;
+11. client visibility may prove one specifically visible object, but absence and complete-set membership require owner-side evidence under the isolated postgres/BYPASSRLS preflight.
 
 These are reusable harness rules for future FECH.AI security matrices.
 
@@ -68,7 +69,13 @@ The runner executes only:
 
 Every valid identity-bearing token used by a versioned request/probe/topology surface must have a matching token-identity topology check. INVALID_TOKEN and EXPIRED_TOKEN are explicit negative-token fixtures, not identity-bearing exceptions.
 
-EVIDENCE_OBSERVER_TOKEN is globally bound through /auth/v1/user to EVIDENCE_OBSERVER_USER_ID. Positive observer reads fail closed if visibility is insufficient. Absence claims such as no-profile and zero-stage-company are not inferred from observer REST invisibility; they use postgres-owner zero-row evidence after the existing non-production BYPASSRLS boundary preflight.
+EVIDENCE_OBSERVER_TOKEN is globally bound through /auth/v1/user to EVIDENCE_OBSERVER_USER_ID. Positive point/object reads fail closed if visibility is insufficient.
+
+CLIENT VISIBILITY MAY PROVE A SPECIFIC VISIBLE OBJECT.
+
+CLIENT VISIBILITY MUST NOT PROVE GLOBAL ABSENCE OR COMPLETE SET MEMBERSHIP.
+
+Absence claims such as no-profile and zero-stage-company use postgres-owner zero-row evidence. Complete-set claims such as own-company and foreign-company funnel-stage membership use owner-side exact ID-set evidence. Both run only after the existing isolated postgres/BYPASSRLS boundary preflight.
 Actor/manager/admin/root/inactive/ineligible/no-profile/actor-A/actor-B cases add their required profile checks.
 
 Manager ACL positive scope proves:
@@ -190,7 +197,7 @@ The schema component preserves grants/policies/functions/DDL sensitivity while t
 
 ROLLBACK_REAPPLY remains NOT_DETERMINED because the runner has not been executed.
 
-## Closure validator v6
+## Closure validator v7
 
 validate_matrix.mjs rejects regressions in:
 
@@ -198,7 +205,9 @@ validate_matrix.mjs rejects regressions in:
 - mutation-capable cases without lifecycle;
 - negative failure paths without cleanup contracts;
 - token identity topology omissions across request/probe/topology surfaces;
-- observer identity-binding regressions and client-visibility-based absence proofs;
+- observer identity-binding regressions;
+- client-visible ZERO_ROWS or complete-set membership assertions;
+- owner-side complete-set topology contract drift;
 - manager/root/actor-A/actor-B scope omissions;
 - STG-001 authenticated regression;
 - FUN-006 unconditional regression;

@@ -1,5 +1,15 @@
 # FECH.AI — SFJM Next Safe Action
 
+## 0.000000000000 PR-08 v7 post-publication gate — 2026-09-03
+
+After the sixth bounded correction is published from parent `c2922bc952741202b8f57505db755d112bd47d82`, the single next safe action is:
+
+    RESOLVE NEW PR #166 EXACT HEAD
+    PERFORM ONE INDEPENDENT EXACT-HEAD IMPLEMENTATION REVIEW
+    STOP BEFORE READY
+
+Do not execute PR-08/Auth/SQL/rollback/smoke. Do not mutate Supabase/Auth. Do not deploy, mark Ready, merge, start OC-01/PR-09 or grant Security Go. Historical findings remain AUDIT_LOOP_BLOCKED absent new exact-head contradiction.
+
 ## 0.0000000000 PR-08 v6 fifth-correction exact-head review — 2026-09-03
 
 The Product Authority authorized one bounded correction from:
