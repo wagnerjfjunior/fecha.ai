@@ -418,3 +418,67 @@ Issue #150 — Security Truth Baseline: CLOSED / completed
 ```
 
 F1-02 final acceptance remains separate and is not granted by B3 closure.
+
+## 6. PR #166 — next safe action after lifecycle reconciliation — 2026-09-03
+
+Current technical position at reviewed head `2a0e6b8a2f964afe3c0c35c75190ae23344ed884`:
+
+```text
+Phase 1: CLOSED STATICALLY
+Phase 2: CLOSED STATICALLY
+Phase 3: CLOSED
+Phase 4: CLOSED
+PR08-RR-64M-CANONICAL-HASH: ACCEPTABLE WITH RESIDUAL RISK
+IMP-003: NOT_DETERMINED
+ROLLBACK_REAPPLY: NOT_DETERMINED
+SECURITY_GO: NOT_GRANTED
+runtime PR-08: NOT_EXECUTED
+```
+
+The residual `PR08-RR-64M-CANONICAL-HASH` is bounded to the isolated evidence
+harness. It may make evidence capture non-executable on large fixtures, but the
+observed failure model is fail-closed and does not create a false PASS. Reopen it
+on ENOBUFS/maxBuffer failure, material fixture growth, large/uncontrolled dataset
+use, or when rollback/cleanup proof cannot complete. Planned remediation is
+server-side ordered digest or streaming hashing.
+
+This reconciliation authorizes lifecycle resolution only after the documentation
+commit is published and revalidated, and only for:
+
+```text
+PRRT_kwDOSEToMc6fBXG5
+PRRT_kwDOSEToMc6fBXHB
+PRRT_kwDOSEToMc6fBXHU
+PRRT_kwDOSEToMc6fBXHW
+PRRT_kwDOSEToMc6fBXHY
+PRRT_kwDOSEToMc6fBXHI
+PRRT_kwDOSEToMc6fBXHF
+PRRT_kwDOSEToMc6fBXHM
+```
+
+Once all eight are confirmed resolved, **STOP**.
+
+The next action after that STOP is:
+
+```text
+FINAL INDEPENDENT EXACT-HEAD PRE-MERGE REVIEW — PR #166
+AUTHORIZATION REQUIRED SEPARATELY
+```
+
+That future gate must reconstruct live PR state, exact base/head/commits/changed
+files/checks/reviews/threads/mergeability/drift, inspect final files and residuals,
+and emit PRE-MERGE PASS or BLOCK. No merge is implied by a PASS.
+
+Prohibited under this entry:
+
+```text
+NO runtime
+NO rollback/reapply
+NO Supabase/Auth mutation
+NO merge
+NO deploy
+NO OC-01
+NO PR-09
+NO Security Go
+NO resolution of any thread outside the eight listed above
+```

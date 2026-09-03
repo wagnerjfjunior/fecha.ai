@@ -1678,3 +1678,78 @@ AUDIT_LOOP_BLOCKED
 ```
 
 After a material T3A corrective commit, revalidate only the affected exact-head T3A gate and its dependencies; do not reopen unrelated completed work.
+
+## 11. PR #166 / PR-08 — evidence freshness reconciliation — 2026-09-03
+
+Fresh anchor used for this lifecycle reconciliation:
+
+```text
+main = 9d05c64281c2aeeae9d67b139eab674720184fb1
+PR #166 reviewed head before documentation reconciliation = 2a0e6b8a2f964afe3c0c35c75190ae23344ed884
+branch = test/f1-02-negative-security-matrix
+PR = OPEN / READY
+mergeable = TRUE
+Vercel = SUCCESS
+```
+
+Material evidence at that anchor was re-resolved from GitHub live. The technical
+closures currently carried forward are:
+
+```text
+Phase 1 — CLOSED STATICALLY
+Phase 2 — CLOSED STATICALLY
+Phase 3 — CLOSED
+Phase 4 — CLOSED
+```
+
+Residual evidence record:
+
+```text
+PR08-RR-64M-CANONICAL-HASH
+classification = ACCEPTABLE WITH RESIDUAL RISK
+thread = PRRT_kwDOSEToMc6fBXHM
+surface = PR-08 isolated evidence harness
+cause = ordered canonical relation JSON materialization + Node spawnSync maxBuffer 64 MiB
+failure semantics = FAIL-CLOSED / NO FALSE PASS
+production runtime impact = NONE ESTABLISHED
+future remediation = server-side digest or streaming
+```
+
+Residual revalidation is required if any of these occur:
+
+```text
+ENOBUFS / maxBuffer / equivalent capture failure
+fixture relation approaches/exceeds the practical envelope
+harness is used against a large or uncontrolled dataset
+rollback/cleanup evidence cannot complete at required volume
+hashing implementation changes
+```
+
+Execution evidence remains deliberately absent:
+
+```text
+IMP-003 = NOT_DETERMINED
+ROLLBACK_REAPPLY = NOT_DETERMINED
+SECURITY_GO = NOT_GRANTED
+PR-08 runtime = NOT_EXECUTED
+```
+
+Authorized lifecycle completion after this documentation commit is published and
+its new exact head is revalidated: resolve only the following eight threads and
+then confirm their GitHub state:
+
+```text
+PRRT_kwDOSEToMc6fBXG5
+PRRT_kwDOSEToMc6fBXHB
+PRRT_kwDOSEToMc6fBXHU
+PRRT_kwDOSEToMc6fBXHW
+PRRT_kwDOSEToMc6fBXHY
+PRRT_kwDOSEToMc6fBXHI
+PRRT_kwDOSEToMc6fBXHF
+PRRT_kwDOSEToMc6fBXHM
+```
+
+A documentation-only SHA advance caused by this reconciliation does not reopen
+Phases 1–4 by itself. Any unexpected implementation-file change, new technical
+finding, failed check, thread contradiction or head drift is an invalidation
+event and requires bounded re-adjudication before pre-merge.

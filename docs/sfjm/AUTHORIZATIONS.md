@@ -956,3 +956,74 @@ Do not rewrite that as `UNAUTHORIZED` without affirmative evidence, and do not r
 Update this ledger only when durable authority meaning changes.
 
 Do not update merely because a SHA, Draft/Ready state, check or mergeability value changes.
+
+## 10. Product Authority grant — PR #166 lifecycle/SFJM reconciliation — 2026-09-03
+
+Product Authority authorized one bounded documentation reconciliation from exact
+head `2a0e6b8a2f964afe3c0c35c75190ae23344ed884`, limited to:
+
+```text
+docs/sfjm/CURRENT_STATE.md
+docs/sfjm/NEXT_SAFE_ACTION.md
+docs/sfjm/EVIDENCE_FRESHNESS.md
+docs/sfjm/AUTHORIZATIONS.md
+docs/sfjm/handoffs/CURRENT.md
+```
+
+Authorized durable meanings:
+
+```text
+Phases 1–4 technically closed
+PR08-RR-64M-CANONICAL-HASH = ACCEPTABLE WITH RESIDUAL RISK
+IMP-003 = NOT_DETERMINED
+ROLLBACK_REAPPLY = NOT_DETERMINED
+SECURITY_GO = NOT_GRANTED
+PR-08 runtime = NOT_EXECUTED
+next safe action after lifecycle resolution = separately authorized final exact-head pre-merge
+```
+
+The residual authority explicitly records:
+
+```text
+cause: relation-wide canonical JSON materialization through psql under 64 MiB Node spawnSync buffer
+safety property: fail-closed; inability to hash cannot be recorded as PASS/restored state
+scope: isolated PR-08 evidence harness, not direct production runtime
+reopen triggers: ENOBUFS/maxBuffer, material fixture growth, large/uncontrolled dataset use,
+                 or inability to complete rollback/cleanup proof
+future remediation: server-side ordered digest or streaming
+```
+
+After publication and exact-head revalidation of this documentation commit,
+Product Authority additionally authorized resolution of exactly these eight
+review threads:
+
+```text
+PRRT_kwDOSEToMc6fBXG5
+PRRT_kwDOSEToMc6fBXHB
+PRRT_kwDOSEToMc6fBXHU
+PRRT_kwDOSEToMc6fBXHW
+PRRT_kwDOSEToMc6fBXHY
+PRRT_kwDOSEToMc6fBXHI
+PRRT_kwDOSEToMc6fBXHF
+PRRT_kwDOSEToMc6fBXHM
+```
+
+No other review-thread mutation is authorized.
+
+Explicitly NOT authorized:
+
+```text
+runtime execution
+rollback/reapply
+Supabase/Auth mutation
+merge
+deploy
+OC-01
+PR-09
+Security Go
+any file outside the five SFJM files listed above
+any thread resolution outside the eight exact IDs above
+```
+
+After lifecycle reconciliation completes, STOP. Final pre-merge requires a
+separate Product Authority authorization.

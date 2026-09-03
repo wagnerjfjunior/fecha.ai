@@ -390,3 +390,73 @@ reopening public.leads
 Issue #150 closure requires a separate explicit Product Authority action after
 the bounded M1 documentation reconciliation reaches its own authorized lifecycle
 gate.
+
+## 10. Handoff — PR #166 after Phases 1–4 and residual adjudication — 2026-09-03
+
+Operational anchor before the authorized SFJM reconciliation commit:
+
+```text
+repository: wagnerjfjunior/fecha.ai
+main: 9d05c64281c2aeeae9d67b139eab674720184fb1
+PR: #166
+branch: test/f1-02-negative-security-matrix
+reviewed exact head: 2a0e6b8a2f964afe3c0c35c75190ae23344ed884
+state: OPEN / READY
+mergeable: TRUE
+Vercel: SUCCESS
+```
+
+Closed technical work:
+
+```text
+Phase 1 — execution authority / SQL safety: CLOSED STATICALLY
+Phase 2 — topology / semantic truth: CLOSED STATICALLY
+Phase 3 — FUN-006 applicability: CLOSED
+Phase 4 — exact artifact provenance: CLOSED
+```
+
+Carried residual:
+
+```text
+PR08-RR-64M-CANONICAL-HASH
+classification: ACCEPTABLE WITH RESIDUAL RISK
+thread: PRRT_kwDOSEToMc6fBXHM
+scope: isolated PR-08 evidence harness
+failure model: fail-closed; large relation materialization may abort evidence capture
+production runtime impact: none established
+reopen on: ENOBUFS/maxBuffer, material fixture growth, large/uncontrolled dataset,
+           or inability to complete rollback/cleanup evidence
+future remediation: server-side ordered digest or streaming hash
+```
+
+Do not convert residual acceptance into execution evidence:
+
+```text
+IMP-003 = NOT_DETERMINED
+ROLLBACK_REAPPLY = NOT_DETERMINED
+SECURITY_GO = NOT_GRANTED
+PR-08 runtime = NOT_EXECUTED
+```
+
+Lifecycle action already authorized after this documentation commit is published
+and revalidated: resolve exactly these eight review threads:
+
+```text
+PRRT_kwDOSEToMc6fBXG5
+PRRT_kwDOSEToMc6fBXHB
+PRRT_kwDOSEToMc6fBXHU
+PRRT_kwDOSEToMc6fBXHW
+PRRT_kwDOSEToMc6fBXHY
+PRRT_kwDOSEToMc6fBXHI
+PRRT_kwDOSEToMc6fBXHF
+PRRT_kwDOSEToMc6fBXHM
+```
+
+Then STOP.
+
+Next specialist/gate: independent final exact-head pre-merge review of PR #166,
+but only after a separate Product Authority authorization. That future review
+must not reopen closed phases without a material invalidation event.
+
+No authority is carried forward for runtime, Supabase/Auth, merge, deploy,
+OC-01, PR-09 or Security Go.

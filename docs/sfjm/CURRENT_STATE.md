@@ -956,3 +956,76 @@ Security Go/F1-02 acceptance changes
 ```
 
 Do not update solely because a SHA advanced, a Draft became Ready, or a documentation-only lifecycle event occurred without semantic effect.
+
+## 12. PR #166 / F1-02 PR-08 — lifecycle reconciliation — 2026-09-03
+
+Canonical repository state for this reconciliation:
+
+```text
+repository: wagnerjfjunior/fecha.ai
+main: 9d05c64281c2aeeae9d67b139eab674720184fb1
+PR: #166
+branch: test/f1-02-negative-security-matrix
+exact reviewed head before this documentation commit: 2a0e6b8a2f964afe3c0c35c75190ae23344ed884
+PR state: OPEN / READY
+mergeability at reviewed head: TRUE
+Vercel status at reviewed head: SUCCESS
+```
+
+Technical phase status:
+
+```text
+PHASE 1 — execution authority / SQL safety: CLOSED STATICALLY
+PHASE 2 — topology / semantic truth: CLOSED STATICALLY
+PHASE 3 — FUN-006 version-bound applicability: CLOSED
+PHASE 4 — exact artifact provenance: CLOSED
+```
+
+Formal residual:
+
+```text
+ID: PR08-RR-64M-CANONICAL-HASH
+source thread: PRRT_kwDOSEToMc6fBXHM
+classification: ACCEPTABLE WITH RESIDUAL RISK
+scope: PR-08 isolated test/evidence harness only; not FECH.AI production runtime
+cause: canonical relation hashing materializes ordered relation JSON through psql while Node spawnSync uses maxBuffer=64 MiB
+safety property: fail-closed; buffer/materialization failure prevents PASS/restored-state evidence rather than manufacturing a false PASS
+direct production runtime impact: NONE ESTABLISHED
+future remediation: server-side ordered digest or streaming hash
+reopen triggers:
+- ENOBUFS / maxBuffer / equivalent evidence-capture failure
+- a fixture relation approaching or exceeding the practical envelope
+- use of this harness against a large or uncontrolled dataset
+- rollback/cleanup proof required at a volume the current harness cannot complete
+```
+
+Residual status does not waive execution evidence.
+
+```text
+IMP-003 = NOT_DETERMINED
+ROLLBACK_REAPPLY = NOT_DETERMINED
+SECURITY_GO = NOT_GRANTED
+PR-08 runtime execution = NOT_EXECUTED
+```
+
+Lifecycle transaction authorized by Product Authority:
+
+```text
+After publication and exact-head revalidation of this documentation commit,
+resolve only these eight already-adjudicated review threads:
+PRRT_kwDOSEToMc6fBXG5
+PRRT_kwDOSEToMc6fBXHB
+PRRT_kwDOSEToMc6fBXHU
+PRRT_kwDOSEToMc6fBXHW
+PRRT_kwDOSEToMc6fBXHY
+PRRT_kwDOSEToMc6fBXHI
+PRRT_kwDOSEToMc6fBXHF
+PRRT_kwDOSEToMc6fBXHM
+
+No other thread resolution is authorized by this entry.
+```
+
+After GitHub confirms those eight threads resolved, the next safe action is a
+**separately authorized final independent exact-head pre-merge review of PR #166**.
+This entry does not authorize that review, merge, deploy, runtime, Supabase/Auth,
+OC-01, PR-09 or Security Go.
