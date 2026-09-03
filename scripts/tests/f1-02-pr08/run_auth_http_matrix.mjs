@@ -192,17 +192,8 @@ async function main() {
       return row?.[c.field]===true;
     });
   }
-  function fixtureBool(name) {
-    const v=valueFromVar(name);
-    if(typeof v==="boolean") return v;
-    const s=String(v).trim().toLowerCase();
-    if(["true","1","yes","y"].includes(s)) return true;
-    if(["false","0","no","n"].includes(s)) return false;
-    throw new Error("PR08_BOOLEAN_VARIABLE_REQUIRED:"+name);
-  }
   function topologyAssertionPass(assertion,body) {
     if (assertion.mode==="VARIABLE_NOT_EQUAL") return String(valueFromVar(assertion.left))!==String(valueFromVar(assertion.right));
-    if (assertion.mode==="FIXTURE_BOOLEAN_TRUE") return fixtureBool(assertion.var)===true;
     if (assertion.mode==="OBJECT_FIELD_EQUALS_VAR") return body && typeof body==="object" && !Array.isArray(body) && String(body[assertion.field])===String(valueFromVar(assertion.var));
     if (assertion.mode==="ZERO_ROWS") return Array.isArray(body) && body.length===0;
     if (assertion.mode==="ROW_IDS_EQUAL_VAR_SET") {
@@ -263,7 +254,7 @@ async function main() {
           "PR08_TOPOLOGY_SERVER_ROW_IDS"
         ),"PR08_TOPOLOGY_SERVER_ROW_IDS");
         if(actual.length!==expected.length||actual.some((v,i)=>v!==expected[i])) throw new Error("PR08_TOPOLOGY_ASSERTION_FAILED:"+id);
-      } else if(["VARIABLE_NOT_EQUAL","FIXTURE_BOOLEAN_TRUE"].includes(check.assertion?.mode)) {
+      } else if(check.assertion?.mode==="VARIABLE_NOT_EQUAL") {
         if(!topologyAssertionPass(check.assertion,null)) throw new Error("PR08_TOPOLOGY_ASSERTION_FAILED:"+id);
       } else {
         const response=await doSpec(check.request);
@@ -944,17 +935,35 @@ async function main() {
   }
 
   function recordApplicable(record) {
-    if(!record.applicability) return true;
-    if(record.applicability.mode==="FIXTURE_BOOLEAN") {
-      const actual=fixtureBool(record.applicability.var);
-      return actual===Boolean(record.applicability.execute_when);
-    }
-    throw new Error("PR08_APPLICABILITY_MODE_UNKNOWN:"+record.test_id);
+    if(!record.applicability) return {applicable:true,evidence:null,reason:null};
+    const a=record.applicability;
+    if(a.mode!=="VERSION_BOUND_FUNCTION_DEFINITION") throw new Error("PR08_APPLICABILITY_MODE_UNKNOWN:"+record.test_id);
+    if(a.function_signature!=="public.mover_funil(uuid,uuid,text)"||
+       a.expected_definition_md5!=="dab988abbd2d50ae57159cc4110051d8"||
+       a.source_migration_commit!=="951da21db217b60463ada48e7801f0593a540687"||
+       a.source_blob!=="028a79c5824d90a990276d986fbbef279fd916b5"||
+       a.on_match!=="NOT_APPLICABLE") throw new Error("PR08_APPLICABILITY_VERSIONED_CONTRACT_INVALID:"+record.test_id);
+    const raw=serverExec(
+      "SELECT pg_catalog.count(*)::text || ':' || COALESCE(pg_catalog.min(pg_catalog.md5(pg_catalog.pg_get_functiondef(p.oid))), '') "+
+      "FROM pg_catalog.pg_proc p JOIN pg_catalog.pg_namespace n ON n.oid=p.pronamespace "+
+      "WHERE n.nspname='public' AND p.proname='mover_funil' "+
+      "AND pg_catalog.pg_get_function_identity_arguments(p.oid)='p_lead_id uuid, p_estagio_id uuid, p_observacao text';",
+      "PR08_APPLICABILITY_PRODUCT_CONTRACT"
+    ).trim();
+    const match=/^1:([0-9a-f]{32})$/.exec(raw);
+    if(!match) throw new Error("PR08_APPLICABILITY_PRODUCT_CONTRACT_EVIDENCE_INVALID");
+    if(match[1]!==a.expected_definition_md5) throw new Error("PR08_APPLICABILITY_PRODUCT_CONTRACT_DRIFT");
+    return {
+      applicable:false,
+      reason:a.reason,
+      evidence:{function_signature:a.function_signature,definition_md5:match[1],source_migration_commit:a.source_migration_commit,source_blob:a.source_blob}
+    };
   }
 
   const receipts=[];
   for(const record of records) {
-    if(!recordApplicable(record)) {
+    const applicability=recordApplicable(record);
+    if(!applicability.applicable) {
       receipts.push({
         test_id:record.test_id,
         requirement_id:record.requirement_id,
@@ -963,6 +972,8 @@ async function main() {
         supabase_project_ref:fixture.target_project_ref,
         environment:fixture.environment,
         fixture_version:fixture.fixture_version,
+        applicability_reason:applicability.reason,
+        applicability_evidence:applicability.evidence,
         actual_authorization_result:"NOT_APPLICABLE",
         actual_data_mutation:"NOT_APPLICABLE",
         semantic_assertions:[],

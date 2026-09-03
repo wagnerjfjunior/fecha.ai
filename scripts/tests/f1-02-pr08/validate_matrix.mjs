@@ -124,7 +124,7 @@ async function main() {
   for(const check of topologyChecks){
     if(!check.check_id||!check.assertion?.mode) throw new Error("TOPOLOGY_CHECK_INVALID");
     if(check.request?.auth_token_var==="EVIDENCE_OBSERVER_TOKEN"&&["ZERO_ROWS","ROW_IDS_EQUAL_VAR_SET"].includes(check.assertion.mode)) throw new Error("OBSERVER_COMPLETENESS_ASSERTION_FORBIDDEN:"+check.check_id);
-    if(["VARIABLE_NOT_EQUAL","FIXTURE_BOOLEAN_TRUE","SERVER_ROOT_AUTHORITY","SERVER_ZERO_ROWS_BY_UUID","SERVER_ROW_IDS_EQUAL_VAR_SET"].includes(check.assertion.mode)){
+    if(["VARIABLE_NOT_EQUAL","SERVER_ROOT_AUTHORITY","SERVER_ZERO_ROWS_BY_UUID","SERVER_ROW_IDS_EQUAL_VAR_SET"].includes(check.assertion.mode)){
       if(check.request!==null) throw new Error("NON_HTTP_TOPOLOGY_REQUEST_MUST_BE_NULL:"+check.check_id);
       if(check.assertion.mode==="SERVER_ZERO_ROWS_BY_UUID"){const allowed=new Set(["public.corretores:user_id","public.corretores:id","public.funil_estagios:empresa_id"]);if(!allowed.has(check.assertion.table+":"+check.assertion.column)||!check.assertion.var) throw new Error("SERVER_ZERO_ROWS_TARGET_INVALID:"+check.check_id);}
       if(check.assertion.mode==="SERVER_ROW_IDS_EQUAL_VAR_SET"){
@@ -178,6 +178,11 @@ async function main() {
     for(const dep of rec.topology_dependencies||[]) if(!topologyIds.has(dep)) throw new Error("UNKNOWN_TOPOLOGY_DEPENDENCY:"+rec.test_id+":"+dep);
 
     if(rec.runner==="http_matrix"){
+      if(rec.applicability?.mode==="VERSION_BOUND_FUNCTION_DEFINITION"){
+        if((rec.request_plan?.requests||[]).length!==0) throw new Error("VERSION_BOUND_NOT_APPLICABLE_REQUEST_FORBIDDEN:"+rec.test_id);
+        if(rec.server_case_plan!==null||rec.mutation_probe_plan!==null||rec.cleanup_contract!==null) throw new Error("VERSION_BOUND_NOT_APPLICABLE_LIFECYCLE_FORBIDDEN:"+rec.test_id);
+        continue;
+      }
       if(!rec.request_plan?.requests?.length) throw new Error("VERSIONED_REQUEST_PLAN_MISSING:"+rec.test_id);
 
       for(const q of rec.request_plan.requests){
@@ -221,7 +226,7 @@ async function main() {
   for(const check of topologyChecks) if(check.request?.auth_token_var) tokenUsages.push({surface:"TOPOLOGY",id:check.check_id,token:check.request.auth_token_var});
   for(const rec of matrix.records){for(const q of rec.request_plan?.requests||[]) if(q.auth_token_var) tokenUsages.push({surface:"REQUEST",id:rec.test_id,token:q.auth_token_var});for(const q of [...(rec.mutation_probe_plan?.before||[]),...(rec.mutation_probe_plan?.after||[])]) if(q.auth_token_var) tokenUsages.push({surface:"PROBE",id:rec.test_id,token:q.auth_token_var});}
   for(const use of tokenUsages){if(negativeTokenVars.has(use.token)) continue;const needed=tokenNeeds[use.token];if(!needed) throw new Error("UNBOUND_VERSIONED_TOKEN_SURFACE:"+use.surface+":"+use.id+":"+use.token);if(use.token==="EVIDENCE_OBSERVER_TOKEN") for(const d of needed) if(!globalDeps.has(d)) throw new Error("OBSERVER_BINDING_NOT_GLOBAL:"+d);}
-  if(topologyChecks.length!==57) throw new Error("TOPOLOGY_COUNT_DRIFT:"+topologyChecks.length);
+  if(topologyChecks.length!==56) throw new Error("TOPOLOGY_COUNT_DRIFT:"+topologyChecks.length);
   for(const id of ["TOPO-ZERO-STAGE-COMPANY","TOPO-NO-PROFILE"]){const c=topologyChecks.find(x=>x.check_id===id);if(c?.request!==null||c?.assertion?.mode!=="SERVER_ZERO_ROWS_BY_UUID") throw new Error("ABSENCE_PROOF_NOT_OWNER_SIDE:"+id);}
 
   // Phase 2 semantic-truth contracts: denial cannot substitute for fixture proof.
@@ -254,10 +259,21 @@ async function main() {
   if(stg001?.request_plan?.requests?.[0]?.auth_token_var!==null) throw new Error("STG001_NOT_ACTUALLY_NO_SESSION");
   if(!/without Authorization\/session/i.test(stg001?.action_request||"")) throw new Error("STG001_ACTION_TEXT_DRIFT");
 
-  // FUN-006 is conditional by master-plan contract.
+  // FUN-006 applicability is version-bound to the product contract, never fixture authority.
   const fun006=matrix.records.find(x=>x.test_id==="FUN-006");
-  if(fun006?.applicability?.mode!=="FIXTURE_BOOLEAN"||fun006.applicability.var!=="FUNNEL_TRANSITION_RULES_ENABLED"||fun006.applicability.execute_when!==true||fun006.applicability.otherwise!=="NOT_APPLICABLE") throw new Error("FUN006_CONDITIONAL_CONTRACT_MISSING");
-  if(!(fun006.topology_dependencies||[]).includes("TOPO-FUNNEL-TRANSITION-RULES")) throw new Error("FUN006_TOPOLOGY_CONDITION_MISSING");
+  const fun006a=fun006?.applicability;
+  if(fun006a?.mode!=="VERSION_BOUND_FUNCTION_DEFINITION"||
+     fun006a.function_signature!=="public.mover_funil(uuid,uuid,text)"||
+     fun006a.expected_definition_md5!=="dab988abbd2d50ae57159cc4110051d8"||
+     fun006a.source_migration_commit!=="951da21db217b60463ada48e7801f0593a540687"||
+     fun006a.source_blob!=="028a79c5824d90a990276d986fbbef279fd916b5"||
+     fun006a.on_match!=="NOT_APPLICABLE"||
+     fun006a.reason!=="VERSIONED_PRODUCT_CONTRACT_HAS_NO_TRANSITION_RULE_MECHANISM") throw new Error("FUN006_VERSION_BOUND_CONTRACT_MISSING");
+  if((fun006?.request_plan?.requests||[]).length!==0||fun006?.server_case_plan!==null||fun006?.mutation_probe_plan!==null||fun006?.cleanup_contract!==null) throw new Error("FUN006_EXECUTION_SURFACE_MUST_BE_EMPTY");
+  if((fun006?.topology_dependencies||[]).length!==0) throw new Error("FUN006_OBSOLETE_TOPOLOGY_DEPENDENCY_REMAINS");
+  if(topologyIds.has("TOPO-FUNNEL-TRANSITION-RULES")) throw new Error("FUN006_OBSOLETE_TOPOLOGY_CHECK_REMAINS");
+  if(matrixText.includes("FUNNEL_TRANSITION_RULES_ENABLED")) throw new Error("FUN006_FIXTURE_AUTHORITY_REMAINS");
+  for(const n of ["PR08_APPLICABILITY_PRODUCT_CONTRACT_DRIFT","PR08_APPLICABILITY_PRODUCT_CONTRACT_EVIDENCE_INVALID","pg_catalog.pg_get_functiondef","dab988abbd2d50ae57159cc4110051d8"]) if(!http.includes(n)) throw new Error("FUN006_RUNNER_VERSION_BOUND_EVIDENCE_MISSING:"+n);
 
   // Privileged topology closure.
   const acl002=new Set(matrix.records.find(x=>x.test_id==="ACL-002")?.topology_dependencies||[]);
@@ -309,7 +325,7 @@ async function main() {
     "SERVER_ROOT_AUTHORITY",
     "SERVER_ROW_IDS_EQUAL_VAR_SET",
     "normalizedUuidListFromVar",
-    "FIXTURE_BOOLEAN_TRUE",
+    "PR08_APPLICABILITY_PRODUCT_CONTRACT_DRIFT",
     "recordApplicable",
     'pass_fail:"NOT_APPLICABLE"',
     "publicDataHash",

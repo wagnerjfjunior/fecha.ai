@@ -9,9 +9,9 @@ Base application snapshot:
 ## PR-08 v7 closure architecture
 
     MATRIX: 98 VERSIONED CASES
-    TOPOLOGY CHECKS: 57
-    SERVER CASE PLANS: 72
-    MUTATION-CAPABLE HTTP CASES: 71
+    TOPOLOGY CHECKS: 56
+    SERVER CASE PLANS: 71
+    MUTATION-CAPABLE HTTP CASES: 70
     MUTATION-CAPABLE WITHOUT LIFECYCLE: 0
     REQUEST/PROBE SPECS: VERSIONED
     RUNTIME RESULT FIELDS: NOT_EXECUTED
@@ -94,12 +94,15 @@ ROOT cases prove both:
 
 STG-001 now sends no Authorization/session. It no longer duplicates an authenticated request.
 
-FUN-006 follows the Master Plan literally:
+FUN-006 is version-bound to the current product contract:
 
-    transition rules exist -> execute invalid-transition denial test
-    transition rules absent -> NOT_APPLICABLE
+    exact mover_funil definition MD5 matches the canonical snapshot
+    -> NOT_APPLICABLE because this snapshot has no transition-rule mechanism
+    function missing / ambiguous / definition drift
+    -> FAIL CLOSED
 
-NOT_APPLICABLE is never converted into PASS.
+Fixture toggles do not control FUN-006 applicability. A future product version
+that introduces transition rules requires a new versioned matrix/contract update.
 
 ## Failure isolation for negative cases
 

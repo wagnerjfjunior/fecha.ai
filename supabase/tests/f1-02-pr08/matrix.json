@@ -3980,11 +3980,11 @@
       "synthetic_actor": "SYNTHETIC_FIXTURE_REQUIRED",
       "actor_role": "REQUIRED_AT_EXECUTION",
       "actor_company_team": "SYNTHETIC_FIXTURE_REQUIRED",
-      "preconditions": "Exact application/migration artifacts verified; conditional execution requires FUNNEL_TRANSITION_RULES_ENABLED=true and a fixture-defined INVALID_TRANSITION_STAGE_ID.",
-      "action_request": "When funnel transition rules exist in the fixture, attempt an invalid transition and require denial; otherwise record NOT_APPLICABLE, never PASS.",
+      "preconditions": "Exact application/migration artifacts verified; applicability is derived from the version-bound public.mover_funil(uuid,uuid,text) PostgreSQL function definition, never from fixture state.",
+      "action_request": "Do not execute mover_funil for this product snapshot. After owner-side proof that the runtime function definition matches the canonical version with no transition-rule mechanism, record NOT_APPLICABLE; contract drift fails closed.",
       "sanitized_payload_description": "Synthetic identifiers and non-PII values only; secrets/tokens supplied out-of-repo at execution.",
-      "expected_authorization_result": "DENY",
-      "expected_data_mutation": "ZERO",
+      "expected_authorization_result": "NOT_APPLICABLE",
+      "expected_data_mutation": "NOT_APPLICABLE",
       "actual_authorization_result": "NOT_EXECUTED",
       "actual_data_mutation": "NOT_EXECUTED",
       "sanitized_error_code": "NOT_EXECUTED",
@@ -3997,59 +3997,25 @@
       "prior_evidence": null,
       "notes": null,
       "request_plan": {
-        "requests": [
-          {
-            "method": "POST",
-            "path_template": "/rest/v1/rpc/mover_funil",
-            "auth_token_var": "ACTOR_TOKEN",
-            "headers_template": {
-              "Content-Type": "application/json"
-            },
-            "body_template": {
-              "p_lead_id": "${TARGET_LEAD_ID}",
-              "p_estagio_id": "${INVALID_TRANSITION_STAGE_ID}",
-              "p_observacao": "PR08 synthetic"
-            }
-          }
-        ],
-        "response_assertion": {
-          "mode": "DENIAL_SEMANTIC",
-          "expected_statuses": [
-            200
-          ],
-          "expected_error_exact": "Transição de funil inválida",
-          "expected_error_codes": [
-            "TRANSICAO_INVALIDA"
-          ]
-        },
+        "requests": [],
+        "response_assertion": null,
         "response_relation": null
       },
-      "mutation_probe_plan": {
-        "channel": "SERVER_SQL_OWNER",
-        "expectation": "MUST_EQUAL",
-        "before": [],
-        "after": [],
-        "fingerprint": "CANONICAL_JSON_SHA256"
-      },
+      "mutation_probe_plan": null,
       "concurrency_assertion": null,
       "semantic_assertions": [],
-      "topology_dependencies": [
-        "TOPO-FUNNEL-TRANSITION-RULES",
-        "TOPO-TOKEN-ACTOR",
-        "TOPO-ACTOR"
-      ],
+      "topology_dependencies": [],
       "applicability": {
-        "mode": "FIXTURE_BOOLEAN",
-        "var": "FUNNEL_TRANSITION_RULES_ENABLED",
-        "execute_when": true,
-        "otherwise": "NOT_APPLICABLE"
+        "mode": "VERSION_BOUND_FUNCTION_DEFINITION",
+        "function_signature": "public.mover_funil(uuid,uuid,text)",
+        "expected_definition_md5": "dab988abbd2d50ae57159cc4110051d8",
+        "source_migration_commit": "951da21db217b60463ada48e7801f0593a540687",
+        "source_blob": "028a79c5824d90a990276d986fbbef279fd916b5",
+        "on_match": "NOT_APPLICABLE",
+        "reason": "VERSIONED_PRODUCT_CONTRACT_HAS_NO_TRANSITION_RULE_MECHANISM"
       },
-      "server_case_plan": "FUN-006",
-      "cleanup_contract": {
-        "mode": "SCOPED_RESTORE_PLUS_GLOBAL_PUBLIC_DATA_HASH",
-        "must_restore_exactly": true,
-        "fail_stop": true
-      }
+      "server_case_plan": null,
+      "cleanup_contract": null
     },
     {
       "test_id": "FUN-007",
@@ -10556,14 +10522,6 @@
         }
       },
       {
-        "check_id": "TOPO-FUNNEL-TRANSITION-RULES",
-        "request": null,
-        "assertion": {
-          "mode": "FIXTURE_BOOLEAN_TRUE",
-          "var": "FUNNEL_TRANSITION_RULES_ENABLED"
-        }
-      },
-      {
         "check_id": "TOPO-ACTOR-A-PROFILE",
         "request": {
           "method": "GET",
@@ -11026,13 +10984,6 @@
       "cleanup_fail_stop": true
     },
     "FUN-005": {
-      "kind": "FUNNEL",
-      "lead_id_var": "TARGET_LEAD_ID",
-      "include_movements": true,
-      "global_data_hash": true,
-      "cleanup_fail_stop": true
-    },
-    "FUN-006": {
       "kind": "FUNNEL",
       "lead_id_var": "TARGET_LEAD_ID",
       "include_movements": true,
