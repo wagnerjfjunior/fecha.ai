@@ -57,6 +57,12 @@ async function main() {
     value && typeof value === "object" ? Object.fromEntries(Object.keys(value).sort().map(k=>[k,canonical(value[k])])) : value;
   const stable = value => JSON.stringify(canonical(value));
   const digest = value => crypto.createHash("sha256").update(typeof value==="string"?value:stable(value)).digest("hex");
+  // PR08_ARTIFACT_GIT_BLOB_V1
+  function gitBlobId(bytes) {
+    if(!Buffer.isBuffer(bytes)) throw new Error("PR08_ARTIFACT_BYTES_BUFFER_REQUIRED");
+    const header=Buffer.from("blob "+bytes.length+"\\0","utf8");
+    return crypto.createHash("sha1").update(header).update(bytes).digest("hex");
+  }
   const qident = name => '"'+String(name).replace(/"/g,'""')+'"';
   function psqlJson(sql,label) {
     const out=run(psql,["-X","-Atq","-v","ON_ERROR_STOP=1","-c",sql],undefined,label).split("\n").map(x=>x.trim()).filter(Boolean);
@@ -95,13 +101,22 @@ async function main() {
 
   const migration = record.migration_artifacts?.[0];
   if (!migration?.path || !migration?.blob || !migration?.final_commit) throw new Error("PR08_MIGRATION_PROVENANCE_REQUIRED");
-  const migrationSql = await fs.readFile(path.join(root,migration.path),"utf8");
+  const migrationBytes = await fs.readFile(path.join(root,migration.path));
+  const migrationBlobActual = gitBlobId(migrationBytes);
+  if (migrationBlobActual !== migration.blob) throw new Error("PR08_MIGRATION_ARTIFACT_BLOB_MISMATCH:"+migration.path+":"+migrationBlobActual+"!="+migration.blob);
+  const migrationSql = migrationBytes.toString("utf8");
 
   let rollbackSql;
+  let rollbackBlobActual;
   if (record.rollback_artifact?.kind === "FILE") {
     if (!record.rollback_artifact.path || !record.rollback_artifact.blob || !record.rollback_artifact.final_commit) throw new Error("PR08_ROLLBACK_PROVENANCE_REQUIRED");
-    rollbackSql = await fs.readFile(path.join(root,record.rollback_artifact.path),"utf8");
+    const rollbackBytes = await fs.readFile(path.join(root,record.rollback_artifact.path));
+    rollbackBlobActual = gitBlobId(rollbackBytes);
+    if (rollbackBlobActual !== record.rollback_artifact.blob) throw new Error("PR08_ROLLBACK_ARTIFACT_BLOB_MISMATCH:"+record.rollback_artifact.path+":"+rollbackBlobActual+"!="+record.rollback_artifact.blob);
+    rollbackSql = rollbackBytes.toString("utf8");
   } else if (record.rollback_artifact?.kind === "EMBEDDED_EXACT_BLOCK") {
+    if(record.rollback_artifact.migration_path!==migration.path||record.rollback_artifact.migration_blob!==migration.blob||record.rollback_artifact.final_commit!==migration.final_commit) throw new Error("PR08_EMBEDDED_ROLLBACK_PROVENANCE_MISMATCH");
+    rollbackBlobActual = migrationBlobActual;
     rollbackSql = extractEmbeddedRollback(migrationSql,record.rollback_artifact.marker);
   } else {
     throw new Error("PR08_ROLLBACK_ARTIFACT_REQUIRED");
@@ -124,9 +139,9 @@ async function main() {
     project_ref:fixture.target_project_ref,
     environment:fixture.environment,
     fixture_version:fixture.fixture_version,
-    migration_blob:migration.blob,
+    migration_blob:migrationBlobActual,
     migration_final_commit:migration.final_commit,
-    rollback_blob:record.rollback_artifact?.blob || migration.blob,
+    rollback_blob:rollbackBlobActual,
     rollback_final_commit:record.rollback_artifact?.final_commit || migration.final_commit,
     state_initial_sha256:initial,
     state_after_rollback_sha256:afterRollback,

@@ -2,6 +2,7 @@
 async function main() {
   const fs = await import("node:fs/promises");
   const path = await import("node:path");
+  const crypto = await import("node:crypto");
   const root = process.cwd();
 
   const matrixText = await fs.readFile(path.join(root,"supabase/tests/f1-02-pr08/matrix.json"),"utf8");
@@ -10,6 +11,29 @@ async function main() {
   const rollback = await fs.readFile(path.join(root,"scripts/tests/f1-02-pr08/run_rollback_reapply.mjs"),"utf8");
   const sql = await fs.readFile(path.join(root,"supabase/tests/f1-02-pr08/runtime_security_matrix.sql"),"utf8");
   const sqlRuntime = await fs.readFile(path.join(root,"scripts/tests/f1-02-pr08/run_sql_runtime_matrix.mjs"),"utf8");
+
+  // PR08_EXACT_ARTIFACT_PROVENANCE_V1
+  function gitBlobId(bytes) {
+    if(!Buffer.isBuffer(bytes)) throw new Error("ARTIFACT_BYTES_BUFFER_REQUIRED");
+    const header=Buffer.from("blob "+bytes.length+"\\0","utf8");
+    return crypto.createHash("sha1").update(header).update(bytes).digest("hex");
+  }
+  const artifactBlobCache=new Map();
+  const artifactDeclaredByPath=new Map();
+  async function assertArtifactBlob(relativePath,declaredBlob,label) {
+    if(typeof relativePath!=="string"||!relativePath||!/^[0-9a-f]{40}$/.test(String(declaredBlob||""))) throw new Error(label+"_PROVENANCE_INVALID:"+relativePath);
+    const prior=artifactDeclaredByPath.get(relativePath);
+    if(prior&&prior!==declaredBlob) throw new Error("ARTIFACT_PATH_DECLARED_WITH_MULTIPLE_BLOBS:"+relativePath);
+    artifactDeclaredByPath.set(relativePath,declaredBlob);
+    let actual=artifactBlobCache.get(relativePath);
+    if(!actual){
+      const bytes=await fs.readFile(path.join(root,relativePath));
+      actual=gitBlobId(bytes);
+      artifactBlobCache.set(relativePath,actual);
+    }
+    if(actual!==declaredBlob) throw new Error(label+"_BLOB_MISMATCH:"+relativePath+":"+actual+"!="+declaredBlob);
+    return actual;
+  }
 
   // PR08 Phase 1 — execution authority + SQL safety anti-regression.
   const sqlRuntimeRecords=matrix.records.filter(r=>r.runner==="sql_runtime");
@@ -170,6 +194,7 @@ async function main() {
       const expectedCommit=matrix.artifact_binding?.migration_final_commits?.[a.path];
       if(!expectedCommit||a.final_commit!==expectedCommit) throw new Error("MIGRATION_FINAL_COMMIT_DRIFT:"+rec.test_id+":"+a.path);
       if(!/^[0-9a-f]{40}$/.test(a.blob)||!/^[0-9a-f]{40}$/.test(a.final_commit)) throw new Error("MIGRATION_PROVENANCE_FORMAT:"+rec.test_id);
+      await assertArtifactBlob(a.path,a.blob,"MIGRATION_ARTIFACT");
       artifactCommits.push(a.final_commit);
     }
     const exact=[...new Set(artifactCommits)];
@@ -219,6 +244,19 @@ async function main() {
       if(rec.supabase_project_ref!=="NON_PRODUCTION_REQUIRED") throw new Error("ROLLBACK_PROJECT_POLICY_DRIFT:"+rec.test_id);
       if(rec.verification_contract?.isolation!=="EXACTLY_ONE_ROL_CASE_PER_INVOCATION") throw new Error("ROLLBACK_ISOLATION_CONTRACT_MISSING:"+rec.test_id);
       if(rec.verification_contract?.after_reapply!=="SHA256_MUST_EQUAL_INITIAL") throw new Error("REAPPLY_STATE_RESTORE_CONTRACT_MISSING:"+rec.test_id);
+      const migration=rec.migration_artifacts?.[0];
+      const rb=rec.rollback_artifact;
+      if(!migration||!rb) throw new Error("ROLLBACK_ARTIFACT_PROVENANCE_REQUIRED:"+rec.test_id);
+      if(rb.kind==="FILE"){
+        const expectedRollbackCommit=matrix.artifact_binding?.rollback_final_commits?.[rb.path];
+        if(!rb.path||!rb.blob||!rb.final_commit||rb.final_commit!==expectedRollbackCommit) throw new Error("ROLLBACK_FINAL_COMMIT_DRIFT:"+rec.test_id);
+        await assertArtifactBlob(rb.path,rb.blob,"ROLLBACK_ARTIFACT");
+      } else if(rb.kind==="EMBEDDED_EXACT_BLOCK"){
+        if(rb.migration_path!==migration.path||rb.migration_blob!==migration.blob||rb.final_commit!==migration.final_commit) throw new Error("EMBEDDED_ROLLBACK_PROVENANCE_MISMATCH:"+rec.test_id);
+        await assertArtifactBlob(migration.path,migration.blob,"MIGRATION_ARTIFACT");
+      } else {
+        throw new Error("ROLLBACK_ARTIFACT_KIND_INVALID:"+rec.test_id);
+      }
     }
   }
 
@@ -292,6 +330,24 @@ async function main() {
   for(const forbidden of ["PGHOSTADDR","PGSERVICE","PGSERVICEFILE"]) {
     if(httpCodeOnly.includes(forbidden)) throw new Error("FUN006_SERVER_LIBPQ_REDIRECT_VAR_FORBIDDEN:"+forbidden);
   }
+
+  // Phase 4: exact artifact bytes must be verified before rollback/reapply execution.
+  for(const n of [
+    "PR08_ARTIFACT_GIT_BLOB_V1",
+    "function gitBlobId(bytes)",
+    "PR08_MIGRATION_ARTIFACT_BLOB_MISMATCH",
+    "PR08_ROLLBACK_ARTIFACT_BLOB_MISMATCH",
+    "const migrationBytes = await fs.readFile",
+    "const migrationBlobActual = gitBlobId(migrationBytes)",
+    "migration_blob:migrationBlobActual",
+    "rollback_blob:rollbackBlobActual"
+  ]) if(!rollback.includes(n)) throw new Error("ROLLBACK_EXACT_ARTIFACT_CONTRACT_MISSING:"+n);
+  if(rollback.includes("migration_blob:migration.blob")) throw new Error("ROLLBACK_RECEIPT_DECLARED_MIGRATION_BLOB_FORBIDDEN");
+  if(rollback.includes("rollback_blob:record.rollback_artifact?.blob || migration.blob")) throw new Error("ROLLBACK_RECEIPT_DECLARED_ROLLBACK_BLOB_FORBIDDEN");
+  const migrationVerifyAt=rollback.indexOf("const migrationBlobActual = gitBlobId(migrationBytes)");
+  const rollbackRunAt=rollback.indexOf('run(psql,["-X","-v","ON_ERROR_STOP=1"],rollbackSql');
+  const reapplyRunAt=rollback.indexOf('run(psql,["-X","-v","ON_ERROR_STOP=1"],migrationSql');
+  if(migrationVerifyAt<0||rollbackRunAt<0||reapplyRunAt<0||!(migrationVerifyAt<rollbackRunAt&&migrationVerifyAt<reapplyRunAt)) throw new Error("ROLLBACK_ARTIFACT_VERIFICATION_ORDER_INVALID");
 
   // Privileged topology closure.
   const acl002=new Set(matrix.records.find(x=>x.test_id==="ACL-002")?.topology_dependencies||[]);
@@ -395,6 +451,7 @@ async function main() {
   if(matrix.residuals?.["IMP-003"]!=="NOT_DETERMINED") throw new Error("IMP003_STATUS_DRIFT");
   if(matrix.residuals?.ROLLBACK_REAPPLY!=="NOT_DETERMINED") throw new Error("ROLLBACK_STATUS_DRIFT");
   if(matrix.records.find(r=>r.test_id==="IMP-003")?.prior_evidence!==null) throw new Error("IMP003_PRIOR_PASS_OVERCLAIM");
+  if(artifactBlobCache.size!==21) throw new Error("EXECUTABLE_ARTIFACT_FILE_COUNT_DRIFT:"+artifactBlobCache.size);
 
   if(/[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}/i.test(matrixText)) throw new Error("UUID_FORBIDDEN");
   if(/eyJ[A-Za-z0-9_-]{10,}\./.test(matrixText)) throw new Error("JWT_FORBIDDEN");
@@ -406,6 +463,7 @@ async function main() {
     server_case_plans:Object.keys(plans).length,
     mutation_capable_http:mutationCapable.length,
     negative_mutation_capable_http:negativeMutationCapable.length,
+    executable_artifact_files:artifactBlobCache.size,
     imp003:"NOT_DETERMINED",
     rollback_reapply:"NOT_DETERMINED"
   })+"\n");
