@@ -1,5 +1,49 @@
 # FECH.AI — SFJM Authorizations
 
+## 0.00000000000 Product Authority — PR #166 fifth bounded root-invariant correction grant — 2026-09-03
+
+Authorization source:
+
+    direct Product Authority instruction after exact-head review:
+    "ok vamos corrigir"
+
+Authorized parent:
+
+    68481f1cfc900be8b2172871b60dd56a27f07c5f
+
+Authorized correction is bounded to the two newly proven harness-root invariants:
+
+    PR166-J4-V5-OBSERVABILITY-ORACLE-001
+    PR166-J4-V5-CANONICAL-RESTORE-002
+
+Allowed implementation remains inside the existing PR #166 nine-file envelope. The correction may update only the PR-08 harness/contracts and the already-participating SFJM views needed to record this material event.
+
+Required implementation outcome:
+
+1. identity-bind EVIDENCE_OBSERVER_TOKEN and prevent REST invisibility from proving row absence;
+2. move absence proofs to owner-side non-production zero-row evidence under the existing postgres/BYPASSRLS preflight;
+3. replace raw data-dump byte equality with a canonical logical public data + sequence fingerprint;
+4. make rollback/reapply fingerprint schema-sensitive without depending on physical data row ordering;
+5. update anti-regression validator invariants;
+6. preserve all runtime result fields as NOT_EXECUTED / NOT_DETERMINED.
+
+Still prohibited:
+
+    runtime matrix
+    Auth matrix
+    rollback/reapply execution
+    production smoke
+    Supabase/Auth mutation
+    LAB / second Supabase project / Preview Branch
+    Vercel/deploy mutation
+    Ready
+    merge
+    OC-01
+    PR-09
+    Security Go
+
+The authorization is consumed by one same-branch bounded correction. After publication, only a fresh exact-head implementation review is authorized.
+
 ## 0.0000000000 Product Authority — PR #166 fourth bounded anti-loop correction grant — 2026-09-03
 
 Authorized correction parent:

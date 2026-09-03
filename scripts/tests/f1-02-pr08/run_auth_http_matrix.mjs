@@ -211,6 +211,16 @@ async function main() {
           "PR08_TOPOLOGY_ROOT_AUTHORITY"
         ));
         if(n!==1) throw new Error("PR08_TOPOLOGY_ASSERTION_FAILED:"+id);
+      } else if(check.assertion?.mode==="SERVER_ZERO_ROWS_BY_UUID") {
+        ensureServerContext();
+        const parts=String(check.assertion.table||"").split(".");
+        if(parts.length!==2) throw new Error("PR08_TOPOLOGY_SERVER_TABLE_INVALID:"+id);
+        const qualified=parts.map(qident).join(".");
+        const n=Number(serverExec(
+          "SELECT count(*)::text FROM "+qualified+" WHERE "+qident(check.assertion.column)+"="+sqlUuidVar(check.assertion.var)+";",
+          "PR08_TOPOLOGY_SERVER_ZERO_ROWS"
+        ));
+        if(n!==0) throw new Error("PR08_TOPOLOGY_ASSERTION_FAILED:"+id);
       } else if(["VARIABLE_NOT_EQUAL","FIXTURE_BOOLEAN_TRUE"].includes(check.assertion?.mode)) {
         if(!topologyAssertionPass(check.assertion,null)) throw new Error("PR08_TOPOLOGY_ASSERTION_FAILED:"+id);
       } else {
@@ -277,7 +287,6 @@ async function main() {
     };
     serverCtx={
       psql:process.env.FECHAI_PR08_PSQL_BIN||"psql",
-      pgDump:process.env.FECHAI_PR08_PG_DUMP_BIN||"pg_dump",
       pgEnv
     };
     return serverCtx;
@@ -391,15 +400,29 @@ async function main() {
   function allAuditRows() {
     return fullSet("public.audit_logs","true","id::text","PR08_AUDIT_ALL_STATE");
   }
-  function publicDataHash(label) {
+  function publicDataRelations() {
+    return serverJson(
+      "SELECT COALESCE(pg_catalog.jsonb_agg(pg_catalog.jsonb_build_object('schema',n.nspname,'name',c.relname) ORDER BY n.nspname,c.relname),'[]'::jsonb) "+
+      "FROM pg_catalog.pg_class c JOIN pg_catalog.pg_namespace n ON n.oid=c.relnamespace "+
+      "WHERE n.nspname='public' AND c.relkind IN ('r','m');",
+      "PR08_PUBLIC_DATA_RELATIONS"
+    );
+  }
+  function canonicalRelationState(rel,index,label) {
+    const qualified=qident(rel.schema)+"."+qident(rel.name);
+    const state=serverJson(
+      "SELECT pg_catalog.jsonb_build_object("+
+      "'row_count',pg_catalog.count(*)::text,"+
+      "'rows_text',COALESCE(pg_catalog.string_agg(s.row_json::text,pg_catalog.chr(10) ORDER BY s.row_json::text),'')"+
+      ") FROM (SELECT pg_catalog.to_jsonb(t) AS row_json FROM "+qualified+" t) s;",
+      label+"_RELATION_"+index
+    );
+    return {schema:rel.schema,name:rel.name,row_count:String(state.row_count),rows_sha256:crypto.createHash("sha256").update(String(state.rows_text||"")).digest("hex")};
+  }
+  function publicDataHash(label,sequences) {
     serverBoundaryPreflight();
-    const ctx=ensureServerContext();
-    const r=spawnSync(ctx.pgDump,[
-      "--data-only","--schema=public","--no-comments","--no-owner","--no-privileges",
-      "--format=plain","--restrict-key=FECHAIPR08CASESTATE"
-    ],{encoding:"utf8",env:ctx.pgEnv,cwd:root,maxBuffer:128*1024*1024});
-    if(r.status!==0) throw new Error(label+"_PG_DUMP_FAILED:"+redact(String(r.stderr||"")).slice(0,1000));
-    return crypto.createHash("sha256").update(String(r.stdout||"")).digest("hex");
+    const relation_states=publicDataRelations().map((rel,i)=>canonicalRelationState(rel,i,label));
+    return sha256({relation_states,sequences:sequences||sequenceState()});
   }
   function sequenceState() {
     const names=serverJson(
@@ -410,7 +433,7 @@ async function main() {
     );
     return (names||[]).map((x,i)=>{
       const qualified=qident(x.schema)+"."+qident(x.name);
-      const state=oneObject("SELECT last_value,is_called FROM "+qualified,"PR08_SEQUENCE_STATE_"+i);
+      const state=oneObject("SELECT last_value::text AS last_value,is_called FROM "+qualified,"PR08_SEQUENCE_STATE_"+i);
       return {...x,last_value:state?.last_value,is_called:state?.is_called};
     });
   }
@@ -929,8 +952,8 @@ async function main() {
       if(plan) {
         ensureServerContext();
         if(plan.global_data_hash) {
-          originalGlobalHash=publicDataHash("PR08_CASE_ORIGINAL_"+record.test_id);
           originalSequences=sequenceState();
+          originalGlobalHash=publicDataHash("PR08_CASE_ORIGINAL_"+record.test_id,originalSequences);
         }
         originalServer=serverState(plan);
         prepareServerCase(plan,originalServer);
@@ -1030,7 +1053,7 @@ async function main() {
     if(caseError) throw caseError;
   }
 
-  const output=JSON.stringify({schema:"fechai.pr08.http.receipt.v5",receipts},null,2)+"\n";
+  const output=JSON.stringify({schema:"fechai.pr08.http.receipt.v6",receipts},null,2)+"\n";
   if(process.env.FECHAI_PR08_RECEIPT_FILE) await fs.writeFile(path.resolve(process.env.FECHAI_PR08_RECEIPT_FILE),output,{flag:"wx"});
   process.stdout.write(output);
   if(receipts.some(r=>r.pass_fail==="FAIL")) process.exitCode=1;

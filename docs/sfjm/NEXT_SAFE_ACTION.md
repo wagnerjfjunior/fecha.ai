@@ -1,5 +1,32 @@
 # FECH.AI — SFJM Next Safe Action
 
+## 0.0000000000 PR-08 v6 fifth-correction exact-head review — 2026-09-03
+
+The Product Authority authorized one bounded correction from:
+
+    parent head: 68481f1cfc900be8b2172871b60dd56a27f07c5f
+
+Correction scope:
+
+    observer trust anchor / owner-side absence evidence
+    canonical logical restoration fingerprint
+    rollback composite schema + canonical-data fingerprint
+    anti-regression validator updates
+
+No runtime/Auth/rollback/smoke execution is authorized.
+No Supabase/Auth/LAB/Vercel mutation is authorized.
+No Ready, merge, OC-01, PR-09 or Security Go action is authorized.
+
+Single next safe action after publication:
+
+    RESOLVE NEW PR #166 HEAD
+    PERFORM ONE INDEPENDENT EXACT-HEAD IMPLEMENTATION REVIEW
+    REVIEW V6 AS A COMPLETE SYSTEM
+    STOP BEFORE READY
+
+Historical v5 closure classes remain closed unless contradicted by new exact-head evidence.
+A new conversation alone is not a reconciliation trigger.
+
 ## 0.000000000 PR-08 fourth-correction anti-loop exact-head review — 2026-09-03
 
 The fourth bounded correction authorization is consumed by the same-branch implementation.

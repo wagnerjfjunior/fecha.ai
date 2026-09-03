@@ -53,9 +53,35 @@ async function main() {
     if (r.status !== 0) throw new Error(label+"_FAILED:"+String(r.stderr||"").slice(0,1000));
     return r.stdout || "";
   }
+  const canonical = value => Array.isArray(value) ? value.map(canonical) :
+    value && typeof value === "object" ? Object.fromEntries(Object.keys(value).sort().map(k=>[k,canonical(value[k])])) : value;
+  const stable = value => JSON.stringify(canonical(value));
+  const digest = value => crypto.createHash("sha256").update(typeof value==="string"?value:stable(value)).digest("hex");
+  const qident = name => '"'+String(name).replace(/"/g,'""')+'"';
+  function psqlJson(sql,label) {
+    const out=run(psql,["-X","-Atq","-v","ON_ERROR_STOP=1","-c",sql],undefined,label).split("\n").map(x=>x.trim()).filter(Boolean);
+    if(!out.length) throw new Error(label+"_EMPTY_JSON");
+    try { return JSON.parse(out[out.length-1]); } catch { throw new Error(label+"_INVALID_JSON"); }
+  }
+  function publicRelations() {
+    return psqlJson("SELECT COALESCE(pg_catalog.jsonb_agg(pg_catalog.jsonb_build_object('schema',n.nspname,'name',c.relname) ORDER BY n.nspname,c.relname),'[]'::jsonb) FROM pg_catalog.pg_class c JOIN pg_catalog.pg_namespace n ON n.oid=c.relnamespace WHERE n.nspname='public' AND c.relkind IN ('r','m');","PR08_ROLLBACK_PUBLIC_RELATIONS");
+  }
+  function sequenceState() {
+    const names=psqlJson("SELECT COALESCE(pg_catalog.jsonb_agg(pg_catalog.jsonb_build_object('schema',n.nspname,'name',c.relname) ORDER BY n.nspname,c.relname),'[]'::jsonb) FROM pg_catalog.pg_class c JOIN pg_catalog.pg_namespace n ON n.oid=c.relnamespace WHERE c.relkind='S' AND n.nspname='public';","PR08_ROLLBACK_SEQUENCE_NAMES");
+    return names.map((s,i)=>{const qualified=qident(s.schema)+"."+qident(s.name);const row=psqlJson("SELECT pg_catalog.to_jsonb(q) FROM (SELECT last_value::text AS last_value,is_called FROM "+qualified+") q;","PR08_ROLLBACK_SEQUENCE_"+i);return {...s,last_value:String(row.last_value),is_called:row.is_called};});
+  }
+  function canonicalRelationState(rel,index,label) {
+    const qualified=qident(rel.schema)+"."+qident(rel.name);
+    const state=psqlJson("SELECT pg_catalog.jsonb_build_object('row_count',pg_catalog.count(*)::text,'rows_text',COALESCE(pg_catalog.string_agg(s.row_json::text,pg_catalog.chr(10) ORDER BY s.row_json::text),'')) FROM (SELECT pg_catalog.to_jsonb(t) AS row_json FROM "+qualified+" t) s;",label+"_RELATION_"+index);
+    return {schema:rel.schema,name:rel.name,row_count:String(state.row_count),rows_sha256:digest(String(state.rows_text||""))};
+  }
+  function canonicalPublicDataHash(label) {
+    const relation_states=publicRelations().map((rel,i)=>canonicalRelationState(rel,i,label));
+    return digest({relation_states,sequences:sequenceState()});
+  }
   function stateHash(label) {
-    const dump = run(pgDump,["--schema=public","--no-comments","--format=plain","--restrict-key=FECHAIPR08STATEHASH"],undefined,label+"_PG_DUMP");
-    return crypto.createHash("sha256").update(dump).digest("hex");
+    const schemaDump=run(pgDump,["--schema-only","--schema=public","--no-comments","--format=plain","--restrict-key=FECHAIPR08STATEHASH"],undefined,label+"_SCHEMA_DUMP");
+    return digest({schema_sha256:digest(schemaDump),public_data_sha256:canonicalPublicDataHash(label+"_DATA")});
   }
   function extractEmbeddedRollback(text,marker) {
     const at = text.indexOf(marker);
@@ -93,7 +119,7 @@ async function main() {
   if (afterReapply !== initial) throw new Error("PR08_REAPPLY_STATE_NOT_RESTORED");
 
   const receipt = {
-    schema:"fechai.pr08.rollback.receipt.v2",
+    schema:"fechai.pr08.rollback.receipt.v3",
     test_id:record.test_id,
     project_ref:fixture.target_project_ref,
     environment:fixture.environment,

@@ -6,10 +6,10 @@ Base application snapshot:
 
     9d05c64281c2aeeae9d67b139eab674720184fb1
 
-## PR-08 v5 closure architecture
+## PR-08 v6 closure architecture
 
     MATRIX: 98 VERSIONED CASES
-    TOPOLOGY CHECKS: 55
+    TOPOLOGY CHECKS: 56
     SERVER CASE PLANS: 72
     MUTATION-CAPABLE HTTP CASES: 71
     MUTATION-CAPABLE WITHOUT LIFECYCLE: 0
@@ -21,7 +21,7 @@ Base application snapshot:
 
 ## Anti-loop closure rule
 
-PR-08 v5 treats the test harness itself as a security-sensitive subsystem.
+PR-08 v6 treats the test harness itself as a security-sensitive subsystem.
 The harness is closed by invariant classes instead of repeated per-test patches:
 
 1. every mutation-capable HTTP case, including DENY cases, has a server lifecycle;
@@ -31,7 +31,9 @@ The harness is closed by invariant classes instead of repeated per-test patches:
 5. cleanup mismatch is fail-stop and no next case may run;
 6. conditional product rules become NOT_APPLICABLE when the prerequisite does not exist;
 7. protected evidence tables remain inaccessible to client REST/JWT;
-8. owner-side evidence is isolated non-production only and cannot widen grants/RLS/policies.
+8. owner-side evidence is isolated non-production only and cannot widen grants/RLS/policies;
+9. the evidence observer is globally identity-bound, while absence proofs use owner-side zero-row evidence under the BYPASSRLS preflight;
+10. restoration fingerprints canonicalize logical public relation multisets plus sequence state rather than hashing raw data-dump row order.
 
 These are reusable harness rules for future FECH.AI security matrices.
 
@@ -64,7 +66,9 @@ The runner executes only:
     global topology checks
     + dependencies of the selected case
 
-Every token used by a request must have a matching token-identity topology check.
+Every valid identity-bearing token used by a versioned request/probe/topology surface must have a matching token-identity topology check. INVALID_TOKEN and EXPIRED_TOKEN are explicit negative-token fixtures, not identity-bearing exceptions.
+
+EVIDENCE_OBSERVER_TOKEN is globally bound through /auth/v1/user to EVIDENCE_OBSERVER_USER_ID. Positive observer reads fail closed if visibility is insufficient. Absence claims such as no-profile and zero-stage-company are not inferred from observer REST invisibility; they use postgres-owner zero-row evidence after the existing non-production BYPASSRLS boundary preflight.
 Actor/manager/admin/root/inactive/ineligible/no-profile/actor-A/actor-B cases add their required profile checks.
 
 Manager ACL positive scope proves:
@@ -108,17 +112,16 @@ This prevents a discovered security defect from contaminating later --all cases.
 
 ## Global restoration proof
 
-For every stateful lifecycle the runner records a deterministic public data-plane hash using:
+For every stateful lifecycle the runner records a canonical logical public data-plane fingerprint:
 
-    pg_dump --data-only
-    --schema=public
-    --no-comments
-    --no-owner
-    --no-privileges
-    --format=plain
-    --restrict-key=FECHAIPR08CASESTATE
+    enumerate public ordinary/materialized relations deterministically
+    -> convert each row to jsonb
+    -> order the row multiset by jsonb text
+    -> hash the exact canonical row text per relation
+    -> include row counts and public sequence last_value/is_called state
+    -> stable SHA-256
 
-Public sequence last_value/is_called state is captured and restored before the final hash.
+Sequence values are carried as text to avoid JavaScript bigint precision loss. This avoids treating heap/physical row-order changes from DELETE/INSERT/UPSERT cleanup as logical state drift. Public sequence state is restored before the final fingerprint.
 
 PASS/FAIL of the business assertion is separate from cleanup integrity.
 A cleanup mismatch raises PR08_CASE_CLEANUP_NOT_RESTORED and aborts further execution.
@@ -176,20 +179,26 @@ Neither case has been executed by this implementation.
 ## Rollback/reapply
 
 The rollback runner remains non-production-only and one-case-per-invocation.
-State hashing uses:
+Rollback/reapply uses a composite state fingerprint:
 
+    pg_dump --schema-only --schema=public --no-comments --format=plain
     --restrict-key=FECHAIPR08STATEHASH
+    +
+    canonical public relation-multiset + sequence-state SHA-256
+
+The schema component preserves grants/policies/functions/DDL sensitivity while the data component is independent of physical heap row order.
 
 ROLLBACK_REAPPLY remains NOT_DETERMINED because the runner has not been executed.
 
-## Closure validator v5
+## Closure validator v6
 
 validate_matrix.mjs rejects regressions in:
 
 - 98-case coverage and exact application/migration provenance;
 - mutation-capable cases without lifecycle;
 - negative failure paths without cleanup contracts;
-- token identity topology omissions;
+- token identity topology omissions across request/probe/topology surfaces;
+- observer identity-binding regressions and client-visibility-based absence proofs;
 - manager/root/actor-A/actor-B scope omissions;
 - STG-001 authenticated regression;
 - FUN-006 unconditional regression;
@@ -198,7 +207,7 @@ validate_matrix.mjs rejects regressions in:
 - COR-011 non-T3 lifecycle;
 - COR-008 single-list false isolation;
 - owner evidence without postgres BYPASSRLS proof;
-- missing global data hash, sequence restoration or cleanup fail-stop;
+- missing canonical logical global data fingerprint, sequence restoration or cleanup fail-stop;
 - missing runner support for any lifecycle kind;
 - protected idempotency REST access;
 - rollback hashing without fixed restrict key;

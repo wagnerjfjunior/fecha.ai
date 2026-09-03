@@ -1,5 +1,5 @@
 {
-  "schema": "fechai.f1-02.pr08.matrix.v5",
+  "schema": "fechai.f1-02.pr08.matrix.v6",
   "title": "FECH.AI F1-02 / J4 / PR-08 repeatable executable security matrix",
   "implementation_status": "VERSIONED_HARNESS_NOT_EXECUTED",
   "base_application_commit": "9d05c64281c2aeeae9d67b139eab674720184fb1",
@@ -8808,7 +8808,7 @@
       },
       "verification_contract": {
         "isolation": "EXACTLY_ONE_ROL_CASE_PER_INVOCATION",
-        "initial_state": "SHA256_FULL_PUBLIC_PG_DUMP",
+        "initial_state": "SHA256_SCHEMA_DUMP_PLUS_CANONICAL_PUBLIC_DATA",
         "after_rollback": "SHA256_MUST_DIFFER_FROM_INITIAL",
         "after_reapply": "SHA256_MUST_EQUAL_INITIAL",
         "pass_rule": "SQL_EXIT_SUCCESS_AND_STATE_ASSERTIONS_ALL_PASS"
@@ -8860,7 +8860,7 @@
       },
       "verification_contract": {
         "isolation": "EXACTLY_ONE_ROL_CASE_PER_INVOCATION",
-        "initial_state": "SHA256_FULL_PUBLIC_PG_DUMP",
+        "initial_state": "SHA256_SCHEMA_DUMP_PLUS_CANONICAL_PUBLIC_DATA",
         "after_rollback": "SHA256_MUST_DIFFER_FROM_INITIAL",
         "after_reapply": "SHA256_MUST_EQUAL_INITIAL",
         "pass_rule": "SQL_EXIT_SUCCESS_AND_STATE_ASSERTIONS_ALL_PASS"
@@ -8912,7 +8912,7 @@
       },
       "verification_contract": {
         "isolation": "EXACTLY_ONE_ROL_CASE_PER_INVOCATION",
-        "initial_state": "SHA256_FULL_PUBLIC_PG_DUMP",
+        "initial_state": "SHA256_SCHEMA_DUMP_PLUS_CANONICAL_PUBLIC_DATA",
         "after_rollback": "SHA256_MUST_DIFFER_FROM_INITIAL",
         "after_reapply": "SHA256_MUST_EQUAL_INITIAL",
         "pass_rule": "SQL_EXIT_SUCCESS_AND_STATE_ASSERTIONS_ALL_PASS"
@@ -8964,7 +8964,7 @@
       },
       "verification_contract": {
         "isolation": "EXACTLY_ONE_ROL_CASE_PER_INVOCATION",
-        "initial_state": "SHA256_FULL_PUBLIC_PG_DUMP",
+        "initial_state": "SHA256_SCHEMA_DUMP_PLUS_CANONICAL_PUBLIC_DATA",
         "after_rollback": "SHA256_MUST_DIFFER_FROM_INITIAL",
         "after_reapply": "SHA256_MUST_EQUAL_INITIAL",
         "pass_rule": "SQL_EXIT_SUCCESS_AND_STATE_ASSERTIONS_ALL_PASS"
@@ -9016,7 +9016,7 @@
       },
       "verification_contract": {
         "isolation": "EXACTLY_ONE_ROL_CASE_PER_INVOCATION",
-        "initial_state": "SHA256_FULL_PUBLIC_PG_DUMP",
+        "initial_state": "SHA256_SCHEMA_DUMP_PLUS_CANONICAL_PUBLIC_DATA",
         "after_rollback": "SHA256_MUST_DIFFER_FROM_INITIAL",
         "after_reapply": "SHA256_MUST_EQUAL_INITIAL",
         "pass_rule": "SQL_EXIT_SUCCESS_AND_STATE_ASSERTIONS_ALL_PASS"
@@ -9068,7 +9068,7 @@
       },
       "verification_contract": {
         "isolation": "EXACTLY_ONE_ROL_CASE_PER_INVOCATION",
-        "initial_state": "SHA256_FULL_PUBLIC_PG_DUMP",
+        "initial_state": "SHA256_SCHEMA_DUMP_PLUS_CANONICAL_PUBLIC_DATA",
         "after_rollback": "SHA256_MUST_DIFFER_FROM_INITIAL",
         "after_reapply": "SHA256_MUST_EQUAL_INITIAL",
         "pass_rule": "SQL_EXIT_SUCCESS_AND_STATE_ASSERTIONS_ALL_PASS"
@@ -9120,7 +9120,7 @@
       },
       "verification_contract": {
         "isolation": "EXACTLY_ONE_ROL_CASE_PER_INVOCATION",
-        "initial_state": "SHA256_FULL_PUBLIC_PG_DUMP",
+        "initial_state": "SHA256_SCHEMA_DUMP_PLUS_CANONICAL_PUBLIC_DATA",
         "after_rollback": "SHA256_MUST_DIFFER_FROM_INITIAL",
         "after_reapply": "SHA256_MUST_EQUAL_INITIAL",
         "pass_rule": "SQL_EXIT_SUCCESS_AND_STATE_ASSERTIONS_ALL_PASS"
@@ -9172,7 +9172,7 @@
       },
       "verification_contract": {
         "isolation": "EXACTLY_ONE_ROL_CASE_PER_INVOCATION",
-        "initial_state": "SHA256_FULL_PUBLIC_PG_DUMP",
+        "initial_state": "SHA256_SCHEMA_DUMP_PLUS_CANONICAL_PUBLIC_DATA",
         "after_rollback": "SHA256_MUST_DIFFER_FROM_INITIAL",
         "after_reapply": "SHA256_MUST_EQUAL_INITIAL",
         "pass_rule": "SQL_EXIT_SUCCESS_AND_STATE_ASSERTIONS_ALL_PASS"
@@ -9224,7 +9224,7 @@
       },
       "verification_contract": {
         "isolation": "EXACTLY_ONE_ROL_CASE_PER_INVOCATION",
-        "initial_state": "SHA256_FULL_PUBLIC_PG_DUMP",
+        "initial_state": "SHA256_SCHEMA_DUMP_PLUS_CANONICAL_PUBLIC_DATA",
         "after_rollback": "SHA256_MUST_DIFFER_FROM_INITIAL",
         "after_reapply": "SHA256_MUST_EQUAL_INITIAL",
         "pass_rule": "SQL_EXIT_SUCCESS_AND_STATE_ASSERTIONS_ALL_PASS"
@@ -9276,7 +9276,7 @@
       },
       "verification_contract": {
         "isolation": "EXACTLY_ONE_ROL_CASE_PER_INVOCATION",
-        "initial_state": "SHA256_FULL_PUBLIC_PG_DUMP",
+        "initial_state": "SHA256_SCHEMA_DUMP_PLUS_CANONICAL_PUBLIC_DATA",
         "after_rollback": "SHA256_MUST_DIFFER_FROM_INITIAL",
         "after_reapply": "SHA256_MUST_EQUAL_INITIAL",
         "pass_rule": "SQL_EXIT_SUCCESS_AND_STATE_ASSERTIONS_ALL_PASS"
@@ -9328,7 +9328,7 @@
       },
       "verification_contract": {
         "isolation": "EXACTLY_ONE_ROL_CASE_PER_INVOCATION",
-        "initial_state": "SHA256_FULL_PUBLIC_PG_DUMP",
+        "initial_state": "SHA256_SCHEMA_DUMP_PLUS_CANONICAL_PUBLIC_DATA",
         "after_rollback": "SHA256_MUST_DIFFER_FROM_INITIAL",
         "after_reapply": "SHA256_MUST_EQUAL_INITIAL",
         "pass_rule": "SQL_EXIT_SUCCESS_AND_STATE_ASSERTIONS_ALL_PASS"
@@ -9591,7 +9591,7 @@
     "arbitrary_fixture_url_method_probe": "FORBIDDEN",
     "mutation_evidence": "DETERMINISTIC_BEFORE_AFTER_CANONICAL_SHA256",
     "concurrent_evidence": "PER_REQUEST_START_FINISH_PLUS_POSITIVE_OVERLAP_REQUIRED",
-    "rollback_evidence": "ONE_CASE_PER_INVOCATION_PLUS_PUBLIC_DUMP_SHA256_BASELINE_ROLLBACK_REAPPLY",
+    "rollback_evidence": "ONE_CASE_PER_INVOCATION_PLUS_SCHEMA_DUMP_AND_CANONICAL_PUBLIC_DATA_SHA256_BASELINE_ROLLBACK_REAPPLY",
     "fixture_topology": "MANDATORY_VERSIONED_PREFLIGHT",
     "denial_semantics": "EXACT_STATUS_AND_EXPECTED_ERROR_EVIDENCE",
     "semantic_assertions": "VERSIONED_AND_MANDATORY_FOR_NONTRIVIAL_POSITIVES",
@@ -9602,10 +9602,11 @@
     "topology_scope": "GLOBAL_PLUS_SELECTED_CASE_DEPENDENCIES_ONLY",
     "cleanup_verification": "POST_CLEANUP_SHA256_MUST_EQUAL_ORIGINAL",
     "failure_isolation": "ALL_MUTATION_CAPABLE_HTTP_CASES_HAVE_SERVER_LIFECYCLE",
-    "cleanup_global_verification": "DETERMINISTIC_PUBLIC_DATA_SHA256_MUST_EQUAL_ORIGINAL",
+    "cleanup_global_verification": "CANONICAL_PUBLIC_RELATION_ROWS_PLUS_SEQUENCES_SHA256_MUST_EQUAL_ORIGINAL",
     "cleanup_fail_stop": "NO_NEXT_CASE_AFTER_UNRESTORED_STATE",
-    "token_topology_binding": "EVERY_VERSIONED_REQUEST_TOKEN_REQUIRES_IDENTITY_TOPOLOGY",
-    "conditional_tests": "NOT_APPLICABLE_IS_NOT_PASS"
+    "token_topology_binding": "EVERY_VALID_VERSIONED_REQUEST_TOKEN_REQUIRES_IDENTITY_TOPOLOGY",
+    "conditional_tests": "NOT_APPLICABLE_IS_NOT_PASS",
+    "absence_topology_evidence": "OWNER_SIDE_SERVER_ZERO_ROWS_WITH_BYPASSRLS"
   },
   "fixture_contract": {
     "allowed_top_level_fields": [
@@ -9630,6 +9631,21 @@
   "topology_contract": {
     "observer_token_var": "EVIDENCE_OBSERVER_TOKEN",
     "checks": [
+      {
+        "check_id": "TOPO-TOKEN-EVIDENCE-OBSERVER",
+        "request": {
+          "method": "GET",
+          "path_template": "/auth/v1/user",
+          "auth_token_var": "EVIDENCE_OBSERVER_TOKEN",
+          "headers_template": {},
+          "body_template": null
+        },
+        "assertion": {
+          "mode": "OBJECT_FIELD_EQUALS_VAR",
+          "field": "id",
+          "var": "EVIDENCE_OBSERVER_USER_ID"
+        }
+      },
       {
         "check_id": "TOPO-TOKEN-ACTOR",
         "request": {
@@ -10199,15 +10215,12 @@
       },
       {
         "check_id": "TOPO-ZERO-STAGE-COMPANY",
-        "request": {
-          "method": "GET",
-          "path_template": "/rest/v1/funil_estagios?empresa_id=eq.${ZERO_STAGE_EMPRESA_ID}&select=id",
-          "auth_token_var": "EVIDENCE_OBSERVER_TOKEN",
-          "headers_template": {},
-          "body_template": null
-        },
+        "request": null,
         "assertion": {
-          "mode": "ZERO_ROWS"
+          "mode": "SERVER_ZERO_ROWS_BY_UUID",
+          "table": "public.funil_estagios",
+          "column": "empresa_id",
+          "var": "ZERO_STAGE_EMPRESA_ID"
         }
       },
       {
@@ -10435,15 +10448,12 @@
       },
       {
         "check_id": "TOPO-NO-PROFILE",
-        "request": {
-          "method": "GET",
-          "path_template": "/rest/v1/corretores?user_id=eq.${NO_PROFILE_USER_ID}&select=id",
-          "auth_token_var": "EVIDENCE_OBSERVER_TOKEN",
-          "headers_template": {},
-          "body_template": null
-        },
+        "request": null,
         "assertion": {
-          "mode": "ZERO_ROWS"
+          "mode": "SERVER_ZERO_ROWS_BY_UUID",
+          "table": "public.corretores",
+          "column": "user_id",
+          "var": "NO_PROFILE_USER_ID"
         }
       },
       {
@@ -10582,7 +10592,26 @@
         }
       }
     ],
-    "global_check_ids": []
+    "global_check_ids": [
+      "TOPO-TOKEN-EVIDENCE-OBSERVER"
+    ],
+    "valid_token_identity_bindings": {
+      "EVIDENCE_OBSERVER_TOKEN": "TOPO-TOKEN-EVIDENCE-OBSERVER",
+      "ACTOR_TOKEN": "TOPO-TOKEN-ACTOR",
+      "MANAGER_TOKEN": "TOPO-TOKEN-MANAGER",
+      "ADMIN_TOKEN": "TOPO-TOKEN-ADMIN",
+      "ROOT_TOKEN": "TOPO-TOKEN-ROOT",
+      "ACTOR_A_TOKEN": "TOPO-TOKEN-A",
+      "ACTOR_B_TOKEN": "TOPO-TOKEN-B",
+      "ZERO_STAGE_TOKEN": "TOPO-TOKEN-ZERO-STAGE",
+      "INACTIVE_TOKEN": "TOPO-TOKEN-INACTIVE",
+      "INELIGIBLE_TOKEN": "TOPO-TOKEN-INELIGIBLE",
+      "NO_PROFILE_TOKEN": "TOPO-TOKEN-NO-PROFILE"
+    },
+    "unbound_negative_token_vars": [
+      "INVALID_TOKEN",
+      "EXPIRED_TOKEN"
+    ]
   },
   "server_evidence_contract": {
     "mode": "PSQL_POSTGRES_OWNER_NON_PRODUCTION_ONLY",
@@ -10597,8 +10626,10 @@
     "required_role_attributes": [
       "rolbypassrls"
     ],
-    "full_public_data_hash": "PG_DUMP_DATA_ONLY_FIXED_RESTRICT_KEY",
-    "full_public_data_hash_restrict_key": "FECHAIPR08CASESTATE"
+    "full_public_data_hash": "CANONICAL_PUBLIC_RELATION_ROWS_PLUS_SEQUENCES_SHA256",
+    "rollback_state_fingerprint": "SCHEMA_DUMP_SHA256_PLUS_CANONICAL_PUBLIC_DATA_SHA256",
+    "rollback_schema_restrict_key": "FECHAIPR08STATEHASH",
+    "absence_evidence": "POSTGRES_OWNER_BYPASSRLS_ZERO_ROW_COUNT"
   },
   "server_case_plans": {
     "COR-001": {

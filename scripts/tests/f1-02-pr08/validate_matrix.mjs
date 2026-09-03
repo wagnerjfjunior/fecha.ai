@@ -14,11 +14,12 @@ async function main() {
   const counts={TOTAL:matrix.records.length};
   const ids=new Set();
 
-  if(matrix.schema!=="fechai.f1-02.pr08.matrix.v5") throw new Error("MATRIX_SCHEMA_DRIFT");
+  if(matrix.schema!=="fechai.f1-02.pr08.matrix.v6") throw new Error("MATRIX_SCHEMA_DRIFT");
   if(matrix.execution_contract?.failure_isolation!=="ALL_MUTATION_CAPABLE_HTTP_CASES_HAVE_SERVER_LIFECYCLE") throw new Error("FAILURE_ISOLATION_CONTRACT_MISSING");
-  if(matrix.execution_contract?.cleanup_global_verification!=="DETERMINISTIC_PUBLIC_DATA_SHA256_MUST_EQUAL_ORIGINAL") throw new Error("GLOBAL_CLEANUP_HASH_CONTRACT_MISSING");
+  if(matrix.execution_contract?.cleanup_global_verification!=="CANONICAL_PUBLIC_RELATION_ROWS_PLUS_SEQUENCES_SHA256_MUST_EQUAL_ORIGINAL") throw new Error("GLOBAL_CLEANUP_HASH_CONTRACT_MISSING");
   if(matrix.execution_contract?.cleanup_fail_stop!=="NO_NEXT_CASE_AFTER_UNRESTORED_STATE") throw new Error("CLEANUP_FAIL_STOP_CONTRACT_MISSING");
-  if(matrix.execution_contract?.token_topology_binding!=="EVERY_VERSIONED_REQUEST_TOKEN_REQUIRES_IDENTITY_TOPOLOGY") throw new Error("TOKEN_TOPOLOGY_CONTRACT_MISSING");
+  if(matrix.execution_contract?.token_topology_binding!=="EVERY_VALID_VERSIONED_REQUEST_TOKEN_REQUIRES_IDENTITY_TOPOLOGY") throw new Error("TOKEN_TOPOLOGY_CONTRACT_MISSING");
+  if(matrix.execution_contract?.absence_topology_evidence!=="OWNER_SIDE_SERVER_ZERO_ROWS_WITH_BYPASSRLS") throw new Error("ABSENCE_TOPOLOGY_CONTRACT_MISSING");
   if(matrix.execution_contract?.conditional_tests!=="NOT_APPLICABLE_IS_NOT_PASS") throw new Error("CONDITIONAL_TEST_CONTRACT_MISSING");
 
   const sec=matrix.server_evidence_contract||{};
@@ -27,8 +28,10 @@ async function main() {
   if(!Array.isArray(sec.required_role_attributes)||!sec.required_role_attributes.includes("rolbypassrls")) throw new Error("SERVER_EVIDENCE_BYPASSRLS_CONTRACT_MISSING");
   if(sec.production_project_ref_hard_deny!=="uobxxgzshrmbtjfdolxd") throw new Error("SERVER_EVIDENCE_PROD_DENY_DRIFT");
   if(sec.grants_rls_policies_changes!=="FORBIDDEN") throw new Error("SERVER_EVIDENCE_BOUNDARY_WIDENING");
-  if(sec.full_public_data_hash!=="PG_DUMP_DATA_ONLY_FIXED_RESTRICT_KEY") throw new Error("GLOBAL_DATA_HASH_MODE_DRIFT");
-  if(sec.full_public_data_hash_restrict_key!=="FECHAIPR08CASESTATE") throw new Error("GLOBAL_DATA_HASH_KEY_DRIFT");
+  if(sec.full_public_data_hash!=="CANONICAL_PUBLIC_RELATION_ROWS_PLUS_SEQUENCES_SHA256") throw new Error("GLOBAL_DATA_HASH_MODE_DRIFT");
+  if(sec.rollback_state_fingerprint!=="SCHEMA_DUMP_SHA256_PLUS_CANONICAL_PUBLIC_DATA_SHA256") throw new Error("ROLLBACK_STATE_FINGERPRINT_DRIFT");
+  if(sec.rollback_schema_restrict_key!=="FECHAIPR08STATEHASH") throw new Error("ROLLBACK_SCHEMA_HASH_KEY_DRIFT");
+  if(sec.absence_evidence!=="POSTGRES_OWNER_BYPASSRLS_ZERO_ROW_COUNT") throw new Error("ABSENCE_EVIDENCE_MODE_DRIFT");
 
   if(matrixText.includes("/rest/v1/importar_leads_batch_idempotency")||http.includes("/rest/v1/importar_leads_batch_idempotency")) {
     throw new Error("IDEMPOTENCY_REST_CLIENT_ACCESS_FORBIDDEN");
@@ -41,8 +44,9 @@ async function main() {
 
   for(const check of topologyChecks){
     if(!check.check_id||!check.assertion?.mode) throw new Error("TOPOLOGY_CHECK_INVALID");
-    if(["VARIABLE_NOT_EQUAL","FIXTURE_BOOLEAN_TRUE","SERVER_ROOT_AUTHORITY"].includes(check.assertion.mode)){
+    if(["VARIABLE_NOT_EQUAL","FIXTURE_BOOLEAN_TRUE","SERVER_ROOT_AUTHORITY","SERVER_ZERO_ROWS_BY_UUID"].includes(check.assertion.mode)){
       if(check.request!==null) throw new Error("NON_HTTP_TOPOLOGY_REQUEST_MUST_BE_NULL:"+check.check_id);
+      if(check.assertion.mode==="SERVER_ZERO_ROWS_BY_UUID"){const allowed=new Set(["public.corretores:user_id","public.funil_estagios:empresa_id"]);if(!allowed.has(check.assertion.table+":"+check.assertion.column)||!check.assertion.var) throw new Error("SERVER_ZERO_ROWS_TARGET_INVALID:"+check.check_id);}
     } else {
       if(!check.request?.path_template) throw new Error("TOPOLOGY_REQUEST_MISSING:"+check.check_id);
       if(!check.request.path_template.startsWith("/")||check.request.path_template.startsWith("//")||/^[a-z]+:/i.test(check.request.path_template)) throw new Error("TOPOLOGY_ABSOLUTE_PATH:"+check.check_id);
@@ -55,17 +59,17 @@ async function main() {
   const negativeMutationCapable=[];
 
   const tokenNeeds={
-    ACTOR_TOKEN:["TOPO-TOKEN-ACTOR","TOPO-ACTOR"],
-    MANAGER_TOKEN:["TOPO-TOKEN-MANAGER","TOPO-MANAGER"],
-    ADMIN_TOKEN:["TOPO-TOKEN-ADMIN","TOPO-ADMIN"],
-    ROOT_TOKEN:["TOPO-TOKEN-ROOT","TOPO-ROOT-PROFILE","TOPO-ROOT-AUTHORITY"],
-    ACTOR_A_TOKEN:["TOPO-TOKEN-A","TOPO-ACTOR-A-PROFILE"],
-    ACTOR_B_TOKEN:["TOPO-TOKEN-B","TOPO-ACTOR-B-PROFILE"],
-    ZERO_STAGE_TOKEN:["TOPO-TOKEN-ZERO-STAGE","TOPO-ZERO-STAGE-ACTOR"],
-    INACTIVE_TOKEN:["TOPO-TOKEN-INACTIVE","TOPO-INACTIVE-PROFILE"],
-    INELIGIBLE_TOKEN:["TOPO-TOKEN-INELIGIBLE","TOPO-INELIGIBLE-PROFILE"],
-    NO_PROFILE_TOKEN:["TOPO-TOKEN-NO-PROFILE","TOPO-NO-PROFILE"]
+    EVIDENCE_OBSERVER_TOKEN:["TOPO-TOKEN-EVIDENCE-OBSERVER"],ACTOR_TOKEN:["TOPO-TOKEN-ACTOR","TOPO-ACTOR"],MANAGER_TOKEN:["TOPO-TOKEN-MANAGER","TOPO-MANAGER"],ADMIN_TOKEN:["TOPO-TOKEN-ADMIN","TOPO-ADMIN"],ROOT_TOKEN:["TOPO-TOKEN-ROOT","TOPO-ROOT-PROFILE","TOPO-ROOT-AUTHORITY"],ACTOR_A_TOKEN:["TOPO-TOKEN-A","TOPO-ACTOR-A-PROFILE"],ACTOR_B_TOKEN:["TOPO-TOKEN-B","TOPO-ACTOR-B-PROFILE"],ZERO_STAGE_TOKEN:["TOPO-TOKEN-ZERO-STAGE","TOPO-ZERO-STAGE-ACTOR"],INACTIVE_TOKEN:["TOPO-TOKEN-INACTIVE","TOPO-INACTIVE-PROFILE"],INELIGIBLE_TOKEN:["TOPO-TOKEN-INELIGIBLE","TOPO-INELIGIBLE-PROFILE"],NO_PROFILE_TOKEN:["TOPO-TOKEN-NO-PROFILE","TOPO-NO-PROFILE"]
   };
+  const declaredBindings=matrix.topology_contract?.valid_token_identity_bindings||{};
+  for(const [token,needed] of Object.entries(tokenNeeds)) if(declaredBindings[token]!==needed[0]||!topologyIds.has(needed[0])) throw new Error("TOKEN_BINDING_DECLARATION_INVALID:"+token);
+  for(const token of Object.keys(declaredBindings)) if(!tokenNeeds[token]) throw new Error("UNKNOWN_TOKEN_BINDING_DECLARATION:"+token);
+  const negativeTokenVars=new Set(matrix.topology_contract?.unbound_negative_token_vars||[]);
+  if(JSON.stringify([...negativeTokenVars].sort())!==JSON.stringify(["EXPIRED_TOKEN","INVALID_TOKEN"])) throw new Error("NEGATIVE_TOKEN_EXCEPTION_DRIFT");
+  const globalDeps=new Set(matrix.topology_contract?.global_check_ids||[]);
+  if(!globalDeps.has("TOPO-TOKEN-EVIDENCE-OBSERVER")) throw new Error("OBSERVER_IDENTITY_BINDING_NOT_GLOBAL");
+  const observerCheck=topologyChecks.find(x=>x.check_id==="TOPO-TOKEN-EVIDENCE-OBSERVER");
+  if(observerCheck?.request?.auth_token_var!=="EVIDENCE_OBSERVER_TOKEN"||observerCheck?.request?.path_template!=="/auth/v1/user"||observerCheck?.assertion?.mode!=="OBJECT_FIELD_EQUALS_VAR"||observerCheck?.assertion?.field!=="id"||observerCheck?.assertion?.var!=="EVIDENCE_OBSERVER_USER_ID") throw new Error("OBSERVER_IDENTITY_BINDING_INVALID");
 
   for(const rec of matrix.records){
     if(!rec.test_id||ids.has(rec.test_id)) throw new Error("DUPLICATE_OR_MISSING_TEST_ID:"+rec.test_id);
@@ -96,9 +100,8 @@ async function main() {
         if(typeof q.path_template!=="string"||!q.path_template.startsWith("/")||q.path_template.startsWith("//")||/^[a-z]+:/i.test(q.path_template)) throw new Error("ABSOLUTE_OR_INVALID_PATH:"+rec.test_id);
         if(!["GET","POST","PATCH","DELETE","HEAD"].includes(q.method)) throw new Error("METHOD_NOT_VERSIONED:"+rec.test_id);
         if("url" in q||"origin" in q) throw new Error("ABSOLUTE_TARGET_FIELD_FORBIDDEN:"+rec.test_id);
-        const needed=tokenNeeds[q.auth_token_var]||[];
-        const deps=new Set(rec.topology_dependencies||[]);
-        for(const d of needed) if(!deps.has(d)) throw new Error("TOKEN_TOPOLOGY_DEPENDENCY_MISSING:"+rec.test_id+":"+q.auth_token_var+":"+d);
+        const token=q.auth_token_var;
+        if(token){if(negativeTokenVars.has(token)){if(!String(rec.expected_authorization_result).startsWith("DENY")) throw new Error("NEGATIVE_TOKEN_USED_OUTSIDE_DENIAL:"+rec.test_id+":"+token);} else {const needed=tokenNeeds[token];if(!needed) throw new Error("UNBOUND_VERSIONED_REQUEST_TOKEN:"+rec.test_id+":"+token);const deps=new Set([...(rec.topology_dependencies||[]),...globalDeps]);for(const d of needed) if(!deps.has(d)) throw new Error("TOKEN_TOPOLOGY_DEPENDENCY_MISSING:"+rec.test_id+":"+token+":"+d);}}
       }
 
       const cat=rec.test_id.split("-")[0];
@@ -130,6 +133,12 @@ async function main() {
     }
   }
 
+  const tokenUsages=[];
+  for(const check of topologyChecks) if(check.request?.auth_token_var) tokenUsages.push({surface:"TOPOLOGY",id:check.check_id,token:check.request.auth_token_var});
+  for(const rec of matrix.records){for(const q of rec.request_plan?.requests||[]) if(q.auth_token_var) tokenUsages.push({surface:"REQUEST",id:rec.test_id,token:q.auth_token_var});for(const q of [...(rec.mutation_probe_plan?.before||[]),...(rec.mutation_probe_plan?.after||[])]) if(q.auth_token_var) tokenUsages.push({surface:"PROBE",id:rec.test_id,token:q.auth_token_var});}
+  for(const use of tokenUsages){if(negativeTokenVars.has(use.token)) continue;const needed=tokenNeeds[use.token];if(!needed) throw new Error("UNBOUND_VERSIONED_TOKEN_SURFACE:"+use.surface+":"+use.id+":"+use.token);if(use.token==="EVIDENCE_OBSERVER_TOKEN") for(const d of needed) if(!globalDeps.has(d)) throw new Error("OBSERVER_BINDING_NOT_GLOBAL:"+d);}
+  if(topologyChecks.length!==56) throw new Error("TOPOLOGY_COUNT_DRIFT:"+topologyChecks.length);
+  for(const id of ["TOPO-ZERO-STAGE-COMPANY","TOPO-NO-PROFILE"]){const c=topologyChecks.find(x=>x.check_id===id);if(c?.request!==null||c?.assertion?.mode!=="SERVER_ZERO_ROWS_BY_UUID") throw new Error("ABSENCE_PROOF_NOT_OWNER_SIDE:"+id);}
   for(const [k,v] of Object.entries(expected)) if(counts[k]!==v) throw new Error("COUNT_MISMATCH:"+k+":"+counts[k]+"!="+v);
 
   // STG-001 must truly be unauthenticated.
@@ -194,7 +203,9 @@ async function main() {
     "recordApplicable",
     'pass_fail:"NOT_APPLICABLE"',
     "publicDataHash",
-    "--restrict-key=FECHAIPR08CASESTATE",
+    "publicDataRelations",
+    "canonicalRelationState",
+    "last_value::text AS last_value",
     "sequenceState",
     "restoreSequences",
     "cleanupGlobalHash",
@@ -210,7 +221,7 @@ async function main() {
     "PR08_DISTRIBUTION_LEADS_RESTORE",
     "PR08_DISTRIBUTION_AUDIT_RESTORE",
     "SERVER_AFTER_ARRAY_COUNT_EQUALS",
-    'schema:"fechai.pr08.http.receipt.v5"'
+    'schema:"fechai.pr08.http.receipt.v6"'
   ];
   for(const n of runnerNeedles) if(!http.includes(n)) throw new Error("HTTP_V5_CONTRACT_MISSING:"+n);
 
@@ -231,7 +242,9 @@ async function main() {
     "idempotency_no_client_direct_dml"
   ]) if(!sql.includes(n)) throw new Error("SERVER_EVIDENCE_SQL_PREFLIGHT_MISSING:"+n);
 
-  if(!rollback.includes("--restrict-key=FECHAIPR08STATEHASH")) throw new Error("ROLLBACK_DETERMINISTIC_RESTRICT_KEY_MISSING");
+  if(http.includes("FECHAIPR08CASESTATE")||http.includes("ctx.pgDump")) throw new Error("HTTP_RAW_PG_DUMP_HASH_REGRESSION");
+  if(!rollback.includes("--schema-only")||!rollback.includes("--restrict-key=FECHAIPR08STATEHASH")||!rollback.includes("canonicalPublicDataHash")||!rollback.includes("last_value::text AS last_value")) throw new Error("ROLLBACK_CANONICAL_STATE_FINGERPRINT_MISSING");
+  if(rollback.includes('["--schema=public","--no-comments","--format=plain","--restrict-key=FECHAIPR08STATEHASH"]')) throw new Error("ROLLBACK_RAW_FULL_PG_DUMP_HASH_REGRESSION");
   if(!rollback.includes("PR08_EXACTLY_ONE_ROLLBACK_CASE_REQUIRED")||!rollback.includes("PR08_DATABASE_HOST_PROJECT_BINDING_MISMATCH")||!rollback.includes("state_after_reapply_sha256")) throw new Error("ROLLBACK_CONTRACT_REGRESSION");
   if(!sql.includes("IMP-CLAIMANT-ROLLBACK")||!sql.includes("no_claimant_marker_residue")) throw new Error("CLAIMANT_SQL_PLAN_REGRESSION");
 

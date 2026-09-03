@@ -1,5 +1,58 @@
 # FECH.AI — SFJM Evidence Freshness
 
+## 0.00000000000 PR-08 fifth bounded root-invariant correction — v6 static closure — 2026-09-03
+
+Parent exact head:
+
+    68481f1cfc900be8b2172871b60dd56a27f07c5f
+
+Material findings being corrected:
+
+    PR166-J4-V5-OBSERVABILITY-ORACLE-001
+    PR166-J4-V5-CANONICAL-RESTORE-002
+
+Static target contract:
+
+    matrix schema: fechai.f1-02.pr08.matrix.v6
+    records: 98
+    topology checks: 56
+    server case plans: 72
+
+Observer closure:
+
+    EVIDENCE_OBSERVER_TOKEN -> global /auth/v1/user identity binding
+    valid-token bindings -> validator-enforced across request/probe/topology surfaces
+    INVALID_TOKEN / EXPIRED_TOKEN -> explicit negative-token fixtures only
+    no-profile / zero-stage-company absence -> owner-side SERVER_ZERO_ROWS_BY_UUID
+    owner-side absence channel -> existing non-production postgres/BYPASSRLS preflight
+
+Restoration closure:
+
+    HTTP cleanup global fingerprint
+      = canonical public ordinary/materialized relation multisets
+      + public sequence last_value/is_called as text
+      + stable SHA-256
+
+    rollback/reapply state fingerprint
+      = schema-only pg_dump SHA-256 with fixed restrict key
+      + canonical public data/sequence SHA-256
+
+No runtime evidence is created by this correction.
+
+    runtime matrix: NONE
+    Auth matrix: NONE
+    rollback/reapply execution: NONE
+    production smoke: NONE
+    IMP-003: NOT_DETERMINED
+    ROLLBACK_REAPPLY: NOT_DETERMINED
+    SECURITY_GO: NOT_GRANTED
+
+Next evidence action after publication:
+
+    resolve the new PR #166 exact head
+    perform one independent exact-head implementation review
+    stop before Ready
+
 ## 0.0000000000 PR-08 fourth bounded anti-loop closure correction — 2026-09-03
 
 Implementation-only event on parent head `c18347701b52ec21a3758cfbfa512871e10998dc`.
