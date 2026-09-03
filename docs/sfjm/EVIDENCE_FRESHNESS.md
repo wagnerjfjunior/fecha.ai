@@ -1,5 +1,41 @@
 # FECH.AI — SFJM Evidence Freshness
 
+## 0.000000000000000 POST-MERGE / POST-DEPLOY FRESHNESS — PR #166 — 2026-09-03
+
+```text
+repository: wagnerjfjunior/fecha.ai
+main: 59262ef7cbbc3d29d6c4693c2b339964d6f806aa
+PR #166: CLOSED / MERGED
+pre-merge reviewed head: e92d97044ac753f9c71aad7fc37207fa355a2d1c
+merge commit: 59262ef7cbbc3d29d6c4693c2b339964d6f806aa
+main compare against merge commit: IDENTICAL
+Vercel UI supplied by Product Authority: Production / Ready / main / 59262ef
+GitHub combined status for exact merge commit: Vercel = SUCCESS
+VERCEL_PRODUCTION_DEPLOY = READY/SUCCESS
+```
+
+Deployment Ready/SUCCESS proves the Vercel deployment lifecycle event for the merge commit.
+It does not prove PR-08 runtime execution, Supabase application, rollback/reapply, OC-01,
+PR-09 or Security Go.
+
+```text
+Phase 1 = CLOSED STATICALLY
+Phase 2 = CLOSED STATICALLY
+Phase 3 = CLOSED
+Phase 4 = CLOSED
+PR08-RR-64M-CANONICAL-HASH = ACCEPTABLE WITH RESIDUAL RISK
+IMP-003 = NOT_DETERMINED
+ROLLBACK_REAPPLY = NOT_DETERMINED
+PR-08 runtime = NOT_EXECUTED
+SECURITY_GO = NOT_GRANTED
+```
+
+Residual freshness invalidators: ENOBUFS/maxBuffer or equivalent capture failure; fixture
+growth toward the practical envelope; large/uncontrolled dataset use; inability to complete
+rollback/cleanup evidence; or hashing implementation change.
+
+Next refresh: the separately authorized READ_ONLY reconstruction of the next J4/F1-02 gate.
+
 ## 0.00000000000000 Phase 1 implementation evidence — SQL execution authority — 2026-09-03
 
 Parent: `98da96da8d20964b9618c72407f34598116b4f46`.

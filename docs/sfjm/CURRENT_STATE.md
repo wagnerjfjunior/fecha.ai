@@ -1,5 +1,46 @@
 # FECH.AI — SFJM Current Material State
 
+## 0.000000000000000 CURRENT SEMANTIC OVERRIDE — PR #166 post-merge/post-deploy — 2026-09-03
+
+This section is the current lifecycle truth for PR #166. Older pre-merge/merge next-action
+wording remains historical evidence and is no longer the current action.
+
+```text
+repository: wagnerjfjunior/fecha.ai
+PR #166: CLOSED / MERGED
+reviewed pre-merge head: e92d97044ac753f9c71aad7fc37207fa355a2d1c
+MERGED_TO_MAIN = CONFIRMED
+merge commit / current main: 59262ef7cbbc3d29d6c4693c2b339964d6f806aa
+Vercel Production deployment for same commit: READY/SUCCESS
+```
+
+Deployment evidence is bounded: Product Authority supplied Vercel UI evidence showing
+Production / Ready / main / commit 59262ef, and GitHub commit status for the exact merge
+commit reports Vercel SUCCESS.
+
+```text
+Phase 1: CLOSED STATICALLY
+Phase 2: CLOSED STATICALLY
+Phase 3: CLOSED
+Phase 4: CLOSED
+PR08-RR-64M-CANONICAL-HASH = ACCEPTABLE WITH RESIDUAL RISK
+IMP-003 = NOT_DETERMINED
+ROLLBACK_REAPPLY = NOT_DETERMINED
+PR-08 runtime = NOT_EXECUTED
+SECURITY_GO = NOT_GRANTED
+```
+
+Residual reopen triggers remain: ENOBUFS/maxBuffer or equivalent capture failure; fixture
+relation approaching/exceeding the practical envelope; large/uncontrolled dataset use;
+or inability to complete rollback/cleanup evidence. Planned remediation remains server-side
+ordered digest or streaming hash.
+
+Next safe action: separately authorized READ_ONLY reconstruction of the next J4/F1-02 gate
+from the merged main, without assuming runtime PASS, OC-01, PR-09 or Security Go.
+
+No authority is created here for runtime, Supabase/Auth, OC-01, PR-09, Security Go,
+Ready, merge or deploy of this reconciliation PR.
+
 ## 0.00000 Current semantic override — J3 bounded-residual closure — 2026-09-02
 
 This section is the current semantic authority for F1-02/J3 and supersedes

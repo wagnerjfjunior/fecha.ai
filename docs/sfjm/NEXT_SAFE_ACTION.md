@@ -1,5 +1,41 @@
 # FECH.AI — SFJM Next Safe Action
 
+## 0.000000000000000 CURRENT NEXT SAFE ACTION — after PR #166 merge/deploy — 2026-09-03
+
+The pre-merge review and merge of PR #166 are consumed and no longer current actions.
+
+```text
+main = 59262ef7cbbc3d29d6c4693c2b339964d6f806aa
+PR #166 = CLOSED / MERGED
+MERGED_TO_MAIN = CONFIRMED
+VERCEL_PRODUCTION_DEPLOY = READY/SUCCESS
+Phases 1–4 = CLOSED
+PR08-RR-64M-CANONICAL-HASH = ACCEPTABLE WITH RESIDUAL RISK
+IMP-003 = NOT_DETERMINED
+ROLLBACK_REAPPLY = NOT_DETERMINED
+PR-08 runtime = NOT_EXECUTED
+SECURITY_GO = NOT_GRANTED
+```
+
+### Next safe action
+
+Perform a READ_ONLY reconstruction of the next J4/F1-02 gate from the exact live main.
+The reconstruction must reconcile the merged PR-08 artifact against the canonical J4
+contract, identify closed versus NOT_DETERMINED obligations, preserve the 64 MiB residual
+and its reopen triggers, distinguish versioned harness readiness from runtime evidence, and
+identify the next bounded gate without presuming OC-01, PR-09, runtime PASS,
+rollback/reapply PASS or Security Go.
+
+```text
+NO runtime PR-08 execution
+NO rollback/reapply execution
+NO Supabase/Auth mutation
+NO OC-01
+NO PR-09
+NO Security Go
+NO Ready/merge/deploy of this reconciliation PR without separate authority
+```
+
 ## 0.00000000000000 Current next safe action — PR #166 Phase 1 — 2026-09-03
 
 After publication of the bounded Phase-1 implementation from parent `98da96da8d20964b9618c72407f34598116b4f46`:
