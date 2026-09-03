@@ -1,5 +1,66 @@
 # FECH.AI — SFJM Authorizations
 
+## 0.000000 Product Authority — J4 / PR-08 bounded implementation grant — 2026-09-03
+
+Product Authority authorized implementation from exact main
+`9d05c64281c2aeeae9d67b139eab674720184fb1` on branch `test/f1-02-negative-security-matrix`, limited to exactly these nine files:
+
+```text
+supabase/tests/f1-02-pr08/matrix.json
+supabase/tests/f1-02-pr08/runtime_security_matrix.sql
+supabase/tests/f1-02-pr08/README.md
+scripts/tests/f1-02-pr08/run_auth_http_matrix.mjs
+scripts/tests/f1-02-pr08/run_rollback_reapply.mjs
+scripts/tests/f1-02-pr08/validate_matrix.mjs
+docs/sfjm/EVIDENCE_FRESHNESS.md
+docs/sfjm/NEXT_SAFE_ACTION.md
+docs/sfjm/AUTHORIZATIONS.md
+```
+
+Authorized:
+
+```text
+create the branch above
+version the PR-08 matrix/harness
+run local/static validation only
+open a Draft PR
+stop for exact-head implementation review
+```
+
+Explicitly NOT authorized:
+
+```text
+execute runtime matrix
+execute Auth matrix
+execute rollback/reapply runner
+execute production smoke
+Supabase mutation or execution
+Auth mutation
+LAB / second Supabase project / Preview Branch
+Vercel/deploy mutation
+Ready
+merge
+PR-09
+OC-01
+Security Go
+```
+
+Required residual status:
+
+```text
+IMP-003 = NOT_DETERMINED
+ROLLBACK_REAPPLY = NOT_DETERMINED
+SECURITY_GO = NOT_GRANTED
+```
+
+The rollback/reapply runner must hard-deny production project
+`uobxxgzshrmbtjfdolxd`. Technical ability to bypass or change a guard is not
+authorization to do so.
+
+This grant is consumed by the branch implementation + Draft lifecycle only.
+Any head review finding requires a fresh bounded correction authorization as
+applicable; Ready and merge remain separate decisions.
+
 ## 0.00000 Current Product Authority J3 exception and J4 boundary
 
 This section is the current authority meaning for F1-02/J3 and the next J4

@@ -1,5 +1,41 @@
 # FECH.AI — SFJM Next Safe Action
 
+## 0.00000 Current semantic next action — PR-08 exact-head implementation review — 2026-09-03
+
+```text
+repository: wagnerjfjunior/fecha.ai
+base: 9d05c64281c2aeeae9d67b139eab674720184fb1
+branch: test/f1-02-negative-security-matrix
+
+authorized implementation:
+  exactly 9 files
+  versioned matrix/harness only
+  local/static validation only
+
+execution authority:
+  NONE
+
+IMP-003:
+  NOT_DETERMINED
+
+ROLLBACK_REAPPLY:
+  NOT_DETERMINED
+
+SECURITY_GO:
+  NOT_GRANTED
+```
+
+After the PR-08 Draft is opened, the single next safe action is:
+
+```text
+RESOLVE PR-08 EXACT HEAD
+PERFORM EXACT-HEAD IMPLEMENTATION REVIEW
+DO NOT EXECUTE ANY PR-08 RUNNER
+```
+
+No Ready, merge, deploy, Supabase, Auth, LAB, rollback/reapply, production
+smoke, OC-01, PR-09 or Security Go authority is inherited.
+
 ## 0.0000 Current semantic next action override — J4/PR-08 gate — 2026-09-02
 
 J3 is closed only by explicit Product Authority bounded-residual exception.

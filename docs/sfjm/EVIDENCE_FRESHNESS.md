@@ -1,5 +1,60 @@
 # FECH.AI — SFJM Evidence Freshness
 
+## 0.000000 Current J4 / PR-08 implementation evidence override — 2026-09-03
+
+This is a versioned-harness implementation event, not runtime evidence.
+
+```text
+repository: wagnerjfjunior/fecha.ai
+implementation base: 9d05c64281c2aeeae9d67b139eab674720184fb1
+branch: test/f1-02-negative-security-matrix
+PR-08 harness records: 98
+security/runtime records before ROL/PRD: 85
+ROL records: 11
+PRD records: 2
+
+IMPLEMENTATION_STATUS:
+  VERSIONED_HARNESS / NOT_EXECUTED
+
+RUNTIME_MATRIX:
+  NOT_EXECUTED
+
+AUTH_MATRIX:
+  NOT_EXECUTED
+
+ROLLBACK_REAPPLY:
+  NOT_DETERMINED / NOT_EXECUTED
+
+IMP-003:
+  NOT_DETERMINED / NOT_EXECUTED
+
+PRODUCTION_SMOKE:
+  NOT_EXECUTED BY PR-08 IMPLEMENTATION
+
+SECURITY_GO:
+  NOT_GRANTED
+```
+
+Prior 33 operating-session STG/IMP/FDB results remain bounded continuity
+evidence only and are referenced from `matrix.json`; they are not promoted to
+canonical PR-08 receipts.
+
+The implementation reuses exact existing B2/B3/B4/PR07 proof blobs rather than
+copying them. Rollback records bind eleven exact migration artifacts; ROL-001
+uses the versioned embedded exact rollback block and ROL-002..011 bind separate
+rollback artifacts.
+
+No Supabase/Auth/Vercel/runtime/rollback call is authorized or evidenced by
+this section.
+
+### Current next evidence action
+
+```text
+OPEN PR-08 AS DRAFT
+THEN STOP
+NEXT GATE = EXACT-HEAD IMPLEMENTATION REVIEW
+```
+
 ## 0.00000 Current J3/PR-07 operating-session runtime evidence override
 
 This section is the current evidence-freshness authority for the J3/PR-07
