@@ -1,5 +1,79 @@
 # FECH.AI — SFJM Current Product/Security Handoff
 
+## 0.00000 Current handoff override — J3 closed by bounded residual exception / J4 next — 2026-09-02
+
+This section is the current handoff authority when older B2/B4-next sections
+below conflict. Preserve older sections as lineage only.
+
+```text
+repository: wagnerjfjunior/fecha.ai
+decision anchor main: 1449bee4b708a9211a099c52ff573cf52d44ef1c
+
+PR #163:
+  CLOSED / MERGED
+
+PR-07 production migration:
+  APPLIED
+  Supabase project: uobxxgzshrmbtjfdolxd
+  ledger version: 20260902225240
+
+bounded runtime evidence:
+  post-application catalog PASS
+  runtime-negative PASS
+  sequential idempotency/replay PASS
+  claimant rollback PASS
+  cross-tenant runtime negatives PASS
+  feedback runtime PASS
+  true-concurrency infrastructure capability PROVEN
+
+residual evidence:
+  IMP-003 concurrent business-RPC runtime NOT_DETERMINED
+  migration rollback/reapply NOT_DETERMINED
+
+control failure observed:
+  NO
+
+CANONICAL_J3_EXIT_SATISFIED:
+  NO
+
+J3_GOVERNANCE_CLOSURE_BY_PRODUCT_AUTHORITY_EXCEPTION:
+  YES
+
+J3:
+  CLOSED WITH BOUNDED RESIDUAL EVIDENCE
+
+Security Go:
+  DENIED / NOT_GRANTED
+```
+
+Standing Product Authority constraints remain:
+
+```text
+NO LAB
+NO SECOND SUPABASE PROJECT
+NO PREVIEW BRANCH
+NO PRODUCTION MIGRATION ROLLBACK TEST
+```
+
+The exception does not claim either residual test passed. Both remain eligible
+for future retest only if an executable and separately authorized path appears.
+
+### Single next handoff
+
+```text
+J4 / PR-08 — REPEATABLE EXECUTABLE SECURITY MATRIX
+
+next action:
+  reconstruct exact scope/evidence matrix/prohibitions first
+  then request separate Product Authority implementation authority
+
+current authority:
+  documentation reconciliation only
+```
+
+Do not infer PR-08 implementation, Ready, merge, deploy, Supabase mutation,
+rollback/reapply, Security Go or commercialization authority from this handoff.
+
 ## 0.0000 Current handoff override — B2 closed / B4 next — 2026-09-01
 
 This section is the current handoff authority when older B2-next sections below

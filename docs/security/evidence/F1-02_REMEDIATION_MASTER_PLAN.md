@@ -807,6 +807,89 @@ INVALID FEEDBACK: REJECTED BEFORE WRITE
 ROLLBACK AND REAPPLY: TESTED
 ```
 
+### J3 Product Authority bounded-residual closure exception — 2026-09-02
+
+This section records an explicit Product Authority governance exception. It does
+not rewrite the canonical J3 exit criteria above and must not be read as proof
+that those original criteria were fully satisfied.
+
+Canonical anchor at the decision:
+
+```text
+repository: wagnerjfjunior/fecha.ai
+exact main: 1449bee4b708a9211a099c52ff573cf52d44ef1c
+this master-plan blob before reconciliation:
+  ea161050c535b848ff927133830984f543c1104d
+
+PR #163:
+  CLOSED / MERGED
+  merge commit: 1449bee4b708a9211a099c52ff573cf52d44ef1c
+
+Supabase project:
+  uobxxgzshrmbtjfdolxd / Discador-MesaCliente
+
+PR-07 migration:
+  APPLIED
+  migration ledger version: 20260902225240
+  name: f1_02_pr07_funnel_reads_crm_payloads
+```
+
+Evidence state accepted by Product Authority:
+
+```text
+post-application catalog: PASS
+runtime-negative: PASS
+sequential idempotency/replay: PASS
+claimant rollback: PASS
+cross-tenant runtime negatives: PASS
+feedback runtime: PASS
+true-concurrency infrastructure capability: PROVEN
+
+IMP-003 true-concurrency business-RPC runtime:
+  NOT_DETERMINED
+  reason: concurrent PostgreSQL sessions were proven, but the concurrent
+  business-RPC submission was blocked by the OpenAI tool safety layer before
+  SQL reached PostgreSQL.
+
+migration rollback/reapply:
+  NOT_DETERMINED
+  reason: Product Authority decisions prohibit LAB, second Supabase project,
+  Preview Branch and production migration rollback testing.
+
+control failure observed:
+  NO
+```
+
+Product Authority decision:
+
+```text
+CANONICAL_J3_EXIT_SATISFIED = NO
+J3_GOVERNANCE_CLOSURE_BY_PRODUCT_AUTHORITY_EXCEPTION = YES
+
+J3 = CLOSED WITH BOUNDED RESIDUAL EVIDENCE
+      — PRODUCT AUTHORITY EXCEPTION
+
+IMP_003_RUNTIME_STATUS = NOT_DETERMINED
+ROLLBACK_REAPPLY_STATUS = NOT_DETERMINED
+SECURITY_GO = NOT_GRANTED
+```
+
+This exception:
+
+- does not declare IMP-003 PASS;
+- does not declare rollback/reapply PASS;
+- does not change either obligation to PROVEN;
+- does not establish satisfaction of the original canonical J3 exit contract;
+- does not authorize LAB, a second Supabase project, Preview Branch or
+  production migration rollback testing;
+- does not authorize deploy, new Supabase mutation, Auth changes, broad paid
+  commercialization or Security Go;
+- preserves both proof obligations as residual evidence items requiring retest
+  if a future executable and explicitly authorized path becomes available.
+
+The next phase is J4 / PR-08. Entry into J4 requires its own bounded scope and
+authorization gate; this J3 exception does not authorize PR-08 implementation.
+
 ## 15. J4 — consolidated testing and gate
 
 ### PR-08 — repeatable executable test matrix
