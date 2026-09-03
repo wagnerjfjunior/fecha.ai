@@ -1,5 +1,332 @@
 # FECH.AI — SFJM Authorizations
 
+## 0.00000000000000 Phase 1 bounded implementation authorization — PR #166 — 2026-09-03
+
+Current material authority:
+
+- phase: F1-02 / J4 / PR-08 — Phase 1 / Execution Authority + SQL Safety;
+- authorized parent: `98da96da8d20964b9618c72407f34598116b4f46`;
+- targeted review threads: `PRRT_kwDOSEToMc6fBXG5`, `PRRT_kwDOSEToMc6fBXG9`, `PRRT_kwDOSEToMc6fBXHB`;
+- scope: exactly the six Phase-1 allowlisted files;
+- one bounded commit authorized;
+- runtime/Auth/SQL execution: NOT_AUTHORIZED;
+- Supabase/Auth mutation: NOT_AUTHORIZED;
+- review-thread resolution: NOT_AUTHORIZED;
+- merge/deploy/OC-01/PR-09: NOT_AUTHORIZED;
+- Security Go: NOT_GRANTED.
+
+The implementation event does not close the targeted threads. Closure requires one independent exact-head Phase-1 implementation review.
+
+Preserved: `IMP-003 = NOT_DETERMINED`, `ROLLBACK_REAPPLY = NOT_DETERMINED`, all PR-08 runtime result fields `NOT_EXECUTED`.
+
+## 0.0000000000000 Current semantic override — PR #166 Ready transition + pre-merge authority — 2026-09-03
+
+This section is the current lifecycle authority for PR #166 and supersedes older "Ready NOT AUTHORIZED" / "STOP BEFORE READY" wording only for current-state interpretation. Those older sections remain valid historical lineage for the authority that existed when written.
+
+Product Authority explicitly authorized:
+
+- PR #166 Draft -> Ready for Review only at exact head `0f3f266cb2ed103e6acda7bb03b9934cd30f1b41`;
+- after Ready, one independent pre-merge gate on that same exact head.
+
+Observed lifecycle event:
+
+- PR #166: OPEN / READY;
+- Ready transition: EXECUTED SUCCESSFULLY;
+- exact head before and after Ready: `0f3f266cb2ed103e6acda7bb03b9934cd30f1b41`;
+- head changed by Ready transition: NO;
+- independent pre-merge gate on that exact head: PERFORMED.
+
+The pre-merge gate did not grant merge authority. Current prohibitions remain:
+
+- merge: NOT_AUTHORIZED;
+- deploy: NOT_AUTHORIZED;
+- PR-08 runtime/Auth/SQL/rollback-reapply/production-smoke execution: NOT_AUTHORIZED;
+- Supabase/Auth mutation: NOT_AUTHORIZED;
+- OC-01: NOT_AUTHORIZED;
+- PR-09: NOT_AUTHORIZED;
+- Security Go: NOT_GRANTED.
+
+Preserved residual states:
+
+- `IMP-003 = NOT_DETERMINED`;
+- `ROLLBACK_REAPPLY = NOT_DETERMINED`;
+- all PR-08 runtime execution result fields remain `NOT_EXECUTED`.
+
+Ready for Review does not mean runtime PASS, J4 PASS, merge approval, deploy approval or Security Go.
+
+## 0.000000000000 Product Authority — PR #166 sixth bounded observer-completeness correction — 2026-09-03
+
+Authorized parent: `c2922bc952741202b8f57505db755d112bd47d82`.
+
+Authorized scope: only `PR166-J4-V5-OBSERVABILITY-ORACLE-001`, limited to the seven PR-08 v7 files already approved. The canonical logical-state restoration finding remains CLOSED STATICALLY and is not reopened.
+
+Authorized publication: one commit on `test/f1-02-negative-security-matrix`.
+
+Prohibited: runtime/Auth matrix, SQL, rollback/reapply, production smoke, Supabase/Auth mutation, deploy, Ready, merge, OC-01, PR-09 and Security Go.
+
+Preserved: `IMP-003 = NOT_DETERMINED`, `ROLLBACK_REAPPLY = NOT_DETERMINED`, `SECURITY_GO = NOT_GRANTED`, all runtime result fields `NOT_EXECUTED`.
+
+## 0.00000000000 Product Authority — PR #166 fifth bounded root-invariant correction grant — 2026-09-03
+
+Authorization source:
+
+    direct Product Authority instruction after exact-head review:
+    "ok vamos corrigir"
+
+Authorized parent:
+
+    68481f1cfc900be8b2172871b60dd56a27f07c5f
+
+Authorized correction is bounded to the two newly proven harness-root invariants:
+
+    PR166-J4-V5-OBSERVABILITY-ORACLE-001
+    PR166-J4-V5-CANONICAL-RESTORE-002
+
+Allowed implementation remains inside the existing PR #166 nine-file envelope. The correction may update only the PR-08 harness/contracts and the already-participating SFJM views needed to record this material event.
+
+Required implementation outcome:
+
+1. identity-bind EVIDENCE_OBSERVER_TOKEN and prevent REST invisibility from proving row absence;
+2. move absence proofs to owner-side non-production zero-row evidence under the existing postgres/BYPASSRLS preflight;
+3. replace raw data-dump byte equality with a canonical logical public data + sequence fingerprint;
+4. make rollback/reapply fingerprint schema-sensitive without depending on physical data row ordering;
+5. update anti-regression validator invariants;
+6. preserve all runtime result fields as NOT_EXECUTED / NOT_DETERMINED.
+
+Still prohibited:
+
+    runtime matrix
+    Auth matrix
+    rollback/reapply execution
+    production smoke
+    Supabase/Auth mutation
+    LAB / second Supabase project / Preview Branch
+    Vercel/deploy mutation
+    Ready
+    merge
+    OC-01
+    PR-09
+    Security Go
+
+The authorization is consumed by one same-branch bounded correction. After publication, only a fresh exact-head implementation review is authorized.
+
+## 0.0000000000 Product Authority — PR #166 fourth bounded anti-loop correction grant — 2026-09-03
+
+Authorized correction parent:
+
+    c18347701b52ec21a3758cfbfa512871e10998dc
+
+Authorized scope remains exactly the same nine PR-08 files.
+
+Execution modifiers supplied by Product Authority:
+
+    FORENSIC DEEP REVIEW
+    EVIDENCE-BOUND
+    HISTORICAL RECONSTRUCTION
+    CONTRADICTION-FIRST
+    RED TEAM THE EVIDENCE
+    NO-SHALLOW-SUMMARY
+    REUSABILITY EXTRACTION
+    CAUTION TO AVOID LOOPING EXECUTION
+
+Required closure domains:
+
+1. isolate/cleanup unexpected mutations from negative cases;
+2. restore ACL list scope, complete visibility set and audit effects;
+3. make COR-011 lifecycle T3-compatible;
+4. complete token/actor/manager/root/team/list topology dependencies;
+5. correct STG-001 to a real no-session request;
+6. make FUN-006 conditional on actual transition-rule existence;
+7. prove postgres BYPASSRLS for owner-side evidence;
+8. include broker audit effects and closure-validator regressions.
+
+Explicit prohibitions remain:
+
+    runtime matrix
+    Auth matrix
+    rollback/reapply execution
+    production smoke
+    Supabase/Auth mutation
+    LAB / second project / Preview Branch
+    Vercel/deploy
+    Ready
+    merge
+    OC-01
+    PR-09
+    Security Go
+
+Only repository/static validation is authorized. The grant is consumed by publication of the fourth correction. The next authorized activity is read-only exact-head implementation review only.
+
+## 0.000000000 Product Authority — PR #166 third bounded correction grant — 2026-09-03
+
+Authorized correction parent:
+
+    718bf5371cde7b1243a852c497721badf0b5bba4
+
+Authorized scope remains exactly the same nine PR-08 files.
+
+Required correction domains:
+
+1. replace REST/client observation of the protected idempotency table with boundary-compatible evidence observation without grant/RLS/policy widening;
+2. run only global topology plus selected-case dependencies;
+3. version deterministic setup for replay, session mismatch, payload mismatch and incomplete-state;
+4. ensure semantic fields are actually observed, including status_comercial;
+5. eliminate cross-case contamination, including explicit --all;
+6. make rollback/reapply dump hashing deterministic with fixed restrict key or equivalent canonicalization;
+7. complete COR-012 state proof/restoration and strengthen positive semantics;
+8. enforce all contracts in validate_matrix.mjs.
+
+Explicit prohibitions remain:
+
+    runtime matrix
+    Auth matrix
+    rollback/reapply execution
+    production smoke
+    Supabase/Auth mutation
+    LAB / second project / Preview Branch
+    Vercel/deploy
+    Ready
+    merge
+    OC-01
+    PR-09
+    Security Go
+
+Only repository/static validation is authorized. The owner-side evidence/lifecycle code may be versioned but is not authorized to execute in this window. The grant is consumed by publication of the correction. The next authorized activity is read-only exact-head implementation review only.
+
+## 0.00000000 Product Authority — PR #166 second bounded correction grant — 2026-09-03
+
+Authorized correction parent:
+
+    e0b17d8c4c3d3d9c35952e3c934e325f92c1a1f5
+
+Authorized scope remains exactly the same nine PR-08 files.
+
+Required correction domains:
+
+1. bind mutation probes to the actual foreign/wrong-owner/mismatch target;
+2. add executable versioned fixture-topology preflight;
+3. require semantic-specific DENY, not arbitrary 4xx;
+4. record actual sanitized error evidence;
+5. add positive content/state assertions for STG/ACL/FUN/FDB and other nontrivial positives;
+6. prove one logical import mutation for idempotency/concurrency cases;
+7. preserve true overlap evidence;
+8. require explicit case selection; full matrix only through explicit --all;
+9. enforce all contracts in validate_matrix.mjs.
+
+Explicit prohibitions remain:
+
+    runtime matrix
+    Auth matrix
+    rollback/reapply execution
+    production smoke
+    Supabase/Auth mutation
+    LAB / second project / Preview Branch
+    Vercel/deploy
+    Ready
+    merge
+    OC-01
+    PR-09
+    Security Go
+
+Only local/static validation is authorized. The grant is consumed by publication of the correction. The next authorized activity is read-only exact-head implementation review only.
+
+## 0.0000000 Product Authority — PR #166 bounded correction grant — 2026-09-03
+
+Authorized correction parent:
+
+    f69f0b5628894d3e74efefc16f02cdfa60877945
+
+Authorized scope remains exactly the same nine PR-08 files.
+
+Required correction domains:
+
+1. version request/probe specs; fixture values/secrets only;
+2. fail-closed request/probe origin binding to project/environment;
+3. remove fixture-asserted mutation PASS;
+4. record observed before/after mutation hashes;
+5. resolve true exact migration commits while preserving exact blobs;
+6. require per-request timing and proven overlap for concurrency;
+7. require state-verifiable, single-case rollback/reapply;
+8. validate all contracts statically.
+
+Explicit prohibitions remain:
+
+    runtime matrix
+    Auth matrix
+    rollback/reapply execution
+    production smoke
+    Supabase/Auth mutation
+    LAB / second project / Preview Branch
+    Vercel/deploy
+    Ready
+    merge
+    OC-01
+    PR-09
+    Security Go
+
+The grant is consumed by publication of the correction. The next authorized activity is read-only exact-head implementation review only.
+
+## 0.000000 Product Authority — J4 / PR-08 bounded implementation grant — 2026-09-03
+
+Product Authority authorized implementation from exact main
+`9d05c64281c2aeeae9d67b139eab674720184fb1` on branch `test/f1-02-negative-security-matrix`, limited to exactly these nine files:
+
+```text
+supabase/tests/f1-02-pr08/matrix.json
+supabase/tests/f1-02-pr08/runtime_security_matrix.sql
+supabase/tests/f1-02-pr08/README.md
+scripts/tests/f1-02-pr08/run_auth_http_matrix.mjs
+scripts/tests/f1-02-pr08/run_rollback_reapply.mjs
+scripts/tests/f1-02-pr08/validate_matrix.mjs
+docs/sfjm/EVIDENCE_FRESHNESS.md
+docs/sfjm/NEXT_SAFE_ACTION.md
+docs/sfjm/AUTHORIZATIONS.md
+```
+
+Authorized:
+
+```text
+create the branch above
+version the PR-08 matrix/harness
+run local/static validation only
+open a Draft PR
+stop for exact-head implementation review
+```
+
+Explicitly NOT authorized:
+
+```text
+execute runtime matrix
+execute Auth matrix
+execute rollback/reapply runner
+execute production smoke
+Supabase mutation or execution
+Auth mutation
+LAB / second Supabase project / Preview Branch
+Vercel/deploy mutation
+Ready
+merge
+PR-09
+OC-01
+Security Go
+```
+
+Required residual status:
+
+```text
+IMP-003 = NOT_DETERMINED
+ROLLBACK_REAPPLY = NOT_DETERMINED
+SECURITY_GO = NOT_GRANTED
+```
+
+The rollback/reapply runner must hard-deny production project
+`uobxxgzshrmbtjfdolxd`. Technical ability to bypass or change a guard is not
+authorization to do so.
+
+This grant is consumed by the branch implementation + Draft lifecycle only.
+Any head review finding requires a fresh bounded correction authorization as
+applicable; Ready and merge remain separate decisions.
+
 ## 0.00000 Current Product Authority J3 exception and J4 boundary
 
 This section is the current authority meaning for F1-02/J3 and the next J4
@@ -629,3 +956,74 @@ Do not rewrite that as `UNAUTHORIZED` without affirmative evidence, and do not r
 Update this ledger only when durable authority meaning changes.
 
 Do not update merely because a SHA, Draft/Ready state, check or mergeability value changes.
+
+## 10. Product Authority grant — PR #166 lifecycle/SFJM reconciliation — 2026-09-03
+
+Product Authority authorized one bounded documentation reconciliation from exact
+head `2a0e6b8a2f964afe3c0c35c75190ae23344ed884`, limited to:
+
+```text
+docs/sfjm/CURRENT_STATE.md
+docs/sfjm/NEXT_SAFE_ACTION.md
+docs/sfjm/EVIDENCE_FRESHNESS.md
+docs/sfjm/AUTHORIZATIONS.md
+docs/sfjm/handoffs/CURRENT.md
+```
+
+Authorized durable meanings:
+
+```text
+Phases 1–4 technically closed
+PR08-RR-64M-CANONICAL-HASH = ACCEPTABLE WITH RESIDUAL RISK
+IMP-003 = NOT_DETERMINED
+ROLLBACK_REAPPLY = NOT_DETERMINED
+SECURITY_GO = NOT_GRANTED
+PR-08 runtime = NOT_EXECUTED
+next safe action after lifecycle resolution = separately authorized final exact-head pre-merge
+```
+
+The residual authority explicitly records:
+
+```text
+cause: relation-wide canonical JSON materialization through psql under 64 MiB Node spawnSync buffer
+safety property: fail-closed; inability to hash cannot be recorded as PASS/restored state
+scope: isolated PR-08 evidence harness, not direct production runtime
+reopen triggers: ENOBUFS/maxBuffer, material fixture growth, large/uncontrolled dataset use,
+                 or inability to complete rollback/cleanup proof
+future remediation: server-side ordered digest or streaming
+```
+
+After publication and exact-head revalidation of this documentation commit,
+Product Authority additionally authorized resolution of exactly these eight
+review threads:
+
+```text
+PRRT_kwDOSEToMc6fBXG5
+PRRT_kwDOSEToMc6fBXHB
+PRRT_kwDOSEToMc6fBXHU
+PRRT_kwDOSEToMc6fBXHW
+PRRT_kwDOSEToMc6fBXHY
+PRRT_kwDOSEToMc6fBXHI
+PRRT_kwDOSEToMc6fBXHF
+PRRT_kwDOSEToMc6fBXHM
+```
+
+No other review-thread mutation is authorized.
+
+Explicitly NOT authorized:
+
+```text
+runtime execution
+rollback/reapply
+Supabase/Auth mutation
+merge
+deploy
+OC-01
+PR-09
+Security Go
+any file outside the five SFJM files listed above
+any thread resolution outside the eight exact IDs above
+```
+
+After lifecycle reconciliation completes, STOP. Final pre-merge requires a
+separate Product Authority authorization.

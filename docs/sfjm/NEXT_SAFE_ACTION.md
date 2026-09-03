@@ -1,5 +1,205 @@
 # FECH.AI — SFJM Next Safe Action
 
+## 0.00000000000000 Current next safe action — PR #166 Phase 1 — 2026-09-03
+
+After publication of the bounded Phase-1 implementation from parent `98da96da8d20964b9618c72407f34598116b4f46`:
+
+```text
+RESOLVE NEW PR #166 EXACT HEAD
+VERIFY EXACTLY +1 BOUNDED COMMIT
+VERIFY ONLY THE SIX AUTHORIZED PHASE-1 FILES CHANGED
+PERFORM ONE INDEPENDENT EXACT-HEAD PHASE-1 IMPLEMENTATION REVIEW
+STOP
+```
+
+Do not resolve review threads yet. Do not execute SQL/runtime/Auth/rollback/smoke. Do not mutate Supabase/Auth. Do not merge, deploy, start OC-01/PR-09 or grant Security Go. Do not address Phase 2+ findings in this gate.
+
+## 0.0000000000000 Current semantic override — PR #166 post-Ready documentation gate — 2026-09-03
+
+After publication of the bounded three-file SFJM reconciliation from parent `0f3f266cb2ed103e6acda7bb03b9934cd30f1b41`, the single next safe action is:
+
+```text
+RESOLVE NEW PR #166 EXACT HEAD
+VERIFY DOCUMENTATION CORRECTION IS EXACTLY +1 COMMIT
+VERIFY THE CORRECTION CHANGED ONLY:
+  docs/sfjm/AUTHORIZATIONS.md
+  docs/sfjm/EVIDENCE_FRESHNESS.md
+  docs/sfjm/NEXT_SAFE_ACTION.md
+PERFORM ONE INDEPENDENT EXACT-HEAD PRE-MERGE REVIEW
+STOP BEFORE MERGE
+```
+
+Anti-loop rules:
+
+- do not repeat the PR-08 v7 implementation review absent new exact-head contradictory evidence;
+- do not reopen closed technical findings absent contradiction;
+- do not perform broad SFJM reconciliation;
+- do not execute PR-08 runtime/Auth/SQL/rollback/smoke;
+- do not mutate Supabase/Auth;
+- do not deploy;
+- do not merge;
+- do not start OC-01;
+- do not start PR-09;
+- do not grant Security Go.
+
+Current PR lifecycle is OPEN / READY. Historical "STOP BEFORE READY" sections below remain lineage only and no longer govern current lifecycle state.
+
+## 0.000000000000 PR-08 v7 post-publication gate — 2026-09-03
+
+After the sixth bounded correction is published from parent `c2922bc952741202b8f57505db755d112bd47d82`, the single next safe action is:
+
+    RESOLVE NEW PR #166 EXACT HEAD
+    PERFORM ONE INDEPENDENT EXACT-HEAD IMPLEMENTATION REVIEW
+    STOP BEFORE READY
+
+Do not execute PR-08/Auth/SQL/rollback/smoke. Do not mutate Supabase/Auth. Do not deploy, mark Ready, merge, start OC-01/PR-09 or grant Security Go. Historical findings remain AUDIT_LOOP_BLOCKED absent new exact-head contradiction.
+
+## 0.0000000000 PR-08 v6 fifth-correction exact-head review — 2026-09-03
+
+The Product Authority authorized one bounded correction from:
+
+    parent head: 68481f1cfc900be8b2172871b60dd56a27f07c5f
+
+Correction scope:
+
+    observer trust anchor / owner-side absence evidence
+    canonical logical restoration fingerprint
+    rollback composite schema + canonical-data fingerprint
+    anti-regression validator updates
+
+No runtime/Auth/rollback/smoke execution is authorized.
+No Supabase/Auth/LAB/Vercel mutation is authorized.
+No Ready, merge, OC-01, PR-09 or Security Go action is authorized.
+
+Single next safe action after publication:
+
+    RESOLVE NEW PR #166 HEAD
+    PERFORM ONE INDEPENDENT EXACT-HEAD IMPLEMENTATION REVIEW
+    REVIEW V6 AS A COMPLETE SYSTEM
+    STOP BEFORE READY
+
+Historical v5 closure classes remain closed unless contradicted by new exact-head evidence.
+A new conversation alone is not a reconciliation trigger.
+
+## 0.000000000 PR-08 fourth-correction anti-loop exact-head review — 2026-09-03
+
+The fourth bounded correction authorization is consumed by the same-branch implementation.
+
+    parent head: c18347701b52ec21a3758cfbfa512871e10998dc
+    branch: test/f1-02-negative-security-matrix
+    allowed files: same 9
+    correction objective: CLOSE HARNESS ARCHITECTURE, NOT ADD ANOTHER PATCH CYCLE
+    runtime/Auth/rollback/smoke execution: NOT_AUTHORIZED
+    Supabase/Auth/LAB/Vercel mutation: NOT_AUTHORIZED
+    Ready/merge/OC-01/PR-09: NOT_AUTHORIZED
+    IMP-003: NOT_DETERMINED
+    ROLLBACK_REAPPLY: NOT_DETERMINED
+    SECURITY_GO: NOT_GRANTED
+
+Single next safe action after publication:
+
+    RESOLVE THE NEW BRANCH/PR HEAD
+    EXACT-HEAD IMPLEMENTATION REVIEW
+    REVIEW AGAINST V5 CLOSURE INVARIANTS AS A COMPLETE SYSTEM
+    STOP BEFORE READY
+
+Anti-loop instruction:
+
+    do not restart historical correction rounds without a new exact-head contradiction
+    classify any new finding by root invariant, not by isolated test ID
+
+## 0.00000000 PR-08 third-correction exact-head review — 2026-09-03
+
+The third bounded correction authorization is consumed by the same-branch implementation.
+
+    parent head: 718bf5371cde7b1243a852c497721badf0b5bba4
+    branch: test/f1-02-negative-security-matrix
+    allowed files: same 9
+    runtime/Auth/rollback/smoke execution: NOT_AUTHORIZED
+    Supabase/Auth/LAB/Vercel mutation: NOT_AUTHORIZED
+    Ready/merge/OC-01/PR-09: NOT_AUTHORIZED
+    IMP-003: NOT_DETERMINED
+    ROLLBACK_REAPPLY: NOT_DETERMINED
+    SECURITY_GO: NOT_GRANTED
+
+Single next safe action after publication:
+
+    RESOLVE THE NEW BRANCH/PR HEAD
+    EXACT-HEAD IMPLEMENTATION REVIEW
+    STOP BEFORE READY
+
+## 0.0000000 PR-08 second-correction exact-head review — 2026-09-03
+
+The second bounded correction authorization is consumed by the same-branch implementation.
+
+    parent head: e0b17d8c4c3d3d9c35952e3c934e325f92c1a1f5
+    branch: test/f1-02-negative-security-matrix
+    allowed files: same 9
+    runner execution: NOT_AUTHORIZED
+    IMP-003: NOT_DETERMINED
+    ROLLBACK_REAPPLY: NOT_DETERMINED
+    SECURITY_GO: NOT_GRANTED
+
+Single next safe action after publication:
+
+    RESOLVE THE NEW BRANCH/PR HEAD
+    EXACT-HEAD IMPLEMENTATION REVIEW
+    STOP BEFORE READY
+
+## 0.000000 PR-08 post-correction exact-head review — 2026-09-03
+
+The bounded correction authorization is consumed by the same-branch correction.
+
+    parent head: f69f0b5628894d3e74efefc16f02cdfa60877945
+    branch: test/f1-02-negative-security-matrix
+    allowed files: same 9
+    runner execution: NOT_AUTHORIZED
+    IMP-003: NOT_DETERMINED
+    ROLLBACK_REAPPLY: NOT_DETERMINED
+    SECURITY_GO: NOT_GRANTED
+
+Single next safe action:
+
+    RESOLVE THE NEW BRANCH/PR HEAD
+    EXACT-HEAD IMPLEMENTATION REVIEW
+    STOP BEFORE READY
+
+## 0.00000 Current semantic next action — PR-08 exact-head implementation review — 2026-09-03
+
+```text
+repository: wagnerjfjunior/fecha.ai
+base: 9d05c64281c2aeeae9d67b139eab674720184fb1
+branch: test/f1-02-negative-security-matrix
+
+authorized implementation:
+  exactly 9 files
+  versioned matrix/harness only
+  local/static validation only
+
+execution authority:
+  NONE
+
+IMP-003:
+  NOT_DETERMINED
+
+ROLLBACK_REAPPLY:
+  NOT_DETERMINED
+
+SECURITY_GO:
+  NOT_GRANTED
+```
+
+After the PR-08 Draft is opened, the single next safe action is:
+
+```text
+RESOLVE PR-08 EXACT HEAD
+PERFORM EXACT-HEAD IMPLEMENTATION REVIEW
+DO NOT EXECUTE ANY PR-08 RUNNER
+```
+
+No Ready, merge, deploy, Supabase, Auth, LAB, rollback/reapply, production
+smoke, OC-01, PR-09 or Security Go authority is inherited.
+
 ## 0.0000 Current semantic next action override — J4/PR-08 gate — 2026-09-02
 
 J3 is closed only by explicit Product Authority bounded-residual exception.
@@ -218,3 +418,67 @@ Issue #150 — Security Truth Baseline: CLOSED / completed
 ```
 
 F1-02 final acceptance remains separate and is not granted by B3 closure.
+
+## 6. PR #166 — next safe action after lifecycle reconciliation — 2026-09-03
+
+Current technical position at reviewed head `2a0e6b8a2f964afe3c0c35c75190ae23344ed884`:
+
+```text
+Phase 1: CLOSED STATICALLY
+Phase 2: CLOSED STATICALLY
+Phase 3: CLOSED
+Phase 4: CLOSED
+PR08-RR-64M-CANONICAL-HASH: ACCEPTABLE WITH RESIDUAL RISK
+IMP-003: NOT_DETERMINED
+ROLLBACK_REAPPLY: NOT_DETERMINED
+SECURITY_GO: NOT_GRANTED
+runtime PR-08: NOT_EXECUTED
+```
+
+The residual `PR08-RR-64M-CANONICAL-HASH` is bounded to the isolated evidence
+harness. It may make evidence capture non-executable on large fixtures, but the
+observed failure model is fail-closed and does not create a false PASS. Reopen it
+on ENOBUFS/maxBuffer failure, material fixture growth, large/uncontrolled dataset
+use, or when rollback/cleanup proof cannot complete. Planned remediation is
+server-side ordered digest or streaming hashing.
+
+This reconciliation authorizes lifecycle resolution only after the documentation
+commit is published and revalidated, and only for:
+
+```text
+PRRT_kwDOSEToMc6fBXG5
+PRRT_kwDOSEToMc6fBXHB
+PRRT_kwDOSEToMc6fBXHU
+PRRT_kwDOSEToMc6fBXHW
+PRRT_kwDOSEToMc6fBXHY
+PRRT_kwDOSEToMc6fBXHI
+PRRT_kwDOSEToMc6fBXHF
+PRRT_kwDOSEToMc6fBXHM
+```
+
+Once all eight are confirmed resolved, **STOP**.
+
+The next action after that STOP is:
+
+```text
+FINAL INDEPENDENT EXACT-HEAD PRE-MERGE REVIEW — PR #166
+AUTHORIZATION REQUIRED SEPARATELY
+```
+
+That future gate must reconstruct live PR state, exact base/head/commits/changed
+files/checks/reviews/threads/mergeability/drift, inspect final files and residuals,
+and emit PRE-MERGE PASS or BLOCK. No merge is implied by a PASS.
+
+Prohibited under this entry:
+
+```text
+NO runtime
+NO rollback/reapply
+NO Supabase/Auth mutation
+NO merge
+NO deploy
+NO OC-01
+NO PR-09
+NO Security Go
+NO resolution of any thread outside the eight listed above
+```

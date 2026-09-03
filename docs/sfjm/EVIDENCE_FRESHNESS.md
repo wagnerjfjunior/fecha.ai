@@ -1,5 +1,337 @@
 # FECH.AI — SFJM Evidence Freshness
 
+## 0.00000000000000 Phase 1 implementation evidence — SQL execution authority — 2026-09-03
+
+Parent: `98da96da8d20964b9618c72407f34598116b4f46`.
+
+Bounded static implementation target:
+
+- dedicated SQL-runtime wrapper;
+- exact affirmative runtime and production authorization;
+- connection-derived project binding plus SQL-side psql `HOST` defense;
+- claimant RPC exact success/count proof before rollback;
+- positive synthetic lead, completed idempotency claimant and `import_batch` audit evidence before rollback;
+- post-rollback scoped residue verification;
+- validator anti-regression coverage.
+
+Targeted threads remain OPEN / NOT_RESOLVED pending independent exact-head review:
+
+`PRRT_kwDOSEToMc6fBXG5`
+`PRRT_kwDOSEToMc6fBXG9`
+`PRRT_kwDOSEToMc6fBXHB`
+
+Execution evidence created by this event: NONE.
+
+Preserved: `IMP-003 = NOT_DETERMINED`, `ROLLBACK_REAPPLY = NOT_DETERMINED`, `SECURITY_GO = NOT_GRANTED`, runtime results `NOT_EXECUTED`.
+
+## 0.0000000000000 Current evidence — PR #166 Ready + pre-merge governance reconciliation — 2026-09-03
+
+Exact reviewed PR state before this documentation-only correction:
+
+```text
+repository: wagnerjfjunior/fecha.ai
+PR: #166
+branch: test/f1-02-negative-security-matrix
+base: 9d05c64281c2aeeae9d67b139eab674720184fb1
+exact head: 0f3f266cb2ed103e6acda7bb03b9934cd30f1b41
+state: OPEN / READY
+draft: false
+commits: 7
+changed files: 9
+mergeable: true
+Vercel: SUCCESS
+reviews: 0
+review threads: 0
+head changed during Ready transition: NO
+```
+
+Evidence classification:
+
+- PR/GitHub lifecycle state above: LIVE_GITHUB_READ;
+- exact-head PR-08 v7 implementation review: PASS;
+- pre-merge technical/security finding at `0f3f266cb2ed103e6acda7bb03b9934cd30f1b41`: NO NEW BLOCKER;
+- pre-merge governance finding: `PR166-PREMERGE-SFJM-001`;
+- finding classification: REQUIRED IN THIS PR;
+- finding type: GOVERNANCE / CONTINUITY ONLY;
+- reason: stale SFJM lifecycle instructions remained after a later Product Authority Ready authorization.
+
+No technical/security finding was reopened in matrix v7, HTTP harness, validator, rollback architecture or runtime SQL.
+
+Historical closed findings remain AUDIT_LOOP_BLOCKED absent new exact-head contradiction:
+
+- `PR166-J4-V5-OBSERVABILITY-ORACLE-001`: CLOSED STATICALLY;
+- `PR166-J4-V5-CANONICAL-RESTORE-002`: CLOSED STATICALLY.
+
+Execution/evidence states remain:
+
+- PR-08 runtime matrix: NOT_EXECUTED;
+- Auth matrix: NOT_EXECUTED;
+- SQL runtime: NOT_EXECUTED;
+- rollback/reapply: NOT_EXECUTED / `ROLLBACK_REAPPLY = NOT_DETERMINED`;
+- production smoke: NOT_EXECUTED;
+- Supabase/Auth mutation: NONE;
+- `IMP-003 = NOT_DETERMINED`;
+- `SECURITY_GO = NOT_GRANTED`.
+
+Additional bounded evidence gaps / residual metadata:
+
+- main branch-protection configuration: NOT_READ — GitHub integration returned `403 Resource not accessible by integration`; no inference is made about presence or absence of branch protection;
+- PR body exact-anchor / Ready wording: STALE METADATA — ACCEPTABLE WITH RESIDUAL RISK; GitHub live state and exact refs remain authoritative.
+
+This documentation reconciliation creates no runtime PASS and no merge authorization.
+
+## 0.000000000000 PR-08 sixth bounded correction — observer completeness v7 — 2026-09-03
+
+Parent: `c2922bc952741202b8f57505db755d112bd47d82`.
+
+Static implementation contract:
+- matrix `fechai.f1-02.pr08.matrix.v7`;
+- 98 records / 56 topology checks / 72 server case plans;
+- observer identity binding preserved;
+- ZERO_ROWS absence remains owner-side;
+- own/foreign funnel-stage complete sets use `SERVER_ROW_IDS_EQUAL_VAR_SET`;
+- generic validator forbids observer REST `ZERO_ROWS` / `ROW_IDS_EQUAL_VAR_SET`;
+- no runtime/Auth/SQL/rollback/smoke execution;
+- no Supabase/Auth mutation;
+- canonical restoration v6 remains unchanged and closed for this scope.
+
+Residual states remain `IMP-003 = NOT_DETERMINED`, `ROLLBACK_REAPPLY = NOT_DETERMINED`, `SECURITY_GO = NOT_GRANTED`.
+
+New exact head must be resolved after publication; no PASS/Ready is implied by this implementation event.
+
+## 0.00000000000 PR-08 fifth bounded root-invariant correction — v6 static closure — 2026-09-03
+
+Parent exact head:
+
+    68481f1cfc900be8b2172871b60dd56a27f07c5f
+
+Material findings being corrected:
+
+    PR166-J4-V5-OBSERVABILITY-ORACLE-001
+    PR166-J4-V5-CANONICAL-RESTORE-002
+
+Static target contract:
+
+    matrix schema: fechai.f1-02.pr08.matrix.v6
+    records: 98
+    topology checks: 56
+    server case plans: 72
+
+Observer closure:
+
+    EVIDENCE_OBSERVER_TOKEN -> global /auth/v1/user identity binding
+    valid-token bindings -> validator-enforced across request/probe/topology surfaces
+    INVALID_TOKEN / EXPIRED_TOKEN -> explicit negative-token fixtures only
+    no-profile / zero-stage-company absence -> owner-side SERVER_ZERO_ROWS_BY_UUID
+    owner-side absence channel -> existing non-production postgres/BYPASSRLS preflight
+
+Restoration closure:
+
+    HTTP cleanup global fingerprint
+      = canonical public ordinary/materialized relation multisets
+      + public sequence last_value/is_called as text
+      + stable SHA-256
+
+    rollback/reapply state fingerprint
+      = schema-only pg_dump SHA-256 with fixed restrict key
+      + canonical public data/sequence SHA-256
+
+No runtime evidence is created by this correction.
+
+    runtime matrix: NONE
+    Auth matrix: NONE
+    rollback/reapply execution: NONE
+    production smoke: NONE
+    IMP-003: NOT_DETERMINED
+    ROLLBACK_REAPPLY: NOT_DETERMINED
+    SECURITY_GO: NOT_GRANTED
+
+Next evidence action after publication:
+
+    resolve the new PR #166 exact head
+    perform one independent exact-head implementation review
+    stop before Ready
+
+## 0.0000000000 PR-08 fourth bounded anti-loop closure correction — 2026-09-03
+
+Implementation-only event on parent head `c18347701b52ec21a3758cfbfa512871e10998dc`.
+
+    scope: same 9 authorized PR-08 files
+    mode: FORENSIC / EVIDENCE-BOUND / CONTRADICTION-FIRST / ANTI-LOOP
+    matrix schema: fechai.f1-02.pr08.matrix.v5
+    test records: 98
+    topology checks: 55
+    server lifecycle plans: 72
+    mutation-capable HTTP cases: 71
+    mutation-capable HTTP cases without lifecycle: 0
+    negative unexpected-mutation cleanup: COVERED BY SERVER LIFECYCLE
+    cleanup verification: SCOPED RESTORE + GLOBAL PUBLIC DATA SHA-256
+    sequence restoration: REQUIRED
+    ACL restoration: LIST ROW + COMPLETE ACL SET + AUDIT
+    broker audit restoration: INCLUDED
+    COR-011: CANONICAL T3 FLOW
+    STG-001: TRUE NO-SESSION REQUEST
+    FUN-006: CONDITIONAL / NOT_APPLICABLE WHEN RULES ABSENT
+    postgres.rolbypassrls preflight: REQUIRED
+    protected idempotency REST/client access: NONE
+    runtime execution: NONE
+    Auth execution: NONE
+    rollback/reapply execution: NONE
+    production smoke: NONE
+    IMP-003: NOT_DETERMINED
+    ROLLBACK_REAPPLY: NOT_DETERMINED
+    SECURITY_GO: NOT_GRANTED
+
+Reusable closure rule extracted: mutation-capable security tests must carry isolation, topology authority proof, deterministic observation, deterministic cleanup and a whole-surface restoration check before batch execution is considered repeatable.
+
+### Current next evidence action
+
+    resolve the new PR #166 exact head
+    perform one exact-head implementation review against the v5 closure invariants
+    do not execute any PR-08 runner
+    do not reopen previous correction classes unless contradicted by exact-head evidence
+
+## 0.000000000 PR-08 third bounded harness correction evidence — 2026-09-03
+
+Implementation-only event on parent head `718bf5371cde7b1243a852c497721badf0b5bba4`.
+
+    scope: same 9 authorized PR-08 files
+    protected idempotency REST/client access: REMOVED
+    server evidence channel: PSQL postgres OWNER / NON-PRODUCTION ONLY
+    server evidence production project: HARD_DENY
+    grants/RLS/policies widening: NONE
+    topology execution: GLOBAL + SELECTED CASE DEPENDENCIES ONLY
+    stateful cases with server lifecycle: 20
+    mutating HTTP cases without lifecycle: 0
+    deterministic replay/mismatch/incomplete setup: VERSIONED
+    per-case cleanup restoration: ORIGINAL SHA-256 REQUIRED
+    rollback pg_dump restrict key: FIXED
+    runtime execution: NONE
+    Auth execution: NONE
+    rollback/reapply execution: NONE
+    production smoke: NONE
+    IMP-003: NOT_DETERMINED
+    ROLLBACK_REAPPLY: NOT_DETERMINED
+    SECURITY_GO: NOT_GRANTED
+
+No runtime PASS is created by this correction. The owner-side channel is code/evidence architecture only and remains unexecuted under the standing NO LAB / NO SECOND PROJECT decision.
+
+### Current next evidence action
+
+    resolve the new PR #166 exact head
+    perform exact-head implementation review
+    do not execute any PR-08 runner
+
+## 0.00000000 PR-08 second bounded harness correction evidence — 2026-09-03
+
+Implementation-only event on parent head `e0b17d8c4c3d3d9c35952e3c934e325f92c1a1f5`.
+
+    scope: same 9 authorized PR-08 files
+    fixture topology preflight: VERSIONED / MANDATORY
+    denial semantics: EXACT STATUS + EXPECTED ERROR EVIDENCE
+    mutation probes: BOUND TO ACTUAL AT-RISK TARGETS
+    positive semantics: VERSIONED CONTENT / DELTA ASSERTIONS
+    import idempotency: LEAD + MARKER + LOG DELTAS
+    explicit runner selection: REQUIRED; --all explicit only
+    runtime execution: NONE
+    Auth execution: NONE
+    rollback/reapply execution: NONE
+    production smoke: NONE
+    IMP-003: NOT_DETERMINED
+    ROLLBACK_REAPPLY: NOT_DETERMINED
+    SECURITY_GO: NOT_GRANTED
+
+No J4 runtime PASS is created by this correction. Prior operating-session evidence remains bounded continuity evidence only.
+
+### Current next evidence action
+
+    resolve the new PR #166 exact head
+    perform exact-head implementation review
+    do not execute any PR-08 runner
+
+## 0.0000000 PR-08 bounded harness correction evidence — 2026-09-03
+
+Implementation-only event on parent head `f69f0b5628894d3e74efefc16f02cdfa60877945`.
+
+    scope: same 9 authorized PR-08 files
+    request/probe specs: VERSIONED_IN_MATRIX
+    fixture role: VALUES_AND_SECRETS_ONLY
+    HTTP target binding: FAIL_CLOSED
+    mutation evidence: BEFORE_AFTER_CANONICAL_SHA256
+    migration provenance: EXACT_BLOB + TRUE_FINAL_GIT_COMMIT
+    concurrency evidence: PER_REQUEST_TIMING + POSITIVE_OVERLAP_REQUIRED
+    rollback evidence: ONE_CASE + INITIAL/ROLLBACK/REAPPLY STATE HASHES
+    runtime execution: NONE
+    Auth execution: NONE
+    rollback/reapply execution: NONE
+    production smoke: NONE
+    IMP-003: NOT_DETERMINED
+    ROLLBACK_REAPPLY: NOT_DETERMINED
+    SECURITY_GO: NOT_GRANTED
+
+No J4 runtime/ROL PASS is created by this correction. The prior 33 operating-session results remain bounded continuity evidence only.
+
+### Current next evidence action
+
+    resolve the new PR #166 exact head
+    perform exact-head implementation review
+    do not execute any PR-08 runner
+
+## 0.000000 Current J4 / PR-08 implementation evidence override — 2026-09-03
+
+This is a versioned-harness implementation event, not runtime evidence.
+
+```text
+repository: wagnerjfjunior/fecha.ai
+implementation base: 9d05c64281c2aeeae9d67b139eab674720184fb1
+branch: test/f1-02-negative-security-matrix
+PR-08 harness records: 98
+security/runtime records before ROL/PRD: 85
+ROL records: 11
+PRD records: 2
+
+IMPLEMENTATION_STATUS:
+  VERSIONED_HARNESS / NOT_EXECUTED
+
+RUNTIME_MATRIX:
+  NOT_EXECUTED
+
+AUTH_MATRIX:
+  NOT_EXECUTED
+
+ROLLBACK_REAPPLY:
+  NOT_DETERMINED / NOT_EXECUTED
+
+IMP-003:
+  NOT_DETERMINED / NOT_EXECUTED
+
+PRODUCTION_SMOKE:
+  NOT_EXECUTED BY PR-08 IMPLEMENTATION
+
+SECURITY_GO:
+  NOT_GRANTED
+```
+
+Prior 33 operating-session STG/IMP/FDB results remain bounded continuity
+evidence only and are referenced from `matrix.json`; they are not promoted to
+canonical PR-08 receipts.
+
+The implementation reuses exact existing B2/B3/B4/PR07 proof blobs rather than
+copying them. Rollback records bind eleven exact migration artifacts; ROL-001
+uses the versioned embedded exact rollback block and ROL-002..011 bind separate
+rollback artifacts.
+
+No Supabase/Auth/Vercel/runtime/rollback call is authorized or evidenced by
+this section.
+
+### Current next evidence action
+
+```text
+OPEN PR-08 AS DRAFT
+THEN STOP
+NEXT GATE = EXACT-HEAD IMPLEMENTATION REVIEW
+```
+
 ## 0.00000 Current J3/PR-07 operating-session runtime evidence override
 
 This section is the current evidence-freshness authority for the J3/PR-07
@@ -1346,3 +1678,78 @@ AUDIT_LOOP_BLOCKED
 ```
 
 After a material T3A corrective commit, revalidate only the affected exact-head T3A gate and its dependencies; do not reopen unrelated completed work.
+
+## 11. PR #166 / PR-08 — evidence freshness reconciliation — 2026-09-03
+
+Fresh anchor used for this lifecycle reconciliation:
+
+```text
+main = 9d05c64281c2aeeae9d67b139eab674720184fb1
+PR #166 reviewed head before documentation reconciliation = 2a0e6b8a2f964afe3c0c35c75190ae23344ed884
+branch = test/f1-02-negative-security-matrix
+PR = OPEN / READY
+mergeable = TRUE
+Vercel = SUCCESS
+```
+
+Material evidence at that anchor was re-resolved from GitHub live. The technical
+closures currently carried forward are:
+
+```text
+Phase 1 — CLOSED STATICALLY
+Phase 2 — CLOSED STATICALLY
+Phase 3 — CLOSED
+Phase 4 — CLOSED
+```
+
+Residual evidence record:
+
+```text
+PR08-RR-64M-CANONICAL-HASH
+classification = ACCEPTABLE WITH RESIDUAL RISK
+thread = PRRT_kwDOSEToMc6fBXHM
+surface = PR-08 isolated evidence harness
+cause = ordered canonical relation JSON materialization + Node spawnSync maxBuffer 64 MiB
+failure semantics = FAIL-CLOSED / NO FALSE PASS
+production runtime impact = NONE ESTABLISHED
+future remediation = server-side digest or streaming
+```
+
+Residual revalidation is required if any of these occur:
+
+```text
+ENOBUFS / maxBuffer / equivalent capture failure
+fixture relation approaches/exceeds the practical envelope
+harness is used against a large or uncontrolled dataset
+rollback/cleanup evidence cannot complete at required volume
+hashing implementation changes
+```
+
+Execution evidence remains deliberately absent:
+
+```text
+IMP-003 = NOT_DETERMINED
+ROLLBACK_REAPPLY = NOT_DETERMINED
+SECURITY_GO = NOT_GRANTED
+PR-08 runtime = NOT_EXECUTED
+```
+
+Authorized lifecycle completion after this documentation commit is published and
+its new exact head is revalidated: resolve only the following eight threads and
+then confirm their GitHub state:
+
+```text
+PRRT_kwDOSEToMc6fBXG5
+PRRT_kwDOSEToMc6fBXHB
+PRRT_kwDOSEToMc6fBXHU
+PRRT_kwDOSEToMc6fBXHW
+PRRT_kwDOSEToMc6fBXHY
+PRRT_kwDOSEToMc6fBXHI
+PRRT_kwDOSEToMc6fBXHF
+PRRT_kwDOSEToMc6fBXHM
+```
+
+A documentation-only SHA advance caused by this reconciliation does not reopen
+Phases 1–4 by itself. Any unexpected implementation-file change, new technical
+finding, failed check, thread contradiction or head drift is an invalidation
+event and requires bounded re-adjudication before pre-merge.
