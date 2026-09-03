@@ -1,5 +1,53 @@
 # FECH.AI — SFJM Current Product/Security Handoff
 
+## 0.000000000000000 CURRENT HANDOFF — PR #166 merged and Vercel deployed — 2026-09-03
+
+```text
+repository: wagnerjfjunior/fecha.ai
+main: 59262ef7cbbc3d29d6c4693c2b339964d6f806aa
+PR #166: CLOSED / MERGED
+pre-merge reviewed head: e92d97044ac753f9c71aad7fc37207fa355a2d1c
+MERGED_TO_MAIN = CONFIRMED
+VERCEL_PRODUCTION_DEPLOY = READY/SUCCESS
+```
+
+Closed PR-08 technical work:
+
+```text
+Phase 1 — execution authority / SQL safety: CLOSED STATICALLY
+Phase 2 — topology / semantic truth: CLOSED STATICALLY
+Phase 3 — FUN-006 applicability: CLOSED
+Phase 4 — exact artifact provenance: CLOSED
+```
+
+Residual carried forward:
+
+```text
+PR08-RR-64M-CANONICAL-HASH
+classification: ACCEPTABLE WITH RESIDUAL RISK
+scope: isolated PR-08 evidence harness
+failure model: fail-closed
+reopen: ENOBUFS/maxBuffer, material fixture growth, large/uncontrolled dataset,
+        or inability to complete rollback/cleanup evidence
+future remediation: server-side ordered digest or streaming hash
+```
+
+Do not promote unresolved evidence:
+
+```text
+IMP-003 = NOT_DETERMINED
+ROLLBACK_REAPPLY = NOT_DETERMINED
+PR-08 runtime = NOT_EXECUTED
+SECURITY_GO = NOT_GRANTED
+```
+
+Next handoff target: reconstruct the next J4/F1-02 gate in READ_ONLY mode from the merged
+main, keeping merged harness, Vercel lifecycle, runtime evidence, rollback/reapply, OC-01,
+PR-09 and Security Go as distinct states. No one state implies another.
+
+No authority is carried forward for runtime, Supabase/Auth, OC-01, PR-09, Security Go,
+Ready, merge or deploy.
+
 ## 0.00000 Current handoff override — J3 closed by bounded residual exception / J4 next — 2026-09-02
 
 This section is the current handoff authority when older B2/B4-next sections

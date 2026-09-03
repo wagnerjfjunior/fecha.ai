@@ -1,5 +1,51 @@
 # FECH.AI — SFJM Authorizations
 
+## 0.000000000000000 Product Authority — post-merge/post-deploy SFJM reconciliation — 2026-09-03
+
+Direct Product Authority authorization:
+
+```text
+base main = 59262ef7cbbc3d29d6c4693c2b339964d6f806aa
+branch = docs/pr166-post-merge-deploy-reconciliation
+purpose = reconcile PR #166 merge + Vercel Production deployment and advance SFJM continuity
+publication = exactly one commit
+PR lifecycle = open one Draft PR, then STOP
+```
+
+Authorized files — exactly five:
+
+```text
+docs/sfjm/CURRENT_STATE.md
+docs/sfjm/NEXT_SAFE_ACTION.md
+docs/sfjm/EVIDENCE_FRESHNESS.md
+docs/sfjm/AUTHORIZATIONS.md
+docs/sfjm/handoffs/CURRENT.md
+```
+
+Authorized durable facts:
+
+```text
+PR #166 MERGED_TO_MAIN = CONFIRMED
+merge commit / main = 59262ef7cbbc3d29d6c4693c2b339964d6f806aa
+Vercel Production deployment for same commit = READY/SUCCESS
+Phases 1–4 = CLOSED
+PR08-RR-64M-CANONICAL-HASH = ACCEPTABLE WITH RESIDUAL RISK
+IMP-003 = NOT_DETERMINED
+ROLLBACK_REAPPLY = NOT_DETERMINED
+PR-08 runtime = NOT_EXECUTED
+SECURITY_GO = NOT_GRANTED
+current next action = READ_ONLY reconstruction of the next J4/F1-02 gate
+```
+
+Residual reopen triggers and future remediation by server-side ordered digest or streaming
+hash must remain preserved.
+
+Explicitly NOT authorized: code/harness changes, migrations/rollback SQL, Supabase/Auth,
+Vercel mutation, GitHub Actions, runtime execution, OC-01, PR-09, Security Go, Ready,
+merge, deploy, or any file outside the five listed above.
+
+After the Draft PR is opened, STOP and present exact branch/head/diff/checks.
+
 ## 0.00000000000000 Phase 1 bounded implementation authorization — PR #166 — 2026-09-03
 
 Current material authority:
