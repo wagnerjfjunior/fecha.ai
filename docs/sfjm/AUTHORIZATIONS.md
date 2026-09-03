@@ -1,5 +1,24 @@
 # FECH.AI — SFJM Authorizations
 
+## 0.00000000000000 Phase 1 bounded implementation authorization — PR #166 — 2026-09-03
+
+Current material authority:
+
+- phase: F1-02 / J4 / PR-08 — Phase 1 / Execution Authority + SQL Safety;
+- authorized parent: `98da96da8d20964b9618c72407f34598116b4f46`;
+- targeted review threads: `PRRT_kwDOSEToMc6fBXG5`, `PRRT_kwDOSEToMc6fBXG9`, `PRRT_kwDOSEToMc6fBXHB`;
+- scope: exactly the six Phase-1 allowlisted files;
+- one bounded commit authorized;
+- runtime/Auth/SQL execution: NOT_AUTHORIZED;
+- Supabase/Auth mutation: NOT_AUTHORIZED;
+- review-thread resolution: NOT_AUTHORIZED;
+- merge/deploy/OC-01/PR-09: NOT_AUTHORIZED;
+- Security Go: NOT_GRANTED.
+
+The implementation event does not close the targeted threads. Closure requires one independent exact-head Phase-1 implementation review.
+
+Preserved: `IMP-003 = NOT_DETERMINED`, `ROLLBACK_REAPPLY = NOT_DETERMINED`, all PR-08 runtime result fields `NOT_EXECUTED`.
+
 ## 0.0000000000000 Current semantic override — PR #166 Ready transition + pre-merge authority — 2026-09-03
 
 This section is the current lifecycle authority for PR #166 and supersedes older "Ready NOT AUTHORIZED" / "STOP BEFORE READY" wording only for current-state interpretation. Those older sections remain valid historical lineage for the authority that existed when written.

@@ -1,5 +1,29 @@
 # FECH.AI — SFJM Evidence Freshness
 
+## 0.00000000000000 Phase 1 implementation evidence — SQL execution authority — 2026-09-03
+
+Parent: `98da96da8d20964b9618c72407f34598116b4f46`.
+
+Bounded static implementation target:
+
+- dedicated SQL-runtime wrapper;
+- exact affirmative runtime and production authorization;
+- connection-derived project binding plus SQL-side psql `HOST` defense;
+- claimant RPC exact success/count proof before rollback;
+- positive synthetic lead, completed idempotency claimant and `import_batch` audit evidence before rollback;
+- post-rollback scoped residue verification;
+- validator anti-regression coverage.
+
+Targeted threads remain OPEN / NOT_RESOLVED pending independent exact-head review:
+
+`PRRT_kwDOSEToMc6fBXG5`
+`PRRT_kwDOSEToMc6fBXG9`
+`PRRT_kwDOSEToMc6fBXHB`
+
+Execution evidence created by this event: NONE.
+
+Preserved: `IMP-003 = NOT_DETERMINED`, `ROLLBACK_REAPPLY = NOT_DETERMINED`, `SECURITY_GO = NOT_GRANTED`, runtime results `NOT_EXECUTED`.
+
 ## 0.0000000000000 Current evidence — PR #166 Ready + pre-merge governance reconciliation — 2026-09-03
 
 Exact reviewed PR state before this documentation-only correction:

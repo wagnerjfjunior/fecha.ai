@@ -9,6 +9,66 @@ async function main() {
   const http = await fs.readFile(path.join(root,"scripts/tests/f1-02-pr08/run_auth_http_matrix.mjs"),"utf8");
   const rollback = await fs.readFile(path.join(root,"scripts/tests/f1-02-pr08/run_rollback_reapply.mjs"),"utf8");
   const sql = await fs.readFile(path.join(root,"supabase/tests/f1-02-pr08/runtime_security_matrix.sql"),"utf8");
+  const sqlRuntime = await fs.readFile(path.join(root,"scripts/tests/f1-02-pr08/run_sql_runtime_matrix.mjs"),"utf8");
+
+  // PR08 Phase 1 — execution authority + SQL safety anti-regression.
+  const sqlRuntimeRecords=matrix.records.filter(r=>r.runner==="sql_runtime");
+  if(sqlRuntimeRecords.length!==1) throw new Error("SQL_RUNTIME_RECORD_COUNT_DRIFT:"+sqlRuntimeRecords.length);
+  for(const rec of sqlRuntimeRecords){
+    if(rec.sql_plan?.file!=="supabase/tests/f1-02-pr08/runtime_security_matrix.sql") throw new Error("SQL_RUNTIME_ARTIFACT_DRIFT:"+rec.test_id);
+    if(!sqlRuntime.includes('"'+rec.test_id+'"')) throw new Error("SQL_RUNTIME_WRAPPER_CASE_MISSING:"+rec.test_id);
+  }
+
+  const wrapperNeedles=[
+    "PR08_SQL_RUNTIME_WRAPPER_V1",
+    'process.env.FECHAI_PR08_SQL_RUNTIME_AUTHORIZED !== "YES"',
+    "FECHAI_PR08_DATABASE_URL",
+    "FECHAI_PR08_TARGET_PROJECT_REF",
+    "PR08_SQL_CONNECTION_PROJECT_BINDING",
+    "connectionProjectRef !== fixture.target_project_ref",
+    "connectionProjectRef !== declaredProjectRef",
+    'process.env.FECHAI_PR08_PRODUCTION_EXECUTION_AUTHORIZED !== "YES"',
+    "PR08_SQL_SAME_VALIDATED_CONNECTION",
+    "PGHOST:u.hostname",
+    "PGDATABASE:decodeURIComponent",
+    "PR08_EXPECTED_VALIDOS",
+    "PR08_EXPECTED_INVALIDOS",
+    "PR08_EXPECTED_DUPLICADOS"
+  ];
+  for(const n of wrapperNeedles) if(!sqlRuntime.includes(n)) throw new Error("SQL_RUNTIME_WRAPPER_CONTRACT_MISSING:"+n);
+
+  const sqlPhase1Needles=[
+    "PR08_PHASE1_SQL_AUTHORITY_V1",
+    ":'PR08_SQL_RUNTIME_AUTHORIZED' = 'YES'",
+    "pr08_sql_runtime_authorized",
+    "pr08_host_project_matches",
+    "db.uobxxgzshrmbtjfdolxd.supabase.co",
+    ":'PR08_PRODUCTION_EXECUTION_AUTHORIZED' = 'YES'",
+    "PR08_PHASE1_CLAIMANT_RESULT_CAPTURE",
+    "PR08_PHASE1_CLAIMANT_SUCCESS_RESULT",
+    "PR08_PHASE1_POSITIVE_LEAD_BEFORE_ROLLBACK",
+    "PR08_PHASE1_POSITIVE_MARKER_BEFORE_ROLLBACK",
+    "PR08_PHASE1_POSITIVE_AUDIT_BEFORE_ROLLBACK",
+    "PR08_PHASE1_ROLLBACK_AFTER_POSITIVE_PROOF",
+    "PR08_PHASE1_POST_ROLLBACK_RESIDUE_CHECKS"
+  ];
+  for(const n of sqlPhase1Needles) if(!sql.includes(n)) throw new Error("SQL_PHASE1_CONTRACT_MISSING:"+n);
+
+  const captureAt=sql.indexOf("PR08_PHASE1_CLAIMANT_RESULT_CAPTURE");
+  const resultAt=sql.indexOf("PR08_PHASE1_CLAIMANT_SUCCESS_RESULT");
+  const leadAt=sql.indexOf("PR08_PHASE1_POSITIVE_LEAD_BEFORE_ROLLBACK");
+  const markerAt=sql.indexOf("PR08_PHASE1_POSITIVE_MARKER_BEFORE_ROLLBACK");
+  const auditAt=sql.indexOf("PR08_PHASE1_POSITIVE_AUDIT_BEFORE_ROLLBACK");
+  const rollbackAt=sql.indexOf("PR08_PHASE1_ROLLBACK_AFTER_POSITIVE_PROOF");
+  const residueAt=sql.indexOf("PR08_PHASE1_POST_ROLLBACK_RESIDUE_CHECKS");
+  if(!(captureAt<resultAt&&resultAt<leadAt&&leadAt<markerAt&&markerAt<auditAt&&auditAt<rollbackAt&&rollbackAt<residueAt)) throw new Error("SQL_CLAIMANT_PROOF_ORDER_INVALID");
+
+  if(!sql.includes("pg_catalog.jsonb_object_keys(:'pr08_claimant_rpc_result'::jsonb)")||
+     !sql.includes("?& ARRAY['validos','invalidos','duplicados']::text[]")||
+     !sql.includes("resultado = :'pr08_claimant_rpc_result'::jsonb")||
+     !sql.includes("detalhes->'resultado' = :'pr08_claimant_rpc_result'::jsonb")) {
+    throw new Error("SQL_CLAIMANT_POSITIVE_PROOF_INCOMPLETE");
+  }
 
   const expected={AUTH:5,COR:13,CRM:15,FUN:8,ACL:10,STG:7,IMP:16,FDB:11,ROL:11,PRD:2,TOTAL:98};
   const counts={TOTAL:matrix.records.length};
