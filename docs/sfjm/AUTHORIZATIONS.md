@@ -1,5 +1,42 @@
 # FECH.AI — SFJM Authorizations
 
+## 0.00000000 Product Authority — PR #166 second bounded correction grant — 2026-09-03
+
+Authorized correction parent:
+
+    e0b17d8c4c3d3d9c35952e3c934e325f92c1a1f5
+
+Authorized scope remains exactly the same nine PR-08 files.
+
+Required correction domains:
+
+1. bind mutation probes to the actual foreign/wrong-owner/mismatch target;
+2. add executable versioned fixture-topology preflight;
+3. require semantic-specific DENY, not arbitrary 4xx;
+4. record actual sanitized error evidence;
+5. add positive content/state assertions for STG/ACL/FUN/FDB and other nontrivial positives;
+6. prove one logical import mutation for idempotency/concurrency cases;
+7. preserve true overlap evidence;
+8. require explicit case selection; full matrix only through explicit --all;
+9. enforce all contracts in validate_matrix.mjs.
+
+Explicit prohibitions remain:
+
+    runtime matrix
+    Auth matrix
+    rollback/reapply execution
+    production smoke
+    Supabase/Auth mutation
+    LAB / second project / Preview Branch
+    Vercel/deploy
+    Ready
+    merge
+    OC-01
+    PR-09
+    Security Go
+
+Only local/static validation is authorized. The grant is consumed by publication of the correction. The next authorized activity is read-only exact-head implementation review only.
+
 ## 0.0000000 Product Authority — PR #166 bounded correction grant — 2026-09-03
 
 Authorized correction parent:

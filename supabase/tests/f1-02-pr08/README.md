@@ -6,48 +6,104 @@ Base application snapshot:
 
     9d05c64281c2aeeae9d67b139eab674720184fb1
 
-## Execution/evidence contract
+## PR-08 v3 evidence contract
 
-PR-08 versions the execution definition itself.
-
-    REQUEST / RESPONSE / MUTATION-PROBE SPECS: VERSIONED IN matrix.json
+    REQUEST / PROBE SPECS: VERSIONED IN matrix.json
     FIXTURE: VALUES + TOKENS/SECRETS ONLY
-    ARBITRARY FIXTURE URL / METHOD / PROBE: FORBIDDEN
-    TARGET ORIGIN: https://<target_project_ref>.supabase.co
+    TOPOLOGY PREFLIGHT: MANDATORY / VERSIONED
+    ARBITRARY FIXTURE URL / METHOD / ASSERTION: FORBIDDEN
+    DENY: EXACT STATUS + EXPECTED ERROR EVIDENCE
+    POSITIVE SEMANTICS: VERSIONED ASSERTIONS
+    EXPLICIT CASE SELECTION: REQUIRED
+    FULL HTTP MATRIX: ONLY WITH EXPLICIT --all
     IMP-003: NOT_DETERMINED
     ROLLBACK_REAPPLY: NOT_DETERMINED
     SECURITY_GO: NOT_GRANTED
 
-The external HTTP fixture may contain only target_project_ref, environment, fixture_version and variables.
-It cannot define cases, URLs, paths, methods, assertions or mutation probes.
-All IDs, tokens, keys and synthetic values remain out of the repository.
+## Fixture topology preflight
 
-## HTTP target binding
+The HTTP fixture carries only target_project_ref, environment, fixture_version and variables.
+Before any selected test executes, the runner evaluates the versioned topology contract.
+The preflight proves the relationships used by the matrix, including:
 
-Every request and every before/after probe is built from a versioned relative path_template.
-The runner derives the only permitted origin from target_project_ref and fails closed if the final origin/hostname differs.
-Declaring a non-production project ref while pointing a request at production is therefore not a valid execution path.
+- actor token -> actor user/profile/company;
+- manager token/profile and managed team;
+- admin token/profile;
+- local vs foreign companies, lists, brokers and teams;
+- target lead ownership;
+- wrong-owner lead in the same tenant;
+- foreign lead in another tenant;
+- valid, inactive and foreign stages;
+- own-company and foreign-company stage sets;
+- a zero-stage tenant;
+- same-session idempotency preconditions for replay/mismatch/incomplete cases.
 
-## Mutation evidence
+If a topology relation is absent, ambiguous or inconsistent, execution fails before the business test.
 
-The fixture cannot assert mutation success.
-The runner executes the versioned before and after probe plans, recursively canonicalizes returned JSON and records SHA-256 fingerprints.
+## Denial semantics
 
-actual_data_mutation contains:
+A DENY case no longer passes because of any generic 4xx.
+Each DENY record versions exact allowed HTTP status values and at least one expected error signal:
 
-    observed = UNCHANGED | CHANGED
-    before_sha256
-    after_sha256
-    expected = MUST_EQUAL | MUST_CHANGE
+- exact RPC error text;
+- exact function error code; or
+- a bounded semantic regex where the historical contract does not expose a stable code.
 
-No fixture-asserted mutation PASS mode exists.
+The runtime receipt records the actual sanitized error code/evidence even when the denial is a PASS.
 
-## Concurrent evidence
+## Mutation-target evidence
 
-Concurrent cases record started_at, finished_at and duration_ms per request.
-The receipt records calculated overlap. PASS requires positive overlap at or above the versioned minimum.
-Promise.all by itself is not treated as concurrency evidence.
-This applies to IMP-003 and FUN-008.
+Before/after probes are bound to the object actually exposed to mutation risk.
+Cross-tenant, wrong-owner and mismatch cases probe the foreign/wrong-owner/mismatch target where applicable instead of proving only that an unrelated local row stayed unchanged.
+
+## Positive semantic assertions
+
+HTTP 2xx plus CHANGED is not enough for nontrivial positive cases.
+The v3 matrix versions content assertions such as:
+
+- STG own-stage set equality, foreign-stage exclusion, deterministic ordering and zero-stage empty result;
+- ACL returned list/selected target plus persisted visibility target;
+- FUN final lead stage plus new history row tenant/stage consistency;
+- FDB expected feedback/status state;
+- COR expected profile/status/team state;
+- CRM positive import shape and expected row delta.
+
+## Import/idempotency evidence
+
+IMP-001 and IMP-003 now probe three independent artifacts:
+
+    lead with the synthetic phone
+    importar_leads_batch_idempotency marker
+    import log for the session
+
+A PASS requires one new logical lead, one new marker, one new log, unique phone cardinality and canonical response agreement.
+IMP-003 additionally retains the existing positive-overlap requirement.
+
+IMP-002 independently proves one logical mutation in each tenant for the same textual session.
+IMP-010 proves the expected bounded multi-lead delta.
+IMP-011 proves zero additional mutation for an already completed replay.
+
+## Explicit selection
+
+The HTTP runner fails with no case IDs.
+Examples of the only valid selection models are conceptually:
+
+    <one or more explicit HTTP test IDs>
+    --all
+
+The --all flag must be exclusive. Technical ability to execute the runner is not execution authority.
+
+## Rollback/reapply
+
+The previous v2 rollback hardening is preserved unchanged:
+
+- production project/host hard deny;
+- one ROL case per invocation;
+- exact artifact provenance;
+- initial / post-rollback / post-reapply public-state SHA-256;
+- PASS only when rollback changes state and reapply restores the exact initial hash.
+
+No rollback/reapply was executed by this correction.
 
 ## Coverage
 
@@ -55,47 +111,8 @@ This applies to IMP-003 and FUN-008.
     STG 7 | IMP 16 | FDB 11 | ROL 11 | PRD 2
     TOTAL 98
 
-The 33 earlier STG/IMP/FDB operating-session results remain bounded continuity evidence only.
-They do not pre-populate a PR-08 PASS receipt.
-
-## Migration provenance
-
-exact_application_commit is the application snapshot and is not a migration commit.
-Every migration artifact is bound to path, exact blob and final_commit.
-final_commit is the Git commit that produced the exact artifact blob.
-Each record's exact_migration_commits is derived from those artifact commits.
-Rollback file artifacts also carry their exact final commit. ROL-001 uses the exact rollback block embedded in the password-state migration.
-
-## SQL cases
-
-runtime_security_matrix.sql versions two explicit cases:
-
-- PRD-001: read-only aggregation of the existing B2/B3/B4/PR07 proofs.
-- IMP-CLAIMANT-ROLLBACK: BEGIN -> importar_leads_batch -> ROLLBACK, followed by read-only assertions that no lead, idempotency marker or import log residue remains.
-
-Neither case was executed while implementing this correction.
-
-## Rollback/reapply runner
-
-The rollback runner is for a future separately authorized isolated non-production environment only.
-It fails closed unless the project ref is not production, the environment label is not production, the DB hostname exactly matches db.<target_project_ref>.supabase.co, exactly one ROL case is selected, and separate authorization flags are present.
-
-For that one case it records SHA-256 over a full plain public pg_dump:
-
-    initial
-    after rollback
-    after reapply
-
-PASS requires after rollback != initial and after reapply == initial.
-The runner records only hashes, not dump contents. Multi-case execution is rejected to prevent case-to-case contamination.
-
-Production project ref remains hard-denied:
-
-    uobxxgzshrmbtjfdolxd
-
-## Static validator
-
-validate_matrix.mjs checks exact 98-case coverage, unique IDs, required J4 fields, exact application snapshot, exact migration/rollback final commit provenance, no pre-populated PASS, versioned request/probe plans, relative-path-only HTTP specs, forbidden fixture request authority, target-origin binding, deterministic mutation fingerprints, concurrency timing/overlap, one-case rollback isolation/state restoration, claimant rollback SQL plan, obvious committed UUID/JWT leakage, and preservation of both residual NOT_DETERMINED states.
+All PR-08 execution-result fields remain NOT_EXECUTED.
+The 33 earlier operating-session results remain bounded continuity evidence only and are not canonical PR-08 receipts.
 
 ## Current authority
 

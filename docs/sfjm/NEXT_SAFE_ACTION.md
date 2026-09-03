@@ -1,5 +1,23 @@
 # FECH.AI — SFJM Next Safe Action
 
+## 0.0000000 PR-08 second-correction exact-head review — 2026-09-03
+
+The second bounded correction authorization is consumed by the same-branch implementation.
+
+    parent head: e0b17d8c4c3d3d9c35952e3c934e325f92c1a1f5
+    branch: test/f1-02-negative-security-matrix
+    allowed files: same 9
+    runner execution: NOT_AUTHORIZED
+    IMP-003: NOT_DETERMINED
+    ROLLBACK_REAPPLY: NOT_DETERMINED
+    SECURITY_GO: NOT_GRANTED
+
+Single next safe action after publication:
+
+    RESOLVE THE NEW BRANCH/PR HEAD
+    EXACT-HEAD IMPLEMENTATION REVIEW
+    STOP BEFORE READY
+
 ## 0.000000 PR-08 post-correction exact-head review — 2026-09-03
 
 The bounded correction authorization is consumed by the same-branch correction.

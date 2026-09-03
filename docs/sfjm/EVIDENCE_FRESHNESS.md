@@ -1,5 +1,32 @@
 # FECH.AI — SFJM Evidence Freshness
 
+## 0.00000000 PR-08 second bounded harness correction evidence — 2026-09-03
+
+Implementation-only event on parent head `e0b17d8c4c3d3d9c35952e3c934e325f92c1a1f5`.
+
+    scope: same 9 authorized PR-08 files
+    fixture topology preflight: VERSIONED / MANDATORY
+    denial semantics: EXACT STATUS + EXPECTED ERROR EVIDENCE
+    mutation probes: BOUND TO ACTUAL AT-RISK TARGETS
+    positive semantics: VERSIONED CONTENT / DELTA ASSERTIONS
+    import idempotency: LEAD + MARKER + LOG DELTAS
+    explicit runner selection: REQUIRED; --all explicit only
+    runtime execution: NONE
+    Auth execution: NONE
+    rollback/reapply execution: NONE
+    production smoke: NONE
+    IMP-003: NOT_DETERMINED
+    ROLLBACK_REAPPLY: NOT_DETERMINED
+    SECURITY_GO: NOT_GRANTED
+
+No J4 runtime PASS is created by this correction. Prior operating-session evidence remains bounded continuity evidence only.
+
+### Current next evidence action
+
+    resolve the new PR #166 exact head
+    perform exact-head implementation review
+    do not execute any PR-08 runner
+
 ## 0.0000000 PR-08 bounded harness correction evidence — 2026-09-03
 
 Implementation-only event on parent head `f69f0b5628894d3e74efefc16f02cdfa60877945`.
