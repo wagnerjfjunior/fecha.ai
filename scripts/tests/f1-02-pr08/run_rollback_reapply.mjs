@@ -54,7 +54,7 @@ async function main() {
     return r.stdout || "";
   }
   function stateHash(label) {
-    const dump = run(pgDump,["--schema=public","--no-comments","--format=plain"],undefined,label+"_PG_DUMP");
+    const dump = run(pgDump,["--schema=public","--no-comments","--format=plain","--restrict-key=FECHAIPR08STATEHASH"],undefined,label+"_PG_DUMP");
     return crypto.createHash("sha256").update(dump).digest("hex");
   }
   function extractEmbeddedRollback(text,marker) {

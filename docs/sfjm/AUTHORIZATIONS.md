@@ -1,5 +1,41 @@
 # FECH.AI — SFJM Authorizations
 
+## 0.000000000 Product Authority — PR #166 third bounded correction grant — 2026-09-03
+
+Authorized correction parent:
+
+    718bf5371cde7b1243a852c497721badf0b5bba4
+
+Authorized scope remains exactly the same nine PR-08 files.
+
+Required correction domains:
+
+1. replace REST/client observation of the protected idempotency table with boundary-compatible evidence observation without grant/RLS/policy widening;
+2. run only global topology plus selected-case dependencies;
+3. version deterministic setup for replay, session mismatch, payload mismatch and incomplete-state;
+4. ensure semantic fields are actually observed, including status_comercial;
+5. eliminate cross-case contamination, including explicit --all;
+6. make rollback/reapply dump hashing deterministic with fixed restrict key or equivalent canonicalization;
+7. complete COR-012 state proof/restoration and strengthen positive semantics;
+8. enforce all contracts in validate_matrix.mjs.
+
+Explicit prohibitions remain:
+
+    runtime matrix
+    Auth matrix
+    rollback/reapply execution
+    production smoke
+    Supabase/Auth mutation
+    LAB / second project / Preview Branch
+    Vercel/deploy
+    Ready
+    merge
+    OC-01
+    PR-09
+    Security Go
+
+Only repository/static validation is authorized. The owner-side evidence/lifecycle code may be versioned but is not authorized to execute in this window. The grant is consumed by publication of the correction. The next authorized activity is read-only exact-head implementation review only.
+
 ## 0.00000000 Product Authority — PR #166 second bounded correction grant — 2026-09-03
 
 Authorized correction parent:

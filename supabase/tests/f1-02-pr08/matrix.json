@@ -1,5 +1,5 @@
 {
-  "schema": "fechai.f1-02.pr08.matrix.v3",
+  "schema": "fechai.f1-02.pr08.matrix.v4",
   "title": "FECH.AI F1-02 / J4 / PR-08 repeatable executable security matrix",
   "implementation_status": "VERSIONED_HARNESS_NOT_EXECUTED",
   "base_application_commit": "9d05c64281c2aeeae9d67b139eab674720184fb1",
@@ -1740,25 +1740,10 @@
         }
       },
       "mutation_probe_plan": {
-        "before": [
-          {
-            "method": "GET",
-            "path_template": "/rest/v1/corretores?id=eq.${TARGET_CORRETOR_ID}&select=id,empresa_id,time_id,role,is_admin_local,is_gestor,ativo,apto_para_receber,must_change_password,user_id&order=id.asc",
-            "auth_token_var": "EVIDENCE_OBSERVER_TOKEN",
-            "headers_template": {},
-            "body_template": null
-          }
-        ],
-        "after": [
-          {
-            "method": "GET",
-            "path_template": "/rest/v1/corretores?id=eq.${TARGET_CORRETOR_ID}&select=id,empresa_id,time_id,role,is_admin_local,is_gestor,ativo,apto_para_receber,must_change_password,user_id&order=id.asc",
-            "auth_token_var": "EVIDENCE_OBSERVER_TOKEN",
-            "headers_template": {},
-            "body_template": null
-          }
-        ],
+        "channel": "SERVER_SQL_OWNER",
         "expectation": "MUST_CHANGE",
+        "before": [],
+        "after": [],
         "fingerprint": "CANONICAL_JSON_SHA256"
       },
       "concurrency_assertion": null,
@@ -1767,9 +1752,18 @@
           "mode": "RESPONSE_EQUALS_LITERAL",
           "response_index": 0,
           "value": true
+        },
+        {
+          "mode": "SERVER_AFTER_PATH_EQUALS_LITERAL",
+          "path": "broker.must_change_password",
+          "value": false
         }
       ],
-      "topology_dependencies": []
+      "topology_dependencies": [
+        "TOPO-TOKEN-ACTOR",
+        "TOPO-ACTOR"
+      ],
+      "server_case_plan": "COR-011"
     },
     {
       "test_id": "COR-012",
@@ -1848,25 +1842,10 @@
         }
       },
       "mutation_probe_plan": {
-        "before": [
-          {
-            "method": "GET",
-            "path_template": "/rest/v1/corretores?id=eq.${TARGET_CORRETOR_ID}&select=id,empresa_id,time_id,role,is_admin_local,is_gestor,ativo,apto_para_receber,must_change_password,user_id&order=id.asc",
-            "auth_token_var": "EVIDENCE_OBSERVER_TOKEN",
-            "headers_template": {},
-            "body_template": null
-          }
-        ],
-        "after": [
-          {
-            "method": "GET",
-            "path_template": "/rest/v1/corretores?id=eq.${TARGET_CORRETOR_ID}&select=id,empresa_id,time_id,role,is_admin_local,is_gestor,ativo,apto_para_receber,must_change_password,user_id&order=id.asc",
-            "auth_token_var": "EVIDENCE_OBSERVER_TOKEN",
-            "headers_template": {},
-            "body_template": null
-          }
-        ],
+        "channel": "SERVER_SQL_OWNER",
         "expectation": "MUST_CHANGE",
+        "before": [],
+        "after": [],
         "fingerprint": "CANONICAL_JSON_SHA256"
       },
       "concurrency_assertion": null,
@@ -1878,13 +1857,23 @@
           "value": true
         },
         {
-          "mode": "AFTER_FIRST_ROW_FIELD_EQUALS_VAR",
-          "probe_index": 0,
-          "field": "id",
-          "var": "TARGET_CORRETOR_ID"
+          "mode": "RESPONSE_OBJECT_FIELD_EQUALS_LITERAL",
+          "response_index": 0,
+          "field": "ativo",
+          "value": false
+        },
+        {
+          "mode": "SERVER_AFTER_PATH_EQUALS_LITERAL",
+          "path": "broker.ativo",
+          "value": false
         }
       ],
-      "topology_dependencies": []
+      "topology_dependencies": [
+        "TOPO-TOKEN-ADMIN",
+        "TOPO-ADMIN",
+        "TOPO-TARGET-CORRETOR"
+      ],
+      "server_case_plan": "COR-012"
     },
     {
       "test_id": "COR-013",
@@ -1962,37 +1951,29 @@
         }
       },
       "mutation_probe_plan": {
-        "before": [
-          {
-            "method": "GET",
-            "path_template": "/rest/v1/corretores?id=eq.${TARGET_CORRETOR_ID}&select=id,empresa_id,time_id,role,is_admin_local,is_gestor,ativo,apto_para_receber,must_change_password,user_id&order=id.asc",
-            "auth_token_var": "EVIDENCE_OBSERVER_TOKEN",
-            "headers_template": {},
-            "body_template": null
-          }
-        ],
-        "after": [
-          {
-            "method": "GET",
-            "path_template": "/rest/v1/corretores?id=eq.${TARGET_CORRETOR_ID}&select=id,empresa_id,time_id,role,is_admin_local,is_gestor,ativo,apto_para_receber,must_change_password,user_id&order=id.asc",
-            "auth_token_var": "EVIDENCE_OBSERVER_TOKEN",
-            "headers_template": {},
-            "body_template": null
-          }
-        ],
+        "channel": "SERVER_SQL_OWNER",
         "expectation": "MUST_CHANGE",
+        "before": [],
+        "after": [],
         "fingerprint": "CANONICAL_JSON_SHA256"
       },
       "concurrency_assertion": null,
       "semantic_assertions": [
         {
-          "mode": "AFTER_FIRST_ROW_FIELD_EQUALS_VAR",
-          "probe_index": 0,
-          "field": "time_id",
+          "mode": "SERVER_AFTER_PATH_EQUALS_VAR",
+          "path": "broker.time_id",
           "var": "TARGET_TIME_ID"
         }
       ],
-      "topology_dependencies": []
+      "topology_dependencies": [
+        "TOPO-TOKEN-ADMIN",
+        "TOPO-ADMIN",
+        "TOPO-TARGET-CORRETOR",
+        "TOPO-BASE-TIME",
+        "TOPO-TARGET-TIME",
+        "TOPO-BASE-TARGET-TIME-DIFFER"
+      ],
+      "server_case_plan": "COR-013"
     },
     {
       "test_id": "CRM-001",
@@ -3677,10 +3658,10 @@
                 {
                   "nome": "PR08 Synthetic",
                   "email": "pr08.synthetic@example.invalid",
-                  "telefone_e164": "${PROBE_PHONE}"
+                  "telefone_e164": "${CRM_015_PHONE}"
                 }
               ],
-              "p_sessao_id": "${SESSION_ID}"
+              "p_sessao_id": "${CRM_015_SESSION_ID}"
             }
           }
         ],
@@ -3691,59 +3672,64 @@
         }
       },
       "mutation_probe_plan": {
-        "before": [
-          {
-            "method": "GET",
-            "path_template": "/rest/v1/leads?lista_id=eq.${LISTA_ID}&select=id,empresa_id,corretor_id,lote_id,lista_id,status,funil_estagio_id,telefone_e164&order=id.asc",
-            "auth_token_var": "EVIDENCE_OBSERVER_TOKEN",
-            "headers_template": {},
-            "body_template": null
-          },
-          {
-            "method": "GET",
-            "path_template": "/rest/v1/lotes?lista_id=eq.${LISTA_ID}&select=id,lista_id,corretor_id,status,data_distribuicao&order=id.asc",
-            "auth_token_var": "EVIDENCE_OBSERVER_TOKEN",
-            "headers_template": {},
-            "body_template": null
-          }
-        ],
-        "after": [
-          {
-            "method": "GET",
-            "path_template": "/rest/v1/leads?lista_id=eq.${LISTA_ID}&select=id,empresa_id,corretor_id,lote_id,lista_id,status,funil_estagio_id,telefone_e164&order=id.asc",
-            "auth_token_var": "EVIDENCE_OBSERVER_TOKEN",
-            "headers_template": {},
-            "body_template": null
-          },
-          {
-            "method": "GET",
-            "path_template": "/rest/v1/lotes?lista_id=eq.${LISTA_ID}&select=id,lista_id,corretor_id,status,data_distribuicao&order=id.asc",
-            "auth_token_var": "EVIDENCE_OBSERVER_TOKEN",
-            "headers_template": {},
-            "body_template": null
-          }
-        ],
+        "channel": "SERVER_SQL_OWNER",
         "expectation": "MUST_CHANGE",
+        "before": [],
+        "after": [],
         "fingerprint": "CANONICAL_JSON_SHA256"
       },
       "concurrency_assertion": null,
       "semantic_assertions": [
         {
-          "mode": "RESPONSE_OBJECT_NUMERIC_FIELDS",
+          "mode": "RESPONSE_OBJECT_FIELD_EQUALS_LITERAL",
           "response_index": 0,
-          "fields": [
-            "validos",
-            "invalidos",
-            "duplicados"
-          ]
+          "field": "validos",
+          "value": 1
         },
         {
-          "mode": "DELTA_ROW_COUNT_EQUALS",
-          "probe_index": 0,
+          "mode": "RESPONSE_OBJECT_FIELD_EQUALS_LITERAL",
+          "response_index": 0,
+          "field": "invalidos",
+          "value": 0
+        },
+        {
+          "mode": "RESPONSE_OBJECT_FIELD_EQUALS_LITERAL",
+          "response_index": 0,
+          "field": "duplicados",
+          "value": 0
+        },
+        {
+          "mode": "SERVER_DELTA_ARRAY_COUNT_EQUALS",
+          "path": "scopes.0.leads",
           "count": 1
+        },
+        {
+          "mode": "SERVER_DELTA_ARRAY_COUNT_EQUALS",
+          "path": "scopes.0.markers",
+          "count": 1
+        },
+        {
+          "mode": "SERVER_DELTA_ARRAY_COUNT_EQUALS",
+          "path": "scopes.0.logs",
+          "count": 1
+        },
+        {
+          "mode": "SERVER_AFTER_PATH_EQUALS_VAR",
+          "path": "scopes.0.leads.0.empresa_id",
+          "var": "ACTOR_EMPRESA_ID"
+        },
+        {
+          "mode": "SERVER_AFTER_PATH_EQUALS_VAR",
+          "path": "scopes.0.leads.0.lista_id",
+          "var": "LISTA_ID"
         }
       ],
-      "topology_dependencies": []
+      "topology_dependencies": [
+        "TOPO-TOKEN-ACTOR",
+        "TOPO-ACTOR",
+        "TOPO-LIST"
+      ],
+      "server_case_plan": "CRM-015"
     },
     {
       "test_id": "FUN-001",
@@ -4506,7 +4492,7 @@
             "body_template": {
               "p_lead_id": "${TARGET_LEAD_ID}",
               "p_estagio_id": "${VALID_STAGE_ID}",
-              "p_observacao": "PR08 synthetic"
+              "p_observacao": "PR08:FUN-007"
             }
           }
         ],
@@ -4518,39 +4504,10 @@
         "response_relation": null
       },
       "mutation_probe_plan": {
-        "before": [
-          {
-            "method": "GET",
-            "path_template": "/rest/v1/leads?id=eq.${TARGET_LEAD_ID}&select=id,empresa_id,corretor_id,lote_id,lista_id,status,funil_estagio_id,feedback&order=id.asc",
-            "auth_token_var": "EVIDENCE_OBSERVER_TOKEN",
-            "headers_template": {},
-            "body_template": null
-          },
-          {
-            "method": "GET",
-            "path_template": "/rest/v1/funil_movimentacoes?lead_id=eq.${TARGET_LEAD_ID}&select=id,lead_id,corretor_id,estagio_id,empresa_id,origem_evento,motivo&order=id.asc",
-            "auth_token_var": "EVIDENCE_OBSERVER_TOKEN",
-            "headers_template": {},
-            "body_template": null
-          }
-        ],
-        "after": [
-          {
-            "method": "GET",
-            "path_template": "/rest/v1/leads?id=eq.${TARGET_LEAD_ID}&select=id,empresa_id,corretor_id,lote_id,lista_id,status,funil_estagio_id,feedback&order=id.asc",
-            "auth_token_var": "EVIDENCE_OBSERVER_TOKEN",
-            "headers_template": {},
-            "body_template": null
-          },
-          {
-            "method": "GET",
-            "path_template": "/rest/v1/funil_movimentacoes?lead_id=eq.${TARGET_LEAD_ID}&select=id,lead_id,corretor_id,estagio_id,empresa_id,origem_evento,motivo&order=id.asc",
-            "auth_token_var": "EVIDENCE_OBSERVER_TOKEN",
-            "headers_template": {},
-            "body_template": null
-          }
-        ],
+        "channel": "SERVER_SQL_OWNER",
         "expectation": "MUST_CHANGE",
+        "before": [],
+        "after": [],
         "fingerprint": "CANONICAL_JSON_SHA256"
       },
       "concurrency_assertion": null,
@@ -4562,25 +4519,37 @@
           "value": true
         },
         {
-          "mode": "AFTER_FIRST_ROW_FIELD_EQUALS_VAR",
-          "probe_index": 0,
-          "field": "funil_estagio_id",
+          "mode": "SERVER_AFTER_PATH_EQUALS_VAR",
+          "path": "lead.funil_estagio_id",
           "var": "VALID_STAGE_ID"
         },
         {
-          "mode": "DELTA_ROWS_ALL_FIELD_EQUALS_VAR",
-          "probe_index": 1,
+          "mode": "SERVER_DELTA_ARRAY_COUNT_EQUALS",
+          "path": "movements",
+          "count": 1
+        },
+        {
+          "mode": "SERVER_DELTA_ARRAY_ALL_FIELD_EQUALS_VAR",
+          "path": "movements",
           "field": "estagio_id",
           "var": "VALID_STAGE_ID"
         },
         {
-          "mode": "DELTA_ROWS_ALL_FIELD_EQUALS_VAR",
-          "probe_index": 1,
+          "mode": "SERVER_DELTA_ARRAY_ALL_FIELD_EQUALS_VAR",
+          "path": "movements",
           "field": "empresa_id",
           "var": "ACTOR_EMPRESA_ID"
         }
       ],
-      "topology_dependencies": []
+      "topology_dependencies": [
+        "TOPO-TOKEN-ACTOR",
+        "TOPO-ACTOR",
+        "TOPO-TARGET-LEAD",
+        "TOPO-BASE-STAGE",
+        "TOPO-VALID-STAGE",
+        "TOPO-BASE-VALID-STAGE-DIFFER"
+      ],
+      "server_case_plan": "FUN-007"
     },
     {
       "test_id": "FUN-008",
@@ -4642,7 +4611,7 @@
             "body_template": {
               "p_lead_id": "${TARGET_LEAD_ID}",
               "p_estagio_id": "${VALID_STAGE_ID}",
-              "p_observacao": "PR08 synthetic"
+              "p_observacao": "PR08:FUN-008"
             }
           },
           {
@@ -4655,7 +4624,7 @@
             "body_template": {
               "p_lead_id": "${TARGET_LEAD_ID}",
               "p_estagio_id": "${VALID_STAGE_ID}",
-              "p_observacao": "PR08 synthetic"
+              "p_observacao": "PR08:FUN-008"
             }
           }
         ],
@@ -4667,39 +4636,10 @@
         "response_relation": "ALL_CANONICAL_BODIES_EQUAL"
       },
       "mutation_probe_plan": {
-        "before": [
-          {
-            "method": "GET",
-            "path_template": "/rest/v1/leads?id=eq.${TARGET_LEAD_ID}&select=id,empresa_id,corretor_id,lote_id,lista_id,status,funil_estagio_id,feedback&order=id.asc",
-            "auth_token_var": "EVIDENCE_OBSERVER_TOKEN",
-            "headers_template": {},
-            "body_template": null
-          },
-          {
-            "method": "GET",
-            "path_template": "/rest/v1/funil_movimentacoes?lead_id=eq.${TARGET_LEAD_ID}&select=id,lead_id,corretor_id,estagio_id,empresa_id,origem_evento,motivo&order=id.asc",
-            "auth_token_var": "EVIDENCE_OBSERVER_TOKEN",
-            "headers_template": {},
-            "body_template": null
-          }
-        ],
-        "after": [
-          {
-            "method": "GET",
-            "path_template": "/rest/v1/leads?id=eq.${TARGET_LEAD_ID}&select=id,empresa_id,corretor_id,lote_id,lista_id,status,funil_estagio_id,feedback&order=id.asc",
-            "auth_token_var": "EVIDENCE_OBSERVER_TOKEN",
-            "headers_template": {},
-            "body_template": null
-          },
-          {
-            "method": "GET",
-            "path_template": "/rest/v1/funil_movimentacoes?lead_id=eq.${TARGET_LEAD_ID}&select=id,lead_id,corretor_id,estagio_id,empresa_id,origem_evento,motivo&order=id.asc",
-            "auth_token_var": "EVIDENCE_OBSERVER_TOKEN",
-            "headers_template": {},
-            "body_template": null
-          }
-        ],
+        "channel": "SERVER_SQL_OWNER",
         "expectation": "MUST_CHANGE",
+        "before": [],
+        "after": [],
         "fingerprint": "CANONICAL_JSON_SHA256"
       },
       "concurrency_assertion": {
@@ -4715,31 +4655,40 @@
           "value": true
         },
         {
-          "mode": "AFTER_FIRST_ROW_FIELD_EQUALS_VAR",
-          "probe_index": 0,
-          "field": "funil_estagio_id",
+          "mode": "ALL_RESPONSE_BODIES_CANONICALLY_EQUAL"
+        },
+        {
+          "mode": "SERVER_AFTER_PATH_EQUALS_VAR",
+          "path": "lead.funil_estagio_id",
           "var": "VALID_STAGE_ID"
         },
         {
-          "mode": "DELTA_ROW_COUNT_RANGE",
-          "probe_index": 1,
-          "min": 1,
-          "max": 2
+          "mode": "SERVER_DELTA_ARRAY_COUNT_EQUALS",
+          "path": "movements",
+          "count": 2
         },
         {
-          "mode": "DELTA_ROWS_ALL_FIELD_EQUALS_VAR",
-          "probe_index": 1,
+          "mode": "SERVER_DELTA_ARRAY_ALL_FIELD_EQUALS_VAR",
+          "path": "movements",
           "field": "estagio_id",
           "var": "VALID_STAGE_ID"
         },
         {
-          "mode": "DELTA_ROWS_ALL_FIELD_EQUALS_VAR",
-          "probe_index": 1,
+          "mode": "SERVER_DELTA_ARRAY_ALL_FIELD_EQUALS_VAR",
+          "path": "movements",
           "field": "empresa_id",
           "var": "ACTOR_EMPRESA_ID"
         }
       ],
-      "topology_dependencies": []
+      "topology_dependencies": [
+        "TOPO-TOKEN-ACTOR",
+        "TOPO-ACTOR",
+        "TOPO-TARGET-LEAD",
+        "TOPO-BASE-STAGE",
+        "TOPO-VALID-STAGE",
+        "TOPO-BASE-VALID-STAGE-DIFFER"
+      ],
+      "server_case_plan": "FUN-008"
     },
     {
       "test_id": "ACL-001",
@@ -4906,25 +4855,10 @@
         }
       },
       "mutation_probe_plan": {
-        "before": [
-          {
-            "method": "GET",
-            "path_template": "/rest/v1/lista_visibilidade?lista_id=eq.${LISTA_ID}&select=lista_id,empresa_id,target_type,target_id&order=target_type.asc,target_id.asc",
-            "auth_token_var": "EVIDENCE_OBSERVER_TOKEN",
-            "headers_template": {},
-            "body_template": null
-          }
-        ],
-        "after": [
-          {
-            "method": "GET",
-            "path_template": "/rest/v1/lista_visibilidade?lista_id=eq.${LISTA_ID}&select=lista_id,empresa_id,target_type,target_id&order=target_type.asc,target_id.asc",
-            "auth_token_var": "EVIDENCE_OBSERVER_TOKEN",
-            "headers_template": {},
-            "body_template": null
-          }
-        ],
+        "channel": "SERVER_SQL_OWNER",
         "expectation": "MUST_CHANGE",
+        "before": [],
+        "after": [],
         "fingerprint": "CANONICAL_JSON_SHA256"
       },
       "concurrency_assertion": null,
@@ -4936,12 +4870,6 @@
           "var": "LISTA_ID"
         },
         {
-          "mode": "RESPONSE_OBJECT_FIELD_EQUALS_LITERAL",
-          "response_index": 0,
-          "field": "escopo_atual",
-          "value": "selecionados"
-        },
-        {
           "mode": "RESPONSE_OBJECT_ARRAY_CONTAINS_TARGET",
           "response_index": 0,
           "field": "selecionados",
@@ -4949,13 +4877,24 @@
           "target_id_var": "TARGET_CORRETOR_ID"
         },
         {
-          "mode": "AFTER_ROWS_CONTAIN_TARGET",
-          "probe_index": 0,
+          "mode": "SERVER_DELTA_ARRAY_COUNT_EQUALS",
+          "path": "acl_rows",
+          "count": 1
+        },
+        {
+          "mode": "SERVER_AFTER_ARRAY_CONTAINS_TARGET",
+          "path": "acl_rows",
           "target_type": "corretor",
           "target_id_var": "TARGET_CORRETOR_ID"
         }
       ],
-      "topology_dependencies": []
+      "topology_dependencies": [
+        "TOPO-TOKEN-MANAGER",
+        "TOPO-MANAGER",
+        "TOPO-LIST",
+        "TOPO-TARGET-CORRETOR"
+      ],
+      "server_case_plan": "ACL-002"
     },
     {
       "test_id": "ACL-003",
@@ -5026,25 +4965,10 @@
         }
       },
       "mutation_probe_plan": {
-        "before": [
-          {
-            "method": "GET",
-            "path_template": "/rest/v1/lista_visibilidade?lista_id=eq.${LISTA_ID}&select=lista_id,empresa_id,target_type,target_id&order=target_type.asc,target_id.asc",
-            "auth_token_var": "EVIDENCE_OBSERVER_TOKEN",
-            "headers_template": {},
-            "body_template": null
-          }
-        ],
-        "after": [
-          {
-            "method": "GET",
-            "path_template": "/rest/v1/lista_visibilidade?lista_id=eq.${LISTA_ID}&select=lista_id,empresa_id,target_type,target_id&order=target_type.asc,target_id.asc",
-            "auth_token_var": "EVIDENCE_OBSERVER_TOKEN",
-            "headers_template": {},
-            "body_template": null
-          }
-        ],
+        "channel": "SERVER_SQL_OWNER",
         "expectation": "MUST_CHANGE",
+        "before": [],
+        "after": [],
         "fingerprint": "CANONICAL_JSON_SHA256"
       },
       "concurrency_assertion": null,
@@ -5056,12 +4980,6 @@
           "var": "LISTA_ID"
         },
         {
-          "mode": "RESPONSE_OBJECT_FIELD_EQUALS_LITERAL",
-          "response_index": 0,
-          "field": "escopo_atual",
-          "value": "selecionados"
-        },
-        {
           "mode": "RESPONSE_OBJECT_ARRAY_CONTAINS_TARGET",
           "response_index": 0,
           "field": "selecionados",
@@ -5069,13 +4987,24 @@
           "target_id_var": "TARGET_CORRETOR_ID"
         },
         {
-          "mode": "AFTER_ROWS_CONTAIN_TARGET",
-          "probe_index": 0,
+          "mode": "SERVER_DELTA_ARRAY_COUNT_EQUALS",
+          "path": "acl_rows",
+          "count": 1
+        },
+        {
+          "mode": "SERVER_AFTER_ARRAY_CONTAINS_TARGET",
+          "path": "acl_rows",
           "target_type": "corretor",
           "target_id_var": "TARGET_CORRETOR_ID"
         }
       ],
-      "topology_dependencies": []
+      "topology_dependencies": [
+        "TOPO-TOKEN-ADMIN",
+        "TOPO-ADMIN",
+        "TOPO-LIST",
+        "TOPO-TARGET-CORRETOR"
+      ],
+      "server_case_plan": "ACL-003"
     },
     {
       "test_id": "ACL-004",
@@ -5146,25 +5075,10 @@
         }
       },
       "mutation_probe_plan": {
-        "before": [
-          {
-            "method": "GET",
-            "path_template": "/rest/v1/lista_visibilidade?lista_id=eq.${LISTA_ID}&select=lista_id,empresa_id,target_type,target_id&order=target_type.asc,target_id.asc",
-            "auth_token_var": "EVIDENCE_OBSERVER_TOKEN",
-            "headers_template": {},
-            "body_template": null
-          }
-        ],
-        "after": [
-          {
-            "method": "GET",
-            "path_template": "/rest/v1/lista_visibilidade?lista_id=eq.${LISTA_ID}&select=lista_id,empresa_id,target_type,target_id&order=target_type.asc,target_id.asc",
-            "auth_token_var": "EVIDENCE_OBSERVER_TOKEN",
-            "headers_template": {},
-            "body_template": null
-          }
-        ],
+        "channel": "SERVER_SQL_OWNER",
         "expectation": "MUST_CHANGE",
+        "before": [],
+        "after": [],
         "fingerprint": "CANONICAL_JSON_SHA256"
       },
       "concurrency_assertion": null,
@@ -5176,12 +5090,6 @@
           "var": "LISTA_ID"
         },
         {
-          "mode": "RESPONSE_OBJECT_FIELD_EQUALS_LITERAL",
-          "response_index": 0,
-          "field": "escopo_atual",
-          "value": "selecionados"
-        },
-        {
           "mode": "RESPONSE_OBJECT_ARRAY_CONTAINS_TARGET",
           "response_index": 0,
           "field": "selecionados",
@@ -5189,13 +5097,23 @@
           "target_id_var": "TARGET_CORRETOR_ID"
         },
         {
-          "mode": "AFTER_ROWS_CONTAIN_TARGET",
-          "probe_index": 0,
+          "mode": "SERVER_DELTA_ARRAY_COUNT_EQUALS",
+          "path": "acl_rows",
+          "count": 1
+        },
+        {
+          "mode": "SERVER_AFTER_ARRAY_CONTAINS_TARGET",
+          "path": "acl_rows",
           "target_type": "corretor",
           "target_id_var": "TARGET_CORRETOR_ID"
         }
       ],
-      "topology_dependencies": []
+      "topology_dependencies": [
+        "TOPO-TOKEN-ROOT",
+        "TOPO-LIST",
+        "TOPO-TARGET-CORRETOR"
+      ],
+      "server_case_plan": "ACL-004"
     },
     {
       "test_id": "ACL-005",
@@ -5767,25 +5685,10 @@
         }
       },
       "mutation_probe_plan": {
-        "before": [
-          {
-            "method": "GET",
-            "path_template": "/rest/v1/lista_visibilidade?lista_id=eq.${LISTA_ID}&select=lista_id,empresa_id,target_type,target_id&order=target_type.asc,target_id.asc",
-            "auth_token_var": "EVIDENCE_OBSERVER_TOKEN",
-            "headers_template": {},
-            "body_template": null
-          }
-        ],
-        "after": [
-          {
-            "method": "GET",
-            "path_template": "/rest/v1/lista_visibilidade?lista_id=eq.${LISTA_ID}&select=lista_id,empresa_id,target_type,target_id&order=target_type.asc,target_id.asc",
-            "auth_token_var": "EVIDENCE_OBSERVER_TOKEN",
-            "headers_template": {},
-            "body_template": null
-          }
-        ],
+        "channel": "SERVER_SQL_OWNER",
         "expectation": "MUST_CHANGE",
+        "before": [],
+        "after": [],
         "fingerprint": "CANONICAL_JSON_SHA256"
       },
       "concurrency_assertion": null,
@@ -5797,12 +5700,6 @@
           "var": "LISTA_ID"
         },
         {
-          "mode": "RESPONSE_OBJECT_FIELD_EQUALS_LITERAL",
-          "response_index": 0,
-          "field": "escopo_atual",
-          "value": "selecionados"
-        },
-        {
           "mode": "RESPONSE_OBJECT_ARRAY_CONTAINS_TARGET",
           "response_index": 0,
           "field": "selecionados",
@@ -5810,13 +5707,24 @@
           "target_id_var": "TARGET_CORRETOR_ID"
         },
         {
-          "mode": "AFTER_ROWS_CONTAIN_TARGET",
-          "probe_index": 0,
+          "mode": "SERVER_DELTA_ARRAY_COUNT_EQUALS",
+          "path": "acl_rows",
+          "count": 1
+        },
+        {
+          "mode": "SERVER_AFTER_ARRAY_CONTAINS_TARGET",
+          "path": "acl_rows",
           "target_type": "corretor",
           "target_id_var": "TARGET_CORRETOR_ID"
         }
       ],
-      "topology_dependencies": []
+      "topology_dependencies": [
+        "TOPO-TOKEN-ADMIN",
+        "TOPO-ADMIN",
+        "TOPO-LIST",
+        "TOPO-TARGET-CORRETOR"
+      ],
+      "server_case_plan": "ACL-010"
     },
     {
       "test_id": "STG-001",
@@ -6518,7 +6426,7 @@
                 {
                   "nome": "PR08 Synthetic",
                   "email": "pr08.synthetic@example.invalid",
-                  "telefone_e164": "${PROBE_PHONE}"
+                  "telefone_e164": "${IMP_001_PHONE}"
                 }
               ],
               "p_sessao_id": "${IDEMPOTENT_SESSION_ID}"
@@ -6537,7 +6445,7 @@
                 {
                   "nome": "PR08 Synthetic",
                   "email": "pr08.synthetic@example.invalid",
-                  "telefone_e164": "${PROBE_PHONE}"
+                  "telefone_e164": "${IMP_001_PHONE}"
                 }
               ],
               "p_sessao_id": "${IDEMPOTENT_SESSION_ID}"
@@ -6552,97 +6460,67 @@
         "response_relation": "ALL_CANONICAL_BODIES_EQUAL"
       },
       "mutation_probe_plan": {
-        "before": [
-          {
-            "method": "GET",
-            "path_template": "/rest/v1/leads?lista_id=eq.${LISTA_ID}&telefone_e164=eq.${PROBE_PHONE}&select=id,empresa_id,lista_id,telefone_e164",
-            "auth_token_var": "EVIDENCE_OBSERVER_TOKEN",
-            "headers_template": {},
-            "body_template": null
-          },
-          {
-            "method": "GET",
-            "path_template": "/rest/v1/importar_leads_batch_idempotency?empresa_id=eq.${ACTOR_EMPRESA_ID}&sessao_id=eq.${IDEMPOTENT_SESSION_ID}&select=empresa_id,sessao_id,lista_id,request_fingerprint,resultado,completed_at",
-            "auth_token_var": "EVIDENCE_OBSERVER_TOKEN",
-            "headers_template": {},
-            "body_template": null
-          },
-          {
-            "method": "GET",
-            "path_template": "/rest/v1/logs?empresa_id=eq.${ACTOR_EMPRESA_ID}&detalhes->>sessao_id=eq.${IDEMPOTENT_SESSION_ID}&select=id,empresa_id,detalhes&order=id.asc",
-            "auth_token_var": "EVIDENCE_OBSERVER_TOKEN",
-            "headers_template": {},
-            "body_template": null
-          }
-        ],
-        "after": [
-          {
-            "method": "GET",
-            "path_template": "/rest/v1/leads?lista_id=eq.${LISTA_ID}&telefone_e164=eq.${PROBE_PHONE}&select=id,empresa_id,lista_id,telefone_e164",
-            "auth_token_var": "EVIDENCE_OBSERVER_TOKEN",
-            "headers_template": {},
-            "body_template": null
-          },
-          {
-            "method": "GET",
-            "path_template": "/rest/v1/importar_leads_batch_idempotency?empresa_id=eq.${ACTOR_EMPRESA_ID}&sessao_id=eq.${IDEMPOTENT_SESSION_ID}&select=empresa_id,sessao_id,lista_id,request_fingerprint,resultado,completed_at",
-            "auth_token_var": "EVIDENCE_OBSERVER_TOKEN",
-            "headers_template": {},
-            "body_template": null
-          },
-          {
-            "method": "GET",
-            "path_template": "/rest/v1/logs?empresa_id=eq.${ACTOR_EMPRESA_ID}&detalhes->>sessao_id=eq.${IDEMPOTENT_SESSION_ID}&select=id,empresa_id,detalhes&order=id.asc",
-            "auth_token_var": "EVIDENCE_OBSERVER_TOKEN",
-            "headers_template": {},
-            "body_template": null
-          }
-        ],
+        "channel": "SERVER_SQL_OWNER",
         "expectation": "MUST_CHANGE",
+        "before": [],
+        "after": [],
         "fingerprint": "CANONICAL_JSON_SHA256"
       },
       "concurrency_assertion": null,
       "semantic_assertions": [
         {
-          "mode": "RESPONSE_OBJECT_NUMERIC_FIELDS",
+          "mode": "RESPONSE_OBJECT_FIELD_EQUALS_LITERAL",
           "response_index": 0,
-          "fields": [
-            "validos",
-            "invalidos",
-            "duplicados"
-          ]
+          "field": "validos",
+          "value": 1
+        },
+        {
+          "mode": "RESPONSE_OBJECT_FIELD_EQUALS_LITERAL",
+          "response_index": 0,
+          "field": "invalidos",
+          "value": 0
+        },
+        {
+          "mode": "RESPONSE_OBJECT_FIELD_EQUALS_LITERAL",
+          "response_index": 0,
+          "field": "duplicados",
+          "value": 0
         },
         {
           "mode": "ALL_RESPONSE_BODIES_CANONICALLY_EQUAL"
         },
         {
-          "mode": "DELTA_ROW_COUNT_EQUALS",
-          "probe_index": 0,
+          "mode": "SERVER_DELTA_ARRAY_COUNT_EQUALS",
+          "path": "scopes.0.leads",
           "count": 1
         },
         {
-          "mode": "DELTA_ROW_COUNT_EQUALS",
-          "probe_index": 1,
+          "mode": "SERVER_DELTA_ARRAY_COUNT_EQUALS",
+          "path": "scopes.0.markers",
           "count": 1
         },
         {
-          "mode": "DELTA_ROW_COUNT_EQUALS",
-          "probe_index": 2,
+          "mode": "SERVER_DELTA_ARRAY_COUNT_EQUALS",
+          "path": "scopes.0.logs",
           "count": 1
         },
         {
-          "mode": "AFTER_ROWS_UNIQUE_FIELD",
-          "probe_index": 0,
+          "mode": "SERVER_AFTER_ARRAY_UNIQUE_FIELD",
+          "path": "scopes.0.leads",
           "field": "telefone_e164"
         },
         {
-          "mode": "AFTER_FIRST_ROW_FIELD_EQUALS_VAR",
-          "probe_index": 1,
-          "field": "lista_id",
+          "mode": "SERVER_AFTER_PATH_EQUALS_VAR",
+          "path": "scopes.0.markers.0.lista_id",
           "var": "LISTA_ID"
         }
       ],
-      "topology_dependencies": []
+      "topology_dependencies": [
+        "TOPO-TOKEN-ACTOR",
+        "TOPO-ACTOR",
+        "TOPO-LIST"
+      ],
+      "server_case_plan": "IMP-001"
     },
     {
       "test_id": "IMP-002",
@@ -6734,101 +6612,88 @@
         "response_relation": null
       },
       "mutation_probe_plan": {
-        "before": [
-          {
-            "method": "GET",
-            "path_template": "/rest/v1/leads?lista_id=eq.${LISTA_ID_A}&telefone_e164=eq.${PROBE_PHONE_A}&select=id,empresa_id,lista_id,telefone_e164",
-            "auth_token_var": "EVIDENCE_OBSERVER_TOKEN",
-            "headers_template": {},
-            "body_template": null
-          },
-          {
-            "method": "GET",
-            "path_template": "/rest/v1/leads?lista_id=eq.${LISTA_ID_B}&telefone_e164=eq.${PROBE_PHONE_B}&select=id,empresa_id,lista_id,telefone_e164",
-            "auth_token_var": "EVIDENCE_OBSERVER_TOKEN",
-            "headers_template": {},
-            "body_template": null
-          },
-          {
-            "method": "GET",
-            "path_template": "/rest/v1/importar_leads_batch_idempotency?empresa_id=eq.${EMPRESA_ID_A}&sessao_id=eq.${SHARED_SESSION_ID}&select=empresa_id,sessao_id,lista_id,request_fingerprint,resultado,completed_at",
-            "auth_token_var": "EVIDENCE_OBSERVER_TOKEN",
-            "headers_template": {},
-            "body_template": null
-          },
-          {
-            "method": "GET",
-            "path_template": "/rest/v1/importar_leads_batch_idempotency?empresa_id=eq.${EMPRESA_ID_B}&sessao_id=eq.${SHARED_SESSION_ID}&select=empresa_id,sessao_id,lista_id,request_fingerprint,resultado,completed_at",
-            "auth_token_var": "EVIDENCE_OBSERVER_TOKEN",
-            "headers_template": {},
-            "body_template": null
-          }
-        ],
-        "after": [
-          {
-            "method": "GET",
-            "path_template": "/rest/v1/leads?lista_id=eq.${LISTA_ID_A}&telefone_e164=eq.${PROBE_PHONE_A}&select=id,empresa_id,lista_id,telefone_e164",
-            "auth_token_var": "EVIDENCE_OBSERVER_TOKEN",
-            "headers_template": {},
-            "body_template": null
-          },
-          {
-            "method": "GET",
-            "path_template": "/rest/v1/leads?lista_id=eq.${LISTA_ID_B}&telefone_e164=eq.${PROBE_PHONE_B}&select=id,empresa_id,lista_id,telefone_e164",
-            "auth_token_var": "EVIDENCE_OBSERVER_TOKEN",
-            "headers_template": {},
-            "body_template": null
-          },
-          {
-            "method": "GET",
-            "path_template": "/rest/v1/importar_leads_batch_idempotency?empresa_id=eq.${EMPRESA_ID_A}&sessao_id=eq.${SHARED_SESSION_ID}&select=empresa_id,sessao_id,lista_id,request_fingerprint,resultado,completed_at",
-            "auth_token_var": "EVIDENCE_OBSERVER_TOKEN",
-            "headers_template": {},
-            "body_template": null
-          },
-          {
-            "method": "GET",
-            "path_template": "/rest/v1/importar_leads_batch_idempotency?empresa_id=eq.${EMPRESA_ID_B}&sessao_id=eq.${SHARED_SESSION_ID}&select=empresa_id,sessao_id,lista_id,request_fingerprint,resultado,completed_at",
-            "auth_token_var": "EVIDENCE_OBSERVER_TOKEN",
-            "headers_template": {},
-            "body_template": null
-          }
-        ],
+        "channel": "SERVER_SQL_OWNER",
         "expectation": "MUST_CHANGE",
+        "before": [],
+        "after": [],
         "fingerprint": "CANONICAL_JSON_SHA256"
       },
       "concurrency_assertion": null,
       "semantic_assertions": [
         {
-          "mode": "DELTA_ROW_COUNT_EQUALS",
-          "probe_index": 0,
+          "mode": "RESPONSE_OBJECT_FIELD_EQUALS_LITERAL",
+          "response_index": 0,
+          "field": "validos",
+          "value": 1
+        },
+        {
+          "mode": "RESPONSE_OBJECT_FIELD_EQUALS_LITERAL",
+          "response_index": 0,
+          "field": "invalidos",
+          "value": 0
+        },
+        {
+          "mode": "RESPONSE_OBJECT_FIELD_EQUALS_LITERAL",
+          "response_index": 0,
+          "field": "duplicados",
+          "value": 0
+        },
+        {
+          "mode": "RESPONSE_OBJECT_FIELD_EQUALS_LITERAL",
+          "response_index": 1,
+          "field": "validos",
+          "value": 1
+        },
+        {
+          "mode": "RESPONSE_OBJECT_FIELD_EQUALS_LITERAL",
+          "response_index": 1,
+          "field": "invalidos",
+          "value": 0
+        },
+        {
+          "mode": "RESPONSE_OBJECT_FIELD_EQUALS_LITERAL",
+          "response_index": 1,
+          "field": "duplicados",
+          "value": 0
+        },
+        {
+          "mode": "SERVER_DELTA_ARRAY_COUNT_EQUALS",
+          "path": "scopes.0.leads",
           "count": 1
         },
         {
-          "mode": "DELTA_ROW_COUNT_EQUALS",
-          "probe_index": 1,
+          "mode": "SERVER_DELTA_ARRAY_COUNT_EQUALS",
+          "path": "scopes.0.markers",
           "count": 1
         },
         {
-          "mode": "DELTA_ROW_COUNT_EQUALS",
-          "probe_index": 2,
+          "mode": "SERVER_DELTA_ARRAY_COUNT_EQUALS",
+          "path": "scopes.0.logs",
           "count": 1
         },
         {
-          "mode": "DELTA_ROW_COUNT_EQUALS",
-          "probe_index": 3,
+          "mode": "SERVER_DELTA_ARRAY_COUNT_EQUALS",
+          "path": "scopes.1.leads",
           "count": 1
         },
         {
-          "mode": "AFTER_FIRST_ROW_FIELD_EQUALS_VAR",
-          "probe_index": 2,
-          "field": "empresa_id",
+          "mode": "SERVER_DELTA_ARRAY_COUNT_EQUALS",
+          "path": "scopes.1.markers",
+          "count": 1
+        },
+        {
+          "mode": "SERVER_DELTA_ARRAY_COUNT_EQUALS",
+          "path": "scopes.1.logs",
+          "count": 1
+        },
+        {
+          "mode": "SERVER_AFTER_PATH_EQUALS_VAR",
+          "path": "scopes.0.leads.0.empresa_id",
           "var": "EMPRESA_ID_A"
         },
         {
-          "mode": "AFTER_FIRST_ROW_FIELD_EQUALS_VAR",
-          "probe_index": 3,
-          "field": "empresa_id",
+          "mode": "SERVER_AFTER_PATH_EQUALS_VAR",
+          "path": "scopes.1.leads.0.empresa_id",
           "var": "EMPRESA_ID_B"
         }
       ],
@@ -6836,8 +6701,11 @@
         "TOPO-TOKEN-A",
         "TOPO-TOKEN-B",
         "TOPO-LIST-A",
-        "TOPO-LIST-B"
-      ]
+        "TOPO-LIST-B",
+        "TOPO-TENANTS-A-B-DIFFER",
+        "TOPO-LISTS-A-B-DIFFER"
+      ],
+      "server_case_plan": "IMP-002"
     },
     {
       "test_id": "IMP-003",
@@ -6890,7 +6758,7 @@
                 {
                   "nome": "PR08 Synthetic",
                   "email": "pr08.synthetic@example.invalid",
-                  "telefone_e164": "${PROBE_PHONE}"
+                  "telefone_e164": "${IMP_003_PHONE}"
                 }
               ],
               "p_sessao_id": "${CONCURRENT_SESSION_ID}"
@@ -6909,7 +6777,7 @@
                 {
                   "nome": "PR08 Synthetic",
                   "email": "pr08.synthetic@example.invalid",
-                  "telefone_e164": "${PROBE_PHONE}"
+                  "telefone_e164": "${IMP_003_PHONE}"
                 }
               ],
               "p_sessao_id": "${CONCURRENT_SESSION_ID}"
@@ -6924,53 +6792,10 @@
         "response_relation": "ALL_CANONICAL_BODIES_EQUAL"
       },
       "mutation_probe_plan": {
-        "before": [
-          {
-            "method": "GET",
-            "path_template": "/rest/v1/leads?lista_id=eq.${LISTA_ID}&telefone_e164=eq.${PROBE_PHONE}&select=id,empresa_id,lista_id,telefone_e164",
-            "auth_token_var": "EVIDENCE_OBSERVER_TOKEN",
-            "headers_template": {},
-            "body_template": null
-          },
-          {
-            "method": "GET",
-            "path_template": "/rest/v1/importar_leads_batch_idempotency?empresa_id=eq.${ACTOR_EMPRESA_ID}&sessao_id=eq.${CONCURRENT_SESSION_ID}&select=empresa_id,sessao_id,lista_id,request_fingerprint,resultado,completed_at",
-            "auth_token_var": "EVIDENCE_OBSERVER_TOKEN",
-            "headers_template": {},
-            "body_template": null
-          },
-          {
-            "method": "GET",
-            "path_template": "/rest/v1/logs?empresa_id=eq.${ACTOR_EMPRESA_ID}&detalhes->>sessao_id=eq.${CONCURRENT_SESSION_ID}&select=id,empresa_id,detalhes&order=id.asc",
-            "auth_token_var": "EVIDENCE_OBSERVER_TOKEN",
-            "headers_template": {},
-            "body_template": null
-          }
-        ],
-        "after": [
-          {
-            "method": "GET",
-            "path_template": "/rest/v1/leads?lista_id=eq.${LISTA_ID}&telefone_e164=eq.${PROBE_PHONE}&select=id,empresa_id,lista_id,telefone_e164",
-            "auth_token_var": "EVIDENCE_OBSERVER_TOKEN",
-            "headers_template": {},
-            "body_template": null
-          },
-          {
-            "method": "GET",
-            "path_template": "/rest/v1/importar_leads_batch_idempotency?empresa_id=eq.${ACTOR_EMPRESA_ID}&sessao_id=eq.${CONCURRENT_SESSION_ID}&select=empresa_id,sessao_id,lista_id,request_fingerprint,resultado,completed_at",
-            "auth_token_var": "EVIDENCE_OBSERVER_TOKEN",
-            "headers_template": {},
-            "body_template": null
-          },
-          {
-            "method": "GET",
-            "path_template": "/rest/v1/logs?empresa_id=eq.${ACTOR_EMPRESA_ID}&detalhes->>sessao_id=eq.${CONCURRENT_SESSION_ID}&select=id,empresa_id,detalhes&order=id.asc",
-            "auth_token_var": "EVIDENCE_OBSERVER_TOKEN",
-            "headers_template": {},
-            "body_template": null
-          }
-        ],
+        "channel": "SERVER_SQL_OWNER",
         "expectation": "MUST_CHANGE",
+        "before": [],
+        "after": [],
         "fingerprint": "CANONICAL_JSON_SHA256"
       },
       "concurrency_assertion": {
@@ -6980,45 +6805,58 @@
       },
       "semantic_assertions": [
         {
-          "mode": "RESPONSE_OBJECT_NUMERIC_FIELDS",
+          "mode": "RESPONSE_OBJECT_FIELD_EQUALS_LITERAL",
           "response_index": 0,
-          "fields": [
-            "validos",
-            "invalidos",
-            "duplicados"
-          ]
+          "field": "validos",
+          "value": 1
+        },
+        {
+          "mode": "RESPONSE_OBJECT_FIELD_EQUALS_LITERAL",
+          "response_index": 0,
+          "field": "invalidos",
+          "value": 0
+        },
+        {
+          "mode": "RESPONSE_OBJECT_FIELD_EQUALS_LITERAL",
+          "response_index": 0,
+          "field": "duplicados",
+          "value": 0
         },
         {
           "mode": "ALL_RESPONSE_BODIES_CANONICALLY_EQUAL"
         },
         {
-          "mode": "DELTA_ROW_COUNT_EQUALS",
-          "probe_index": 0,
+          "mode": "SERVER_DELTA_ARRAY_COUNT_EQUALS",
+          "path": "scopes.0.leads",
           "count": 1
         },
         {
-          "mode": "DELTA_ROW_COUNT_EQUALS",
-          "probe_index": 1,
+          "mode": "SERVER_DELTA_ARRAY_COUNT_EQUALS",
+          "path": "scopes.0.markers",
           "count": 1
         },
         {
-          "mode": "DELTA_ROW_COUNT_EQUALS",
-          "probe_index": 2,
+          "mode": "SERVER_DELTA_ARRAY_COUNT_EQUALS",
+          "path": "scopes.0.logs",
           "count": 1
         },
         {
-          "mode": "AFTER_ROWS_UNIQUE_FIELD",
-          "probe_index": 0,
+          "mode": "SERVER_AFTER_ARRAY_UNIQUE_FIELD",
+          "path": "scopes.0.leads",
           "field": "telefone_e164"
         },
         {
-          "mode": "AFTER_FIRST_ROW_FIELD_EQUALS_VAR",
-          "probe_index": 1,
-          "field": "lista_id",
+          "mode": "SERVER_AFTER_PATH_EQUALS_VAR",
+          "path": "scopes.0.markers.0.lista_id",
           "var": "LISTA_ID"
         }
       ],
-      "topology_dependencies": []
+      "topology_dependencies": [
+        "TOPO-TOKEN-ACTOR",
+        "TOPO-ACTOR",
+        "TOPO-LIST"
+      ],
+      "server_case_plan": "IMP-003"
     },
     {
       "test_id": "IMP-004",
@@ -7734,12 +7572,12 @@
                 {
                   "nome": "PR08 Synthetic",
                   "email": "pr08.synthetic@example.invalid",
-                  "telefone_e164": "${PROBE_PHONE}"
+                  "telefone_e164": "${IMP_010_PHONE_1}"
                 },
                 {
                   "nome": "PR08 Synthetic",
                   "email": "pr08.synthetic@example.invalid",
-                  "telefone_e164": "${PROBE_PHONE_2}"
+                  "telefone_e164": "${IMP_010_PHONE_2}"
                 }
               ],
               "p_sessao_id": "${POSITIVE_IMPORT_SESSION_ID}"
@@ -7754,88 +7592,59 @@
         "response_relation": null
       },
       "mutation_probe_plan": {
-        "before": [
-          {
-            "method": "GET",
-            "path_template": "/rest/v1/leads?lista_id=eq.${LISTA_ID}&telefone_e164=in.(${PROBE_PHONE},${PROBE_PHONE_2})&select=id,empresa_id,lista_id,telefone_e164&order=telefone_e164.asc",
-            "auth_token_var": "EVIDENCE_OBSERVER_TOKEN",
-            "headers_template": {},
-            "body_template": null
-          },
-          {
-            "method": "GET",
-            "path_template": "/rest/v1/importar_leads_batch_idempotency?empresa_id=eq.${ACTOR_EMPRESA_ID}&sessao_id=eq.${POSITIVE_IMPORT_SESSION_ID}&select=empresa_id,sessao_id,lista_id,request_fingerprint,resultado,completed_at",
-            "auth_token_var": "EVIDENCE_OBSERVER_TOKEN",
-            "headers_template": {},
-            "body_template": null
-          },
-          {
-            "method": "GET",
-            "path_template": "/rest/v1/logs?empresa_id=eq.${ACTOR_EMPRESA_ID}&detalhes->>sessao_id=eq.${POSITIVE_IMPORT_SESSION_ID}&select=id,empresa_id,detalhes&order=id.asc",
-            "auth_token_var": "EVIDENCE_OBSERVER_TOKEN",
-            "headers_template": {},
-            "body_template": null
-          }
-        ],
-        "after": [
-          {
-            "method": "GET",
-            "path_template": "/rest/v1/leads?lista_id=eq.${LISTA_ID}&telefone_e164=in.(${PROBE_PHONE},${PROBE_PHONE_2})&select=id,empresa_id,lista_id,telefone_e164&order=telefone_e164.asc",
-            "auth_token_var": "EVIDENCE_OBSERVER_TOKEN",
-            "headers_template": {},
-            "body_template": null
-          },
-          {
-            "method": "GET",
-            "path_template": "/rest/v1/importar_leads_batch_idempotency?empresa_id=eq.${ACTOR_EMPRESA_ID}&sessao_id=eq.${POSITIVE_IMPORT_SESSION_ID}&select=empresa_id,sessao_id,lista_id,request_fingerprint,resultado,completed_at",
-            "auth_token_var": "EVIDENCE_OBSERVER_TOKEN",
-            "headers_template": {},
-            "body_template": null
-          },
-          {
-            "method": "GET",
-            "path_template": "/rest/v1/logs?empresa_id=eq.${ACTOR_EMPRESA_ID}&detalhes->>sessao_id=eq.${POSITIVE_IMPORT_SESSION_ID}&select=id,empresa_id,detalhes&order=id.asc",
-            "auth_token_var": "EVIDENCE_OBSERVER_TOKEN",
-            "headers_template": {},
-            "body_template": null
-          }
-        ],
+        "channel": "SERVER_SQL_OWNER",
         "expectation": "MUST_CHANGE",
+        "before": [],
+        "after": [],
         "fingerprint": "CANONICAL_JSON_SHA256"
       },
       "concurrency_assertion": null,
       "semantic_assertions": [
         {
-          "mode": "RESPONSE_OBJECT_NUMERIC_FIELDS",
+          "mode": "RESPONSE_OBJECT_FIELD_EQUALS_LITERAL",
           "response_index": 0,
-          "fields": [
-            "validos",
-            "invalidos",
-            "duplicados"
-          ]
+          "field": "validos",
+          "value": 2
         },
         {
-          "mode": "DELTA_ROW_COUNT_EQUALS",
-          "probe_index": 0,
+          "mode": "RESPONSE_OBJECT_FIELD_EQUALS_LITERAL",
+          "response_index": 0,
+          "field": "invalidos",
+          "value": 0
+        },
+        {
+          "mode": "RESPONSE_OBJECT_FIELD_EQUALS_LITERAL",
+          "response_index": 0,
+          "field": "duplicados",
+          "value": 0
+        },
+        {
+          "mode": "SERVER_DELTA_ARRAY_COUNT_EQUALS",
+          "path": "scopes.0.leads",
           "count": 2
         },
         {
-          "mode": "DELTA_ROW_COUNT_EQUALS",
-          "probe_index": 1,
+          "mode": "SERVER_DELTA_ARRAY_COUNT_EQUALS",
+          "path": "scopes.0.markers",
           "count": 1
         },
         {
-          "mode": "DELTA_ROW_COUNT_EQUALS",
-          "probe_index": 2,
+          "mode": "SERVER_DELTA_ARRAY_COUNT_EQUALS",
+          "path": "scopes.0.logs",
           "count": 1
         },
         {
-          "mode": "AFTER_ROWS_UNIQUE_FIELD",
-          "probe_index": 0,
+          "mode": "SERVER_AFTER_ARRAY_UNIQUE_FIELD",
+          "path": "scopes.0.leads",
           "field": "telefone_e164"
         }
       ],
-      "topology_dependencies": []
+      "topology_dependencies": [
+        "TOPO-TOKEN-ACTOR",
+        "TOPO-ACTOR",
+        "TOPO-LIST"
+      ],
+      "server_case_plan": "IMP-010"
     },
     {
       "test_id": "IMP-011",
@@ -7857,7 +7666,7 @@
       "synthetic_actor": "SYNTHETIC_FIXTURE_REQUIRED",
       "actor_role": "REQUIRED_AT_EXECUTION",
       "actor_company_team": "SYNTHETIC_FIXTURE_REQUIRED",
-      "preconditions": "Exact application/migration artifacts verified; synthetic fixture prepared; separate execution authorization recorded.",
+      "preconditions": "Exact application/migration artifacts verified; selected-case topology passes; deterministic non-production server lifecycle prepares the required state; separate execution authorization recorded.",
       "action_request": "Replay canonical session and require deterministic result without additional mutation.",
       "sanitized_payload_description": "Synthetic identifiers and non-PII values only; secrets/tokens supplied out-of-repo at execution.",
       "expected_authorization_result": "ALLOW_IDEMPOTENT",
@@ -7893,7 +7702,7 @@
                 {
                   "nome": "PR08 Synthetic",
                   "email": "pr08.synthetic@example.invalid",
-                  "telefone_e164": "${PROBE_PHONE}"
+                  "telefone_e164": "${IMP_011_PHONE}"
                 }
               ],
               "p_sessao_id": "${REPLAY_SESSION_ID}"
@@ -7908,85 +7717,42 @@
         "response_relation": null
       },
       "mutation_probe_plan": {
-        "before": [
-          {
-            "method": "GET",
-            "path_template": "/rest/v1/leads?lista_id=eq.${LISTA_ID}&telefone_e164=eq.${PROBE_PHONE}&select=id,empresa_id,lista_id,telefone_e164",
-            "auth_token_var": "EVIDENCE_OBSERVER_TOKEN",
-            "headers_template": {},
-            "body_template": null
-          },
-          {
-            "method": "GET",
-            "path_template": "/rest/v1/importar_leads_batch_idempotency?empresa_id=eq.${ACTOR_EMPRESA_ID}&sessao_id=eq.${REPLAY_SESSION_ID}&select=empresa_id,sessao_id,lista_id,request_fingerprint,resultado,completed_at",
-            "auth_token_var": "EVIDENCE_OBSERVER_TOKEN",
-            "headers_template": {},
-            "body_template": null
-          },
-          {
-            "method": "GET",
-            "path_template": "/rest/v1/logs?empresa_id=eq.${ACTOR_EMPRESA_ID}&detalhes->>sessao_id=eq.${REPLAY_SESSION_ID}&select=id,empresa_id,detalhes&order=id.asc",
-            "auth_token_var": "EVIDENCE_OBSERVER_TOKEN",
-            "headers_template": {},
-            "body_template": null
-          }
-        ],
-        "after": [
-          {
-            "method": "GET",
-            "path_template": "/rest/v1/leads?lista_id=eq.${LISTA_ID}&telefone_e164=eq.${PROBE_PHONE}&select=id,empresa_id,lista_id,telefone_e164",
-            "auth_token_var": "EVIDENCE_OBSERVER_TOKEN",
-            "headers_template": {},
-            "body_template": null
-          },
-          {
-            "method": "GET",
-            "path_template": "/rest/v1/importar_leads_batch_idempotency?empresa_id=eq.${ACTOR_EMPRESA_ID}&sessao_id=eq.${REPLAY_SESSION_ID}&select=empresa_id,sessao_id,lista_id,request_fingerprint,resultado,completed_at",
-            "auth_token_var": "EVIDENCE_OBSERVER_TOKEN",
-            "headers_template": {},
-            "body_template": null
-          },
-          {
-            "method": "GET",
-            "path_template": "/rest/v1/logs?empresa_id=eq.${ACTOR_EMPRESA_ID}&detalhes->>sessao_id=eq.${REPLAY_SESSION_ID}&select=id,empresa_id,detalhes&order=id.asc",
-            "auth_token_var": "EVIDENCE_OBSERVER_TOKEN",
-            "headers_template": {},
-            "body_template": null
-          }
-        ],
+        "channel": "SERVER_SQL_OWNER",
         "expectation": "MUST_EQUAL",
+        "before": [],
+        "after": [],
         "fingerprint": "CANONICAL_JSON_SHA256"
       },
       "concurrency_assertion": null,
       "semantic_assertions": [
         {
-          "mode": "RESPONSE_OBJECT_NUMERIC_FIELDS",
+          "mode": "RESPONSE_OBJECT_FIELD_EQUALS_LITERAL",
           "response_index": 0,
-          "fields": [
-            "validos",
-            "invalidos",
-            "duplicados"
-          ]
+          "field": "validos",
+          "value": 1
         },
         {
-          "mode": "DELTA_ROW_COUNT_EQUALS",
-          "probe_index": 0,
-          "count": 0
+          "mode": "RESPONSE_OBJECT_FIELD_EQUALS_LITERAL",
+          "response_index": 0,
+          "field": "invalidos",
+          "value": 0
         },
         {
-          "mode": "DELTA_ROW_COUNT_EQUALS",
-          "probe_index": 1,
-          "count": 0
+          "mode": "RESPONSE_OBJECT_FIELD_EQUALS_LITERAL",
+          "response_index": 0,
+          "field": "duplicados",
+          "value": 0
         },
         {
-          "mode": "DELTA_ROW_COUNT_EQUALS",
-          "probe_index": 2,
-          "count": 0
+          "mode": "SERVER_STATE_UNCHANGED"
         }
       ],
       "topology_dependencies": [
-        "TOPO-REPLAY-CLAIM"
-      ]
+        "TOPO-TOKEN-ACTOR",
+        "TOPO-ACTOR",
+        "TOPO-LIST"
+      ],
+      "server_case_plan": "IMP-011"
     },
     {
       "test_id": "IMP-012",
@@ -8120,7 +7886,7 @@
       "synthetic_actor": "SYNTHETIC_FIXTURE_REQUIRED",
       "actor_role": "REQUIRED_AT_EXECUTION",
       "actor_company_team": "SYNTHETIC_FIXTURE_REQUIRED",
-      "preconditions": "Exact application/migration artifacts verified; synthetic fixture prepared; separate execution authorization recorded.",
+      "preconditions": "Exact application/migration artifacts verified; selected-case topology passes; deterministic non-production server lifecycle prepares the required state; separate execution authorization recorded.",
       "action_request": "Reuse tenant/session with different lista_id and require fail-closed.",
       "sanitized_payload_description": "Synthetic identifiers and non-PII values only; secrets/tokens supplied out-of-repo at execution.",
       "expected_authorization_result": "DENY",
@@ -8156,7 +7922,7 @@
                 {
                   "nome": "PR08 Synthetic",
                   "email": "pr08.synthetic@example.invalid",
-                  "telefone_e164": "${PROBE_PHONE}"
+                  "telefone_e164": "${LIST_MISMATCH_PHONE}"
                 }
               ],
               "p_sessao_id": "${LIST_MISMATCH_SESSION_ID}"
@@ -8173,47 +7939,22 @@
         "response_relation": null
       },
       "mutation_probe_plan": {
-        "before": [
-          {
-            "method": "GET",
-            "path_template": "/rest/v1/leads?lista_id=eq.${MISMATCH_LISTA_ID}&select=id,empresa_id,corretor_id,lote_id,lista_id,status,funil_estagio_id,telefone_e164&order=id.asc",
-            "auth_token_var": "EVIDENCE_OBSERVER_TOKEN",
-            "headers_template": {},
-            "body_template": null
-          },
-          {
-            "method": "GET",
-            "path_template": "/rest/v1/importar_leads_batch_idempotency?empresa_id=eq.${ACTOR_EMPRESA_ID}&sessao_id=eq.${LIST_MISMATCH_SESSION_ID}&select=empresa_id,sessao_id,lista_id,request_fingerprint,resultado,completed_at",
-            "auth_token_var": "EVIDENCE_OBSERVER_TOKEN",
-            "headers_template": {},
-            "body_template": null
-          }
-        ],
-        "after": [
-          {
-            "method": "GET",
-            "path_template": "/rest/v1/leads?lista_id=eq.${MISMATCH_LISTA_ID}&select=id,empresa_id,corretor_id,lote_id,lista_id,status,funil_estagio_id,telefone_e164&order=id.asc",
-            "auth_token_var": "EVIDENCE_OBSERVER_TOKEN",
-            "headers_template": {},
-            "body_template": null
-          },
-          {
-            "method": "GET",
-            "path_template": "/rest/v1/importar_leads_batch_idempotency?empresa_id=eq.${ACTOR_EMPRESA_ID}&sessao_id=eq.${LIST_MISMATCH_SESSION_ID}&select=empresa_id,sessao_id,lista_id,request_fingerprint,resultado,completed_at",
-            "auth_token_var": "EVIDENCE_OBSERVER_TOKEN",
-            "headers_template": {},
-            "body_template": null
-          }
-        ],
+        "channel": "SERVER_SQL_OWNER",
         "expectation": "MUST_EQUAL",
+        "before": [],
+        "after": [],
         "fingerprint": "CANONICAL_JSON_SHA256"
       },
       "concurrency_assertion": null,
       "semantic_assertions": [],
       "topology_dependencies": [
-        "TOPO-LIST-MISMATCH-CLAIM",
-        "TOPO-MISMATCH-LIST"
-      ]
+        "TOPO-TOKEN-ACTOR",
+        "TOPO-ACTOR",
+        "TOPO-LIST",
+        "TOPO-MISMATCH-LIST",
+        "TOPO-LIST-MISMATCH-DIFFER"
+      ],
+      "server_case_plan": "IMP-SESSION-LIST-MISMATCH"
     },
     {
       "test_id": "IMP-SESSION-PAYLOAD-MISMATCH",
@@ -8235,7 +7976,7 @@
       "synthetic_actor": "SYNTHETIC_FIXTURE_REQUIRED",
       "actor_role": "REQUIRED_AT_EXECUTION",
       "actor_company_team": "SYNTHETIC_FIXTURE_REQUIRED",
-      "preconditions": "Exact application/migration artifacts verified; synthetic fixture prepared; separate execution authorization recorded.",
+      "preconditions": "Exact application/migration artifacts verified; selected-case topology passes; deterministic non-production server lifecycle prepares the required state; separate execution authorization recorded.",
       "action_request": "Reuse tenant/session/list with changed payload digest and require fail-closed.",
       "sanitized_payload_description": "Synthetic identifiers and non-PII values only; secrets/tokens supplied out-of-repo at execution.",
       "expected_authorization_result": "DENY",
@@ -8271,7 +8012,7 @@
                 {
                   "nome": "PR08 Synthetic",
                   "email": "pr08.synthetic@example.invalid",
-                  "telefone_e164": "${PROBE_PHONE_2}"
+                  "telefone_e164": "${PAYLOAD_MISMATCH_REQUEST_PHONE}"
                 }
               ],
               "p_sessao_id": "${PAYLOAD_MISMATCH_SESSION_ID}"
@@ -8288,46 +8029,20 @@
         "response_relation": null
       },
       "mutation_probe_plan": {
-        "before": [
-          {
-            "method": "GET",
-            "path_template": "/rest/v1/leads?lista_id=eq.${LISTA_ID}&select=id,empresa_id,corretor_id,lote_id,lista_id,status,funil_estagio_id,telefone_e164&order=id.asc",
-            "auth_token_var": "EVIDENCE_OBSERVER_TOKEN",
-            "headers_template": {},
-            "body_template": null
-          },
-          {
-            "method": "GET",
-            "path_template": "/rest/v1/lotes?lista_id=eq.${LISTA_ID}&select=id,lista_id,corretor_id,status,data_distribuicao&order=id.asc",
-            "auth_token_var": "EVIDENCE_OBSERVER_TOKEN",
-            "headers_template": {},
-            "body_template": null
-          }
-        ],
-        "after": [
-          {
-            "method": "GET",
-            "path_template": "/rest/v1/leads?lista_id=eq.${LISTA_ID}&select=id,empresa_id,corretor_id,lote_id,lista_id,status,funil_estagio_id,telefone_e164&order=id.asc",
-            "auth_token_var": "EVIDENCE_OBSERVER_TOKEN",
-            "headers_template": {},
-            "body_template": null
-          },
-          {
-            "method": "GET",
-            "path_template": "/rest/v1/lotes?lista_id=eq.${LISTA_ID}&select=id,lista_id,corretor_id,status,data_distribuicao&order=id.asc",
-            "auth_token_var": "EVIDENCE_OBSERVER_TOKEN",
-            "headers_template": {},
-            "body_template": null
-          }
-        ],
+        "channel": "SERVER_SQL_OWNER",
         "expectation": "MUST_EQUAL",
+        "before": [],
+        "after": [],
         "fingerprint": "CANONICAL_JSON_SHA256"
       },
       "concurrency_assertion": null,
       "semantic_assertions": [],
       "topology_dependencies": [
-        "TOPO-PAYLOAD-MISMATCH-CLAIM"
-      ]
+        "TOPO-TOKEN-ACTOR",
+        "TOPO-ACTOR",
+        "TOPO-LIST"
+      ],
+      "server_case_plan": "IMP-SESSION-PAYLOAD-MISMATCH"
     },
     {
       "test_id": "IMP-CLAIMANT-ROLLBACK",
@@ -8399,7 +8114,7 @@
       "synthetic_actor": "SYNTHETIC_FIXTURE_REQUIRED",
       "actor_role": "REQUIRED_AT_EXECUTION",
       "actor_company_team": "SYNTHETIC_FIXTURE_REQUIRED",
-      "preconditions": "Exact application/migration artifacts verified; synthetic fixture prepared; separate execution authorization recorded.",
+      "preconditions": "Exact application/migration artifacts verified; selected-case topology passes; deterministic non-production server lifecycle prepares the required state; separate execution authorization recorded.",
       "action_request": "Present synthetic committed incomplete idempotency state and require fail-closed.",
       "sanitized_payload_description": "Synthetic identifiers and non-PII values only; secrets/tokens supplied out-of-repo at execution.",
       "expected_authorization_result": "DENY",
@@ -8435,7 +8150,7 @@
                 {
                   "nome": "PR08 Synthetic",
                   "email": "pr08.synthetic@example.invalid",
-                  "telefone_e164": "${PROBE_PHONE}"
+                  "telefone_e164": "${INCOMPLETE_PHONE}"
                 }
               ],
               "p_sessao_id": "${INCOMPLETE_SESSION_ID}"
@@ -8452,46 +8167,20 @@
         "response_relation": null
       },
       "mutation_probe_plan": {
-        "before": [
-          {
-            "method": "GET",
-            "path_template": "/rest/v1/leads?lista_id=eq.${LISTA_ID}&select=id,empresa_id,corretor_id,lote_id,lista_id,status,funil_estagio_id,telefone_e164&order=id.asc",
-            "auth_token_var": "EVIDENCE_OBSERVER_TOKEN",
-            "headers_template": {},
-            "body_template": null
-          },
-          {
-            "method": "GET",
-            "path_template": "/rest/v1/lotes?lista_id=eq.${LISTA_ID}&select=id,lista_id,corretor_id,status,data_distribuicao&order=id.asc",
-            "auth_token_var": "EVIDENCE_OBSERVER_TOKEN",
-            "headers_template": {},
-            "body_template": null
-          }
-        ],
-        "after": [
-          {
-            "method": "GET",
-            "path_template": "/rest/v1/leads?lista_id=eq.${LISTA_ID}&select=id,empresa_id,corretor_id,lote_id,lista_id,status,funil_estagio_id,telefone_e164&order=id.asc",
-            "auth_token_var": "EVIDENCE_OBSERVER_TOKEN",
-            "headers_template": {},
-            "body_template": null
-          },
-          {
-            "method": "GET",
-            "path_template": "/rest/v1/lotes?lista_id=eq.${LISTA_ID}&select=id,lista_id,corretor_id,status,data_distribuicao&order=id.asc",
-            "auth_token_var": "EVIDENCE_OBSERVER_TOKEN",
-            "headers_template": {},
-            "body_template": null
-          }
-        ],
+        "channel": "SERVER_SQL_OWNER",
         "expectation": "MUST_EQUAL",
+        "before": [],
+        "after": [],
         "fingerprint": "CANONICAL_JSON_SHA256"
       },
       "concurrency_assertion": null,
       "semantic_assertions": [],
       "topology_dependencies": [
-        "TOPO-INCOMPLETE-CLAIM"
-      ]
+        "TOPO-TOKEN-ACTOR",
+        "TOPO-ACTOR",
+        "TOPO-LIST"
+      ],
+      "server_case_plan": "IMP-INCOMPLETE-STATE"
     },
     {
       "test_id": "FDB-001",
@@ -9296,57 +8985,72 @@
         }
       },
       "mutation_probe_plan": {
-        "before": [
-          {
-            "method": "GET",
-            "path_template": "/rest/v1/leads?id=eq.${TARGET_LEAD_ID}&select=id,empresa_id,corretor_id,lote_id,lista_id,status,funil_estagio_id,feedback&order=id.asc",
-            "auth_token_var": "EVIDENCE_OBSERVER_TOKEN",
-            "headers_template": {},
-            "body_template": null
-          },
-          {
-            "method": "GET",
-            "path_template": "/rest/v1/funil_movimentacoes?lead_id=eq.${TARGET_LEAD_ID}&select=id,lead_id,corretor_id,estagio_id,empresa_id,origem_evento,motivo&order=id.asc",
-            "auth_token_var": "EVIDENCE_OBSERVER_TOKEN",
-            "headers_template": {},
-            "body_template": null
-          }
-        ],
-        "after": [
-          {
-            "method": "GET",
-            "path_template": "/rest/v1/leads?id=eq.${TARGET_LEAD_ID}&select=id,empresa_id,corretor_id,lote_id,lista_id,status,funil_estagio_id,feedback&order=id.asc",
-            "auth_token_var": "EVIDENCE_OBSERVER_TOKEN",
-            "headers_template": {},
-            "body_template": null
-          },
-          {
-            "method": "GET",
-            "path_template": "/rest/v1/funil_movimentacoes?lead_id=eq.${TARGET_LEAD_ID}&select=id,lead_id,corretor_id,estagio_id,empresa_id,origem_evento,motivo&order=id.asc",
-            "auth_token_var": "EVIDENCE_OBSERVER_TOKEN",
-            "headers_template": {},
-            "body_template": null
-          }
-        ],
+        "channel": "SERVER_SQL_OWNER",
         "expectation": "MUST_CHANGE",
+        "before": [],
+        "after": [],
         "fingerprint": "CANONICAL_JSON_SHA256"
       },
       "concurrency_assertion": null,
       "semantic_assertions": [
         {
-          "mode": "AFTER_FIRST_ROW_FIELD_EQUALS_LITERAL",
-          "probe_index": 0,
-          "field": "feedback",
+          "mode": "RESPONSE_OBJECT_FIELD_EQUALS_LITERAL",
+          "response_index": 0,
+          "field": "ok",
+          "value": true
+        },
+        {
+          "mode": "SERVER_AFTER_PATH_EQUALS_LITERAL",
+          "path": "lead.feedback",
           "value": "em_conversa"
         },
         {
-          "mode": "AFTER_FIRST_ROW_FIELD_EQUALS_LITERAL",
-          "probe_index": 0,
-          "field": "status_comercial",
+          "mode": "SERVER_AFTER_PATH_EQUALS_LITERAL",
+          "path": "lead.status_comercial",
           "value": "contato_efetivo"
+        },
+        {
+          "mode": "SERVER_AFTER_PATH_EQUALS_VAR",
+          "path": "lead.funil_estagio_id",
+          "var": "EM_CONVERSA_STAGE_ID"
+        },
+        {
+          "mode": "SERVER_DELTA_ARRAY_COUNT_EQUALS",
+          "path": "movements",
+          "count": 1
+        },
+        {
+          "mode": "SERVER_DELTA_ARRAY_ALL_FIELD_EQUALS_LITERAL",
+          "path": "movements",
+          "field": "origem_evento",
+          "value": "feedback"
+        },
+        {
+          "mode": "SERVER_DELTA_ARRAY_ALL_FIELD_EQUALS_LITERAL",
+          "path": "movements",
+          "field": "motivo",
+          "value": "em_conversa"
+        },
+        {
+          "mode": "SERVER_DELTA_ARRAY_ALL_FIELD_EQUALS_VAR",
+          "path": "movements",
+          "field": "estagio_id",
+          "var": "EM_CONVERSA_STAGE_ID"
+        },
+        {
+          "mode": "SERVER_AFTER_PATH_EQUALS_BEFORE",
+          "path": "lot.status"
         }
       ],
-      "topology_dependencies": []
+      "topology_dependencies": [
+        "TOPO-TOKEN-ACTOR",
+        "TOPO-ACTOR",
+        "TOPO-TARGET-LEAD",
+        "TOPO-BASE-STAGE",
+        "TOPO-EM-CONVERSA-STAGE",
+        "TOPO-BASE-EM-CONVERSA-DIFFER"
+      ],
+      "server_case_plan": "FDB-008"
     },
     {
       "test_id": "FDB-009",
@@ -9412,57 +9116,72 @@
         }
       },
       "mutation_probe_plan": {
-        "before": [
-          {
-            "method": "GET",
-            "path_template": "/rest/v1/leads?id=eq.${TARGET_LEAD_ID}&select=id,empresa_id,corretor_id,lote_id,lista_id,status,funil_estagio_id,feedback&order=id.asc",
-            "auth_token_var": "EVIDENCE_OBSERVER_TOKEN",
-            "headers_template": {},
-            "body_template": null
-          },
-          {
-            "method": "GET",
-            "path_template": "/rest/v1/funil_movimentacoes?lead_id=eq.${TARGET_LEAD_ID}&select=id,lead_id,corretor_id,estagio_id,empresa_id,origem_evento,motivo&order=id.asc",
-            "auth_token_var": "EVIDENCE_OBSERVER_TOKEN",
-            "headers_template": {},
-            "body_template": null
-          }
-        ],
-        "after": [
-          {
-            "method": "GET",
-            "path_template": "/rest/v1/leads?id=eq.${TARGET_LEAD_ID}&select=id,empresa_id,corretor_id,lote_id,lista_id,status,funil_estagio_id,feedback&order=id.asc",
-            "auth_token_var": "EVIDENCE_OBSERVER_TOKEN",
-            "headers_template": {},
-            "body_template": null
-          },
-          {
-            "method": "GET",
-            "path_template": "/rest/v1/funil_movimentacoes?lead_id=eq.${TARGET_LEAD_ID}&select=id,lead_id,corretor_id,estagio_id,empresa_id,origem_evento,motivo&order=id.asc",
-            "auth_token_var": "EVIDENCE_OBSERVER_TOKEN",
-            "headers_template": {},
-            "body_template": null
-          }
-        ],
+        "channel": "SERVER_SQL_OWNER",
         "expectation": "MUST_CHANGE",
+        "before": [],
+        "after": [],
         "fingerprint": "CANONICAL_JSON_SHA256"
       },
       "concurrency_assertion": null,
       "semantic_assertions": [
         {
-          "mode": "AFTER_FIRST_ROW_FIELD_EQUALS_LITERAL",
-          "probe_index": 0,
-          "field": "feedback",
+          "mode": "RESPONSE_OBJECT_FIELD_EQUALS_LITERAL",
+          "response_index": 0,
+          "field": "ok",
+          "value": true
+        },
+        {
+          "mode": "SERVER_AFTER_PATH_EQUALS_LITERAL",
+          "path": "lead.feedback",
           "value": "em_conversa"
         },
         {
-          "mode": "AFTER_FIRST_ROW_FIELD_EQUALS_LITERAL",
-          "probe_index": 0,
-          "field": "status_comercial",
+          "mode": "SERVER_AFTER_PATH_EQUALS_LITERAL",
+          "path": "lead.status_comercial",
           "value": "contato_efetivo"
+        },
+        {
+          "mode": "SERVER_AFTER_PATH_EQUALS_VAR",
+          "path": "lead.funil_estagio_id",
+          "var": "EM_CONVERSA_STAGE_ID"
+        },
+        {
+          "mode": "SERVER_DELTA_ARRAY_COUNT_EQUALS",
+          "path": "movements",
+          "count": 1
+        },
+        {
+          "mode": "SERVER_DELTA_ARRAY_ALL_FIELD_EQUALS_LITERAL",
+          "path": "movements",
+          "field": "origem_evento",
+          "value": "feedback"
+        },
+        {
+          "mode": "SERVER_DELTA_ARRAY_ALL_FIELD_EQUALS_LITERAL",
+          "path": "movements",
+          "field": "motivo",
+          "value": "em_conversa"
+        },
+        {
+          "mode": "SERVER_DELTA_ARRAY_ALL_FIELD_EQUALS_VAR",
+          "path": "movements",
+          "field": "estagio_id",
+          "var": "EM_CONVERSA_STAGE_ID"
+        },
+        {
+          "mode": "SERVER_AFTER_PATH_EQUALS_BEFORE",
+          "path": "lot.status"
         }
       ],
-      "topology_dependencies": []
+      "topology_dependencies": [
+        "TOPO-TOKEN-ACTOR",
+        "TOPO-ACTOR",
+        "TOPO-TARGET-LEAD",
+        "TOPO-BASE-STAGE",
+        "TOPO-EM-CONVERSA-STAGE",
+        "TOPO-BASE-EM-CONVERSA-DIFFER"
+      ],
+      "server_case_plan": "FDB-009"
     },
     {
       "test_id": "FDB-010",
@@ -10504,7 +10223,11 @@
     "denial_semantics": "EXACT_STATUS_AND_EXPECTED_ERROR_EVIDENCE",
     "semantic_assertions": "VERSIONED_AND_MANDATORY_FOR_NONTRIVIAL_POSITIVES",
     "explicit_selection": "REQUIRED_UNLESS_EXPLICIT_ALL",
-    "idempotency_evidence": "LEAD_PLUS_IDEMPOTENCY_MARKER_PLUS_LOG_DELTAS"
+    "idempotency_evidence": "SERVER_SQL_ONLY_NO_REST_CLIENT_ACCESS",
+    "server_evidence_channel": "PSQL_POSTGRES_OWNER_NON_PRODUCTION_ONLY",
+    "case_isolation": "PER_TEST_CAPTURE_PREPARE_EVIDENCE_CLEANUP_RESTORE",
+    "topology_scope": "GLOBAL_PLUS_SELECTED_CASE_DEPENDENCIES_ONLY",
+    "cleanup_verification": "POST_CLEANUP_SHA256_MUST_EQUAL_ORIGINAL"
   },
   "fixture_contract": {
     "allowed_top_level_fields": [
@@ -10528,33 +10251,6 @@
   },
   "topology_contract": {
     "observer_token_var": "EVIDENCE_OBSERVER_TOKEN",
-    "variable_relations": [
-      {
-        "mode": "NOT_EQUAL",
-        "left": "ACTOR_EMPRESA_ID",
-        "right": "FOREIGN_EMPRESA_ID"
-      },
-      {
-        "mode": "NOT_EQUAL",
-        "left": "EMPRESA_ID_A",
-        "right": "EMPRESA_ID_B"
-      },
-      {
-        "mode": "NOT_EQUAL",
-        "left": "LISTA_ID_A",
-        "right": "LISTA_ID_B"
-      },
-      {
-        "mode": "NOT_EQUAL",
-        "left": "LISTA_ID",
-        "right": "MISMATCH_LISTA_ID"
-      },
-      {
-        "mode": "NOT_EQUAL",
-        "left": "ACTOR_CORRETOR_ID",
-        "right": "WRONG_OWNER_CORRETOR_ID"
-      }
-    ],
     "checks": [
       {
         "check_id": "TOPO-TOKEN-ACTOR",
@@ -11137,10 +10833,10 @@
         }
       },
       {
-        "check_id": "TOPO-REPLAY-CLAIM",
+        "check_id": "TOPO-TARGET-CORRETOR",
         "request": {
           "method": "GET",
-          "path_template": "/rest/v1/importar_leads_batch_idempotency?empresa_id=eq.${ACTOR_EMPRESA_ID}&sessao_id=eq.${REPLAY_SESSION_ID}&select=empresa_id,sessao_id,lista_id,resultado,completed_at",
+          "path_template": "/rest/v1/corretores?id=eq.${TARGET_CORRETOR_ID}&select=id,empresa_id,time_id,ativo,role",
           "auth_token_var": "EVIDENCE_OBSERVER_TOKEN",
           "headers_template": {},
           "body_template": null
@@ -11148,21 +10844,19 @@
         "assertion": {
           "mode": "EXACTLY_ONE_ROW",
           "field_equals_vars": {
-            "empresa_id": "ACTOR_EMPRESA_ID",
-            "sessao_id": "REPLAY_SESSION_ID",
-            "lista_id": "LISTA_ID"
+            "id": "TARGET_CORRETOR_ID",
+            "empresa_id": "ACTOR_EMPRESA_ID"
           },
-          "field_not_null": [
-            "resultado",
-            "completed_at"
-          ]
+          "field_equals_literals": {
+            "ativo": true
+          }
         }
       },
       {
-        "check_id": "TOPO-LIST-MISMATCH-CLAIM",
+        "check_id": "TOPO-BASE-TIME",
         "request": {
           "method": "GET",
-          "path_template": "/rest/v1/importar_leads_batch_idempotency?empresa_id=eq.${ACTOR_EMPRESA_ID}&sessao_id=eq.${LIST_MISMATCH_SESSION_ID}&select=empresa_id,sessao_id,lista_id,resultado,completed_at",
+          "path_template": "/rest/v1/times?id=eq.${BASE_TIME_ID}&select=id,empresa_id,ativo",
           "auth_token_var": "EVIDENCE_OBSERVER_TOKEN",
           "headers_template": {},
           "body_template": null
@@ -11170,21 +10864,19 @@
         "assertion": {
           "mode": "EXACTLY_ONE_ROW",
           "field_equals_vars": {
-            "empresa_id": "ACTOR_EMPRESA_ID",
-            "sessao_id": "LIST_MISMATCH_SESSION_ID",
-            "lista_id": "LISTA_ID"
+            "id": "BASE_TIME_ID",
+            "empresa_id": "ACTOR_EMPRESA_ID"
           },
-          "field_not_null": [
-            "resultado",
-            "completed_at"
-          ]
+          "field_equals_literals": {
+            "ativo": true
+          }
         }
       },
       {
-        "check_id": "TOPO-PAYLOAD-MISMATCH-CLAIM",
+        "check_id": "TOPO-BASE-STAGE",
         "request": {
           "method": "GET",
-          "path_template": "/rest/v1/importar_leads_batch_idempotency?empresa_id=eq.${ACTOR_EMPRESA_ID}&sessao_id=eq.${PAYLOAD_MISMATCH_SESSION_ID}&select=empresa_id,sessao_id,lista_id,resultado,completed_at",
+          "path_template": "/rest/v1/funil_estagios?id=eq.${BASE_STAGE_ID}&select=id,empresa_id,ativo,codigo_estagio",
           "auth_token_var": "EVIDENCE_OBSERVER_TOKEN",
           "headers_template": {},
           "body_template": null
@@ -11192,21 +10884,19 @@
         "assertion": {
           "mode": "EXACTLY_ONE_ROW",
           "field_equals_vars": {
-            "empresa_id": "ACTOR_EMPRESA_ID",
-            "sessao_id": "PAYLOAD_MISMATCH_SESSION_ID",
-            "lista_id": "LISTA_ID"
+            "id": "BASE_STAGE_ID",
+            "empresa_id": "ACTOR_EMPRESA_ID"
           },
-          "field_not_null": [
-            "resultado",
-            "completed_at"
-          ]
+          "field_equals_literals": {
+            "ativo": true
+          }
         }
       },
       {
-        "check_id": "TOPO-INCOMPLETE-CLAIM",
+        "check_id": "TOPO-EM-CONVERSA-STAGE",
         "request": {
           "method": "GET",
-          "path_template": "/rest/v1/importar_leads_batch_idempotency?empresa_id=eq.${ACTOR_EMPRESA_ID}&sessao_id=eq.${INCOMPLETE_SESSION_ID}&select=empresa_id,sessao_id,lista_id,resultado,completed_at",
+          "path_template": "/rest/v1/funil_estagios?id=eq.${EM_CONVERSA_STAGE_ID}&empresa_id=eq.${ACTOR_EMPRESA_ID}&codigo_estagio=eq.em_conversa&select=id,empresa_id,ativo,codigo_estagio",
           "auth_token_var": "EVIDENCE_OBSERVER_TOKEN",
           "headers_template": {},
           "body_template": null
@@ -11214,16 +10904,335 @@
         "assertion": {
           "mode": "EXACTLY_ONE_ROW",
           "field_equals_vars": {
-            "empresa_id": "ACTOR_EMPRESA_ID",
-            "sessao_id": "INCOMPLETE_SESSION_ID",
-            "lista_id": "LISTA_ID"
+            "id": "EM_CONVERSA_STAGE_ID",
+            "empresa_id": "ACTOR_EMPRESA_ID"
           },
-          "field_null": [
-            "resultado",
-            "completed_at"
-          ]
+          "field_equals_literals": {
+            "ativo": true,
+            "codigo_estagio": "em_conversa"
+          }
+        }
+      },
+      {
+        "check_id": "TOPO-TENANTS-A-B-DIFFER",
+        "request": null,
+        "assertion": {
+          "mode": "VARIABLE_NOT_EQUAL",
+          "left": "EMPRESA_ID_A",
+          "right": "EMPRESA_ID_B"
+        }
+      },
+      {
+        "check_id": "TOPO-LISTS-A-B-DIFFER",
+        "request": null,
+        "assertion": {
+          "mode": "VARIABLE_NOT_EQUAL",
+          "left": "LISTA_ID_A",
+          "right": "LISTA_ID_B"
+        }
+      },
+      {
+        "check_id": "TOPO-LIST-MISMATCH-DIFFER",
+        "request": null,
+        "assertion": {
+          "mode": "VARIABLE_NOT_EQUAL",
+          "left": "LISTA_ID",
+          "right": "MISMATCH_LISTA_ID"
+        }
+      },
+      {
+        "check_id": "TOPO-BASE-TARGET-TIME-DIFFER",
+        "request": null,
+        "assertion": {
+          "mode": "VARIABLE_NOT_EQUAL",
+          "left": "BASE_TIME_ID",
+          "right": "TARGET_TIME_ID"
+        }
+      },
+      {
+        "check_id": "TOPO-BASE-VALID-STAGE-DIFFER",
+        "request": null,
+        "assertion": {
+          "mode": "VARIABLE_NOT_EQUAL",
+          "left": "BASE_STAGE_ID",
+          "right": "VALID_STAGE_ID"
+        }
+      },
+      {
+        "check_id": "TOPO-BASE-EM-CONVERSA-DIFFER",
+        "request": null,
+        "assertion": {
+          "mode": "VARIABLE_NOT_EQUAL",
+          "left": "BASE_STAGE_ID",
+          "right": "EM_CONVERSA_STAGE_ID"
         }
       }
-    ]
+    ],
+    "global_check_ids": []
+  },
+  "server_evidence_contract": {
+    "mode": "PSQL_POSTGRES_OWNER_NON_PRODUCTION_ONLY",
+    "database_url_env": "FECHAI_PR08_DATABASE_URL",
+    "authorization_env": "FECHAI_PR08_SERVER_EVIDENCE_AUTHORIZED",
+    "isolation_env": "FECHAI_PR08_ISOLATED_ENVIRONMENT",
+    "required_database_role": "postgres",
+    "production_project_ref_hard_deny": "uobxxgzshrmbtjfdolxd",
+    "boundary_preflight_sql_case": "SERVER-EVIDENCE-PREFLIGHT",
+    "grants_rls_policies_changes": "FORBIDDEN",
+    "note": "Server-side evidence uses the database owner only in a separately authorized isolated non-production environment. It never grants REST/client access to protected evidence tables."
+  },
+  "server_case_plans": {
+    "COR-011": {
+      "kind": "BROKER",
+      "broker_id_var": "ACTOR_CORRETOR_ID",
+      "prepare_patch": {
+        "must_change_password": true
+      }
+    },
+    "COR-012": {
+      "kind": "BROKER",
+      "broker_id_var": "TARGET_CORRETOR_ID",
+      "prepare_patch": {
+        "ativo": true
+      }
+    },
+    "COR-013": {
+      "kind": "BROKER",
+      "broker_id_var": "TARGET_CORRETOR_ID",
+      "prepare_patch": {
+        "time_id_var": "BASE_TIME_ID"
+      }
+    },
+    "CRM-015": {
+      "kind": "IMPORT",
+      "scopes": [
+        {
+          "company_var": "ACTOR_EMPRESA_ID",
+          "list_vars": [
+            "LISTA_ID"
+          ],
+          "session_var": "CRM_015_SESSION_ID",
+          "phone_vars": [
+            "CRM_015_PHONE"
+          ],
+          "seed_mode": "NONE"
+        }
+      ]
+    },
+    "FUN-007": {
+      "kind": "FUNNEL",
+      "lead_id_var": "TARGET_LEAD_ID",
+      "baseline_stage_var": "BASE_STAGE_ID",
+      "observation": "PR08:FUN-007"
+    },
+    "FUN-008": {
+      "kind": "FUNNEL",
+      "lead_id_var": "TARGET_LEAD_ID",
+      "baseline_stage_var": "BASE_STAGE_ID",
+      "observation": "PR08:FUN-008"
+    },
+    "ACL-002": {
+      "kind": "ACL",
+      "list_id_var": "LISTA_ID",
+      "target_type": "corretor",
+      "target_id_var": "TARGET_CORRETOR_ID",
+      "require_initial_absent": true
+    },
+    "ACL-003": {
+      "kind": "ACL",
+      "list_id_var": "LISTA_ID",
+      "target_type": "corretor",
+      "target_id_var": "TARGET_CORRETOR_ID",
+      "require_initial_absent": true
+    },
+    "ACL-004": {
+      "kind": "ACL",
+      "list_id_var": "LISTA_ID",
+      "target_type": "corretor",
+      "target_id_var": "TARGET_CORRETOR_ID",
+      "require_initial_absent": true
+    },
+    "ACL-010": {
+      "kind": "ACL",
+      "list_id_var": "LISTA_ID",
+      "target_type": "corretor",
+      "target_id_var": "TARGET_CORRETOR_ID",
+      "require_initial_absent": true
+    },
+    "IMP-001": {
+      "kind": "IMPORT",
+      "scopes": [
+        {
+          "company_var": "ACTOR_EMPRESA_ID",
+          "list_vars": [
+            "LISTA_ID"
+          ],
+          "session_var": "IDEMPOTENT_SESSION_ID",
+          "phone_vars": [
+            "IMP_001_PHONE"
+          ],
+          "seed_mode": "NONE"
+        }
+      ]
+    },
+    "IMP-002": {
+      "kind": "IMPORT",
+      "scopes": [
+        {
+          "company_var": "EMPRESA_ID_A",
+          "list_vars": [
+            "LISTA_ID_A"
+          ],
+          "session_var": "SHARED_SESSION_ID",
+          "phone_vars": [
+            "PROBE_PHONE_A"
+          ],
+          "seed_mode": "NONE"
+        },
+        {
+          "company_var": "EMPRESA_ID_B",
+          "list_vars": [
+            "LISTA_ID_B"
+          ],
+          "session_var": "SHARED_SESSION_ID",
+          "phone_vars": [
+            "PROBE_PHONE_B"
+          ],
+          "seed_mode": "NONE"
+        }
+      ]
+    },
+    "IMP-003": {
+      "kind": "IMPORT",
+      "scopes": [
+        {
+          "company_var": "ACTOR_EMPRESA_ID",
+          "list_vars": [
+            "LISTA_ID"
+          ],
+          "session_var": "CONCURRENT_SESSION_ID",
+          "phone_vars": [
+            "IMP_003_PHONE"
+          ],
+          "seed_mode": "NONE"
+        }
+      ]
+    },
+    "IMP-010": {
+      "kind": "IMPORT",
+      "scopes": [
+        {
+          "company_var": "ACTOR_EMPRESA_ID",
+          "list_vars": [
+            "LISTA_ID"
+          ],
+          "session_var": "POSITIVE_IMPORT_SESSION_ID",
+          "phone_vars": [
+            "IMP_010_PHONE_1",
+            "IMP_010_PHONE_2"
+          ],
+          "seed_mode": "NONE"
+        }
+      ]
+    },
+    "IMP-011": {
+      "kind": "IMPORT",
+      "claims_var": "ACTOR_JWT_CLAIMS",
+      "scopes": [
+        {
+          "company_var": "ACTOR_EMPRESA_ID",
+          "list_vars": [
+            "LISTA_ID"
+          ],
+          "session_var": "REPLAY_SESSION_ID",
+          "phone_vars": [
+            "IMP_011_PHONE"
+          ],
+          "seed_mode": "COMPLETED",
+          "seed_list_var": "LISTA_ID",
+          "seed_phone_vars": [
+            "IMP_011_PHONE"
+          ]
+        }
+      ]
+    },
+    "IMP-SESSION-LIST-MISMATCH": {
+      "kind": "IMPORT",
+      "claims_var": "ACTOR_JWT_CLAIMS",
+      "scopes": [
+        {
+          "company_var": "ACTOR_EMPRESA_ID",
+          "list_vars": [
+            "LISTA_ID",
+            "MISMATCH_LISTA_ID"
+          ],
+          "session_var": "LIST_MISMATCH_SESSION_ID",
+          "phone_vars": [
+            "LIST_MISMATCH_PHONE"
+          ],
+          "seed_mode": "COMPLETED",
+          "seed_list_var": "LISTA_ID",
+          "seed_phone_vars": [
+            "LIST_MISMATCH_PHONE"
+          ]
+        }
+      ]
+    },
+    "IMP-SESSION-PAYLOAD-MISMATCH": {
+      "kind": "IMPORT",
+      "claims_var": "ACTOR_JWT_CLAIMS",
+      "scopes": [
+        {
+          "company_var": "ACTOR_EMPRESA_ID",
+          "list_vars": [
+            "LISTA_ID"
+          ],
+          "session_var": "PAYLOAD_MISMATCH_SESSION_ID",
+          "phone_vars": [
+            "PAYLOAD_MISMATCH_BASE_PHONE",
+            "PAYLOAD_MISMATCH_REQUEST_PHONE"
+          ],
+          "seed_mode": "COMPLETED",
+          "seed_list_var": "LISTA_ID",
+          "seed_phone_vars": [
+            "PAYLOAD_MISMATCH_BASE_PHONE"
+          ]
+        }
+      ]
+    },
+    "IMP-INCOMPLETE-STATE": {
+      "kind": "IMPORT",
+      "scopes": [
+        {
+          "company_var": "ACTOR_EMPRESA_ID",
+          "list_vars": [
+            "LISTA_ID"
+          ],
+          "session_var": "INCOMPLETE_SESSION_ID",
+          "phone_vars": [
+            "INCOMPLETE_PHONE"
+          ],
+          "seed_mode": "INCOMPLETE",
+          "seed_list_var": "LISTA_ID",
+          "seed_phone_vars": [
+            "INCOMPLETE_PHONE"
+          ]
+        }
+      ]
+    },
+    "FDB-008": {
+      "kind": "FEEDBACK",
+      "lead_id_var": "TARGET_LEAD_ID",
+      "baseline_stage_var": "BASE_STAGE_ID",
+      "expected_stage_var": "EM_CONVERSA_STAGE_ID",
+      "max_other_feedback": 23
+    },
+    "FDB-009": {
+      "kind": "FEEDBACK",
+      "lead_id_var": "TARGET_LEAD_ID",
+      "baseline_stage_var": "BASE_STAGE_ID",
+      "expected_stage_var": "EM_CONVERSA_STAGE_ID",
+      "max_other_feedback": 23
+    }
   }
 }

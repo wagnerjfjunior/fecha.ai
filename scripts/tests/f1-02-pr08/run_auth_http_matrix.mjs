@@ -3,6 +3,7 @@ async function main() {
   const fs = await import("node:fs/promises");
   const path = await import("node:path");
   const crypto = await import("node:crypto");
+  const { spawnSync } = await import("node:child_process");
 
   const PROD_REF = "uobxxgzshrmbtjfdolxd";
   const root = process.cwd();
@@ -43,11 +44,14 @@ async function main() {
   if (origin.hostname !== fixture.target_project_ref + ".supabase.co") throw new Error("PR08_ORIGIN_BINDING_FAILED");
   const variables = fixture.variables;
 
+  function valueFromVar(name) {
+    if (!(name in variables)) throw new Error("PR08_VARIABLE_REQUIRED:"+name);
+    return variables[name];
+  }
   function renderString(value, encode) {
     if (typeof value !== "string") return value;
     return value.replace(/\$\{([A-Z0-9_]+)\}/g, (_,name) => {
-      if (!(name in variables)) throw new Error("PR08_VARIABLE_REQUIRED:"+name);
-      const raw = String(variables[name]);
+      const raw = String(valueFromVar(name));
       return encode ? encodeURIComponent(raw) : raw;
     });
   }
@@ -99,8 +103,7 @@ async function main() {
     if (!anonKey) throw new Error("PR08_SUPABASE_ANON_KEY_REQUIRED");
     const headers = {apikey:String(anonKey)};
     if (spec.auth_token_var) {
-      if (!(spec.auth_token_var in variables)) throw new Error("PR08_AUTH_TOKEN_REQUIRED:"+spec.auth_token_var);
-      headers.Authorization = "Bearer "+String(variables[spec.auth_token_var]);
+      headers.Authorization = "Bearer "+String(valueFromVar(spec.auth_token_var));
     }
     for (const [k,v] of Object.entries(spec.headers_template||{})) headers[k] = renderString(v,false);
     const body = spec.body_template === null || spec.body_template === undefined ? undefined : JSON.stringify(renderDeep(spec.body_template));
@@ -115,260 +118,630 @@ async function main() {
   }
 
   function errorEvidence(response) {
-    const body = response.body;
-    const code = body && typeof body === "object" && !Array.isArray(body) && typeof body.code === "string" ? body.code : null;
-    const message = body && typeof body === "object" && !Array.isArray(body)
-      ? (typeof body.error === "string" ? body.error : (typeof body.message === "string" ? body.message : ""))
-      : (typeof body === "string" ? body : "");
-    const sanitizedMessage = redact(message);
+    const body=response.body;
+    const code=body && typeof body==="object" && !Array.isArray(body) && typeof body.code==="string" ? body.code : null;
+    const message=body && typeof body==="object" && !Array.isArray(body)
+      ? (typeof body.error==="string" ? body.error : (typeof body.message==="string" ? body.message : ""))
+      : (typeof body==="string" ? body : "");
+    const sanitizedMessage=redact(message);
     return {
-      code: code ? redact(code) : null,
+      code:code?redact(code):null,
       message:sanitizedMessage,
-      normalized_code: code ? redact(code) : "HTTP_"+response.status+"_"+slug(sanitizedMessage || "NO_BODY")
+      normalized_code:code?redact(code):"HTTP_"+response.status+"_"+slug(sanitizedMessage||"NO_BODY")
     };
   }
-
   function responsePass(assertion,response) {
     if (assertion.mode === "EMPTY_ARRAY_DENIAL") {
-      return assertion.allowed_statuses.includes(response.status) && Array.isArray(response.body) && response.body.length === 0;
+      return assertion.allowed_statuses.includes(response.status) && Array.isArray(response.body) && response.body.length===0;
     }
     if (assertion.mode === "DENIAL_SEMANTIC") {
       if (!assertion.expected_statuses.includes(response.status)) return false;
-      const ev = errorEvidence(response);
+      const ev=errorEvidence(response);
       if (assertion.expected_error_codes?.length && !assertion.expected_error_codes.includes(ev.code)) return false;
-      if (assertion.expected_error_exact && ev.message !== assertion.expected_error_exact) return false;
+      if (assertion.expected_error_exact && ev.message!==assertion.expected_error_exact) return false;
       if (assertion.expected_error_regex && !(new RegExp(assertion.expected_error_regex,"i")).test((ev.code||"")+" "+ev.message)) return false;
       return true;
     }
     if (assertion.mode === "ALLOW_SEMANTIC") {
-      if (Math.floor(response.status/100) !== assertion.allowed_status_class) return false;
-      if (assertion.reject_json_error && response.body && typeof response.body === "object" && !Array.isArray(response.body) && response.body.error) return false;
+      if (Math.floor(response.status/100)!==assertion.allowed_status_class) return false;
+      if (assertion.reject_json_error && response.body && typeof response.body==="object" && !Array.isArray(response.body) && response.body.error) return false;
       return true;
     }
     throw new Error("PR08_RESPONSE_ASSERTION_UNKNOWN");
   }
 
-  function valueFromVar(name) {
-    if (!(name in variables)) throw new Error("PR08_VARIABLE_REQUIRED:"+name);
-    return variables[name];
-  }
   function asSet(value) {
     if (Array.isArray(value)) return new Set(value.map(String));
     if (typeof value === "string") {
-      try {
-        const parsed = JSON.parse(value);
-        if (Array.isArray(parsed)) return new Set(parsed.map(String));
-      } catch {}
+      try { const p=JSON.parse(value); if(Array.isArray(p)) return new Set(p.map(String)); } catch {}
       return new Set(value.split(",").map(x=>x.trim()).filter(Boolean));
     }
     throw new Error("PR08_VAR_SET_REQUIRED");
   }
   function anyTrue(row,clauses) {
-    return clauses.some(c => {
-      if (Object.prototype.hasOwnProperty.call(c,"equals")) return row?.[c.field] === c.equals;
+    return clauses.some(c=>{
+      if (Object.prototype.hasOwnProperty.call(c,"equals")) return row?.[c.field]===c.equals;
       if (Array.isArray(c.in)) return c.in.includes(row?.[c.field]);
-      return row?.[c.field] === true;
+      return row?.[c.field]===true;
     });
   }
-
   function topologyAssertionPass(assertion,body) {
-    if (assertion.mode === "OBJECT_FIELD_EQUALS_VAR") return body && typeof body==="object" && !Array.isArray(body) && String(body[assertion.field]) === String(valueFromVar(assertion.var));
-    if (assertion.mode === "ZERO_ROWS") return Array.isArray(body) && body.length === 0;
-    if (assertion.mode === "ROW_IDS_EQUAL_VAR_SET") {
-      if (!Array.isArray(body)) return false;
-      const actual = new Set(body.map(x=>String(x.id)));
-      const expected = asSet(valueFromVar(assertion.var));
+    if (assertion.mode==="VARIABLE_NOT_EQUAL") return String(valueFromVar(assertion.left))!==String(valueFromVar(assertion.right));
+    if (assertion.mode==="OBJECT_FIELD_EQUALS_VAR") return body && typeof body==="object" && !Array.isArray(body) && String(body[assertion.field])===String(valueFromVar(assertion.var));
+    if (assertion.mode==="ZERO_ROWS") return Array.isArray(body) && body.length===0;
+    if (assertion.mode==="ROW_IDS_EQUAL_VAR_SET") {
+      if(!Array.isArray(body)) return false;
+      const actual=new Set(body.map(x=>String(x.id))),expected=asSet(valueFromVar(assertion.var));
       return actual.size===expected.size && [...actual].every(x=>expected.has(x));
     }
-    if (assertion.mode === "EXACTLY_ONE_ROW") {
-      if (!Array.isArray(body) || body.length !== 1) return false;
+    if (assertion.mode==="EXACTLY_ONE_ROW") {
+      if(!Array.isArray(body)||body.length!==1) return false;
       const row=body[0];
-      for (const [field,varName] of Object.entries(assertion.field_equals_vars||{})) if (String(row[field]) !== String(valueFromVar(varName))) return false;
-      for (const [field,varName] of Object.entries(assertion.field_not_equals_vars||{})) if (String(row[field]) === String(valueFromVar(varName))) return false;
-      for (const [field,literal] of Object.entries(assertion.field_equals_literals||{})) if (row[field] !== literal) return false;
-      for (const field of assertion.field_not_null||[]) if (row[field] === null || row[field] === undefined) return false;
-      for (const field of assertion.field_null||[]) if (row[field] !== null) return false;
-      if (assertion.any_true?.length && !anyTrue(row,assertion.any_true)) return false;
+      for(const [f,vn] of Object.entries(assertion.field_equals_vars||{})) if(String(row[f])!==String(valueFromVar(vn))) return false;
+      for(const [f,vn] of Object.entries(assertion.field_not_equals_vars||{})) if(String(row[f])===String(valueFromVar(vn))) return false;
+      for(const [f,lit] of Object.entries(assertion.field_equals_literals||{})) if(row[f]!==lit) return false;
+      for(const f of assertion.field_not_null||[]) if(row[f]===null||row[f]===undefined) return false;
+      for(const f of assertion.field_null||[]) if(row[f]!==null) return false;
+      if(assertion.any_true?.length && !anyTrue(row,assertion.any_true)) return false;
       return true;
     }
     throw new Error("PR08_TOPOLOGY_ASSERTION_UNKNOWN:"+assertion.mode);
   }
-
-  async function runTopologyPreflight() {
-    for (const rel of matrix.topology_contract?.variable_relations||[]) {
-      if (rel.mode === "NOT_EQUAL" && String(valueFromVar(rel.left)) === String(valueFromVar(rel.right))) {
-        throw new Error("PR08_TOPOLOGY_VARIABLE_RELATION_FAILED:"+rel.left+":"+rel.right);
-      }
-    }
+  async function runTopologyPreflight(record) {
+    const checksById=new Map((matrix.topology_contract?.checks||[]).map(x=>[x.check_id,x]));
+    const ids=[...new Set([...(matrix.topology_contract?.global_check_ids||[]),...(record.topology_dependencies||[])])];
     const passed=[];
-    for (const check of matrix.topology_contract?.checks||[]) {
-      const response = await doSpec(check.request);
-      if (Math.floor(response.status/100)!==2) throw new Error("PR08_TOPOLOGY_HTTP_FAILED:"+check.check_id+":"+response.status);
-      if (!topologyAssertionPass(check.assertion,response.body)) throw new Error("PR08_TOPOLOGY_ASSERTION_FAILED:"+check.check_id);
-      passed.push(check.check_id);
+    for(const id of ids) {
+      const check=checksById.get(id);
+      if(!check) throw new Error("PR08_TOPOLOGY_CHECK_UNKNOWN:"+record.test_id+":"+id);
+      if(check.assertion?.mode==="VARIABLE_NOT_EQUAL") {
+        if(!topologyAssertionPass(check.assertion,null)) throw new Error("PR08_TOPOLOGY_ASSERTION_FAILED:"+id);
+      } else {
+        const response=await doSpec(check.request);
+        if(Math.floor(response.status/100)!==2) throw new Error("PR08_TOPOLOGY_HTTP_FAILED:"+id+":"+response.status);
+        if(!topologyAssertionPass(check.assertion,response.body)) throw new Error("PR08_TOPOLOGY_ASSERTION_FAILED:"+id);
+      }
+      passed.push(id);
     }
     return passed;
   }
 
-  async function probeFingerprint(specs) {
+  async function httpProbeState(specs) {
     const observations=[];
-    for (const spec of specs) {
-      const r = await doSpec(spec);
-      if (Math.floor(r.status/100) !== 2) throw new Error("PR08_MUTATION_PROBE_FAILED_HTTP:"+r.status);
+    for(const spec of specs||[]) {
+      const r=await doSpec(spec);
+      if(Math.floor(r.status/100)!==2) throw new Error("PR08_MUTATION_PROBE_FAILED_HTTP:"+r.status);
       observations.push({status:r.status,body:r.body});
     }
-    return {sha256:sha256(observations),observations};
+    return observations;
   }
-  function rowsFrom(obs,index) {
-    const body=obs?.observations?.[index]?.body;
-    if (!Array.isArray(body)) throw new Error("PR08_PROBE_ROWS_REQUIRED:"+index);
-    return body;
+
+  // -------------------------------------------------------------------------
+  // Owner-side non-production evidence/lifecycle channel.
+  // This does not alter grants, RLS or policies and hard-denies production.
+  // -------------------------------------------------------------------------
+  let serverCtx=null;
+  let serverBoundaryPreflightDone=false;
+
+  function sqlLiteral(value) {
+    if (value===null || value===undefined) return "NULL";
+    return "'" + String(value).replace(/'/g,"''") + "'";
   }
-  function deltaRows(before,after,index) {
-    const b=rowsFrom(before,index).map(stable);
-    const a=rowsFrom(after,index).map(stable);
+  function sqlUuidVar(name) { return sqlLiteral(valueFromVar(name))+"::uuid"; }
+  function sqlTextVar(name) { return sqlLiteral(valueFromVar(name)); }
+  function sqlJson(value) { return sqlLiteral(JSON.stringify(value))+"::jsonb"; }
+  function sqlTyped(value,type) {
+    if(value===null||value===undefined) return "NULL";
+    return sqlLiteral(value)+"::"+type;
+  }
+
+  function ensureServerContext() {
+    if(serverCtx) return serverCtx;
+    if(fixture.target_project_ref===PROD_REF) throw new Error("PR08_SERVER_EVIDENCE_HARD_DENY_PRODUCTION_PROJECT_REF");
+    if(fixture.environment==="production") throw new Error("PR08_SERVER_EVIDENCE_HARD_DENY_PRODUCTION_ENVIRONMENT");
+    if(process.env.FECHAI_PR08_SERVER_EVIDENCE_AUTHORIZED!=="YES") throw new Error("PR08_SERVER_EVIDENCE_NOT_AUTHORIZED");
+    if(process.env.FECHAI_PR08_ISOLATED_ENVIRONMENT!=="YES") throw new Error("PR08_SERVER_EVIDENCE_ISOLATED_ENVIRONMENT_REQUIRED");
+
+    const raw=process.env.FECHAI_PR08_DATABASE_URL;
+    if(!raw) throw new Error("PR08_DATABASE_URL_REQUIRED");
+    const u=new URL(raw);
+    const expectedHost="db."+fixture.target_project_ref+".supabase.co";
+    if(u.hostname!==expectedHost) throw new Error("PR08_SERVER_DATABASE_HOST_PROJECT_BINDING_MISMATCH");
+    if(u.hostname.includes(PROD_REF)) throw new Error("PR08_SERVER_EVIDENCE_HARD_DENY_PRODUCTION_DATABASE_HOST");
+
+    const pgEnv={
+      ...process.env,
+      PGHOST:u.hostname,
+      PGPORT:u.port||"5432",
+      PGDATABASE:u.pathname.replace(/^\//,""),
+      PGUSER:decodeURIComponent(u.username),
+      PGPASSWORD:decodeURIComponent(u.password),
+      PGSSLMODE:u.searchParams.get("sslmode")||"require"
+    };
+    serverCtx={psql:process.env.FECHAI_PR08_PSQL_BIN||"psql",pgEnv};
+    return serverCtx;
+  }
+
+  function psqlRun(args,input,label) {
+    const ctx=ensureServerContext();
+    const r=spawnSync(ctx.psql,args,{input,encoding:"utf8",env:ctx.pgEnv,cwd:root,maxBuffer:64*1024*1024});
+    if(r.status!==0) throw new Error(label+"_FAILED:"+redact(String(r.stderr||"")).slice(0,1000));
+    return String(r.stdout||"").trim();
+  }
+  function serverBoundaryPreflight() {
+    if(serverBoundaryPreflightDone) return;
+    const sqlFile=path.join(root,"supabase/tests/f1-02-pr08/runtime_security_matrix.sql");
+    psqlRun([
+      "-X","-q","-v","ON_ERROR_STOP=1",
+      "-v","PR08_SQL_CASE=SERVER-EVIDENCE-PREFLIGHT",
+      "-v","PR08_TARGET_PROJECT_REF="+fixture.target_project_ref,
+      "-f",sqlFile
+    ],undefined,"PR08_SERVER_EVIDENCE_PREFLIGHT");
+    serverBoundaryPreflightDone=true;
+  }
+  function serverExec(sql,label) {
+    serverBoundaryPreflight();
+    return psqlRun(["-X","-Atq","-v","ON_ERROR_STOP=1","-c",sql],undefined,label);
+  }
+  function serverJson(sql,label) {
+    const out=serverExec(sql,label).split("\n").map(x=>x.trim()).filter(Boolean);
+    if(!out.length) throw new Error(label+"_EMPTY_JSON");
+    try { return JSON.parse(out[out.length-1]); } catch { throw new Error(label+"_INVALID_JSON"); }
+  }
+  function queryArray(selectSql,label) {
+    return serverJson("SELECT COALESCE(pg_catalog.jsonb_agg(to_jsonb(q) ORDER BY q.__ord), '[]'::jsonb) FROM ("+selectSql+") q;",label);
+  }
+  function oneObject(selectSql,label) {
+    return serverJson("SELECT COALESCE((SELECT to_jsonb(q) FROM ("+selectSql+") q LIMIT 1),'null'::jsonb);",label);
+  }
+
+  function importScopeState(scope,index) {
+    const company=sqlUuidVar(scope.company_var);
+    const session=sqlTextVar(scope.session_var);
+    const phones=scope.phone_vars.map(n=>sqlLiteral(valueFromVar(n))).join(",");
+    const listIds=scope.list_vars.map(n=>sqlUuidVar(n)).join(",");
+    const lists=queryArray(
+      "SELECT id,empresa_id,leads_validos,leads_invalidos,id::text AS __ord FROM public.listas WHERE id IN ("+listIds+") ORDER BY id",
+      "PR08_SERVER_IMPORT_LISTS_"+index
+    );
+    const leads=queryArray(
+      "SELECT id,empresa_id,lista_id,telefone_e164,id::text AS __ord FROM public.leads WHERE empresa_id="+company+" AND telefone_e164 IN ("+phones+") ORDER BY id",
+      "PR08_SERVER_IMPORT_LEADS_"+index
+    );
+    const markers=queryArray(
+      "SELECT empresa_id,sessao_id,lista_id,request_fingerprint,resultado,completed_at,(empresa_id::text||':'||sessao_id) AS __ord FROM public.importar_leads_batch_idempotency WHERE empresa_id="+company+" AND sessao_id="+session+" ORDER BY empresa_id,sessao_id",
+      "PR08_SERVER_IMPORT_MARKERS_"+index
+    );
+    const logs=queryArray(
+      "SELECT id,empresa_id,detalhes,id::text AS __ord FROM public.logs WHERE empresa_id="+company+" AND detalhes->>'sessao_id'="+session+" ORDER BY id",
+      "PR08_SERVER_IMPORT_LOGS_"+index
+    );
+    for(const rows of [lists,leads,markers,logs]) for(const row of rows) delete row.__ord;
+    return {lists,leads,markers,logs};
+  }
+
+  function serverState(plan) {
+    serverBoundaryPreflight();
+    if(plan.kind==="BROKER") {
+      const broker=oneObject(
+        "SELECT id,empresa_id,time_id,ativo,apto_para_receber,must_change_password,role,is_admin_local,is_gestor FROM public.corretores WHERE id="+sqlUuidVar(plan.broker_id_var),
+        "PR08_SERVER_BROKER_STATE"
+      );
+      return {broker};
+    }
+    if(plan.kind==="ACL") {
+      const rows=queryArray(
+        "SELECT lista_id,empresa_id,target_type,target_id,(lista_id::text||':'||target_type||':'||target_id::text) AS __ord FROM public.lista_visibilidade WHERE lista_id="+sqlUuidVar(plan.list_id_var)+" AND target_type="+sqlLiteral(plan.target_type)+" AND target_id="+sqlUuidVar(plan.target_id_var)+" ORDER BY target_type,target_id",
+        "PR08_SERVER_ACL_STATE"
+      );
+      for(const row of rows) delete row.__ord;
+      return {acl_rows:rows};
+    }
+    if(plan.kind==="FUNNEL" || plan.kind==="FEEDBACK") {
+      const leadId=sqlUuidVar(plan.lead_id_var);
+      const lead=oneObject(
+        "SELECT id,empresa_id,corretor_id,lote_id,status,funil_estagio_id,funil_atualizado_em,feedback,observacao_corretor,data_feedback,atendimento_finalizado_em,tempo_tratativa_segundos,updated_at,tentativas_caiu,tecnico_pendente,ultima_falha_tecnica,ultima_falha_em,acao_sugerida,feedback_tipo,status_operacional,status_comercial FROM public.leads WHERE id="+leadId,
+        "PR08_SERVER_LEAD_STATE"
+      );
+      const movements=queryArray(
+        "SELECT id,lead_id,corretor_id,estagio_id,estagio_anterior_id,observacao,empresa_id,origem_evento,motivo,id::text AS __ord FROM public.funil_movimentacoes WHERE lead_id="+leadId+" ORDER BY id",
+        "PR08_SERVER_MOVEMENT_STATE"
+      );
+      for(const row of movements) delete row.__ord;
+      if(plan.kind==="FUNNEL") return {lead,movements};
+      if(!lead?.lote_id) throw new Error("PR08_FEEDBACK_LEAD_LOTE_REQUIRED");
+      const lot=oneObject(
+        "SELECT id,empresa_id,corretor_id,quantidade_feedback,status,status_v2,data_fechamento,closed_at FROM public.lotes WHERE id="+sqlLiteral(lead.lote_id)+"::uuid",
+        "PR08_SERVER_LOT_STATE"
+      );
+      const otherCount=Number(serverExec(
+        "SELECT count(*)::text FROM public.leads WHERE lote_id="+sqlLiteral(lead.lote_id)+"::uuid AND id<>"+leadId+" AND feedback IS NOT NULL AND feedback<>'' AND (tecnico_pendente=false OR tecnico_pendente IS NULL);",
+        "PR08_SERVER_OTHER_FEEDBACK_COUNT"
+      ));
+      return {lead,movements,lot,other_feedback_count:otherCount};
+    }
+    if(plan.kind==="IMPORT") {
+      return {scopes:plan.scopes.map((s,i)=>importScopeState(s,i))};
+    }
+    throw new Error("PR08_SERVER_PLAN_KIND_UNKNOWN:"+plan.kind);
+  }
+
+  function assertCleanImportOriginal(plan,original) {
+    original.scopes.forEach((state,i)=>{
+      const expectedLists=plan.scopes[i].list_vars.length;
+      if(state.lists.length!==expectedLists) throw new Error("PR08_IMPORT_LIST_FIXTURE_MISSING:"+i);
+      if(state.leads.length!==0 || state.markers.length!==0 || state.logs.length!==0) throw new Error("PR08_IMPORT_NAMESPACE_NOT_CLEAN:"+i);
+    });
+  }
+  function syntheticLeads(phoneVars) {
+    return phoneVars.map(n=>({nome:"PR08 Synthetic",email:"pr08.synthetic@example.invalid",telefone_e164:String(valueFromVar(n))}));
+  }
+  function seedCompletedImport(plan,scope) {
+    if(!plan.claims_var) throw new Error("PR08_IMPORT_SEED_CLAIMS_VAR_REQUIRED");
+    const listVar=scope.seed_list_var;
+    const phones=scope.seed_phone_vars||scope.phone_vars;
+    const leads=syntheticLeads(phones);
+    const sql=
+      "BEGIN;"+
+      "SELECT pg_catalog.set_config('request.jwt.claims',"+sqlTextVar(plan.claims_var)+",true);"+
+      "SELECT public.importar_leads_batch("+sqlUuidVar(listVar)+","+sqlJson(leads)+","+sqlTextVar(scope.session_var)+")::text;"+
+      "COMMIT;";
+    const lines=serverExec(sql,"PR08_IMPORT_SEED_COMPLETED").split("\n").map(x=>x.trim()).filter(Boolean);
+    const jsonLine=[...lines].reverse().find(x=>x.startsWith("{"));
+    if(!jsonLine) throw new Error("PR08_IMPORT_SEED_RESULT_MISSING");
+    const result=JSON.parse(jsonLine);
+    if(result.error) throw new Error("PR08_IMPORT_SEED_RESULT_ERROR:"+redact(result.error));
+  }
+  function seedIncompleteImport(scope) {
+    const phones=scope.seed_phone_vars||scope.phone_vars;
+    const leads=syntheticLeads(phones);
+    const company=sqlUuidVar(scope.company_var);
+    const listId=sqlUuidVar(scope.seed_list_var);
+    const session=sqlTextVar(scope.session_var);
+    const payload=sqlJson(leads);
+    const sql=
+      "INSERT INTO public.importar_leads_batch_idempotency(empresa_id,sessao_id,lista_id,request_fingerprint) "+
+      "VALUES ("+company+","+session+","+listId+",pg_catalog.encode(extensions.digest(pg_catalog.jsonb_build_object("+
+      "'contract','F1-02/PR-07/v1','empresa_id',("+company+")::text,'lista_id',("+listId+")::text,'sessao_id',"+session+",'leads',"+payload+
+      ")::text,'sha256'),'hex'));";
+    serverExec(sql,"PR08_IMPORT_SEED_INCOMPLETE");
+  }
+
+  function updateBrokerPrepare(plan) {
+    const sets=[];
+    if(Object.prototype.hasOwnProperty.call(plan.prepare_patch||{},"must_change_password")) sets.push("must_change_password="+(plan.prepare_patch.must_change_password?"true":"false"));
+    if(Object.prototype.hasOwnProperty.call(plan.prepare_patch||{},"ativo")) sets.push("ativo="+(plan.prepare_patch.ativo?"true":"false"));
+    if(plan.prepare_patch?.time_id_var) sets.push("time_id="+sqlUuidVar(plan.prepare_patch.time_id_var));
+    if(!sets.length) return;
+    const n=Number(serverExec("WITH u AS (UPDATE public.corretores SET "+sets.join(",")+" WHERE id="+sqlUuidVar(plan.broker_id_var)+" RETURNING 1) SELECT count(*)::text FROM u;","PR08_BROKER_PREPARE"));
+    if(n!==1) throw new Error("PR08_BROKER_PREPARE_TARGET_COUNT");
+  }
+  function prepareServerCase(plan,original) {
+    if(plan.kind==="BROKER") {
+      if(!original.broker) throw new Error("PR08_BROKER_ORIGINAL_REQUIRED");
+      updateBrokerPrepare(plan);
+      return;
+    }
+    if(plan.kind==="ACL") {
+      if(plan.require_initial_absent && original.acl_rows.length!==0) throw new Error("PR08_ACL_INITIAL_TARGET_NOT_ABSENT");
+      return;
+    }
+    if(plan.kind==="FUNNEL") {
+      if(!original.lead) throw new Error("PR08_FUNNEL_LEAD_REQUIRED");
+      const n=Number(serverExec(
+        "WITH u AS (UPDATE public.leads l SET funil_estagio_id="+sqlUuidVar(plan.baseline_stage_var)+",funil_atualizado_em=pg_catalog.now(),updated_at=pg_catalog.now() WHERE l.id="+sqlUuidVar(plan.lead_id_var)+" AND EXISTS (SELECT 1 FROM public.funil_estagios fe WHERE fe.id="+sqlUuidVar(plan.baseline_stage_var)+" AND fe.empresa_id=l.empresa_id) RETURNING 1) SELECT count(*)::text FROM u;",
+        "PR08_FUNNEL_PREPARE"
+      ));
+      if(n!==1) throw new Error("PR08_FUNNEL_PREPARE_FAILED");
+      return;
+    }
+    if(plan.kind==="FEEDBACK") {
+      if(!original.lead || !original.lot) throw new Error("PR08_FEEDBACK_FIXTURE_REQUIRED");
+      if(original.other_feedback_count>plan.max_other_feedback) throw new Error("PR08_FEEDBACK_LOT_TOO_CLOSE_TO_AUTO_CLOSE");
+      const n=Number(serverExec(
+        "WITH u AS (UPDATE public.leads l SET "+
+        "feedback=NULL,observacao_corretor=NULL,data_feedback=NULL,atendimento_finalizado_em=NULL,tempo_tratativa_segundos=NULL,"+
+        "tentativas_caiu=0,tecnico_pendente=false,ultima_falha_tecnica=NULL,ultima_falha_em=NULL,acao_sugerida=NULL,feedback_tipo=NULL,"+
+        "status_operacional='em_trabalho'::public.lead_status_operacional,status_comercial='sem_status'::public.lead_status_comercial,"+
+        "funil_estagio_id="+sqlUuidVar(plan.baseline_stage_var)+",funil_atualizado_em=pg_catalog.now(),updated_at=pg_catalog.now() "+
+        "WHERE l.id="+sqlUuidVar(plan.lead_id_var)+" AND EXISTS (SELECT 1 FROM public.funil_estagios fe WHERE fe.id="+sqlUuidVar(plan.baseline_stage_var)+" AND fe.empresa_id=l.empresa_id) RETURNING 1) SELECT count(*)::text FROM u;",
+        "PR08_FEEDBACK_PREPARE"
+      ));
+      if(n!==1) throw new Error("PR08_FEEDBACK_PREPARE_FAILED");
+      return;
+    }
+    if(plan.kind==="IMPORT") {
+      assertCleanImportOriginal(plan,original);
+      for(const scope of plan.scopes) {
+        if(scope.seed_mode==="COMPLETED") seedCompletedImport(plan,scope);
+        else if(scope.seed_mode==="INCOMPLETE") seedIncompleteImport(scope);
+        else if(scope.seed_mode!=="NONE") throw new Error("PR08_IMPORT_SEED_MODE_UNKNOWN");
+      }
+      return;
+    }
+    throw new Error("PR08_SERVER_PREPARE_KIND_UNKNOWN");
+  }
+
+  function sqlValue(value,type) {
+    if(value===null||value===undefined) return "NULL";
+    if(type) return sqlLiteral(value)+"::"+type;
+    if(typeof value==="boolean") return value?"true":"false";
+    if(typeof value==="number") return String(value);
+    return sqlLiteral(value);
+  }
+  function deleteNewMovements(leadVar,original) {
+    const ids=(original.movements||[]).map(x=>sqlLiteral(x.id)+"::uuid");
+    const keep=ids.length ? " AND id NOT IN ("+ids.join(",")+")" : "";
+    serverExec("DELETE FROM public.funil_movimentacoes WHERE lead_id="+sqlUuidVar(leadVar)+keep+";","PR08_MOVEMENT_CLEANUP");
+  }
+  function restoreBroker(plan,original) {
+    const b=original.broker;
+    const sets=[];
+    if(Object.prototype.hasOwnProperty.call(plan.prepare_patch||{},"must_change_password")) sets.push("must_change_password="+sqlValue(b.must_change_password));
+    if(Object.prototype.hasOwnProperty.call(plan.prepare_patch||{},"ativo")) sets.push("ativo="+sqlValue(b.ativo));
+    if(plan.prepare_patch?.time_id_var) sets.push("time_id="+sqlValue(b.time_id,"uuid"));
+    if(sets.length) serverExec("UPDATE public.corretores SET "+sets.join(",")+" WHERE id="+sqlUuidVar(plan.broker_id_var)+";","PR08_BROKER_CLEANUP");
+  }
+  function restoreFunnel(plan,original) {
+    const l=original.lead;
+    serverExec(
+      "UPDATE public.leads SET funil_estagio_id="+sqlValue(l.funil_estagio_id,"uuid")+
+      ",funil_atualizado_em="+sqlValue(l.funil_atualizado_em,"timestamptz")+
+      ",updated_at="+sqlValue(l.updated_at,"timestamptz")+
+      " WHERE id="+sqlUuidVar(plan.lead_id_var)+";",
+      "PR08_FUNNEL_CLEANUP"
+    );
+    deleteNewMovements(plan.lead_id_var,original);
+  }
+  function restoreFeedback(plan,original) {
+    const l=original.lead,lot=original.lot;
+    const leadSets=[
+      ["feedback",l.feedback,null],["observacao_corretor",l.observacao_corretor,null],["data_feedback",l.data_feedback,"timestamptz"],
+      ["atendimento_finalizado_em",l.atendimento_finalizado_em,"timestamptz"],["tempo_tratativa_segundos",l.tempo_tratativa_segundos,"integer"],
+      ["updated_at",l.updated_at,"timestamptz"],["tentativas_caiu",l.tentativas_caiu,"integer"],["tecnico_pendente",l.tecnico_pendente,null],
+      ["ultima_falha_tecnica",l.ultima_falha_tecnica,null],["ultima_falha_em",l.ultima_falha_em,"timestamptz"],["acao_sugerida",l.acao_sugerida,null],
+      ["feedback_tipo",l.feedback_tipo,"public.lead_feedback_tipo"],["status_operacional",l.status_operacional,"public.lead_status_operacional"],
+      ["status_comercial",l.status_comercial,"public.lead_status_comercial"],["funil_estagio_id",l.funil_estagio_id,"uuid"],
+      ["funil_atualizado_em",l.funil_atualizado_em,"timestamptz"],["status",l.status,null]
+    ].map(([f,v,t])=>f+"="+sqlValue(v,t));
+    serverExec("UPDATE public.leads SET "+leadSets.join(",")+" WHERE id="+sqlUuidVar(plan.lead_id_var)+";","PR08_FEEDBACK_LEAD_CLEANUP");
+    const lotSets=[
+      ["quantidade_feedback",lot.quantidade_feedback,"integer"],["status",lot.status,null],["status_v2",lot.status_v2,"public.lote_status"],
+      ["data_fechamento",lot.data_fechamento,"timestamptz"],["closed_at",lot.closed_at,"timestamptz"]
+    ].map(([f,v,t])=>f+"="+sqlValue(v,t));
+    serverExec("UPDATE public.lotes SET "+lotSets.join(",")+" WHERE id="+sqlLiteral(lot.id)+"::uuid;","PR08_FEEDBACK_LOT_CLEANUP");
+    deleteNewMovements(plan.lead_id_var,original);
+  }
+  function cleanupImport(plan,original) {
+    plan.scopes.forEach((scope,i)=>{
+      const company=sqlUuidVar(scope.company_var),session=sqlTextVar(scope.session_var);
+      const phones=scope.phone_vars.map(n=>sqlLiteral(valueFromVar(n))).join(",");
+      serverExec("DELETE FROM public.logs WHERE empresa_id="+company+" AND detalhes->>'sessao_id'="+session+";","PR08_IMPORT_LOG_CLEANUP_"+i);
+      serverExec("DELETE FROM public.importar_leads_batch_idempotency WHERE empresa_id="+company+" AND sessao_id="+session+";","PR08_IMPORT_MARKER_CLEANUP_"+i);
+      serverExec("DELETE FROM public.leads WHERE empresa_id="+company+" AND telefone_e164 IN ("+phones+");","PR08_IMPORT_LEAD_CLEANUP_"+i);
+      for(const list of original.scopes[i].lists) {
+        serverExec(
+          "UPDATE public.listas SET leads_validos="+sqlValue(list.leads_validos,"integer")+",leads_invalidos="+sqlValue(list.leads_invalidos,"integer")+" WHERE id="+sqlLiteral(list.id)+"::uuid AND empresa_id="+sqlLiteral(list.empresa_id)+"::uuid;",
+          "PR08_IMPORT_LIST_COUNTER_CLEANUP_"+i
+        );
+      }
+    });
+  }
+  function cleanupServerCase(plan,original) {
+    if(plan.kind==="BROKER") return restoreBroker(plan,original);
+    if(plan.kind==="ACL") {
+      serverExec("DELETE FROM public.lista_visibilidade WHERE lista_id="+sqlUuidVar(plan.list_id_var)+" AND target_type="+sqlLiteral(plan.target_type)+" AND target_id="+sqlUuidVar(plan.target_id_var)+";","PR08_ACL_CLEANUP");
+      return;
+    }
+    if(plan.kind==="FUNNEL") return restoreFunnel(plan,original);
+    if(plan.kind==="FEEDBACK") return restoreFeedback(plan,original);
+    if(plan.kind==="IMPORT") return cleanupImport(plan,original);
+    throw new Error("PR08_SERVER_CLEANUP_KIND_UNKNOWN");
+  }
+
+  function valueAt(obj,pathString) {
+    return String(pathString).split(".").reduce((acc,key)=>{
+      if(acc===null||acc===undefined) return undefined;
+      const k=/^\d+$/.test(key)?Number(key):key;
+      return acc[k];
+    },obj);
+  }
+  function multisetDelta(beforeRows,afterRows) {
     const counts=new Map();
-    for(const x of b) counts.set(x,(counts.get(x)||0)+1);
+    for(const row of beforeRows||[]) { const k=stable(row); counts.set(k,(counts.get(k)||0)+1); }
     const delta=[];
-    for(let i=0;i<a.length;i++){
-      const key=a[i],n=counts.get(key)||0;
-      if(n>0) counts.set(key,n-1); else delta.push(rowsFrom(after,index)[i]);
+    for(const row of afterRows||[]) {
+      const k=stable(row),n=counts.get(k)||0;
+      if(n>0) counts.set(k,n-1); else delta.push(row);
     }
     return delta;
   }
-  function firstResponseBody(responses,index) {
-    if (!responses[index]) throw new Error("PR08_RESPONSE_INDEX_MISSING:"+index);
+  function serverDelta(before,after,pathString) {
+    const b=valueAt(before,pathString),a=valueAt(after,pathString);
+    if(!Array.isArray(b)||!Array.isArray(a)) throw new Error("PR08_SERVER_DELTA_ARRAY_REQUIRED:"+pathString);
+    return multisetDelta(b,a);
+  }
+  function responseBody(responses,index) {
+    if(!responses[index]) throw new Error("PR08_RESPONSE_INDEX_MISSING:"+index);
     return responses[index].body;
   }
 
-  function semanticAssertionPass(a,responses,before,after) {
-    const body=()=>firstResponseBody(responses,a.response_index||0);
-    if (a.mode==="NO_JSON_ERROR") return !(body() && typeof body()==="object" && !Array.isArray(body()) && body().error);
-    if (a.mode==="RESPONSE_EQUALS_LITERAL") return stable(body())===stable(a.value);
-    if (a.mode==="RESPONSE_FIRST_ROW_FIELD_EQUALS_VAR") return Array.isArray(body()) && body().length>0 && String(body()[0]?.[a.field])===String(valueFromVar(a.var));
-    if (a.mode==="RESPONSE_OBJECT_FIELD_EQUALS_LITERAL") return body() && !Array.isArray(body()) && body()[a.field]===a.value;
-    if (a.mode==="RESPONSE_OBJECT_FIELD_EQUALS_VAR") return body() && !Array.isArray(body()) && String(body()[a.field])===String(valueFromVar(a.var));
-    if (a.mode==="RESPONSE_OBJECT_NUMERIC_FIELDS") return body() && !Array.isArray(body()) && a.fields.every(f=>typeof body()[f]==="number" && Number.isFinite(body()[f]));
-    if (a.mode==="RESPONSE_ARRAY_EMPTY") return Array.isArray(body()) && body().length===0;
-    if (a.mode==="RESPONSE_ARRAY_NONEMPTY") return Array.isArray(body()) && body().length>0;
-    if (a.mode==="RESPONSE_ARRAY_IDS_EQUAL_VAR_SET") {
+  function semanticAssertionPass(a,responses,httpBefore,httpAfter,serverBefore,serverAfter) {
+    const body=()=>responseBody(responses,a.response_index||0);
+    if(a.mode==="NO_JSON_ERROR") return !(body()&&typeof body()==="object"&&!Array.isArray(body())&&body().error);
+    if(a.mode==="RESPONSE_EQUALS_LITERAL") return stable(body())===stable(a.value);
+    if(a.mode==="RESPONSE_OBJECT_FIELD_EQUALS_LITERAL") return body()&&!Array.isArray(body())&&body()[a.field]===a.value;
+    if(a.mode==="RESPONSE_OBJECT_FIELD_EQUALS_VAR") return body()&&!Array.isArray(body())&&String(body()[a.field])===String(valueFromVar(a.var));
+    if(a.mode==="RESPONSE_FIRST_ROW_FIELD_EQUALS_VAR") return Array.isArray(body())&&body().length>0&&String(body()[0]?.[a.field])===String(valueFromVar(a.var));
+    if(a.mode==="RESPONSE_OBJECT_NUMERIC_FIELDS") return body()&&!Array.isArray(body())&&a.fields.every(f=>typeof body()[f]==="number"&&Number.isFinite(body()[f]));
+    if(a.mode==="RESPONSE_ARRAY_EMPTY") return Array.isArray(body())&&body().length===0;
+    if(a.mode==="RESPONSE_ARRAY_NONEMPTY") return Array.isArray(body())&&body().length>0;
+    if(a.mode==="RESPONSE_ARRAY_IDS_EQUAL_VAR_SET") {
       if(!Array.isArray(body())) return false;
-      const actual=new Set(body().map(x=>String(x.id))), expected=asSet(valueFromVar(a.var));
-      return actual.size===expected.size && [...actual].every(x=>expected.has(x));
+      const actual=new Set(body().map(x=>String(x.id))),expected=asSet(valueFromVar(a.var));
+      return actual.size===expected.size&&[...actual].every(x=>expected.has(x));
     }
-    if (a.mode==="RESPONSE_ARRAY_IDS_EXCLUDE_VAR_SET") {
+    if(a.mode==="RESPONSE_ARRAY_IDS_EXCLUDE_VAR_SET") {
       if(!Array.isArray(body())) return false;
-      const denied=asSet(valueFromVar(a.var));
-      return body().every(x=>!denied.has(String(x.id)));
+      const denied=asSet(valueFromVar(a.var)); return body().every(x=>!denied.has(String(x.id)));
     }
-    if (a.mode==="RESPONSE_ARRAY_ORDER_ASC") {
+    if(a.mode==="RESPONSE_ARRAY_ORDER_ASC") {
       if(!Array.isArray(body())) return false;
-      for(let i=1;i<body().length;i++){
-        const prev=body()[i-1],cur=body()[i];
-        for(const f of a.fields){
-          if(prev[f]===cur[f]) continue;
-          if(prev[f]>cur[f]) return false;
-          break;
-        }
-      }
+      for(let i=1;i<body().length;i++){const p=body()[i-1],c=body()[i];for(const f of a.fields){if(p[f]===c[f])continue;if(p[f]>c[f])return false;break;}}
       return true;
     }
-    if (a.mode==="RESPONSE_OBJECT_ARRAY_CONTAINS_TARGET") {
-      const arr=body()?.[a.field];
-      return Array.isArray(arr) && arr.some(x=>x.target_type===a.target_type && String(x.target_id)===String(valueFromVar(a.target_id_var)));
+    if(a.mode==="RESPONSE_OBJECT_ARRAY_CONTAINS_TARGET") {
+      const arr=body()?.[a.field]; return Array.isArray(arr)&&arr.some(x=>x.target_type===a.target_type&&String(x.target_id)===String(valueFromVar(a.target_id_var)));
     }
-    if (a.mode==="ALL_RESPONSE_BODIES_CANONICALLY_EQUAL") return responses.every(r=>stable(r.body)===stable(responses[0].body));
-    if (a.mode==="AFTER_FIRST_ROW_FIELD_EQUALS_VAR") {
-      const rows=rowsFrom(after,a.probe_index);
-      return rows.length>0 && String(rows[0]?.[a.field])===String(valueFromVar(a.var));
+    if(a.mode==="ALL_RESPONSE_BODIES_CANONICALLY_EQUAL") return responses.every(r=>stable(r.body)===stable(responses[0].body));
+
+    if(a.mode==="SERVER_STATE_UNCHANGED") return stable(serverBefore)===stable(serverAfter);
+    if(a.mode==="SERVER_AFTER_PATH_EQUALS_LITERAL") return stable(valueAt(serverAfter,a.path))===stable(a.value);
+    if(a.mode==="SERVER_AFTER_PATH_EQUALS_VAR") return String(valueAt(serverAfter,a.path))===String(valueFromVar(a.var));
+    if(a.mode==="SERVER_AFTER_PATH_EQUALS_BEFORE") return stable(valueAt(serverAfter,a.path))===stable(valueAt(serverBefore,a.path));
+    if(a.mode==="SERVER_DELTA_ARRAY_COUNT_EQUALS") return serverDelta(serverBefore,serverAfter,a.path).length===a.count;
+    if(a.mode==="SERVER_DELTA_ARRAY_ALL_FIELD_EQUALS_VAR") {
+      const rows=serverDelta(serverBefore,serverAfter,a.path); return rows.length>0&&rows.every(x=>String(x[a.field])===String(valueFromVar(a.var)));
     }
-    if (a.mode==="AFTER_FIRST_ROW_FIELD_EQUALS_LITERAL") {
-      const rows=rowsFrom(after,a.probe_index);
-      return rows.length>0 && rows[0]?.[a.field]===a.value;
+    if(a.mode==="SERVER_DELTA_ARRAY_ALL_FIELD_EQUALS_LITERAL") {
+      const rows=serverDelta(serverBefore,serverAfter,a.path); return rows.length>0&&rows.every(x=>x[a.field]===a.value);
     }
-    if (a.mode==="AFTER_ROWS_CONTAIN_TARGET") {
-      const rows=rowsFrom(after,a.probe_index);
-      return rows.some(x=>x.target_type===a.target_type && String(x.target_id)===String(valueFromVar(a.target_id_var)));
+    if(a.mode==="SERVER_AFTER_ARRAY_UNIQUE_FIELD") {
+      const rows=valueAt(serverAfter,a.path); if(!Array.isArray(rows)) return false;
+      const vals=rows.map(x=>String(x[a.field])); return new Set(vals).size===vals.length;
     }
-    if (a.mode==="DELTA_ROW_COUNT_EQUALS") return deltaRows(before,after,a.probe_index).length===a.count;
-    if (a.mode==="DELTA_ROW_COUNT_RANGE") {
-      const n=deltaRows(before,after,a.probe_index).length;
-      return n>=a.min && n<=a.max;
+    if(a.mode==="SERVER_AFTER_ARRAY_CONTAINS_TARGET") {
+      const rows=valueAt(serverAfter,a.path); return Array.isArray(rows)&&rows.some(x=>x.target_type===a.target_type&&String(x.target_id)===String(valueFromVar(a.target_id_var)));
     }
-    if (a.mode==="DELTA_ROWS_ALL_FIELD_EQUALS_VAR") {
-      const rows=deltaRows(before,after,a.probe_index);
-      return rows.length>0 && rows.every(x=>String(x[a.field])===String(valueFromVar(a.var)));
-    }
-    if (a.mode==="AFTER_ROWS_UNIQUE_FIELD") {
-      const rows=rowsFrom(after,a.probe_index),vals=rows.map(x=>String(x[a.field]));
-      return new Set(vals).size===vals.length;
+
+    // Legacy HTTP-probe assertions remain for non-server-managed cases.
+    if(a.mode==="AFTER_FIRST_ROW_FIELD_EQUALS_VAR" || a.mode==="AFTER_FIRST_ROW_FIELD_EQUALS_LITERAL" || a.mode==="AFTER_ROWS_CONTAIN_TARGET" || a.mode==="DELTA_ROW_COUNT_EQUALS" || a.mode==="DELTA_ROW_COUNT_RANGE" || a.mode==="DELTA_ROWS_ALL_FIELD_EQUALS_VAR" || a.mode==="AFTER_ROWS_UNIQUE_FIELD") {
+      const beforeRows=httpBefore?.[a.probe_index]?.body,afterRows=httpAfter?.[a.probe_index]?.body;
+      if(!Array.isArray(afterRows)) return false;
+      if(a.mode==="AFTER_FIRST_ROW_FIELD_EQUALS_VAR") return afterRows.length>0&&String(afterRows[0]?.[a.field])===String(valueFromVar(a.var));
+      if(a.mode==="AFTER_FIRST_ROW_FIELD_EQUALS_LITERAL") return afterRows.length>0&&afterRows[0]?.[a.field]===a.value;
+      if(a.mode==="AFTER_ROWS_CONTAIN_TARGET") return afterRows.some(x=>x.target_type===a.target_type&&String(x.target_id)===String(valueFromVar(a.target_id_var)));
+      const d=multisetDelta(beforeRows||[],afterRows);
+      if(a.mode==="DELTA_ROW_COUNT_EQUALS") return d.length===a.count;
+      if(a.mode==="DELTA_ROW_COUNT_RANGE") return d.length>=a.min&&d.length<=a.max;
+      if(a.mode==="DELTA_ROWS_ALL_FIELD_EQUALS_VAR") return d.length>0&&d.every(x=>String(x[a.field])===String(valueFromVar(a.var)));
+      if(a.mode==="AFTER_ROWS_UNIQUE_FIELD"){const vals=afterRows.map(x=>String(x[a.field]));return new Set(vals).size===vals.length;}
     }
     throw new Error("PR08_SEMANTIC_ASSERTION_UNKNOWN:"+a.mode);
   }
 
-  const topologyPassed = await runTopologyPreflight();
   const receipts=[];
+  for(const record of records) {
+    const plan=record.server_case_plan ? matrix.server_case_plans?.[record.server_case_plan] : null;
+    if(record.server_case_plan && !plan) throw new Error("PR08_SERVER_CASE_PLAN_MISSING:"+record.test_id);
 
-  for (const record of records) {
-    if (!record.request_plan?.requests?.length || !record.mutation_probe_plan?.before?.length || !record.mutation_probe_plan?.after?.length) {
-      throw new Error("PR08_VERSIONED_EXECUTION_PLAN_MISSING:"+record.test_id);
-    }
-
-    const before = await probeFingerprint(record.mutation_probe_plan.before);
+    let originalServer=null,serverBefore=null,serverAfter=null,cleanupState=null;
+    let cleanupRestored=plan?false:null;
+    let topologyPassed=[];
+    let httpBefore=[],httpAfter=[];
+    let caseError=null;
     let responses=[];
-    if (record.execution_mode === "CONCURRENT_HTTP") responses = await Promise.all(record.request_plan.requests.map(doSpec));
-    else for (const spec of record.request_plan.requests) responses.push(await doSpec(spec));
-    const after = await probeFingerprint(record.mutation_probe_plan.after);
+    let receipt=null;
 
-    const authPass = responses.every(r=>responsePass(record.request_plan.response_assertion,r));
-    const relationPass = record.request_plan.response_relation === "ALL_CANONICAL_BODIES_EQUAL"
-      ? responses.every(r=>stable(r.body)===stable(responses[0].body)) : true;
+    try {
+      topologyPassed=await runTopologyPreflight(record);
 
-    const observed = before.sha256 === after.sha256 ? "UNCHANGED" : "CHANGED";
-    const expected = record.mutation_probe_plan.expectation;
-    const mutationPass = expected === "MUST_EQUAL" ? observed === "UNCHANGED" :
-      expected === "MUST_CHANGE" ? observed === "CHANGED" : false;
+      if(plan) {
+        ensureServerContext();
+        originalServer=serverState(plan);
+        prepareServerCase(plan,originalServer);
+        serverBefore=serverState(plan);
+      } else {
+        if(!record.mutation_probe_plan?.before?.length || !record.mutation_probe_plan?.after?.length) throw new Error("PR08_VERSIONED_HTTP_PROBE_PLAN_MISSING:"+record.test_id);
+        httpBefore=await httpProbeState(record.mutation_probe_plan.before);
+      }
 
-    const semanticResults=(record.semantic_assertions||[]).map(a=>({mode:a.mode,pass:semanticAssertionPass(a,responses,before,after)}));
-    const semanticPass=semanticResults.every(x=>x.pass);
+      if(!record.request_plan?.requests?.length) throw new Error("PR08_VERSIONED_REQUEST_PLAN_MISSING:"+record.test_id);
+      if(record.execution_mode==="CONCURRENT_HTTP") responses=await Promise.all(record.request_plan.requests.map(doSpec));
+      else for(const spec of record.request_plan.requests) responses.push(await doSpec(spec));
 
-    let concurrency=null, concurrencyPass=true;
-    if (record.concurrency_assertion?.require_positive_overlap) {
-      if (responses.length < 2) throw new Error("PR08_CONCURRENCY_NEEDS_TWO_REQUESTS:"+record.test_id);
-      const overlapMs = Math.min(...responses.map(r=>r.finish_ms)) - Math.max(...responses.map(r=>r.start_ms));
-      concurrency={overlap_ms:overlapMs,required_min_ms:record.concurrency_assertion.min_overlap_ms,timings:responses.map(r=>({started_at:r.started_at,finished_at:r.finished_at,duration_ms:r.duration_ms}))};
-      concurrencyPass=overlapMs>=record.concurrency_assertion.min_overlap_ms;
+      if(plan) serverAfter=serverState(plan);
+      else httpAfter=await httpProbeState(record.mutation_probe_plan.after);
+
+      const authPass=responses.every(r=>responsePass(record.request_plan.response_assertion,r));
+      const relationPass=record.request_plan.response_relation==="ALL_CANONICAL_BODIES_EQUAL" ? responses.every(r=>stable(r.body)===stable(responses[0].body)) : true;
+
+      const beforeEvidence=plan?serverBefore:httpBefore;
+      const afterEvidence=plan?serverAfter:httpAfter;
+      const beforeHash=sha256(beforeEvidence),afterHash=sha256(afterEvidence);
+      const observed=beforeHash===afterHash?"UNCHANGED":"CHANGED";
+      const expected=record.mutation_probe_plan.expectation;
+      const mutationPass=expected==="MUST_EQUAL"?observed==="UNCHANGED":expected==="MUST_CHANGE"?observed==="CHANGED":false;
+
+      const semanticResults=(record.semantic_assertions||[]).map(a=>({
+        mode:a.mode,
+        pass:semanticAssertionPass(a,responses,httpBefore,httpAfter,serverBefore,serverAfter)
+      }));
+      const semanticPass=semanticResults.every(x=>x.pass);
+
+      let concurrency=null,concurrencyPass=true;
+      if(record.concurrency_assertion?.require_positive_overlap) {
+        if(responses.length<2) throw new Error("PR08_CONCURRENCY_NEEDS_TWO_REQUESTS:"+record.test_id);
+        const overlapMs=Math.min(...responses.map(r=>r.finish_ms))-Math.max(...responses.map(r=>r.start_ms));
+        concurrency={overlap_ms:overlapMs,required_min_ms:record.concurrency_assertion.min_overlap_ms,timings:responses.map(r=>({started_at:r.started_at,finished_at:r.finished_at,duration_ms:r.duration_ms}))};
+        concurrencyPass=overlapMs>=record.concurrency_assertion.min_overlap_ms;
+      }
+
+      const errors=responses.map(errorEvidence);
+      const errorCodes=errors.map(e=>e.normalized_code);
+
+      receipt={
+        test_id:record.test_id,
+        requirement_id:record.requirement_id,
+        exact_application_commit:matrix.base_application_commit,
+        exact_migration_commits:record.exact_migration_commits,
+        supabase_project_ref:fixture.target_project_ref,
+        environment:fixture.environment,
+        fixture_version:fixture.fixture_version,
+        topology_checks_passed:topologyPassed,
+        evidence_channel:plan?"PSQL_POSTGRES_OWNER_NON_PRODUCTION_ONLY":"VERSIONED_HTTP_PROBES",
+        actual_authorization_result:responses.map(r=>r.status),
+        actual_data_mutation:{observed,before_sha256:beforeHash,after_sha256:afterHash,expected},
+        semantic_assertions:semanticResults,
+        concurrency,
+        sanitized_error_code:errorCodes.length===1?errorCodes[0]:errorCodes,
+        sanitized_error_evidence:errors.map(e=>({code:e.code,message:e.message})),
+        cleanup_restored:cleanupRestored,
+        pass_fail:(authPass&&relationPass&&mutationPass&&semanticPass&&concurrencyPass)?"PASS":"FAIL",
+        timestamp:new Date().toISOString(),
+        evidence_reference:process.env.FECHAI_PR08_RECEIPT_FILE||"STDOUT_ONLY",
+        response_bodies_sanitized:responses.map(r=>redact(r.body))
+      };
+    } catch(error) {
+      caseError=error;
+    } finally {
+      if(plan && originalServer) {
+        try {
+          cleanupServerCase(plan,originalServer);
+          cleanupState=serverState(plan);
+          cleanupRestored=stable(cleanupState)===stable(originalServer);
+          if(receipt) {
+            receipt.cleanup_restored=cleanupRestored;
+            receipt.cleanup_original_sha256=sha256(originalServer);
+            receipt.cleanup_final_sha256=sha256(cleanupState);
+            if(!cleanupRestored) receipt.pass_fail="FAIL";
+          }
+          if(!cleanupRestored && !caseError) caseError=new Error("PR08_CASE_CLEANUP_NOT_RESTORED:"+record.test_id);
+        } catch(cleanupError) {
+          if(receipt){receipt.cleanup_restored=false;receipt.pass_fail="FAIL";}
+          if(!caseError) caseError=cleanupError;
+        }
+      }
     }
 
-    const errors=responses.map(errorEvidence);
-    const errorCodes=errors.map(e=>e.normalized_code);
-    const pass=authPass && relationPass && mutationPass && semanticPass && concurrencyPass;
-    receipts.push({
-      test_id:record.test_id,
-      requirement_id:record.requirement_id,
-      exact_application_commit:matrix.base_application_commit,
-      exact_migration_commits:record.exact_migration_commits,
-      supabase_project_ref:fixture.target_project_ref,
-      environment:fixture.environment,
-      fixture_version:fixture.fixture_version,
-      topology_checks_passed:topologyPassed,
-      actual_authorization_result:responses.map(r=>r.status),
-      actual_data_mutation:{observed,before_sha256:before.sha256,after_sha256:after.sha256,expected},
-      semantic_assertions:semanticResults,
-      concurrency,
-      sanitized_error_code:errorCodes.length===1?errorCodes[0]:errorCodes,
-      sanitized_error_evidence:errors.map(e=>({code:e.code,message:e.message})),
-      pass_fail:pass?"PASS":"FAIL",
-      timestamp:new Date().toISOString(),
-      evidence_reference:process.env.FECHAI_PR08_RECEIPT_FILE || "STDOUT_ONLY",
-      response_bodies_sanitized:responses.map(r=>redact(r.body))
-    });
+    if(receipt) receipts.push(receipt);
+    if(caseError) throw caseError;
   }
 
-  const output=JSON.stringify({schema:"fechai.pr08.http.receipt.v3",topology_checks_passed:topologyPassed,receipts},null,2)+"\n";
-  if (process.env.FECHAI_PR08_RECEIPT_FILE) await fs.writeFile(path.resolve(process.env.FECHAI_PR08_RECEIPT_FILE),output,{flag:"wx"});
+  const output=JSON.stringify({schema:"fechai.pr08.http.receipt.v4",receipts},null,2)+"\n";
+  if(process.env.FECHAI_PR08_RECEIPT_FILE) await fs.writeFile(path.resolve(process.env.FECHAI_PR08_RECEIPT_FILE),output,{flag:"wx"});
   process.stdout.write(output);
-  if (receipts.some(r=>r.pass_fail!=="PASS")) process.exitCode=1;
+  if(receipts.some(r=>r.pass_fail!=="PASS")) process.exitCode=1;
 }
 main().catch(error=>{
   process.stderr.write(JSON.stringify({error:String(error?.message||error)})+"\n");

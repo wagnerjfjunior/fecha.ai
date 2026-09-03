@@ -1,5 +1,36 @@
 # FECH.AI — SFJM Evidence Freshness
 
+## 0.000000000 PR-08 third bounded harness correction evidence — 2026-09-03
+
+Implementation-only event on parent head `718bf5371cde7b1243a852c497721badf0b5bba4`.
+
+    scope: same 9 authorized PR-08 files
+    protected idempotency REST/client access: REMOVED
+    server evidence channel: PSQL postgres OWNER / NON-PRODUCTION ONLY
+    server evidence production project: HARD_DENY
+    grants/RLS/policies widening: NONE
+    topology execution: GLOBAL + SELECTED CASE DEPENDENCIES ONLY
+    stateful cases with server lifecycle: 20
+    mutating HTTP cases without lifecycle: 0
+    deterministic replay/mismatch/incomplete setup: VERSIONED
+    per-case cleanup restoration: ORIGINAL SHA-256 REQUIRED
+    rollback pg_dump restrict key: FIXED
+    runtime execution: NONE
+    Auth execution: NONE
+    rollback/reapply execution: NONE
+    production smoke: NONE
+    IMP-003: NOT_DETERMINED
+    ROLLBACK_REAPPLY: NOT_DETERMINED
+    SECURITY_GO: NOT_GRANTED
+
+No runtime PASS is created by this correction. The owner-side channel is code/evidence architecture only and remains unexecuted under the standing NO LAB / NO SECOND PROJECT decision.
+
+### Current next evidence action
+
+    resolve the new PR #166 exact head
+    perform exact-head implementation review
+    do not execute any PR-08 runner
+
 ## 0.00000000 PR-08 second bounded harness correction evidence — 2026-09-03
 
 Implementation-only event on parent head `e0b17d8c4c3d3d9c35952e3c934e325f92c1a1f5`.

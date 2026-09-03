@@ -6,113 +6,129 @@ Base application snapshot:
 
     9d05c64281c2aeeae9d67b139eab674720184fb1
 
-## PR-08 v3 evidence contract
+## PR-08 v4 evidence contract
 
-    REQUEST / PROBE SPECS: VERSIONED IN matrix.json
+    MATRIX: 98 VERSIONED CASES
+    REQUEST SPECS: VERSIONED
     FIXTURE: VALUES + TOKENS/SECRETS ONLY
-    TOPOLOGY PREFLIGHT: MANDATORY / VERSIONED
-    ARBITRARY FIXTURE URL / METHOD / ASSERTION: FORBIDDEN
-    DENY: EXACT STATUS + EXPECTED ERROR EVIDENCE
-    POSITIVE SEMANTICS: VERSIONED ASSERTIONS
-    EXPLICIT CASE SELECTION: REQUIRED
-    FULL HTTP MATRIX: ONLY WITH EXPLICIT --all
+    TOPOLOGY: GLOBAL + SELECTED CASE DEPENDENCIES ONLY
+    SERVER EVIDENCE: PSQL / postgres OWNER / NON-PRODUCTION ONLY
+    IDEMPOTENCY TABLE REST/CLIENT ACCESS: FORBIDDEN
+    CASE ISOLATION: CAPTURE -> PREPARE -> CASE -> EVIDENCE -> CLEANUP -> RESTORE
+    CLEANUP PASS: FINAL SHA-256 == ORIGINAL SHA-256
+    FULL HTTP MATRIX: EXPLICIT --all ONLY
     IMP-003: NOT_DETERMINED
     ROLLBACK_REAPPLY: NOT_DETERMINED
     SECURITY_GO: NOT_GRANTED
 
-## Fixture topology preflight
+## Protected idempotency evidence
 
-The HTTP fixture carries only target_project_ref, environment, fixture_version and variables.
-Before any selected test executes, the runner evaluates the versioned topology contract.
-The preflight proves the relationships used by the matrix, including:
+public.importar_leads_batch_idempotency remains intentionally unavailable to PUBLIC, anon, authenticated and service_role direct DML/SELECT under the PR-07 boundary.
+PR-08 v4 therefore contains no REST/client-JWT request to that table.
 
-- actor token -> actor user/profile/company;
-- manager token/profile and managed team;
-- admin token/profile;
-- local vs foreign companies, lists, brokers and teams;
-- target lead ownership;
-- wrong-owner lead in the same tenant;
-- foreign lead in another tenant;
-- valid, inactive and foreign stages;
-- own-company and foreign-company stage sets;
-- a zero-stage tenant;
-- same-session idempotency preconditions for replay/mismatch/incomplete cases.
+When a stateful import case requires marker evidence, the future separately authorized harness uses an owner-side psql connection in an isolated non-production project.
+The runner hard-denies the production project ref and requires the database hostname to bind exactly to the selected project.
 
-If a topology relation is absent, ambiguous or inconsistent, execution fails before the business test.
+Before owner-side evidence can run, runtime_security_matrix.sql case SERVER-EVIDENCE-PREFLIGHT verifies:
 
-## Denial semantics
+- current_user is postgres;
+- idempotency table owner is postgres;
+- RLS and FORCE RLS remain enabled;
+- zero client policies remain;
+- anon/authenticated/service_role have no direct SELECT/INSERT/UPDATE/DELETE.
 
-A DENY case no longer passes because of any generic 4xx.
-Each DENY record versions exact allowed HTTP status values and at least one expected error signal:
+No grant, policy or RLS widening is part of this harness.
 
-- exact RPC error text;
-- exact function error code; or
-- a bounded semantic regex where the historical contract does not expose a stable code.
+## Per-case topology
 
-The runtime receipt records the actual sanitized error code/evidence even when the denial is a PASS.
+The runner no longer executes every topology check for every selected test.
+For each test it executes only:
 
-## Mutation-target evidence
+    topology_contract.global_check_ids
+    + record.topology_dependencies
 
-Before/after probes are bound to the object actually exposed to mutation risk.
-Cross-tenant, wrong-owner and mismatch cases probe the foreign/wrong-owner/mismatch target where applicable instead of proving only that an unrelated local row stayed unchanged.
+Variable-relation checks are themselves versioned topology checks.
+Unrelated manager/root/tenant/idempotency fixture variables are therefore not required by an unrelated STG, CRM or other case.
 
-## Positive semantic assertions
+## Deterministic stateful lifecycle
 
-HTTP 2xx plus CHANGED is not enough for nontrivial positive cases.
-The v3 matrix versions content assertions such as:
+Twenty stateful cases have a versioned server_case_plan.
+All sixteen HTTP cases that expect business mutation are included.
 
-- STG own-stage set equality, foreign-stage exclusion, deterministic ordering and zero-stage empty result;
-- ACL returned list/selected target plus persisted visibility target;
-- FUN final lead stage plus new history row tenant/stage consistency;
-- FDB expected feedback/status state;
-- COR expected profile/status/team state;
-- CRM positive import shape and expected row delta.
+The lifecycle is:
 
-## Import/idempotency evidence
+    capture original server state
+    deterministic prepare
+    capture test-before state
+    execute selected HTTP request(s)
+    capture test-after state
+    evaluate semantic/delta assertions
+    cleanup in finally
+    capture cleanup-final state
+    require cleanup-final == original
 
-IMP-001 and IMP-003 now probe three independent artifacts:
+This isolation also applies when --all is explicitly selected, eliminating cross-case residue from successful runs.
 
-    lead with the synthetic phone
-    importar_leads_batch_idempotency marker
-    import log for the session
+## Deterministic idempotency setup
 
-A PASS requires one new logical lead, one new marker, one new log, unique phone cardinality and canonical response agreement.
-IMP-003 additionally retains the existing positive-overlap requirement.
+The following cases no longer depend on manually pre-created state:
 
-IMP-002 independently proves one logical mutation in each tenant for the same textual session.
-IMP-010 proves the expected bounded multi-lead delta.
-IMP-011 proves zero additional mutation for an already completed replay.
+- IMP-011: owner-side seed performs one canonical completed import, then HTTP replay proves zero additional mutation;
+- IMP-SESSION-LIST-MISMATCH: seed establishes the canonical session/list state before testing a different list;
+- IMP-SESSION-PAYLOAD-MISMATCH: seed establishes the canonical session/payload before testing a changed payload;
+- IMP-INCOMPLETE-STATE: owner-side seed creates the exact incomplete marker with the same PR-07 request fingerprint algorithm.
 
-## Explicit selection
+Each seeded namespace is cleaned and the original list counters/state are restored after the case.
 
-The HTTP runner fails with no case IDs.
-Examples of the only valid selection models are conceptually:
+## Import namespaces and logical-mutation evidence
 
-    <one or more explicit HTTP test IDs>
-    --all
+Stateful import cases use test-specific phone/session variables.
+Owner-side snapshots observe, by synthetic namespace:
 
-The --all flag must be exclusive. Technical ability to execute the runner is not execution authority.
+    list counters
+    matching leads
+    idempotency marker
+    import logs
 
-## Rollback/reapply
+IMP-001 and IMP-003 require one lead + one marker + one log, exact positive counters, unique phone cardinality and canonical response agreement.
+IMP-003 additionally retains the positive-overlap timing requirement.
+IMP-002 proves independent tenant-scoped effects for the same textual session.
+IMP-010 proves two bounded new leads with one marker and one log.
+IMP-011 proves the entire server state remains unchanged during replay.
 
-The previous v2 rollback hardening is preserved unchanged:
+## Positive semantic evidence
 
-- production project/host hard deny;
-- one ROL case per invocation;
-- exact artifact provenance;
-- initial / post-rollback / post-reapply public-state SHA-256;
-- PASS only when rollback changes state and reapply restores the exact initial hash.
+COR-012 now proves ativo=false in both response and server state, then requires cleanup restoration to the original broker state.
+COR-013 proves the target time after the RPC and restores the original broker state.
+CRM-015 requires exact counters validos=1, invalidos=0, duplicados=0 plus lead/marker/log deltas.
+FUN-007 and FUN-008 use server-side lead/history state and restore the original lead/history state after the case.
+FDB-008 and FDB-009 observe status_comercial directly through the server evidence channel, prove feedback/stage/history semantics, prevent the synthetic lot from approaching auto-close, and restore the original lead/lot/history state.
+ACL positive cases require a clean target row, prove the new target, then remove it and verify original-state restoration.
 
-No rollback/reapply was executed by this correction.
+## Rollback/reapply state hashing
 
-## Coverage
+The rollback runner retains one-case isolation and production hard-deny.
+Plain pg_dump state hashing now fixes:
 
-    AUTH 5 | COR 13 | CRM 15 | FUN 8 | ACL 10
-    STG 7 | IMP 16 | FDB 11 | ROL 11 | PRD 2
-    TOTAL 98
+    --restrict-key=FECHAIPR08STATEHASH
 
-All PR-08 execution-result fields remain NOT_EXECUTED.
-The 33 earlier operating-session results remain bounded continuity evidence only and are not canonical PR-08 receipts.
+so random restrict-key output cannot invalidate the comparison.
+PASS still requires post-rollback state to differ from initial and post-reapply state to equal initial.
+
+## Static validator
+
+validate_matrix.mjs now rejects:
+
+- REST/client access to importar_leads_batch_idempotency;
+- missing server lifecycle for a mutating or required stateful case;
+- implicit replay/mismatch/incomplete preconditions;
+- execution of all topology checks instead of selected-case dependencies;
+- assertions against fields not selected by remaining HTTP probes;
+- missing COR-012 active-state proof;
+- missing strong server assertions for import/funnel/ACL/feedback positives;
+- missing cleanup-restoration contract;
+- rollback pg_dump without the fixed restrict key;
+- runtime-result overclaim or residual-status drift.
 
 ## Current authority
 
@@ -129,8 +145,9 @@ The 33 earlier operating-session results remain bounded continuity evidence only
     PR-09: NOT AUTHORIZED
     Security Go: NOT_GRANTED
 
-Only local/static validation is authorized at this implementation stage.
+Only repository/static validation is authorized at this implementation stage.
 
     VERSIONED != EXECUTED
+    OWNER-SIDE EVIDENCE CHANNEL VERSIONED != CURRENTLY AUTHORIZED TO RUN
     PR08_IMPLEMENTED != J4_EVIDENCE_GATE_PASSED
     J4_EVIDENCE_GATE_PASSED != SECURITY_GO

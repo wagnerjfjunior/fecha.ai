@@ -1,5 +1,25 @@
 # FECH.AI — SFJM Next Safe Action
 
+## 0.00000000 PR-08 third-correction exact-head review — 2026-09-03
+
+The third bounded correction authorization is consumed by the same-branch implementation.
+
+    parent head: 718bf5371cde7b1243a852c497721badf0b5bba4
+    branch: test/f1-02-negative-security-matrix
+    allowed files: same 9
+    runtime/Auth/rollback/smoke execution: NOT_AUTHORIZED
+    Supabase/Auth/LAB/Vercel mutation: NOT_AUTHORIZED
+    Ready/merge/OC-01/PR-09: NOT_AUTHORIZED
+    IMP-003: NOT_DETERMINED
+    ROLLBACK_REAPPLY: NOT_DETERMINED
+    SECURITY_GO: NOT_GRANTED
+
+Single next safe action after publication:
+
+    RESOLVE THE NEW BRANCH/PR HEAD
+    EXACT-HEAD IMPLEMENTATION REVIEW
+    STOP BEFORE READY
+
 ## 0.0000000 PR-08 second-correction exact-head review — 2026-09-03
 
 The second bounded correction authorization is consumed by the same-branch implementation.
