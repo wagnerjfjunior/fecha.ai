@@ -2,132 +2,196 @@
 async function main() {
   const fs = await import("node:fs/promises");
   const path = await import("node:path");
-  const { fileURLToPath } = await import("node:url");
+  const crypto = await import("node:crypto");
 
   const PROD_REF = "uobxxgzshrmbtjfdolxd";
-  const here = path.dirname(fileURLToPath(import.meta.url));
-  const matrixPath = path.resolve(here, "../../../supabase/tests/f1-02-pr08/matrix.json");
+  const root = process.cwd();
+  const matrix = JSON.parse(await fs.readFile(path.join(root,"supabase/tests/f1-02-pr08/matrix.json"),"utf8"));
   const fixturePath = process.env.FECHAI_PR08_HTTP_FIXTURE_FILE;
 
-  if (process.env.FECHAI_PR08_EXECUTION_AUTHORIZED !== "YES") {
-    throw new Error("PR08_EXECUTION_NOT_AUTHORIZED");
-  }
+  if (process.env.FECHAI_PR08_EXECUTION_AUTHORIZED !== "YES") throw new Error("PR08_EXECUTION_NOT_AUTHORIZED");
   if (!fixturePath) throw new Error("PR08_HTTP_FIXTURE_FILE_REQUIRED");
 
-  const matrix = JSON.parse(await fs.readFile(matrixPath, "utf8"));
-  const fixture = JSON.parse(await fs.readFile(path.resolve(fixturePath), "utf8"));
+  const fixture = JSON.parse(await fs.readFile(path.resolve(fixturePath),"utf8"));
+  const allowedFixtureKeys = new Set(["target_project_ref","environment","fixture_version","variables"]);
+  for (const key of Object.keys(fixture)) if (!allowedFixtureKeys.has(key)) throw new Error("PR08_FIXTURE_FIELD_FORBIDDEN:"+key);
+  if (!fixture.target_project_ref || !fixture.environment || !fixture.fixture_version || !fixture.variables) throw new Error("PR08_FIXTURE_IDENTITY_REQUIRED");
+  if (!/^[a-z0-9]{20}$/.test(fixture.target_project_ref)) throw new Error("PR08_PROJECT_REF_INVALID");
 
-  if (!fixture.target_project_ref || !fixture.environment || !fixture.fixture_version) {
-    throw new Error("PR08_FIXTURE_IDENTITY_REQUIRED");
-  }
   if (fixture.target_project_ref === PROD_REF) {
-    if (process.env.FECHAI_PR08_ALLOW_PRODUCTION !== "YES" ||
-        process.env.FECHAI_PR08_PRODUCTION_EXECUTION_AUTHORIZED !== "YES") {
+    if (fixture.environment !== "production") throw new Error("PR08_PRODUCTION_ENVIRONMENT_LABEL_MISMATCH");
+    if (process.env.FECHAI_PR08_ALLOW_PRODUCTION !== "YES" || process.env.FECHAI_PR08_PRODUCTION_EXECUTION_AUTHORIZED !== "YES") {
       throw new Error("PR08_PRODUCTION_EXECUTION_NOT_AUTHORIZED");
     }
+  } else if (fixture.environment === "production") {
+    throw new Error("PR08_NONPROD_PROJECT_CANNOT_DECLARE_PRODUCTION");
+  }
+
+  const origin = new URL("https://" + fixture.target_project_ref + ".supabase.co");
+  if (origin.hostname !== fixture.target_project_ref + ".supabase.co") throw new Error("PR08_ORIGIN_BINDING_FAILED");
+  const variables = fixture.variables;
+
+  function renderString(value, encode) {
+    if (typeof value !== "string") return value;
+    return value.replace(/\$\{([A-Z0-9_]+)\}/g, (_,name) => {
+      if (!(name in variables)) throw new Error("PR08_VARIABLE_REQUIRED:"+name);
+      const raw = String(variables[name]);
+      return encode ? encodeURIComponent(raw) : raw;
+    });
+  }
+  function renderDeep(value) {
+    if (Array.isArray(value)) return value.map(renderDeep);
+    if (value && typeof value === "object") {
+      if (value.$generator === "synthetic_leads") {
+        const count = Number(value.count);
+        const prefix = variables[value.phone_prefix_var];
+        if (!Number.isInteger(count) || count < 1 || count > 1000 || !prefix) throw new Error("PR08_SYNTHETIC_GENERATOR_INVALID");
+        return Array.from({length:count},(_,i)=>({
+          nome:"PR08 Synthetic "+String(i+1),
+          email:"pr08.synthetic."+String(i+1)+"@example.invalid",
+          telefone_e164:String(prefix)+String(i+1).padStart(3,"0")
+        }));
+      }
+      return Object.fromEntries(Object.entries(value).map(([k,v])=>[k,renderDeep(v)]));
+    }
+    return renderString(value,false);
+  }
+  function bindPath(template) {
+    if (typeof template !== "string" || !template.startsWith("/") || template.startsWith("//") || /^[a-z]+:/i.test(template)) {
+      throw new Error("PR08_ABSOLUTE_OR_INVALID_PATH_FORBIDDEN");
+    }
+    const rendered = renderString(template,true);
+    const url = new URL(rendered,origin);
+    if (url.origin !== origin.origin || url.hostname !== origin.hostname) throw new Error("PR08_TARGET_ORIGIN_MISMATCH");
+    return url;
+  }
+
+  const canonical = value => Array.isArray(value) ? value.map(canonical) :
+    value && typeof value === "object" ? Object.fromEntries(Object.keys(value).sort().map(k=>[k,canonical(value[k])])) : value;
+  const stable = value => JSON.stringify(canonical(value));
+  const sha256 = value => crypto.createHash("sha256").update(stable(value)).digest("hex");
+  const redact = value => String(typeof value === "string" ? value : JSON.stringify(value))
+    .replace(/Bearer\s+[A-Za-z0-9._-]+/gi,"Bearer [REDACTED]")
+    .replace(/eyJ[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+/g,"[JWT_REDACTED]")
+    .replace(/[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}/gi,"[UUID_REDACTED]")
+    .replace(/[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/gi,"[EMAIL_REDACTED]")
+    .replace(/\+?\d[\d\s().-]{7,}\d/g,"[PHONE_REDACTED]");
+
+  async function doSpec(spec) {
+    if (!spec?.method || !spec?.path_template) throw new Error("PR08_VERSIONED_REQUEST_SPEC_REQUIRED");
+    const method = String(spec.method).toUpperCase();
+    if (!["GET","POST","PATCH","DELETE","HEAD"].includes(method)) throw new Error("PR08_METHOD_FORBIDDEN:"+method);
+    const url = bindPath(spec.path_template);
+    const anonKey = variables.SUPABASE_ANON_KEY;
+    if (!anonKey) throw new Error("PR08_SUPABASE_ANON_KEY_REQUIRED");
+    const headers = {apikey:String(anonKey)};
+    if (spec.auth_token_var) {
+      if (!(spec.auth_token_var in variables)) throw new Error("PR08_AUTH_TOKEN_REQUIRED:"+spec.auth_token_var);
+      headers.Authorization = "Bearer "+String(variables[spec.auth_token_var]);
+    }
+    for (const [k,v] of Object.entries(spec.headers_template||{})) headers[k] = renderString(v,false);
+    const body = spec.body_template === null || spec.body_template === undefined ? undefined : JSON.stringify(renderDeep(spec.body_template));
+    const startMs = Date.now();
+    const startedAt = new Date(startMs).toISOString();
+    const response = await fetch(url,{method,headers,body});
+    const finishMs = Date.now();
+    const finishedAt = new Date(finishMs).toISOString();
+    const raw = await response.text();
+    let parsed; try { parsed = JSON.parse(raw); } catch { parsed = raw; }
+    return {status:response.status,body:parsed,start_ms:startMs,finish_ms:finishMs,started_at:startedAt,finished_at:finishedAt,duration_ms:finishMs-startMs};
+  }
+
+  function responsePass(assertion,response) {
+    if (assertion.mode === "EMPTY_ARRAY_DENIAL") return assertion.allowed_statuses.includes(response.status) && Array.isArray(response.body) && response.body.length === 0;
+    if (assertion.mode === "DENIAL_SEMANTIC") {
+      const httpDenied = Math.floor(response.status/100) === assertion.allowed_http_error_class;
+      const rpcDenied = assertion.allow_2xx_json_error && Math.floor(response.status/100) === 2 && response.body && typeof response.body === "object" && !Array.isArray(response.body) && typeof response.body.error === "string" && response.body.error.length > 0;
+      return httpDenied || rpcDenied;
+    }
+    if (assertion.mode === "ALLOW_SEMANTIC") {
+      if (Math.floor(response.status/100) !== assertion.allowed_status_class) return false;
+      if (assertion.reject_json_error && response.body && typeof response.body === "object" && !Array.isArray(response.body) && response.body.error) return false;
+      return true;
+    }
+    throw new Error("PR08_RESPONSE_ASSERTION_UNKNOWN");
+  }
+
+  async function probeFingerprint(specs) {
+    const observations=[];
+    for (const spec of specs) {
+      const r = await doSpec(spec);
+      if (Math.floor(r.status/100) !== 2) throw new Error("PR08_MUTATION_PROBE_FAILED_HTTP:"+r.status);
+      observations.push({status:r.status,body:r.body});
+    }
+    return {sha256:sha256(observations),sanitized_preview:redact(observations).slice(0,1000)};
   }
 
   const selected = process.argv.slice(2);
-  const records = matrix.records.filter(r =>
-    r.runner === "http_matrix" && (selected.length === 0 || selected.includes(r.test_id))
-  );
+  const records = matrix.records.filter(r=>r.runner==="http_matrix" && (selected.length===0 || selected.includes(r.test_id)));
   if (!records.length) throw new Error("PR08_NO_HTTP_CASES_SELECTED");
 
-  const redact = value => {
-    const text = typeof value === "string" ? value : JSON.stringify(value);
-    return text
-      .replace(/Bearer\s+[A-Za-z0-9._-]+/gi, "Bearer [REDACTED]")
-      .replace(/eyJ[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+/g, "[JWT_REDACTED]")
-      .replace(/[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}/gi, "[UUID_REDACTED]")
-      .replace(/[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/gi, "[EMAIL_REDACTED]")
-      .replace(/\+?\d[\d\s().-]{7,}\d/g, "[PHONE_REDACTED]");
-  };
-  const stable = value => JSON.stringify(value, Object.keys(value || {}).sort());
-
-  async function doRequest(spec) {
-    if (!spec || !spec.url || !spec.method) throw new Error("PR08_REQUEST_SPEC_REQUIRED");
-    const response = await fetch(spec.url, {
-      method: spec.method,
-      headers: spec.headers || {},
-      body: spec.body === undefined ? undefined :
-        (typeof spec.body === "string" ? spec.body : JSON.stringify(spec.body))
-    });
-    const bodyText = await response.text();
-    let body;
-    try { body = JSON.parse(bodyText); } catch { body = bodyText; }
-    return { status: response.status, body };
-  }
-
-  async function probe(spec) {
-    if (!spec) return null;
-    return await doRequest(spec);
-  }
-
-  const receipts = [];
+  const receipts=[];
   for (const record of records) {
-    const c = fixture.cases?.[record.test_id];
-    if (!c) throw new Error("PR08_FIXTURE_CASE_MISSING:" + record.test_id);
+    if (!record.request_plan?.requests?.length || !record.mutation_probe_plan?.before?.length || !record.mutation_probe_plan?.after?.length) {
+      throw new Error("PR08_VERSIONED_EXECUTION_PLAN_MISSING:"+record.test_id);
+    }
 
-    const before = await probe(c.mutation_probe?.before);
-    let responses;
+    const before = await probeFingerprint(record.mutation_probe_plan.before);
+    let responses=[];
     if (record.execution_mode === "CONCURRENT_HTTP") {
-      if (!Array.isArray(c.concurrent_requests) || c.concurrent_requests.length < 2) {
-        throw new Error("PR08_CONCURRENT_REQUESTS_REQUIRED:" + record.test_id);
-      }
-      responses = await Promise.all(c.concurrent_requests.map(doRequest));
+      responses = await Promise.all(record.request_plan.requests.map(doSpec));
     } else {
-      responses = [await doRequest(c.request)];
+      for (const spec of record.request_plan.requests) responses.push(await doSpec(spec));
     }
-    const after = await probe(c.mutation_probe?.after);
+    const after = await probeFingerprint(record.mutation_probe_plan.after);
 
-    const expectedStatuses = c.expected_statuses;
-    if (!Array.isArray(expectedStatuses) || !expectedStatuses.length) {
-      throw new Error("PR08_EXPECTED_STATUSES_REQUIRED:" + record.test_id);
+    const authPass = responses.every(r=>responsePass(record.request_plan.response_assertion,r));
+    const relationPass = record.request_plan.response_relation === "ALL_CANONICAL_BODIES_EQUAL"
+      ? responses.every(r=>stable(r.body)===stable(responses[0].body)) : true;
+
+    const observed = before.sha256 === after.sha256 ? "UNCHANGED" : "CHANGED";
+    const expected = record.mutation_probe_plan.expectation;
+    const mutationPass = expected === "MUST_EQUAL" ? observed === "UNCHANGED" :
+      expected === "MUST_CHANGE" ? observed === "CHANGED" : false;
+
+    let concurrency=null, concurrencyPass=true;
+    if (record.concurrency_assertion?.require_positive_overlap) {
+      if (responses.length < 2) throw new Error("PR08_CONCURRENCY_NEEDS_TWO_REQUESTS:"+record.test_id);
+      const overlapMs = Math.min(...responses.map(r=>r.finish_ms)) - Math.max(...responses.map(r=>r.start_ms));
+      concurrency = {
+        overlap_ms:overlapMs,
+        required_min_ms:record.concurrency_assertion.min_overlap_ms,
+        timings:responses.map(r=>({started_at:r.started_at,finished_at:r.finished_at,duration_ms:r.duration_ms}))
+      };
+      concurrencyPass = overlapMs >= record.concurrency_assertion.min_overlap_ms;
     }
-    const statusPass = responses.every(r => expectedStatuses.includes(r.status));
 
-    let mutationPass = false;
-    if (c.mutation_probe?.mode === "MUST_EQUAL") {
-      mutationPass = before !== null && after !== null && stable(before.body) === stable(after.body);
-    } else if (c.mutation_probe?.mode === "MUST_CHANGE") {
-      mutationPass = before !== null && after !== null && stable(before.body) !== stable(after.body);
-    } else if (c.mutation_probe?.mode === "CUSTOM_ASSERTED_BY_FIXTURE") {
-      mutationPass = c.mutation_probe.custom_assertion_pass === true;
-    } else {
-      throw new Error("PR08_MUTATION_PROBE_MODE_REQUIRED:" + record.test_id);
-    }
-
-    const bodyRegex = c.expected_body_regex ? new RegExp(c.expected_body_regex) : null;
-    const bodyPass = bodyRegex ? responses.every(r => bodyRegex.test(redact(r.body))) : true;
-    const pass = statusPass && mutationPass && bodyPass;
-
+    const pass = authPass && relationPass && mutationPass && concurrencyPass;
     receipts.push({
-      test_id: record.test_id,
-      requirement_id: record.requirement_id,
-      exact_application_commit: matrix.base_application_commit,
-      supabase_project_ref: fixture.target_project_ref,
-      environment: fixture.environment,
-      fixture_version: fixture.fixture_version,
-      actor_role: c.actor_role || "SANITIZED",
-      actor_company_team: c.actor_company_team || "SANITIZED",
-      actual_authorization_result: responses.map(r => r.status),
-      actual_data_mutation: c.mutation_probe.mode,
-      sanitized_error_code: pass ? null : "PR08_EXPECTATION_MISMATCH",
-      pass_fail: pass ? "PASS" : "FAIL",
-      timestamp: new Date().toISOString(),
-      evidence_reference: process.env.FECHAI_PR08_RECEIPT_FILE || "STDOUT_ONLY",
-      response_bodies_sanitized: responses.map(r => redact(r.body))
+      test_id:record.test_id,
+      requirement_id:record.requirement_id,
+      exact_application_commit:matrix.base_application_commit,
+      exact_migration_commits:record.exact_migration_commits,
+      supabase_project_ref:fixture.target_project_ref,
+      environment:fixture.environment,
+      fixture_version:fixture.fixture_version,
+      actual_authorization_result:responses.map(r=>r.status),
+      actual_data_mutation:{observed,before_sha256:before.sha256,after_sha256:after.sha256,expected},
+      concurrency,
+      sanitized_error_code:pass?null:"PR08_EXPECTATION_MISMATCH",
+      pass_fail:pass?"PASS":"FAIL",
+      timestamp:new Date().toISOString(),
+      evidence_reference:process.env.FECHAI_PR08_RECEIPT_FILE || "STDOUT_ONLY",
+      response_bodies_sanitized:responses.map(r=>redact(r.body))
     });
   }
 
-  const output = JSON.stringify({schema:"fechai.pr08.http.receipt.v1",receipts}, null, 2) + "\n";
-  if (process.env.FECHAI_PR08_RECEIPT_FILE) {
-    await fs.writeFile(path.resolve(process.env.FECHAI_PR08_RECEIPT_FILE), output, {flag:"wx"});
-  }
+  const output=JSON.stringify({schema:"fechai.pr08.http.receipt.v2",receipts},null,2)+"\n";
+  if (process.env.FECHAI_PR08_RECEIPT_FILE) await fs.writeFile(path.resolve(process.env.FECHAI_PR08_RECEIPT_FILE),output,{flag:"wx"});
   process.stdout.write(output);
-  if (receipts.some(r => r.pass_fail !== "PASS")) process.exitCode = 1;
+  if (receipts.some(r=>r.pass_fail!=="PASS")) process.exitCode=1;
 }
-main().catch(error => {
-  process.stderr.write(JSON.stringify({error:String(error?.message || error)}) + "\n");
-  process.exitCode = 1;
+main().catch(error=>{
+  process.stderr.write(JSON.stringify({error:String(error?.message||error)})+"\n");
+  process.exitCode=1;
 });

@@ -1,5 +1,33 @@
 # FECH.AI — SFJM Evidence Freshness
 
+## 0.0000000 PR-08 bounded harness correction evidence — 2026-09-03
+
+Implementation-only event on parent head `f69f0b5628894d3e74efefc16f02cdfa60877945`.
+
+    scope: same 9 authorized PR-08 files
+    request/probe specs: VERSIONED_IN_MATRIX
+    fixture role: VALUES_AND_SECRETS_ONLY
+    HTTP target binding: FAIL_CLOSED
+    mutation evidence: BEFORE_AFTER_CANONICAL_SHA256
+    migration provenance: EXACT_BLOB + TRUE_FINAL_GIT_COMMIT
+    concurrency evidence: PER_REQUEST_TIMING + POSITIVE_OVERLAP_REQUIRED
+    rollback evidence: ONE_CASE + INITIAL/ROLLBACK/REAPPLY STATE HASHES
+    runtime execution: NONE
+    Auth execution: NONE
+    rollback/reapply execution: NONE
+    production smoke: NONE
+    IMP-003: NOT_DETERMINED
+    ROLLBACK_REAPPLY: NOT_DETERMINED
+    SECURITY_GO: NOT_GRANTED
+
+No J4 runtime/ROL PASS is created by this correction. The prior 33 operating-session results remain bounded continuity evidence only.
+
+### Current next evidence action
+
+    resolve the new PR #166 exact head
+    perform exact-head implementation review
+    do not execute any PR-08 runner
+
 ## 0.000000 Current J4 / PR-08 implementation evidence override — 2026-09-03
 
 This is a versioned-harness implementation event, not runtime evidence.
