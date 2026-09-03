@@ -75,8 +75,14 @@ async function main() {
   const expectedInvalidos = expectedCount("expected_invalidos",fixture.expected_invalidos);
   const expectedDuplicados = expectedCount("expected_duplicados",fixture.expected_duplicados);
 
+  // PR08_SQL_STRIP_INHERITED_LIBPQ_ENV
+  // Keep non-libpq process environment (e.g. PATH) but discard every inherited
+  // PG* variable before constructing the validated connection environment.
+  const inheritedEnv = Object.fromEntries(
+    Object.entries(process.env).filter(([key])=>!key.startsWith("PG"))
+  );
   const pgEnv = {
-    ...process.env,
+    ...inheritedEnv,
     PGHOST:u.hostname,
     PGPORT:u.port || "5432",
     PGDATABASE:decodeURIComponent(u.pathname.replace(/^\//,"")),

@@ -37,6 +37,25 @@ async function main() {
   ];
   for(const n of wrapperNeedles) if(!sqlRuntime.includes(n)) throw new Error("SQL_RUNTIME_WRAPPER_CONTRACT_MISSING:"+n);
 
+  // P1-B: validated DSN must also be the libpq execution target.
+  for(const n of [
+    "PR08_SQL_STRIP_INHERITED_LIBPQ_ENV",
+    "Object.entries(process.env).filter(([key])=>!key.startsWith(\"PG\"))",
+    "...inheritedEnv",
+    "PGHOST:u.hostname",
+    "PGPORT:u.port || \"5432\"",
+    "PGDATABASE:decodeURIComponent",
+    "PGUSER:decodeURIComponent",
+    "PGPASSWORD:decodeURIComponent",
+    "PGSSLMODE:u.searchParams.get(\"sslmode\") || \"require\""
+  ]) if(!sqlRuntime.includes(n)) throw new Error("SQL_RUNTIME_LIBPQ_ENV_CONTRACT_MISSING:"+n);
+
+  if(sqlRuntime.includes("...process.env")) throw new Error("SQL_RUNTIME_INHERITED_PROCESS_ENV_FORBIDDEN");
+  const sqlRuntimeCodeOnly=sqlRuntime.split("\\n").filter(line=>!line.trim().startsWith("//")).join("\\n");
+  for(const forbidden of ["PGHOSTADDR","PGSERVICE","PGSERVICEFILE"]) {
+    if(sqlRuntimeCodeOnly.includes(forbidden)) throw new Error("SQL_RUNTIME_LIBPQ_REDIRECT_VAR_FORBIDDEN:"+forbidden);
+  }
+
   const sqlPhase1Needles=[
     "PR08_PHASE1_SQL_AUTHORITY_V1",
     ":'PR08_SQL_RUNTIME_AUTHORIZED' = 'YES'",
