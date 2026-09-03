@@ -1231,4 +1231,37 @@ No checkpoint or WDP is earned by this plan alone.
 
 ## 23. Immediate next safe action
 
-Audit this PR-00 documentation baseline at its exact final head. After it passes and is merged, request cost confirmation for the single isolated Supabase Branch. Do not begin PR-01 or any Supabase mutation before the plan and lab strategy are accepted.
+The earlier PR-00 / isolated-lab next action is consumed and superseded by the
+2026-09-02 Product Authority J3 bounded-residual exception recorded in this
+document.
+
+Standing Product Authority constraints are:
+
+```text
+NO LAB
+NO SECOND SUPABASE PROJECT
+NO PREVIEW BRANCH
+NO PRODUCTION MIGRATION ROLLBACK TEST
+```
+
+Therefore:
+
+- do not request cost confirmation for a Supabase Branch;
+- do not create or propose an isolated LAB as the current next action;
+- do not reinterpret IMP-003 or rollback/reapply as PASS;
+- preserve both obligations as `NOT_DETERMINED`;
+- do not grant Security Go.
+
+The single current next safe action is:
+
+```text
+J4 / PR-08 — REPEATABLE EXECUTABLE SECURITY MATRIX
+SCOPE / EVIDENCE-COVERAGE / PROHIBITIONS RECONSTRUCTION FIRST
+SEPARATE PRODUCT AUTHORITY IMPLEMENTATION GATE REQUIRED
+```
+
+Any older lab-oriented planning language in this historical master plan is
+superseded where it conflicts with the standing Product Authority constraints
+above. This does not silently waive J4 or final F1-02 proof obligations; those
+must be explicitly reconciled at the J4 gate before implementation or final
+acceptance.
