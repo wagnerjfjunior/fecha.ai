@@ -1,5 +1,40 @@
 # FECH.AI — SFJM Authorizations
 
+## 0.0000000000000 Current semantic override — PR #166 Ready transition + pre-merge authority — 2026-09-03
+
+This section is the current lifecycle authority for PR #166 and supersedes older "Ready NOT AUTHORIZED" / "STOP BEFORE READY" wording only for current-state interpretation. Those older sections remain valid historical lineage for the authority that existed when written.
+
+Product Authority explicitly authorized:
+
+- PR #166 Draft -> Ready for Review only at exact head `0f3f266cb2ed103e6acda7bb03b9934cd30f1b41`;
+- after Ready, one independent pre-merge gate on that same exact head.
+
+Observed lifecycle event:
+
+- PR #166: OPEN / READY;
+- Ready transition: EXECUTED SUCCESSFULLY;
+- exact head before and after Ready: `0f3f266cb2ed103e6acda7bb03b9934cd30f1b41`;
+- head changed by Ready transition: NO;
+- independent pre-merge gate on that exact head: PERFORMED.
+
+The pre-merge gate did not grant merge authority. Current prohibitions remain:
+
+- merge: NOT_AUTHORIZED;
+- deploy: NOT_AUTHORIZED;
+- PR-08 runtime/Auth/SQL/rollback-reapply/production-smoke execution: NOT_AUTHORIZED;
+- Supabase/Auth mutation: NOT_AUTHORIZED;
+- OC-01: NOT_AUTHORIZED;
+- PR-09: NOT_AUTHORIZED;
+- Security Go: NOT_GRANTED.
+
+Preserved residual states:
+
+- `IMP-003 = NOT_DETERMINED`;
+- `ROLLBACK_REAPPLY = NOT_DETERMINED`;
+- all PR-08 runtime execution result fields remain `NOT_EXECUTED`.
+
+Ready for Review does not mean runtime PASS, J4 PASS, merge approval, deploy approval or Security Go.
+
 ## 0.000000000000 Product Authority — PR #166 sixth bounded observer-completeness correction — 2026-09-03
 
 Authorized parent: `c2922bc952741202b8f57505db755d112bd47d82`.

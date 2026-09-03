@@ -1,5 +1,61 @@
 # FECH.AI — SFJM Evidence Freshness
 
+## 0.0000000000000 Current evidence — PR #166 Ready + pre-merge governance reconciliation — 2026-09-03
+
+Exact reviewed PR state before this documentation-only correction:
+
+```text
+repository: wagnerjfjunior/fecha.ai
+PR: #166
+branch: test/f1-02-negative-security-matrix
+base: 9d05c64281c2aeeae9d67b139eab674720184fb1
+exact head: 0f3f266cb2ed103e6acda7bb03b9934cd30f1b41
+state: OPEN / READY
+draft: false
+commits: 7
+changed files: 9
+mergeable: true
+Vercel: SUCCESS
+reviews: 0
+review threads: 0
+head changed during Ready transition: NO
+```
+
+Evidence classification:
+
+- PR/GitHub lifecycle state above: LIVE_GITHUB_READ;
+- exact-head PR-08 v7 implementation review: PASS;
+- pre-merge technical/security finding at `0f3f266cb2ed103e6acda7bb03b9934cd30f1b41`: NO NEW BLOCKER;
+- pre-merge governance finding: `PR166-PREMERGE-SFJM-001`;
+- finding classification: REQUIRED IN THIS PR;
+- finding type: GOVERNANCE / CONTINUITY ONLY;
+- reason: stale SFJM lifecycle instructions remained after a later Product Authority Ready authorization.
+
+No technical/security finding was reopened in matrix v7, HTTP harness, validator, rollback architecture or runtime SQL.
+
+Historical closed findings remain AUDIT_LOOP_BLOCKED absent new exact-head contradiction:
+
+- `PR166-J4-V5-OBSERVABILITY-ORACLE-001`: CLOSED STATICALLY;
+- `PR166-J4-V5-CANONICAL-RESTORE-002`: CLOSED STATICALLY.
+
+Execution/evidence states remain:
+
+- PR-08 runtime matrix: NOT_EXECUTED;
+- Auth matrix: NOT_EXECUTED;
+- SQL runtime: NOT_EXECUTED;
+- rollback/reapply: NOT_EXECUTED / `ROLLBACK_REAPPLY = NOT_DETERMINED`;
+- production smoke: NOT_EXECUTED;
+- Supabase/Auth mutation: NONE;
+- `IMP-003 = NOT_DETERMINED`;
+- `SECURITY_GO = NOT_GRANTED`.
+
+Additional bounded evidence gaps / residual metadata:
+
+- main branch-protection configuration: NOT_READ — GitHub integration returned `403 Resource not accessible by integration`; no inference is made about presence or absence of branch protection;
+- PR body exact-anchor / Ready wording: STALE METADATA — ACCEPTABLE WITH RESIDUAL RISK; GitHub live state and exact refs remain authoritative.
+
+This documentation reconciliation creates no runtime PASS and no merge authorization.
+
 ## 0.000000000000 PR-08 sixth bounded correction — observer completeness v7 — 2026-09-03
 
 Parent: `c2922bc952741202b8f57505db755d112bd47d82`.

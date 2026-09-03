@@ -1,5 +1,35 @@
 # FECH.AI — SFJM Next Safe Action
 
+## 0.0000000000000 Current semantic override — PR #166 post-Ready documentation gate — 2026-09-03
+
+After publication of the bounded three-file SFJM reconciliation from parent `0f3f266cb2ed103e6acda7bb03b9934cd30f1b41`, the single next safe action is:
+
+```text
+RESOLVE NEW PR #166 EXACT HEAD
+VERIFY DOCUMENTATION CORRECTION IS EXACTLY +1 COMMIT
+VERIFY THE CORRECTION CHANGED ONLY:
+  docs/sfjm/AUTHORIZATIONS.md
+  docs/sfjm/EVIDENCE_FRESHNESS.md
+  docs/sfjm/NEXT_SAFE_ACTION.md
+PERFORM ONE INDEPENDENT EXACT-HEAD PRE-MERGE REVIEW
+STOP BEFORE MERGE
+```
+
+Anti-loop rules:
+
+- do not repeat the PR-08 v7 implementation review absent new exact-head contradictory evidence;
+- do not reopen closed technical findings absent contradiction;
+- do not perform broad SFJM reconciliation;
+- do not execute PR-08 runtime/Auth/SQL/rollback/smoke;
+- do not mutate Supabase/Auth;
+- do not deploy;
+- do not merge;
+- do not start OC-01;
+- do not start PR-09;
+- do not grant Security Go.
+
+Current PR lifecycle is OPEN / READY. Historical "STOP BEFORE READY" sections below remain lineage only and no longer govern current lifecycle state.
+
 ## 0.000000000000 PR-08 v7 post-publication gate — 2026-09-03
 
 After the sixth bounded correction is published from parent `c2922bc952741202b8f57505db755d112bd47d82`, the single next safe action is:
