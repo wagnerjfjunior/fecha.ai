@@ -1,5 +1,5 @@
 {
-  "schema": "fechai.f1-02.pr08.matrix.v4",
+  "schema": "fechai.f1-02.pr08.matrix.v5",
   "title": "FECH.AI F1-02 / J4 / PR-08 repeatable executable security matrix",
   "implementation_status": "VERSIONED_HARNESS_NOT_EXECUTED",
   "base_application_commit": "9d05c64281c2aeeae9d67b139eab674720184fb1",
@@ -502,7 +502,10 @@
       },
       "concurrency_assertion": null,
       "semantic_assertions": [],
-      "topology_dependencies": []
+      "topology_dependencies": [
+        "TOPO-TOKEN-NO-PROFILE",
+        "TOPO-NO-PROFILE"
+      ]
     },
     {
       "test_id": "AUTH-005",
@@ -601,7 +604,10 @@
       },
       "concurrency_assertion": null,
       "semantic_assertions": [],
-      "topology_dependencies": []
+      "topology_dependencies": [
+        "TOPO-TOKEN-INACTIVE",
+        "TOPO-INACTIVE-PROFILE"
+      ]
     },
     {
       "test_id": "COR-001",
@@ -683,30 +689,24 @@
         }
       },
       "mutation_probe_plan": {
-        "before": [
-          {
-            "method": "GET",
-            "path_template": "/rest/v1/corretores?id=eq.${TARGET_CORRETOR_ID}&select=id,empresa_id,time_id,role,is_admin_local,is_gestor,ativo,apto_para_receber,must_change_password,user_id&order=id.asc",
-            "auth_token_var": "EVIDENCE_OBSERVER_TOKEN",
-            "headers_template": {},
-            "body_template": null
-          }
-        ],
-        "after": [
-          {
-            "method": "GET",
-            "path_template": "/rest/v1/corretores?id=eq.${TARGET_CORRETOR_ID}&select=id,empresa_id,time_id,role,is_admin_local,is_gestor,ativo,apto_para_receber,must_change_password,user_id&order=id.asc",
-            "auth_token_var": "EVIDENCE_OBSERVER_TOKEN",
-            "headers_template": {},
-            "body_template": null
-          }
-        ],
+        "channel": "SERVER_SQL_OWNER",
         "expectation": "MUST_EQUAL",
+        "before": [],
+        "after": [],
         "fingerprint": "CANONICAL_JSON_SHA256"
       },
       "concurrency_assertion": null,
       "semantic_assertions": [],
-      "topology_dependencies": []
+      "topology_dependencies": [
+        "TOPO-TOKEN-ACTOR",
+        "TOPO-ACTOR"
+      ],
+      "server_case_plan": "COR-001",
+      "cleanup_contract": {
+        "mode": "SCOPED_RESTORE_PLUS_GLOBAL_PUBLIC_DATA_HASH",
+        "must_restore_exactly": true,
+        "fail_stop": true
+      }
     },
     {
       "test_id": "COR-002",
@@ -790,30 +790,24 @@
         }
       },
       "mutation_probe_plan": {
-        "before": [
-          {
-            "method": "GET",
-            "path_template": "/rest/v1/corretores?id=eq.${TARGET_CORRETOR_ID}&select=id,empresa_id,time_id,role,is_admin_local,is_gestor,ativo,apto_para_receber,must_change_password,user_id&order=id.asc",
-            "auth_token_var": "EVIDENCE_OBSERVER_TOKEN",
-            "headers_template": {},
-            "body_template": null
-          }
-        ],
-        "after": [
-          {
-            "method": "GET",
-            "path_template": "/rest/v1/corretores?id=eq.${TARGET_CORRETOR_ID}&select=id,empresa_id,time_id,role,is_admin_local,is_gestor,ativo,apto_para_receber,must_change_password,user_id&order=id.asc",
-            "auth_token_var": "EVIDENCE_OBSERVER_TOKEN",
-            "headers_template": {},
-            "body_template": null
-          }
-        ],
+        "channel": "SERVER_SQL_OWNER",
         "expectation": "MUST_EQUAL",
+        "before": [],
+        "after": [],
         "fingerprint": "CANONICAL_JSON_SHA256"
       },
       "concurrency_assertion": null,
       "semantic_assertions": [],
-      "topology_dependencies": []
+      "topology_dependencies": [
+        "TOPO-TOKEN-ACTOR",
+        "TOPO-ACTOR"
+      ],
+      "server_case_plan": "COR-002",
+      "cleanup_contract": {
+        "mode": "SCOPED_RESTORE_PLUS_GLOBAL_PUBLIC_DATA_HASH",
+        "must_restore_exactly": true,
+        "fail_stop": true
+      }
     },
     {
       "test_id": "COR-003",
@@ -897,25 +891,10 @@
         }
       },
       "mutation_probe_plan": {
-        "before": [
-          {
-            "method": "GET",
-            "path_template": "/rest/v1/corretores?id=eq.${FOREIGN_CORRETOR_ID}&select=id,empresa_id,time_id,role,is_admin_local,is_gestor,ativo,apto_para_receber,must_change_password,user_id",
-            "auth_token_var": "EVIDENCE_OBSERVER_TOKEN",
-            "headers_template": {},
-            "body_template": null
-          }
-        ],
-        "after": [
-          {
-            "method": "GET",
-            "path_template": "/rest/v1/corretores?id=eq.${FOREIGN_CORRETOR_ID}&select=id,empresa_id,time_id,role,is_admin_local,is_gestor,ativo,apto_para_receber,must_change_password,user_id",
-            "auth_token_var": "EVIDENCE_OBSERVER_TOKEN",
-            "headers_template": {},
-            "body_template": null
-          }
-        ],
+        "channel": "SERVER_SQL_OWNER",
         "expectation": "MUST_EQUAL",
+        "before": [],
+        "after": [],
         "fingerprint": "CANONICAL_JSON_SHA256"
       },
       "concurrency_assertion": null,
@@ -924,7 +903,13 @@
         "TOPO-TOKEN-MANAGER",
         "TOPO-MANAGER",
         "TOPO-FOREIGN-CORRETOR"
-      ]
+      ],
+      "server_case_plan": "COR-003",
+      "cleanup_contract": {
+        "mode": "SCOPED_RESTORE_PLUS_GLOBAL_PUBLIC_DATA_HASH",
+        "must_restore_exactly": true,
+        "fail_stop": true
+      }
     },
     {
       "test_id": "COR-004",
@@ -1008,30 +993,24 @@
         }
       },
       "mutation_probe_plan": {
-        "before": [
-          {
-            "method": "GET",
-            "path_template": "/rest/v1/corretores?id=eq.${TARGET_CORRETOR_ID}&select=id,empresa_id,time_id,role,is_admin_local,is_gestor,ativo,apto_para_receber,must_change_password,user_id&order=id.asc",
-            "auth_token_var": "EVIDENCE_OBSERVER_TOKEN",
-            "headers_template": {},
-            "body_template": null
-          }
-        ],
-        "after": [
-          {
-            "method": "GET",
-            "path_template": "/rest/v1/corretores?id=eq.${TARGET_CORRETOR_ID}&select=id,empresa_id,time_id,role,is_admin_local,is_gestor,ativo,apto_para_receber,must_change_password,user_id&order=id.asc",
-            "auth_token_var": "EVIDENCE_OBSERVER_TOKEN",
-            "headers_template": {},
-            "body_template": null
-          }
-        ],
+        "channel": "SERVER_SQL_OWNER",
         "expectation": "MUST_EQUAL",
+        "before": [],
+        "after": [],
         "fingerprint": "CANONICAL_JSON_SHA256"
       },
       "concurrency_assertion": null,
       "semantic_assertions": [],
-      "topology_dependencies": []
+      "topology_dependencies": [
+        "TOPO-TOKEN-ACTOR",
+        "TOPO-ACTOR"
+      ],
+      "server_case_plan": "COR-004",
+      "cleanup_contract": {
+        "mode": "SCOPED_RESTORE_PLUS_GLOBAL_PUBLIC_DATA_HASH",
+        "must_restore_exactly": true,
+        "fail_stop": true
+      }
     },
     {
       "test_id": "COR-005",
@@ -1111,30 +1090,24 @@
         }
       },
       "mutation_probe_plan": {
-        "before": [
-          {
-            "method": "GET",
-            "path_template": "/rest/v1/corretores?id=eq.${TARGET_CORRETOR_ID}&select=id,empresa_id,time_id,role,is_admin_local,is_gestor,ativo,apto_para_receber,must_change_password,user_id&order=id.asc",
-            "auth_token_var": "EVIDENCE_OBSERVER_TOKEN",
-            "headers_template": {},
-            "body_template": null
-          }
-        ],
-        "after": [
-          {
-            "method": "GET",
-            "path_template": "/rest/v1/corretores?id=eq.${TARGET_CORRETOR_ID}&select=id,empresa_id,time_id,role,is_admin_local,is_gestor,ativo,apto_para_receber,must_change_password,user_id&order=id.asc",
-            "auth_token_var": "EVIDENCE_OBSERVER_TOKEN",
-            "headers_template": {},
-            "body_template": null
-          }
-        ],
+        "channel": "SERVER_SQL_OWNER",
         "expectation": "MUST_EQUAL",
+        "before": [],
+        "after": [],
         "fingerprint": "CANONICAL_JSON_SHA256"
       },
       "concurrency_assertion": null,
       "semantic_assertions": [],
-      "topology_dependencies": []
+      "topology_dependencies": [
+        "TOPO-TOKEN-ACTOR",
+        "TOPO-ACTOR"
+      ],
+      "server_case_plan": "COR-005",
+      "cleanup_contract": {
+        "mode": "SCOPED_RESTORE_PLUS_GLOBAL_PUBLIC_DATA_HASH",
+        "must_restore_exactly": true,
+        "fail_stop": true
+      }
     },
     {
       "test_id": "COR-006",
@@ -1218,30 +1191,24 @@
         }
       },
       "mutation_probe_plan": {
-        "before": [
-          {
-            "method": "GET",
-            "path_template": "/rest/v1/corretores?id=eq.${TARGET_CORRETOR_ID}&select=id,empresa_id,time_id,role,is_admin_local,is_gestor,ativo,apto_para_receber,must_change_password,user_id&order=id.asc",
-            "auth_token_var": "EVIDENCE_OBSERVER_TOKEN",
-            "headers_template": {},
-            "body_template": null
-          }
-        ],
-        "after": [
-          {
-            "method": "GET",
-            "path_template": "/rest/v1/corretores?id=eq.${TARGET_CORRETOR_ID}&select=id,empresa_id,time_id,role,is_admin_local,is_gestor,ativo,apto_para_receber,must_change_password,user_id&order=id.asc",
-            "auth_token_var": "EVIDENCE_OBSERVER_TOKEN",
-            "headers_template": {},
-            "body_template": null
-          }
-        ],
+        "channel": "SERVER_SQL_OWNER",
         "expectation": "MUST_EQUAL",
+        "before": [],
+        "after": [],
         "fingerprint": "CANONICAL_JSON_SHA256"
       },
       "concurrency_assertion": null,
       "semantic_assertions": [],
-      "topology_dependencies": []
+      "topology_dependencies": [
+        "TOPO-TOKEN-ACTOR",
+        "TOPO-ACTOR"
+      ],
+      "server_case_plan": "COR-006",
+      "cleanup_contract": {
+        "mode": "SCOPED_RESTORE_PLUS_GLOBAL_PUBLIC_DATA_HASH",
+        "must_restore_exactly": true,
+        "fail_stop": true
+      }
     },
     {
       "test_id": "COR-007",
@@ -1325,30 +1292,24 @@
         }
       },
       "mutation_probe_plan": {
-        "before": [
-          {
-            "method": "GET",
-            "path_template": "/rest/v1/corretores?id=eq.${TARGET_CORRETOR_ID}&select=id,empresa_id,time_id,role,is_admin_local,is_gestor,ativo,apto_para_receber,must_change_password,user_id&order=id.asc",
-            "auth_token_var": "EVIDENCE_OBSERVER_TOKEN",
-            "headers_template": {},
-            "body_template": null
-          }
-        ],
-        "after": [
-          {
-            "method": "GET",
-            "path_template": "/rest/v1/corretores?id=eq.${TARGET_CORRETOR_ID}&select=id,empresa_id,time_id,role,is_admin_local,is_gestor,ativo,apto_para_receber,must_change_password,user_id&order=id.asc",
-            "auth_token_var": "EVIDENCE_OBSERVER_TOKEN",
-            "headers_template": {},
-            "body_template": null
-          }
-        ],
+        "channel": "SERVER_SQL_OWNER",
         "expectation": "MUST_EQUAL",
+        "before": [],
+        "after": [],
         "fingerprint": "CANONICAL_JSON_SHA256"
       },
       "concurrency_assertion": null,
       "semantic_assertions": [],
-      "topology_dependencies": []
+      "topology_dependencies": [
+        "TOPO-TOKEN-INACTIVE",
+        "TOPO-INACTIVE-PROFILE"
+      ],
+      "server_case_plan": "COR-007",
+      "cleanup_contract": {
+        "mode": "SCOPED_RESTORE_PLUS_GLOBAL_PUBLIC_DATA_HASH",
+        "must_restore_exactly": true,
+        "fail_stop": true
+      }
     },
     {
       "test_id": "COR-008",
@@ -1426,30 +1387,24 @@
         }
       },
       "mutation_probe_plan": {
-        "before": [
-          {
-            "method": "GET",
-            "path_template": "/rest/v1/corretores?id=eq.${TARGET_CORRETOR_ID}&select=id,empresa_id,time_id,role,is_admin_local,is_gestor,ativo,apto_para_receber,must_change_password,user_id&order=id.asc",
-            "auth_token_var": "EVIDENCE_OBSERVER_TOKEN",
-            "headers_template": {},
-            "body_template": null
-          }
-        ],
-        "after": [
-          {
-            "method": "GET",
-            "path_template": "/rest/v1/corretores?id=eq.${TARGET_CORRETOR_ID}&select=id,empresa_id,time_id,role,is_admin_local,is_gestor,ativo,apto_para_receber,must_change_password,user_id&order=id.asc",
-            "auth_token_var": "EVIDENCE_OBSERVER_TOKEN",
-            "headers_template": {},
-            "body_template": null
-          }
-        ],
+        "channel": "SERVER_SQL_OWNER",
         "expectation": "MUST_EQUAL",
+        "before": [],
+        "after": [],
         "fingerprint": "CANONICAL_JSON_SHA256"
       },
       "concurrency_assertion": null,
       "semantic_assertions": [],
-      "topology_dependencies": []
+      "topology_dependencies": [
+        "TOPO-TOKEN-INELIGIBLE",
+        "TOPO-INELIGIBLE-PROFILE"
+      ],
+      "server_case_plan": "COR-008",
+      "cleanup_contract": {
+        "mode": "SCOPED_RESTORE_PLUS_GLOBAL_PUBLIC_DATA_HASH",
+        "must_restore_exactly": true,
+        "fail_stop": true
+      }
     },
     {
       "test_id": "COR-009",
@@ -1533,30 +1488,24 @@
         }
       },
       "mutation_probe_plan": {
-        "before": [
-          {
-            "method": "GET",
-            "path_template": "/rest/v1/corretores?id=eq.${TARGET_CORRETOR_ID}&select=id,empresa_id,time_id,role,is_admin_local,is_gestor,ativo,apto_para_receber,must_change_password,user_id&order=id.asc",
-            "auth_token_var": "EVIDENCE_OBSERVER_TOKEN",
-            "headers_template": {},
-            "body_template": null
-          }
-        ],
-        "after": [
-          {
-            "method": "GET",
-            "path_template": "/rest/v1/corretores?id=eq.${TARGET_CORRETOR_ID}&select=id,empresa_id,time_id,role,is_admin_local,is_gestor,ativo,apto_para_receber,must_change_password,user_id&order=id.asc",
-            "auth_token_var": "EVIDENCE_OBSERVER_TOKEN",
-            "headers_template": {},
-            "body_template": null
-          }
-        ],
+        "channel": "SERVER_SQL_OWNER",
         "expectation": "MUST_EQUAL",
+        "before": [],
+        "after": [],
         "fingerprint": "CANONICAL_JSON_SHA256"
       },
       "concurrency_assertion": null,
       "semantic_assertions": [],
-      "topology_dependencies": []
+      "topology_dependencies": [
+        "TOPO-TOKEN-ACTOR",
+        "TOPO-ACTOR"
+      ],
+      "server_case_plan": "COR-009",
+      "cleanup_contract": {
+        "mode": "SCOPED_RESTORE_PLUS_GLOBAL_PUBLIC_DATA_HASH",
+        "must_restore_exactly": true,
+        "fail_stop": true
+      }
     },
     {
       "test_id": "COR-010",
@@ -1665,7 +1614,10 @@
           "var": "ACTOR_EMPRESA_ID"
         }
       ],
-      "topology_dependencies": []
+      "topology_dependencies": [
+        "TOPO-TOKEN-ACTOR",
+        "TOPO-ACTOR"
+      ]
     },
     {
       "test_id": "COR-011",
@@ -1757,13 +1709,30 @@
           "mode": "SERVER_AFTER_PATH_EQUALS_LITERAL",
           "path": "broker.must_change_password",
           "value": false
+        },
+        {
+          "mode": "SERVER_AFTER_ARRAY_COUNT_EQUALS",
+          "path": "t3_leases",
+          "count": 0
+        },
+        {
+          "mode": "SERVER_AFTER_ARRAY_COUNT_EQUALS",
+          "path": "t3_proofs",
+          "count": 0
         }
       ],
       "topology_dependencies": [
         "TOPO-TOKEN-ACTOR",
-        "TOPO-ACTOR"
+        "TOPO-ACTOR",
+        "TOPO-TOKEN-ADMIN",
+        "TOPO-ADMIN"
       ],
-      "server_case_plan": "COR-011"
+      "server_case_plan": "COR-011",
+      "cleanup_contract": {
+        "mode": "SCOPED_RESTORE_PLUS_GLOBAL_PUBLIC_DATA_HASH",
+        "must_restore_exactly": true,
+        "fail_stop": true
+      }
     },
     {
       "test_id": "COR-012",
@@ -1871,9 +1840,15 @@
       "topology_dependencies": [
         "TOPO-TOKEN-ADMIN",
         "TOPO-ADMIN",
-        "TOPO-TARGET-CORRETOR"
+        "TOPO-TARGET-CORRETOR",
+        "TOPO-LIST"
       ],
-      "server_case_plan": "COR-012"
+      "server_case_plan": "COR-012",
+      "cleanup_contract": {
+        "mode": "SCOPED_RESTORE_PLUS_GLOBAL_PUBLIC_DATA_HASH",
+        "must_restore_exactly": true,
+        "fail_stop": true
+      }
     },
     {
       "test_id": "COR-013",
@@ -1971,9 +1946,15 @@
         "TOPO-TARGET-CORRETOR",
         "TOPO-BASE-TIME",
         "TOPO-TARGET-TIME",
-        "TOPO-BASE-TARGET-TIME-DIFFER"
+        "TOPO-BASE-TARGET-TIME-DIFFER",
+        "TOPO-LIST"
       ],
-      "server_case_plan": "COR-013"
+      "server_case_plan": "COR-013",
+      "cleanup_contract": {
+        "mode": "SCOPED_RESTORE_PLUS_GLOBAL_PUBLIC_DATA_HASH",
+        "must_restore_exactly": true,
+        "fail_stop": true
+      }
     },
     {
       "test_id": "CRM-001",
@@ -2054,44 +2035,24 @@
         }
       },
       "mutation_probe_plan": {
-        "before": [
-          {
-            "method": "GET",
-            "path_template": "/rest/v1/leads?lista_id=eq.${LISTA_ID}&select=id,empresa_id,corretor_id,lote_id,lista_id,status,funil_estagio_id,telefone_e164&order=id.asc",
-            "auth_token_var": "EVIDENCE_OBSERVER_TOKEN",
-            "headers_template": {},
-            "body_template": null
-          },
-          {
-            "method": "GET",
-            "path_template": "/rest/v1/lotes?lista_id=eq.${LISTA_ID}&select=id,lista_id,corretor_id,status,data_distribuicao&order=id.asc",
-            "auth_token_var": "EVIDENCE_OBSERVER_TOKEN",
-            "headers_template": {},
-            "body_template": null
-          }
-        ],
-        "after": [
-          {
-            "method": "GET",
-            "path_template": "/rest/v1/leads?lista_id=eq.${LISTA_ID}&select=id,empresa_id,corretor_id,lote_id,lista_id,status,funil_estagio_id,telefone_e164&order=id.asc",
-            "auth_token_var": "EVIDENCE_OBSERVER_TOKEN",
-            "headers_template": {},
-            "body_template": null
-          },
-          {
-            "method": "GET",
-            "path_template": "/rest/v1/lotes?lista_id=eq.${LISTA_ID}&select=id,lista_id,corretor_id,status,data_distribuicao&order=id.asc",
-            "auth_token_var": "EVIDENCE_OBSERVER_TOKEN",
-            "headers_template": {},
-            "body_template": null
-          }
-        ],
+        "channel": "SERVER_SQL_OWNER",
         "expectation": "MUST_EQUAL",
+        "before": [],
+        "after": [],
         "fingerprint": "CANONICAL_JSON_SHA256"
       },
       "concurrency_assertion": null,
       "semantic_assertions": [],
-      "topology_dependencies": []
+      "topology_dependencies": [
+        "TOPO-TOKEN-ACTOR",
+        "TOPO-ACTOR"
+      ],
+      "server_case_plan": "CRM-001",
+      "cleanup_contract": {
+        "mode": "SCOPED_RESTORE_PLUS_GLOBAL_PUBLIC_DATA_HASH",
+        "must_restore_exactly": true,
+        "fail_stop": true
+      }
     },
     {
       "test_id": "CRM-002",
@@ -2169,44 +2130,24 @@
         }
       },
       "mutation_probe_plan": {
-        "before": [
-          {
-            "method": "GET",
-            "path_template": "/rest/v1/leads?lista_id=eq.${LISTA_ID}&select=id,empresa_id,corretor_id,lote_id,lista_id,status,funil_estagio_id,telefone_e164&order=id.asc",
-            "auth_token_var": "EVIDENCE_OBSERVER_TOKEN",
-            "headers_template": {},
-            "body_template": null
-          },
-          {
-            "method": "GET",
-            "path_template": "/rest/v1/lotes?lista_id=eq.${LISTA_ID}&select=id,lista_id,corretor_id,status,data_distribuicao&order=id.asc",
-            "auth_token_var": "EVIDENCE_OBSERVER_TOKEN",
-            "headers_template": {},
-            "body_template": null
-          }
-        ],
-        "after": [
-          {
-            "method": "GET",
-            "path_template": "/rest/v1/leads?lista_id=eq.${LISTA_ID}&select=id,empresa_id,corretor_id,lote_id,lista_id,status,funil_estagio_id,telefone_e164&order=id.asc",
-            "auth_token_var": "EVIDENCE_OBSERVER_TOKEN",
-            "headers_template": {},
-            "body_template": null
-          },
-          {
-            "method": "GET",
-            "path_template": "/rest/v1/lotes?lista_id=eq.${LISTA_ID}&select=id,lista_id,corretor_id,status,data_distribuicao&order=id.asc",
-            "auth_token_var": "EVIDENCE_OBSERVER_TOKEN",
-            "headers_template": {},
-            "body_template": null
-          }
-        ],
+        "channel": "SERVER_SQL_OWNER",
         "expectation": "MUST_EQUAL",
+        "before": [],
+        "after": [],
         "fingerprint": "CANONICAL_JSON_SHA256"
       },
       "concurrency_assertion": null,
       "semantic_assertions": [],
-      "topology_dependencies": []
+      "topology_dependencies": [
+        "TOPO-TOKEN-ACTOR",
+        "TOPO-ACTOR"
+      ],
+      "server_case_plan": "CRM-002",
+      "cleanup_contract": {
+        "mode": "SCOPED_RESTORE_PLUS_GLOBAL_PUBLIC_DATA_HASH",
+        "must_restore_exactly": true,
+        "fail_stop": true
+      }
     },
     {
       "test_id": "CRM-003",
@@ -2279,44 +2220,24 @@
         }
       },
       "mutation_probe_plan": {
-        "before": [
-          {
-            "method": "GET",
-            "path_template": "/rest/v1/leads?lista_id=eq.${LISTA_ID}&select=id,empresa_id,corretor_id,lote_id,lista_id,status,funil_estagio_id,telefone_e164&order=id.asc",
-            "auth_token_var": "EVIDENCE_OBSERVER_TOKEN",
-            "headers_template": {},
-            "body_template": null
-          },
-          {
-            "method": "GET",
-            "path_template": "/rest/v1/lotes?lista_id=eq.${LISTA_ID}&select=id,lista_id,corretor_id,status,data_distribuicao&order=id.asc",
-            "auth_token_var": "EVIDENCE_OBSERVER_TOKEN",
-            "headers_template": {},
-            "body_template": null
-          }
-        ],
-        "after": [
-          {
-            "method": "GET",
-            "path_template": "/rest/v1/leads?lista_id=eq.${LISTA_ID}&select=id,empresa_id,corretor_id,lote_id,lista_id,status,funil_estagio_id,telefone_e164&order=id.asc",
-            "auth_token_var": "EVIDENCE_OBSERVER_TOKEN",
-            "headers_template": {},
-            "body_template": null
-          },
-          {
-            "method": "GET",
-            "path_template": "/rest/v1/lotes?lista_id=eq.${LISTA_ID}&select=id,lista_id,corretor_id,status,data_distribuicao&order=id.asc",
-            "auth_token_var": "EVIDENCE_OBSERVER_TOKEN",
-            "headers_template": {},
-            "body_template": null
-          }
-        ],
+        "channel": "SERVER_SQL_OWNER",
         "expectation": "MUST_EQUAL",
+        "before": [],
+        "after": [],
         "fingerprint": "CANONICAL_JSON_SHA256"
       },
       "concurrency_assertion": null,
       "semantic_assertions": [],
-      "topology_dependencies": []
+      "topology_dependencies": [
+        "TOPO-TOKEN-ACTOR",
+        "TOPO-ACTOR"
+      ],
+      "server_case_plan": "CRM-003",
+      "cleanup_contract": {
+        "mode": "SCOPED_RESTORE_PLUS_GLOBAL_PUBLIC_DATA_HASH",
+        "must_restore_exactly": true,
+        "fail_stop": true
+      }
     },
     {
       "test_id": "CRM-004",
@@ -2398,44 +2319,24 @@
         }
       },
       "mutation_probe_plan": {
-        "before": [
-          {
-            "method": "GET",
-            "path_template": "/rest/v1/leads?lista_id=eq.${LISTA_ID}&select=id,empresa_id,corretor_id,lote_id,lista_id,status,funil_estagio_id,telefone_e164&order=id.asc",
-            "auth_token_var": "EVIDENCE_OBSERVER_TOKEN",
-            "headers_template": {},
-            "body_template": null
-          },
-          {
-            "method": "GET",
-            "path_template": "/rest/v1/lotes?lista_id=eq.${LISTA_ID}&select=id,lista_id,corretor_id,status,data_distribuicao&order=id.asc",
-            "auth_token_var": "EVIDENCE_OBSERVER_TOKEN",
-            "headers_template": {},
-            "body_template": null
-          }
-        ],
-        "after": [
-          {
-            "method": "GET",
-            "path_template": "/rest/v1/leads?lista_id=eq.${LISTA_ID}&select=id,empresa_id,corretor_id,lote_id,lista_id,status,funil_estagio_id,telefone_e164&order=id.asc",
-            "auth_token_var": "EVIDENCE_OBSERVER_TOKEN",
-            "headers_template": {},
-            "body_template": null
-          },
-          {
-            "method": "GET",
-            "path_template": "/rest/v1/lotes?lista_id=eq.${LISTA_ID}&select=id,lista_id,corretor_id,status,data_distribuicao&order=id.asc",
-            "auth_token_var": "EVIDENCE_OBSERVER_TOKEN",
-            "headers_template": {},
-            "body_template": null
-          }
-        ],
+        "channel": "SERVER_SQL_OWNER",
         "expectation": "MUST_EQUAL",
+        "before": [],
+        "after": [],
         "fingerprint": "CANONICAL_JSON_SHA256"
       },
       "concurrency_assertion": null,
       "semantic_assertions": [],
-      "topology_dependencies": []
+      "topology_dependencies": [
+        "TOPO-TOKEN-ACTOR",
+        "TOPO-ACTOR"
+      ],
+      "server_case_plan": "CRM-004",
+      "cleanup_contract": {
+        "mode": "SCOPED_RESTORE_PLUS_GLOBAL_PUBLIC_DATA_HASH",
+        "must_restore_exactly": true,
+        "fail_stop": true
+      }
     },
     {
       "test_id": "CRM-005",
@@ -2517,44 +2418,24 @@
         }
       },
       "mutation_probe_plan": {
-        "before": [
-          {
-            "method": "GET",
-            "path_template": "/rest/v1/leads?lista_id=eq.${LISTA_ID}&select=id,empresa_id,corretor_id,lote_id,lista_id,status,funil_estagio_id,telefone_e164&order=id.asc",
-            "auth_token_var": "EVIDENCE_OBSERVER_TOKEN",
-            "headers_template": {},
-            "body_template": null
-          },
-          {
-            "method": "GET",
-            "path_template": "/rest/v1/corretores?id=eq.${FOREIGN_CORRETOR_ID}&select=id,empresa_id,time_id,role,is_admin_local,is_gestor,ativo,apto_para_receber,must_change_password,user_id",
-            "auth_token_var": "EVIDENCE_OBSERVER_TOKEN",
-            "headers_template": {},
-            "body_template": null
-          }
-        ],
-        "after": [
-          {
-            "method": "GET",
-            "path_template": "/rest/v1/leads?lista_id=eq.${LISTA_ID}&select=id,empresa_id,corretor_id,lote_id,lista_id,status,funil_estagio_id,telefone_e164&order=id.asc",
-            "auth_token_var": "EVIDENCE_OBSERVER_TOKEN",
-            "headers_template": {},
-            "body_template": null
-          },
-          {
-            "method": "GET",
-            "path_template": "/rest/v1/corretores?id=eq.${FOREIGN_CORRETOR_ID}&select=id,empresa_id,time_id,role,is_admin_local,is_gestor,ativo,apto_para_receber,must_change_password,user_id",
-            "auth_token_var": "EVIDENCE_OBSERVER_TOKEN",
-            "headers_template": {},
-            "body_template": null
-          }
-        ],
+        "channel": "SERVER_SQL_OWNER",
         "expectation": "MUST_EQUAL",
+        "before": [],
+        "after": [],
         "fingerprint": "CANONICAL_JSON_SHA256"
       },
       "concurrency_assertion": null,
       "semantic_assertions": [],
-      "topology_dependencies": []
+      "topology_dependencies": [
+        "TOPO-TOKEN-ACTOR",
+        "TOPO-ACTOR"
+      ],
+      "server_case_plan": "CRM-005",
+      "cleanup_contract": {
+        "mode": "SCOPED_RESTORE_PLUS_GLOBAL_PUBLIC_DATA_HASH",
+        "must_restore_exactly": true,
+        "fail_stop": true
+      }
     },
     {
       "test_id": "CRM-006",
@@ -2635,25 +2516,10 @@
         }
       },
       "mutation_probe_plan": {
-        "before": [
-          {
-            "method": "GET",
-            "path_template": "/rest/v1/leads?lista_id=eq.${FOREIGN_LISTA_ID}&select=id,empresa_id,corretor_id,lote_id,lista_id,status,funil_estagio_id,telefone_e164&order=id.asc",
-            "auth_token_var": "EVIDENCE_OBSERVER_TOKEN",
-            "headers_template": {},
-            "body_template": null
-          }
-        ],
-        "after": [
-          {
-            "method": "GET",
-            "path_template": "/rest/v1/leads?lista_id=eq.${FOREIGN_LISTA_ID}&select=id,empresa_id,corretor_id,lote_id,lista_id,status,funil_estagio_id,telefone_e164&order=id.asc",
-            "auth_token_var": "EVIDENCE_OBSERVER_TOKEN",
-            "headers_template": {},
-            "body_template": null
-          }
-        ],
+        "channel": "SERVER_SQL_OWNER",
         "expectation": "MUST_EQUAL",
+        "before": [],
+        "after": [],
         "fingerprint": "CANONICAL_JSON_SHA256"
       },
       "concurrency_assertion": null,
@@ -2661,8 +2527,15 @@
       "topology_dependencies": [
         "TOPO-ACTOR",
         "TOPO-LIST",
-        "TOPO-FOREIGN-LIST"
-      ]
+        "TOPO-FOREIGN-LIST",
+        "TOPO-TOKEN-ACTOR"
+      ],
+      "server_case_plan": "CRM-006",
+      "cleanup_contract": {
+        "mode": "SCOPED_RESTORE_PLUS_GLOBAL_PUBLIC_DATA_HASH",
+        "must_restore_exactly": true,
+        "fail_stop": true
+      }
     },
     {
       "test_id": "CRM-007",
@@ -2744,44 +2617,24 @@
         }
       },
       "mutation_probe_plan": {
-        "before": [
-          {
-            "method": "GET",
-            "path_template": "/rest/v1/leads?lista_id=eq.${LISTA_ID}&select=id,empresa_id,corretor_id,lote_id,lista_id,status,funil_estagio_id,telefone_e164&order=id.asc",
-            "auth_token_var": "EVIDENCE_OBSERVER_TOKEN",
-            "headers_template": {},
-            "body_template": null
-          },
-          {
-            "method": "GET",
-            "path_template": "/rest/v1/lotes?id=eq.${FOREIGN_LOTE_ID}&select=id,lista_id,corretor_id,status,data_distribuicao",
-            "auth_token_var": "EVIDENCE_OBSERVER_TOKEN",
-            "headers_template": {},
-            "body_template": null
-          }
-        ],
-        "after": [
-          {
-            "method": "GET",
-            "path_template": "/rest/v1/leads?lista_id=eq.${LISTA_ID}&select=id,empresa_id,corretor_id,lote_id,lista_id,status,funil_estagio_id,telefone_e164&order=id.asc",
-            "auth_token_var": "EVIDENCE_OBSERVER_TOKEN",
-            "headers_template": {},
-            "body_template": null
-          },
-          {
-            "method": "GET",
-            "path_template": "/rest/v1/lotes?id=eq.${FOREIGN_LOTE_ID}&select=id,lista_id,corretor_id,status,data_distribuicao",
-            "auth_token_var": "EVIDENCE_OBSERVER_TOKEN",
-            "headers_template": {},
-            "body_template": null
-          }
-        ],
+        "channel": "SERVER_SQL_OWNER",
         "expectation": "MUST_EQUAL",
+        "before": [],
+        "after": [],
         "fingerprint": "CANONICAL_JSON_SHA256"
       },
       "concurrency_assertion": null,
       "semantic_assertions": [],
-      "topology_dependencies": []
+      "topology_dependencies": [
+        "TOPO-TOKEN-ACTOR",
+        "TOPO-ACTOR"
+      ],
+      "server_case_plan": "CRM-007",
+      "cleanup_contract": {
+        "mode": "SCOPED_RESTORE_PLUS_GLOBAL_PUBLIC_DATA_HASH",
+        "must_restore_exactly": true,
+        "fail_stop": true
+      }
     },
     {
       "test_id": "CRM-008",
@@ -2863,44 +2716,24 @@
         }
       },
       "mutation_probe_plan": {
-        "before": [
-          {
-            "method": "GET",
-            "path_template": "/rest/v1/leads?lista_id=eq.${LISTA_ID}&select=id,empresa_id,corretor_id,lote_id,lista_id,status,funil_estagio_id,telefone_e164&order=id.asc",
-            "auth_token_var": "EVIDENCE_OBSERVER_TOKEN",
-            "headers_template": {},
-            "body_template": null
-          },
-          {
-            "method": "GET",
-            "path_template": "/rest/v1/lotes?lista_id=eq.${LISTA_ID}&select=id,lista_id,corretor_id,status,data_distribuicao&order=id.asc",
-            "auth_token_var": "EVIDENCE_OBSERVER_TOKEN",
-            "headers_template": {},
-            "body_template": null
-          }
-        ],
-        "after": [
-          {
-            "method": "GET",
-            "path_template": "/rest/v1/leads?lista_id=eq.${LISTA_ID}&select=id,empresa_id,corretor_id,lote_id,lista_id,status,funil_estagio_id,telefone_e164&order=id.asc",
-            "auth_token_var": "EVIDENCE_OBSERVER_TOKEN",
-            "headers_template": {},
-            "body_template": null
-          },
-          {
-            "method": "GET",
-            "path_template": "/rest/v1/lotes?lista_id=eq.${LISTA_ID}&select=id,lista_id,corretor_id,status,data_distribuicao&order=id.asc",
-            "auth_token_var": "EVIDENCE_OBSERVER_TOKEN",
-            "headers_template": {},
-            "body_template": null
-          }
-        ],
+        "channel": "SERVER_SQL_OWNER",
         "expectation": "MUST_EQUAL",
+        "before": [],
+        "after": [],
         "fingerprint": "CANONICAL_JSON_SHA256"
       },
       "concurrency_assertion": null,
       "semantic_assertions": [],
-      "topology_dependencies": []
+      "topology_dependencies": [
+        "TOPO-TOKEN-ACTOR",
+        "TOPO-ACTOR"
+      ],
+      "server_case_plan": "CRM-008",
+      "cleanup_contract": {
+        "mode": "SCOPED_RESTORE_PLUS_GLOBAL_PUBLIC_DATA_HASH",
+        "must_restore_exactly": true,
+        "fail_stop": true
+      }
     },
     {
       "test_id": "CRM-009",
@@ -2982,44 +2815,24 @@
         }
       },
       "mutation_probe_plan": {
-        "before": [
-          {
-            "method": "GET",
-            "path_template": "/rest/v1/leads?lista_id=eq.${LISTA_ID}&select=id,empresa_id,corretor_id,lote_id,lista_id,status,funil_estagio_id,telefone_e164&order=id.asc",
-            "auth_token_var": "EVIDENCE_OBSERVER_TOKEN",
-            "headers_template": {},
-            "body_template": null
-          },
-          {
-            "method": "GET",
-            "path_template": "/rest/v1/funil_estagios?id=eq.${FOREIGN_STAGE_ID}&select=id,empresa_id,ativo",
-            "auth_token_var": "EVIDENCE_OBSERVER_TOKEN",
-            "headers_template": {},
-            "body_template": null
-          }
-        ],
-        "after": [
-          {
-            "method": "GET",
-            "path_template": "/rest/v1/leads?lista_id=eq.${LISTA_ID}&select=id,empresa_id,corretor_id,lote_id,lista_id,status,funil_estagio_id,telefone_e164&order=id.asc",
-            "auth_token_var": "EVIDENCE_OBSERVER_TOKEN",
-            "headers_template": {},
-            "body_template": null
-          },
-          {
-            "method": "GET",
-            "path_template": "/rest/v1/funil_estagios?id=eq.${FOREIGN_STAGE_ID}&select=id,empresa_id,ativo",
-            "auth_token_var": "EVIDENCE_OBSERVER_TOKEN",
-            "headers_template": {},
-            "body_template": null
-          }
-        ],
+        "channel": "SERVER_SQL_OWNER",
         "expectation": "MUST_EQUAL",
+        "before": [],
+        "after": [],
         "fingerprint": "CANONICAL_JSON_SHA256"
       },
       "concurrency_assertion": null,
       "semantic_assertions": [],
-      "topology_dependencies": []
+      "topology_dependencies": [
+        "TOPO-TOKEN-ACTOR",
+        "TOPO-ACTOR"
+      ],
+      "server_case_plan": "CRM-009",
+      "cleanup_contract": {
+        "mode": "SCOPED_RESTORE_PLUS_GLOBAL_PUBLIC_DATA_HASH",
+        "must_restore_exactly": true,
+        "fail_stop": true
+      }
     },
     {
       "test_id": "CRM-010",
@@ -3101,44 +2914,24 @@
         }
       },
       "mutation_probe_plan": {
-        "before": [
-          {
-            "method": "GET",
-            "path_template": "/rest/v1/leads?lista_id=eq.${LISTA_ID}&select=id,empresa_id,corretor_id,lote_id,lista_id,status,funil_estagio_id,telefone_e164&order=id.asc",
-            "auth_token_var": "EVIDENCE_OBSERVER_TOKEN",
-            "headers_template": {},
-            "body_template": null
-          },
-          {
-            "method": "GET",
-            "path_template": "/rest/v1/lotes?lista_id=eq.${LISTA_ID}&select=id,lista_id,corretor_id,status,data_distribuicao&order=id.asc",
-            "auth_token_var": "EVIDENCE_OBSERVER_TOKEN",
-            "headers_template": {},
-            "body_template": null
-          }
-        ],
-        "after": [
-          {
-            "method": "GET",
-            "path_template": "/rest/v1/leads?lista_id=eq.${LISTA_ID}&select=id,empresa_id,corretor_id,lote_id,lista_id,status,funil_estagio_id,telefone_e164&order=id.asc",
-            "auth_token_var": "EVIDENCE_OBSERVER_TOKEN",
-            "headers_template": {},
-            "body_template": null
-          },
-          {
-            "method": "GET",
-            "path_template": "/rest/v1/lotes?lista_id=eq.${LISTA_ID}&select=id,lista_id,corretor_id,status,data_distribuicao&order=id.asc",
-            "auth_token_var": "EVIDENCE_OBSERVER_TOKEN",
-            "headers_template": {},
-            "body_template": null
-          }
-        ],
+        "channel": "SERVER_SQL_OWNER",
         "expectation": "MUST_EQUAL",
+        "before": [],
+        "after": [],
         "fingerprint": "CANONICAL_JSON_SHA256"
       },
       "concurrency_assertion": null,
       "semantic_assertions": [],
-      "topology_dependencies": []
+      "topology_dependencies": [
+        "TOPO-TOKEN-ACTOR",
+        "TOPO-ACTOR"
+      ],
+      "server_case_plan": "CRM-010",
+      "cleanup_contract": {
+        "mode": "SCOPED_RESTORE_PLUS_GLOBAL_PUBLIC_DATA_HASH",
+        "must_restore_exactly": true,
+        "fail_stop": true
+      }
     },
     {
       "test_id": "CRM-011",
@@ -3213,47 +3006,25 @@
         }
       },
       "mutation_probe_plan": {
-        "before": [
-          {
-            "method": "GET",
-            "path_template": "/rest/v1/leads?id=eq.${WRONG_OWNER_LEAD_ID}&select=id,empresa_id,corretor_id,lote_id,lista_id,status,funil_estagio_id,feedback,feedback_tipo,status_operacional,status_comercial,telefone_e164",
-            "auth_token_var": "EVIDENCE_OBSERVER_TOKEN",
-            "headers_template": {},
-            "body_template": null
-          },
-          {
-            "method": "GET",
-            "path_template": "/rest/v1/funil_movimentacoes?lead_id=eq.${WRONG_OWNER_LEAD_ID}&select=id,lead_id,corretor_id,estagio_id,estagio_anterior_id,empresa_id,origem_evento,motivo&order=id.asc",
-            "auth_token_var": "EVIDENCE_OBSERVER_TOKEN",
-            "headers_template": {},
-            "body_template": null
-          }
-        ],
-        "after": [
-          {
-            "method": "GET",
-            "path_template": "/rest/v1/leads?id=eq.${WRONG_OWNER_LEAD_ID}&select=id,empresa_id,corretor_id,lote_id,lista_id,status,funil_estagio_id,feedback,feedback_tipo,status_operacional,status_comercial,telefone_e164",
-            "auth_token_var": "EVIDENCE_OBSERVER_TOKEN",
-            "headers_template": {},
-            "body_template": null
-          },
-          {
-            "method": "GET",
-            "path_template": "/rest/v1/funil_movimentacoes?lead_id=eq.${WRONG_OWNER_LEAD_ID}&select=id,lead_id,corretor_id,estagio_id,estagio_anterior_id,empresa_id,origem_evento,motivo&order=id.asc",
-            "auth_token_var": "EVIDENCE_OBSERVER_TOKEN",
-            "headers_template": {},
-            "body_template": null
-          }
-        ],
+        "channel": "SERVER_SQL_OWNER",
         "expectation": "MUST_EQUAL",
+        "before": [],
+        "after": [],
         "fingerprint": "CANONICAL_JSON_SHA256"
       },
       "concurrency_assertion": null,
       "semantic_assertions": [],
       "topology_dependencies": [
         "TOPO-ACTOR",
-        "TOPO-WRONG-OWNER-LEAD"
-      ]
+        "TOPO-WRONG-OWNER-LEAD",
+        "TOPO-TOKEN-ACTOR"
+      ],
+      "server_case_plan": "CRM-011",
+      "cleanup_contract": {
+        "mode": "SCOPED_RESTORE_PLUS_GLOBAL_PUBLIC_DATA_HASH",
+        "must_restore_exactly": true,
+        "fail_stop": true
+      }
     },
     {
       "test_id": "CRM-012",
@@ -3328,47 +3099,25 @@
         }
       },
       "mutation_probe_plan": {
-        "before": [
-          {
-            "method": "GET",
-            "path_template": "/rest/v1/leads?id=eq.${FOREIGN_LEAD_ID}&select=id,empresa_id,corretor_id,lote_id,lista_id,status,funil_estagio_id,feedback,feedback_tipo,status_operacional,status_comercial,telefone_e164",
-            "auth_token_var": "EVIDENCE_OBSERVER_TOKEN",
-            "headers_template": {},
-            "body_template": null
-          },
-          {
-            "method": "GET",
-            "path_template": "/rest/v1/funil_movimentacoes?lead_id=eq.${FOREIGN_LEAD_ID}&select=id,lead_id,corretor_id,estagio_id,estagio_anterior_id,empresa_id,origem_evento,motivo&order=id.asc",
-            "auth_token_var": "EVIDENCE_OBSERVER_TOKEN",
-            "headers_template": {},
-            "body_template": null
-          }
-        ],
-        "after": [
-          {
-            "method": "GET",
-            "path_template": "/rest/v1/leads?id=eq.${FOREIGN_LEAD_ID}&select=id,empresa_id,corretor_id,lote_id,lista_id,status,funil_estagio_id,feedback,feedback_tipo,status_operacional,status_comercial,telefone_e164",
-            "auth_token_var": "EVIDENCE_OBSERVER_TOKEN",
-            "headers_template": {},
-            "body_template": null
-          },
-          {
-            "method": "GET",
-            "path_template": "/rest/v1/funil_movimentacoes?lead_id=eq.${FOREIGN_LEAD_ID}&select=id,lead_id,corretor_id,estagio_id,estagio_anterior_id,empresa_id,origem_evento,motivo&order=id.asc",
-            "auth_token_var": "EVIDENCE_OBSERVER_TOKEN",
-            "headers_template": {},
-            "body_template": null
-          }
-        ],
+        "channel": "SERVER_SQL_OWNER",
         "expectation": "MUST_EQUAL",
+        "before": [],
+        "after": [],
         "fingerprint": "CANONICAL_JSON_SHA256"
       },
       "concurrency_assertion": null,
       "semantic_assertions": [],
       "topology_dependencies": [
         "TOPO-ACTOR",
-        "TOPO-FOREIGN-LEAD"
-      ]
+        "TOPO-FOREIGN-LEAD",
+        "TOPO-TOKEN-ACTOR"
+      ],
+      "server_case_plan": "CRM-012",
+      "cleanup_contract": {
+        "mode": "SCOPED_RESTORE_PLUS_GLOBAL_PUBLIC_DATA_HASH",
+        "must_restore_exactly": true,
+        "fail_stop": true
+      }
     },
     {
       "test_id": "CRM-013",
@@ -3446,30 +3195,24 @@
         }
       },
       "mutation_probe_plan": {
-        "before": [
-          {
-            "method": "GET",
-            "path_template": "/rest/v1/lotes?id=eq.${FOREIGN_LOTE_ID}&select=id,lista_id,corretor_id,status,data_distribuicao",
-            "auth_token_var": "EVIDENCE_OBSERVER_TOKEN",
-            "headers_template": {},
-            "body_template": null
-          }
-        ],
-        "after": [
-          {
-            "method": "GET",
-            "path_template": "/rest/v1/lotes?id=eq.${FOREIGN_LOTE_ID}&select=id,lista_id,corretor_id,status,data_distribuicao",
-            "auth_token_var": "EVIDENCE_OBSERVER_TOKEN",
-            "headers_template": {},
-            "body_template": null
-          }
-        ],
+        "channel": "SERVER_SQL_OWNER",
         "expectation": "MUST_EQUAL",
+        "before": [],
+        "after": [],
         "fingerprint": "CANONICAL_JSON_SHA256"
       },
       "concurrency_assertion": null,
       "semantic_assertions": [],
-      "topology_dependencies": []
+      "topology_dependencies": [
+        "TOPO-TOKEN-ACTOR",
+        "TOPO-ACTOR"
+      ],
+      "server_case_plan": "CRM-013",
+      "cleanup_contract": {
+        "mode": "SCOPED_RESTORE_PLUS_GLOBAL_PUBLIC_DATA_HASH",
+        "must_restore_exactly": true,
+        "fail_stop": true
+      }
     },
     {
       "test_id": "CRM-014",
@@ -3556,44 +3299,24 @@
         }
       },
       "mutation_probe_plan": {
-        "before": [
-          {
-            "method": "GET",
-            "path_template": "/rest/v1/leads?lista_id=eq.${LISTA_ID}&select=id,empresa_id,corretor_id,lote_id,lista_id,status,funil_estagio_id,telefone_e164&order=id.asc",
-            "auth_token_var": "EVIDENCE_OBSERVER_TOKEN",
-            "headers_template": {},
-            "body_template": null
-          },
-          {
-            "method": "GET",
-            "path_template": "/rest/v1/lotes?lista_id=eq.${LISTA_ID}&select=id,lista_id,corretor_id,status,data_distribuicao&order=id.asc",
-            "auth_token_var": "EVIDENCE_OBSERVER_TOKEN",
-            "headers_template": {},
-            "body_template": null
-          }
-        ],
-        "after": [
-          {
-            "method": "GET",
-            "path_template": "/rest/v1/leads?lista_id=eq.${LISTA_ID}&select=id,empresa_id,corretor_id,lote_id,lista_id,status,funil_estagio_id,telefone_e164&order=id.asc",
-            "auth_token_var": "EVIDENCE_OBSERVER_TOKEN",
-            "headers_template": {},
-            "body_template": null
-          },
-          {
-            "method": "GET",
-            "path_template": "/rest/v1/lotes?lista_id=eq.${LISTA_ID}&select=id,lista_id,corretor_id,status,data_distribuicao&order=id.asc",
-            "auth_token_var": "EVIDENCE_OBSERVER_TOKEN",
-            "headers_template": {},
-            "body_template": null
-          }
-        ],
+        "channel": "SERVER_SQL_OWNER",
         "expectation": "MUST_EQUAL",
+        "before": [],
+        "after": [],
         "fingerprint": "CANONICAL_JSON_SHA256"
       },
       "concurrency_assertion": null,
       "semantic_assertions": [],
-      "topology_dependencies": []
+      "topology_dependencies": [
+        "TOPO-TOKEN-ACTOR",
+        "TOPO-ACTOR"
+      ],
+      "server_case_plan": "CRM-014",
+      "cleanup_contract": {
+        "mode": "SCOPED_RESTORE_PLUS_GLOBAL_PUBLIC_DATA_HASH",
+        "must_restore_exactly": true,
+        "fail_stop": true
+      }
     },
     {
       "test_id": "CRM-015",
@@ -3729,7 +3452,12 @@
         "TOPO-ACTOR",
         "TOPO-LIST"
       ],
-      "server_case_plan": "CRM-015"
+      "server_case_plan": "CRM-015",
+      "cleanup_contract": {
+        "mode": "SCOPED_RESTORE_PLUS_GLOBAL_PUBLIC_DATA_HASH",
+        "must_restore_exactly": true,
+        "fail_stop": true
+      }
     },
     {
       "test_id": "FUN-001",
@@ -3812,44 +3540,24 @@
         "response_relation": null
       },
       "mutation_probe_plan": {
-        "before": [
-          {
-            "method": "GET",
-            "path_template": "/rest/v1/leads?id=eq.${TARGET_LEAD_ID}&select=id,empresa_id,corretor_id,lote_id,lista_id,status,funil_estagio_id,feedback&order=id.asc",
-            "auth_token_var": "EVIDENCE_OBSERVER_TOKEN",
-            "headers_template": {},
-            "body_template": null
-          },
-          {
-            "method": "GET",
-            "path_template": "/rest/v1/funil_movimentacoes?lead_id=eq.${TARGET_LEAD_ID}&select=id,lead_id,corretor_id,estagio_id,empresa_id,origem_evento,motivo&order=id.asc",
-            "auth_token_var": "EVIDENCE_OBSERVER_TOKEN",
-            "headers_template": {},
-            "body_template": null
-          }
-        ],
-        "after": [
-          {
-            "method": "GET",
-            "path_template": "/rest/v1/leads?id=eq.${TARGET_LEAD_ID}&select=id,empresa_id,corretor_id,lote_id,lista_id,status,funil_estagio_id,feedback&order=id.asc",
-            "auth_token_var": "EVIDENCE_OBSERVER_TOKEN",
-            "headers_template": {},
-            "body_template": null
-          },
-          {
-            "method": "GET",
-            "path_template": "/rest/v1/funil_movimentacoes?lead_id=eq.${TARGET_LEAD_ID}&select=id,lead_id,corretor_id,estagio_id,empresa_id,origem_evento,motivo&order=id.asc",
-            "auth_token_var": "EVIDENCE_OBSERVER_TOKEN",
-            "headers_template": {},
-            "body_template": null
-          }
-        ],
+        "channel": "SERVER_SQL_OWNER",
         "expectation": "MUST_EQUAL",
+        "before": [],
+        "after": [],
         "fingerprint": "CANONICAL_JSON_SHA256"
       },
       "concurrency_assertion": null,
       "semantic_assertions": [],
-      "topology_dependencies": []
+      "topology_dependencies": [
+        "TOPO-TOKEN-ACTOR",
+        "TOPO-ACTOR"
+      ],
+      "server_case_plan": "FUN-001",
+      "cleanup_contract": {
+        "mode": "SCOPED_RESTORE_PLUS_GLOBAL_PUBLIC_DATA_HASH",
+        "must_restore_exactly": true,
+        "fail_stop": true
+      }
     },
     {
       "test_id": "FUN-002",
@@ -3928,44 +3636,26 @@
         "response_relation": null
       },
       "mutation_probe_plan": {
-        "before": [
-          {
-            "method": "GET",
-            "path_template": "/rest/v1/leads?id=eq.${TARGET_LEAD_ID}&select=id,empresa_id,corretor_id,lote_id,lista_id,status,funil_estagio_id,feedback&order=id.asc",
-            "auth_token_var": "EVIDENCE_OBSERVER_TOKEN",
-            "headers_template": {},
-            "body_template": null
-          },
-          {
-            "method": "GET",
-            "path_template": "/rest/v1/funil_movimentacoes?lead_id=eq.${TARGET_LEAD_ID}&select=id,lead_id,corretor_id,estagio_id,empresa_id,origem_evento,motivo&order=id.asc",
-            "auth_token_var": "EVIDENCE_OBSERVER_TOKEN",
-            "headers_template": {},
-            "body_template": null
-          }
-        ],
-        "after": [
-          {
-            "method": "GET",
-            "path_template": "/rest/v1/leads?id=eq.${TARGET_LEAD_ID}&select=id,empresa_id,corretor_id,lote_id,lista_id,status,funil_estagio_id,feedback&order=id.asc",
-            "auth_token_var": "EVIDENCE_OBSERVER_TOKEN",
-            "headers_template": {},
-            "body_template": null
-          },
-          {
-            "method": "GET",
-            "path_template": "/rest/v1/funil_movimentacoes?lead_id=eq.${TARGET_LEAD_ID}&select=id,lead_id,corretor_id,estagio_id,empresa_id,origem_evento,motivo&order=id.asc",
-            "auth_token_var": "EVIDENCE_OBSERVER_TOKEN",
-            "headers_template": {},
-            "body_template": null
-          }
-        ],
+        "channel": "SERVER_SQL_OWNER",
         "expectation": "MUST_EQUAL",
+        "before": [],
+        "after": [],
         "fingerprint": "CANONICAL_JSON_SHA256"
       },
       "concurrency_assertion": null,
       "semantic_assertions": [],
-      "topology_dependencies": []
+      "topology_dependencies": [
+        "TOPO-TOKEN-ACTOR",
+        "TOPO-ACTOR",
+        "TOPO-MOVEMENT",
+        "TOPO-TARGET-LEAD"
+      ],
+      "server_case_plan": "FUN-002",
+      "cleanup_contract": {
+        "mode": "SCOPED_RESTORE_PLUS_GLOBAL_PUBLIC_DATA_HASH",
+        "must_restore_exactly": true,
+        "fail_stop": true
+      }
     },
     {
       "test_id": "FUN-003",
@@ -4039,44 +3729,26 @@
         "response_relation": null
       },
       "mutation_probe_plan": {
-        "before": [
-          {
-            "method": "GET",
-            "path_template": "/rest/v1/leads?id=eq.${TARGET_LEAD_ID}&select=id,empresa_id,corretor_id,lote_id,lista_id,status,funil_estagio_id,feedback&order=id.asc",
-            "auth_token_var": "EVIDENCE_OBSERVER_TOKEN",
-            "headers_template": {},
-            "body_template": null
-          },
-          {
-            "method": "GET",
-            "path_template": "/rest/v1/funil_movimentacoes?lead_id=eq.${TARGET_LEAD_ID}&select=id,lead_id,corretor_id,estagio_id,empresa_id,origem_evento,motivo&order=id.asc",
-            "auth_token_var": "EVIDENCE_OBSERVER_TOKEN",
-            "headers_template": {},
-            "body_template": null
-          }
-        ],
-        "after": [
-          {
-            "method": "GET",
-            "path_template": "/rest/v1/leads?id=eq.${TARGET_LEAD_ID}&select=id,empresa_id,corretor_id,lote_id,lista_id,status,funil_estagio_id,feedback&order=id.asc",
-            "auth_token_var": "EVIDENCE_OBSERVER_TOKEN",
-            "headers_template": {},
-            "body_template": null
-          },
-          {
-            "method": "GET",
-            "path_template": "/rest/v1/funil_movimentacoes?lead_id=eq.${TARGET_LEAD_ID}&select=id,lead_id,corretor_id,estagio_id,empresa_id,origem_evento,motivo&order=id.asc",
-            "auth_token_var": "EVIDENCE_OBSERVER_TOKEN",
-            "headers_template": {},
-            "body_template": null
-          }
-        ],
+        "channel": "SERVER_SQL_OWNER",
         "expectation": "MUST_EQUAL",
+        "before": [],
+        "after": [],
         "fingerprint": "CANONICAL_JSON_SHA256"
       },
       "concurrency_assertion": null,
       "semantic_assertions": [],
-      "topology_dependencies": []
+      "topology_dependencies": [
+        "TOPO-TOKEN-ACTOR",
+        "TOPO-ACTOR",
+        "TOPO-MOVEMENT",
+        "TOPO-TARGET-LEAD"
+      ],
+      "server_case_plan": "FUN-003",
+      "cleanup_contract": {
+        "mode": "SCOPED_RESTORE_PLUS_GLOBAL_PUBLIC_DATA_HASH",
+        "must_restore_exactly": true,
+        "fail_stop": true
+      }
     },
     {
       "test_id": "FUN-004",
@@ -4155,47 +3827,26 @@
         "response_relation": null
       },
       "mutation_probe_plan": {
-        "before": [
-          {
-            "method": "GET",
-            "path_template": "/rest/v1/leads?id=eq.${TARGET_LEAD_ID}&select=id,empresa_id,corretor_id,lote_id,lista_id,status,funil_estagio_id,feedback&order=id.asc",
-            "auth_token_var": "EVIDENCE_OBSERVER_TOKEN",
-            "headers_template": {},
-            "body_template": null
-          },
-          {
-            "method": "GET",
-            "path_template": "/rest/v1/funil_movimentacoes?lead_id=eq.${TARGET_LEAD_ID}&select=id,lead_id,corretor_id,estagio_id,empresa_id,origem_evento,motivo&order=id.asc",
-            "auth_token_var": "EVIDENCE_OBSERVER_TOKEN",
-            "headers_template": {},
-            "body_template": null
-          }
-        ],
-        "after": [
-          {
-            "method": "GET",
-            "path_template": "/rest/v1/leads?id=eq.${TARGET_LEAD_ID}&select=id,empresa_id,corretor_id,lote_id,lista_id,status,funil_estagio_id,feedback&order=id.asc",
-            "auth_token_var": "EVIDENCE_OBSERVER_TOKEN",
-            "headers_template": {},
-            "body_template": null
-          },
-          {
-            "method": "GET",
-            "path_template": "/rest/v1/funil_movimentacoes?lead_id=eq.${TARGET_LEAD_ID}&select=id,lead_id,corretor_id,estagio_id,empresa_id,origem_evento,motivo&order=id.asc",
-            "auth_token_var": "EVIDENCE_OBSERVER_TOKEN",
-            "headers_template": {},
-            "body_template": null
-          }
-        ],
+        "channel": "SERVER_SQL_OWNER",
         "expectation": "MUST_EQUAL",
+        "before": [],
+        "after": [],
         "fingerprint": "CANONICAL_JSON_SHA256"
       },
       "concurrency_assertion": null,
       "semantic_assertions": [],
       "topology_dependencies": [
         "TOPO-TARGET-LEAD",
-        "TOPO-FOREIGN-STAGE"
-      ]
+        "TOPO-FOREIGN-STAGE",
+        "TOPO-TOKEN-ACTOR",
+        "TOPO-ACTOR"
+      ],
+      "server_case_plan": "FUN-004",
+      "cleanup_contract": {
+        "mode": "SCOPED_RESTORE_PLUS_GLOBAL_PUBLIC_DATA_HASH",
+        "must_restore_exactly": true,
+        "fail_stop": true
+      }
     },
     {
       "test_id": "FUN-005",
@@ -4274,47 +3925,26 @@
         "response_relation": null
       },
       "mutation_probe_plan": {
-        "before": [
-          {
-            "method": "GET",
-            "path_template": "/rest/v1/leads?id=eq.${TARGET_LEAD_ID}&select=id,empresa_id,corretor_id,lote_id,lista_id,status,funil_estagio_id,feedback&order=id.asc",
-            "auth_token_var": "EVIDENCE_OBSERVER_TOKEN",
-            "headers_template": {},
-            "body_template": null
-          },
-          {
-            "method": "GET",
-            "path_template": "/rest/v1/funil_movimentacoes?lead_id=eq.${TARGET_LEAD_ID}&select=id,lead_id,corretor_id,estagio_id,empresa_id,origem_evento,motivo&order=id.asc",
-            "auth_token_var": "EVIDENCE_OBSERVER_TOKEN",
-            "headers_template": {},
-            "body_template": null
-          }
-        ],
-        "after": [
-          {
-            "method": "GET",
-            "path_template": "/rest/v1/leads?id=eq.${TARGET_LEAD_ID}&select=id,empresa_id,corretor_id,lote_id,lista_id,status,funil_estagio_id,feedback&order=id.asc",
-            "auth_token_var": "EVIDENCE_OBSERVER_TOKEN",
-            "headers_template": {},
-            "body_template": null
-          },
-          {
-            "method": "GET",
-            "path_template": "/rest/v1/funil_movimentacoes?lead_id=eq.${TARGET_LEAD_ID}&select=id,lead_id,corretor_id,estagio_id,empresa_id,origem_evento,motivo&order=id.asc",
-            "auth_token_var": "EVIDENCE_OBSERVER_TOKEN",
-            "headers_template": {},
-            "body_template": null
-          }
-        ],
+        "channel": "SERVER_SQL_OWNER",
         "expectation": "MUST_EQUAL",
+        "before": [],
+        "after": [],
         "fingerprint": "CANONICAL_JSON_SHA256"
       },
       "concurrency_assertion": null,
       "semantic_assertions": [],
       "topology_dependencies": [
         "TOPO-TARGET-LEAD",
-        "TOPO-INACTIVE-STAGE"
-      ]
+        "TOPO-INACTIVE-STAGE",
+        "TOPO-TOKEN-ACTOR",
+        "TOPO-ACTOR"
+      ],
+      "server_case_plan": "FUN-005",
+      "cleanup_contract": {
+        "mode": "SCOPED_RESTORE_PLUS_GLOBAL_PUBLIC_DATA_HASH",
+        "must_restore_exactly": true,
+        "fail_stop": true
+      }
     },
     {
       "test_id": "FUN-006",
@@ -4348,8 +3978,8 @@
       "synthetic_actor": "SYNTHETIC_FIXTURE_REQUIRED",
       "actor_role": "REQUIRED_AT_EXECUTION",
       "actor_company_team": "SYNTHETIC_FIXTURE_REQUIRED",
-      "preconditions": "Exact application/migration artifacts verified; synthetic fixture prepared; separate execution authorization recorded.",
-      "action_request": "Attempt invalid funnel transition.",
+      "preconditions": "Exact application/migration artifacts verified; conditional execution requires FUNNEL_TRANSITION_RULES_ENABLED=true and a fixture-defined INVALID_TRANSITION_STAGE_ID.",
+      "action_request": "When funnel transition rules exist in the fixture, attempt an invalid transition and require denial; otherwise record NOT_APPLICABLE, never PASS.",
       "sanitized_payload_description": "Synthetic identifiers and non-PII values only; secrets/tokens supplied out-of-repo at execution.",
       "expected_authorization_result": "DENY",
       "expected_data_mutation": "ZERO",
@@ -4393,44 +4023,31 @@
         "response_relation": null
       },
       "mutation_probe_plan": {
-        "before": [
-          {
-            "method": "GET",
-            "path_template": "/rest/v1/leads?id=eq.${TARGET_LEAD_ID}&select=id,empresa_id,corretor_id,lote_id,lista_id,status,funil_estagio_id,feedback&order=id.asc",
-            "auth_token_var": "EVIDENCE_OBSERVER_TOKEN",
-            "headers_template": {},
-            "body_template": null
-          },
-          {
-            "method": "GET",
-            "path_template": "/rest/v1/funil_movimentacoes?lead_id=eq.${TARGET_LEAD_ID}&select=id,lead_id,corretor_id,estagio_id,empresa_id,origem_evento,motivo&order=id.asc",
-            "auth_token_var": "EVIDENCE_OBSERVER_TOKEN",
-            "headers_template": {},
-            "body_template": null
-          }
-        ],
-        "after": [
-          {
-            "method": "GET",
-            "path_template": "/rest/v1/leads?id=eq.${TARGET_LEAD_ID}&select=id,empresa_id,corretor_id,lote_id,lista_id,status,funil_estagio_id,feedback&order=id.asc",
-            "auth_token_var": "EVIDENCE_OBSERVER_TOKEN",
-            "headers_template": {},
-            "body_template": null
-          },
-          {
-            "method": "GET",
-            "path_template": "/rest/v1/funil_movimentacoes?lead_id=eq.${TARGET_LEAD_ID}&select=id,lead_id,corretor_id,estagio_id,empresa_id,origem_evento,motivo&order=id.asc",
-            "auth_token_var": "EVIDENCE_OBSERVER_TOKEN",
-            "headers_template": {},
-            "body_template": null
-          }
-        ],
+        "channel": "SERVER_SQL_OWNER",
         "expectation": "MUST_EQUAL",
+        "before": [],
+        "after": [],
         "fingerprint": "CANONICAL_JSON_SHA256"
       },
       "concurrency_assertion": null,
       "semantic_assertions": [],
-      "topology_dependencies": []
+      "topology_dependencies": [
+        "TOPO-FUNNEL-TRANSITION-RULES",
+        "TOPO-TOKEN-ACTOR",
+        "TOPO-ACTOR"
+      ],
+      "applicability": {
+        "mode": "FIXTURE_BOOLEAN",
+        "var": "FUNNEL_TRANSITION_RULES_ENABLED",
+        "execute_when": true,
+        "otherwise": "NOT_APPLICABLE"
+      },
+      "server_case_plan": "FUN-006",
+      "cleanup_contract": {
+        "mode": "SCOPED_RESTORE_PLUS_GLOBAL_PUBLIC_DATA_HASH",
+        "must_restore_exactly": true,
+        "fail_stop": true
+      }
     },
     {
       "test_id": "FUN-007",
@@ -4549,7 +4166,12 @@
         "TOPO-VALID-STAGE",
         "TOPO-BASE-VALID-STAGE-DIFFER"
       ],
-      "server_case_plan": "FUN-007"
+      "server_case_plan": "FUN-007",
+      "cleanup_contract": {
+        "mode": "SCOPED_RESTORE_PLUS_GLOBAL_PUBLIC_DATA_HASH",
+        "must_restore_exactly": true,
+        "fail_stop": true
+      }
     },
     {
       "test_id": "FUN-008",
@@ -4688,7 +4310,12 @@
         "TOPO-VALID-STAGE",
         "TOPO-BASE-VALID-STAGE-DIFFER"
       ],
-      "server_case_plan": "FUN-008"
+      "server_case_plan": "FUN-008",
+      "cleanup_contract": {
+        "mode": "SCOPED_RESTORE_PLUS_GLOBAL_PUBLIC_DATA_HASH",
+        "must_restore_exactly": true,
+        "fail_stop": true
+      }
     },
     {
       "test_id": "ACL-001",
@@ -4761,30 +4388,24 @@
         }
       },
       "mutation_probe_plan": {
-        "before": [
-          {
-            "method": "GET",
-            "path_template": "/rest/v1/lista_visibilidade?lista_id=eq.${LISTA_ID}&select=lista_id,empresa_id,target_type,target_id&order=target_type.asc,target_id.asc",
-            "auth_token_var": "EVIDENCE_OBSERVER_TOKEN",
-            "headers_template": {},
-            "body_template": null
-          }
-        ],
-        "after": [
-          {
-            "method": "GET",
-            "path_template": "/rest/v1/lista_visibilidade?lista_id=eq.${LISTA_ID}&select=lista_id,empresa_id,target_type,target_id&order=target_type.asc,target_id.asc",
-            "auth_token_var": "EVIDENCE_OBSERVER_TOKEN",
-            "headers_template": {},
-            "body_template": null
-          }
-        ],
+        "channel": "SERVER_SQL_OWNER",
         "expectation": "MUST_EQUAL",
+        "before": [],
+        "after": [],
         "fingerprint": "CANONICAL_JSON_SHA256"
       },
       "concurrency_assertion": null,
       "semantic_assertions": [],
-      "topology_dependencies": []
+      "topology_dependencies": [
+        "TOPO-TOKEN-ACTOR",
+        "TOPO-ACTOR"
+      ],
+      "server_case_plan": "ACL-001",
+      "cleanup_contract": {
+        "mode": "SCOPED_RESTORE_PLUS_GLOBAL_PUBLIC_DATA_HASH",
+        "must_restore_exactly": true,
+        "fail_stop": true
+      }
     },
     {
       "test_id": "ACL-002",
@@ -4892,9 +4513,17 @@
         "TOPO-TOKEN-MANAGER",
         "TOPO-MANAGER",
         "TOPO-LIST",
-        "TOPO-TARGET-CORRETOR"
+        "TOPO-TARGET-CORRETOR",
+        "TOPO-MANAGED-TIME",
+        "TOPO-MANAGER-LIST-SCOPE",
+        "TOPO-MANAGER-TARGET-SCOPE"
       ],
-      "server_case_plan": "ACL-002"
+      "server_case_plan": "ACL-002",
+      "cleanup_contract": {
+        "mode": "SCOPED_RESTORE_PLUS_GLOBAL_PUBLIC_DATA_HASH",
+        "must_restore_exactly": true,
+        "fail_stop": true
+      }
     },
     {
       "test_id": "ACL-003",
@@ -5004,7 +4633,12 @@
         "TOPO-LIST",
         "TOPO-TARGET-CORRETOR"
       ],
-      "server_case_plan": "ACL-003"
+      "server_case_plan": "ACL-003",
+      "cleanup_contract": {
+        "mode": "SCOPED_RESTORE_PLUS_GLOBAL_PUBLIC_DATA_HASH",
+        "must_restore_exactly": true,
+        "fail_stop": true
+      }
     },
     {
       "test_id": "ACL-004",
@@ -5111,9 +4745,16 @@
       "topology_dependencies": [
         "TOPO-TOKEN-ROOT",
         "TOPO-LIST",
-        "TOPO-TARGET-CORRETOR"
+        "TOPO-TARGET-CORRETOR",
+        "TOPO-ROOT-PROFILE",
+        "TOPO-ROOT-AUTHORITY"
       ],
-      "server_case_plan": "ACL-004"
+      "server_case_plan": "ACL-004",
+      "cleanup_contract": {
+        "mode": "SCOPED_RESTORE_PLUS_GLOBAL_PUBLIC_DATA_HASH",
+        "must_restore_exactly": true,
+        "fail_stop": true
+      }
     },
     {
       "test_id": "ACL-005",
@@ -5186,30 +4827,24 @@
         }
       },
       "mutation_probe_plan": {
-        "before": [
-          {
-            "method": "GET",
-            "path_template": "/rest/v1/lista_visibilidade?lista_id=eq.${LISTA_ID}&select=lista_id,empresa_id,target_type,target_id&order=target_type.asc,target_id.asc",
-            "auth_token_var": "EVIDENCE_OBSERVER_TOKEN",
-            "headers_template": {},
-            "body_template": null
-          }
-        ],
-        "after": [
-          {
-            "method": "GET",
-            "path_template": "/rest/v1/lista_visibilidade?lista_id=eq.${LISTA_ID}&select=lista_id,empresa_id,target_type,target_id&order=target_type.asc,target_id.asc",
-            "auth_token_var": "EVIDENCE_OBSERVER_TOKEN",
-            "headers_template": {},
-            "body_template": null
-          }
-        ],
+        "channel": "SERVER_SQL_OWNER",
         "expectation": "MUST_EQUAL",
+        "before": [],
+        "after": [],
         "fingerprint": "CANONICAL_JSON_SHA256"
       },
       "concurrency_assertion": null,
       "semantic_assertions": [],
-      "topology_dependencies": []
+      "topology_dependencies": [
+        "TOPO-TOKEN-ADMIN",
+        "TOPO-ADMIN"
+      ],
+      "server_case_plan": "ACL-005",
+      "cleanup_contract": {
+        "mode": "SCOPED_RESTORE_PLUS_GLOBAL_PUBLIC_DATA_HASH",
+        "must_restore_exactly": true,
+        "fail_stop": true
+      }
     },
     {
       "test_id": "ACL-006",
@@ -5282,30 +4917,24 @@
         }
       },
       "mutation_probe_plan": {
-        "before": [
-          {
-            "method": "GET",
-            "path_template": "/rest/v1/lista_visibilidade?lista_id=eq.${LISTA_ID}&select=lista_id,empresa_id,target_type,target_id&order=target_type.asc,target_id.asc",
-            "auth_token_var": "EVIDENCE_OBSERVER_TOKEN",
-            "headers_template": {},
-            "body_template": null
-          }
-        ],
-        "after": [
-          {
-            "method": "GET",
-            "path_template": "/rest/v1/lista_visibilidade?lista_id=eq.${LISTA_ID}&select=lista_id,empresa_id,target_type,target_id&order=target_type.asc,target_id.asc",
-            "auth_token_var": "EVIDENCE_OBSERVER_TOKEN",
-            "headers_template": {},
-            "body_template": null
-          }
-        ],
+        "channel": "SERVER_SQL_OWNER",
         "expectation": "MUST_EQUAL",
+        "before": [],
+        "after": [],
         "fingerprint": "CANONICAL_JSON_SHA256"
       },
       "concurrency_assertion": null,
       "semantic_assertions": [],
-      "topology_dependencies": []
+      "topology_dependencies": [
+        "TOPO-TOKEN-ADMIN",
+        "TOPO-ADMIN"
+      ],
+      "server_case_plan": "ACL-006",
+      "cleanup_contract": {
+        "mode": "SCOPED_RESTORE_PLUS_GLOBAL_PUBLIC_DATA_HASH",
+        "must_restore_exactly": true,
+        "fail_stop": true
+      }
     },
     {
       "test_id": "ACL-007",
@@ -5378,39 +5007,10 @@
         }
       },
       "mutation_probe_plan": {
-        "before": [
-          {
-            "method": "GET",
-            "path_template": "/rest/v1/lista_visibilidade?lista_id=eq.${LISTA_ID}&select=lista_id,empresa_id,target_type,target_id&order=target_type.asc,target_id.asc",
-            "auth_token_var": "EVIDENCE_OBSERVER_TOKEN",
-            "headers_template": {},
-            "body_template": null
-          },
-          {
-            "method": "GET",
-            "path_template": "/rest/v1/corretores?id=eq.${FOREIGN_CORRETOR_ID}&select=id,empresa_id,time_id,role,is_admin_local,is_gestor,ativo,apto_para_receber,must_change_password,user_id",
-            "auth_token_var": "EVIDENCE_OBSERVER_TOKEN",
-            "headers_template": {},
-            "body_template": null
-          }
-        ],
-        "after": [
-          {
-            "method": "GET",
-            "path_template": "/rest/v1/lista_visibilidade?lista_id=eq.${LISTA_ID}&select=lista_id,empresa_id,target_type,target_id&order=target_type.asc,target_id.asc",
-            "auth_token_var": "EVIDENCE_OBSERVER_TOKEN",
-            "headers_template": {},
-            "body_template": null
-          },
-          {
-            "method": "GET",
-            "path_template": "/rest/v1/corretores?id=eq.${FOREIGN_CORRETOR_ID}&select=id,empresa_id,time_id,role,is_admin_local,is_gestor,ativo,apto_para_receber,must_change_password,user_id",
-            "auth_token_var": "EVIDENCE_OBSERVER_TOKEN",
-            "headers_template": {},
-            "body_template": null
-          }
-        ],
+        "channel": "SERVER_SQL_OWNER",
         "expectation": "MUST_EQUAL",
+        "before": [],
+        "after": [],
         "fingerprint": "CANONICAL_JSON_SHA256"
       },
       "concurrency_assertion": null,
@@ -5419,7 +5019,13 @@
         "TOPO-TOKEN-MANAGER",
         "TOPO-MANAGER",
         "TOPO-FOREIGN-CORRETOR"
-      ]
+      ],
+      "server_case_plan": "ACL-007",
+      "cleanup_contract": {
+        "mode": "SCOPED_RESTORE_PLUS_GLOBAL_PUBLIC_DATA_HASH",
+        "must_restore_exactly": true,
+        "fail_stop": true
+      }
     },
     {
       "test_id": "ACL-008",
@@ -5495,30 +5101,24 @@
         }
       },
       "mutation_probe_plan": {
-        "before": [
-          {
-            "method": "GET",
-            "path_template": "/rest/v1/lista_visibilidade?lista_id=eq.${LISTA_ID}&select=lista_id,empresa_id,target_type,target_id&order=target_type.asc,target_id.asc",
-            "auth_token_var": "EVIDENCE_OBSERVER_TOKEN",
-            "headers_template": {},
-            "body_template": null
-          }
-        ],
-        "after": [
-          {
-            "method": "GET",
-            "path_template": "/rest/v1/lista_visibilidade?lista_id=eq.${LISTA_ID}&select=lista_id,empresa_id,target_type,target_id&order=target_type.asc,target_id.asc",
-            "auth_token_var": "EVIDENCE_OBSERVER_TOKEN",
-            "headers_template": {},
-            "body_template": null
-          }
-        ],
+        "channel": "SERVER_SQL_OWNER",
         "expectation": "MUST_EQUAL",
+        "before": [],
+        "after": [],
         "fingerprint": "CANONICAL_JSON_SHA256"
       },
       "concurrency_assertion": null,
       "semantic_assertions": [],
-      "topology_dependencies": []
+      "topology_dependencies": [
+        "TOPO-TOKEN-ACTOR",
+        "TOPO-ACTOR"
+      ],
+      "server_case_plan": "ACL-008",
+      "cleanup_contract": {
+        "mode": "SCOPED_RESTORE_PLUS_GLOBAL_PUBLIC_DATA_HASH",
+        "must_restore_exactly": true,
+        "fail_stop": true
+      }
     },
     {
       "test_id": "ACL-009",
@@ -5591,30 +5191,24 @@
         }
       },
       "mutation_probe_plan": {
-        "before": [
-          {
-            "method": "GET",
-            "path_template": "/rest/v1/lista_visibilidade?lista_id=eq.${LISTA_ID}&select=lista_id,empresa_id,target_type,target_id&order=target_type.asc,target_id.asc",
-            "auth_token_var": "EVIDENCE_OBSERVER_TOKEN",
-            "headers_template": {},
-            "body_template": null
-          }
-        ],
-        "after": [
-          {
-            "method": "GET",
-            "path_template": "/rest/v1/lista_visibilidade?lista_id=eq.${LISTA_ID}&select=lista_id,empresa_id,target_type,target_id&order=target_type.asc,target_id.asc",
-            "auth_token_var": "EVIDENCE_OBSERVER_TOKEN",
-            "headers_template": {},
-            "body_template": null
-          }
-        ],
+        "channel": "SERVER_SQL_OWNER",
         "expectation": "MUST_EQUAL",
+        "before": [],
+        "after": [],
         "fingerprint": "CANONICAL_JSON_SHA256"
       },
       "concurrency_assertion": null,
       "semantic_assertions": [],
-      "topology_dependencies": []
+      "topology_dependencies": [
+        "TOPO-TOKEN-ADMIN",
+        "TOPO-ADMIN"
+      ],
+      "server_case_plan": "ACL-009",
+      "cleanup_contract": {
+        "mode": "SCOPED_RESTORE_PLUS_GLOBAL_PUBLIC_DATA_HASH",
+        "must_restore_exactly": true,
+        "fail_stop": true
+      }
     },
     {
       "test_id": "ACL-010",
@@ -5724,7 +5318,12 @@
         "TOPO-LIST",
         "TOPO-TARGET-CORRETOR"
       ],
-      "server_case_plan": "ACL-010"
+      "server_case_plan": "ACL-010",
+      "cleanup_contract": {
+        "mode": "SCOPED_RESTORE_PLUS_GLOBAL_PUBLIC_DATA_HASH",
+        "must_restore_exactly": true,
+        "fail_stop": true
+      }
     },
     {
       "test_id": "STG-001",
@@ -5746,8 +5345,8 @@
       "synthetic_actor": "SYNTHETIC_FIXTURE_REQUIRED",
       "actor_role": "REQUIRED_AT_EXECUTION",
       "actor_company_team": "SYNTHETIC_FIXTURE_REQUIRED",
-      "preconditions": "Exact application/migration artifacts verified; synthetic fixture prepared; separate execution authorization recorded.",
-      "action_request": "Call listar_funil_estagios without session and require type-stable denial/empty result.",
+      "preconditions": "Exact application/migration artifacts verified; request intentionally omits Authorization/session.",
+      "action_request": "Call listar_funil_estagios without Authorization/session.",
       "sanitized_payload_description": "Synthetic identifiers and non-PII values only; secrets/tokens supplied out-of-repo at execution.",
       "expected_authorization_result": "DENY",
       "expected_data_mutation": "ZERO",
@@ -5772,7 +5371,7 @@
           {
             "method": "POST",
             "path_template": "/rest/v1/rpc/listar_funil_estagios",
-            "auth_token_var": "ACTOR_TOKEN",
+            "auth_token_var": null,
             "headers_template": {
               "Content-Type": "application/json"
             },
@@ -5896,7 +5495,10 @@
       },
       "concurrency_assertion": null,
       "semantic_assertions": [],
-      "topology_dependencies": []
+      "topology_dependencies": [
+        "TOPO-TOKEN-INACTIVE",
+        "TOPO-INACTIVE-PROFILE"
+      ]
     },
     {
       "test_id": "STG-003",
@@ -5993,7 +5595,8 @@
       ],
       "topology_dependencies": [
         "TOPO-ACTOR",
-        "TOPO-OWN-STAGE-SET"
+        "TOPO-OWN-STAGE-SET",
+        "TOPO-TOKEN-ACTOR"
       ]
     },
     {
@@ -6093,7 +5696,8 @@
       "topology_dependencies": [
         "TOPO-ACTOR",
         "TOPO-OWN-STAGE-SET",
-        "TOPO-FOREIGN-STAGE-SET"
+        "TOPO-FOREIGN-STAGE-SET",
+        "TOPO-TOKEN-ACTOR"
       ]
     },
     {
@@ -6188,7 +5792,10 @@
           ]
         }
       ],
-      "topology_dependencies": []
+      "topology_dependencies": [
+        "TOPO-TOKEN-ACTOR",
+        "TOPO-ACTOR"
+      ]
     },
     {
       "test_id": "STG-006",
@@ -6368,7 +5975,11 @@
       },
       "concurrency_assertion": null,
       "semantic_assertions": [],
-      "topology_dependencies": []
+      "topology_dependencies": [
+        "TOPO-TOKEN-ROOT",
+        "TOPO-ROOT-PROFILE",
+        "TOPO-ROOT-AUTHORITY"
+      ]
     },
     {
       "test_id": "IMP-001",
@@ -6520,7 +6131,12 @@
         "TOPO-ACTOR",
         "TOPO-LIST"
       ],
-      "server_case_plan": "IMP-001"
+      "server_case_plan": "IMP-001",
+      "cleanup_contract": {
+        "mode": "SCOPED_RESTORE_PLUS_GLOBAL_PUBLIC_DATA_HASH",
+        "must_restore_exactly": true,
+        "fail_stop": true
+      }
     },
     {
       "test_id": "IMP-002",
@@ -6703,9 +6319,16 @@
         "TOPO-LIST-A",
         "TOPO-LIST-B",
         "TOPO-TENANTS-A-B-DIFFER",
-        "TOPO-LISTS-A-B-DIFFER"
+        "TOPO-LISTS-A-B-DIFFER",
+        "TOPO-ACTOR-A-PROFILE",
+        "TOPO-ACTOR-B-PROFILE"
       ],
-      "server_case_plan": "IMP-002"
+      "server_case_plan": "IMP-002",
+      "cleanup_contract": {
+        "mode": "SCOPED_RESTORE_PLUS_GLOBAL_PUBLIC_DATA_HASH",
+        "must_restore_exactly": true,
+        "fail_stop": true
+      }
     },
     {
       "test_id": "IMP-003",
@@ -6856,7 +6479,12 @@
         "TOPO-ACTOR",
         "TOPO-LIST"
       ],
-      "server_case_plan": "IMP-003"
+      "server_case_plan": "IMP-003",
+      "cleanup_contract": {
+        "mode": "SCOPED_RESTORE_PLUS_GLOBAL_PUBLIC_DATA_HASH",
+        "must_restore_exactly": true,
+        "fail_stop": true
+      }
     },
     {
       "test_id": "IMP-004",
@@ -6931,30 +6559,24 @@
         "response_relation": null
       },
       "mutation_probe_plan": {
-        "before": [
-          {
-            "method": "GET",
-            "path_template": "/rest/v1/leads?lista_id=eq.${FOREIGN_LISTA_ID}&select=id,empresa_id,corretor_id,lote_id,lista_id,status,funil_estagio_id,telefone_e164&order=id.asc",
-            "auth_token_var": "EVIDENCE_OBSERVER_TOKEN",
-            "headers_template": {},
-            "body_template": null
-          }
-        ],
-        "after": [
-          {
-            "method": "GET",
-            "path_template": "/rest/v1/leads?lista_id=eq.${FOREIGN_LISTA_ID}&select=id,empresa_id,corretor_id,lote_id,lista_id,status,funil_estagio_id,telefone_e164&order=id.asc",
-            "auth_token_var": "EVIDENCE_OBSERVER_TOKEN",
-            "headers_template": {},
-            "body_template": null
-          }
-        ],
+        "channel": "SERVER_SQL_OWNER",
         "expectation": "MUST_EQUAL",
+        "before": [],
+        "after": [],
         "fingerprint": "CANONICAL_JSON_SHA256"
       },
       "concurrency_assertion": null,
       "semantic_assertions": [],
-      "topology_dependencies": []
+      "topology_dependencies": [
+        "TOPO-TOKEN-ACTOR",
+        "TOPO-ACTOR"
+      ],
+      "server_case_plan": "IMP-004",
+      "cleanup_contract": {
+        "mode": "SCOPED_RESTORE_PLUS_GLOBAL_PUBLIC_DATA_HASH",
+        "must_restore_exactly": true,
+        "fail_stop": true
+      }
     },
     {
       "test_id": "IMP-005",
@@ -7025,44 +6647,24 @@
         "response_relation": null
       },
       "mutation_probe_plan": {
-        "before": [
-          {
-            "method": "GET",
-            "path_template": "/rest/v1/leads?lista_id=eq.${LISTA_ID}&select=id,empresa_id,corretor_id,lote_id,lista_id,status,funil_estagio_id,telefone_e164&order=id.asc",
-            "auth_token_var": "EVIDENCE_OBSERVER_TOKEN",
-            "headers_template": {},
-            "body_template": null
-          },
-          {
-            "method": "GET",
-            "path_template": "/rest/v1/lotes?lista_id=eq.${LISTA_ID}&select=id,lista_id,corretor_id,status,data_distribuicao&order=id.asc",
-            "auth_token_var": "EVIDENCE_OBSERVER_TOKEN",
-            "headers_template": {},
-            "body_template": null
-          }
-        ],
-        "after": [
-          {
-            "method": "GET",
-            "path_template": "/rest/v1/leads?lista_id=eq.${LISTA_ID}&select=id,empresa_id,corretor_id,lote_id,lista_id,status,funil_estagio_id,telefone_e164&order=id.asc",
-            "auth_token_var": "EVIDENCE_OBSERVER_TOKEN",
-            "headers_template": {},
-            "body_template": null
-          },
-          {
-            "method": "GET",
-            "path_template": "/rest/v1/lotes?lista_id=eq.${LISTA_ID}&select=id,lista_id,corretor_id,status,data_distribuicao&order=id.asc",
-            "auth_token_var": "EVIDENCE_OBSERVER_TOKEN",
-            "headers_template": {},
-            "body_template": null
-          }
-        ],
+        "channel": "SERVER_SQL_OWNER",
         "expectation": "MUST_EQUAL",
+        "before": [],
+        "after": [],
         "fingerprint": "CANONICAL_JSON_SHA256"
       },
       "concurrency_assertion": null,
       "semantic_assertions": [],
-      "topology_dependencies": []
+      "topology_dependencies": [
+        "TOPO-TOKEN-ACTOR",
+        "TOPO-ACTOR"
+      ],
+      "server_case_plan": "IMP-005",
+      "cleanup_contract": {
+        "mode": "SCOPED_RESTORE_PLUS_GLOBAL_PUBLIC_DATA_HASH",
+        "must_restore_exactly": true,
+        "fail_stop": true
+      }
     },
     {
       "test_id": "IMP-006",
@@ -7135,44 +6737,24 @@
         "response_relation": null
       },
       "mutation_probe_plan": {
-        "before": [
-          {
-            "method": "GET",
-            "path_template": "/rest/v1/leads?lista_id=eq.${LISTA_ID}&select=id,empresa_id,corretor_id,lote_id,lista_id,status,funil_estagio_id,telefone_e164&order=id.asc",
-            "auth_token_var": "EVIDENCE_OBSERVER_TOKEN",
-            "headers_template": {},
-            "body_template": null
-          },
-          {
-            "method": "GET",
-            "path_template": "/rest/v1/lotes?lista_id=eq.${LISTA_ID}&select=id,lista_id,corretor_id,status,data_distribuicao&order=id.asc",
-            "auth_token_var": "EVIDENCE_OBSERVER_TOKEN",
-            "headers_template": {},
-            "body_template": null
-          }
-        ],
-        "after": [
-          {
-            "method": "GET",
-            "path_template": "/rest/v1/leads?lista_id=eq.${LISTA_ID}&select=id,empresa_id,corretor_id,lote_id,lista_id,status,funil_estagio_id,telefone_e164&order=id.asc",
-            "auth_token_var": "EVIDENCE_OBSERVER_TOKEN",
-            "headers_template": {},
-            "body_template": null
-          },
-          {
-            "method": "GET",
-            "path_template": "/rest/v1/lotes?lista_id=eq.${LISTA_ID}&select=id,lista_id,corretor_id,status,data_distribuicao&order=id.asc",
-            "auth_token_var": "EVIDENCE_OBSERVER_TOKEN",
-            "headers_template": {},
-            "body_template": null
-          }
-        ],
+        "channel": "SERVER_SQL_OWNER",
         "expectation": "MUST_EQUAL",
+        "before": [],
+        "after": [],
         "fingerprint": "CANONICAL_JSON_SHA256"
       },
       "concurrency_assertion": null,
       "semantic_assertions": [],
-      "topology_dependencies": []
+      "topology_dependencies": [
+        "TOPO-TOKEN-ACTOR",
+        "TOPO-ACTOR"
+      ],
+      "server_case_plan": "IMP-006",
+      "cleanup_contract": {
+        "mode": "SCOPED_RESTORE_PLUS_GLOBAL_PUBLIC_DATA_HASH",
+        "must_restore_exactly": true,
+        "fail_stop": true
+      }
     },
     {
       "test_id": "IMP-007",
@@ -7248,44 +6830,24 @@
         "response_relation": null
       },
       "mutation_probe_plan": {
-        "before": [
-          {
-            "method": "GET",
-            "path_template": "/rest/v1/leads?lista_id=eq.${LISTA_ID}&select=id,empresa_id,corretor_id,lote_id,lista_id,status,funil_estagio_id,telefone_e164&order=id.asc",
-            "auth_token_var": "EVIDENCE_OBSERVER_TOKEN",
-            "headers_template": {},
-            "body_template": null
-          },
-          {
-            "method": "GET",
-            "path_template": "/rest/v1/lotes?lista_id=eq.${LISTA_ID}&select=id,lista_id,corretor_id,status,data_distribuicao&order=id.asc",
-            "auth_token_var": "EVIDENCE_OBSERVER_TOKEN",
-            "headers_template": {},
-            "body_template": null
-          }
-        ],
-        "after": [
-          {
-            "method": "GET",
-            "path_template": "/rest/v1/leads?lista_id=eq.${LISTA_ID}&select=id,empresa_id,corretor_id,lote_id,lista_id,status,funil_estagio_id,telefone_e164&order=id.asc",
-            "auth_token_var": "EVIDENCE_OBSERVER_TOKEN",
-            "headers_template": {},
-            "body_template": null
-          },
-          {
-            "method": "GET",
-            "path_template": "/rest/v1/lotes?lista_id=eq.${LISTA_ID}&select=id,lista_id,corretor_id,status,data_distribuicao&order=id.asc",
-            "auth_token_var": "EVIDENCE_OBSERVER_TOKEN",
-            "headers_template": {},
-            "body_template": null
-          }
-        ],
+        "channel": "SERVER_SQL_OWNER",
         "expectation": "MUST_EQUAL",
+        "before": [],
+        "after": [],
         "fingerprint": "CANONICAL_JSON_SHA256"
       },
       "concurrency_assertion": null,
       "semantic_assertions": [],
-      "topology_dependencies": []
+      "topology_dependencies": [
+        "TOPO-TOKEN-ACTOR",
+        "TOPO-ACTOR"
+      ],
+      "server_case_plan": "IMP-007",
+      "cleanup_contract": {
+        "mode": "SCOPED_RESTORE_PLUS_GLOBAL_PUBLIC_DATA_HASH",
+        "must_restore_exactly": true,
+        "fail_stop": true
+      }
     },
     {
       "test_id": "IMP-008",
@@ -7359,44 +6921,24 @@
         "response_relation": null
       },
       "mutation_probe_plan": {
-        "before": [
-          {
-            "method": "GET",
-            "path_template": "/rest/v1/leads?lista_id=eq.${LISTA_ID}&select=id,empresa_id,corretor_id,lote_id,lista_id,status,funil_estagio_id,telefone_e164&order=id.asc",
-            "auth_token_var": "EVIDENCE_OBSERVER_TOKEN",
-            "headers_template": {},
-            "body_template": null
-          },
-          {
-            "method": "GET",
-            "path_template": "/rest/v1/lotes?lista_id=eq.${LISTA_ID}&select=id,lista_id,corretor_id,status,data_distribuicao&order=id.asc",
-            "auth_token_var": "EVIDENCE_OBSERVER_TOKEN",
-            "headers_template": {},
-            "body_template": null
-          }
-        ],
-        "after": [
-          {
-            "method": "GET",
-            "path_template": "/rest/v1/leads?lista_id=eq.${LISTA_ID}&select=id,empresa_id,corretor_id,lote_id,lista_id,status,funil_estagio_id,telefone_e164&order=id.asc",
-            "auth_token_var": "EVIDENCE_OBSERVER_TOKEN",
-            "headers_template": {},
-            "body_template": null
-          },
-          {
-            "method": "GET",
-            "path_template": "/rest/v1/lotes?lista_id=eq.${LISTA_ID}&select=id,lista_id,corretor_id,status,data_distribuicao&order=id.asc",
-            "auth_token_var": "EVIDENCE_OBSERVER_TOKEN",
-            "headers_template": {},
-            "body_template": null
-          }
-        ],
+        "channel": "SERVER_SQL_OWNER",
         "expectation": "MUST_EQUAL",
+        "before": [],
+        "after": [],
         "fingerprint": "CANONICAL_JSON_SHA256"
       },
       "concurrency_assertion": null,
       "semantic_assertions": [],
-      "topology_dependencies": []
+      "topology_dependencies": [
+        "TOPO-TOKEN-ACTOR",
+        "TOPO-ACTOR"
+      ],
+      "server_case_plan": "IMP-008",
+      "cleanup_contract": {
+        "mode": "SCOPED_RESTORE_PLUS_GLOBAL_PUBLIC_DATA_HASH",
+        "must_restore_exactly": true,
+        "fail_stop": true
+      }
     },
     {
       "test_id": "IMP-009",
@@ -7477,44 +7019,24 @@
         "response_relation": null
       },
       "mutation_probe_plan": {
-        "before": [
-          {
-            "method": "GET",
-            "path_template": "/rest/v1/leads?lista_id=eq.${LISTA_ID}&select=id,empresa_id,corretor_id,lote_id,lista_id,status,funil_estagio_id,telefone_e164&order=id.asc",
-            "auth_token_var": "EVIDENCE_OBSERVER_TOKEN",
-            "headers_template": {},
-            "body_template": null
-          },
-          {
-            "method": "GET",
-            "path_template": "/rest/v1/lotes?lista_id=eq.${LISTA_ID}&select=id,lista_id,corretor_id,status,data_distribuicao&order=id.asc",
-            "auth_token_var": "EVIDENCE_OBSERVER_TOKEN",
-            "headers_template": {},
-            "body_template": null
-          }
-        ],
-        "after": [
-          {
-            "method": "GET",
-            "path_template": "/rest/v1/leads?lista_id=eq.${LISTA_ID}&select=id,empresa_id,corretor_id,lote_id,lista_id,status,funil_estagio_id,telefone_e164&order=id.asc",
-            "auth_token_var": "EVIDENCE_OBSERVER_TOKEN",
-            "headers_template": {},
-            "body_template": null
-          },
-          {
-            "method": "GET",
-            "path_template": "/rest/v1/lotes?lista_id=eq.${LISTA_ID}&select=id,lista_id,corretor_id,status,data_distribuicao&order=id.asc",
-            "auth_token_var": "EVIDENCE_OBSERVER_TOKEN",
-            "headers_template": {},
-            "body_template": null
-          }
-        ],
+        "channel": "SERVER_SQL_OWNER",
         "expectation": "MUST_EQUAL",
+        "before": [],
+        "after": [],
         "fingerprint": "CANONICAL_JSON_SHA256"
       },
       "concurrency_assertion": null,
       "semantic_assertions": [],
-      "topology_dependencies": []
+      "topology_dependencies": [
+        "TOPO-TOKEN-ACTOR",
+        "TOPO-ACTOR"
+      ],
+      "server_case_plan": "IMP-009",
+      "cleanup_contract": {
+        "mode": "SCOPED_RESTORE_PLUS_GLOBAL_PUBLIC_DATA_HASH",
+        "must_restore_exactly": true,
+        "fail_stop": true
+      }
     },
     {
       "test_id": "IMP-010",
@@ -7644,7 +7166,12 @@
         "TOPO-ACTOR",
         "TOPO-LIST"
       ],
-      "server_case_plan": "IMP-010"
+      "server_case_plan": "IMP-010",
+      "cleanup_contract": {
+        "mode": "SCOPED_RESTORE_PLUS_GLOBAL_PUBLIC_DATA_HASH",
+        "must_restore_exactly": true,
+        "fail_stop": true
+      }
     },
     {
       "test_id": "IMP-011",
@@ -7752,7 +7279,12 @@
         "TOPO-ACTOR",
         "TOPO-LIST"
       ],
-      "server_case_plan": "IMP-011"
+      "server_case_plan": "IMP-011",
+      "cleanup_contract": {
+        "mode": "SCOPED_RESTORE_PLUS_GLOBAL_PUBLIC_DATA_HASH",
+        "must_restore_exactly": true,
+        "fail_stop": true
+      }
     },
     {
       "test_id": "IMP-012",
@@ -7827,44 +7359,25 @@
         "response_relation": null
       },
       "mutation_probe_plan": {
-        "before": [
-          {
-            "method": "GET",
-            "path_template": "/rest/v1/leads?lista_id=eq.${LISTA_ID}&select=id,empresa_id,corretor_id,lote_id,lista_id,status,funil_estagio_id,telefone_e164&order=id.asc",
-            "auth_token_var": "EVIDENCE_OBSERVER_TOKEN",
-            "headers_template": {},
-            "body_template": null
-          },
-          {
-            "method": "GET",
-            "path_template": "/rest/v1/lotes?lista_id=eq.${LISTA_ID}&select=id,lista_id,corretor_id,status,data_distribuicao&order=id.asc",
-            "auth_token_var": "EVIDENCE_OBSERVER_TOKEN",
-            "headers_template": {},
-            "body_template": null
-          }
-        ],
-        "after": [
-          {
-            "method": "GET",
-            "path_template": "/rest/v1/leads?lista_id=eq.${LISTA_ID}&select=id,empresa_id,corretor_id,lote_id,lista_id,status,funil_estagio_id,telefone_e164&order=id.asc",
-            "auth_token_var": "EVIDENCE_OBSERVER_TOKEN",
-            "headers_template": {},
-            "body_template": null
-          },
-          {
-            "method": "GET",
-            "path_template": "/rest/v1/lotes?lista_id=eq.${LISTA_ID}&select=id,lista_id,corretor_id,status,data_distribuicao&order=id.asc",
-            "auth_token_var": "EVIDENCE_OBSERVER_TOKEN",
-            "headers_template": {},
-            "body_template": null
-          }
-        ],
+        "channel": "SERVER_SQL_OWNER",
         "expectation": "MUST_EQUAL",
+        "before": [],
+        "after": [],
         "fingerprint": "CANONICAL_JSON_SHA256"
       },
       "concurrency_assertion": null,
       "semantic_assertions": [],
-      "topology_dependencies": []
+      "topology_dependencies": [
+        "TOPO-TOKEN-ROOT",
+        "TOPO-ROOT-PROFILE",
+        "TOPO-ROOT-AUTHORITY"
+      ],
+      "server_case_plan": "IMP-012",
+      "cleanup_contract": {
+        "mode": "SCOPED_RESTORE_PLUS_GLOBAL_PUBLIC_DATA_HASH",
+        "must_restore_exactly": true,
+        "fail_stop": true
+      }
     },
     {
       "test_id": "IMP-SESSION-LIST-MISMATCH",
@@ -7954,7 +7467,12 @@
         "TOPO-MISMATCH-LIST",
         "TOPO-LIST-MISMATCH-DIFFER"
       ],
-      "server_case_plan": "IMP-SESSION-LIST-MISMATCH"
+      "server_case_plan": "IMP-SESSION-LIST-MISMATCH",
+      "cleanup_contract": {
+        "mode": "SCOPED_RESTORE_PLUS_GLOBAL_PUBLIC_DATA_HASH",
+        "must_restore_exactly": true,
+        "fail_stop": true
+      }
     },
     {
       "test_id": "IMP-SESSION-PAYLOAD-MISMATCH",
@@ -8042,7 +7560,12 @@
         "TOPO-ACTOR",
         "TOPO-LIST"
       ],
-      "server_case_plan": "IMP-SESSION-PAYLOAD-MISMATCH"
+      "server_case_plan": "IMP-SESSION-PAYLOAD-MISMATCH",
+      "cleanup_contract": {
+        "mode": "SCOPED_RESTORE_PLUS_GLOBAL_PUBLIC_DATA_HASH",
+        "must_restore_exactly": true,
+        "fail_stop": true
+      }
     },
     {
       "test_id": "IMP-CLAIMANT-ROLLBACK",
@@ -8092,7 +7615,20 @@
         "expected_persistent_mutation": "ZERO"
       },
       "semantic_assertions": [],
-      "topology_dependencies": []
+      "topology_dependencies": [],
+      "server_case_plan": "IMP-CLAIMANT-ROLLBACK",
+      "mutation_probe_plan": {
+        "channel": "SERVER_SQL_OWNER",
+        "expectation": "MUST_EQUAL",
+        "before": [],
+        "after": [],
+        "fingerprint": "CANONICAL_JSON_SHA256"
+      },
+      "cleanup_contract": {
+        "mode": "SCOPED_RESTORE_PLUS_GLOBAL_PUBLIC_DATA_HASH",
+        "must_restore_exactly": true,
+        "fail_stop": true
+      }
     },
     {
       "test_id": "IMP-INCOMPLETE-STATE",
@@ -8180,7 +7716,12 @@
         "TOPO-ACTOR",
         "TOPO-LIST"
       ],
-      "server_case_plan": "IMP-INCOMPLETE-STATE"
+      "server_case_plan": "IMP-INCOMPLETE-STATE",
+      "cleanup_contract": {
+        "mode": "SCOPED_RESTORE_PLUS_GLOBAL_PUBLIC_DATA_HASH",
+        "must_restore_exactly": true,
+        "fail_stop": true
+      }
     },
     {
       "test_id": "FDB-001",
@@ -8248,44 +7789,24 @@
         }
       },
       "mutation_probe_plan": {
-        "before": [
-          {
-            "method": "GET",
-            "path_template": "/rest/v1/leads?id=eq.${TARGET_LEAD_ID}&select=id,empresa_id,corretor_id,lote_id,lista_id,status,funil_estagio_id,feedback&order=id.asc",
-            "auth_token_var": "EVIDENCE_OBSERVER_TOKEN",
-            "headers_template": {},
-            "body_template": null
-          },
-          {
-            "method": "GET",
-            "path_template": "/rest/v1/funil_movimentacoes?lead_id=eq.${TARGET_LEAD_ID}&select=id,lead_id,corretor_id,estagio_id,empresa_id,origem_evento,motivo&order=id.asc",
-            "auth_token_var": "EVIDENCE_OBSERVER_TOKEN",
-            "headers_template": {},
-            "body_template": null
-          }
-        ],
-        "after": [
-          {
-            "method": "GET",
-            "path_template": "/rest/v1/leads?id=eq.${TARGET_LEAD_ID}&select=id,empresa_id,corretor_id,lote_id,lista_id,status,funil_estagio_id,feedback&order=id.asc",
-            "auth_token_var": "EVIDENCE_OBSERVER_TOKEN",
-            "headers_template": {},
-            "body_template": null
-          },
-          {
-            "method": "GET",
-            "path_template": "/rest/v1/funil_movimentacoes?lead_id=eq.${TARGET_LEAD_ID}&select=id,lead_id,corretor_id,estagio_id,empresa_id,origem_evento,motivo&order=id.asc",
-            "auth_token_var": "EVIDENCE_OBSERVER_TOKEN",
-            "headers_template": {},
-            "body_template": null
-          }
-        ],
+        "channel": "SERVER_SQL_OWNER",
         "expectation": "MUST_EQUAL",
+        "before": [],
+        "after": [],
         "fingerprint": "CANONICAL_JSON_SHA256"
       },
       "concurrency_assertion": null,
       "semantic_assertions": [],
-      "topology_dependencies": []
+      "topology_dependencies": [
+        "TOPO-TOKEN-ACTOR",
+        "TOPO-ACTOR"
+      ],
+      "server_case_plan": "FDB-001",
+      "cleanup_contract": {
+        "mode": "SCOPED_RESTORE_PLUS_GLOBAL_PUBLIC_DATA_HASH",
+        "must_restore_exactly": true,
+        "fail_stop": true
+      }
     },
     {
       "test_id": "FDB-002",
@@ -8353,44 +7874,24 @@
         }
       },
       "mutation_probe_plan": {
-        "before": [
-          {
-            "method": "GET",
-            "path_template": "/rest/v1/leads?id=eq.${TARGET_LEAD_ID}&select=id,empresa_id,corretor_id,lote_id,lista_id,status,funil_estagio_id,feedback&order=id.asc",
-            "auth_token_var": "EVIDENCE_OBSERVER_TOKEN",
-            "headers_template": {},
-            "body_template": null
-          },
-          {
-            "method": "GET",
-            "path_template": "/rest/v1/funil_movimentacoes?lead_id=eq.${TARGET_LEAD_ID}&select=id,lead_id,corretor_id,estagio_id,empresa_id,origem_evento,motivo&order=id.asc",
-            "auth_token_var": "EVIDENCE_OBSERVER_TOKEN",
-            "headers_template": {},
-            "body_template": null
-          }
-        ],
-        "after": [
-          {
-            "method": "GET",
-            "path_template": "/rest/v1/leads?id=eq.${TARGET_LEAD_ID}&select=id,empresa_id,corretor_id,lote_id,lista_id,status,funil_estagio_id,feedback&order=id.asc",
-            "auth_token_var": "EVIDENCE_OBSERVER_TOKEN",
-            "headers_template": {},
-            "body_template": null
-          },
-          {
-            "method": "GET",
-            "path_template": "/rest/v1/funil_movimentacoes?lead_id=eq.${TARGET_LEAD_ID}&select=id,lead_id,corretor_id,estagio_id,empresa_id,origem_evento,motivo&order=id.asc",
-            "auth_token_var": "EVIDENCE_OBSERVER_TOKEN",
-            "headers_template": {},
-            "body_template": null
-          }
-        ],
+        "channel": "SERVER_SQL_OWNER",
         "expectation": "MUST_EQUAL",
+        "before": [],
+        "after": [],
         "fingerprint": "CANONICAL_JSON_SHA256"
       },
       "concurrency_assertion": null,
       "semantic_assertions": [],
-      "topology_dependencies": []
+      "topology_dependencies": [
+        "TOPO-TOKEN-ACTOR",
+        "TOPO-ACTOR"
+      ],
+      "server_case_plan": "FDB-002",
+      "cleanup_contract": {
+        "mode": "SCOPED_RESTORE_PLUS_GLOBAL_PUBLIC_DATA_HASH",
+        "must_restore_exactly": true,
+        "fail_stop": true
+      }
     },
     {
       "test_id": "FDB-003",
@@ -8458,44 +7959,24 @@
         }
       },
       "mutation_probe_plan": {
-        "before": [
-          {
-            "method": "GET",
-            "path_template": "/rest/v1/leads?id=eq.${TARGET_LEAD_ID}&select=id,empresa_id,corretor_id,lote_id,lista_id,status,funil_estagio_id,feedback&order=id.asc",
-            "auth_token_var": "EVIDENCE_OBSERVER_TOKEN",
-            "headers_template": {},
-            "body_template": null
-          },
-          {
-            "method": "GET",
-            "path_template": "/rest/v1/funil_movimentacoes?lead_id=eq.${TARGET_LEAD_ID}&select=id,lead_id,corretor_id,estagio_id,empresa_id,origem_evento,motivo&order=id.asc",
-            "auth_token_var": "EVIDENCE_OBSERVER_TOKEN",
-            "headers_template": {},
-            "body_template": null
-          }
-        ],
-        "after": [
-          {
-            "method": "GET",
-            "path_template": "/rest/v1/leads?id=eq.${TARGET_LEAD_ID}&select=id,empresa_id,corretor_id,lote_id,lista_id,status,funil_estagio_id,feedback&order=id.asc",
-            "auth_token_var": "EVIDENCE_OBSERVER_TOKEN",
-            "headers_template": {},
-            "body_template": null
-          },
-          {
-            "method": "GET",
-            "path_template": "/rest/v1/funil_movimentacoes?lead_id=eq.${TARGET_LEAD_ID}&select=id,lead_id,corretor_id,estagio_id,empresa_id,origem_evento,motivo&order=id.asc",
-            "auth_token_var": "EVIDENCE_OBSERVER_TOKEN",
-            "headers_template": {},
-            "body_template": null
-          }
-        ],
+        "channel": "SERVER_SQL_OWNER",
         "expectation": "MUST_EQUAL",
+        "before": [],
+        "after": [],
         "fingerprint": "CANONICAL_JSON_SHA256"
       },
       "concurrency_assertion": null,
       "semantic_assertions": [],
-      "topology_dependencies": []
+      "topology_dependencies": [
+        "TOPO-TOKEN-ACTOR",
+        "TOPO-ACTOR"
+      ],
+      "server_case_plan": "FDB-003",
+      "cleanup_contract": {
+        "mode": "SCOPED_RESTORE_PLUS_GLOBAL_PUBLIC_DATA_HASH",
+        "must_restore_exactly": true,
+        "fail_stop": true
+      }
     },
     {
       "test_id": "FDB-004",
@@ -8563,44 +8044,24 @@
         }
       },
       "mutation_probe_plan": {
-        "before": [
-          {
-            "method": "GET",
-            "path_template": "/rest/v1/leads?id=eq.${TARGET_LEAD_ID}&select=id,empresa_id,corretor_id,lote_id,lista_id,status,funil_estagio_id,feedback&order=id.asc",
-            "auth_token_var": "EVIDENCE_OBSERVER_TOKEN",
-            "headers_template": {},
-            "body_template": null
-          },
-          {
-            "method": "GET",
-            "path_template": "/rest/v1/funil_movimentacoes?lead_id=eq.${TARGET_LEAD_ID}&select=id,lead_id,corretor_id,estagio_id,empresa_id,origem_evento,motivo&order=id.asc",
-            "auth_token_var": "EVIDENCE_OBSERVER_TOKEN",
-            "headers_template": {},
-            "body_template": null
-          }
-        ],
-        "after": [
-          {
-            "method": "GET",
-            "path_template": "/rest/v1/leads?id=eq.${TARGET_LEAD_ID}&select=id,empresa_id,corretor_id,lote_id,lista_id,status,funil_estagio_id,feedback&order=id.asc",
-            "auth_token_var": "EVIDENCE_OBSERVER_TOKEN",
-            "headers_template": {},
-            "body_template": null
-          },
-          {
-            "method": "GET",
-            "path_template": "/rest/v1/funil_movimentacoes?lead_id=eq.${TARGET_LEAD_ID}&select=id,lead_id,corretor_id,estagio_id,empresa_id,origem_evento,motivo&order=id.asc",
-            "auth_token_var": "EVIDENCE_OBSERVER_TOKEN",
-            "headers_template": {},
-            "body_template": null
-          }
-        ],
+        "channel": "SERVER_SQL_OWNER",
         "expectation": "MUST_EQUAL",
+        "before": [],
+        "after": [],
         "fingerprint": "CANONICAL_JSON_SHA256"
       },
       "concurrency_assertion": null,
       "semantic_assertions": [],
-      "topology_dependencies": []
+      "topology_dependencies": [
+        "TOPO-TOKEN-ACTOR",
+        "TOPO-ACTOR"
+      ],
+      "server_case_plan": "FDB-004",
+      "cleanup_contract": {
+        "mode": "SCOPED_RESTORE_PLUS_GLOBAL_PUBLIC_DATA_HASH",
+        "must_restore_exactly": true,
+        "fail_stop": true
+      }
     },
     {
       "test_id": "FDB-005",
@@ -8668,46 +8129,25 @@
         }
       },
       "mutation_probe_plan": {
-        "before": [
-          {
-            "method": "GET",
-            "path_template": "/rest/v1/leads?id=eq.${WRONG_OWNER_LEAD_ID}&select=id,empresa_id,corretor_id,lote_id,lista_id,status,funil_estagio_id,feedback,feedback_tipo,status_operacional,status_comercial,telefone_e164",
-            "auth_token_var": "EVIDENCE_OBSERVER_TOKEN",
-            "headers_template": {},
-            "body_template": null
-          },
-          {
-            "method": "GET",
-            "path_template": "/rest/v1/funil_movimentacoes?lead_id=eq.${WRONG_OWNER_LEAD_ID}&select=id,lead_id,corretor_id,estagio_id,estagio_anterior_id,empresa_id,origem_evento,motivo&order=id.asc",
-            "auth_token_var": "EVIDENCE_OBSERVER_TOKEN",
-            "headers_template": {},
-            "body_template": null
-          }
-        ],
-        "after": [
-          {
-            "method": "GET",
-            "path_template": "/rest/v1/leads?id=eq.${WRONG_OWNER_LEAD_ID}&select=id,empresa_id,corretor_id,lote_id,lista_id,status,funil_estagio_id,feedback,feedback_tipo,status_operacional,status_comercial,telefone_e164",
-            "auth_token_var": "EVIDENCE_OBSERVER_TOKEN",
-            "headers_template": {},
-            "body_template": null
-          },
-          {
-            "method": "GET",
-            "path_template": "/rest/v1/funil_movimentacoes?lead_id=eq.${WRONG_OWNER_LEAD_ID}&select=id,lead_id,corretor_id,estagio_id,estagio_anterior_id,empresa_id,origem_evento,motivo&order=id.asc",
-            "auth_token_var": "EVIDENCE_OBSERVER_TOKEN",
-            "headers_template": {},
-            "body_template": null
-          }
-        ],
+        "channel": "SERVER_SQL_OWNER",
         "expectation": "MUST_EQUAL",
+        "before": [],
+        "after": [],
         "fingerprint": "CANONICAL_JSON_SHA256"
       },
       "concurrency_assertion": null,
       "semantic_assertions": [],
       "topology_dependencies": [
-        "TOPO-WRONG-OWNER-LEAD"
-      ]
+        "TOPO-WRONG-OWNER-LEAD",
+        "TOPO-TOKEN-ACTOR",
+        "TOPO-ACTOR"
+      ],
+      "server_case_plan": "FDB-005",
+      "cleanup_contract": {
+        "mode": "SCOPED_RESTORE_PLUS_GLOBAL_PUBLIC_DATA_HASH",
+        "must_restore_exactly": true,
+        "fail_stop": true
+      }
     },
     {
       "test_id": "FDB-006",
@@ -8775,46 +8215,25 @@
         }
       },
       "mutation_probe_plan": {
-        "before": [
-          {
-            "method": "GET",
-            "path_template": "/rest/v1/leads?id=eq.${FOREIGN_LEAD_ID}&select=id,empresa_id,corretor_id,lote_id,lista_id,status,funil_estagio_id,feedback,feedback_tipo,status_operacional,status_comercial,telefone_e164",
-            "auth_token_var": "EVIDENCE_OBSERVER_TOKEN",
-            "headers_template": {},
-            "body_template": null
-          },
-          {
-            "method": "GET",
-            "path_template": "/rest/v1/funil_movimentacoes?lead_id=eq.${FOREIGN_LEAD_ID}&select=id,lead_id,corretor_id,estagio_id,estagio_anterior_id,empresa_id,origem_evento,motivo&order=id.asc",
-            "auth_token_var": "EVIDENCE_OBSERVER_TOKEN",
-            "headers_template": {},
-            "body_template": null
-          }
-        ],
-        "after": [
-          {
-            "method": "GET",
-            "path_template": "/rest/v1/leads?id=eq.${FOREIGN_LEAD_ID}&select=id,empresa_id,corretor_id,lote_id,lista_id,status,funil_estagio_id,feedback,feedback_tipo,status_operacional,status_comercial,telefone_e164",
-            "auth_token_var": "EVIDENCE_OBSERVER_TOKEN",
-            "headers_template": {},
-            "body_template": null
-          },
-          {
-            "method": "GET",
-            "path_template": "/rest/v1/funil_movimentacoes?lead_id=eq.${FOREIGN_LEAD_ID}&select=id,lead_id,corretor_id,estagio_id,estagio_anterior_id,empresa_id,origem_evento,motivo&order=id.asc",
-            "auth_token_var": "EVIDENCE_OBSERVER_TOKEN",
-            "headers_template": {},
-            "body_template": null
-          }
-        ],
+        "channel": "SERVER_SQL_OWNER",
         "expectation": "MUST_EQUAL",
+        "before": [],
+        "after": [],
         "fingerprint": "CANONICAL_JSON_SHA256"
       },
       "concurrency_assertion": null,
       "semantic_assertions": [],
       "topology_dependencies": [
-        "TOPO-FOREIGN-LEAD"
-      ]
+        "TOPO-FOREIGN-LEAD",
+        "TOPO-TOKEN-ACTOR",
+        "TOPO-ACTOR"
+      ],
+      "server_case_plan": "FDB-006",
+      "cleanup_contract": {
+        "mode": "SCOPED_RESTORE_PLUS_GLOBAL_PUBLIC_DATA_HASH",
+        "must_restore_exactly": true,
+        "fail_stop": true
+      }
     },
     {
       "test_id": "FDB-007",
@@ -8882,44 +8301,24 @@
         }
       },
       "mutation_probe_plan": {
-        "before": [
-          {
-            "method": "GET",
-            "path_template": "/rest/v1/leads?id=eq.${TARGET_LEAD_ID}&select=id,empresa_id,corretor_id,lote_id,lista_id,status,funil_estagio_id,feedback&order=id.asc",
-            "auth_token_var": "EVIDENCE_OBSERVER_TOKEN",
-            "headers_template": {},
-            "body_template": null
-          },
-          {
-            "method": "GET",
-            "path_template": "/rest/v1/funil_movimentacoes?lead_id=eq.${TARGET_LEAD_ID}&select=id,lead_id,corretor_id,estagio_id,empresa_id,origem_evento,motivo&order=id.asc",
-            "auth_token_var": "EVIDENCE_OBSERVER_TOKEN",
-            "headers_template": {},
-            "body_template": null
-          }
-        ],
-        "after": [
-          {
-            "method": "GET",
-            "path_template": "/rest/v1/leads?id=eq.${TARGET_LEAD_ID}&select=id,empresa_id,corretor_id,lote_id,lista_id,status,funil_estagio_id,feedback&order=id.asc",
-            "auth_token_var": "EVIDENCE_OBSERVER_TOKEN",
-            "headers_template": {},
-            "body_template": null
-          },
-          {
-            "method": "GET",
-            "path_template": "/rest/v1/funil_movimentacoes?lead_id=eq.${TARGET_LEAD_ID}&select=id,lead_id,corretor_id,estagio_id,empresa_id,origem_evento,motivo&order=id.asc",
-            "auth_token_var": "EVIDENCE_OBSERVER_TOKEN",
-            "headers_template": {},
-            "body_template": null
-          }
-        ],
+        "channel": "SERVER_SQL_OWNER",
         "expectation": "MUST_EQUAL",
+        "before": [],
+        "after": [],
         "fingerprint": "CANONICAL_JSON_SHA256"
       },
       "concurrency_assertion": null,
       "semantic_assertions": [],
-      "topology_dependencies": []
+      "topology_dependencies": [
+        "TOPO-TOKEN-INACTIVE",
+        "TOPO-INACTIVE-PROFILE"
+      ],
+      "server_case_plan": "FDB-007",
+      "cleanup_contract": {
+        "mode": "SCOPED_RESTORE_PLUS_GLOBAL_PUBLIC_DATA_HASH",
+        "must_restore_exactly": true,
+        "fail_stop": true
+      }
     },
     {
       "test_id": "FDB-008",
@@ -9050,7 +8449,12 @@
         "TOPO-EM-CONVERSA-STAGE",
         "TOPO-BASE-EM-CONVERSA-DIFFER"
       ],
-      "server_case_plan": "FDB-008"
+      "server_case_plan": "FDB-008",
+      "cleanup_contract": {
+        "mode": "SCOPED_RESTORE_PLUS_GLOBAL_PUBLIC_DATA_HASH",
+        "must_restore_exactly": true,
+        "fail_stop": true
+      }
     },
     {
       "test_id": "FDB-009",
@@ -9181,7 +8585,12 @@
         "TOPO-EM-CONVERSA-STAGE",
         "TOPO-BASE-EM-CONVERSA-DIFFER"
       ],
-      "server_case_plan": "FDB-009"
+      "server_case_plan": "FDB-009",
+      "cleanup_contract": {
+        "mode": "SCOPED_RESTORE_PLUS_GLOBAL_PUBLIC_DATA_HASH",
+        "must_restore_exactly": true,
+        "fail_stop": true
+      }
     },
     {
       "test_id": "FDB-010",
@@ -9249,44 +8658,24 @@
         }
       },
       "mutation_probe_plan": {
-        "before": [
-          {
-            "method": "GET",
-            "path_template": "/rest/v1/leads?id=eq.${TARGET_LEAD_ID}&select=id,empresa_id,corretor_id,lote_id,lista_id,status,funil_estagio_id,feedback&order=id.asc",
-            "auth_token_var": "EVIDENCE_OBSERVER_TOKEN",
-            "headers_template": {},
-            "body_template": null
-          },
-          {
-            "method": "GET",
-            "path_template": "/rest/v1/funil_movimentacoes?lead_id=eq.${TARGET_LEAD_ID}&select=id,lead_id,corretor_id,estagio_id,empresa_id,origem_evento,motivo&order=id.asc",
-            "auth_token_var": "EVIDENCE_OBSERVER_TOKEN",
-            "headers_template": {},
-            "body_template": null
-          }
-        ],
-        "after": [
-          {
-            "method": "GET",
-            "path_template": "/rest/v1/leads?id=eq.${TARGET_LEAD_ID}&select=id,empresa_id,corretor_id,lote_id,lista_id,status,funil_estagio_id,feedback&order=id.asc",
-            "auth_token_var": "EVIDENCE_OBSERVER_TOKEN",
-            "headers_template": {},
-            "body_template": null
-          },
-          {
-            "method": "GET",
-            "path_template": "/rest/v1/funil_movimentacoes?lead_id=eq.${TARGET_LEAD_ID}&select=id,lead_id,corretor_id,estagio_id,empresa_id,origem_evento,motivo&order=id.asc",
-            "auth_token_var": "EVIDENCE_OBSERVER_TOKEN",
-            "headers_template": {},
-            "body_template": null
-          }
-        ],
+        "channel": "SERVER_SQL_OWNER",
         "expectation": "MUST_EQUAL",
+        "before": [],
+        "after": [],
         "fingerprint": "CANONICAL_JSON_SHA256"
       },
       "concurrency_assertion": null,
       "semantic_assertions": [],
-      "topology_dependencies": []
+      "topology_dependencies": [
+        "TOPO-TOKEN-ACTOR",
+        "TOPO-ACTOR"
+      ],
+      "server_case_plan": "FDB-010",
+      "cleanup_contract": {
+        "mode": "SCOPED_RESTORE_PLUS_GLOBAL_PUBLIC_DATA_HASH",
+        "must_restore_exactly": true,
+        "fail_stop": true
+      }
     },
     {
       "test_id": "FDB-011",
@@ -9354,44 +8743,25 @@
         }
       },
       "mutation_probe_plan": {
-        "before": [
-          {
-            "method": "GET",
-            "path_template": "/rest/v1/leads?id=eq.${TARGET_LEAD_ID}&select=id,empresa_id,corretor_id,lote_id,lista_id,status,funil_estagio_id,feedback&order=id.asc",
-            "auth_token_var": "EVIDENCE_OBSERVER_TOKEN",
-            "headers_template": {},
-            "body_template": null
-          },
-          {
-            "method": "GET",
-            "path_template": "/rest/v1/funil_movimentacoes?lead_id=eq.${TARGET_LEAD_ID}&select=id,lead_id,corretor_id,estagio_id,empresa_id,origem_evento,motivo&order=id.asc",
-            "auth_token_var": "EVIDENCE_OBSERVER_TOKEN",
-            "headers_template": {},
-            "body_template": null
-          }
-        ],
-        "after": [
-          {
-            "method": "GET",
-            "path_template": "/rest/v1/leads?id=eq.${TARGET_LEAD_ID}&select=id,empresa_id,corretor_id,lote_id,lista_id,status,funil_estagio_id,feedback&order=id.asc",
-            "auth_token_var": "EVIDENCE_OBSERVER_TOKEN",
-            "headers_template": {},
-            "body_template": null
-          },
-          {
-            "method": "GET",
-            "path_template": "/rest/v1/funil_movimentacoes?lead_id=eq.${TARGET_LEAD_ID}&select=id,lead_id,corretor_id,estagio_id,empresa_id,origem_evento,motivo&order=id.asc",
-            "auth_token_var": "EVIDENCE_OBSERVER_TOKEN",
-            "headers_template": {},
-            "body_template": null
-          }
-        ],
+        "channel": "SERVER_SQL_OWNER",
         "expectation": "MUST_EQUAL",
+        "before": [],
+        "after": [],
         "fingerprint": "CANONICAL_JSON_SHA256"
       },
       "concurrency_assertion": null,
       "semantic_assertions": [],
-      "topology_dependencies": []
+      "topology_dependencies": [
+        "TOPO-TOKEN-ROOT",
+        "TOPO-ROOT-PROFILE",
+        "TOPO-ROOT-AUTHORITY"
+      ],
+      "server_case_plan": "FDB-011",
+      "cleanup_contract": {
+        "mode": "SCOPED_RESTORE_PLUS_GLOBAL_PUBLIC_DATA_HASH",
+        "must_restore_exactly": true,
+        "fail_stop": true
+      }
     },
     {
       "test_id": "ROL-001",
@@ -10208,7 +9578,10 @@
       },
       "concurrency_assertion": null,
       "semantic_assertions": [],
-      "topology_dependencies": []
+      "topology_dependencies": [
+        "TOPO-TOKEN-ACTOR",
+        "TOPO-ACTOR"
+      ]
     }
   ],
   "execution_contract": {
@@ -10227,7 +9600,12 @@
     "server_evidence_channel": "PSQL_POSTGRES_OWNER_NON_PRODUCTION_ONLY",
     "case_isolation": "PER_TEST_CAPTURE_PREPARE_EVIDENCE_CLEANUP_RESTORE",
     "topology_scope": "GLOBAL_PLUS_SELECTED_CASE_DEPENDENCIES_ONLY",
-    "cleanup_verification": "POST_CLEANUP_SHA256_MUST_EQUAL_ORIGINAL"
+    "cleanup_verification": "POST_CLEANUP_SHA256_MUST_EQUAL_ORIGINAL",
+    "failure_isolation": "ALL_MUTATION_CAPABLE_HTTP_CASES_HAVE_SERVER_LIFECYCLE",
+    "cleanup_global_verification": "DETERMINISTIC_PUBLIC_DATA_SHA256_MUST_EQUAL_ORIGINAL",
+    "cleanup_fail_stop": "NO_NEXT_CASE_AFTER_UNRESTORED_STATE",
+    "token_topology_binding": "EVERY_VERSIONED_REQUEST_TOKEN_REQUIRES_IDENTITY_TOPOLOGY",
+    "conditional_tests": "NOT_APPLICABLE_IS_NOT_PASS"
   },
   "fixture_contract": {
     "allowed_top_level_fields": [
@@ -10966,6 +10344,242 @@
           "left": "BASE_STAGE_ID",
           "right": "EM_CONVERSA_STAGE_ID"
         }
+      },
+      {
+        "check_id": "TOPO-TOKEN-INACTIVE",
+        "request": {
+          "method": "GET",
+          "path_template": "/auth/v1/user",
+          "auth_token_var": "INACTIVE_TOKEN",
+          "headers_template": {},
+          "body_template": null
+        },
+        "assertion": {
+          "mode": "OBJECT_FIELD_EQUALS_VAR",
+          "field": "id",
+          "var": "INACTIVE_USER_ID"
+        }
+      },
+      {
+        "check_id": "TOPO-INACTIVE-PROFILE",
+        "request": {
+          "method": "GET",
+          "path_template": "/rest/v1/corretores?id=eq.${INACTIVE_CORRETOR_ID}&select=id,user_id,empresa_id,ativo,apto_para_receber",
+          "auth_token_var": "EVIDENCE_OBSERVER_TOKEN",
+          "headers_template": {},
+          "body_template": null
+        },
+        "assertion": {
+          "mode": "EXACTLY_ONE_ROW",
+          "field_equals_vars": {
+            "id": "INACTIVE_CORRETOR_ID",
+            "user_id": "INACTIVE_USER_ID",
+            "empresa_id": "ACTOR_EMPRESA_ID"
+          },
+          "field_equals_literals": {
+            "ativo": false
+          }
+        }
+      },
+      {
+        "check_id": "TOPO-TOKEN-INELIGIBLE",
+        "request": {
+          "method": "GET",
+          "path_template": "/auth/v1/user",
+          "auth_token_var": "INELIGIBLE_TOKEN",
+          "headers_template": {},
+          "body_template": null
+        },
+        "assertion": {
+          "mode": "OBJECT_FIELD_EQUALS_VAR",
+          "field": "id",
+          "var": "INELIGIBLE_USER_ID"
+        }
+      },
+      {
+        "check_id": "TOPO-INELIGIBLE-PROFILE",
+        "request": {
+          "method": "GET",
+          "path_template": "/rest/v1/corretores?id=eq.${INELIGIBLE_CORRETOR_ID}&select=id,user_id,empresa_id,ativo,apto_para_receber",
+          "auth_token_var": "EVIDENCE_OBSERVER_TOKEN",
+          "headers_template": {},
+          "body_template": null
+        },
+        "assertion": {
+          "mode": "EXACTLY_ONE_ROW",
+          "field_equals_vars": {
+            "id": "INELIGIBLE_CORRETOR_ID",
+            "user_id": "INELIGIBLE_USER_ID",
+            "empresa_id": "ACTOR_EMPRESA_ID"
+          },
+          "field_equals_literals": {
+            "ativo": true,
+            "apto_para_receber": false
+          }
+        }
+      },
+      {
+        "check_id": "TOPO-TOKEN-NO-PROFILE",
+        "request": {
+          "method": "GET",
+          "path_template": "/auth/v1/user",
+          "auth_token_var": "NO_PROFILE_TOKEN",
+          "headers_template": {},
+          "body_template": null
+        },
+        "assertion": {
+          "mode": "OBJECT_FIELD_EQUALS_VAR",
+          "field": "id",
+          "var": "NO_PROFILE_USER_ID"
+        }
+      },
+      {
+        "check_id": "TOPO-NO-PROFILE",
+        "request": {
+          "method": "GET",
+          "path_template": "/rest/v1/corretores?user_id=eq.${NO_PROFILE_USER_ID}&select=id",
+          "auth_token_var": "EVIDENCE_OBSERVER_TOKEN",
+          "headers_template": {},
+          "body_template": null
+        },
+        "assertion": {
+          "mode": "ZERO_ROWS"
+        }
+      },
+      {
+        "check_id": "TOPO-ROOT-PROFILE",
+        "request": {
+          "method": "GET",
+          "path_template": "/rest/v1/corretores?id=eq.${ROOT_CORRETOR_ID}&select=id,user_id,empresa_id,ativo,role",
+          "auth_token_var": "EVIDENCE_OBSERVER_TOKEN",
+          "headers_template": {},
+          "body_template": null
+        },
+        "assertion": {
+          "mode": "EXACTLY_ONE_ROW",
+          "field_equals_vars": {
+            "id": "ROOT_CORRETOR_ID",
+            "user_id": "ROOT_USER_ID"
+          },
+          "field_equals_literals": {
+            "ativo": true
+          }
+        }
+      },
+      {
+        "check_id": "TOPO-ROOT-AUTHORITY",
+        "request": null,
+        "assertion": {
+          "mode": "SERVER_ROOT_AUTHORITY",
+          "user_var": "ROOT_USER_ID"
+        }
+      },
+      {
+        "check_id": "TOPO-MANAGER-LIST-SCOPE",
+        "request": {
+          "method": "GET",
+          "path_template": "/rest/v1/listas?id=eq.${LISTA_ID}&select=id,empresa_id,time_id",
+          "auth_token_var": "EVIDENCE_OBSERVER_TOKEN",
+          "headers_template": {},
+          "body_template": null
+        },
+        "assertion": {
+          "mode": "EXACTLY_ONE_ROW",
+          "field_equals_vars": {
+            "id": "LISTA_ID",
+            "empresa_id": "ACTOR_EMPRESA_ID",
+            "time_id": "MANAGED_TIME_ID"
+          }
+        }
+      },
+      {
+        "check_id": "TOPO-MANAGER-TARGET-SCOPE",
+        "request": {
+          "method": "GET",
+          "path_template": "/rest/v1/corretores?id=eq.${TARGET_CORRETOR_ID}&select=id,empresa_id,time_id,ativo",
+          "auth_token_var": "EVIDENCE_OBSERVER_TOKEN",
+          "headers_template": {},
+          "body_template": null
+        },
+        "assertion": {
+          "mode": "EXACTLY_ONE_ROW",
+          "field_equals_vars": {
+            "id": "TARGET_CORRETOR_ID",
+            "empresa_id": "ACTOR_EMPRESA_ID",
+            "time_id": "MANAGED_TIME_ID"
+          },
+          "field_equals_literals": {
+            "ativo": true
+          }
+        }
+      },
+      {
+        "check_id": "TOPO-MOVEMENT",
+        "request": {
+          "method": "GET",
+          "path_template": "/rest/v1/funil_movimentacoes?id=eq.${MOVEMENT_ID}&select=id,lead_id,empresa_id",
+          "auth_token_var": "EVIDENCE_OBSERVER_TOKEN",
+          "headers_template": {},
+          "body_template": null
+        },
+        "assertion": {
+          "mode": "EXACTLY_ONE_ROW",
+          "field_equals_vars": {
+            "id": "MOVEMENT_ID",
+            "lead_id": "TARGET_LEAD_ID",
+            "empresa_id": "ACTOR_EMPRESA_ID"
+          }
+        }
+      },
+      {
+        "check_id": "TOPO-FUNNEL-TRANSITION-RULES",
+        "request": null,
+        "assertion": {
+          "mode": "FIXTURE_BOOLEAN_TRUE",
+          "var": "FUNNEL_TRANSITION_RULES_ENABLED"
+        }
+      },
+      {
+        "check_id": "TOPO-ACTOR-A-PROFILE",
+        "request": {
+          "method": "GET",
+          "path_template": "/rest/v1/corretores?id=eq.${ACTOR_A_CORRETOR_ID}&select=id,user_id,empresa_id,ativo",
+          "auth_token_var": "EVIDENCE_OBSERVER_TOKEN",
+          "headers_template": {},
+          "body_template": null
+        },
+        "assertion": {
+          "mode": "EXACTLY_ONE_ROW",
+          "field_equals_vars": {
+            "id": "ACTOR_A_CORRETOR_ID",
+            "user_id": "ACTOR_A_USER_ID",
+            "empresa_id": "EMPRESA_ID_A"
+          },
+          "field_equals_literals": {
+            "ativo": true
+          }
+        }
+      },
+      {
+        "check_id": "TOPO-ACTOR-B-PROFILE",
+        "request": {
+          "method": "GET",
+          "path_template": "/rest/v1/corretores?id=eq.${ACTOR_B_CORRETOR_ID}&select=id,user_id,empresa_id,ativo",
+          "auth_token_var": "EVIDENCE_OBSERVER_TOKEN",
+          "headers_template": {},
+          "body_template": null
+        },
+        "assertion": {
+          "mode": "EXACTLY_ONE_ROW",
+          "field_equals_vars": {
+            "id": "ACTOR_B_CORRETOR_ID",
+            "user_id": "ACTOR_B_USER_ID",
+            "empresa_id": "EMPRESA_ID_B"
+          },
+          "field_equals_literals": {
+            "ativo": true
+          }
+        }
       }
     ],
     "global_check_ids": []
@@ -10979,29 +10593,345 @@
     "production_project_ref_hard_deny": "uobxxgzshrmbtjfdolxd",
     "boundary_preflight_sql_case": "SERVER-EVIDENCE-PREFLIGHT",
     "grants_rls_policies_changes": "FORBIDDEN",
-    "note": "Server-side evidence uses the database owner only in a separately authorized isolated non-production environment. It never grants REST/client access to protected evidence tables."
+    "note": "Server-side evidence uses the database owner only in a separately authorized isolated non-production environment. It never grants REST/client access to protected evidence tables.",
+    "required_role_attributes": [
+      "rolbypassrls"
+    ],
+    "full_public_data_hash": "PG_DUMP_DATA_ONLY_FIXED_RESTRICT_KEY",
+    "full_public_data_hash_restrict_key": "FECHAIPR08CASESTATE"
   },
   "server_case_plans": {
-    "COR-011": {
+    "COR-001": {
       "kind": "BROKER",
+      "broker_id_var": "TARGET_CORRETOR_ID",
+      "include_full_audit_logs": true,
+      "password_state_guard": false,
+      "global_data_hash": true,
+      "cleanup_fail_stop": true
+    },
+    "COR-002": {
+      "kind": "BROKER",
+      "broker_id_var": "TARGET_CORRETOR_ID",
+      "include_full_audit_logs": true,
+      "password_state_guard": false,
+      "global_data_hash": true,
+      "cleanup_fail_stop": true
+    },
+    "COR-003": {
+      "kind": "BROKER",
+      "broker_id_var": "FOREIGN_CORRETOR_ID",
+      "include_full_audit_logs": true,
+      "password_state_guard": false,
+      "global_data_hash": true,
+      "cleanup_fail_stop": true
+    },
+    "COR-004": {
+      "kind": "BROKER",
+      "broker_id_var": "TARGET_CORRETOR_ID",
+      "include_full_audit_logs": true,
+      "password_state_guard": false,
+      "global_data_hash": true,
+      "cleanup_fail_stop": true
+    },
+    "COR-005": {
+      "kind": "BROKER",
+      "broker_id_var": "TARGET_CORRETOR_ID",
+      "include_full_audit_logs": true,
+      "password_state_guard": false,
+      "global_data_hash": true,
+      "cleanup_fail_stop": true
+    },
+    "COR-006": {
+      "kind": "BROKER",
+      "broker_id_var": "TARGET_CORRETOR_ID",
+      "include_full_audit_logs": true,
+      "password_state_guard": false,
+      "global_data_hash": true,
+      "cleanup_fail_stop": true
+    },
+    "COR-007": {
+      "kind": "BROKER",
+      "broker_id_var": "TARGET_CORRETOR_ID",
+      "include_full_audit_logs": true,
+      "password_state_guard": false,
+      "global_data_hash": true,
+      "cleanup_fail_stop": true
+    },
+    "COR-009": {
+      "kind": "BROKER",
+      "broker_id_var": "TARGET_CORRETOR_ID",
+      "include_full_audit_logs": true,
+      "password_state_guard": true,
+      "global_data_hash": true,
+      "cleanup_fail_stop": true
+    },
+    "COR-008": {
+      "kind": "DISTRIBUTION",
+      "list_id_var": null,
+      "actor_corretor_id_var": "INELIGIBLE_CORRETOR_ID",
+      "include_list": true,
+      "include_list_leads": true,
+      "include_list_lots": true,
+      "include_actor_broker": true,
+      "include_full_audit_logs": true,
+      "global_data_hash": true,
+      "cleanup_fail_stop": true,
+      "full_distribution_tables": true
+    },
+    "COR-011": {
+      "kind": "PASSWORD_T3",
       "broker_id_var": "ACTOR_CORRETOR_ID",
-      "prepare_patch": {
-        "must_change_password": true
-      }
+      "target_user_id_var": "ACTOR_USER_ID",
+      "authority_user_id_var": "ADMIN_USER_ID",
+      "authority_token_var": "ADMIN_TOKEN",
+      "require_original_must_change_password": false,
+      "include_full_audit_logs": true,
+      "include_t3_proof_lease_rows": true,
+      "global_data_hash": true,
+      "cleanup_fail_stop": true,
+      "authority_claims_var": "ADMIN_JWT_CLAIMS",
+      "target_claims_var": "ACTOR_JWT_CLAIMS"
     },
     "COR-012": {
       "kind": "BROKER",
       "broker_id_var": "TARGET_CORRETOR_ID",
+      "include_full_audit_logs": true,
       "prepare_patch": {
         "ativo": true
-      }
+      },
+      "global_data_hash": true,
+      "cleanup_fail_stop": true
     },
     "COR-013": {
       "kind": "BROKER",
       "broker_id_var": "TARGET_CORRETOR_ID",
+      "include_full_audit_logs": true,
       "prepare_patch": {
         "time_id_var": "BASE_TIME_ID"
-      }
+      },
+      "global_data_hash": true,
+      "cleanup_fail_stop": true
+    },
+    "CRM-001": {
+      "kind": "LEAD_NAMESPACE",
+      "list_id_var": "LISTA_ID",
+      "phone_vars": [
+        "PROBE_PHONE"
+      ],
+      "require_clean": true,
+      "global_data_hash": true,
+      "cleanup_fail_stop": true
+    },
+    "CRM-002": {
+      "kind": "LEAD",
+      "lead_id_var": "TARGET_LEAD_ID",
+      "include_movements": true,
+      "global_data_hash": true,
+      "cleanup_fail_stop": true
+    },
+    "CRM-003": {
+      "kind": "LEAD",
+      "lead_id_var": "TARGET_LEAD_ID",
+      "include_movements": true,
+      "global_data_hash": true,
+      "cleanup_fail_stop": true
+    },
+    "CRM-004": {
+      "kind": "IMPORT",
+      "scopes": [
+        {
+          "company_var": "ACTOR_EMPRESA_ID",
+          "list_vars": [
+            "LISTA_ID"
+          ],
+          "session_var": "SESSION_ID",
+          "phone_vars": [
+            "PROBE_PHONE"
+          ],
+          "seed_mode": "NONE"
+        },
+        {
+          "company_var": "FOREIGN_EMPRESA_ID",
+          "list_vars": [
+            "LISTA_ID"
+          ],
+          "session_var": "SESSION_ID",
+          "phone_vars": [
+            "PROBE_PHONE"
+          ],
+          "seed_mode": "NONE"
+        }
+      ],
+      "clean_namespace_before_case": true,
+      "global_data_hash": true,
+      "cleanup_fail_stop": true
+    },
+    "CRM-005": {
+      "kind": "IMPORT",
+      "scopes": [
+        {
+          "company_var": "ACTOR_EMPRESA_ID",
+          "list_vars": [
+            "LISTA_ID"
+          ],
+          "session_var": "SESSION_ID",
+          "phone_vars": [
+            "PROBE_PHONE"
+          ],
+          "seed_mode": "NONE"
+        }
+      ],
+      "clean_namespace_before_case": true,
+      "global_data_hash": true,
+      "cleanup_fail_stop": true
+    },
+    "CRM-006": {
+      "kind": "IMPORT",
+      "scopes": [
+        {
+          "company_var": "ACTOR_EMPRESA_ID",
+          "list_vars": [
+            "FOREIGN_LISTA_ID"
+          ],
+          "session_var": "SESSION_ID",
+          "phone_vars": [
+            "PROBE_PHONE"
+          ],
+          "seed_mode": "NONE"
+        },
+        {
+          "company_var": "FOREIGN_EMPRESA_ID",
+          "list_vars": [
+            "FOREIGN_LISTA_ID"
+          ],
+          "session_var": "SESSION_ID",
+          "phone_vars": [
+            "PROBE_PHONE"
+          ],
+          "seed_mode": "NONE"
+        }
+      ],
+      "clean_namespace_before_case": true,
+      "global_data_hash": true,
+      "cleanup_fail_stop": true
+    },
+    "CRM-007": {
+      "kind": "IMPORT",
+      "scopes": [
+        {
+          "company_var": "ACTOR_EMPRESA_ID",
+          "list_vars": [
+            "LISTA_ID"
+          ],
+          "session_var": "SESSION_ID",
+          "phone_vars": [
+            "PROBE_PHONE"
+          ],
+          "seed_mode": "NONE"
+        }
+      ],
+      "clean_namespace_before_case": true,
+      "global_data_hash": true,
+      "cleanup_fail_stop": true
+    },
+    "CRM-008": {
+      "kind": "IMPORT",
+      "scopes": [
+        {
+          "company_var": "ACTOR_EMPRESA_ID",
+          "list_vars": [
+            "LISTA_ID"
+          ],
+          "session_var": "SESSION_ID",
+          "phone_vars": [
+            "PROBE_PHONE"
+          ],
+          "seed_mode": "NONE"
+        }
+      ],
+      "clean_namespace_before_case": true,
+      "global_data_hash": true,
+      "cleanup_fail_stop": true
+    },
+    "CRM-009": {
+      "kind": "IMPORT",
+      "scopes": [
+        {
+          "company_var": "ACTOR_EMPRESA_ID",
+          "list_vars": [
+            "LISTA_ID"
+          ],
+          "session_var": "SESSION_ID",
+          "phone_vars": [
+            "PROBE_PHONE"
+          ],
+          "seed_mode": "NONE"
+        }
+      ],
+      "clean_namespace_before_case": true,
+      "global_data_hash": true,
+      "cleanup_fail_stop": true
+    },
+    "CRM-010": {
+      "kind": "IMPORT",
+      "scopes": [
+        {
+          "company_var": "ACTOR_EMPRESA_ID",
+          "list_vars": [
+            "LISTA_ID"
+          ],
+          "session_var": "SESSION_ID",
+          "phone_vars": [
+            "PROBE_PHONE"
+          ],
+          "seed_mode": "NONE"
+        }
+      ],
+      "clean_namespace_before_case": true,
+      "global_data_hash": true,
+      "cleanup_fail_stop": true
+    },
+    "CRM-011": {
+      "kind": "FEEDBACK",
+      "lead_id_var": "WRONG_OWNER_LEAD_ID",
+      "include_movements": true,
+      "include_lot": true,
+      "global_data_hash": true,
+      "cleanup_fail_stop": true
+    },
+    "CRM-012": {
+      "kind": "FEEDBACK",
+      "lead_id_var": "FOREIGN_LEAD_ID",
+      "include_movements": true,
+      "include_lot": true,
+      "global_data_hash": true,
+      "cleanup_fail_stop": true
+    },
+    "CRM-013": {
+      "kind": "LOT",
+      "lot_id_var": "FOREIGN_LOTE_ID",
+      "global_data_hash": true,
+      "cleanup_fail_stop": true
+    },
+    "CRM-014": {
+      "kind": "IMPORT",
+      "scopes": [
+        {
+          "company_var": "ACTOR_EMPRESA_ID",
+          "list_vars": [
+            "LISTA_ID"
+          ],
+          "session_var": "SESSION_ID",
+          "phone_vars": [
+            "PROBE_PHONE",
+            "PROBE_PHONE_2"
+          ],
+          "seed_mode": "NONE"
+        }
+      ],
+      "clean_namespace_before_case": true,
+      "global_data_hash": true,
+      "cleanup_fail_stop": true
     },
     "CRM-015": {
       "kind": "IMPORT",
@@ -11017,47 +10947,188 @@
           ],
           "seed_mode": "NONE"
         }
-      ]
+      ],
+      "clean_namespace_before_case": true,
+      "global_data_hash": true,
+      "cleanup_fail_stop": true
+    },
+    "FUN-001": {
+      "kind": "FUNNEL",
+      "lead_id_var": "TARGET_LEAD_ID",
+      "include_movements": true,
+      "global_data_hash": true,
+      "cleanup_fail_stop": true
+    },
+    "FUN-002": {
+      "kind": "FUNNEL",
+      "lead_id_var": "TARGET_LEAD_ID",
+      "include_movements": true,
+      "global_data_hash": true,
+      "cleanup_fail_stop": true
+    },
+    "FUN-003": {
+      "kind": "FUNNEL",
+      "lead_id_var": "TARGET_LEAD_ID",
+      "include_movements": true,
+      "global_data_hash": true,
+      "cleanup_fail_stop": true
+    },
+    "FUN-004": {
+      "kind": "FUNNEL",
+      "lead_id_var": "TARGET_LEAD_ID",
+      "include_movements": true,
+      "global_data_hash": true,
+      "cleanup_fail_stop": true
+    },
+    "FUN-005": {
+      "kind": "FUNNEL",
+      "lead_id_var": "TARGET_LEAD_ID",
+      "include_movements": true,
+      "global_data_hash": true,
+      "cleanup_fail_stop": true
+    },
+    "FUN-006": {
+      "kind": "FUNNEL",
+      "lead_id_var": "TARGET_LEAD_ID",
+      "include_movements": true,
+      "global_data_hash": true,
+      "cleanup_fail_stop": true
     },
     "FUN-007": {
       "kind": "FUNNEL",
       "lead_id_var": "TARGET_LEAD_ID",
-      "baseline_stage_var": "BASE_STAGE_ID",
-      "observation": "PR08:FUN-007"
+      "include_movements": true,
+      "prepare_stage_var": "BASE_STAGE_ID",
+      "global_data_hash": true,
+      "cleanup_fail_stop": true
     },
     "FUN-008": {
       "kind": "FUNNEL",
       "lead_id_var": "TARGET_LEAD_ID",
-      "baseline_stage_var": "BASE_STAGE_ID",
-      "observation": "PR08:FUN-008"
+      "include_movements": true,
+      "prepare_stage_var": "BASE_STAGE_ID",
+      "global_data_hash": true,
+      "cleanup_fail_stop": true
+    },
+    "ACL-001": {
+      "kind": "ACL",
+      "list_id_var": "LISTA_ID",
+      "include_list_row": true,
+      "include_all_acl_rows": true,
+      "include_list_audit_rows": true,
+      "global_data_hash": true,
+      "cleanup_fail_stop": true,
+      "request_target_type": "corretor",
+      "request_target_id_var": "TARGET_CORRETOR_ID",
+      "prepare_target_absent": false
     },
     "ACL-002": {
       "kind": "ACL",
       "list_id_var": "LISTA_ID",
-      "target_type": "corretor",
-      "target_id_var": "TARGET_CORRETOR_ID",
-      "require_initial_absent": true
+      "include_list_row": true,
+      "include_all_acl_rows": true,
+      "include_list_audit_rows": true,
+      "global_data_hash": true,
+      "cleanup_fail_stop": true,
+      "request_target_type": "corretor",
+      "request_target_id_var": "TARGET_CORRETOR_ID",
+      "prepare_target_absent": true
     },
     "ACL-003": {
       "kind": "ACL",
       "list_id_var": "LISTA_ID",
-      "target_type": "corretor",
-      "target_id_var": "TARGET_CORRETOR_ID",
-      "require_initial_absent": true
+      "include_list_row": true,
+      "include_all_acl_rows": true,
+      "include_list_audit_rows": true,
+      "global_data_hash": true,
+      "cleanup_fail_stop": true,
+      "request_target_type": "corretor",
+      "request_target_id_var": "TARGET_CORRETOR_ID",
+      "prepare_target_absent": true
     },
     "ACL-004": {
       "kind": "ACL",
       "list_id_var": "LISTA_ID",
-      "target_type": "corretor",
-      "target_id_var": "TARGET_CORRETOR_ID",
-      "require_initial_absent": true
+      "include_list_row": true,
+      "include_all_acl_rows": true,
+      "include_list_audit_rows": true,
+      "global_data_hash": true,
+      "cleanup_fail_stop": true,
+      "request_target_type": "corretor",
+      "request_target_id_var": "TARGET_CORRETOR_ID",
+      "prepare_target_absent": true
+    },
+    "ACL-005": {
+      "kind": "ACL",
+      "list_id_var": "LISTA_ID",
+      "include_list_row": true,
+      "include_all_acl_rows": true,
+      "include_list_audit_rows": true,
+      "global_data_hash": true,
+      "cleanup_fail_stop": true,
+      "request_target_type": "corretor",
+      "request_target_id_var": "NONEXISTENT_TARGET_ID",
+      "prepare_target_absent": false
+    },
+    "ACL-006": {
+      "kind": "ACL",
+      "list_id_var": "LISTA_ID",
+      "include_list_row": true,
+      "include_all_acl_rows": true,
+      "include_list_audit_rows": true,
+      "global_data_hash": true,
+      "cleanup_fail_stop": true,
+      "request_target_type": "empresa",
+      "request_target_id_var": "ACTOR_EMPRESA_ID",
+      "prepare_target_absent": false
+    },
+    "ACL-007": {
+      "kind": "ACL",
+      "list_id_var": "LISTA_ID",
+      "include_list_row": true,
+      "include_all_acl_rows": true,
+      "include_list_audit_rows": true,
+      "global_data_hash": true,
+      "cleanup_fail_stop": true,
+      "request_target_type": "corretor",
+      "request_target_id_var": "FOREIGN_CORRETOR_ID",
+      "prepare_target_absent": false
+    },
+    "ACL-008": {
+      "kind": "ACL",
+      "list_id_var": "LISTA_ID",
+      "include_list_row": true,
+      "include_all_acl_rows": true,
+      "include_list_audit_rows": true,
+      "global_data_hash": true,
+      "cleanup_fail_stop": true,
+      "request_target_type": "corretor",
+      "request_target_id_var": "TARGET_CORRETOR_ID",
+      "prepare_target_absent": false
+    },
+    "ACL-009": {
+      "kind": "ACL",
+      "list_id_var": "LISTA_ID",
+      "include_list_row": true,
+      "include_all_acl_rows": true,
+      "include_list_audit_rows": true,
+      "global_data_hash": true,
+      "cleanup_fail_stop": true,
+      "request_target_type": "time",
+      "request_target_id_var": "FOREIGN_TIME_ID",
+      "prepare_target_absent": false
     },
     "ACL-010": {
       "kind": "ACL",
       "list_id_var": "LISTA_ID",
-      "target_type": "corretor",
-      "target_id_var": "TARGET_CORRETOR_ID",
-      "require_initial_absent": true
+      "include_list_row": true,
+      "include_all_acl_rows": true,
+      "include_list_audit_rows": true,
+      "global_data_hash": true,
+      "cleanup_fail_stop": true,
+      "request_target_type": "corretor",
+      "request_target_id_var": "TARGET_CORRETOR_ID",
+      "prepare_target_absent": true
     },
     "IMP-001": {
       "kind": "IMPORT",
@@ -11073,7 +11144,10 @@
           ],
           "seed_mode": "NONE"
         }
-      ]
+      ],
+      "clean_namespace_before_case": true,
+      "global_data_hash": true,
+      "cleanup_fail_stop": true
     },
     "IMP-002": {
       "kind": "IMPORT",
@@ -11100,7 +11174,10 @@
           ],
           "seed_mode": "NONE"
         }
-      ]
+      ],
+      "clean_namespace_before_case": true,
+      "global_data_hash": true,
+      "cleanup_fail_stop": true
     },
     "IMP-003": {
       "kind": "IMPORT",
@@ -11116,7 +11193,132 @@
           ],
           "seed_mode": "NONE"
         }
-      ]
+      ],
+      "clean_namespace_before_case": true,
+      "global_data_hash": true,
+      "cleanup_fail_stop": true
+    },
+    "IMP-004": {
+      "kind": "IMPORT",
+      "scopes": [
+        {
+          "company_var": "ACTOR_EMPRESA_ID",
+          "list_vars": [
+            "FOREIGN_LISTA_ID"
+          ],
+          "session_var": "SESSION_ID",
+          "phone_vars": [
+            "PROBE_PHONE"
+          ],
+          "seed_mode": "NONE"
+        },
+        {
+          "company_var": "FOREIGN_EMPRESA_ID",
+          "list_vars": [
+            "FOREIGN_LISTA_ID"
+          ],
+          "session_var": "SESSION_ID",
+          "phone_vars": [
+            "PROBE_PHONE"
+          ],
+          "seed_mode": "NONE"
+        }
+      ],
+      "clean_namespace_before_case": true,
+      "global_data_hash": true,
+      "cleanup_fail_stop": true
+    },
+    "IMP-005": {
+      "kind": "IMPORT",
+      "scopes": [
+        {
+          "company_var": "ACTOR_EMPRESA_ID",
+          "list_vars": [
+            "LISTA_ID"
+          ],
+          "session_var": "SESSION_ID",
+          "phone_vars": [],
+          "seed_mode": "NONE"
+        }
+      ],
+      "clean_namespace_before_case": true,
+      "global_data_hash": true,
+      "cleanup_fail_stop": true
+    },
+    "IMP-006": {
+      "kind": "IMPORT",
+      "scopes": [
+        {
+          "company_var": "ACTOR_EMPRESA_ID",
+          "list_vars": [
+            "LISTA_ID"
+          ],
+          "session_var": "SESSION_ID",
+          "phone_vars": [],
+          "seed_mode": "NONE",
+          "phone_prefix_var": "PROBE_PHONE_PREFIX"
+        }
+      ],
+      "clean_namespace_before_case": true,
+      "global_data_hash": true,
+      "cleanup_fail_stop": true
+    },
+    "IMP-007": {
+      "kind": "IMPORT",
+      "scopes": [
+        {
+          "company_var": "ACTOR_EMPRESA_ID",
+          "list_vars": [
+            "LISTA_ID"
+          ],
+          "session_var": "SESSION_ID",
+          "phone_vars": [
+            "PROBE_PHONE"
+          ],
+          "seed_mode": "NONE"
+        }
+      ],
+      "clean_namespace_before_case": true,
+      "global_data_hash": true,
+      "cleanup_fail_stop": true
+    },
+    "IMP-008": {
+      "kind": "IMPORT",
+      "scopes": [
+        {
+          "company_var": "ACTOR_EMPRESA_ID",
+          "list_vars": [
+            "LISTA_ID"
+          ],
+          "session_var": "SESSION_ID",
+          "phone_vars": [
+            "PROBE_PHONE"
+          ],
+          "seed_mode": "NONE"
+        }
+      ],
+      "clean_namespace_before_case": true,
+      "global_data_hash": true,
+      "cleanup_fail_stop": true
+    },
+    "IMP-009": {
+      "kind": "IMPORT",
+      "scopes": [
+        {
+          "company_var": "ACTOR_EMPRESA_ID",
+          "list_vars": [
+            "LISTA_ID"
+          ],
+          "session_var": "SESSION_ID",
+          "phone_vars": [
+            "PROBE_PHONE"
+          ],
+          "seed_mode": "NONE"
+        }
+      ],
+      "clean_namespace_before_case": true,
+      "global_data_hash": true,
+      "cleanup_fail_stop": true
     },
     "IMP-010": {
       "kind": "IMPORT",
@@ -11133,11 +11335,13 @@
           ],
           "seed_mode": "NONE"
         }
-      ]
+      ],
+      "clean_namespace_before_case": true,
+      "global_data_hash": true,
+      "cleanup_fail_stop": true
     },
     "IMP-011": {
       "kind": "IMPORT",
-      "claims_var": "ACTOR_JWT_CLAIMS",
       "scopes": [
         {
           "company_var": "ACTOR_EMPRESA_ID",
@@ -11154,11 +11358,33 @@
             "IMP_011_PHONE"
           ]
         }
-      ]
+      ],
+      "clean_namespace_before_case": true,
+      "claims_var": "ACTOR_JWT_CLAIMS",
+      "global_data_hash": true,
+      "cleanup_fail_stop": true
+    },
+    "IMP-012": {
+      "kind": "IMPORT",
+      "scopes": [
+        {
+          "company_var": "ACTOR_EMPRESA_ID",
+          "list_vars": [
+            "LISTA_ID"
+          ],
+          "session_var": "SESSION_ID",
+          "phone_vars": [
+            "PROBE_PHONE"
+          ],
+          "seed_mode": "NONE"
+        }
+      ],
+      "clean_namespace_before_case": true,
+      "global_data_hash": true,
+      "cleanup_fail_stop": true
     },
     "IMP-SESSION-LIST-MISMATCH": {
       "kind": "IMPORT",
-      "claims_var": "ACTOR_JWT_CLAIMS",
       "scopes": [
         {
           "company_var": "ACTOR_EMPRESA_ID",
@@ -11176,11 +11402,14 @@
             "LIST_MISMATCH_PHONE"
           ]
         }
-      ]
+      ],
+      "clean_namespace_before_case": true,
+      "claims_var": "ACTOR_JWT_CLAIMS",
+      "global_data_hash": true,
+      "cleanup_fail_stop": true
     },
     "IMP-SESSION-PAYLOAD-MISMATCH": {
       "kind": "IMPORT",
-      "claims_var": "ACTOR_JWT_CLAIMS",
       "scopes": [
         {
           "company_var": "ACTOR_EMPRESA_ID",
@@ -11198,7 +11427,16 @@
             "PAYLOAD_MISMATCH_BASE_PHONE"
           ]
         }
-      ]
+      ],
+      "clean_namespace_before_case": true,
+      "claims_var": "ACTOR_JWT_CLAIMS",
+      "global_data_hash": true,
+      "cleanup_fail_stop": true
+    },
+    "IMP-CLAIMANT-ROLLBACK": {
+      "kind": "SQL_ONLY_ROLLBACK_CASE",
+      "global_data_hash": true,
+      "cleanup_fail_stop": true
     },
     "IMP-INCOMPLETE-STATE": {
       "kind": "IMPORT",
@@ -11218,11 +11456,51 @@
             "INCOMPLETE_PHONE"
           ]
         }
-      ]
+      ],
+      "clean_namespace_before_case": true,
+      "global_data_hash": true,
+      "cleanup_fail_stop": true
+    },
+    "FDB-001": {
+      "kind": "FEEDBACK",
+      "lead_id_var": "TARGET_LEAD_ID",
+      "include_movements": true,
+      "include_lot": true,
+      "global_data_hash": true,
+      "cleanup_fail_stop": true
+    },
+    "FDB-002": {
+      "kind": "FEEDBACK",
+      "lead_id_var": "TARGET_LEAD_ID",
+      "include_movements": true,
+      "include_lot": true,
+      "global_data_hash": true,
+      "cleanup_fail_stop": true
+    },
+    "FDB-003": {
+      "kind": "FEEDBACK",
+      "lead_id_var": "TARGET_LEAD_ID",
+      "include_movements": true,
+      "include_lot": true,
+      "global_data_hash": true,
+      "cleanup_fail_stop": true
+    },
+    "FDB-004": {
+      "kind": "FEEDBACK",
+      "lead_id_var": "TARGET_LEAD_ID",
+      "include_movements": true,
+      "include_lot": true,
+      "global_data_hash": true,
+      "cleanup_fail_stop": true
     },
     "FDB-008": {
       "kind": "FEEDBACK",
       "lead_id_var": "TARGET_LEAD_ID",
+      "include_movements": true,
+      "include_lot": true,
+      "global_data_hash": true,
+      "cleanup_fail_stop": true,
+      "prepare_feedback_baseline": true,
       "baseline_stage_var": "BASE_STAGE_ID",
       "expected_stage_var": "EM_CONVERSA_STAGE_ID",
       "max_other_feedback": 23
@@ -11230,9 +11508,54 @@
     "FDB-009": {
       "kind": "FEEDBACK",
       "lead_id_var": "TARGET_LEAD_ID",
+      "include_movements": true,
+      "include_lot": true,
+      "global_data_hash": true,
+      "cleanup_fail_stop": true,
+      "prepare_feedback_baseline": true,
       "baseline_stage_var": "BASE_STAGE_ID",
       "expected_stage_var": "EM_CONVERSA_STAGE_ID",
       "max_other_feedback": 23
+    },
+    "FDB-010": {
+      "kind": "FEEDBACK",
+      "lead_id_var": "TARGET_LEAD_ID",
+      "include_movements": true,
+      "include_lot": true,
+      "global_data_hash": true,
+      "cleanup_fail_stop": true
+    },
+    "FDB-011": {
+      "kind": "FEEDBACK",
+      "lead_id_var": "TARGET_LEAD_ID",
+      "include_movements": true,
+      "include_lot": true,
+      "global_data_hash": true,
+      "cleanup_fail_stop": true
+    },
+    "FDB-005": {
+      "kind": "FEEDBACK",
+      "lead_id_var": "WRONG_OWNER_LEAD_ID",
+      "include_movements": true,
+      "include_lot": true,
+      "global_data_hash": true,
+      "cleanup_fail_stop": true
+    },
+    "FDB-006": {
+      "kind": "FEEDBACK",
+      "lead_id_var": "FOREIGN_LEAD_ID",
+      "include_movements": true,
+      "include_lot": true,
+      "global_data_hash": true,
+      "cleanup_fail_stop": true
+    },
+    "FDB-007": {
+      "kind": "FEEDBACK",
+      "lead_id_var": "TARGET_LEAD_ID",
+      "include_movements": true,
+      "include_lot": true,
+      "global_data_hash": true,
+      "cleanup_fail_stop": true
     }
   }
 }

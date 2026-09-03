@@ -1,5 +1,32 @@
 # FECH.AI — SFJM Next Safe Action
 
+## 0.000000000 PR-08 fourth-correction anti-loop exact-head review — 2026-09-03
+
+The fourth bounded correction authorization is consumed by the same-branch implementation.
+
+    parent head: c18347701b52ec21a3758cfbfa512871e10998dc
+    branch: test/f1-02-negative-security-matrix
+    allowed files: same 9
+    correction objective: CLOSE HARNESS ARCHITECTURE, NOT ADD ANOTHER PATCH CYCLE
+    runtime/Auth/rollback/smoke execution: NOT_AUTHORIZED
+    Supabase/Auth/LAB/Vercel mutation: NOT_AUTHORIZED
+    Ready/merge/OC-01/PR-09: NOT_AUTHORIZED
+    IMP-003: NOT_DETERMINED
+    ROLLBACK_REAPPLY: NOT_DETERMINED
+    SECURITY_GO: NOT_GRANTED
+
+Single next safe action after publication:
+
+    RESOLVE THE NEW BRANCH/PR HEAD
+    EXACT-HEAD IMPLEMENTATION REVIEW
+    REVIEW AGAINST V5 CLOSURE INVARIANTS AS A COMPLETE SYSTEM
+    STOP BEFORE READY
+
+Anti-loop instruction:
+
+    do not restart historical correction rounds without a new exact-head contradiction
+    classify any new finding by root invariant, not by isolated test ID
+
 ## 0.00000000 PR-08 third-correction exact-head review — 2026-09-03
 
 The third bounded correction authorization is consumed by the same-branch implementation.

@@ -40,6 +40,13 @@ SELECT :'PR08_SQL_CASE' = 'SERVER-EVIDENCE-PREFLIGHT' AS pr08_run_server_evidenc
 
   SELECT 1 / CASE WHEN EXISTS (
     SELECT 1
+    FROM pg_catalog.pg_roles r
+    WHERE r.rolname = 'postgres'
+      AND r.rolbypassrls = true
+  ) THEN 1 ELSE 0 END AS server_evidence_postgres_bypassrls;
+
+  SELECT 1 / CASE WHEN EXISTS (
+    SELECT 1
     FROM pg_catalog.pg_class c
     JOIN pg_catalog.pg_namespace n ON n.oid = c.relnamespace
     WHERE n.nspname = 'public'

@@ -4,30 +4,33 @@ async function main() {
   const path = await import("node:path");
   const root = process.cwd();
 
-  const matrixText=await fs.readFile(path.join(root,"supabase/tests/f1-02-pr08/matrix.json"),"utf8");
-  const matrix=JSON.parse(matrixText);
-  const http=await fs.readFile(path.join(root,"scripts/tests/f1-02-pr08/run_auth_http_matrix.mjs"),"utf8");
-  const rollback=await fs.readFile(path.join(root,"scripts/tests/f1-02-pr08/run_rollback_reapply.mjs"),"utf8");
-  const sql=await fs.readFile(path.join(root,"supabase/tests/f1-02-pr08/runtime_security_matrix.sql"),"utf8");
+  const matrixText = await fs.readFile(path.join(root,"supabase/tests/f1-02-pr08/matrix.json"),"utf8");
+  const matrix = JSON.parse(matrixText);
+  const http = await fs.readFile(path.join(root,"scripts/tests/f1-02-pr08/run_auth_http_matrix.mjs"),"utf8");
+  const rollback = await fs.readFile(path.join(root,"scripts/tests/f1-02-pr08/run_rollback_reapply.mjs"),"utf8");
+  const sql = await fs.readFile(path.join(root,"supabase/tests/f1-02-pr08/runtime_security_matrix.sql"),"utf8");
 
   const expected={AUTH:5,COR:13,CRM:15,FUN:8,ACL:10,STG:7,IMP:16,FDB:11,ROL:11,PRD:2,TOTAL:98};
   const counts={TOTAL:matrix.records.length};
   const ids=new Set();
 
-  if(matrix.schema!=="fechai.f1-02.pr08.matrix.v4") throw new Error("MATRIX_SCHEMA_DRIFT");
-  if(matrix.execution_contract?.server_evidence_channel!=="PSQL_POSTGRES_OWNER_NON_PRODUCTION_ONLY") throw new Error("SERVER_EVIDENCE_CONTRACT_MISSING");
-  if(matrix.execution_contract?.case_isolation!=="PER_TEST_CAPTURE_PREPARE_EVIDENCE_CLEANUP_RESTORE") throw new Error("CASE_ISOLATION_CONTRACT_MISSING");
-  if(matrix.execution_contract?.topology_scope!=="GLOBAL_PLUS_SELECTED_CASE_DEPENDENCIES_ONLY") throw new Error("TOPOLOGY_SCOPE_CONTRACT_MISSING");
-  if(matrix.execution_contract?.idempotency_evidence!=="SERVER_SQL_ONLY_NO_REST_CLIENT_ACCESS") throw new Error("IDEMPOTENCY_EVIDENCE_CONTRACT_MISSING");
-  if(matrix.execution_contract?.cleanup_verification!=="POST_CLEANUP_SHA256_MUST_EQUAL_ORIGINAL") throw new Error("CLEANUP_CONTRACT_MISSING");
+  if(matrix.schema!=="fechai.f1-02.pr08.matrix.v5") throw new Error("MATRIX_SCHEMA_DRIFT");
+  if(matrix.execution_contract?.failure_isolation!=="ALL_MUTATION_CAPABLE_HTTP_CASES_HAVE_SERVER_LIFECYCLE") throw new Error("FAILURE_ISOLATION_CONTRACT_MISSING");
+  if(matrix.execution_contract?.cleanup_global_verification!=="DETERMINISTIC_PUBLIC_DATA_SHA256_MUST_EQUAL_ORIGINAL") throw new Error("GLOBAL_CLEANUP_HASH_CONTRACT_MISSING");
+  if(matrix.execution_contract?.cleanup_fail_stop!=="NO_NEXT_CASE_AFTER_UNRESTORED_STATE") throw new Error("CLEANUP_FAIL_STOP_CONTRACT_MISSING");
+  if(matrix.execution_contract?.token_topology_binding!=="EVERY_VERSIONED_REQUEST_TOKEN_REQUIRES_IDENTITY_TOPOLOGY") throw new Error("TOKEN_TOPOLOGY_CONTRACT_MISSING");
+  if(matrix.execution_contract?.conditional_tests!=="NOT_APPLICABLE_IS_NOT_PASS") throw new Error("CONDITIONAL_TEST_CONTRACT_MISSING");
 
   const sec=matrix.server_evidence_contract||{};
   if(sec.mode!=="PSQL_POSTGRES_OWNER_NON_PRODUCTION_ONLY") throw new Error("SERVER_EVIDENCE_MODE_DRIFT");
   if(sec.required_database_role!=="postgres") throw new Error("SERVER_EVIDENCE_ROLE_DRIFT");
+  if(!Array.isArray(sec.required_role_attributes)||!sec.required_role_attributes.includes("rolbypassrls")) throw new Error("SERVER_EVIDENCE_BYPASSRLS_CONTRACT_MISSING");
   if(sec.production_project_ref_hard_deny!=="uobxxgzshrmbtjfdolxd") throw new Error("SERVER_EVIDENCE_PROD_DENY_DRIFT");
   if(sec.grants_rls_policies_changes!=="FORBIDDEN") throw new Error("SERVER_EVIDENCE_BOUNDARY_WIDENING");
+  if(sec.full_public_data_hash!=="PG_DUMP_DATA_ONLY_FIXED_RESTRICT_KEY") throw new Error("GLOBAL_DATA_HASH_MODE_DRIFT");
+  if(sec.full_public_data_hash_restrict_key!=="FECHAIPR08CASESTATE") throw new Error("GLOBAL_DATA_HASH_KEY_DRIFT");
 
-  if(matrixText.includes("/rest/v1/importar_leads_batch_idempotency") || http.includes("/rest/v1/importar_leads_batch_idempotency")) {
+  if(matrixText.includes("/rest/v1/importar_leads_batch_idempotency")||http.includes("/rest/v1/importar_leads_batch_idempotency")) {
     throw new Error("IDEMPOTENCY_REST_CLIENT_ACCESS_FORBIDDEN");
   }
 
@@ -35,31 +38,49 @@ async function main() {
   const topologyIds=new Set(topologyChecks.map(x=>x.check_id));
   if(!Array.isArray(matrix.topology_contract?.global_check_ids)) throw new Error("GLOBAL_TOPOLOGY_IDS_MISSING");
   for(const id of matrix.topology_contract.global_check_ids) if(!topologyIds.has(id)) throw new Error("UNKNOWN_GLOBAL_TOPOLOGY_CHECK:"+id);
+
   for(const check of topologyChecks){
-    if(!check.check_id || !check.assertion?.mode) throw new Error("TOPOLOGY_CHECK_INVALID");
-    if(check.assertion.mode==="VARIABLE_NOT_EQUAL"){
-      if(check.request!==null || !check.assertion.left || !check.assertion.right) throw new Error("VARIABLE_TOPOLOGY_CHECK_INVALID:"+check.check_id);
+    if(!check.check_id||!check.assertion?.mode) throw new Error("TOPOLOGY_CHECK_INVALID");
+    if(["VARIABLE_NOT_EQUAL","FIXTURE_BOOLEAN_TRUE","SERVER_ROOT_AUTHORITY"].includes(check.assertion.mode)){
+      if(check.request!==null) throw new Error("NON_HTTP_TOPOLOGY_REQUEST_MUST_BE_NULL:"+check.check_id);
     } else {
       if(!check.request?.path_template) throw new Error("TOPOLOGY_REQUEST_MISSING:"+check.check_id);
-      if(!check.request.path_template.startsWith("/") || check.request.path_template.startsWith("//") || /^[a-z]+:/i.test(check.request.path_template)) throw new Error("TOPOLOGY_ABSOLUTE_PATH:"+check.check_id);
+      if(!check.request.path_template.startsWith("/")||check.request.path_template.startsWith("//")||/^[a-z]+:/i.test(check.request.path_template)) throw new Error("TOPOLOGY_ABSOLUTE_PATH:"+check.check_id);
     }
   }
 
   const required=matrix.required_record_fields||[];
-  const serverPlans=matrix.server_case_plans||{};
-  const mutating=[];
+  const plans=matrix.server_case_plans||{};
+  const mutationCapable=[];
+  const negativeMutationCapable=[];
+
+  const tokenNeeds={
+    ACTOR_TOKEN:["TOPO-TOKEN-ACTOR","TOPO-ACTOR"],
+    MANAGER_TOKEN:["TOPO-TOKEN-MANAGER","TOPO-MANAGER"],
+    ADMIN_TOKEN:["TOPO-TOKEN-ADMIN","TOPO-ADMIN"],
+    ROOT_TOKEN:["TOPO-TOKEN-ROOT","TOPO-ROOT-PROFILE","TOPO-ROOT-AUTHORITY"],
+    ACTOR_A_TOKEN:["TOPO-TOKEN-A","TOPO-ACTOR-A-PROFILE"],
+    ACTOR_B_TOKEN:["TOPO-TOKEN-B","TOPO-ACTOR-B-PROFILE"],
+    ZERO_STAGE_TOKEN:["TOPO-TOKEN-ZERO-STAGE","TOPO-ZERO-STAGE-ACTOR"],
+    INACTIVE_TOKEN:["TOPO-TOKEN-INACTIVE","TOPO-INACTIVE-PROFILE"],
+    INELIGIBLE_TOKEN:["TOPO-TOKEN-INELIGIBLE","TOPO-INELIGIBLE-PROFILE"],
+    NO_PROFILE_TOKEN:["TOPO-TOKEN-NO-PROFILE","TOPO-NO-PROFILE"]
+  };
+
   for(const rec of matrix.records){
-    if(!rec.test_id || ids.has(rec.test_id)) throw new Error("DUPLICATE_OR_MISSING_TEST_ID:"+rec.test_id);
+    if(!rec.test_id||ids.has(rec.test_id)) throw new Error("DUPLICATE_OR_MISSING_TEST_ID:"+rec.test_id);
     ids.add(rec.test_id);
-    const cat=rec.test_id.split("-")[0]; counts[cat]=(counts[cat]||0)+1;
+    const cat=rec.test_id.split("-")[0];
+    counts[cat]=(counts[cat]||0)+1;
     for(const field of required) if(!(field in rec)) throw new Error("MISSING_FIELD:"+rec.test_id+":"+field);
+
     if(rec.exact_application_commit!=="9d05c64281c2aeeae9d67b139eab674720184fb1") throw new Error("APP_COMMIT_DRIFT:"+rec.test_id);
-    if(rec.pass_fail!=="NOT_EXECUTED" || rec.actual_authorization_result!=="NOT_EXECUTED" || rec.actual_data_mutation!=="NOT_EXECUTED") throw new Error("EXECUTION_OVERCLAIM:"+rec.test_id);
+    if(rec.pass_fail!=="NOT_EXECUTED"||rec.actual_authorization_result!=="NOT_EXECUTED"||rec.actual_data_mutation!=="NOT_EXECUTED") throw new Error("EXECUTION_OVERCLAIM:"+rec.test_id);
 
     const artifactCommits=[];
     for(const a of rec.migration_artifacts||[]){
       const expectedCommit=matrix.artifact_binding?.migration_final_commits?.[a.path];
-      if(!expectedCommit || a.final_commit!==expectedCommit) throw new Error("MIGRATION_FINAL_COMMIT_DRIFT:"+rec.test_id+":"+a.path);
+      if(!expectedCommit||a.final_commit!==expectedCommit) throw new Error("MIGRATION_FINAL_COMMIT_DRIFT:"+rec.test_id+":"+a.path);
       if(!/^[0-9a-f]{40}$/.test(a.blob)||!/^[0-9a-f]{40}$/.test(a.final_commit)) throw new Error("MIGRATION_PROVENANCE_FORMAT:"+rec.test_id);
       artifactCommits.push(a.final_commit);
     }
@@ -70,24 +91,24 @@ async function main() {
 
     if(rec.runner==="http_matrix"){
       if(!rec.request_plan?.requests?.length) throw new Error("VERSIONED_REQUEST_PLAN_MISSING:"+rec.test_id);
-      const hasServer=Boolean(rec.server_case_plan);
-      if(hasServer){
-        if(!serverPlans[rec.server_case_plan]) throw new Error("SERVER_PLAN_REFERENCE_MISSING:"+rec.test_id);
-        if(rec.mutation_probe_plan?.channel!=="SERVER_SQL_OWNER") throw new Error("SERVER_PROBE_CHANNEL_DRIFT:"+rec.test_id);
-        if((rec.mutation_probe_plan.before||[]).length || (rec.mutation_probe_plan.after||[]).length) throw new Error("SERVER_CASE_HAS_HTTP_MUTATION_PROBES:"+rec.test_id);
-      } else {
-        if(!rec.mutation_probe_plan?.before?.length || !rec.mutation_probe_plan?.after?.length) throw new Error("HTTP_PROBE_PLAN_MISSING:"+rec.test_id);
+
+      for(const q of rec.request_plan.requests){
+        if(typeof q.path_template!=="string"||!q.path_template.startsWith("/")||q.path_template.startsWith("//")||/^[a-z]+:/i.test(q.path_template)) throw new Error("ABSOLUTE_OR_INVALID_PATH:"+rec.test_id);
+        if(!["GET","POST","PATCH","DELETE","HEAD"].includes(q.method)) throw new Error("METHOD_NOT_VERSIONED:"+rec.test_id);
+        if("url" in q||"origin" in q) throw new Error("ABSOLUTE_TARGET_FIELD_FORBIDDEN:"+rec.test_id);
+        const needed=tokenNeeds[q.auth_token_var]||[];
+        const deps=new Set(rec.topology_dependencies||[]);
+        for(const d of needed) if(!deps.has(d)) throw new Error("TOKEN_TOPOLOGY_DEPENDENCY_MISSING:"+rec.test_id+":"+q.auth_token_var+":"+d);
       }
 
-      for(const spec of [...rec.request_plan.requests,...(rec.mutation_probe_plan?.before||[]),...(rec.mutation_probe_plan?.after||[])]){
-        if(typeof spec.path_template!=="string" || !spec.path_template.startsWith("/") || spec.path_template.startsWith("//") || /^[a-z]+:/i.test(spec.path_template)) throw new Error("ABSOLUTE_OR_INVALID_PATH:"+rec.test_id);
-        if(!["GET","POST","PATCH","DELETE","HEAD"].includes(spec.method)) throw new Error("METHOD_NOT_VERSIONED:"+rec.test_id);
-        if("url" in spec || "origin" in spec) throw new Error("ABSOLUTE_TARGET_FIELD_FORBIDDEN:"+rec.test_id);
-      }
-
-      if(!["ZERO","ZERO_ADDITIONAL","ZERO_PERSISTENT","ZERO_BUSINESS"].includes(rec.expected_data_mutation)) {
-        mutating.push(rec.test_id);
-        if(!hasServer) throw new Error("MUTATING_CASE_WITHOUT_SERVER_LIFECYCLE:"+rec.test_id);
+      const cat=rec.test_id.split("-")[0];
+      const canMutate=!["AUTH","STG","PRD"].includes(cat)&&(rec.request_plan.requests||[]).some(q=>q.method!=="GET");
+      if(canMutate){
+        mutationCapable.push(rec.test_id);
+        if(String(rec.expected_authorization_result).startsWith("DENY")) negativeMutationCapable.push(rec.test_id);
+        if(!rec.server_case_plan||!plans[rec.server_case_plan]) throw new Error("MUTATION_CAPABLE_WITHOUT_SERVER_LIFECYCLE:"+rec.test_id);
+        if(rec.mutation_probe_plan?.channel!=="SERVER_SQL_OWNER") throw new Error("MUTATION_CAPABLE_WRONG_EVIDENCE_CHANNEL:"+rec.test_id);
+        if(rec.cleanup_contract?.mode!=="SCOPED_RESTORE_PLUS_GLOBAL_PUBLIC_DATA_HASH"||rec.cleanup_contract.must_restore_exactly!==true||rec.cleanup_contract.fail_stop!==true) throw new Error("MUTATION_CAPABLE_CLEANUP_CONTRACT_MISSING:"+rec.test_id);
       }
 
       if(rec.request_plan.response_assertion?.mode==="DENIAL_SEMANTIC"){
@@ -97,12 +118,8 @@ async function main() {
         if(!a.expected_error_exact&&!a.expected_error_regex&&!a.expected_error_codes?.length) throw new Error("DENY_ERROR_EVIDENCE_MISSING:"+rec.test_id);
       }
 
-      const nontrivialPositive=!String(rec.expected_authorization_result).startsWith("DENY") &&
-        !["AUTH-001","AUTH-004","AUTH-005","STG-001","STG-002","STG-007","PRD-002"].includes(rec.test_id);
-      if(nontrivialPositive && !rec.semantic_assertions?.length) throw new Error("POSITIVE_SEMANTIC_ASSERTION_MISSING:"+rec.test_id);
-
       if(rec.execution_mode==="CONCURRENT_HTTP"){
-        if(!rec.concurrency_assertion?.require_positive_overlap || rec.concurrency_assertion.min_overlap_ms<1 || !rec.concurrency_assertion.receipt_per_request_timing) throw new Error("CONCURRENCY_OVERLAP_ASSERTION_MISSING:"+rec.test_id);
+        if(!rec.concurrency_assertion?.require_positive_overlap||rec.concurrency_assertion.min_overlap_ms<1||!rec.concurrency_assertion.receipt_per_request_timing) throw new Error("CONCURRENCY_OVERLAP_ASSERTION_MISSING:"+rec.test_id);
       }
     }
 
@@ -112,99 +129,115 @@ async function main() {
       if(rec.verification_contract?.after_reapply!=="SHA256_MUST_EQUAL_INITIAL") throw new Error("REAPPLY_STATE_RESTORE_CONTRACT_MISSING:"+rec.test_id);
     }
   }
+
   for(const [k,v] of Object.entries(expected)) if(counts[k]!==v) throw new Error("COUNT_MISMATCH:"+k+":"+counts[k]+"!="+v);
 
-  const statefulRequired=[
-    "COR-011","COR-012","COR-013","CRM-015","FUN-007","FUN-008","ACL-002","ACL-003","ACL-004","ACL-010",
-    "IMP-001","IMP-002","IMP-003","IMP-010","IMP-011","IMP-SESSION-LIST-MISMATCH","IMP-SESSION-PAYLOAD-MISMATCH","IMP-INCOMPLETE-STATE",
-    "FDB-008","FDB-009"
-  ];
-  for(const id of statefulRequired) if(!serverPlans[id]) throw new Error("STATEFUL_SERVER_PLAN_MISSING:"+id);
+  // STG-001 must truly be unauthenticated.
+  const stg001=matrix.records.find(x=>x.test_id==="STG-001");
+  if(stg001?.request_plan?.requests?.[0]?.auth_token_var!==null) throw new Error("STG001_NOT_ACTUALLY_NO_SESSION");
+  if(!/without Authorization\/session/i.test(stg001?.action_request||"")) throw new Error("STG001_ACTION_TEXT_DRIFT");
 
-  const importModes={
-    "IMP-011":"COMPLETED",
-    "IMP-SESSION-LIST-MISMATCH":"COMPLETED",
-    "IMP-SESSION-PAYLOAD-MISMATCH":"COMPLETED",
-    "IMP-INCOMPLETE-STATE":"INCOMPLETE"
-  };
-  for(const [id,mode] of Object.entries(importModes)){
-    const plan=serverPlans[id];
-    if(plan.kind!=="IMPORT" || !plan.scopes?.some(s=>s.seed_mode===mode)) throw new Error("DETERMINISTIC_PRECONDITION_SETUP_MISSING:"+id);
+  // FUN-006 is conditional by master-plan contract.
+  const fun006=matrix.records.find(x=>x.test_id==="FUN-006");
+  if(fun006?.applicability?.mode!=="FIXTURE_BOOLEAN"||fun006.applicability.var!=="FUNNEL_TRANSITION_RULES_ENABLED"||fun006.applicability.execute_when!==true||fun006.applicability.otherwise!=="NOT_APPLICABLE") throw new Error("FUN006_CONDITIONAL_CONTRACT_MISSING");
+  if(!(fun006.topology_dependencies||[]).includes("TOPO-FUNNEL-TRANSITION-RULES")) throw new Error("FUN006_TOPOLOGY_CONDITION_MISSING");
+
+  // Privileged topology closure.
+  const acl002=new Set(matrix.records.find(x=>x.test_id==="ACL-002")?.topology_dependencies||[]);
+  for(const d of ["TOPO-TOKEN-MANAGER","TOPO-MANAGER","TOPO-MANAGED-TIME","TOPO-MANAGER-LIST-SCOPE","TOPO-MANAGER-TARGET-SCOPE"]) if(!acl002.has(d)) throw new Error("ACL002_MANAGER_SCOPE_MISSING:"+d);
+
+  for(const id of ["ACL-004","STG-007"]){
+    const deps=new Set(matrix.records.find(x=>x.test_id===id)?.topology_dependencies||[]);
+    for(const d of ["TOPO-TOKEN-ROOT","TOPO-ROOT-PROFILE","TOPO-ROOT-AUTHORITY"]) if(!deps.has(d)) throw new Error("ROOT_TOPOLOGY_MISSING:"+id+":"+d);
   }
 
-  const requiredServerModes={
-    "COR-012":["SERVER_AFTER_PATH_EQUALS_LITERAL"],
-    "CRM-015":["SERVER_DELTA_ARRAY_COUNT_EQUALS","SERVER_AFTER_PATH_EQUALS_VAR"],
-    "FUN-007":["SERVER_DELTA_ARRAY_COUNT_EQUALS","SERVER_DELTA_ARRAY_ALL_FIELD_EQUALS_VAR"],
-    "FUN-008":["SERVER_DELTA_ARRAY_COUNT_EQUALS","ALL_RESPONSE_BODIES_CANONICALLY_EQUAL"],
-    "ACL-010":["SERVER_DELTA_ARRAY_COUNT_EQUALS","SERVER_AFTER_ARRAY_CONTAINS_TARGET"],
-    "IMP-001":["SERVER_DELTA_ARRAY_COUNT_EQUALS","SERVER_AFTER_ARRAY_UNIQUE_FIELD"],
-    "IMP-003":["SERVER_DELTA_ARRAY_COUNT_EQUALS","ALL_RESPONSE_BODIES_CANONICALLY_EQUAL"],
-    "IMP-010":["SERVER_DELTA_ARRAY_COUNT_EQUALS","SERVER_AFTER_ARRAY_UNIQUE_FIELD"],
-    "IMP-011":["SERVER_STATE_UNCHANGED"],
-    "FDB-008":["SERVER_AFTER_PATH_EQUALS_LITERAL","SERVER_DELTA_ARRAY_COUNT_EQUALS","SERVER_DELTA_ARRAY_ALL_FIELD_EQUALS_LITERAL"],
-    "FDB-009":["SERVER_AFTER_PATH_EQUALS_LITERAL","SERVER_DELTA_ARRAY_COUNT_EQUALS","SERVER_DELTA_ARRAY_ALL_FIELD_EQUALS_LITERAL"]
-  };
-  for(const [id,modes] of Object.entries(requiredServerModes)){
-    const present=new Set((matrix.records.find(x=>x.test_id===id)?.semantic_assertions||[]).map(x=>x.mode));
-    for(const mode of modes) if(!present.has(mode)) throw new Error("SERVER_SEMANTIC_MODE_MISSING:"+id+":"+mode);
-  }
-  const cor12=matrix.records.find(x=>x.test_id==="COR-012");
-  if(!(cor12.semantic_assertions||[]).some(x=>x.mode==="SERVER_AFTER_PATH_EQUALS_LITERAL"&&x.path==="broker.ativo"&&x.value===false)) throw new Error("COR012_ACTIVE_ASSERTION_MISSING");
+  const imp002=new Set(matrix.records.find(x=>x.test_id==="IMP-002")?.topology_dependencies||[]);
+  for(const d of ["TOPO-TOKEN-A","TOPO-ACTOR-A-PROFILE","TOPO-TOKEN-B","TOPO-ACTOR-B-PROFILE","TOPO-TENANTS-A-B-DIFFER","TOPO-LISTS-A-B-DIFFER"]) if(!imp002.has(d)) throw new Error("IMP002_ACTOR_TOPOLOGY_MISSING:"+d);
 
-  function selectedFields(pathTemplate){
-    const mm=String(pathTemplate||"").match(/[?&]select=([^&]+)/);
-    if(!mm) return null;
-    return new Set(mm[1].split(",").map(x=>x.trim()));
+  // ACL lifecycle must cover list row, entire ACL set and audit side effects.
+  for(const id of ["ACL-001","ACL-002","ACL-003","ACL-004","ACL-005","ACL-006","ACL-007","ACL-008","ACL-009","ACL-010"]){
+    const p=plans[id];
+    if(p?.kind!=="ACL"||p.include_list_row!==true||p.include_all_acl_rows!==true||p.include_list_audit_rows!==true||p.global_data_hash!==true||p.cleanup_fail_stop!==true) throw new Error("ACL_FULL_LIFECYCLE_MISSING:"+id);
   }
-  for(const rec of matrix.records.filter(x=>x.runner==="http_matrix"&&!x.server_case_plan)){
-    const after=rec.mutation_probe_plan?.after||[];
-    for(const a of rec.semantic_assertions||[]){
-      if(["AFTER_FIRST_ROW_FIELD_EQUALS_VAR","AFTER_FIRST_ROW_FIELD_EQUALS_LITERAL","DELTA_ROWS_ALL_FIELD_EQUALS_VAR"].includes(a.mode)){
-        const spec=after[a.probe_index],fields=selectedFields(spec?.path_template);
-        if(fields && a.field && !fields.has(a.field)) throw new Error("ASSERTS_UNSELECTED_FIELD:"+rec.test_id+":"+a.field);
-      }
-      if(a.mode==="AFTER_ROWS_CONTAIN_TARGET"){
-        const spec=after[a.probe_index],fields=selectedFields(spec?.path_template);
-        if(fields && (!fields.has("target_type")||!fields.has("target_id"))) throw new Error("ASSERTS_UNSELECTED_TARGET_FIELDS:"+rec.test_id);
-      }
-    }
+  for(const id of ["ACL-002","ACL-003","ACL-004","ACL-010"]) if(plans[id]?.prepare_target_absent!==true) throw new Error("ACL_POSITIVE_TARGET_PREPARE_MISSING:"+id);
+
+  // Broker lifecycles must cover audit side effects.
+  for(const [id,p] of Object.entries(plans)){
+    if(p.kind==="BROKER"&&p.include_full_audit_logs!==true) throw new Error("BROKER_AUDIT_LIFECYCLE_MISSING:"+id);
   }
 
-  if(matrix.residuals?.["IMP-003"]!=="NOT_DETERMINED") throw new Error("IMP003_STATUS_DRIFT");
-  if(matrix.residuals?.ROLLBACK_REAPPLY!=="NOT_DETERMINED") throw new Error("ROLLBACK_STATUS_DRIFT");
-  if(matrix.records.find(r=>r.test_id==="IMP-003")?.prior_evidence!==null) throw new Error("IMP003_PRIOR_PASS_OVERCLAIM");
+  // COR-011 must use the real T3 state machine.
+  const cor11=plans["COR-011"];
+  if(cor11?.kind!=="PASSWORD_T3"||cor11.authority_claims_var!=="ADMIN_JWT_CLAIMS"||cor11.target_claims_var!=="ACTOR_JWT_CLAIMS"||cor11.include_full_audit_logs!==true||cor11.include_t3_proof_lease_rows!==true) throw new Error("COR011_T3_LIFECYCLE_CONTRACT_MISSING");
+  const cor11Deps=new Set(matrix.records.find(x=>x.test_id==="COR-011")?.topology_dependencies||[]);
+  for(const d of ["TOPO-TOKEN-ACTOR","TOPO-ACTOR","TOPO-TOKEN-ADMIN","TOPO-ADMIN"]) if(!cor11Deps.has(d)) throw new Error("COR011_AUTHORITY_TOPOLOGY_MISSING:"+d);
 
+  // Distribution denial has no lista arg, so the lifecycle must cover the full distribution tables.
+  if(plans["COR-008"]?.kind!=="DISTRIBUTION"||plans["COR-008"].full_distribution_tables!==true||plans["COR-008"].include_full_audit_logs!==true) throw new Error("COR008_FULL_DISTRIBUTION_GUARD_MISSING");
+
+  // Positive feedback baseline/semantic closure.
+  for(const id of ["FDB-008","FDB-009"]){
+    const p=plans[id];
+    if(p?.kind!=="FEEDBACK"||p.prepare_feedback_baseline!==true||p.baseline_stage_var!=="BASE_STAGE_ID"||p.expected_stage_var!=="EM_CONVERSA_STAGE_ID") throw new Error("FDB_POSITIVE_BASELINE_MISSING:"+id);
+  }
+
+  // No protected idempotency state can be observed through client REST.
   if(/CUSTOM_ASSERTED_BY_FIXTURE/.test(matrixText+http)) throw new Error("CUSTOM_FIXTURE_ASSERTION_FORBIDDEN");
   if(/allowed_http_error_class/.test(matrixText+http)) throw new Error("BROAD_4XX_CLASS_REMAINS");
   if(/fixture\.cases|spec\.url|fetch\(spec\.url/.test(http)) throw new Error("FIXTURE_OR_ARBITRARY_URL_EXECUTION_FORBIDDEN");
   if(/for \(const check of matrix\.topology_contract\?\.checks/.test(http)) throw new Error("RUNNER_EXECUTES_ALL_TOPOLOGY_CHECKS");
 
-  for(const needle of [
+  const runnerNeedles=[
     "runTopologyPreflight(record)",
-    "record.topology_dependencies",
-    "PR08_SERVER_EVIDENCE_HARD_DENY_PRODUCTION_PROJECT_REF",
-    "SERVER-EVIDENCE-PREFLIGHT",
-    "seedCompletedImport",
-    "seedIncompleteImport",
-    "cleanupServerCase",
-    "cleanup_restored",
+    "SERVER_ROOT_AUTHORITY",
+    "FIXTURE_BOOLEAN_TRUE",
+    "recordApplicable",
+    'pass_fail:"NOT_APPLICABLE"',
+    "publicDataHash",
+    "--restrict-key=FECHAIPR08CASESTATE",
+    "sequenceState",
+    "restoreSequences",
+    "cleanupGlobalHash",
     "PR08_CASE_CLEANUP_NOT_RESTORED",
-    "SERVER_DELTA_ARRAY_COUNT_EQUALS",
-    "overlap_ms"
-  ]) if(!http.includes(needle)) throw new Error("HTTP_V4_CONTRACT_MISSING:"+needle);
+    "t3PreparePasswordState",
+    "t3_issue_admin_password_reset_edge_proof",
+    "t3_prepare_admin_password_reset",
+    "t3_release_admin_password_reset_lease",
+    "marcar_senha_inicial_definida",
+    "PR08_ACL_ROWS_RESTORE",
+    "PR08_ACL_AUDIT_RESTORE",
+    "PR08_BROKER_AUDIT_RESTORE",
+    "PR08_DISTRIBUTION_LEADS_RESTORE",
+    "PR08_DISTRIBUTION_AUDIT_RESTORE",
+    "SERVER_AFTER_ARRAY_COUNT_EQUALS",
+    'schema:"fechai.pr08.http.receipt.v5"'
+  ];
+  for(const n of runnerNeedles) if(!http.includes(n)) throw new Error("HTTP_V5_CONTRACT_MISSING:"+n);
 
-  for(const needle of [
+  // Every lifecycle kind in the matrix must have a runner branch.
+  const runnerKinds=new Set();
+  for(const p of Object.values(plans)) if(p.kind!=="SQL_ONLY_ROLLBACK_CASE") runnerKinds.add(p.kind);
+  for(const kind of runnerKinds){
+    if(!http.includes('plan.kind==="'+kind+'"')&&!http.includes('plan.kind==="'+kind+'" ||')&&!http.includes('plan.kind==="'+kind+'"||')) throw new Error("RUNNER_KIND_IMPLEMENTATION_MISSING:"+kind);
+  }
+
+  // Owner-side evidence preflight must prove BYPASSRLS and preserve PR-07 boundary.
+  for(const n of [
     "SERVER-EVIDENCE-PREFLIGHT",
     "server evidence channel hard-denies production",
     "server_evidence_owner_role_is_postgres",
+    "server_evidence_postgres_bypassrls",
     "idempotency_zero_client_policies",
     "idempotency_no_client_direct_dml"
-  ]) if(!sql.includes(needle)) throw new Error("SERVER_EVIDENCE_SQL_PREFLIGHT_MISSING:"+needle);
+  ]) if(!sql.includes(n)) throw new Error("SERVER_EVIDENCE_SQL_PREFLIGHT_MISSING:"+n);
 
   if(!rollback.includes("--restrict-key=FECHAIPR08STATEHASH")) throw new Error("ROLLBACK_DETERMINISTIC_RESTRICT_KEY_MISSING");
-  if(!rollback.includes("PR08_EXACTLY_ONE_ROLLBACK_CASE_REQUIRED") || !rollback.includes("PR08_DATABASE_HOST_PROJECT_BINDING_MISMATCH") || !rollback.includes("state_after_reapply_sha256")) throw new Error("ROLLBACK_CONTRACT_REGRESSION");
-  if(!sql.includes("IMP-CLAIMANT-ROLLBACK") || !sql.includes("no_claimant_marker_residue")) throw new Error("CLAIMANT_SQL_PLAN_REGRESSION");
+  if(!rollback.includes("PR08_EXACTLY_ONE_ROLLBACK_CASE_REQUIRED")||!rollback.includes("PR08_DATABASE_HOST_PROJECT_BINDING_MISMATCH")||!rollback.includes("state_after_reapply_sha256")) throw new Error("ROLLBACK_CONTRACT_REGRESSION");
+  if(!sql.includes("IMP-CLAIMANT-ROLLBACK")||!sql.includes("no_claimant_marker_residue")) throw new Error("CLAIMANT_SQL_PLAN_REGRESSION");
+
+  if(matrix.residuals?.["IMP-003"]!=="NOT_DETERMINED") throw new Error("IMP003_STATUS_DRIFT");
+  if(matrix.residuals?.ROLLBACK_REAPPLY!=="NOT_DETERMINED") throw new Error("ROLLBACK_STATUS_DRIFT");
+  if(matrix.records.find(r=>r.test_id==="IMP-003")?.prior_evidence!==null) throw new Error("IMP003_PRIOR_PASS_OVERCLAIM");
 
   if(/[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}/i.test(matrixText)) throw new Error("UUID_FORBIDDEN");
   if(/eyJ[A-Za-z0-9_-]{10,}\./.test(matrixText)) throw new Error("JWT_FORBIDDEN");
@@ -213,9 +246,9 @@ async function main() {
     status:"PASS",
     counts,
     topology_checks:topologyChecks.length,
-    global_topology_checks:matrix.topology_contract.global_check_ids.length,
-    server_case_plans:Object.keys(serverPlans).length,
-    mutating_cases:mutating.length,
+    server_case_plans:Object.keys(plans).length,
+    mutation_capable_http:mutationCapable.length,
+    negative_mutation_capable_http:negativeMutationCapable.length,
     imp003:"NOT_DETERMINED",
     rollback_reapply:"NOT_DETERMINED"
   })+"\n");

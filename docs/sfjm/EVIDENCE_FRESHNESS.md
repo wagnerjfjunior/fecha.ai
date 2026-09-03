@@ -1,5 +1,44 @@
 # FECH.AI — SFJM Evidence Freshness
 
+## 0.0000000000 PR-08 fourth bounded anti-loop closure correction — 2026-09-03
+
+Implementation-only event on parent head `c18347701b52ec21a3758cfbfa512871e10998dc`.
+
+    scope: same 9 authorized PR-08 files
+    mode: FORENSIC / EVIDENCE-BOUND / CONTRADICTION-FIRST / ANTI-LOOP
+    matrix schema: fechai.f1-02.pr08.matrix.v5
+    test records: 98
+    topology checks: 55
+    server lifecycle plans: 72
+    mutation-capable HTTP cases: 71
+    mutation-capable HTTP cases without lifecycle: 0
+    negative unexpected-mutation cleanup: COVERED BY SERVER LIFECYCLE
+    cleanup verification: SCOPED RESTORE + GLOBAL PUBLIC DATA SHA-256
+    sequence restoration: REQUIRED
+    ACL restoration: LIST ROW + COMPLETE ACL SET + AUDIT
+    broker audit restoration: INCLUDED
+    COR-011: CANONICAL T3 FLOW
+    STG-001: TRUE NO-SESSION REQUEST
+    FUN-006: CONDITIONAL / NOT_APPLICABLE WHEN RULES ABSENT
+    postgres.rolbypassrls preflight: REQUIRED
+    protected idempotency REST/client access: NONE
+    runtime execution: NONE
+    Auth execution: NONE
+    rollback/reapply execution: NONE
+    production smoke: NONE
+    IMP-003: NOT_DETERMINED
+    ROLLBACK_REAPPLY: NOT_DETERMINED
+    SECURITY_GO: NOT_GRANTED
+
+Reusable closure rule extracted: mutation-capable security tests must carry isolation, topology authority proof, deterministic observation, deterministic cleanup and a whole-surface restoration check before batch execution is considered repeatable.
+
+### Current next evidence action
+
+    resolve the new PR #166 exact head
+    perform one exact-head implementation review against the v5 closure invariants
+    do not execute any PR-08 runner
+    do not reopen previous correction classes unless contradicted by exact-head evidence
+
 ## 0.000000000 PR-08 third bounded harness correction evidence — 2026-09-03
 
 Implementation-only event on parent head `718bf5371cde7b1243a852c497721badf0b5bba4`.

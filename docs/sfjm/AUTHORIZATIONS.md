@@ -1,5 +1,52 @@
 # FECH.AI — SFJM Authorizations
 
+## 0.0000000000 Product Authority — PR #166 fourth bounded anti-loop correction grant — 2026-09-03
+
+Authorized correction parent:
+
+    c18347701b52ec21a3758cfbfa512871e10998dc
+
+Authorized scope remains exactly the same nine PR-08 files.
+
+Execution modifiers supplied by Product Authority:
+
+    FORENSIC DEEP REVIEW
+    EVIDENCE-BOUND
+    HISTORICAL RECONSTRUCTION
+    CONTRADICTION-FIRST
+    RED TEAM THE EVIDENCE
+    NO-SHALLOW-SUMMARY
+    REUSABILITY EXTRACTION
+    CAUTION TO AVOID LOOPING EXECUTION
+
+Required closure domains:
+
+1. isolate/cleanup unexpected mutations from negative cases;
+2. restore ACL list scope, complete visibility set and audit effects;
+3. make COR-011 lifecycle T3-compatible;
+4. complete token/actor/manager/root/team/list topology dependencies;
+5. correct STG-001 to a real no-session request;
+6. make FUN-006 conditional on actual transition-rule existence;
+7. prove postgres BYPASSRLS for owner-side evidence;
+8. include broker audit effects and closure-validator regressions.
+
+Explicit prohibitions remain:
+
+    runtime matrix
+    Auth matrix
+    rollback/reapply execution
+    production smoke
+    Supabase/Auth mutation
+    LAB / second project / Preview Branch
+    Vercel/deploy
+    Ready
+    merge
+    OC-01
+    PR-09
+    Security Go
+
+Only repository/static validation is authorized. The grant is consumed by publication of the fourth correction. The next authorized activity is read-only exact-head implementation review only.
+
 ## 0.000000000 Product Authority — PR #166 third bounded correction grant — 2026-09-03
 
 Authorized correction parent:

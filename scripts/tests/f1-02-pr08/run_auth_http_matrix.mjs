@@ -165,8 +165,17 @@ async function main() {
       return row?.[c.field]===true;
     });
   }
+  function fixtureBool(name) {
+    const v=valueFromVar(name);
+    if(typeof v==="boolean") return v;
+    const s=String(v).trim().toLowerCase();
+    if(["true","1","yes","y"].includes(s)) return true;
+    if(["false","0","no","n"].includes(s)) return false;
+    throw new Error("PR08_BOOLEAN_VARIABLE_REQUIRED:"+name);
+  }
   function topologyAssertionPass(assertion,body) {
     if (assertion.mode==="VARIABLE_NOT_EQUAL") return String(valueFromVar(assertion.left))!==String(valueFromVar(assertion.right));
+    if (assertion.mode==="FIXTURE_BOOLEAN_TRUE") return fixtureBool(assertion.var)===true;
     if (assertion.mode==="OBJECT_FIELD_EQUALS_VAR") return body && typeof body==="object" && !Array.isArray(body) && String(body[assertion.field])===String(valueFromVar(assertion.var));
     if (assertion.mode==="ZERO_ROWS") return Array.isArray(body) && body.length===0;
     if (assertion.mode==="ROW_IDS_EQUAL_VAR_SET") {
@@ -194,7 +203,15 @@ async function main() {
     for(const id of ids) {
       const check=checksById.get(id);
       if(!check) throw new Error("PR08_TOPOLOGY_CHECK_UNKNOWN:"+record.test_id+":"+id);
-      if(check.assertion?.mode==="VARIABLE_NOT_EQUAL") {
+
+      if(check.assertion?.mode==="SERVER_ROOT_AUTHORITY") {
+        ensureServerContext();
+        const n=Number(serverExec(
+          "SELECT count(*)::text FROM public.admins WHERE user_id="+sqlUuidVar(check.assertion.user_var)+" AND ativo IS TRUE AND role='admin_global';",
+          "PR08_TOPOLOGY_ROOT_AUTHORITY"
+        ));
+        if(n!==1) throw new Error("PR08_TOPOLOGY_ASSERTION_FAILED:"+id);
+      } else if(["VARIABLE_NOT_EQUAL","FIXTURE_BOOLEAN_TRUE"].includes(check.assertion?.mode)) {
         if(!topologyAssertionPass(check.assertion,null)) throw new Error("PR08_TOPOLOGY_ASSERTION_FAILED:"+id);
       } else {
         const response=await doSpec(check.request);
@@ -258,7 +275,11 @@ async function main() {
       PGPASSWORD:decodeURIComponent(u.password),
       PGSSLMODE:u.searchParams.get("sslmode")||"require"
     };
-    serverCtx={psql:process.env.FECHAI_PR08_PSQL_BIN||"psql",pgEnv};
+    serverCtx={
+      psql:process.env.FECHAI_PR08_PSQL_BIN||"psql",
+      pgDump:process.env.FECHAI_PR08_PG_DUMP_BIN||"pg_dump",
+      pgEnv
+    };
     return serverCtx;
   }
 
@@ -295,74 +316,220 @@ async function main() {
     return serverJson("SELECT COALESCE((SELECT to_jsonb(q) FROM ("+selectSql+") q LIMIT 1),'null'::jsonb);",label);
   }
 
+  const tableColumnCache=new Map();
+
+  function qident(name) {
+    return '"'+String(name).replace(/"/g,'""')+'"';
+  }
+  function tableColumns(table) {
+    if(tableColumnCache.has(table)) return tableColumnCache.get(table);
+    const cols=serverJson(
+      "SELECT COALESCE(pg_catalog.jsonb_agg(a.attname ORDER BY a.attnum),'[]'::jsonb) "+
+      "FROM pg_catalog.pg_attribute a "+
+      "WHERE a.attrelid="+sqlLiteral(table)+"::pg_catalog.regclass "+
+      "AND a.attnum>0 AND NOT a.attisdropped AND a.attgenerated='';",
+      "PR08_TABLE_COLUMNS"
+    );
+    if(!Array.isArray(cols)||!cols.length) throw new Error("PR08_TABLE_COLUMNS_EMPTY:"+table);
+    tableColumnCache.set(table,cols);
+    return cols;
+  }
+  function fullRow(table,where,label) {
+    return oneObject("SELECT t.* FROM "+table+" t WHERE "+where,label);
+  }
+  function fullSet(table,where,orderExpr,label) {
+    const rows=queryArray(
+      "SELECT t.*, ("+orderExpr+")::text AS __ord FROM "+table+" t WHERE "+where+" ORDER BY "+orderExpr,
+      label
+    );
+    for(const row of rows) delete row.__ord;
+    return rows;
+  }
+  function insertRows(table,rows,label) {
+    if(!rows?.length) return;
+    const cols=tableColumns(table);
+    const list=cols.map(qident).join(",");
+    serverExec(
+      "INSERT INTO "+table+" ("+list+") "+
+      "SELECT "+list+" FROM pg_catalog.jsonb_populate_recordset(NULL::"+table+","+sqlJson(rows)+") r;",
+      label
+    );
+  }
+  function restoreFullRow(table,row,pkFields,label) {
+    if(!row) return;
+    const cols=tableColumns(table);
+    const list=cols.map(qident).join(",");
+    const conflict=pkFields.map(qident).join(",");
+    const updates=cols.filter(c=>!pkFields.includes(c)).map(c=>qident(c)+"=EXCLUDED."+qident(c)).join(",");
+    serverExec(
+      "INSERT INTO "+table+" ("+list+") "+
+      "SELECT "+list+" FROM pg_catalog.jsonb_populate_record(NULL::"+table+","+sqlJson(row)+") r "+
+      "ON CONFLICT ("+conflict+") DO UPDATE SET "+updates+";",
+      label
+    );
+  }
+  function restoreReplaceSet(table,where,rows,label) {
+    serverExec("DELETE FROM "+table+" WHERE "+where+";",label+"_DELETE");
+    insertRows(table,rows,label+"_INSERT");
+  }
+  function restoreScopedSetById(table,where,rows,label) {
+    const ids=(rows||[]).map(x=>sqlLiteral(x.id)+"::uuid");
+    serverExec(
+      "DELETE FROM "+table+" WHERE "+where+(ids.length?" AND id NOT IN ("+ids.join(",")+")":"")+";",
+      label+"_DELETE_EXTRAS"
+    );
+    for(const row of rows||[]) restoreFullRow(table,row,["id"],label+"_UPSERT");
+  }
+  function restoreWholeTableById(table,rows,label) {
+    const ids=(rows||[]).map(x=>sqlLiteral(x.id)+"::uuid");
+    serverExec(
+      "DELETE FROM "+table+(ids.length?" WHERE id NOT IN ("+ids.join(",")+")":"")+";",
+      label+"_DELETE_EXTRAS"
+    );
+    for(const row of rows||[]) restoreFullRow(table,row,["id"],label+"_UPSERT");
+  }
+  function allAuditRows() {
+    return fullSet("public.audit_logs","true","id::text","PR08_AUDIT_ALL_STATE");
+  }
+  function publicDataHash(label) {
+    serverBoundaryPreflight();
+    const ctx=ensureServerContext();
+    const r=spawnSync(ctx.pgDump,[
+      "--data-only","--schema=public","--no-comments","--no-owner","--no-privileges",
+      "--format=plain","--restrict-key=FECHAIPR08CASESTATE"
+    ],{encoding:"utf8",env:ctx.pgEnv,cwd:root,maxBuffer:128*1024*1024});
+    if(r.status!==0) throw new Error(label+"_PG_DUMP_FAILED:"+redact(String(r.stderr||"")).slice(0,1000));
+    return crypto.createHash("sha256").update(String(r.stdout||"")).digest("hex");
+  }
+  function sequenceState() {
+    const names=serverJson(
+      "SELECT COALESCE(pg_catalog.jsonb_agg(pg_catalog.jsonb_build_object('schema',n.nspname,'name',c.relname) ORDER BY n.nspname,c.relname),'[]'::jsonb) "+
+      "FROM pg_catalog.pg_class c JOIN pg_catalog.pg_namespace n ON n.oid=c.relnamespace "+
+      "WHERE c.relkind='S' AND n.nspname='public';",
+      "PR08_SEQUENCE_NAMES"
+    );
+    return (names||[]).map((x,i)=>{
+      const qualified=qident(x.schema)+"."+qident(x.name);
+      const state=oneObject("SELECT last_value,is_called FROM "+qualified,"PR08_SEQUENCE_STATE_"+i);
+      return {...x,last_value:state?.last_value,is_called:state?.is_called};
+    });
+  }
+  function restoreSequences(state) {
+    for(const s of state||[]) {
+      if(s.last_value===null||s.last_value===undefined) continue;
+      serverExec(
+        "SELECT pg_catalog.setval(pg_catalog.format('%I.%I',"+sqlLiteral(s.schema)+","+sqlLiteral(s.name)+")::pg_catalog.regclass,"+
+        String(s.last_value)+","+(s.is_called?"true":"false")+");",
+        "PR08_SEQUENCE_RESTORE"
+      );
+    }
+  }
+
   function importScopeState(scope,index) {
     const company=sqlUuidVar(scope.company_var);
     const session=sqlTextVar(scope.session_var);
-    const phones=scope.phone_vars.map(n=>sqlLiteral(valueFromVar(n))).join(",");
     const listIds=scope.list_vars.map(n=>sqlUuidVar(n)).join(",");
-    const lists=queryArray(
-      "SELECT id,empresa_id,leads_validos,leads_invalidos,id::text AS __ord FROM public.listas WHERE id IN ("+listIds+") ORDER BY id",
+    const lists=fullSet(
+      "public.listas",
+      "id IN ("+listIds+")",
+      "id::text",
       "PR08_SERVER_IMPORT_LISTS_"+index
     );
-    const leads=queryArray(
-      "SELECT id,empresa_id,lista_id,telefone_e164,id::text AS __ord FROM public.leads WHERE empresa_id="+company+" AND telefone_e164 IN ("+phones+") ORDER BY id",
-      "PR08_SERVER_IMPORT_LEADS_"+index
-    );
-    const markers=queryArray(
-      "SELECT empresa_id,sessao_id,lista_id,request_fingerprint,resultado,completed_at,(empresa_id::text||':'||sessao_id) AS __ord FROM public.importar_leads_batch_idempotency WHERE empresa_id="+company+" AND sessao_id="+session+" ORDER BY empresa_id,sessao_id",
+
+    let leadWhere="empresa_id="+company+" AND false";
+    if(scope.phone_vars?.length) {
+      const phones=scope.phone_vars.map(n=>sqlLiteral(valueFromVar(n))).join(",");
+      leadWhere="empresa_id="+company+" AND telefone_e164 IN ("+phones+")";
+    } else if(scope.phone_prefix_var) {
+      leadWhere="empresa_id="+company+" AND telefone_e164 LIKE "+sqlLiteral(String(valueFromVar(scope.phone_prefix_var))+"%");
+    }
+    const leads=fullSet("public.leads",leadWhere,"id::text","PR08_SERVER_IMPORT_LEADS_"+index);
+    const markers=fullSet(
+      "public.importar_leads_batch_idempotency",
+      "empresa_id="+company+" AND sessao_id="+session,
+      "(empresa_id::text||':'||sessao_id)",
       "PR08_SERVER_IMPORT_MARKERS_"+index
     );
-    const logs=queryArray(
-      "SELECT id,empresa_id,detalhes,id::text AS __ord FROM public.logs WHERE empresa_id="+company+" AND detalhes->>'sessao_id'="+session+" ORDER BY id",
+    const logs=fullSet(
+      "public.logs",
+      "empresa_id="+company+" AND detalhes->>'sessao_id'="+session,
+      "id::text",
       "PR08_SERVER_IMPORT_LOGS_"+index
     );
-    for(const rows of [lists,leads,markers,logs]) for(const row of rows) delete row.__ord;
     return {lists,leads,markers,logs};
+  }
+
+  function leadState(leadVar,label) {
+    const leadId=sqlUuidVar(leadVar);
+    const lead=fullRow("public.leads","id="+leadId,label+"_LEAD");
+    const movements=fullSet("public.funil_movimentacoes","lead_id="+leadId,"id::text",label+"_MOVEMENTS");
+    return {lead,movements};
   }
 
   function serverState(plan) {
     serverBoundaryPreflight();
+
     if(plan.kind==="BROKER") {
-      const broker=oneObject(
-        "SELECT id,empresa_id,time_id,ativo,apto_para_receber,must_change_password,role,is_admin_local,is_gestor FROM public.corretores WHERE id="+sqlUuidVar(plan.broker_id_var),
-        "PR08_SERVER_BROKER_STATE"
-      );
-      return {broker};
+      return {
+        broker:fullRow("public.corretores","id="+sqlUuidVar(plan.broker_id_var),"PR08_BROKER_STATE"),
+        audit_logs:plan.include_full_audit_logs?allAuditRows():[]
+      };
+    }
+    if(plan.kind==="PASSWORD_T3") {
+      const authority=sqlUuidVar(plan.authority_user_id_var),target=sqlUuidVar(plan.target_user_id_var);
+      return {
+        broker:fullRow("public.corretores","id="+sqlUuidVar(plan.broker_id_var),"PR08_T3_BROKER_STATE"),
+        audit_logs:allAuditRows(),
+        t3_proofs:fullSet(
+          "public.t3_admin_password_reset_edge_proofs",
+          "actor_user_id="+authority+" OR target_user_id="+target,
+          "proof_id::text",
+          "PR08_T3_PROOF_STATE"
+        ),
+        t3_leases:fullSet(
+          "public.t3_admin_password_reset_leases",
+          "actor_user_id IN ("+authority+","+target+") OR target_user_id IN ("+authority+","+target+")",
+          "lease_id::text",
+          "PR08_T3_LEASE_STATE"
+        )
+      };
     }
     if(plan.kind==="ACL") {
-      const rows=queryArray(
-        "SELECT lista_id,empresa_id,target_type,target_id,(lista_id::text||':'||target_type||':'||target_id::text) AS __ord FROM public.lista_visibilidade WHERE lista_id="+sqlUuidVar(plan.list_id_var)+" AND target_type="+sqlLiteral(plan.target_type)+" AND target_id="+sqlUuidVar(plan.target_id_var)+" ORDER BY target_type,target_id",
-        "PR08_SERVER_ACL_STATE"
-      );
-      for(const row of rows) delete row.__ord;
-      return {acl_rows:rows};
+      const listId=sqlUuidVar(plan.list_id_var);
+      return {
+        list:fullRow("public.listas","id="+listId,"PR08_ACL_LIST_STATE"),
+        acl_rows:fullSet("public.lista_visibilidade","lista_id="+listId,"(target_type||':'||target_id::text)","PR08_ACL_ROWS_STATE"),
+        audit_logs:allAuditRows()
+      };
     }
-    if(plan.kind==="FUNNEL" || plan.kind==="FEEDBACK") {
-      const leadId=sqlUuidVar(plan.lead_id_var);
-      const lead=oneObject(
-        "SELECT id,empresa_id,corretor_id,lote_id,status,funil_estagio_id,funil_atualizado_em,feedback,observacao_corretor,data_feedback,atendimento_finalizado_em,tempo_tratativa_segundos,updated_at,tentativas_caiu,tecnico_pendente,ultima_falha_tecnica,ultima_falha_em,acao_sugerida,feedback_tipo,status_operacional,status_comercial FROM public.leads WHERE id="+leadId,
-        "PR08_SERVER_LEAD_STATE"
-      );
-      const movements=queryArray(
-        "SELECT id,lead_id,corretor_id,estagio_id,estagio_anterior_id,observacao,empresa_id,origem_evento,motivo,id::text AS __ord FROM public.funil_movimentacoes WHERE lead_id="+leadId+" ORDER BY id",
-        "PR08_SERVER_MOVEMENT_STATE"
-      );
-      for(const row of movements) delete row.__ord;
-      if(plan.kind==="FUNNEL") return {lead,movements};
-      if(!lead?.lote_id) throw new Error("PR08_FEEDBACK_LEAD_LOTE_REQUIRED");
-      const lot=oneObject(
-        "SELECT id,empresa_id,corretor_id,quantidade_feedback,status,status_v2,data_fechamento,closed_at FROM public.lotes WHERE id="+sqlLiteral(lead.lote_id)+"::uuid",
-        "PR08_SERVER_LOT_STATE"
-      );
+    if(plan.kind==="LEAD" || plan.kind==="FUNNEL") return leadState(plan.lead_id_var,"PR08_"+plan.kind+"_STATE");
+    if(plan.kind==="FEEDBACK") {
+      const base=leadState(plan.lead_id_var,"PR08_FEEDBACK_STATE");
+      if(!base.lead?.lote_id) throw new Error("PR08_FEEDBACK_LEAD_LOTE_REQUIRED");
+      const lot=fullRow("public.lotes","id="+sqlLiteral(base.lead.lote_id)+"::uuid","PR08_FEEDBACK_LOT_STATE");
       const otherCount=Number(serverExec(
-        "SELECT count(*)::text FROM public.leads WHERE lote_id="+sqlLiteral(lead.lote_id)+"::uuid AND id<>"+leadId+" AND feedback IS NOT NULL AND feedback<>'' AND (tecnico_pendente=false OR tecnico_pendente IS NULL);",
+        "SELECT count(*)::text FROM public.leads WHERE lote_id="+sqlLiteral(base.lead.lote_id)+"::uuid AND id<>"+sqlUuidVar(plan.lead_id_var)+" AND feedback IS NOT NULL AND feedback<>'' AND (tecnico_pendente=false OR tecnico_pendente IS NULL);",
         "PR08_SERVER_OTHER_FEEDBACK_COUNT"
       ));
-      return {lead,movements,lot,other_feedback_count:otherCount};
+      return {...base,lot,other_feedback_count:otherCount};
     }
-    if(plan.kind==="IMPORT") {
-      return {scopes:plan.scopes.map((s,i)=>importScopeState(s,i))};
+    if(plan.kind==="LOT") {
+      return {lot:fullRow("public.lotes","id="+sqlUuidVar(plan.lot_id_var),"PR08_LOT_STATE")};
     }
+    if(plan.kind==="LEAD_NAMESPACE") {
+      const phones=plan.phone_vars.map(n=>sqlLiteral(valueFromVar(n))).join(",");
+      return {leads:fullSet("public.leads","lista_id="+sqlUuidVar(plan.list_id_var)+" AND telefone_e164 IN ("+phones+")","id::text","PR08_LEAD_NAMESPACE_STATE")};
+    }
+    if(plan.kind==="DISTRIBUTION") {
+      return {
+        lists:fullSet("public.listas","true","id::text","PR08_DISTRIBUTION_LISTS"),
+        lots:fullSet("public.lotes","true","id::text","PR08_DISTRIBUTION_LOTS"),
+        leads:fullSet("public.leads","true","id::text","PR08_DISTRIBUTION_LEADS"),
+        broker:fullRow("public.corretores","id="+sqlUuidVar(plan.actor_corretor_id_var),"PR08_DISTRIBUTION_BROKER"),
+        audit_logs:allAuditRows()
+      };
+    }
+    if(plan.kind==="IMPORT") return {scopes:plan.scopes.map((s,i)=>importScopeState(s,i))};
     throw new Error("PR08_SERVER_PLAN_KIND_UNKNOWN:"+plan.kind);
   }
 
@@ -413,41 +580,91 @@ async function main() {
     if(Object.prototype.hasOwnProperty.call(plan.prepare_patch||{},"ativo")) sets.push("ativo="+(plan.prepare_patch.ativo?"true":"false"));
     if(plan.prepare_patch?.time_id_var) sets.push("time_id="+sqlUuidVar(plan.prepare_patch.time_id_var));
     if(!sets.length) return;
-    const n=Number(serverExec("WITH u AS (UPDATE public.corretores SET "+sets.join(",")+" WHERE id="+sqlUuidVar(plan.broker_id_var)+" RETURNING 1) SELECT count(*)::text FROM u;","PR08_BROKER_PREPARE"));
+    const n=Number(serverExec(
+      "WITH u AS (UPDATE public.corretores SET "+sets.join(",")+" WHERE id="+sqlUuidVar(plan.broker_id_var)+" RETURNING 1) SELECT count(*)::text FROM u;",
+      "PR08_BROKER_PREPARE"
+    ));
     if(n!==1) throw new Error("PR08_BROKER_PREPARE_TARGET_COUNT");
   }
+
+  function t3PreparePasswordState(plan,original) {
+    if(!original.broker) throw new Error("PR08_T3_BROKER_REQUIRED");
+    if(original.broker.must_change_password!==plan.require_original_must_change_password) throw new Error("PR08_T3_ORIGINAL_PASSWORD_STATE_INVALID");
+    if(original.t3_proofs.length||original.t3_leases.length) throw new Error("PR08_T3_ORIGINAL_PROOF_LEASE_STATE_NOT_CLEAN");
+
+    const proof=serverExec(
+      "SELECT public.t3_issue_admin_password_reset_edge_proof("+sqlUuidVar(plan.authority_user_id_var)+","+sqlUuidVar(plan.target_user_id_var)+")::text;",
+      "PR08_T3_ISSUE_PROOF"
+    ).split("\n").map(x=>x.trim()).filter(Boolean).pop();
+    if(!proof) throw new Error("PR08_T3_PROOF_MISSING");
+
+    const prepareSql=
+      "BEGIN;"+
+      "SELECT pg_catalog.set_config('request.jwt.claims',"+sqlTextVar(plan.authority_claims_var)+",true);"+
+      "SELECT public.t3_prepare_admin_password_reset("+sqlUuidVar(plan.target_user_id_var)+","+sqlLiteral(proof)+"::uuid)::text;"+
+      "COMMIT;";
+    const lines=serverExec(prepareSql,"PR08_T3_PREPARE").split("\n").map(x=>x.trim()).filter(Boolean);
+    const jsonLine=[...lines].reverse().find(x=>x.startsWith("{"));
+    if(!jsonLine) throw new Error("PR08_T3_PREPARE_RESULT_MISSING");
+    const result=JSON.parse(jsonLine);
+    if(result.ok!==true||!result.lease_id) throw new Error("PR08_T3_PREPARE_RESULT_INVALID");
+    plan.__runtime_lease_id=String(result.lease_id);
+
+    const released=serverExec(
+      "SELECT public.t3_release_admin_password_reset_lease("+sqlLiteral(plan.__runtime_lease_id)+"::uuid,"+
+      sqlUuidVar(plan.authority_user_id_var)+","+sqlUuidVar(plan.target_user_id_var)+")::text;",
+      "PR08_T3_RELEASE_PRETEST"
+    ).split("\n").map(x=>x.trim()).filter(Boolean).pop();
+    if(released!=="t"&&released!=="true") throw new Error("PR08_T3_RELEASE_PRETEST_FAILED");
+
+    const prepared=fullRow("public.corretores","id="+sqlUuidVar(plan.broker_id_var),"PR08_T3_PREPARED_BROKER");
+    if(prepared?.must_change_password!==true) throw new Error("PR08_T3_PASSWORD_STATE_NOT_PREPARED");
+  }
+
   function prepareServerCase(plan,original) {
     if(plan.kind==="BROKER") {
       if(!original.broker) throw new Error("PR08_BROKER_ORIGINAL_REQUIRED");
+      if(plan.password_state_guard && original.broker.must_change_password!==false) throw new Error("PR08_PASSWORD_GUARD_REQUIRES_FALSE_ORIGINAL");
       updateBrokerPrepare(plan);
       return;
     }
+    if(plan.kind==="PASSWORD_T3") return t3PreparePasswordState(plan,original);
     if(plan.kind==="ACL") {
-      if(plan.require_initial_absent && original.acl_rows.length!==0) throw new Error("PR08_ACL_INITIAL_TARGET_NOT_ABSENT");
+      if(plan.prepare_target_absent) {
+        serverExec(
+          "DELETE FROM public.lista_visibilidade WHERE lista_id="+sqlUuidVar(plan.list_id_var)+" AND target_type="+sqlLiteral(plan.request_target_type)+" AND target_id="+sqlUuidVar(plan.request_target_id_var)+";",
+          "PR08_ACL_PREPARE_TARGET_ABSENT"
+        );
+      }
       return;
     }
     if(plan.kind==="FUNNEL") {
-      if(!original.lead) throw new Error("PR08_FUNNEL_LEAD_REQUIRED");
-      const n=Number(serverExec(
-        "WITH u AS (UPDATE public.leads l SET funil_estagio_id="+sqlUuidVar(plan.baseline_stage_var)+",funil_atualizado_em=pg_catalog.now(),updated_at=pg_catalog.now() WHERE l.id="+sqlUuidVar(plan.lead_id_var)+" AND EXISTS (SELECT 1 FROM public.funil_estagios fe WHERE fe.id="+sqlUuidVar(plan.baseline_stage_var)+" AND fe.empresa_id=l.empresa_id) RETURNING 1) SELECT count(*)::text FROM u;",
-        "PR08_FUNNEL_PREPARE"
-      ));
-      if(n!==1) throw new Error("PR08_FUNNEL_PREPARE_FAILED");
+      if(plan.prepare_stage_var) {
+        if(!original.lead) throw new Error("PR08_FUNNEL_LEAD_REQUIRED");
+        const n=Number(serverExec(
+          "WITH u AS (UPDATE public.leads l SET funil_estagio_id="+sqlUuidVar(plan.prepare_stage_var)+",funil_atualizado_em=pg_catalog.now(),updated_at=pg_catalog.now() "+
+          "WHERE l.id="+sqlUuidVar(plan.lead_id_var)+" AND EXISTS (SELECT 1 FROM public.funil_estagios fe WHERE fe.id="+sqlUuidVar(plan.prepare_stage_var)+" AND fe.empresa_id=l.empresa_id) RETURNING 1) SELECT count(*)::text FROM u;",
+          "PR08_FUNNEL_PREPARE"
+        ));
+        if(n!==1) throw new Error("PR08_FUNNEL_PREPARE_FAILED");
+      }
       return;
     }
     if(plan.kind==="FEEDBACK") {
-      if(!original.lead || !original.lot) throw new Error("PR08_FEEDBACK_FIXTURE_REQUIRED");
-      if(original.other_feedback_count>plan.max_other_feedback) throw new Error("PR08_FEEDBACK_LOT_TOO_CLOSE_TO_AUTO_CLOSE");
-      const n=Number(serverExec(
-        "WITH u AS (UPDATE public.leads l SET "+
-        "feedback=NULL,observacao_corretor=NULL,data_feedback=NULL,atendimento_finalizado_em=NULL,tempo_tratativa_segundos=NULL,"+
-        "tentativas_caiu=0,tecnico_pendente=false,ultima_falha_tecnica=NULL,ultima_falha_em=NULL,acao_sugerida=NULL,feedback_tipo=NULL,"+
-        "status_operacional='em_trabalho'::public.lead_status_operacional,status_comercial='sem_status'::public.lead_status_comercial,"+
-        "funil_estagio_id="+sqlUuidVar(plan.baseline_stage_var)+",funil_atualizado_em=pg_catalog.now(),updated_at=pg_catalog.now() "+
-        "WHERE l.id="+sqlUuidVar(plan.lead_id_var)+" AND EXISTS (SELECT 1 FROM public.funil_estagios fe WHERE fe.id="+sqlUuidVar(plan.baseline_stage_var)+" AND fe.empresa_id=l.empresa_id) RETURNING 1) SELECT count(*)::text FROM u;",
-        "PR08_FEEDBACK_PREPARE"
-      ));
-      if(n!==1) throw new Error("PR08_FEEDBACK_PREPARE_FAILED");
+      if(plan.prepare_feedback_baseline) {
+        if(!original.lead||!original.lot) throw new Error("PR08_FEEDBACK_FIXTURE_REQUIRED");
+        if(original.other_feedback_count>plan.max_other_feedback) throw new Error("PR08_FEEDBACK_LOT_TOO_CLOSE_TO_AUTO_CLOSE");
+        const n=Number(serverExec(
+          "WITH u AS (UPDATE public.leads l SET "+
+          "feedback=NULL,observacao_corretor=NULL,data_feedback=NULL,atendimento_finalizado_em=NULL,tempo_tratativa_segundos=NULL,"+
+          "tentativas_caiu=0,tecnico_pendente=false,ultima_falha_tecnica=NULL,ultima_falha_em=NULL,acao_sugerida=NULL,feedback_tipo=NULL,"+
+          "status_operacional='em_trabalho'::public.lead_status_operacional,status_comercial='sem_status'::public.lead_status_comercial,"+
+          "funil_estagio_id="+sqlUuidVar(plan.baseline_stage_var)+",funil_atualizado_em=pg_catalog.now(),updated_at=pg_catalog.now() "+
+          "WHERE l.id="+sqlUuidVar(plan.lead_id_var)+" AND EXISTS (SELECT 1 FROM public.funil_estagios fe WHERE fe.id="+sqlUuidVar(plan.baseline_stage_var)+" AND fe.empresa_id=l.empresa_id) RETURNING 1) SELECT count(*)::text FROM u;",
+          "PR08_FEEDBACK_PREPARE"
+        ));
+        if(n!==1) throw new Error("PR08_FEEDBACK_PREPARE_FAILED");
+      }
       return;
     }
     if(plan.kind==="IMPORT") {
@@ -459,84 +676,114 @@ async function main() {
       }
       return;
     }
-    throw new Error("PR08_SERVER_PREPARE_KIND_UNKNOWN");
+    if(plan.kind==="LEAD_NAMESPACE") {
+      if(plan.require_clean&&original.leads.length!==0) throw new Error("PR08_LEAD_NAMESPACE_NOT_CLEAN");
+      return;
+    }
+    if(["LEAD","LOT","DISTRIBUTION"].includes(plan.kind)) return;
+    throw new Error("PR08_SERVER_PREPARE_KIND_UNKNOWN:"+plan.kind);
   }
 
-  function sqlValue(value,type) {
-    if(value===null||value===undefined) return "NULL";
-    if(type) return sqlLiteral(value)+"::"+type;
-    if(typeof value==="boolean") return value?"true":"false";
-    if(typeof value==="number") return String(value);
-    return sqlLiteral(value);
-  }
-  function deleteNewMovements(leadVar,original) {
-    const ids=(original.movements||[]).map(x=>sqlLiteral(x.id)+"::uuid");
-    const keep=ids.length ? " AND id NOT IN ("+ids.join(",")+")" : "";
-    serverExec("DELETE FROM public.funil_movimentacoes WHERE lead_id="+sqlUuidVar(leadVar)+keep+";","PR08_MOVEMENT_CLEANUP");
-  }
-  function restoreBroker(plan,original) {
-    const b=original.broker;
-    const sets=[];
-    if(Object.prototype.hasOwnProperty.call(plan.prepare_patch||{},"must_change_password")) sets.push("must_change_password="+sqlValue(b.must_change_password));
-    if(Object.prototype.hasOwnProperty.call(plan.prepare_patch||{},"ativo")) sets.push("ativo="+sqlValue(b.ativo));
-    if(plan.prepare_patch?.time_id_var) sets.push("time_id="+sqlValue(b.time_id,"uuid"));
-    if(sets.length) serverExec("UPDATE public.corretores SET "+sets.join(",")+" WHERE id="+sqlUuidVar(plan.broker_id_var)+";","PR08_BROKER_CLEANUP");
-  }
-  function restoreFunnel(plan,original) {
-    const l=original.lead;
-    serverExec(
-      "UPDATE public.leads SET funil_estagio_id="+sqlValue(l.funil_estagio_id,"uuid")+
-      ",funil_atualizado_em="+sqlValue(l.funil_atualizado_em,"timestamptz")+
-      ",updated_at="+sqlValue(l.updated_at,"timestamptz")+
-      " WHERE id="+sqlUuidVar(plan.lead_id_var)+";",
-      "PR08_FUNNEL_CLEANUP"
+  function cleanupPasswordT3(plan,original) {
+    const current=fullRow("public.corretores","id="+sqlUuidVar(plan.broker_id_var),"PR08_T3_CLEANUP_CURRENT");
+    if(current?.must_change_password===true) {
+      const sql=
+        "BEGIN;"+
+        "SELECT pg_catalog.set_config('request.jwt.claims',"+sqlTextVar(plan.target_claims_var)+",true);"+
+        "SELECT public.marcar_senha_inicial_definida()::text;"+
+        "COMMIT;";
+      serverExec(sql,"PR08_T3_SELF_SERVICE_CLEANUP");
+    }
+
+    if(plan.__runtime_lease_id) {
+      const n=Number(serverExec(
+        "SELECT count(*)::text FROM public.t3_admin_password_reset_leases WHERE lease_id="+sqlLiteral(plan.__runtime_lease_id)+"::uuid;",
+        "PR08_T3_LEFTOVER_LEASE_COUNT"
+      ));
+      if(n===1) {
+        serverExec(
+          "SELECT public.t3_release_admin_password_reset_lease("+sqlLiteral(plan.__runtime_lease_id)+"::uuid,"+
+          sqlUuidVar(plan.authority_user_id_var)+","+sqlUuidVar(plan.target_user_id_var)+")::text;",
+          "PR08_T3_LEFTOVER_LEASE_RELEASE"
+        );
+      }
+    }
+
+    const authority=sqlUuidVar(plan.authority_user_id_var),target=sqlUuidVar(plan.target_user_id_var);
+    restoreReplaceSet(
+      "public.t3_admin_password_reset_edge_proofs",
+      "actor_user_id="+authority+" OR target_user_id="+target,
+      original.t3_proofs,
+      "PR08_T3_PROOFS_RESTORE"
     );
-    deleteNewMovements(plan.lead_id_var,original);
+    restoreReplaceSet(
+      "public.t3_admin_password_reset_leases",
+      "actor_user_id IN ("+authority+","+target+") OR target_user_id IN ("+authority+","+target+")",
+      original.t3_leases,
+      "PR08_T3_LEASES_RESTORE"
+    );
+    restoreFullRow("public.corretores",original.broker,["id"],"PR08_T3_BROKER_RESTORE");
+    restoreWholeTableById("public.audit_logs",original.audit_logs,"PR08_T3_AUDIT_RESTORE");
   }
-  function restoreFeedback(plan,original) {
-    const l=original.lead,lot=original.lot;
-    const leadSets=[
-      ["feedback",l.feedback,null],["observacao_corretor",l.observacao_corretor,null],["data_feedback",l.data_feedback,"timestamptz"],
-      ["atendimento_finalizado_em",l.atendimento_finalizado_em,"timestamptz"],["tempo_tratativa_segundos",l.tempo_tratativa_segundos,"integer"],
-      ["updated_at",l.updated_at,"timestamptz"],["tentativas_caiu",l.tentativas_caiu,"integer"],["tecnico_pendente",l.tecnico_pendente,null],
-      ["ultima_falha_tecnica",l.ultima_falha_tecnica,null],["ultima_falha_em",l.ultima_falha_em,"timestamptz"],["acao_sugerida",l.acao_sugerida,null],
-      ["feedback_tipo",l.feedback_tipo,"public.lead_feedback_tipo"],["status_operacional",l.status_operacional,"public.lead_status_operacional"],
-      ["status_comercial",l.status_comercial,"public.lead_status_comercial"],["funil_estagio_id",l.funil_estagio_id,"uuid"],
-      ["funil_atualizado_em",l.funil_atualizado_em,"timestamptz"],["status",l.status,null]
-    ].map(([f,v,t])=>f+"="+sqlValue(v,t));
-    serverExec("UPDATE public.leads SET "+leadSets.join(",")+" WHERE id="+sqlUuidVar(plan.lead_id_var)+";","PR08_FEEDBACK_LEAD_CLEANUP");
-    const lotSets=[
-      ["quantidade_feedback",lot.quantidade_feedback,"integer"],["status",lot.status,null],["status_v2",lot.status_v2,"public.lote_status"],
-      ["data_fechamento",lot.data_fechamento,"timestamptz"],["closed_at",lot.closed_at,"timestamptz"]
-    ].map(([f,v,t])=>f+"="+sqlValue(v,t));
-    serverExec("UPDATE public.lotes SET "+lotSets.join(",")+" WHERE id="+sqlLiteral(lot.id)+"::uuid;","PR08_FEEDBACK_LOT_CLEANUP");
-    deleteNewMovements(plan.lead_id_var,original);
-  }
+
   function cleanupImport(plan,original) {
     plan.scopes.forEach((scope,i)=>{
       const company=sqlUuidVar(scope.company_var),session=sqlTextVar(scope.session_var);
-      const phones=scope.phone_vars.map(n=>sqlLiteral(valueFromVar(n))).join(",");
       serverExec("DELETE FROM public.logs WHERE empresa_id="+company+" AND detalhes->>'sessao_id'="+session+";","PR08_IMPORT_LOG_CLEANUP_"+i);
       serverExec("DELETE FROM public.importar_leads_batch_idempotency WHERE empresa_id="+company+" AND sessao_id="+session+";","PR08_IMPORT_MARKER_CLEANUP_"+i);
-      serverExec("DELETE FROM public.leads WHERE empresa_id="+company+" AND telefone_e164 IN ("+phones+");","PR08_IMPORT_LEAD_CLEANUP_"+i);
-      for(const list of original.scopes[i].lists) {
-        serverExec(
-          "UPDATE public.listas SET leads_validos="+sqlValue(list.leads_validos,"integer")+",leads_invalidos="+sqlValue(list.leads_invalidos,"integer")+" WHERE id="+sqlLiteral(list.id)+"::uuid AND empresa_id="+sqlLiteral(list.empresa_id)+"::uuid;",
-          "PR08_IMPORT_LIST_COUNTER_CLEANUP_"+i
-        );
+      if(scope.phone_vars?.length) {
+        const phones=scope.phone_vars.map(n=>sqlLiteral(valueFromVar(n))).join(",");
+        serverExec("DELETE FROM public.leads WHERE empresa_id="+company+" AND telefone_e164 IN ("+phones+");","PR08_IMPORT_LEAD_CLEANUP_"+i);
+      } else if(scope.phone_prefix_var) {
+        serverExec("DELETE FROM public.leads WHERE empresa_id="+company+" AND telefone_e164 LIKE "+sqlLiteral(String(valueFromVar(scope.phone_prefix_var))+"%")+";","PR08_IMPORT_LEAD_PREFIX_CLEANUP_"+i);
       }
+      for(const list of original.scopes[i].lists) restoreFullRow("public.listas",list,["id"],"PR08_IMPORT_LIST_RESTORE_"+i);
     });
   }
+
   function cleanupServerCase(plan,original) {
-    if(plan.kind==="BROKER") return restoreBroker(plan,original);
-    if(plan.kind==="ACL") {
-      serverExec("DELETE FROM public.lista_visibilidade WHERE lista_id="+sqlUuidVar(plan.list_id_var)+" AND target_type="+sqlLiteral(plan.target_type)+" AND target_id="+sqlUuidVar(plan.target_id_var)+";","PR08_ACL_CLEANUP");
+    if(plan.kind==="BROKER") {
+      restoreFullRow("public.corretores",original.broker,["id"],"PR08_BROKER_RESTORE");
+      if(plan.include_full_audit_logs) restoreWholeTableById("public.audit_logs",original.audit_logs,"PR08_BROKER_AUDIT_RESTORE");
       return;
     }
-    if(plan.kind==="FUNNEL") return restoreFunnel(plan,original);
-    if(plan.kind==="FEEDBACK") return restoreFeedback(plan,original);
+    if(plan.kind==="PASSWORD_T3") return cleanupPasswordT3(plan,original);
+    if(plan.kind==="ACL") {
+      restoreFullRow("public.listas",original.list,["id"],"PR08_ACL_LIST_RESTORE");
+      restoreReplaceSet("public.lista_visibilidade","lista_id="+sqlUuidVar(plan.list_id_var),original.acl_rows,"PR08_ACL_ROWS_RESTORE");
+      restoreWholeTableById("public.audit_logs",original.audit_logs,"PR08_ACL_AUDIT_RESTORE");
+      return;
+    }
+    if(plan.kind==="LEAD"||plan.kind==="FUNNEL") {
+      restoreFullRow("public.leads",original.lead,["id"],"PR08_LEAD_RESTORE");
+      restoreScopedSetById("public.funil_movimentacoes","lead_id="+sqlUuidVar(plan.lead_id_var),original.movements,"PR08_MOVEMENT_RESTORE");
+      return;
+    }
+    if(plan.kind==="FEEDBACK") {
+      restoreFullRow("public.lotes",original.lot,["id"],"PR08_FEEDBACK_LOT_RESTORE");
+      restoreFullRow("public.leads",original.lead,["id"],"PR08_FEEDBACK_LEAD_RESTORE");
+      restoreScopedSetById("public.funil_movimentacoes","lead_id="+sqlUuidVar(plan.lead_id_var),original.movements,"PR08_FEEDBACK_MOVEMENT_RESTORE");
+      return;
+    }
+    if(plan.kind==="LOT") {
+      restoreFullRow("public.lotes",original.lot,["id"],"PR08_LOT_RESTORE");
+      return;
+    }
+    if(plan.kind==="LEAD_NAMESPACE") {
+      const phones=plan.phone_vars.map(n=>sqlLiteral(valueFromVar(n))).join(",");
+      serverExec("DELETE FROM public.leads WHERE lista_id="+sqlUuidVar(plan.list_id_var)+" AND telefone_e164 IN ("+phones+");","PR08_LEAD_NAMESPACE_CLEANUP");
+      return;
+    }
+    if(plan.kind==="DISTRIBUTION") {
+      restoreWholeTableById("public.leads",original.leads,"PR08_DISTRIBUTION_LEADS_RESTORE");
+      restoreWholeTableById("public.lotes",original.lots,"PR08_DISTRIBUTION_LOTS_RESTORE");
+      restoreWholeTableById("public.listas",original.lists,"PR08_DISTRIBUTION_LISTS_RESTORE");
+      restoreFullRow("public.corretores",original.broker,["id"],"PR08_DISTRIBUTION_BROKER_RESTORE");
+      restoreWholeTableById("public.audit_logs",original.audit_logs,"PR08_DISTRIBUTION_AUDIT_RESTORE");
+      return;
+    }
     if(plan.kind==="IMPORT") return cleanupImport(plan,original);
-    throw new Error("PR08_SERVER_CLEANUP_KIND_UNKNOWN");
+    throw new Error("PR08_SERVER_CLEANUP_KIND_UNKNOWN:"+plan.kind);
   }
 
   function valueAt(obj,pathString) {
@@ -606,6 +853,7 @@ async function main() {
     if(a.mode==="SERVER_DELTA_ARRAY_ALL_FIELD_EQUALS_LITERAL") {
       const rows=serverDelta(serverBefore,serverAfter,a.path); return rows.length>0&&rows.every(x=>x[a.field]===a.value);
     }
+    if(a.mode==="SERVER_AFTER_ARRAY_COUNT_EQUALS") { const rows=valueAt(serverAfter,a.path); return Array.isArray(rows)&&rows.length===a.count; }
     if(a.mode==="SERVER_AFTER_ARRAY_UNIQUE_FIELD") {
       const rows=valueAt(serverAfter,a.path); if(!Array.isArray(rows)) return false;
       const vals=rows.map(x=>String(x[a.field])); return new Set(vals).size===vals.length;
@@ -630,12 +878,44 @@ async function main() {
     throw new Error("PR08_SEMANTIC_ASSERTION_UNKNOWN:"+a.mode);
   }
 
+  function recordApplicable(record) {
+    if(!record.applicability) return true;
+    if(record.applicability.mode==="FIXTURE_BOOLEAN") {
+      const actual=fixtureBool(record.applicability.var);
+      return actual===Boolean(record.applicability.execute_when);
+    }
+    throw new Error("PR08_APPLICABILITY_MODE_UNKNOWN:"+record.test_id);
+  }
+
   const receipts=[];
   for(const record of records) {
+    if(!recordApplicable(record)) {
+      receipts.push({
+        test_id:record.test_id,
+        requirement_id:record.requirement_id,
+        exact_application_commit:matrix.base_application_commit,
+        exact_migration_commits:record.exact_migration_commits,
+        supabase_project_ref:fixture.target_project_ref,
+        environment:fixture.environment,
+        fixture_version:fixture.fixture_version,
+        actual_authorization_result:"NOT_APPLICABLE",
+        actual_data_mutation:"NOT_APPLICABLE",
+        semantic_assertions:[],
+        concurrency:null,
+        sanitized_error_code:null,
+        cleanup_restored:null,
+        pass_fail:"NOT_APPLICABLE",
+        timestamp:new Date().toISOString(),
+        evidence_reference:process.env.FECHAI_PR08_RECEIPT_FILE||"STDOUT_ONLY"
+      });
+      continue;
+    }
+
     const plan=record.server_case_plan ? matrix.server_case_plans?.[record.server_case_plan] : null;
     if(record.server_case_plan && !plan) throw new Error("PR08_SERVER_CASE_PLAN_MISSING:"+record.test_id);
 
     let originalServer=null,serverBefore=null,serverAfter=null,cleanupState=null;
+    let originalGlobalHash=null,cleanupGlobalHash=null,originalSequences=null;
     let cleanupRestored=plan?false:null;
     let topologyPassed=[];
     let httpBefore=[],httpAfter=[];
@@ -648,6 +928,10 @@ async function main() {
 
       if(plan) {
         ensureServerContext();
+        if(plan.global_data_hash) {
+          originalGlobalHash=publicDataHash("PR08_CASE_ORIGINAL_"+record.test_id);
+          originalSequences=sequenceState();
+        }
         originalServer=serverState(plan);
         prepareServerCase(plan,originalServer);
         serverBefore=serverState(plan);
@@ -718,12 +1002,20 @@ async function main() {
       if(plan && originalServer) {
         try {
           cleanupServerCase(plan,originalServer);
+          if(originalSequences) restoreSequences(originalSequences);
           cleanupState=serverState(plan);
-          cleanupRestored=stable(cleanupState)===stable(originalServer);
+
+          const scopedRestored=stable(cleanupState)===stable(originalServer);
+          if(plan.global_data_hash) cleanupGlobalHash=publicDataHash("PR08_CASE_FINAL_"+record.test_id);
+          const globalRestored=!plan.global_data_hash || cleanupGlobalHash===originalGlobalHash;
+          cleanupRestored=scopedRestored&&globalRestored;
+
           if(receipt) {
             receipt.cleanup_restored=cleanupRestored;
-            receipt.cleanup_original_sha256=sha256(originalServer);
-            receipt.cleanup_final_sha256=sha256(cleanupState);
+            receipt.cleanup_scoped_original_sha256=sha256(originalServer);
+            receipt.cleanup_scoped_final_sha256=sha256(cleanupState);
+            receipt.cleanup_global_original_sha256=originalGlobalHash;
+            receipt.cleanup_global_final_sha256=cleanupGlobalHash;
             if(!cleanupRestored) receipt.pass_fail="FAIL";
           }
           if(!cleanupRestored && !caseError) caseError=new Error("PR08_CASE_CLEANUP_NOT_RESTORED:"+record.test_id);
@@ -738,10 +1030,10 @@ async function main() {
     if(caseError) throw caseError;
   }
 
-  const output=JSON.stringify({schema:"fechai.pr08.http.receipt.v4",receipts},null,2)+"\n";
+  const output=JSON.stringify({schema:"fechai.pr08.http.receipt.v5",receipts},null,2)+"\n";
   if(process.env.FECHAI_PR08_RECEIPT_FILE) await fs.writeFile(path.resolve(process.env.FECHAI_PR08_RECEIPT_FILE),output,{flag:"wx"});
   process.stdout.write(output);
-  if(receipts.some(r=>r.pass_fail!=="PASS")) process.exitCode=1;
+  if(receipts.some(r=>r.pass_fail==="FAIL")) process.exitCode=1;
 }
 main().catch(error=>{
   process.stderr.write(JSON.stringify({error:String(error?.message||error)})+"\n");
