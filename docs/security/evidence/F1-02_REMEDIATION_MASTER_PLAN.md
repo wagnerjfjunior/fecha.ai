@@ -837,13 +837,48 @@ PR-07 migration:
 Evidence state accepted by Product Authority:
 
 ```text
-post-application catalog: PASS
-runtime-negative: PASS
-sequential idempotency/replay: PASS
-claimant rollback: PASS
-cross-tenant runtime negatives: PASS
-feedback runtime: PASS
-true-concurrency infrastructure capability: PROVEN
+evidence reference:
+  docs/sfjm/EVIDENCE_FRESHNESS.md
+  current J3/PR-07 operating-session runtime evidence override
+
+evidence class:
+  OPERATING_SESSION_RUNTIME_EVIDENCE
+
+raw per-case execution receipt:
+  NOT_VERSIONED
+
+canonical executable PR-08 receipt:
+  NOT_ESTABLISHED
+
+source runtime plan / proof file:
+  supabase/tests/f1-02-pr07/funnel_reads_crm_payloads.sql
+  blob 55bef23b5a7103e9935ca6eb63a066d3db23dc6e
+  remains versioned with runtime cases marked NOT_EXECUTED and is not
+  retroactively relabeled as the runtime receipt.
+
+operating-session reported PASS cases:
+  STG-001..007
+  IMP-001
+  IMP-002
+  IMP-004..012
+  IMP-SESSION-LIST-MISMATCH
+  IMP-SESSION-PAYLOAD-MISMATCH
+  IMP-CLAIMANT-ROLLBACK
+  IMP-INCOMPLETE-STATE
+  FDB-001..011
+
+bounded catalog/runtime summaries:
+  post-application catalog: OPERATING_SESSION_REPORTED_PASS
+  runtime-negative cases above: OPERATING_SESSION_REPORTED_PASS
+  sequential idempotency/replay: OPERATING_SESSION_REPORTED_PASS
+  claimant rollback: OPERATING_SESSION_REPORTED_PASS
+  cross-tenant runtime negatives: OPERATING_SESSION_REPORTED_PASS
+  feedback runtime: OPERATING_SESSION_REPORTED_PASS
+
+true-concurrency infrastructure capability:
+  PROVEN
+  evidence type: operating-session capability probe
+  raw probe receipt: NOT_VERSIONED
 
 IMP-003 true-concurrency business-RPC runtime:
   NOT_DETERMINED
@@ -851,7 +886,7 @@ IMP-003 true-concurrency business-RPC runtime:
   business-RPC submission was blocked by the OpenAI tool safety layer before
   SQL reached PostgreSQL.
 
-migration rollback/reapply:
+migration rollback/reapply / ROL-PR07:
   NOT_DETERMINED
   reason: Product Authority decisions prohibit LAB, second Supabase project,
   Preview Branch and production migration rollback testing.
@@ -859,6 +894,11 @@ migration rollback/reapply:
 control failure observed:
   NO
 ```
+
+These operating-session results are accepted only as bounded continuity
+evidence. They do not convert the versioned proof file into an executed
+artifact, do not satisfy PR-08's future executable-receipt requirement and do
+not allow an unversioned raw receipt to be inferred where none exists.
 
 Product Authority decision:
 

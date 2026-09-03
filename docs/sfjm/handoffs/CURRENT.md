@@ -18,13 +18,17 @@ PR-07 production migration:
   ledger version: 20260902225240
 
 bounded runtime evidence:
-  post-application catalog PASS
-  runtime-negative PASS
-  sequential idempotency/replay PASS
-  claimant rollback PASS
-  cross-tenant runtime negatives PASS
-  feedback runtime PASS
-  true-concurrency infrastructure capability PROVEN
+  class: OPERATING_SESSION_RUNTIME_EVIDENCE
+  evidence reference: docs/sfjm/EVIDENCE_FRESHNESS.md
+  raw per-case execution receipt: NOT_VERSIONED
+  canonical executable PR-08 receipt: NOT_ESTABLISHED
+  post-application catalog: OPERATING_SESSION_REPORTED_PASS
+  runtime-negative cases: OPERATING_SESSION_REPORTED_PASS
+  sequential idempotency/replay: OPERATING_SESSION_REPORTED_PASS
+  claimant rollback: OPERATING_SESSION_REPORTED_PASS
+  cross-tenant runtime negatives: OPERATING_SESSION_REPORTED_PASS
+  feedback runtime: OPERATING_SESSION_REPORTED_PASS
+  true-concurrency infrastructure capability: PROVEN
 
 residual evidence:
   IMP-003 concurrent business-RPC runtime NOT_DETERMINED

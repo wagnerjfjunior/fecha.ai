@@ -1,5 +1,108 @@
 # FECH.AI — SFJM Authorizations
 
+## 0.00000 Current Product Authority J3 exception and J4 boundary
+
+This section is the current authority meaning for F1-02/J3 and the next J4
+phase. It supersedes older B4/PR-06 current-authority wording below where it
+conflicts. Historical authorization records remain provenance only and are not
+reusable as current grants.
+
+Decision anchor:
+
+```text
+Product Authority:
+  Wagner / FECH.AI
+
+repository:
+  wagnerjfjunior/fecha.ai
+
+exact main at J3 exception decision:
+  1449bee4b708a9211a099c52ff573cf52d44ef1c
+
+canonical master-plan blob before reconciliation:
+  ea161050c535b848ff927133830984f543c1104d
+```
+
+Product Authority decision:
+
+```text
+CANONICAL_J3_EXIT_SATISFIED:
+  NO
+
+J3_GOVERNANCE_CLOSURE_BY_PRODUCT_AUTHORITY_EXCEPTION:
+  YES
+
+J3:
+  CLOSED WITH BOUNDED RESIDUAL EVIDENCE
+  — PRODUCT AUTHORITY EXCEPTION
+
+IMP-003:
+  NOT_DETERMINED
+
+ROLLBACK_REAPPLY / ROL-PR07:
+  NOT_DETERMINED
+
+CONTROL_FAILURE_OBSERVED:
+  NO
+
+SECURITY_GO:
+  NOT_GRANTED
+```
+
+The exception expressly does NOT:
+
+```text
+declare IMP-003 PASS
+declare rollback/reapply PASS
+change either proof obligation to PROVEN
+claim that the original canonical J3 exit was satisfied
+grant Security Go
+authorize deploy
+authorize Supabase/Auth mutation
+authorize LAB / second Supabase project / Preview Branch
+authorize production migration rollback testing
+authorize broad paid commercialization
+```
+
+Standing Product Authority constraints:
+
+```text
+NO LAB
+NO SECOND SUPABASE PROJECT
+NO PREVIEW BRANCH
+NO PRODUCTION MIGRATION ROLLBACK TEST
+```
+
+Current authority boundary after J3 closure:
+
+```text
+NEXT PHASE:
+  J4 / PR-08 — REPEATABLE EXECUTABLE SECURITY MATRIX
+
+CURRENTLY AUTHORIZED NEXT ACTION:
+  reconstruct exact J4/PR-08 scope, evidence coverage, residual obligations and
+  prohibited areas, then request a separate bounded Product Authority
+  implementation authorization.
+
+PR-08 IMPLEMENTATION:
+  NOT_AUTHORIZED
+
+READY / MERGE / DEPLOY inherited from this ledger:
+  NONE
+
+SUPABASE / AUTH MUTATION inherited from this ledger:
+  NONE
+```
+
+Runtime-result provenance is governed by:
+
+```text
+docs/sfjm/EVIDENCE_FRESHNESS.md
+EVIDENCE_CLASS = OPERATING_SESSION_RUNTIME_EVIDENCE
+RAW_PER_CASE_EXECUTION_RECEIPT = NOT_VERSIONED
+CANONICAL_EXECUTABLE_PR08_RECEIPT = NOT_ESTABLISHED
+```
+
 ## 0.0000 Consumed authority record — F1-02/B2 closure — 2026-09-01
 
 The bounded authorities used to version, merge and apply F1-02/B2 have been

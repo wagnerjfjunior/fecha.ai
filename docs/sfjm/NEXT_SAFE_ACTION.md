@@ -18,6 +18,19 @@ migration rollback/reapply: NOT_DETERMINED
 Security Go: DENIED / NOT_GRANTED
 ```
 
+Current provenance and authority anchors:
+
+```text
+runtime evidence:
+  docs/sfjm/EVIDENCE_FRESHNESS.md
+  class = OPERATING_SESSION_RUNTIME_EVIDENCE
+  raw per-case execution receipt = NOT_VERSIONED
+  canonical executable PR-08 receipt = NOT_ESTABLISHED
+
+Product Authority J3 exception / current authority boundary:
+  docs/sfjm/AUTHORIZATIONS.md
+```
+
 The single current next safe action is:
 
 ```text

@@ -1,5 +1,172 @@
 # FECH.AI — SFJM Evidence Freshness
 
+## 0.00000 Current J3/PR-07 operating-session runtime evidence override
+
+This section is the current evidence-freshness authority for the J3/PR-07
+runtime results accepted by the Product Authority bounded-residual exception.
+It supersedes older B4/PR-06 next-evidence wording below where it conflicts,
+while preserving that older material as lineage.
+
+Decision/program anchor:
+
+```text
+repository: wagnerjfjunior/fecha.ai
+decision anchor main: 1449bee4b708a9211a099c52ff573cf52d44ef1c
+PR #163: CLOSED / MERGED
+PR-07 migration ledger version: 20260902225240
+PR #165: documentation reconciliation lifecycle
+```
+
+### Evidence class and provenance
+
+```text
+EVIDENCE_CLASS:
+  OPERATING_SESSION_RUNTIME_EVIDENCE
+
+RAW_PER_CASE_EXECUTION_RECEIPT:
+  NOT_VERSIONED
+
+CANONICAL_EXECUTABLE_PR08_RECEIPT:
+  NOT_ESTABLISHED
+
+SOURCE_RUNTIME_PLAN:
+  supabase/tests/f1-02-pr07/funnel_reads_crm_payloads.sql
+
+SOURCE_RUNTIME_PLAN_BLOB:
+  55bef23b5a7103e9935ca6eb63a066d3db23dc6e
+
+SOURCE_RUNTIME_PLAN_STATUS:
+  runtime cases remain textually NOT_EXECUTED in that versioned proof file
+  and the file is NOT retroactively treated as the execution receipt.
+```
+
+No raw test-run artifact, synthetic actor identifier, per-case timestamp or
+transport transcript is invented or inferred by this reconciliation.
+
+### Operating-session reported PASS coverage
+
+The following cases were executed in the operating session and reported PASS.
+This is bounded continuity evidence only; each line remains distinct from a
+future canonical executable PR-08 receipt.
+
+```text
+STG-001
+STG-002
+STG-003
+STG-004
+STG-005
+STG-006
+STG-007
+
+IMP-001
+IMP-002
+IMP-004
+IMP-005
+IMP-006
+IMP-007
+IMP-008
+IMP-009
+IMP-010
+IMP-011
+IMP-012
+IMP-SESSION-LIST-MISMATCH
+IMP-SESSION-PAYLOAD-MISMATCH
+IMP-CLAIMANT-ROLLBACK
+IMP-INCOMPLETE-STATE
+
+FDB-001
+FDB-002
+FDB-003
+FDB-004
+FDB-005
+FDB-006
+FDB-007
+FDB-008
+FDB-009
+FDB-010
+FDB-011
+```
+
+Coverage count:
+
+```text
+STG operating-session reported PASS: 7
+IMP operating-session reported PASS: 15
+FDB operating-session reported PASS: 11
+TOTAL operating-session reported PASS: 33
+```
+
+Additional bounded operating-session evidence:
+
+```text
+post-application catalog:
+  OPERATING_SESSION_REPORTED_PASS
+
+true-concurrency infrastructure capability:
+  PROVEN
+
+concurrency capability basis:
+  distinct PostgreSQL backend_pid values + materially overlapping transaction
+  windows observed in the operating-session capability probe
+
+raw concurrency capability receipt:
+  NOT_VERSIONED
+```
+
+### Explicitly unresolved proof obligations
+
+```text
+IMP-003 true-concurrency business-RPC runtime:
+  NOT_DETERMINED
+
+reason:
+  concurrent PostgreSQL capability was demonstrated, but the concurrent
+  importar_leads_batch submission was blocked by the OpenAI tool safety layer
+  before SQL reached PostgreSQL.
+
+ROL-PR07 / migration rollback and reapply:
+  NOT_DETERMINED
+
+reason:
+  Product Authority decisions prohibit:
+    NO LAB
+    NO SECOND SUPABASE PROJECT
+    NO PREVIEW BRANCH
+    NO PRODUCTION MIGRATION ROLLBACK TEST
+```
+
+Therefore:
+
+```text
+OPERATING_SESSION_REPORTED_PASS != CANONICAL_EXECUTABLE_PR08_PASS
+CONTROL_IMPLEMENTED != CONTROL_PROVEN_EFFECTIVE
+NO_CONTROL_FAILURE_OBSERVED != MISSING_TEST_PASSED
+```
+
+### Current evidence target
+
+```text
+J3:
+  CLOSED WITH BOUNDED RESIDUAL EVIDENCE
+  — PRODUCT AUTHORITY EXCEPTION
+
+CANONICAL_J3_EXIT_SATISFIED:
+  NO
+
+J3_GOVERNANCE_CLOSURE_BY_PRODUCT_AUTHORITY_EXCEPTION:
+  YES
+
+NEXT EVIDENCE TARGET:
+  J4 / PR-08 — REPEATABLE EXECUTABLE SECURITY MATRIX
+  SCOPE / EVIDENCE-COVERAGE / PROHIBITIONS RECONSTRUCTION FIRST
+
+PR-08 IMPLEMENTATION AUTHORITY:
+  NOT_GRANTED
+
+SECURITY_GO:
+  NOT_GRANTED
+```
+
 ## 0.0000 F1-02/B2 post-application evidence override — 2026-09-01
 
 This is the freshest bounded evidence record for F1-02/B2 and supersedes older
