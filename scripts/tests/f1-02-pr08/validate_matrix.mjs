@@ -15,7 +15,10 @@ async function main() {
   // PR08_EXACT_ARTIFACT_PROVENANCE_V1
   function gitBlobId(bytes) {
     if(!Buffer.isBuffer(bytes)) throw new Error("ARTIFACT_BYTES_BUFFER_REQUIRED");
-    const header=Buffer.from("blob "+bytes.length+"\\0","utf8");
+    const header=Buffer.concat([
+      Buffer.from("blob "+bytes.length,"utf8"),
+      Buffer.from([0])
+    ]);
     return crypto.createHash("sha1").update(header).update(bytes).digest("hex");
   }
   const artifactBlobCache=new Map();

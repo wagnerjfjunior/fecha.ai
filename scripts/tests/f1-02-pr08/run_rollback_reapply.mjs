@@ -60,7 +60,10 @@ async function main() {
   // PR08_ARTIFACT_GIT_BLOB_V1
   function gitBlobId(bytes) {
     if(!Buffer.isBuffer(bytes)) throw new Error("PR08_ARTIFACT_BYTES_BUFFER_REQUIRED");
-    const header=Buffer.from("blob "+bytes.length+"\\0","utf8");
+    const header=Buffer.concat([
+      Buffer.from("blob "+bytes.length,"utf8"),
+      Buffer.from([0])
+    ]);
     return crypto.createHash("sha1").update(header).update(bytes).digest("hex");
   }
   const qident = name => '"'+String(name).replace(/"/g,'""')+'"';
