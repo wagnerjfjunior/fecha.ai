@@ -309,8 +309,14 @@ async function main() {
     if(u.hostname!==expectedHost) throw new Error("PR08_SERVER_DATABASE_HOST_PROJECT_BINDING_MISMATCH");
     if(u.hostname.includes(PROD_REF)) throw new Error("PR08_SERVER_EVIDENCE_HARD_DENY_PRODUCTION_DATABASE_HOST");
 
+    // PR08_SERVER_STRIP_INHERITED_LIBPQ_ENV
+    // Keep non-libpq process environment (e.g. PATH) but remove every inherited
+    // PG* variable before constructing the validated connection environment.
+    const serverInheritedEnv = Object.fromEntries(
+      Object.entries(process.env).filter(([key])=>!key.startsWith("PG"))
+    );
     const pgEnv={
-      ...process.env,
+      ...serverInheritedEnv,
       PGHOST:u.hostname,
       PGPORT:u.port||"5432",
       PGDATABASE:u.pathname.replace(/^\//,""),

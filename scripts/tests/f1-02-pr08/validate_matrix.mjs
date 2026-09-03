@@ -275,6 +275,24 @@ async function main() {
   if(matrixText.includes("FUNNEL_TRANSITION_RULES_ENABLED")) throw new Error("FUN006_FIXTURE_AUTHORITY_REMAINS");
   for(const n of ["PR08_APPLICABILITY_PRODUCT_CONTRACT_DRIFT","PR08_APPLICABILITY_PRODUCT_CONTRACT_EVIDENCE_INVALID","pg_catalog.pg_get_functiondef","dab988abbd2d50ae57159cc4110051d8"]) if(!http.includes(n)) throw new Error("FUN006_RUNNER_VERSION_BOUND_EVIDENCE_MISSING:"+n);
 
+  // Phase 3: owner-side product-contract evidence must use only the validated libpq target.
+  for(const n of [
+    "PR08_SERVER_STRIP_INHERITED_LIBPQ_ENV",
+    "Object.entries(process.env).filter(([key])=>!key.startsWith(\"PG\"))",
+    "...serverInheritedEnv",
+    "PGHOST:u.hostname",
+    "PGPORT:u.port||\"5432\"",
+    "PGDATABASE:u.pathname.replace(/^\\\\//,\"\")",
+    "PGUSER:decodeURIComponent",
+    "PGPASSWORD:decodeURIComponent",
+    "PGSSLMODE:u.searchParams.get(\"sslmode\")||\"require\""
+  ]) if(!http.includes(n)) throw new Error("FUN006_SERVER_LIBPQ_ENV_CONTRACT_MISSING:"+n);
+  if(http.includes("...process.env")) throw new Error("FUN006_SERVER_INHERITED_PROCESS_ENV_FORBIDDEN");
+  const httpCodeOnly=http.split("\\n").filter(line=>!line.trim().startsWith("//")).join("\\n");
+  for(const forbidden of ["PGHOSTADDR","PGSERVICE","PGSERVICEFILE"]) {
+    if(httpCodeOnly.includes(forbidden)) throw new Error("FUN006_SERVER_LIBPQ_REDIRECT_VAR_FORBIDDEN:"+forbidden);
+  }
+
   // Privileged topology closure.
   const acl002=new Set(matrix.records.find(x=>x.test_id==="ACL-002")?.topology_dependencies||[]);
   for(const d of ["TOPO-TOKEN-MANAGER","TOPO-MANAGER","TOPO-MANAGED-TIME","TOPO-MANAGER-LIST-SCOPE","TOPO-MANAGER-TARGET-SCOPE"]) if(!acl002.has(d)) throw new Error("ACL002_MANAGER_SCOPE_MISSING:"+d);
