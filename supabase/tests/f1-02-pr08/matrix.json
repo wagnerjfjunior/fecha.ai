@@ -3205,7 +3205,9 @@
       "semantic_assertions": [],
       "topology_dependencies": [
         "TOPO-TOKEN-ACTOR",
-        "TOPO-ACTOR"
+        "TOPO-ACTOR",
+        "TOPO-FOREIGN-LOTE",
+        "TOPO-FOREIGN-LIST"
       ],
       "server_case_plan": "CRM-013",
       "cleanup_contract": {
@@ -4837,7 +4839,8 @@
       "semantic_assertions": [],
       "topology_dependencies": [
         "TOPO-TOKEN-ADMIN",
-        "TOPO-ADMIN"
+        "TOPO-ADMIN",
+        "TOPO-NONEXISTENT-CORRETOR"
       ],
       "server_case_plan": "ACL-005",
       "cleanup_contract": {
@@ -5201,7 +5204,8 @@
       "semantic_assertions": [],
       "topology_dependencies": [
         "TOPO-TOKEN-ADMIN",
-        "TOPO-ADMIN"
+        "TOPO-ADMIN",
+        "TOPO-FOREIGN-TIME"
       ],
       "server_case_plan": "ACL-009",
       "cleanup_contract": {
@@ -9939,6 +9943,9 @@
           },
           "field_not_equals_vars": {
             "empresa_id": "ACTOR_EMPRESA_ID"
+          },
+          "field_equals_literals": {
+            "ativo": true
           }
         }
       },
@@ -10101,7 +10108,8 @@
         "assertion": {
           "mode": "EXACTLY_ONE_ROW",
           "field_equals_vars": {
-            "id": "FOREIGN_LOTE_ID"
+            "id": "FOREIGN_LOTE_ID",
+            "lista_id": "FOREIGN_LISTA_ID"
           }
         }
       },
@@ -10440,6 +10448,16 @@
           "mode": "OBJECT_FIELD_EQUALS_VAR",
           "field": "id",
           "var": "NO_PROFILE_USER_ID"
+        }
+      },
+      {
+        "check_id": "TOPO-NONEXISTENT-CORRETOR",
+        "request": null,
+        "assertion": {
+          "mode": "SERVER_ZERO_ROWS_BY_UUID",
+          "table": "public.corretores",
+          "column": "id",
+          "var": "NONEXISTENT_TARGET_ID"
         }
       },
       {

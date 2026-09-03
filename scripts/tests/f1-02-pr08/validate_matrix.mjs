@@ -126,7 +126,7 @@ async function main() {
     if(check.request?.auth_token_var==="EVIDENCE_OBSERVER_TOKEN"&&["ZERO_ROWS","ROW_IDS_EQUAL_VAR_SET"].includes(check.assertion.mode)) throw new Error("OBSERVER_COMPLETENESS_ASSERTION_FORBIDDEN:"+check.check_id);
     if(["VARIABLE_NOT_EQUAL","FIXTURE_BOOLEAN_TRUE","SERVER_ROOT_AUTHORITY","SERVER_ZERO_ROWS_BY_UUID","SERVER_ROW_IDS_EQUAL_VAR_SET"].includes(check.assertion.mode)){
       if(check.request!==null) throw new Error("NON_HTTP_TOPOLOGY_REQUEST_MUST_BE_NULL:"+check.check_id);
-      if(check.assertion.mode==="SERVER_ZERO_ROWS_BY_UUID"){const allowed=new Set(["public.corretores:user_id","public.funil_estagios:empresa_id"]);if(!allowed.has(check.assertion.table+":"+check.assertion.column)||!check.assertion.var) throw new Error("SERVER_ZERO_ROWS_TARGET_INVALID:"+check.check_id);}
+      if(check.assertion.mode==="SERVER_ZERO_ROWS_BY_UUID"){const allowed=new Set(["public.corretores:user_id","public.corretores:id","public.funil_estagios:empresa_id"]);if(!allowed.has(check.assertion.table+":"+check.assertion.column)||!check.assertion.var) throw new Error("SERVER_ZERO_ROWS_TARGET_INVALID:"+check.check_id);}
       if(check.assertion.mode==="SERVER_ROW_IDS_EQUAL_VAR_SET"){
         const a=check.assertion;
         if(a.table!=="public.funil_estagios"||a.id_column!=="id"||a.where_column!=="empresa_id"||!a.where_var||!a.expected_ids_var) throw new Error("SERVER_ROW_IDS_SET_TARGET_INVALID:"+check.check_id);
@@ -221,8 +221,24 @@ async function main() {
   for(const check of topologyChecks) if(check.request?.auth_token_var) tokenUsages.push({surface:"TOPOLOGY",id:check.check_id,token:check.request.auth_token_var});
   for(const rec of matrix.records){for(const q of rec.request_plan?.requests||[]) if(q.auth_token_var) tokenUsages.push({surface:"REQUEST",id:rec.test_id,token:q.auth_token_var});for(const q of [...(rec.mutation_probe_plan?.before||[]),...(rec.mutation_probe_plan?.after||[])]) if(q.auth_token_var) tokenUsages.push({surface:"PROBE",id:rec.test_id,token:q.auth_token_var});}
   for(const use of tokenUsages){if(negativeTokenVars.has(use.token)) continue;const needed=tokenNeeds[use.token];if(!needed) throw new Error("UNBOUND_VERSIONED_TOKEN_SURFACE:"+use.surface+":"+use.id+":"+use.token);if(use.token==="EVIDENCE_OBSERVER_TOKEN") for(const d of needed) if(!globalDeps.has(d)) throw new Error("OBSERVER_BINDING_NOT_GLOBAL:"+d);}
-  if(topologyChecks.length!==56) throw new Error("TOPOLOGY_COUNT_DRIFT:"+topologyChecks.length);
+  if(topologyChecks.length!==57) throw new Error("TOPOLOGY_COUNT_DRIFT:"+topologyChecks.length);
   for(const id of ["TOPO-ZERO-STAGE-COMPANY","TOPO-NO-PROFILE"]){const c=topologyChecks.find(x=>x.check_id===id);if(c?.request!==null||c?.assertion?.mode!=="SERVER_ZERO_ROWS_BY_UUID") throw new Error("ABSENCE_PROOF_NOT_OWNER_SIDE:"+id);}
+
+  // Phase 2 semantic-truth contracts: denial cannot substitute for fixture proof.
+  const foreignLote=topologyChecks.find(x=>x.check_id==="TOPO-FOREIGN-LOTE");
+  if(foreignLote?.assertion?.mode!=="EXACTLY_ONE_ROW"||foreignLote.assertion?.field_equals_vars?.id!=="FOREIGN_LOTE_ID"||foreignLote.assertion?.field_equals_vars?.lista_id!=="FOREIGN_LISTA_ID") throw new Error("CRM013_FOREIGN_LOTE_CHAIN_INVALID");
+  const foreignList=topologyChecks.find(x=>x.check_id==="TOPO-FOREIGN-LIST");
+  if(foreignList?.assertion?.mode!=="EXACTLY_ONE_ROW"||foreignList.assertion?.field_equals_vars?.id!=="FOREIGN_LISTA_ID"||foreignList.assertion?.field_equals_vars?.empresa_id!=="FOREIGN_EMPRESA_ID"||foreignList.assertion?.field_not_equals_vars?.empresa_id!=="ACTOR_EMPRESA_ID") throw new Error("CRM013_FOREIGN_LIST_CHAIN_INVALID");
+  const crm013Deps=new Set(matrix.records.find(x=>x.test_id==="CRM-013")?.topology_dependencies||[]);
+  for(const d of ["TOPO-FOREIGN-LOTE","TOPO-FOREIGN-LIST"]) if(!crm013Deps.has(d)) throw new Error("CRM013_FOREIGN_CHAIN_DEPENDENCY_MISSING:"+d);
+
+  const nonexistentCorretor=topologyChecks.find(x=>x.check_id==="TOPO-NONEXISTENT-CORRETOR");
+  if(nonexistentCorretor?.request!==null||nonexistentCorretor?.assertion?.mode!=="SERVER_ZERO_ROWS_BY_UUID"||nonexistentCorretor.assertion?.table!=="public.corretores"||nonexistentCorretor.assertion?.column!=="id"||nonexistentCorretor.assertion?.var!=="NONEXISTENT_TARGET_ID") throw new Error("ACL005_OWNER_SIDE_ABSENCE_INVALID");
+  if(!(matrix.records.find(x=>x.test_id==="ACL-005")?.topology_dependencies||[]).includes("TOPO-NONEXISTENT-CORRETOR")) throw new Error("ACL005_OWNER_SIDE_ABSENCE_DEPENDENCY_MISSING");
+
+  const foreignTime=topologyChecks.find(x=>x.check_id==="TOPO-FOREIGN-TIME");
+  if(foreignTime?.assertion?.mode!=="EXACTLY_ONE_ROW"||foreignTime.assertion?.field_equals_vars?.id!=="FOREIGN_TIME_ID"||foreignTime.assertion?.field_equals_vars?.empresa_id!=="FOREIGN_EMPRESA_ID"||foreignTime.assertion?.field_not_equals_vars?.empresa_id!=="ACTOR_EMPRESA_ID"||foreignTime.assertion?.field_equals_literals?.ativo!==true) throw new Error("ACL009_ACTIVE_FOREIGN_TIME_INVALID");
+  if(!(matrix.records.find(x=>x.test_id==="ACL-009")?.topology_dependencies||[]).includes("TOPO-FOREIGN-TIME")) throw new Error("ACL009_ACTIVE_FOREIGN_TIME_DEPENDENCY_MISSING");
   const completeSetContracts={
     "TOPO-OWN-STAGE-SET":{where_var:"ACTOR_EMPRESA_ID",expected_ids_var:"OWN_STAGE_IDS"},
     "TOPO-FOREIGN-STAGE-SET":{where_var:"FOREIGN_EMPRESA_ID",expected_ids_var:"FOREIGN_STAGE_IDS"}
