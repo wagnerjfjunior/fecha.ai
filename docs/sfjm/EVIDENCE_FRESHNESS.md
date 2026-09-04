@@ -1,5 +1,54 @@
 # FECH.AI — SFJM Evidence Freshness
 
+## 0.00000000000000000000 STS-M2-01 ACCEPTANCE EVIDENCE — 2026-09-04
+
+```text
+acceptance evidence base = FECH.AI main 252fb981bba4fb410136fd34cb29b9f2d0e057f8
+Issue #141 = OPEN
+Supabase project = uobxxgzshrmbtjfdolxd / Discador-MesaCliente
+live public table count independently revalidated = 44
+```
+
+Material evidence chain:
+
+1. Backend/Data Phase A — READ_ONLY live database inventory:
+   - live `public` universe = 44;
+   - historical WBS label = 43;
+   - +1 explained by `public.importar_leads_batch_idempotency`;
+   - 44/44 matrix delivered;
+   - raw specialist report = operating-conversation evidence / NOT_VERSIONED_IN_REPOSITORY.
+
+2. Architecture Phase B — READ_ONLY adjudication:
+   - 44-table bounded-context/canonicality review completed;
+   - initial result = 37 KEEP / 4 INTERNAL / 3 NOT_DETERMINED;
+   - raw specialist report = operating-conversation evidence / NOT_VERSIONED_IN_REPOSITORY.
+
+3. Architecture final three-table delta:
+   - `public.logs` → KEEP + residual;
+   - `public.mesa_fluxo_pagamentos_canonico` → KEEP + residual;
+   - `public.templates_mensagens` → KEEP + residual;
+   - resulting matrix = 40 KEEP / 4 INTERNAL / 0 NOT_DETERMINED.
+
+4. Master Project independent READ_ONLY revalidation:
+   - current FECH.AI main remained unchanged at the acceptance gate;
+   - Issue #141 remained OPEN;
+   - live Supabase still exposed 44 public tables;
+   - all three delta tables remained present;
+   - current routine catalog materially supported active `logs` writers/references and the MesaCliente legacy+shadow transition evidence.
+
+Product Authority then explicitly accepted STS-M2-01.
+
+Freshness boundaries:
+
+```text
+M2-01 canonicality acceptance != M2-02 policy correctness
+M2-01 acceptance != permission to drop/consolidate/remodel tables
+M2-01 acceptance != runtime equivalence
+M2-01 acceptance != Security Go
+```
+
+Revalidate affected dispositions on material schema/caller/authority drift or when later M2 evidence produces a stronger disposition.
+
 ## 0.000000000000000000 PROGRAM HIERARCHY / CORE DoD ADJUDICATION EVIDENCE — 2026-09-04
 
 ```text

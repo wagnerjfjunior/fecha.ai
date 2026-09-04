@@ -1,5 +1,55 @@
 # FECH.AI — SFJM Current Material State
 
+## 0.00000000000000000000 STS-M2-01 ACCEPTED / STS-M2 STARTED — 2026-09-04
+
+Product Authority accepted STS-M2-01 after Backend/Data Phase A, Architecture Phase B and the bounded three-table delta.
+
+```text
+current execution program = Issue #141 — Security-to-Scale 2026
+
+STS-M1 = COMPLETE WITH DEFERRED SECURITY ASSURANCE
+STS-M2 = STARTED
+
+STS-M2-01 = COMPLETE / ACCEPTED
+planning label = "Matriz de 43 tabelas" / historical WBS label
+accepted live database universe = 44 public tables
+
+FINAL CANONICALITY:
+KEEP = 40
+INTERNAL = 4
+CONSOLIDATE = 0
+RETIRE = 0
+REMODEL = 0
+TOTAL = 44
+NOT_DETERMINED = 0
+```
+
+The accepted classification is current-evidence bounded:
+
+```text
+KEEP_NOW != PERMANENT_ARCHITECTURAL_END_STATE
+ARCHITECTURE_DECISION != IMPLEMENTATION_AUTHORIZATION
+```
+
+Residual evidence obligations remain attached to:
+
+- `public.logs` — producer/consumer taxonomy, retention, sensitivity and relationship to audit facilities;
+- `public.mesa_fluxo_pagamentos_canonico` — canonical read cutover, backfill/equivalence, authoritative writer contract and rollback;
+- `public.templates_mensagens` — reader/writer inventory, compatibility, data relevance and migration/equivalence proof.
+
+These residual obligations do not reopen STS-M2-01. They may change future canonicality only when stronger evidence is produced in the appropriate later M2 gate.
+
+```text
+STS-M2-02 = NEXT ELIGIBLE TASK / NOT STARTED
+STS-M2 implementation = NOT AUTHORIZED BY THIS ACCEPTANCE
+Security Go = NOT_GRANTED
+J4 deferred evidence = unchanged
+IMP-003 = NOT_DETERMINED
+ROLLBACK_REAPPLY = NOT_DETERMINED
+```
+
+This material transition supersedes older top-level wording that said `STS-M2 = ELIGIBLE / NOT STARTED` or `STS-M2-01 = scope reconstruction next`. Older sections remain lineage only.
+
 ## 0.000000000000000000 PROGRAM HIERARCHY / CORE DoD ADJUDICATION — 2026-09-04
 
 This section is candidate documentation while it exists only on PR #170 and becomes durable material meaning only when present on canonical `main`.

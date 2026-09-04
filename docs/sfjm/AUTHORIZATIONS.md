@@ -1,4 +1,56 @@
 # FECH.AI — SFJM Authorizations
+
+## 0.00000000000000000000 Product Authority — STS-M2-01 acceptance + bounded SFJM reconciliation — 2026-09-04
+
+Product Authority explicitly stated:
+
+```text
+"Aceito STS-M2-01 e autorizo a reconciliação SFJM bounded correspondente."
+```
+
+Authorized durable meaning:
+
+```text
+STS-M2 = STARTED
+STS-M2-01 = COMPLETE / ACCEPTED
+
+accepted current universe = 44 public tables
+final canonicality:
+  KEEP = 40
+  INTERNAL = 4
+  CONSOLIDATE = 0
+  RETIRE = 0
+  REMODEL = 0
+  NOT_DETERMINED = 0
+
+STS-M2-02 = NEXT ELIGIBLE / NOT STARTED
+```
+
+Authorized reconciliation scope is documentation-only and limited to:
+
+- `docs/sfjm/CURRENT_STATE.md`
+- `docs/sfjm/NEXT_SAFE_ACTION.md`
+- `docs/sfjm/EVIDENCE_FRESHNESS.md`
+- `docs/sfjm/AUTHORIZATIONS.md`
+- `docs/sfjm/handoffs/CURRENT.md`
+
+This grant does **not** authorize:
+
+```text
+STS-M2-02 substantive execution by itself
+DDL / DML / migration
+table drop / consolidation / remodel
+RLS / policy / grant / trigger / RPC mutation
+Supabase/Auth/data mutation
+runtime or production change
+deploy
+Security Go
+Ready
+merge
+```
+
+Publication is bounded to one documentation commit and Draft PR. Ready and merge remain separate gates.
+
 ## 0.0000000000000000000 Product Authority — PR #170 hierarchy/Core DoD correction — 2026-09-04
 
 Product Authority authorized preparing a single documentary adjudication of program hierarchy + Definition of Done, including the final M4 segmentation and AS-BUILT obligation, and correcting PR #170 rather than creating another roadmap.
