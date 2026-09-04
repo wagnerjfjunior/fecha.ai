@@ -1,40 +1,42 @@
 # FECH.AI — SFJM Current Product/Security Handoff
 
-## 0.000000000000000000 CURRENT HANDOFF — Security-to-Scale WBS identity resolved / M2-01 next — 2026-09-04
+## 0.000000000000000000 CURRENT HANDOFF — program hierarchy/Core DoD adjudicated / STS-M2 next — 2026-09-04
 
-This handoff meaning becomes canonical only when this documentation is present on FECH.AI `main`.
-
-```text
-repository = wagnerjfjunior/fecha.ai
-decision/base main = 2bad8e9c3d6d6e091a6416c556e793eb1b24e0ec
-program = Issue #141 — FECH.AI Security-to-Scale 2026 / OPEN
-program WBS = docs/roadmap/fechai-security-to-scale-2026-wbs.md
-M1 = COMPLETE WITH DEFERRED SECURITY ASSURANCE
-J4 environment-dependent evidence = DEFERRED
-IMP-003 = NOT_DETERMINED
-ROLLBACK_REAPPLY = NOT_DETERMINED
-SECURITY_GO = NOT_GRANTED
-OC-01 = REQUIRED BEFORE EXTERNAL USERS
-M2 = Database Simplification & Optimization Plan / ELIGIBLE / NOT STARTED
-M2-01 = Matriz de 43 tabelas / 20h / SCOPE RECONSTRUCTION ONLY
-M2-01 implementation = NOT_AUTHORIZED
-```
-
-Continuity contract:
+This handoff meaning becomes canonical only when the PR #170 adjudication is present on FECH.AI `main`.
 
 ```text
-PROGRAM = Issue #141 — Security-to-Scale 2026
-GRANULAR_WBS = docs/roadmap/fechai-security-to-scale-2026-wbs.md
-LEGACY_JUNE_ROADMAP = HISTORICAL / NOT MILESTONE-NUMBERING AUTHORITY
-M2 = Database Simplification & Optimization Plan
-M2-01 = Matriz de 43 tabelas / 20h
-NEXT = bounded READ_ONLY M2-01 scope/evidence reconstruction
+program hierarchy = docs/governance/2026-09-04-fechai-bcr-security-to-scale-program-hierarchy-core-dod.md
+current execution program = Issue #141 — Security-to-Scale 2026
+current execution WBS = docs/roadmap/fechai-security-to-scale-2026-wbs.md
+
+B0 = immutable historical 300 WDP comparison baseline / not current execution baseline
+product modules + Roadmap Mestre = product capability/vision references
+sfjm-workspace = derived representation
+
+STS-M1 = COMPLETE WITH DEFERRED SECURITY ASSURANCE
+STS-M2 = Database Simplification & Optimization Plan / ELIGIBLE / NOT STARTED
+STS-M2-01 = Matriz de 43 tabelas / 20h / READ_ONLY scope reconstruction next
+STS-M2-01 implementation = NOT_AUTHORIZED
+Security Go = NOT_GRANTED
 ```
 
-Receiving conversations must reconstruct the same result from FECH.AI canonical sources and current SES routing without relying on this conversation or on the Workspace as product authority.
+Core finish line:
 
-No inherited authority exists for M2 implementation, Supabase/Auth, production, deploy, OC-01, deferred J4 execution, Security Go, Ready or merge.
+```text
+CRM
+Funil
+Discador
+Power Message Engine
+MesaCliente
 
+STS-M4 = core modularization + functional equivalence
+STS-M5 = integrated security/reliability validation
+STS-M6 = Security Go candidate + professional AS-BUILT + operational readiness
+```
+
+Receiving conversations must qualify ambiguous milestone references as `PRODUCT_MODULE_*`, `B0-*` or `STS-*` and reconstruct current live lifecycle from GitHub before action.
+
+No authority is inherited for STS-M2 implementation, Supabase/Auth, runtime, production, deploy, Security Go, Ready or merge.
 
 ## 0.00000000000000000 CURRENT HANDOFF — M1 closed / M2 bootstrap next — 2026-09-04
 

@@ -1,27 +1,33 @@
-# FECH.AI — Security-to-Scale 2026 — Canonical Program WBS
+# FECH.AI — Security-to-Scale 2026 — Current Execution WBS
 
-**Status:** `CANONICAL_ON_MAIN / CANDIDATE_WHILE_ON_PR_HEAD / DOCUMENTATION_ONLY`  
+**Status:** `CURRENT_EXECUTION_BASELINE_ON_MAIN / CANDIDATE_WHILE_ON_PR_HEAD / DOCUMENTATION_ONLY`  
 **Program:** Issue #141 — `PROGRAM: FECH.AI Security-to-Scale 2026`  
 **Repository:** `wagnerjfjunior/fecha.ai`  
 **Program authority:** FECH.AI canonical project state + Product Authority  
+**Governance adjudication:** `docs/governance/2026-09-04-fechai-bcr-security-to-scale-program-hierarchy-core-dod.md`  
 **Planning baseline canonicalization date:** 2026-09-04
 
 ## 1. Purpose
 
 This document is the FECH.AI-owned granular Work Breakdown Structure for the current Security-to-Scale 2026 program.
 
-It exists to prevent roadmap identity drift across conversations, specialists and derived workspaces.
+It exists to provide the granular execution baseline for the current FECH.AI core-completion/hardening program while preventing roadmap identity drift across conversations, specialists and derived workspaces.
 
-It does not replace Issue #141, SFJM, live GitHub lifecycle, runtime evidence, specialist routing or Product Authority.
+It does not replace Issue #141, the program-hierarchy BCR, SFJM, live GitHub lifecycle, runtime evidence, specialist routing or Product Authority.
+
+The program is primarily organized by shared architectural layers. CRM, Funil, Discador, Power Message Engine and MesaCliente are core bounded product contexts/features of the same FECH.AI platform and inherit common database, backend-authority, Auth, tenant/company, deploy and observability foundations.
 
 ## 2. Authority and precedence
 
 ```text
+program hierarchy BCR
+= current precedence + namespace + core finish line + M4/AS-BUILT adjudication
+
 Issue #141
 = program objective + M0–M6 milestone contract + owners + exit criteria
 
 this file
-= FECH.AI-owned granular WBS IDs + planning hours + package boundaries
+= FECH.AI-owned granular execution WBS IDs + planning hours + package boundaries
 
 docs/sfjm/*
 = current operational/material state + continuity + evidence/authority boundaries
@@ -31,7 +37,20 @@ sfjm-workspace
 ```
 
 If this file exists only on a PR head, it is candidate documentation and does not override `main`.
-Once merged to FECH.AI `main`, this file is the FECH.AI-owned granular WBS reference for Security-to-Scale 2026.
+Once merged to FECH.AI `main`, this file is the FECH.AI-owned granular execution baseline for Security-to-Scale 2026.
+
+Historical product-module, Roadmap Mestre and B0 labels remain preserved in their own source documents. They do not control current Security-to-Scale progress.
+
+Qualified naming outside this WBS:
+
+```text
+PRODUCT_MODULE_M1..M6
+B0-M1..M6
+STS-M0..M6
+STS-M2-01 etc.
+```
+
+Inside this file, short IDs such as `M2-01` are unambiguous and remain the compact WBS labels.
 
 Preserve:
 
@@ -42,6 +61,31 @@ WBS_HOURS != CLOCKED_TIMESHEET
 MILESTONE_COMPLETE != SECURITY_GO
 WORKSPACE_REPRESENTATION != FECHAI_AUTHORITY
 ```
+
+## 2.1 Core finish line
+
+Security-to-Scale finishes the FECH.AI **core**, not every future capability.
+
+Core launch-scope flows that must remain operational and regression-proven:
+
+```text
+CRM
+Funil
+Discador
+Power Message Engine / Aceleração Operacional
+MesaCliente
+```
+
+Shared LeadOps dependencies include Leads, Listas, Distribuição, responsible broker, feedback, next action/follow-up and history where used.
+
+Advanced ADS/CAPI/tracking, broader portal integrations, advanced campaign/message automation and full monetization/GTM expansion remain product capabilities/future work unless separately brought into launch scope.
+
+```text
+CORE_COMPLETE != EVERY_FUTURE_FEATURE_COMPLETE
+OUTSIDE_CORE_FINISH_LINE != RETIRED_CAPABILITY
+```
+
+The final M6 gate also requires a professional indexed AS-BUILT package as defined by the program-hierarchy BCR.
 
 ## 3. Planning totals
 
@@ -151,20 +195,31 @@ Issue #141 exit remains authoritative for M3.
 
 ## 8. M4 — Frontend Modularization / App.jsx Extraction — 172h
 
+**Qualified milestone:** `STS-M4`  
 **Issue #141 owners:** Architecture + UX/UI + domain specialists  
 **Issue #141 window:** 30 Oct–27 Nov  
 **State:** PLANNED
 
-| ID | Task | Hours |
-|---|---|---:|
-| M4-01 | AppShell boundary | 20h |
-| M4-02 | Slice Leads / Funil | 40h |
-| M4-03 | Slice Listas / Distribuição | 32h |
-| M4-04 | Slice MesaCliente | 32h |
-| M4-05 | Gateways / API por feature | 24h |
-| M4-06 | Equivalence / regressão | 24h |
+| ID | Qualified ID | Task | Hours |
+|---|---|---|---:|
+| M4-01 | STS-M4-01 | AppShell / Shared Frontend Boundary | 20h |
+| M4-02 | STS-M4-02 | CRM + Funil Core Slice | 40h |
+| M4-03 | STS-M4-03 | LeadOps Execution Slice — Leads / Listas / Distribuição / Discador / Power Message Engine | 32h |
+| M4-04 | STS-M4-04 | MesaCliente Core Slice | 32h |
+| M4-05 | STS-M4-05 | Feature Gateways / API Boundaries | 24h |
+| M4-06 | STS-M4-06 | Core Functional Equivalence & Regression | 24h |
 
 Issue #141 acceptance remains semantic: AppShell must not own business authority; line count alone is not acceptance.
+
+M4 acceptance preserves:
+
+```text
+APP.JSX_SMALLER != M4_PASS
+MODULE_EXTRACTED != FUNCTIONAL_PASS
+FUNCTIONAL_PASS != SECURITY_GO
+```
+
+M4-06 cannot close without accepted functional-equivalence evidence for CRM, Funil, Discador, Power Message Engine and MesaCliente, including their material shared Leads/Listas/Distribuição dependencies. No tenant, role, ownership or sensitive business authority may be moved to the frontend during extraction.
 
 ## 9. M5 — Integrated Security / Reliability Validation — 128h
 
@@ -185,17 +240,20 @@ Issue #141 exit remains authoritative for M5.
 
 ## 10. M6 — Security Go Candidate / Commercial Readiness — 60h
 
+**Qualified milestone:** `STS-M6`  
 **Issue #141 owners:** Product Authority + AppSec + Backend/Data + Architecture + SRE  
 **Issue #141 window:** 11–18 Dec  
 **State:** PLANNED
 
-| ID | Task | Hours |
-|---|---|---:|
-| M6-01 | Evidence packet | 14h |
-| M6-02 | Blocker closeout | 8h |
-| M6-03 | Onboarding / support / runbooks | 18h |
-| M6-04 | Decisão comercial controlada | 8h |
-| M6-05 | Launch readiness review | 12h |
+| ID | Qualified ID | Task | Hours |
+|---|---|---|---:|
+| M6-01 | STS-M6-01 | Security Evidence + Final AS-BUILT Package | 14h |
+| M6-02 | STS-M6-02 | Blocker closeout | 8h |
+| M6-03 | STS-M6-03 | Onboarding / support / operational runbooks | 18h |
+| M6-04 | STS-M6-04 | Decisão comercial controlada | 8h |
+| M6-05 | STS-M6-05 | Launch readiness + AS-BUILT acceptance review | 12h |
+
+The professional AS-BUILT package must provide an indexed launch-scope view of system context, tenant/identity/authority, database contract, API/RPC/Edge boundaries, frontend/core slices, deployment topology, observability, backup/restore understanding, rollback, incident response, residual risks and specialist/operational ownership.
 
 Security Go and controlled commercialization remain separate Product Authority decisions.
 
@@ -229,20 +287,20 @@ A parked item is not waived, passed or authorized.
 At this canonicalization:
 
 ```text
-M1 = COMPLETE WITH DEFERRED SECURITY ASSURANCE
-M2 = ELIGIBLE / NOT STARTED
-M2-01 = MATRIZ DE 43 TABELAS / 20h
-M2-01 execution = NOT_AUTHORIZED
+STS-M1 = COMPLETE WITH DEFERRED SECURITY ASSURANCE
+STS-M2 = ELIGIBLE / NOT STARTED
+STS-M2-01 = MATRIZ DE 43 TABELAS / 20h
+STS-M2-01 execution = NOT_AUTHORIZED
 ```
 
-The next semantic action is bounded M2-01 scope/evidence reconstruction under FECH.AI bootstrap and current specialist routing. It is preparation/read-only unless separate Product Authority authority explicitly permits mutation.
+The next semantic action is bounded STS-M2-01 scope/evidence reconstruction under FECH.AI bootstrap and current specialist routing. It is preparation/read-only unless separate Product Authority authority explicitly permits mutation.
 
 ## 14. Provenance
 
 Program milestone contract:
 - FECH.AI Issue #141 — Security-to-Scale 2026.
 
-Granular planning baseline canonicalized here:
+Granular planning source used before FECH.AI canonicalization:
 - Product Authority-approved WBS represented in `wagnerjfjunior/sfjm-workspace` PR #27;
 - exact evidence head at canonicalization: `d13ee49ae86225db89c6f81c015051be2f90334e`;
 - exact WBS file: `data/workspace-demo.ts`;
