@@ -1,4 +1,52 @@
 # FECH.AI — SFJM Authorizations
+
+## 0.0000000000000000001 Product Authority — STS-M2-01 acceptance + bounded SFJM reconciliation — 2026-09-04
+
+Product Authority explicitly stated:
+
+```text
+"Aceito STS-M2-01 e autorizo a reconciliação SFJM bounded correspondente."
+```
+
+Product Authority subsequently authorized the reconciliation workflow through review, Ready and merge.
+
+Authorized scope:
+
+```text
+purpose = record material STS-M2 start and STS-M2-01 final acceptance
+base main = 252fb981bba4fb410136fd34cb29b9f2d0e057f8
+documentation-only SFJM reconciliation
+exactly five SFJM files
+review exact head
+Ready if review passes
+merge if exact-head gate remains clean
+```
+
+Authorized files:
+
+- `docs/sfjm/CURRENT_STATE.md`
+- `docs/sfjm/NEXT_SAFE_ACTION.md`
+- `docs/sfjm/EVIDENCE_FRESHNESS.md`
+- `docs/sfjm/AUTHORIZATIONS.md`
+- `docs/sfjm/handoffs/CURRENT.md`
+
+Explicitly NOT authorized:
+
+```text
+STS-M2-02 implementation
+Supabase/Auth/data/runtime mutation
+DDL/DML/migration
+RLS/policy/grant/RPC/trigger/index change
+Edge Function change
+manual deploy
+Issue #141 closure
+Security Go
+commercialization decision
+changes outside the five SFJM files
+```
+
+This documentation lifecycle is self-closing: once merged, a second PR solely to record that this reconciliation PR merged or that `main` advanced is not required unless a new material state change occurs.
+
 ## 0.0000000000000000000 Product Authority — PR #170 hierarchy/Core DoD correction — 2026-09-04
 
 Product Authority authorized preparing a single documentary adjudication of program hierarchy + Definition of Done, including the final M4 segmentation and AS-BUILT obligation, and correcting PR #170 rather than creating another roadmap.

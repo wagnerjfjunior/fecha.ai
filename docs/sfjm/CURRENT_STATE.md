@@ -1,5 +1,52 @@
 # FECH.AI — SFJM Current Material State
 
+## 0.0000000000000000001 STS-M2 STARTED / STS-M2-01 ACCEPTED — 2026-09-04
+
+This section records a material program transition. While present only on a PR head it is candidate continuity; once merged to canonical `main`, it is the current SFJM semantic authority for STS-M2 / STS-M2-01.
+
+```text
+program = Issue #141 — FECH.AI Security-to-Scale 2026
+STS-M2 = STARTED
+STS-M2-01 = COMPLETE / ACCEPTED BY PRODUCT AUTHORITY
+
+planning WBS label = Matriz de 43 tabelas / 20h
+current live public-table universe = 44
+43→44 delta = explained by public.importar_leads_batch_idempotency
+unresolved numerical table-count drift = 0
+
+FINAL CANONICALITY MATRIX
+KEEP = 40
+INTERNAL = 4
+CONSOLIDATE = 0
+RETIRE = 0
+REMODEL = 0
+TOTAL = 44
+NOT_DETERMINED = 0
+```
+
+Accepted evidence chain:
+
+```text
+Backend/Data Phase A = PASS
+Architecture Phase B = PASS WITH RESIDUAL EVIDENCE OBLIGATIONS
+final three-table delta = PASS
+Master Project adjudication = READY FOR / ACCEPTED BY PRODUCT AUTHORITY
+```
+
+Residual evidence obligations remain attached to current KEEP dispositions and do not become silent PASS:
+
+- `public.logs` — producer/consumer taxonomy, retention, data sensitivity, relationship to audit facilities;
+- `public.mesa_fluxo_pagamentos_canonico` — canonical read cutover, backfill/equivalence, authoritative writer/read contract, rollback;
+- `public.templates_mensagens` — complete readers/writers, compatibility, data relevance, migration/equivalence/rollback.
+
+```text
+KEEP_NOW != PERMANENT_ARCHITECTURAL_END_STATE
+M2-01_ACCEPTED != DATABASE_IMPLEMENTATION_AUTHORIZED
+M2-01_ACCEPTED != SECURITY_GO
+```
+
+No database, Auth, RLS, policy, grant, routine, trigger, index, runtime or production mutation is authorized by this state transition.
+
 ## 0.000000000000000000 PROGRAM HIERARCHY / CORE DoD ADJUDICATION — 2026-09-04
 
 This section is candidate documentation while it exists only on PR #170 and becomes durable material meaning only when present on canonical `main`.

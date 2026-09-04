@@ -1,5 +1,42 @@
 # FECH.AI — SFJM Evidence Freshness
 
+## 0.0000000000000000001 STS-M2-01 ACCEPTANCE EVIDENCE — 2026-09-04
+
+```text
+decision anchor main = 252fb981bba4fb410136fd34cb29b9f2d0e057f8
+Issue #141 = OPEN
+live public-table universe independently revalidated = 44
+three final delta tables present live:
+  public.logs
+  public.mesa_fluxo_pagamentos_canonico
+  public.templates_mensagens
+
+Phase A evidence class = UPSTREAM LIVE_DATABASE_AUDIT / READ_ONLY
+Phase B evidence class = ARCHITECTURE_READ_ONLY + versioned GitHub evidence + upstream live DB evidence
+final delta = ARCHITECTURE_RECOMMENDS_M2_01_FINAL_ACCEPTANCE
+Product Authority acceptance = GRANTED
+```
+
+Final accepted matrix:
+
+```text
+KEEP 40
+INTERNAL 4
+CONSOLIDATE 0
+RETIRE 0
+REMODEL 0
+TOTAL 44
+NOT_DETERMINED 0
+```
+
+Important freshness boundaries:
+
+- the WBS "43 tables" remains the historical/planning label; current live scope is 44;
+- `public.importar_leads_batch_idempotency` explains the +1 table-count delta;
+- current KEEP on `logs`, `mesa_fluxo_pagamentos_canonico` and `templates_mensagens` carries explicit residual proof obligations;
+- future M2 evidence may support a different target disposition, but only through a separately evidenced and authorized gate;
+- no M2-02 catalog map, implementation, runtime equivalence, Security Go or production readiness is established by M2-01 acceptance.
+
 ## 0.000000000000000000 PROGRAM HIERARCHY / CORE DoD ADJUDICATION EVIDENCE — 2026-09-04
 
 ```text
