@@ -1,5 +1,51 @@
 # FECH.AI — SFJM Next Safe Action
 
+## 0.00000000000000000000 CURRENT SEMANTIC NEXT ACTION — STS-M2-02 READ_ONLY — 2026-09-04
+
+```text
+decision anchor main = 252fb981bba4fb410136fd34cb29b9f2d0e057f8
+
+STS-M1 = COMPLETE WITH DEFERRED SECURITY ASSURANCE
+STS-M2 = STARTED
+STS-M2-01 = COMPLETE / PRODUCT AUTHORITY ACCEPTED
+
+STS-M2-01 final matrix:
+  KEEP = 40
+  INTERNAL = 4
+  CONSOLIDATE = 0
+  RETIRE = 0
+  REMODEL = 0
+  TOTAL = 44
+
+Security Go = NOT_GRANTED
+```
+
+### Single next safe action
+
+```text
+STS-M2-02 — ROUTINES / POLICIES / TRIGGERS / GRANTS MAP
+READ_ONLY SCOPE / EVIDENCE RECONSTRUCTION
+
+→ resolve FECH.AI main live
+→ bootstrap current Backend/Data + Architecture owners and AppSec when security adjudication becomes material
+→ enumerate current routines, policies, triggers and grants against the 44-table live universe
+→ map owner / caller / tenant authority / write authority
+→ distinguish table authority, RPC authority, trigger-mediated writes and client-direct DML
+→ identify contradictions and evidence gaps without changing the database
+→ preserve STS-M2-01 residual obligations as evidence debt, not as reopened canonicality
+→ produce the bounded STS-M2-02 evidence/acceptance package
+
+NO DDL
+NO DML
+NO migration
+NO RLS/policy/grant/RPC mutation
+NO Auth mutation
+NO deploy
+NO Security Go
+```
+
+STS-M2-02 implementation requires separate Product Authority authorization if a future step proposes mutation.
+
 ## 0.000000000000000000 CURRENT SEMANTIC NEXT ACTION — STS-M2 bootstrap / STS-M2-01 scope reconstruction — 2026-09-04
 
 This section defines the semantic next action only when this adjudication is present on canonical `main`. PR lifecycle must still be resolved live.
