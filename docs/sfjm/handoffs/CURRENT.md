@@ -1,5 +1,28 @@
 # FECH.AI — SFJM Current Product/Security Handoff
 
+## 0.0000000000000000002 CURRENT HANDOFF — STS-M2-01 durable matrix/provenance anchor — 2026-09-04
+
+For STS-M2-01, receiving conversations must use:
+
+```text
+docs/security/evidence/2026-09-04-sts-m2-01-database-canonicality-matrix.md
+```
+
+as the durable row-level accepted matrix/provenance artifact.
+
+It contains all 44 final dispositions and the residual proof obligations. Aggregate SFJM counts are a summary only and must not replace that artifact.
+
+Current semantic continuation remains:
+
+```text
+STS-M2 = STARTED
+STS-M2-01 = COMPLETE / ACCEPTED
+STS-M2-02 = NEXT / READ_ONLY
+Security Go = NOT_GRANTED
+```
+
+Do not reopen M2-01 absent material invalidation. Do not infer implementation authority from the accepted matrix.
+
 ## 0.0000000000000000001 CURRENT HANDOFF — STS-M2-01 accepted / STS-M2-02 next — 2026-09-04
 
 This handoff becomes current material continuity when merged to canonical `main`.

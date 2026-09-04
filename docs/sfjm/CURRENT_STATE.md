@@ -1,5 +1,33 @@
 # FECH.AI — SFJM Current Material State
 
+## 0.0000000000000000002 STS-M2-01 AUDITABILITY CORRECTION — 2026-09-04
+
+The accepted STS-M2-01 result is now backed by a durable row-level evidence artifact:
+
+```text
+docs/security/evidence/2026-09-04-sts-m2-01-database-canonicality-matrix.md
+
+matrix rows = 44
+KEEP = 40
+INTERNAL = 4
+CONSOLIDATE = 0
+RETIRE = 0
+REMODEL = 0
+NOT_DETERMINED = 0
+```
+
+This reference closes the post-PR-174 documentation finding that aggregate totals alone were insufficient for future consumers to reconstruct the accepted per-table disposition.
+
+The semantic state remains unchanged:
+
+```text
+STS-M2 = STARTED
+STS-M2-01 = COMPLETE / ACCEPTED
+STS-M2-02 = NEXT / READ_ONLY
+```
+
+No implementation authority is introduced.
+
 ## 0.0000000000000000001 STS-M2 STARTED / STS-M2-01 ACCEPTED — 2026-09-04
 
 This section records a material program transition. While present only on a PR head it is candidate continuity; once merged to canonical `main`, it is the current SFJM semantic authority for STS-M2 / STS-M2-01.

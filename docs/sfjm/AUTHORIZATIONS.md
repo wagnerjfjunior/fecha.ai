@@ -1,5 +1,51 @@
 # FECH.AI — SFJM Authorizations
 
+## 0.0000000000000000002 Product Authority — STS-M2-01 evidence/provenance correction through merge — 2026-09-04
+
+After the post-merge audit of PR #174 exposed two P2 documentation findings, Product Authority authorized resolving the problem completely, including correction, audit, Ready, pre-merge and merge.
+
+Bounded correction objective:
+
+```text
+primary risk = STS-M2-01_ACCEPTANCE_NOT_DURABLY_AUDITABLE
+base = b6fdf75adcb199213b461e07374d77e03b877301
+documentation-only
+one evidence artifact + minimal SFJM references
+no product/runtime/database mutation
+```
+
+Authorized correction scope for this PR:
+
+- `docs/security/evidence/2026-09-04-sts-m2-01-database-canonicality-matrix.md` — new durable accepted evidence artifact;
+- `docs/sfjm/CURRENT_STATE.md` — reference the row-level artifact;
+- `docs/sfjm/EVIDENCE_FRESHNESS.md` — anchor durable provenance;
+- `docs/sfjm/AUTHORIZATIONS.md` — record correction authority;
+- `docs/sfjm/handoffs/CURRENT.md` — point receiving conversations to the artifact.
+
+Lifecycle authorization:
+
+```text
+Draft publication = AUTHORIZED
+exact-head audit = AUTHORIZED
+Ready if clean = AUTHORIZED
+pre-merge revalidation = AUTHORIZED
+merge if exact head remains clean = AUTHORIZED
+```
+
+Explicitly not authorized:
+
+```text
+Supabase/Auth/data/runtime mutation
+DDL/DML/migration
+RLS/policy/grant/RPC/trigger/index change
+manual deploy
+STS-M2-02 implementation
+Security Go
+Issue #141 closure
+```
+
+Rollback is one documentation revert.
+
 ## 0.0000000000000000001 Product Authority — STS-M2-01 acceptance + bounded SFJM reconciliation — 2026-09-04
 
 Product Authority explicitly stated:
