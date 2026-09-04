@@ -1,5 +1,54 @@
 # FECH.AI — SFJM Evidence Freshness
 
+## 0.000000000000000000 PROGRAM HIERARCHY / CORE DoD ADJUDICATION EVIDENCE — 2026-09-04
+
+```text
+FECH.AI base main = 2bad8e9c3d6d6e091a6416c556e793eb1b24e0ec
+PR #170 pre-correction head = 6df2fbef7425c0a6ebc105fbc910d8379bd6218a
+Issue #141 = OPEN / Security-to-Scale 2026
+B0 baseline = immutable historical comparison source
+program hierarchy BCR = docs/governance/2026-09-04-fechai-bcr-security-to-scale-program-hierarchy-core-dod.md
+current WBS target = docs/roadmap/fechai-security-to-scale-2026-wbs.md
+```
+
+Adjudicated conflict:
+
+```text
+UNQUALIFIED M1..M6 = AMBIGUOUS ACROSS PRODUCT MODULES / B0 / SECURITY-TO-SCALE
+B0 governance index = STALE FOR CURRENT EXECUTION AUTHORITY
+PR #170 previous LEGACY/HISTORICAL roadmap banner = TOO BROAD
+WBS M4 Discador/PME representation = SEMANTICALLY UNDER-SPECIFIED
+FINAL PROFESSIONAL AS-BUILT = REQUIRED BUT UNDER-SPECIFIED IN PRE-CORRECTION WBS
+```
+
+Coverage basis at the unchanged FECH.AI main/ref includes the integral reconstruction of:
+
+- FECH.AI bootstrap, governance and SFJM authority model;
+- B0 baseline/control model and its BCR requirement;
+- Issue #141 program contract;
+- product module map and Roadmap Mestre;
+- A1/A2 AS-IS architecture baseline;
+- LeadOps/CRM/Discador product evidence;
+- Power Message Engine and Discador Flow specifications;
+- MesaCliente project-local specialist/architecture evidence;
+- SRE/observability/runbook requirements;
+- SES Project Adapter/adoption/certification/current manual handoff semantics;
+- StopJuniorMode/SFJM session-transition and canonicality protocol;
+- sfjm-workspace main plus PR #27 candidate representation.
+
+Resolution proposed by PR #170 correction:
+
+```text
+B0 = immutable historical comparison baseline
+Issue #141 = current core-completion program contract
+Security-to-Scale WBS = current granular execution baseline on main
+qualified namespaces = PRODUCT_MODULE_* / B0-* / STS-*
+M4 core slices = CRM/Funil + LeadOps Execution/Discador/PME + MesaCliente
+M6 = Security evidence + professional AS-BUILT + operational readiness
+```
+
+Candidate PR evidence does not become canonical until merge. M1 deferred evidence remains frozen, not waived and not PASS.
+
 ## 0.00000000000000000 POST-PR-09 freshness / handoff anchor — 2026-09-04
 
 ```text

@@ -1,5 +1,48 @@
 # FECH.AI — SFJM Current Material State
 
+## 0.000000000000000000 PROGRAM HIERARCHY / CORE DoD ADJUDICATION — 2026-09-04
+
+This section is candidate documentation while it exists only on PR #170 and becomes durable material meaning only when present on canonical `main`.
+
+```text
+repository = wagnerjfjunior/fecha.ai
+decision/base main = 2bad8e9c3d6d6e091a6416c556e793eb1b24e0ec
+program hierarchy decision = docs/governance/2026-09-04-fechai-bcr-security-to-scale-program-hierarchy-core-dod.md
+current execution program = Issue #141 — FECH.AI Security-to-Scale 2026
+current granular execution baseline = docs/roadmap/fechai-security-to-scale-2026-wbs.md
+
+PRODUCT_MODULE_M1..M6 = product capability taxonomy / not execution milestone authority
+B0-M1..M6 = immutable historical 300 WDP delivery baseline / not current execution baseline
+STS-M0..M6 = current Security-to-Scale milestones
+sfjm-workspace = derived representation / not FECH.AI authority
+
+STS-M1 = COMPLETE WITH DEFERRED SECURITY ASSURANCE
+J4 environment-dependent evidence = DEFERRED
+IMP-003 = NOT_DETERMINED
+ROLLBACK_REAPPLY = NOT_DETERMINED
+SECURITY_GO = NOT_GRANTED
+OC-01 = REQUIRED BEFORE EXTERNAL USERS
+
+STS-M2 = Database Simplification & Optimization Plan / ELIGIBLE / NOT STARTED
+STS-M2-01 = Matriz de 43 tabelas / 20h / SCOPE RECONSTRUCTION ONLY
+STS-M2-01 implementation = NOT_AUTHORIZED
+```
+
+Current program finish-line clarification:
+
+```text
+CORE = CRM + Funil + Discador + Power Message Engine + MesaCliente
+STS-M4 = core vertical-slice modularization + functional equivalence
+STS-M5 = integrated security / reliability validation
+STS-M6 = Security Go candidate + professional AS-BUILT + operational readiness
+
+CORE_COMPLETE != EVERY_FUTURE_FEATURE_COMPLETE
+```
+
+B0 history is preserved; uncompleted B0 requirements are not silently waived. Requirements still material to launch/core must be mapped into current WBS/backlog or a separately governed future program.
+
+Preserve all prior M1/F1-02 lineage below. This adjudication does not start STS-M2 and grants no runtime/Supabase/Auth/Ready/merge/deploy/Security Go authority.
+
 ## 0.00000000000000000 POST-MERGE HANDOFF OVERRIDE — M1 closed / M2 next eligible — 2026-09-04
 
 ```text

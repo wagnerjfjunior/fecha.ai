@@ -5,7 +5,27 @@
 
 ---
 
-## Current execution baseline
+## Current execution authority — Security-to-Scale 2026
+
+When this decision is present on canonical `main`, resolve current execution governance in this order:
+
+1. `2026-09-04-fechai-bcr-security-to-scale-program-hierarchy-core-dod.md`  
+   Current Product Authority adjudication for program hierarchy, namespace, core finish line, M4 segmentation and AS-BUILT obligation.
+
+2. GitHub Issue `#141` — `PROGRAM: FECH.AI Security-to-Scale 2026`  
+   Current M0–M6 program/milestone contract, owners, windows and exit criteria.
+
+3. `../roadmap/fechai-security-to-scale-2026-wbs.md`  
+   Current granular execution baseline only when the file is present on canonical `main`.
+
+4. `../sfjm/INDEX.md` plus current SFJM views  
+   Current material state, blockers, evidence/authorization boundaries and next safe action.
+
+Use qualified references such as `STS-M2`, `B0-M2` and `PRODUCT_MODULE_M2` when cross-program ambiguity is possible.
+
+---
+
+## Historical B0 baseline — immutable comparison / not current execution baseline
 
 Read in this order:
 

@@ -1,5 +1,43 @@
 # FECH.AI — SFJM Current Product/Security Handoff
 
+## 0.000000000000000000 CURRENT HANDOFF — program hierarchy/Core DoD adjudicated / STS-M2 next — 2026-09-04
+
+This handoff meaning becomes canonical only when the PR #170 adjudication is present on FECH.AI `main`.
+
+```text
+program hierarchy = docs/governance/2026-09-04-fechai-bcr-security-to-scale-program-hierarchy-core-dod.md
+current execution program = Issue #141 — Security-to-Scale 2026
+current execution WBS = docs/roadmap/fechai-security-to-scale-2026-wbs.md
+
+B0 = immutable historical 300 WDP comparison baseline / not current execution baseline
+product modules + Roadmap Mestre = product capability/vision references
+sfjm-workspace = derived representation
+
+STS-M1 = COMPLETE WITH DEFERRED SECURITY ASSURANCE
+STS-M2 = Database Simplification & Optimization Plan / ELIGIBLE / NOT STARTED
+STS-M2-01 = Matriz de 43 tabelas / 20h / READ_ONLY scope reconstruction next
+STS-M2-01 implementation = NOT_AUTHORIZED
+Security Go = NOT_GRANTED
+```
+
+Core finish line:
+
+```text
+CRM
+Funil
+Discador
+Power Message Engine
+MesaCliente
+
+STS-M4 = core modularization + functional equivalence
+STS-M5 = integrated security/reliability validation
+STS-M6 = Security Go candidate + professional AS-BUILT + operational readiness
+```
+
+Receiving conversations must qualify ambiguous milestone references as `PRODUCT_MODULE_*`, `B0-*` or `STS-*` and reconstruct current live lifecycle from GitHub before action.
+
+No authority is inherited for STS-M2 implementation, Supabase/Auth, runtime, production, deploy, Security Go, Ready or merge.
+
 ## 0.00000000000000000 CURRENT HANDOFF — M1 closed / M2 bootstrap next — 2026-09-04
 
 ```text

@@ -1,4 +1,104 @@
 # FECH.AI — SFJM Authorizations
+## 0.0000000000000000000 Product Authority — PR #170 hierarchy/Core DoD correction — 2026-09-04
+
+Product Authority authorized preparing a single documentary adjudication of program hierarchy + Definition of Done, including the final M4 segmentation and AS-BUILT obligation, and correcting PR #170 rather than creating another roadmap.
+
+The smallest coherent implementation expands the same documentation-only PR to exactly these 10 files:
+
+- `docs/governance/2026-09-04-fechai-bcr-security-to-scale-program-hierarchy-core-dod.md` — new BCR/adjudication, not a roadmap;
+- `docs/governance/INDEX.md`;
+- `docs/product/fechai-modules-map-v1.md`;
+- `docs/roadmap/fechai-roadmap-master-v1.md`;
+- `docs/roadmap/fechai-security-to-scale-2026-wbs.md`;
+- `docs/sfjm/CURRENT_STATE.md`;
+- `docs/sfjm/NEXT_SAFE_ACTION.md`;
+- `docs/sfjm/EVIDENCE_FRESHNESS.md`;
+- `docs/sfjm/AUTHORIZATIONS.md`;
+- `docs/sfjm/handoffs/CURRENT.md`.
+
+Bounded objective:
+
+```text
+preserve B0 immutably but remove current-execution ambiguity
+preserve product capability documents without treating them as execution milestones
+establish Issue #141 + FECH.AI WBS as current Security-to-Scale execution hierarchy on main
+qualify PRODUCT_MODULE / B0 / STS namespaces
+clarify M4 core slices without changing 172h
+require core functional equivalence
+require professional AS-BUILT at M6
+keep 832h total unchanged
+```
+
+Explicitly not authorized by this grant:
+
+```text
+B0 historical file rewrite
+runtime/frontend implementation
+STS-M2 implementation
+Supabase/Auth/data
+SES/Project Adapter
+StopJuniorMode/SFJM protocol
+sfjm-workspace
+Ready
+merge
+deploy
+Security Go
+```
+
+Ready and merge remain separate Product Authority gates after exact-head independent review.
+
+
+## 0.000000000000000000 Product Authority — Security-to-Scale WBS canonicalization / PR A — 2026-09-04
+
+Product Authority explicitly authorized the bounded documentation PR A from exact base:
+
+```text
+repository = wagnerjfjunior/fecha.ai
+exact base main = 2bad8e9c3d6d6e091a6416c556e793eb1b24e0ec
+branch = docs/security-to-scale-wbs-canonicalization
+primary risk = ROADMAP_IDENTITY_AMBIGUITY / CONTEXT_REGRESSION
+scope = documentation-only / exactly seven files
+publication = one bounded commit + Draft PR
+```
+
+Authorized files only:
+
+- `docs/roadmap/fechai-security-to-scale-2026-wbs.md` — create;
+- `docs/roadmap/fechai-roadmap-master-v1.md` — mark historical without deleting original content;
+- `docs/sfjm/CURRENT_STATE.md`;
+- `docs/sfjm/NEXT_SAFE_ACTION.md`;
+- `docs/sfjm/EVIDENCE_FRESHNESS.md`;
+- `docs/sfjm/AUTHORIZATIONS.md`;
+- `docs/sfjm/handoffs/CURRENT.md`.
+
+Authorized durable objective:
+
+```text
+Issue #141 = current Security-to-Scale M0–M6 program contract
+FECH.AI owns the granular M0–M6 WBS on main
+legacy June roadmap remains historical
+SFJM resolves M2 = Database Simplification & Optimization Plan
+M2-01 = Matriz de 43 tabelas / 20h
+sfjm-workspace remains derived representation
+```
+
+Explicitly not authorized by this grant:
+
+```text
+M2 implementation
+Supabase/Auth/runtime/production mutation
+DDL/DML/migration/RLS/policy/grant/RPC changes
+SES / Project Adapter / StopJuniorMode protocol changes
+sfjm-workspace mutation
+Ready
+merge
+deploy
+Security Go
+OC-01 or deferred-J4 execution
+```
+
+Ready and merge require later, separate Product Authority decisions after exact-head validation.
+
 
 ## 0.00000000000000000 Product Authority — post-PR-09 SFJM handoff reconciliation through merge — 2026-09-04
 

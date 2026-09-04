@@ -1,5 +1,11 @@
 # FECH.AI — Mapa de Módulos v1
 
+> **ROLE: PRODUCT CAPABILITY TAXONOMY / NOT CURRENT EXECUTION BASELINE**  
+> The original short IDs `M1…M6` below are preserved as historical product-module labels. In new cross-program references use `PRODUCT_MODULE_M1…PRODUCT_MODULE_M6`.  
+> They must not be interpreted as `B0-M1…M6` or `STS-M0…M6`.  
+> Current execution hierarchy is governed by `docs/governance/2026-09-04-fechai-bcr-security-to-scale-program-hierarchy-core-dod.md` when present on canonical `main`.
+
+
 **Status:** v1.0 — mapa inicial dos módulos de produto  
 **Data:** 2026-06-02  
 **Escopo:** organização funcional do app FECH.AI por módulos, responsabilidades e especialistas.  

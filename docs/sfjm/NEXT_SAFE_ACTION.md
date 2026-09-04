@@ -1,5 +1,39 @@
 # FECH.AI — SFJM Next Safe Action
 
+## 0.000000000000000000 CURRENT SEMANTIC NEXT ACTION — STS-M2 bootstrap / STS-M2-01 scope reconstruction — 2026-09-04
+
+This section defines the semantic next action only when this adjudication is present on canonical `main`. PR lifecycle must still be resolved live.
+
+```text
+current execution program = Issue #141 — Security-to-Scale 2026
+program hierarchy = docs/governance/2026-09-04-fechai-bcr-security-to-scale-program-hierarchy-core-dod.md
+current execution WBS = docs/roadmap/fechai-security-to-scale-2026-wbs.md
+
+STS-M1 = COMPLETE WITH DEFERRED SECURITY ASSURANCE
+STS-M2 = ELIGIBLE / NOT STARTED
+STS-M2-01 = Matriz de 43 tabelas / 20h
+STS-M2-01 implementation = NOT_AUTHORIZED
+Security Go = NOT_GRANTED
+```
+
+### Single next safe action
+
+```text
+STS-M2-01 — MATRIZ DE 43 TABELAS
+
+→ resolve FECH.AI main live
+→ read bootstrap + program-hierarchy BCR + Issue #141 + current execution WBS
+→ resolve Backend/Data + Architecture through current SES routing
+→ perform READ_ONLY scope reconstruction for the 43-table canonicality matrix
+→ classify the evidence required for KEEP / CONSOLIDATE / RETIRE / REMODEL / INTERNAL
+→ map domain ownership across the whole FECH.AI database, including core contexts
+→ define live-catalog/statistics dependencies and unavailable evidence
+→ produce the bounded M2-01 evidence/acceptance package
+→ no implementation, DDL, DML, migration, RLS/policy/grant/RPC change without separate Product Authority authorization
+```
+
+Do not confuse `STS-M2` with `B0-M2` or `PRODUCT_MODULE_M2`.
+
 ## 0.00000000000000000 CURRENT NEXT SAFE ACTION — M2 bootstrap / M2-01 scope reconstruction — 2026-09-04
 
 ```text
