@@ -1,5 +1,26 @@
 # FECH.AI — SFJM Evidence Freshness
 
+## 0.0000000000000000002 STS-M2-01 DURABLE PROVENANCE CORRECTION — 2026-09-04
+
+Canonical accepted evidence artifact:
+
+```text
+docs/security/evidence/2026-09-04-sts-m2-01-database-canonicality-matrix.md
+```
+
+It preserves:
+
+- the 44 row-level final canonicality assignments;
+- exact FECH.AI/Supabase target identifiers;
+- exact GitHub evidence blobs used for the planning label, PR-07 +1 table delta and MesaCliente shadow transition;
+- SHA-256 fingerprints of the upstream Backend/Data and Architecture operating-session reports;
+- independent Master Project live revalidation summary and capture window;
+- residual evidence obligations for `logs`, `mesa_fluxo_pagamentos_canonico` and `templates_mensagens`.
+
+This closes the post-PR-174 finding that generic evidence-class labels were insufficient durable provenance.
+
+Freshness invalidation remains evidence-specific: material database/catalog drift, migration changes, changed callers/authority, or later accepted M2 evidence may require proportional revalidation.
+
 ## 0.0000000000000000001 STS-M2-01 ACCEPTANCE EVIDENCE — 2026-09-04
 
 ```text
