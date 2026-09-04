@@ -1,5 +1,52 @@
 # FECH.AI — SFJM Current Material State
 
+## 0.00000000000000000 POST-MERGE HANDOFF OVERRIDE — M1 closed / M2 next eligible — 2026-09-04
+
+```text
+repository = wagnerjfjunior/fecha.ai
+live main = 4ede55dfe63b5da342e53b125e85068980090c82
+PR #168 = CLOSED / MERGED
+PR #168 pre-merge head = 82dafd4fe47ded3a4037668aa1200b518fd9fe07
+PR #168 merge method = SQUASH
+PR #168 merge commit = 4ede55dfe63b5da342e53b125e85068980090c82
+
+M1 = COMPLETE WITH DEFERRED SECURITY ASSURANCE
+M1_MAIN_RECONCILED = YES
+F1-02 operational remediation = CLOSED FOR CURRENT M1 ROADMAP
+J4 environment-dependent evidence = DEFERRED
+IMP-003 = NOT_DETERMINED
+ROLLBACK_REAPPLY = NOT_DETERMINED
+SECURITY GO FOR TESTED M1 PATHS = DENIED / NOT_GRANTED
+OC-01 = REQUIRED BEFORE EXTERNAL USERS / NOT BLOCKING FOR M1 ROADMAP CLOSE
+M2 = NEXT ELIGIBLE MILESTONE
+```
+
+Deferred evidence remains frozen, not waived and not PASS.
+
+Reopen trigger:
+
+```text
+Supabase Pro
+AND isolated non-production environment available
+AND explicit Product Authority execution authorization
+```
+
+This reconciliation does not start M2 and does not authorize runtime, Supabase/Auth, J4,
+IMP-003, rollback/reapply, production smoke, OC-01, Security Go, deploy or production/data changes.
+
+This section is the current semantic authority for M1/F1-02 lifecycle after PR #168.
+Older PR-09 Draft/Ready/pre-merge wording below is historical lineage only and must not be
+used as the current next action.
+
+```text
+PR-09_DOCUMENTATION = MERGED
+M1_MAIN_RECONCILED = YES
+M2_STARTED = NO
+```
+
+The next conversation must bootstrap from live `main`, preserve the deferred-security trigger,
+and reconstruct M2/M2-01 scope before any implementation.
+
 ## 0.0000000000000000 Product Authority M1 close-out decision — 2026-09-04
 
 ```text

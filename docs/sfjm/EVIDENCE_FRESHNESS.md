@@ -1,5 +1,49 @@
 # FECH.AI — SFJM Evidence Freshness
 
+## 0.00000000000000000 POST-PR-09 freshness / handoff anchor — 2026-09-04
+
+```text
+repository = wagnerjfjunior/fecha.ai
+live main = 4ede55dfe63b5da342e53b125e85068980090c82
+PR #168 = CLOSED / MERGED
+PR #168 pre-merge head = 82dafd4fe47ded3a4037668aa1200b518fd9fe07
+PR #168 merge method = SQUASH
+PR #168 merge commit = 4ede55dfe63b5da342e53b125e85068980090c82
+
+M1 = COMPLETE WITH DEFERRED SECURITY ASSURANCE
+M1_MAIN_RECONCILED = YES
+F1-02 operational remediation = CLOSED FOR CURRENT M1 ROADMAP
+J4 environment-dependent evidence = DEFERRED
+IMP-003 = NOT_DETERMINED
+ROLLBACK_REAPPLY = NOT_DETERMINED
+SECURITY GO FOR TESTED M1 PATHS = DENIED / NOT_GRANTED
+OC-01 = REQUIRED BEFORE EXTERNAL USERS / NOT BLOCKING FOR M1 ROADMAP CLOSE
+M2 = NEXT ELIGIBLE MILESTONE
+```
+
+Deferred evidence remains frozen, not waived and not PASS.
+
+Reopen trigger:
+
+```text
+Supabase Pro
+AND isolated non-production environment available
+AND explicit Product Authority execution authorization
+```
+
+This reconciliation does not start M2 and does not authorize runtime, Supabase/Auth, J4,
+IMP-003, rollback/reapply, production smoke, OC-01, Security Go, deploy or production/data changes.
+
+Fresh lifecycle evidence:
+
+- GitHub live resolved PR #168 as merged.
+- merge/main commit: `4ede55dfe63b5da342e53b125e85068980090c82`.
+- the five SFJM files in this reconciliation are continuity-only and do not alter product/runtime state.
+- older `PR-09 = Draft / Not merged` text remains historical provenance below and is superseded by this top override.
+
+Freshness rule for deferred J4 evidence remains unchanged: do not refresh or reinterpret it merely
+because M2 starts.
+
 ## 0.0000000000000000 M1 close-out / deferred assurance evidence state — 2026-09-04
 
 Decision anchor: `f4ff8e42f601a1e033ae6ceaf4c5ecd17b23f3a8`.
