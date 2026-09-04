@@ -1,5 +1,66 @@
 # FECH.AI — SFJM Authorizations
 
+## 0.0000000000000000 Product Authority — M1 / F1-02 / PR-09 final close-out documentation grant — 2026-09-04
+
+Direct Product Authority authorization is bound to:
+
+```text
+repository = wagnerjfjunior/fecha.ai
+exact base main = f4ff8e42f601a1e033ae6ceaf4c5ecd17b23f3a8
+branch = docs/f1-02-security-go-decision
+scope = documentation-only / six files
+PR mode = Draft
+```
+
+Authorized outcome:
+
+```text
+PRODUCT_AUTHORITY_DECISION = 2026-09-04
+DECISION_BASE_MAIN = f4ff8e42f601a1e033ae6ceaf4c5ecd17b23f3a8
+M1 = COMPLETE WITH DEFERRED SECURITY ASSURANCE
+F1-02 operational remediation = CLOSED FOR CURRENT M1 ROADMAP
+J4 environment-dependent evidence = DEFERRED
+IMP-003 = NOT_DETERMINED
+ROLLBACK_REAPPLY = NOT_DETERMINED
+SECURITY GO FOR TESTED M1 PATHS = DENIED / NOT_GRANTED
+OC-01 = REQUIRED BEFORE EXTERNAL USERS / NOT BLOCKING FOR M1 ROADMAP CLOSE
+M2 = NEXT ELIGIBLE MILESTONE
+```
+
+Deferred evidence remains evidence debt, not PASS. The reopen trigger is:
+
+```text
+Supabase Pro
+AND isolated non-production environment available
+AND explicit Product Authority execution authorization
+```
+
+This decision does not authorize PR-08 runtime, J4 execution, IMP-003, rollback/reapply,
+production smoke, OC-01 execution, Security Go, Supabase/Auth changes or production changes.
+
+Authorized files only:
+
+- `docs/security/evidence/F1-02_REMEDIATION_MASTER_PLAN.md`
+- `docs/sfjm/CURRENT_STATE.md`
+- `docs/sfjm/NEXT_SAFE_ACTION.md`
+- `docs/sfjm/EVIDENCE_FRESHNESS.md`
+- `docs/sfjm/AUTHORIZATIONS.md`
+- `docs/sfjm/handoffs/CURRENT.md`
+
+Explicitly prohibited:
+
+- runtime/frontend changes;
+- Supabase/Auth/migrations/rollback SQL/RLS/grants/policies/RPCs/Edge Functions;
+- Vercel/GitHub Actions;
+- PR-08 harness changes;
+- production/data changes;
+- J4/IMP-003/rollback-reapply/production-smoke/OC-01 execution;
+- Security Go grant;
+- Ready, merge or deploy without later separate authorization.
+
+This grant authorizes creating the branch, one bounded documentation commit and opening a Draft PR.
+It does not authorize Ready, merge or deploy.
+
 ## 0.000000000000000 Product Authority — post-merge/post-deploy SFJM reconciliation — 2026-09-03
 
 Direct Product Authority authorization:

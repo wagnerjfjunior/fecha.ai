@@ -1,5 +1,51 @@
 # FECH.AI — SFJM Next Safe Action
 
+## 0.0000000000000000 Current next safe action — M1 / F1-02 / PR-09 close-out — 2026-09-04
+
+```text
+PRODUCT_AUTHORITY_DECISION = 2026-09-04
+DECISION_BASE_MAIN = f4ff8e42f601a1e033ae6ceaf4c5ecd17b23f3a8
+M1 = COMPLETE WITH DEFERRED SECURITY ASSURANCE
+F1-02 operational remediation = CLOSED FOR CURRENT M1 ROADMAP
+J4 environment-dependent evidence = DEFERRED
+IMP-003 = NOT_DETERMINED
+ROLLBACK_REAPPLY = NOT_DETERMINED
+SECURITY GO FOR TESTED M1 PATHS = DENIED / NOT_GRANTED
+OC-01 = REQUIRED BEFORE EXTERNAL USERS / NOT BLOCKING FOR M1 ROADMAP CLOSE
+M2 = NEXT ELIGIBLE MILESTONE
+```
+
+Deferred evidence remains evidence debt, not PASS. The reopen trigger is:
+
+```text
+Supabase Pro
+AND isolated non-production environment available
+AND explicit Product Authority execution authorization
+```
+
+This decision does not authorize PR-08 runtime, J4 execution, IMP-003, rollback/reapply,
+production smoke, OC-01 execution, Security Go, Supabase/Auth changes or production changes.
+
+Current lifecycle state on this branch:
+
+```text
+PR-09 = DOCUMENTATION DRAFT / NOT READY / NOT MERGED
+READY = NOT_AUTHORIZED
+MERGE = NOT_AUTHORIZED
+DEPLOY = NOT_AUTHORIZED
+```
+
+### Single next safe action
+
+Perform an exact-head read-only review of this PR-09 documentation-only branch against the six-file
+authorized scope. If and only if the review passes, request separate Product Authority authorization
+for Ready. Merge remains a later, separate authorization.
+
+After an authorized merge and live-main reconciliation, the next eligible milestone is M2. Starting
+M2-01 requires a separate bounded bootstrap/scope gate; this record does not start M2.
+
+Do not execute J4, IMP-003, rollback/reapply, production smoke or OC-01 and do not grant Security Go.
+
 ## 0.000000000000000 CURRENT NEXT SAFE ACTION — after PR #166 merge/deploy — 2026-09-03
 
 The pre-merge review and merge of PR #166 are consumed and no longer current actions.

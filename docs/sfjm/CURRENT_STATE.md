@@ -1,5 +1,49 @@
 # FECH.AI — SFJM Current Material State
 
+## 0.0000000000000000 Product Authority M1 close-out decision — 2026-09-04
+
+```text
+PRODUCT_AUTHORITY_DECISION = 2026-09-04
+DECISION_BASE_MAIN = f4ff8e42f601a1e033ae6ceaf4c5ecd17b23f3a8
+M1 = COMPLETE WITH DEFERRED SECURITY ASSURANCE
+F1-02 operational remediation = CLOSED FOR CURRENT M1 ROADMAP
+J4 environment-dependent evidence = DEFERRED
+IMP-003 = NOT_DETERMINED
+ROLLBACK_REAPPLY = NOT_DETERMINED
+SECURITY GO FOR TESTED M1 PATHS = DENIED / NOT_GRANTED
+OC-01 = REQUIRED BEFORE EXTERNAL USERS / NOT BLOCKING FOR M1 ROADMAP CLOSE
+M2 = NEXT ELIGIBLE MILESTONE
+```
+
+Deferred evidence remains evidence debt, not PASS. The reopen trigger is:
+
+```text
+Supabase Pro
+AND isolated non-production environment available
+AND explicit Product Authority execution authorization
+```
+
+This decision does not authorize PR-08 runtime, J4 execution, IMP-003, rollback/reapply,
+production smoke, OC-01 execution, Security Go, Supabase/Auth changes or production changes.
+
+Lifecycle distinction:
+
+```text
+PRODUCT_DECISION_RECORDED = YES
+PR-09_DOCUMENTATION = VERSIONED ON THIS BRANCH
+PR-09_MERGED = NOT_YET_ESTABLISHED
+M1_MAIN_RECONCILED = NOT_YET_ESTABLISHED
+```
+
+The intended post-merge roadmap state is `M1 = COMPLETE WITH DEFERRED SECURITY ASSURANCE`.
+No J4 deferred result becomes PASS. No Security Go is granted.
+
+OC-01 is dispositioned by Product Authority as required before external users and not blocking the
+M1 roadmap close. GPT3 concurrence remains a separate evidence requirement before external-user
+admission relies on that control classification.
+
+Reopen the deferred J4 evidence only when the exact three-part trigger is satisfied.
+
 ## 0.000000000000000 CURRENT SEMANTIC OVERRIDE — PR #166 post-merge/post-deploy — 2026-09-03
 
 This section is the current lifecycle truth for PR #166. Older pre-merge/merge next-action

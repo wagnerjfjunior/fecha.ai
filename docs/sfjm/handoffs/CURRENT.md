@@ -1,5 +1,47 @@
 # FECH.AI — SFJM Current Product/Security Handoff
 
+## 0.0000000000000000 Current handoff — M1 / F1-02 / PR-09 close-out — 2026-09-04
+
+```text
+PRODUCT_AUTHORITY_DECISION = 2026-09-04
+DECISION_BASE_MAIN = f4ff8e42f601a1e033ae6ceaf4c5ecd17b23f3a8
+M1 = COMPLETE WITH DEFERRED SECURITY ASSURANCE
+F1-02 operational remediation = CLOSED FOR CURRENT M1 ROADMAP
+J4 environment-dependent evidence = DEFERRED
+IMP-003 = NOT_DETERMINED
+ROLLBACK_REAPPLY = NOT_DETERMINED
+SECURITY GO FOR TESTED M1 PATHS = DENIED / NOT_GRANTED
+OC-01 = REQUIRED BEFORE EXTERNAL USERS / NOT BLOCKING FOR M1 ROADMAP CLOSE
+M2 = NEXT ELIGIBLE MILESTONE
+```
+
+Deferred evidence remains evidence debt, not PASS. The reopen trigger is:
+
+```text
+Supabase Pro
+AND isolated non-production environment available
+AND explicit Product Authority execution authorization
+```
+
+This decision does not authorize PR-08 runtime, J4 execution, IMP-003, rollback/reapply,
+production smoke, OC-01 execution, Security Go, Supabase/Auth changes or production changes.
+
+Continuity contract:
+
+```text
+M1 roadmap close = approved by Product Authority
+PR-09 documentation lifecycle = DRAFT until separately advanced
+Security Go = NOT_GRANTED
+J4 deferred evidence = frozen, not waived
+M2 = next eligible milestone only after PR-09 merge/reconciliation
+```
+
+Reopen deferred J4 evidence only after the exact Supabase Pro + isolated non-production environment
++ explicit Product Authority execution authorization trigger.
+
+Next specialist/agent must first validate the exact PR-09 head and the six-file diff. It must not
+start M2, execute OC-01/J4, grant Security Go, mark Ready or merge without fresh explicit authority.
+
 ## 0.000000000000000 CURRENT HANDOFF — PR #166 merged and Vercel deployed — 2026-09-03
 
 ```text
