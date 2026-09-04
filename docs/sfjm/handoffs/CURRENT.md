@@ -1,5 +1,45 @@
 # FECH.AI — SFJM Current Product/Security Handoff
 
+## 0.0000000000000000000 CURRENT HANDOFF — PR #170 merged / STS-M2-01 next — 2026-09-04
+
+```text
+repository = wagnerjfjunior/fecha.ai
+live main = 252fb981bba4fb410136fd34cb29b9f2d0e057f8
+
+PR #170 = CLOSED / MERGED
+pre-merge audited head = 70cf464540c2b72cb4abe51857734b000748a890
+merge method = SQUASH
+merge commit = 252fb981bba4fb410136fd34cb29b9f2d0e057f8
+
+program hierarchy BCR = CANONICAL_ON_MAIN
+Security-to-Scale WBS = CURRENT EXECUTION BASELINE
+B0 = immutable historical comparison baseline
+Product Modules / Roadmap Mestre = capability / vision references
+sfjm-workspace = derived representation
+
+Vercel automatic post-merge deployment = SUCCESS
+DEPLOY_SUCCESS != RUNTIME_PASS
+DEPLOY_SUCCESS != SECURITY_GO
+
+STS-M1 = COMPLETE WITH DEFERRED SECURITY ASSURANCE
+J4 = DEFERRED
+IMP-003 = NOT_DETERMINED
+ROLLBACK_REAPPLY = NOT_DETERMINED
+SECURITY_GO = NOT_GRANTED
+
+STS-M2 = ELIGIBLE / NOT STARTED
+STS-M2-01 = Matriz de 43 tabelas / READ_ONLY scope reconstruction next
+STS-M2 implementation = NOT_AUTHORIZED
+```
+
+Receiving conversation contract:
+
+1. bootstrap from live `main`;
+2. use qualified `PRODUCT_MODULE_*`, `B0-*` and `STS-*` namespace when ambiguity is possible;
+3. do not reopen M1 or PR #170 without material invalidation;
+4. continue with STS-M2-01 READ_ONLY scope/evidence reconstruction;
+5. request separate Product Authority authorization before any database/backend implementation or mutation.
+
 ## 0.000000000000000000 CURRENT HANDOFF — program hierarchy/Core DoD adjudicated / STS-M2 next — 2026-09-04
 
 This handoff meaning becomes canonical only when the PR #170 adjudication is present on FECH.AI `main`.

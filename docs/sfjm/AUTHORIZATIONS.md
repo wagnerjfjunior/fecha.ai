@@ -1,4 +1,42 @@
 # FECH.AI — SFJM Authorizations
+
+## 0.00000000000000000000 Product Authority — PR #170 post-merge SFJM reconciliation — 2026-09-04
+
+Product Authority explicitly accepted that Vercel automatically deploys after merge and authorized the post-merge SFJM reconciliation after PR #170 merged.
+
+Authorized bounded action:
+
+```text
+base main = 252fb981bba4fb410136fd34cb29b9f2d0e057f8
+purpose = record PR #170 merged lifecycle + new canonical main + observed automatic Vercel success
+scope = documentation-only SFJM reconciliation
+files = exactly five SFJM files
+```
+
+Authorized files:
+
+- `docs/sfjm/CURRENT_STATE.md`
+- `docs/sfjm/NEXT_SAFE_ACTION.md`
+- `docs/sfjm/EVIDENCE_FRESHNESS.md`
+- `docs/sfjm/AUTHORIZATIONS.md`
+- `docs/sfjm/handoffs/CURRENT.md`
+
+This authorization does not authorize:
+
+```text
+STS-M2 implementation
+Supabase/Auth/runtime/data mutation
+Security Go
+Issue #141 closure
+WBS/BCR redesign
+SES or StopJuniorMode protocol changes
+sfjm-workspace mutation
+Ready
+merge of the reconciliation PR
+```
+
+The reconciliation must preserve the distinction between merge, automatic deployment, runtime validation and Security Go.
+
 ## 0.0000000000000000000 Product Authority — PR #170 hierarchy/Core DoD correction — 2026-09-04
 
 Product Authority authorized preparing a single documentary adjudication of program hierarchy + Definition of Done, including the final M4 segmentation and AS-BUILT obligation, and correcting PR #170 rather than creating another roadmap.

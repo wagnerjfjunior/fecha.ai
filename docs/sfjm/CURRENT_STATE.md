@@ -1,5 +1,51 @@
 # FECH.AI — SFJM Current Material State
 
+## 0.0000000000000000000 POST-PR-170 MAIN RECONCILIATION — 2026-09-04
+
+```text
+repository = wagnerjfjunior/fecha.ai
+live main = 252fb981bba4fb410136fd34cb29b9f2d0e057f8
+
+PR #170 = CLOSED / MERGED
+PR #170 reviewed pre-merge head = 70cf464540c2b72cb4abe51857734b000748a890
+PR #170 merge method = SQUASH
+PR #170 merge commit = 252fb981bba4fb410136fd34cb29b9f2d0e057f8
+
+program hierarchy BCR = MERGED / CANONICAL_ON_MAIN
+Security-to-Scale WBS = CURRENT GRANULAR EXECUTION BASELINE ON MAIN
+
+Vercel automatic post-merge deployment = SUCCESS
+Vercel status source = commit status on 252fb981bba4fb410136fd34cb29b9f2d0e057f8
+MERGE != DEPLOY
+DEPLOY_SUCCESS != RUNTIME_VALIDATION
+DEPLOY_SUCCESS != SECURITY_GO
+
+STS-M1 = COMPLETE WITH DEFERRED SECURITY ASSURANCE
+J4 = DEFERRED
+IMP-003 = NOT_DETERMINED
+ROLLBACK_REAPPLY = NOT_DETERMINED
+SECURITY_GO = NOT_GRANTED
+OC-01 = REQUIRED BEFORE EXTERNAL USERS
+
+STS-M2 = ELIGIBLE / NOT STARTED
+STS-M2-01 = Matriz de 43 tabelas / 20h / READ_ONLY scope reconstruction next
+STS-M2 implementation = NOT_AUTHORIZED
+```
+
+This reconciliation records only the material lifecycle transition created by the merge of PR #170 and the observed automatic Vercel deployment result. It does not re-earn progress, reopen M1, start STS-M2, validate runtime behavior, authorize Supabase/Auth changes or grant Security Go.
+
+Current hierarchy remains:
+
+```text
+PRODUCT_MODULE_* = product capability taxonomy
+B0-* = immutable historical comparison baseline
+STS-* = current Security-to-Scale execution namespace
+SFJM = current material operational state / continuity
+sfjm-workspace = derived representation
+```
+
+The single semantic continuation remains STS-M2-01 READ_ONLY scope/evidence reconstruction under fresh bootstrap.
+
 ## 0.000000000000000000 PROGRAM HIERARCHY / CORE DoD ADJUDICATION — 2026-09-04
 
 This section is candidate documentation while it exists only on PR #170 and becomes durable material meaning only when present on canonical `main`.

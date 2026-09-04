@@ -1,5 +1,41 @@
 # FECH.AI — SFJM Evidence Freshness
 
+## 0.0000000000000000000 PR #170 POST-MERGE FRESHNESS — 2026-09-04
+
+```text
+live main = 252fb981bba4fb410136fd34cb29b9f2d0e057f8
+PR #170 state = CLOSED / MERGED
+PR #170 pre-merge head = 70cf464540c2b72cb4abe51857734b000748a890
+merge method = SQUASH
+merge commit = 252fb981bba4fb410136fd34cb29b9f2d0e057f8
+changed files in PR #170 = 10
+program hierarchy BCR = PRESENT ON MAIN
+Security-to-Scale WBS = PRESENT ON MAIN
+
+Vercel automatic deployment status = SUCCESS
+Vercel lifecycle evidence = GitHub commit status for 252fb981bba4fb410136fd34cb29b9f2d0e057f8
+runtime smoke/equivalence evidence from this deployment = NOT_ESTABLISHED
+Security Go = NOT_GRANTED
+```
+
+Material consequence:
+
+```text
+PROGRAM_AUTHORITY_AMBIGUITY = RECONCILED ON MAIN
+PRODUCT_MODULE / B0 / STS namespace separation = CANONICAL_ON_MAIN
+M4 core segmentation = CANONICAL_ON_MAIN
+professional AS-BUILT obligation = CANONICAL_ON_MAIN
+STS-M2-01 = NEXT SEMANTIC READ_ONLY ACTION
+```
+
+Freshness boundaries preserved:
+
+- automatic Vercel deployment success is lifecycle evidence only;
+- deployment does not establish functional, runtime, tenant-isolation or security PASS;
+- J4 remains deferred;
+- IMP-003 and rollback/reapply remain NOT_DETERMINED;
+- STS-M2 remains NOT STARTED.
+
 ## 0.000000000000000000 PROGRAM HIERARCHY / CORE DoD ADJUDICATION EVIDENCE — 2026-09-04
 
 ```text

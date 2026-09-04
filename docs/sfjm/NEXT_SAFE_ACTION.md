@@ -1,5 +1,44 @@
 # FECH.AI — SFJM Next Safe Action
 
+## 0.0000000000000000000 CURRENT NEXT SAFE ACTION — post-PR-170 merge — 2026-09-04
+
+```text
+live main = 252fb981bba4fb410136fd34cb29b9f2d0e057f8
+PR #170 = CLOSED / MERGED
+Security-to-Scale WBS = CANONICAL_ON_MAIN
+Vercel automatic post-merge deployment = SUCCESS
+
+STS-M1 = COMPLETE WITH DEFERRED SECURITY ASSURANCE
+STS-M2 = ELIGIBLE / NOT STARTED
+STS-M2-01 = Matriz de 43 tabelas / 20h
+STS-M2-01 implementation = NOT_AUTHORIZED
+Security Go = NOT_GRANTED
+```
+
+### Single next safe action
+
+```text
+STS-M2-01 — READ_ONLY SCOPE / EVIDENCE RECONSTRUCTION
+
+→ resolve FECH.AI main live
+→ read bootstrap + governance BCR + Issue #141 + current WBS + current SFJM
+→ resolve current Backend/Data + Architecture routing
+→ reconstruct the 43-table source universe and evidence obligations
+→ define KEEP / CONSOLIDATE / RETIRE / REMODEL / INTERNAL decision criteria
+→ identify required live catalog/statistics reads
+→ map domain ownership and callers
+→ produce the bounded STS-M2-01 acceptance/evidence package
+
+NO implementation
+NO DDL/DML
+NO migration
+NO RLS/policy/grant/RPC mutation
+NO Supabase/Auth mutation
+NO Security Go
+```
+
+Do not reopen PR #170 or completed M1 lifecycle absent a material invalidation event.
+
 ## 0.000000000000000000 CURRENT SEMANTIC NEXT ACTION — STS-M2 bootstrap / STS-M2-01 scope reconstruction — 2026-09-04
 
 This section defines the semantic next action only when this adjudication is present on canonical `main`. PR lifecycle must still be resolved live.
