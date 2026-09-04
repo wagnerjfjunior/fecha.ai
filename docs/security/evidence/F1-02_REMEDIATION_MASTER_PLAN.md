@@ -1,5 +1,56 @@
 # FECH.AI — F1-02 Security Remediation Master Plan
 
+## 0. Product Authority close-out decision — M1 / F1-02 / PR-09 — 2026-09-04
+
+```text
+PRODUCT_AUTHORITY_DECISION = 2026-09-04
+DECISION_BASE_MAIN = f4ff8e42f601a1e033ae6ceaf4c5ecd17b23f3a8
+M1 = COMPLETE WITH DEFERRED SECURITY ASSURANCE
+F1-02 operational remediation = CLOSED FOR CURRENT M1 ROADMAP
+J4 environment-dependent evidence = DEFERRED
+IMP-003 = NOT_DETERMINED
+ROLLBACK_REAPPLY = NOT_DETERMINED
+SECURITY GO FOR TESTED M1 PATHS = DENIED / NOT_GRANTED
+OC-01 = REQUIRED BEFORE EXTERNAL USERS / NOT BLOCKING FOR M1 ROADMAP CLOSE
+M2 = NEXT ELIGIBLE MILESTONE
+```
+
+Deferred evidence remains evidence debt, not PASS. The reopen trigger is:
+
+```text
+Supabase Pro
+AND isolated non-production environment available
+AND explicit Product Authority execution authorization
+```
+
+This decision does not authorize PR-08 runtime, J4 execution, IMP-003, rollback/reapply,
+production smoke, OC-01 execution, Security Go, Supabase/Auth changes or production changes.
+
+### Deferred J4 evidence
+
+The environment-dependent PR-08 evidence remains frozen until the reopen trigger is satisfied.
+The deferred set includes the owner-side/non-production-only HTTP evidence and migration
+rollback/reapply obligations already versioned by PR-08. No deferred item is reclassified as PASS.
+
+### OC-01 disposition
+
+Product Authority classifies OC-01 as `REQUIRED BEFORE EXTERNAL USERS / NOT BLOCKING FOR M1 ROADMAP CLOSE`.
+GPT3 concurrence for that before-external-users disposition is not established by this documentation
+change and remains required before OC-01 is treated as security-accepted or before external-user
+admission relies on it.
+
+### PR-09 decision
+
+PR-09 records:
+
+```text
+SECURITY GO FOR TESTED M1 PATHS: DENIED / NOT_GRANTED
+```
+
+This is a bounded roadmap close-out decision, not a Security Go grant. M2 may become the next eligible
+milestone after this documentation lifecycle is merged; starting M2 requires its own explicit scope
+and authorization.
+
 **Status:** `PROGRAM_BASELINE / DOCUMENTATION_ONLY / SECURITY_GO_DENIED`  
 **Date:** 2026-07-24  
 **Repository:** `wagnerjfjunior/fecha.ai`  

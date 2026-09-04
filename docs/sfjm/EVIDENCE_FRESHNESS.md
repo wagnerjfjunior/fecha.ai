@@ -1,5 +1,47 @@
 # FECH.AI — SFJM Evidence Freshness
 
+## 0.0000000000000000 M1 close-out / deferred assurance evidence state — 2026-09-04
+
+Decision anchor: `f4ff8e42f601a1e033ae6ceaf4c5ecd17b23f3a8`.
+
+```text
+PRODUCT_AUTHORITY_DECISION = 2026-09-04
+DECISION_BASE_MAIN = f4ff8e42f601a1e033ae6ceaf4c5ecd17b23f3a8
+M1 = COMPLETE WITH DEFERRED SECURITY ASSURANCE
+F1-02 operational remediation = CLOSED FOR CURRENT M1 ROADMAP
+J4 environment-dependent evidence = DEFERRED
+IMP-003 = NOT_DETERMINED
+ROLLBACK_REAPPLY = NOT_DETERMINED
+SECURITY GO FOR TESTED M1 PATHS = DENIED / NOT_GRANTED
+OC-01 = REQUIRED BEFORE EXTERNAL USERS / NOT BLOCKING FOR M1 ROADMAP CLOSE
+M2 = NEXT ELIGIBLE MILESTONE
+```
+
+Deferred evidence remains evidence debt, not PASS. The reopen trigger is:
+
+```text
+Supabase Pro
+AND isolated non-production environment available
+AND explicit Product Authority execution authorization
+```
+
+This decision does not authorize PR-08 runtime, J4 execution, IMP-003, rollback/reapply,
+production smoke, OC-01 execution, Security Go, Supabase/Auth changes or production changes.
+
+Evidence classification:
+
+- PR-08 static harness and its merged lifecycle remain historical/versioned evidence.
+- Canonical PR-08 runtime receipts remain unexecuted for the deferred environment-dependent set.
+- `IMP-003 = NOT_DETERMINED`.
+- `ROLLBACK_REAPPLY = NOT_DETERMINED`.
+- operating-session evidence remains bounded continuity evidence only.
+- no deferred result is promoted to `PASS`.
+- `SECURITY_GO = NOT_GRANTED`.
+
+Freshness rule: do not reopen the deferred evidence merely because M2 starts. Reopen only after the
+three-part Supabase Pro / isolated non-production / explicit Product Authority execution trigger, or
+on a material contradiction affecting the underlying security assumptions.
+
 ## 0.000000000000000 POST-MERGE / POST-DEPLOY FRESHNESS — PR #166 — 2026-09-03
 
 ```text
