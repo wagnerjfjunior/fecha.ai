@@ -1,5 +1,49 @@
 # FECH.AI — SFJM Current Product/Security Handoff
 
+## 0.00000000000000000000 CURRENT HANDOFF — STS-M2-01 ACCEPTED / STS-M2-02 NEXT — 2026-09-04
+
+```text
+repository = wagnerjfjunior/fecha.ai
+decision anchor main = 252fb981bba4fb410136fd34cb29b9f2d0e057f8
+
+current program = Issue #141 — Security-to-Scale 2026
+
+STS-M1 = COMPLETE WITH DEFERRED SECURITY ASSURANCE
+STS-M2 = STARTED
+STS-M2-01 = COMPLETE / PRODUCT AUTHORITY ACCEPTED
+
+WBS label = 43-table canonicality matrix
+current live/adjudicated public universe = 44
+delta = +1 / importar_leads_batch_idempotency
+
+FINAL STS-M2-01 CANONICALITY:
+  KEEP = 40
+  INTERNAL = 4
+  CONSOLIDATE = 0
+  RETIRE = 0
+  REMODEL = 0
+  TOTAL = 44
+  NOT_DETERMINED = 0
+
+RESIDUAL EVIDENCE OBLIGATIONS:
+  logs
+  mesa_fluxo_pagamentos_canonico
+  templates_mensagens
+
+Security Go = NOT_GRANTED
+database implementation = NOT_AUTHORIZED
+```
+
+Receiving-conversation contract:
+
+1. resolve live `main` first;
+2. do not reopen STS-M2-01 without a material invalidation event;
+3. preserve the 44-table current universe and the 43-table label as historical planning nomenclature;
+4. treat KEEP as current evidence-bound disposition, not permanent architecture;
+5. continue only with `STS-M2-02 — READ_ONLY routine/policy/trigger/grant map`;
+6. map owner/caller/tenant/write authority before proposing any mutation;
+7. require separate Product Authority authorization before implementation, Supabase mutation, Ready, merge, deploy or Security Go.
+
 ## 0.000000000000000000 CURRENT HANDOFF — program hierarchy/Core DoD adjudicated / STS-M2 next — 2026-09-04
 
 This handoff meaning becomes canonical only when the PR #170 adjudication is present on FECH.AI `main`.

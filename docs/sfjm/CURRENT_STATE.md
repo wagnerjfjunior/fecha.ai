@@ -1,5 +1,53 @@
 # FECH.AI — SFJM Current Material State
 
+## 0.00000000000000000000 STS-M2-01 PRODUCT AUTHORITY ACCEPTANCE — 2026-09-04
+
+```text
+repository = wagnerjfjunior/fecha.ai
+decision anchor main = 252fb981bba4fb410136fd34cb29b9f2d0e057f8
+program = Issue #141 — FECH.AI Security-to-Scale 2026
+
+STS-M2 = STARTED
+STS-M2-01 = COMPLETE / ACCEPTED BY PRODUCT AUTHORITY
+STS-M2-01 execution mode = READ_ONLY EVIDENCE + ARCHITECTURE ADJUDICATION
+STS-M2-01 implementation = NONE
+
+WBS planning label = Matriz de 43 tabelas
+live public table universe adjudicated = 44
+planning/live count delta = +1
+delta explanation = public.importar_leads_batch_idempotency
+unresolved numerical table-count drift = 0
+
+FINAL CANONICALITY:
+  KEEP = 40
+  INTERNAL = 4
+  CONSOLIDATE = 0
+  RETIRE = 0
+  REMODEL = 0
+  TOTAL = 44
+  NOT_DETERMINED = 0
+
+KEEP_NOW != PERMANENT_ARCHITECTURAL_END_STATE
+ARCHITECTURE_DECISION != IMPLEMENTATION_AUTHORIZATION
+```
+
+The 4 INTERNAL tables are:
+
+- `public.deployment_control_log`
+- `public.importar_leads_batch_idempotency`
+- `public.t3_admin_password_reset_edge_proofs`
+- `public.t3_admin_password_reset_leases`
+
+Residual evidence obligations remain attached to current KEEP disposition for:
+
+- `public.logs` — producer/consumer taxonomy, retention, sensitivity and relationship to other audit/log facilities;
+- `public.mesa_fluxo_pagamentos_canonico` — canonical read cutover/promotion, historical/backfill equivalence, reconciliation, compatibility and rollback;
+- `public.templates_mensagens` — reader/writer inventory, compatibility, data relevance, migration coverage and rollback.
+
+These residuals do not reopen STS-M2-01. A future stronger `CONSOLIDATE / RETIRE / REMODEL` disposition requires new proportional evidence and a separate authorized implementation gate.
+
+Current next task is `STS-M2-02` scope/evidence reconstruction in READ_ONLY mode. STS-M2-02 is not started or implemented by this acceptance.
+
 ## 0.000000000000000000 PROGRAM HIERARCHY / CORE DoD ADJUDICATION — 2026-09-04
 
 This section is candidate documentation while it exists only on PR #170 and becomes durable material meaning only when present on canonical `main`.

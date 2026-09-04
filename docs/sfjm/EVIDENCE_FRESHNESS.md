@@ -1,5 +1,43 @@
 # FECH.AI — SFJM Evidence Freshness
 
+## 0.00000000000000000000 STS-M2-01 ACCEPTANCE EVIDENCE FRESHNESS — 2026-09-04
+
+```text
+decision anchor FECH.AI main = 252fb981bba4fb410136fd34cb29b9f2d0e057f8
+Issue #141 = OPEN
+Supabase project = uobxxgzshrmbtjfdolxd / Discador-MesaCliente
+
+live public table count revalidated = 44
+PR-07 applied migration = 20260902225240 / f1_02_pr07_funnel_reads_crm_payloads
+public.importar_leads_batch_idempotency = PRESENT LIVE
+
+Backend/Data Phase A = DELIVERED / READ_ONLY LIVE DATABASE AUDIT
+Architecture Phase B = COMPLETE / ACCEPTANCE WITH RESIDUALS RECOMMENDED
+Architecture three-table final delta = COMPLETE
+Product Authority STS-M2-01 acceptance = GRANTED
+```
+
+Adjudicated final distribution:
+
+```text
+KEEP = 40
+INTERNAL = 4
+CONSOLIDATE = 0
+RETIRE = 0
+REMODEL = 0
+TOTAL = 44
+NOT_DETERMINED = 0
+```
+
+Evidence boundaries:
+
+- the historical WBS label remains 43 tables; current live/adjudicated universe is 44;
+- `KEEP` is the current evidence-bound disposition, not a permanent architecture promise;
+- the three residual evidence obligations remain open without invalidating STS-M2-01 acceptance;
+- full policy/grant correctness was not established by STS-M2-01 and belongs to later M2 work;
+- no database mutation, runtime behavior change or Security Go occurred in STS-M2-01;
+- external specialist reports used during the operating session are not silently promoted to versioned runtime proof; this SFJM entry records the accepted material decision and bounded evidence meaning.
+
 ## 0.000000000000000000 PROGRAM HIERARCHY / CORE DoD ADJUDICATION EVIDENCE — 2026-09-04
 
 ```text
