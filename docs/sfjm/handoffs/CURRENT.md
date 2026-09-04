@@ -1,5 +1,44 @@
 # FECH.AI — SFJM Current Product/Security Handoff
 
+## 0.0000000000000000001 CURRENT HANDOFF — STS-M2-01 accepted / STS-M2-02 next — 2026-09-04
+
+This handoff becomes current material continuity when merged to canonical `main`.
+
+```text
+program = Issue #141 — Security-to-Scale 2026
+
+STS-M1 = COMPLETE WITH DEFERRED SECURITY ASSURANCE
+STS-M2 = STARTED
+STS-M2-01 = COMPLETE / ACCEPTED
+
+M2-01 current live universe = 44 public tables
+M2-01 final matrix:
+  KEEP 40
+  INTERNAL 4
+  CONSOLIDATE 0
+  RETIRE 0
+  REMODEL 0
+  TOTAL 44
+
+residual KEEP evidence obligations:
+  logs
+  mesa_fluxo_pagamentos_canonico
+  templates_mensagens
+
+Security Go = NOT_GRANTED
+```
+
+Receiving conversation contract:
+
+1. resolve GitHub `main` live and bootstrap normally;
+2. do not reopen STS-M2-01 without material invalidation;
+3. preserve the historical WBS label 43 while using live universe 44;
+4. next safe action is STS-M2-02 READ_ONLY routine/policy/trigger/grant mapping;
+5. no implementation or database/runtime mutation is inherited from M2-01 acceptance;
+6. keep M1 deferred-security evidence frozen unless its explicit reopen trigger is satisfied.
+
+This reconciliation is self-closing after merge; do not create a lifecycle-only follow-up SFJM PR.
+
 ## 0.000000000000000000 CURRENT HANDOFF — program hierarchy/Core DoD adjudicated / STS-M2 next — 2026-09-04
 
 This handoff meaning becomes canonical only when the PR #170 adjudication is present on FECH.AI `main`.

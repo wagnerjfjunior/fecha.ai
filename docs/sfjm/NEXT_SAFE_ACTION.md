@@ -1,5 +1,40 @@
 # FECH.AI — SFJM Next Safe Action
 
+## 0.0000000000000000001 CURRENT SEMANTIC NEXT ACTION — STS-M2-02 READ_ONLY MAP — 2026-09-04
+
+Once this reconciliation is present on canonical `main`, the previous STS-M2-01 next-action section becomes historical lineage.
+
+```text
+STS-M2 = STARTED
+STS-M2-01 = COMPLETE / ACCEPTED
+STS-M2-02 = NEXT
+STS-M2-02 implementation = NOT_AUTHORIZED
+Security Go = NOT_GRANTED
+```
+
+### Single next safe action
+
+```text
+STS-M2-02 — MAPA DE ROUTINES / POLICIES / TRIGGERS / GRANTS — READ_ONLY
+
+→ resolve FECH.AI main live
+→ bootstrap current Backend/Data + Architecture routing; add AppSec where security adjudication is material
+→ enumerate current routines / policies / triggers / grants
+→ map owner, caller, tenant authority and write authority
+→ distinguish catalog evidence from runtime behavior
+→ identify contradictions/gaps without mutating live state
+→ produce bounded M2-02 evidence/acceptance package
+
+NO DDL/DML
+NO migration
+NO policy/RLS/grant/RPC/trigger mutation
+NO Auth/Edge mutation
+NO deploy
+NO Security Go
+```
+
+M2-01 residual evidence remains visible and may be consumed by later M2 tasks; do not reopen the accepted 44-table matrix absent a material invalidation event.
+
 ## 0.000000000000000000 CURRENT SEMANTIC NEXT ACTION — STS-M2 bootstrap / STS-M2-01 scope reconstruction — 2026-09-04
 
 This section defines the semantic next action only when this adjudication is present on canonical `main`. PR lifecycle must still be resolved live.
