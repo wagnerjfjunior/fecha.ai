@@ -1,5 +1,13 @@
 # FECH.AI — Roadmap Mestre v1
 
+> **STATUS: HISTORICAL / LEGACY PRODUCT ROADMAP**  
+> Original date: 2026-06-02. This file preserves the initial product-roadmap history.  
+> It is **not** the current milestone-numbering authority for `FECH.AI Security-to-Scale 2026`.  
+> Current program contract: **Issue #141 — FECH.AI Security-to-Scale 2026**.  
+> Current granular WBS, when present on `main`: `docs/roadmap/fechai-security-to-scale-2026-wbs.md`.  
+> Historical labels such as “Fase 1…Fase 6” must not be interpreted as Security-to-Scale `M1…M6`.
+
+
 **Status:** v1.0 — roadmap inicial de produto  
 **Data:** 2026-06-02  
 **Escopo:** organização dos módulos, fases de MVP, ordem de execução e relação com GPTs especialistas.  

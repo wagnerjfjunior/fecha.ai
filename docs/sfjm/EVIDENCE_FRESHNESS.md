@@ -1,5 +1,39 @@
 # FECH.AI — SFJM Evidence Freshness
 
+## 0.000000000000000000 PROGRAM/WBS CANONICALIZATION EVIDENCE — 2026-09-04
+
+```text
+FECH.AI base main = 2bad8e9c3d6d6e091a6416c556e793eb1b24e0ec
+Issue #141 = OPEN
+Issue #141 title = PROGRAM: FECH.AI Security-to-Scale 2026
+workspace candidate evidence head = d13ee49ae86225db89c6f81c015051be2f90334e
+workspace WBS path = data/workspace-demo.ts
+workspace WBS blob = 980549bb35c429be89ef22f6ce1dd0e52f9a2190
+target FECH.AI WBS path = docs/roadmap/fechai-security-to-scale-2026-wbs.md
+```
+
+Coverage used for this bounded reconciliation:
+
+| Source | Coverage | Purpose |
+|---|---|---|
+| Issue #141 full body | INTEGRAL_READ | program objective, M0–M6 names/owners/windows/exit criteria |
+| `sfjm-workspace/data/workspace-demo.ts` @ exact head above | INTEGRAL_READ | Product Authority-approved granular WBS IDs/hours/backlogs |
+| `docs/roadmap/fechai-roadmap-master-v1.md` @ base main | INTEGRAL_READ | identify and preserve legacy roadmap collision |
+| affected FECH.AI SFJM files @ base main | INTEGRAL_READ | preserve history and add current material override |
+
+Evidence boundary:
+
+```text
+ISSUE_141_PROGRAM_CONTRACT != GRANULAR_WBS_HOURS_SOURCE
+WORKSPACE_CANDIDATE_EVIDENCE != FECHAI_CANONICAL_MAIN
+PR_HEAD_DOCUMENTATION != MERGED_CANONICAL_STATE
+```
+
+The Product Authority authorization for PR A permits canonicalizing the approved WBS into FECH.AI documentation. Until merge, the new WBS remains candidate branch content. No technical/runtime evidence is created by this PR.
+
+M1 deferred evidence remains frozen, not waived and not PASS.
+
+
 ## 0.00000000000000000 POST-PR-09 freshness / handoff anchor — 2026-09-04
 
 ```text

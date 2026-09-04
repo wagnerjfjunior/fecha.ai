@@ -1,5 +1,43 @@
 # FECH.AI — SFJM Next Safe Action
 
+## 0.000000000000000000 CURRENT SEMANTIC NEXT ACTION — M2-01 bounded scope/evidence reconstruction — 2026-09-04
+
+This section defines the semantic next action when present on canonical `main`. PR lifecycle gates remain live-resolved and do not themselves start M2.
+
+```text
+repository = wagnerjfjunior/fecha.ai
+decision/base main = 2bad8e9c3d6d6e091a6416c556e793eb1b24e0ec
+program = Issue #141 — FECH.AI Security-to-Scale 2026 / OPEN
+program WBS = docs/roadmap/fechai-security-to-scale-2026-wbs.md
+M1 = COMPLETE WITH DEFERRED SECURITY ASSURANCE
+J4 environment-dependent evidence = DEFERRED
+IMP-003 = NOT_DETERMINED
+ROLLBACK_REAPPLY = NOT_DETERMINED
+SECURITY_GO = NOT_GRANTED
+OC-01 = REQUIRED BEFORE EXTERNAL USERS
+M2 = Database Simplification & Optimization Plan / ELIGIBLE / NOT STARTED
+M2-01 = Matriz de 43 tabelas / 20h / SCOPE RECONSTRUCTION ONLY
+M2-01 implementation = NOT_AUTHORIZED
+```
+
+### Single next safe action
+
+```text
+M2-01 — MATRIZ DE 43 TABELAS
+
+→ resolve FECH.AI main live
+→ read Issue #141 + canonical Security-to-Scale WBS
+→ resolve Backend/Data + Architecture through current SES routing
+→ perform READ_ONLY scope reconstruction for the 43-table canonicality matrix
+→ define evidence needed for KEEP / CONSOLIDATE / RETIRE / REMODEL / INTERNAL
+→ define exact live-catalog/statistics dependencies and unavailable evidence
+→ produce bounded acceptance/evidence package
+→ no implementation, DDL, DML, migration, RLS/policy/grant/RPC change without separate Product Authority authorization
+```
+
+This action is preparation/read-only. It does not grant Security Go, start M2 implementation, reopen M1, or authorize Supabase/Auth/production/deploy changes.
+
+
 ## 0.00000000000000000 CURRENT NEXT SAFE ACTION — M2 bootstrap / M2-01 scope reconstruction — 2026-09-04
 
 ```text

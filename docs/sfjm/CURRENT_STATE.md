@@ -1,5 +1,42 @@
 # FECH.AI — SFJM Current Material State
 
+## 0.000000000000000000 PROGRAM/WBS IDENTITY RECONCILIATION — Security-to-Scale M2 resolved — 2026-09-04
+
+This section defines durable material meaning when present on canonical `main`. On a PR head it is candidate documentation only.
+
+```text
+repository = wagnerjfjunior/fecha.ai
+decision/base main = 2bad8e9c3d6d6e091a6416c556e793eb1b24e0ec
+program = Issue #141 — FECH.AI Security-to-Scale 2026 / OPEN
+program WBS = docs/roadmap/fechai-security-to-scale-2026-wbs.md
+M1 = COMPLETE WITH DEFERRED SECURITY ASSURANCE
+J4 environment-dependent evidence = DEFERRED
+IMP-003 = NOT_DETERMINED
+ROLLBACK_REAPPLY = NOT_DETERMINED
+SECURITY_GO = NOT_GRANTED
+OC-01 = REQUIRED BEFORE EXTERNAL USERS
+M2 = Database Simplification & Optimization Plan / ELIGIBLE / NOT STARTED
+M2-01 = Matriz de 43 tabelas / 20h / SCOPE RECONSTRUCTION ONLY
+M2-01 implementation = NOT_AUTHORIZED
+```
+
+Material reconciliation:
+
+```text
+CURRENT_PROGRAM_MILESTONE_AUTHORITY = Issue #141
+CURRENT_GRANULAR_WBS = docs/roadmap/fechai-security-to-scale-2026-wbs.md
+LEGACY_ROADMAP = docs/roadmap/fechai-roadmap-master-v1.md / HISTORICAL
+WORKSPACE_WBS = DERIVED REPRESENTATION / NOT FECHAI AUTHORITY
+```
+
+The earlier generic pointer `M2 = NEXT ELIGIBLE MILESTONE` is now resolved as
+`M2 — Database Simplification & Optimization Plan`. The current bounded task is
+`M2-01 — Matriz de 43 tabelas`, but this documentation reconciliation does not start
+implementation and does not authorize Supabase/database mutation.
+
+Preserve the M1 deferred-security reopen trigger and all prior historical lineage below.
+
+
 ## 0.00000000000000000 POST-MERGE HANDOFF OVERRIDE — M1 closed / M2 next eligible — 2026-09-04
 
 ```text
