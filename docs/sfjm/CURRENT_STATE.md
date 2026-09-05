@@ -1,5 +1,33 @@
 # FECH.AI — SFJM Current Material State
 
+## 0.0000000000000000004 STS-M2-03 COMPLETE / ACCEPTED WITH RESIDUALS — 2026-09-05
+
+Product Authority accepted STS-M2-03 on exact main `682837dab2c719330c2e6e72e885ed6de5e2f171`.
+
+```text
+STS-M2 = STARTED
+STS-M2-01 = COMPLETE / ACCEPTED
+STS-M2-02 = COMPLETE / ACCEPTED WITH RESIDUALS
+STS-M2-03 = COMPLETE / ACCEPTED WITH RESIDUALS
+STS-M2-04 = NEXT GATE / NOT STARTED
+Security Go = NOT_GRANTED
+```
+
+Durable accepted evidence:
+
+`docs/security/evidence/2026-09-05-sts-m2-03-index-acl-contradictions.md`
+
+Independent specialist convergence:
+
+- `BACKEND_DATA_RECOMMENDS_STS_M2_03_ACCEPTANCE_WITH_RESIDUALS`
+- `ARCHITECTURE_RECOMMENDS_STS_M2_03_ACCEPTANCE_WITH_RESIDUALS`
+- `APPSEC_NOT_REQUIRED_FOR_STS_M2_03_ACCEPTANCE`
+
+Current authoritative write-policy AS-IS is `14 structurally authenticated-reachable / 32 non-reachable`, decomposed into `13 latent/grant-blocked + 19 false-predicate`. The historical STS-M2-02 `15/31` split remains accepted historical evidence; its delta cause is `NOT DETERMINED`, without global M2-02 reopening.
+
+No remediation, runtime mutation, STS-M2-04 implementation, deploy or Security Go is authorized.
+
+
 ## 0.0000000000000000003 STS-M2-02 COMPLETE / ACCEPTED WITH RESIDUALS — 2026-09-05
 
 Product Authority accepted STS-M2-02 on the exact decision anchor:
