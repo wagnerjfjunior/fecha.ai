@@ -1,5 +1,45 @@
 # FECH.AI — SFJM Current Product/Security Handoff
 
+## 0.0000000000000000005 CURRENT HANDOFF — STS-M2-04B1 accepted / B2 scope preparation next — 2026-09-05
+
+Canonical durable B1 evidence once this reconciliation is merged:
+
+`docs/security/evidence/2026-09-05-sts-m2-04b1-routine-authority-policy.md`
+
+State to preserve:
+
+```text
+STS-M2 = STARTED
+STS-M2-01 = COMPLETE / ACCEPTED
+STS-M2-02 = COMPLETE / ACCEPTED WITH RESIDUALS
+STS-M2-03 = COMPLETE / ACCEPTED WITH RESIDUALS
+STS-M2-04 = IN PROGRESS / TARGET-POLICY DESIGN
+STS-M2-04B1 = COMPLETE / ACCEPTED WITH RESIDUALS
+STS-M2-04B2 = NOT STARTED / EXECUTION NOT AUTHORIZED
+Security Go = NOT_GRANTED
+```
+
+B1 target contract to preserve:
+
+```text
+SECURITY DEFINER = PRIVILEGED EXCEPTION
+SECURITY INVOKER = PREFERRED DEFAULT WHEN CALLER AUTHORITY IS DELIBERATELY SUFFICIENT
+routine authority = caller + class + EXECUTE + security mode + owner
+                    + actor/tenant/role derivation + side effects
+                    + transitive authority + proof obligation
+```
+
+The next safe work is **B2 scope preparation only**: reconstruct the exact high-risk routine list and the per-object evidence/proof matrix before requesting separate execution authority.
+
+The intended specialist destination for later B2 execution remains:
+
+`SES — Backend & Data Platform Specialist`
+
+Do not reopen B1 merely because B2 discovers current non-compliance.
+
+No B2 substantive classification, remediation, SQL/Supabase/Auth mutation, runtime hostile testing, Ready, merge, deploy or Security Go authority is carried forward.
+
+
 ## 0.0000000000000000004 CURRENT HANDOFF — STS-M2-03 accepted with residuals / STS-M2-04 next — 2026-09-05
 
 This handoff becomes current material continuity when the bounded STS-M2-03 documentation reconciliation is merged to canonical `main`.
