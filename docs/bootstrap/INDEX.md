@@ -37,7 +37,15 @@ Se a tarefa corresponder a um `ROLE` explicitamente adotado nesse documento:
 7. carregar a skill/regra local FECH.AI apontada para o role, quando aplicável;
 8. continuar o bootstrap FECH.AI e emitir Context Readiness antes de trabalho substantivo quando exigido.
 
-Não usar nomes históricos `GPT0`, `GPT1`, `GPT1.5`, `GPT2` ou `GPT3` como autoridade atual de routing quando o role correspondente estiver mapeado no SES. Esses nomes permanecem referências de continuidade e de skills project-local.
+Para qualquer role SES adotado, a identidade operacional do especialista deve ser resolvida pelo `ARCHETYPE_ID` no SES `archetypes/REGISTRY.md`. O destino humano de handoff manual deve usar o `CANONICAL_NAME` do arquétipo, conforme `core/protocols/MANUAL_SPECIALIST_HANDOFF_CONTRACT.md`.
+
+Nomes históricos/legacy (incluindo labels `GPT<number>`, títulos antigos de Builder ou títulos de skills project-local) permanecem apenas como continuidade/project-local rules e não podem substituir o destino SES canônico.
+
+```text
+SPECIALIST_TARGET_NAME = ARCHETYPE_REGISTRY.CANONICAL_NAME
+LEGACY_ALIAS != SPECIALIST_TARGET_NAME
+PROJECT_LOCAL_SKILL_TITLE != SPECIALIST_TARGET_NAME
+```
 
 Se o domínio **não** possuir role SES adotado, usar o routing project-local existente:
 
@@ -200,7 +208,7 @@ SFJM não substitui bootstrap, routing SES, registry ou evidência live.
 1. Resolver FECH.AI main live.
 2. Ler este INDEX.
 3. Ler SES_SPECIALIST_ROUTING.md.
-4. Para role SES adotado: resolver SES main + current adoption pointer quando material + Project Adapter + archetype + certificação + current handoff/transport semantics quando aplicável + regra local aplicável.
+4. Para role SES adotado: resolver SES main + current adoption pointer quando material + Project Adapter + archetype + certificação + `core/protocols/MANUAL_SPECIALIST_HANDOFF_CONTRACT.md` + regra local aplicável; renderizar o destino manual usando o `CANONICAL_NAME` do arquétipo.
 5. Para domínio não adotado: resolver a skill project-local pelo registry FECH.AI.
 6. Ler os documentos comuns de bootstrap, incluindo o Modus Operandi.
 7. Ler governança quando entrega/aceite estiverem envolvidos.
