@@ -1,5 +1,40 @@
 # FECH.AI — SFJM Next Safe Action
 
+## 0.0000000000000000003 CURRENT SEMANTIC NEXT ACTION — STS-M2-04 READ_ONLY TARGET-POLICY BOOTSTRAP — 2026-09-05
+
+This section becomes the current semantic next action only after the STS-M2-03 acceptance reconciliation is merged to canonical `main`.
+
+Current accepted state:
+
+- `STS-M2-01 = COMPLETE / ACCEPTED`
+- `STS-M2-02 = COMPLETE / ACCEPTED WITH RESIDUALS`
+- `STS-M2-03 = COMPLETE / ACCEPTED WITH RESIDUALS`
+- `Security Go = NOT_GRANTED`
+
+Single next safe action:
+
+`STS-M2-04 — Política target de DEFINER / RLS / DML — READ_ONLY BOOTSTRAP FIRST`
+
+Required boundary:
+
+- resolve FECH.AI main live and bootstrap current Backend/Data + Architecture routing;
+- consume accepted M2-02 and M2-03 evidence without globally reopening them absent invalidation;
+- define target-policy questions for SECURITY DEFINER, RLS, direct DML, grants/default privileges, MAINTAIN and routine EXECUTE/caller contracts;
+- route bounded AppSec adjudication where security-policy decisions materially require independent assurance;
+- produce target-policy evidence/decision package before any implementation authorization.
+
+Not authorized:
+
+- no index creation/drop;
+- no DDL/DML or migration;
+- no RLS/policy/grant/revoke/default-privilege mutation;
+- no function/RPC/trigger/Auth/Edge mutation;
+- no hostile production testing;
+- no deploy;
+- no STS-M2-04 implementation;
+- no Security Go.
+
+
 ## 0.0000000000000000002 CURRENT SEMANTIC NEXT ACTION — STS-M2-03 READ_ONLY — 2026-09-05
 
 This section becomes the current semantic next action only after the STS-M2-02 acceptance reconciliation is merged to canonical `main`.

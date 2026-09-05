@@ -1,5 +1,37 @@
 # FECH.AI — SFJM Authorizations
 
+## 0.0000000000000000004 Product Authority — STS-M2-03 acceptance + bounded durable reconciliation — 2026-09-05
+
+Product Authority explicitly accepted:
+
+- `STS-M2-03 = COMPLETE / ACCEPTED WITH RESIDUALS`
+- decision anchor main = `682837dab2c719330c2e6e72e885ed6de5e2f171`
+- `STS-M2-03 AS-IS INDEX / ACL CONTRADICTION SURFACE = SUFFICIENTLY UNDERSTOOD`
+- `APPSEC_NOT_REQUIRED_FOR_STS_M2_03_ACCEPTANCE`
+- `Security Go = NOT_GRANTED`
+
+Accepted specialist verdicts:
+
+- `BACKEND_DATA_RECOMMENDS_STS_M2_03_ACCEPTANCE_WITH_RESIDUALS`
+- `ARCHITECTURE_RECOMMENDS_STS_M2_03_ACCEPTANCE_WITH_RESIDUALS`
+
+Accepted residuals include workload proof obligations before index creation/removal; constraint/prefix overlap candidates; zero-scan/statistics limitations; 70/129 FK-support review candidates; historical `15/31 → 14/32` provenance conflict with cause `NOT DETERMINED`; 13 latent/grant-blocked policies; 19 composition-sensitive false-predicate policies; authenticated direct-DML and MAINTAIN surfaces; `mesa_cliente_unidade_enriquecimentos` grant/policy mismatch; future default-privilege fail-open hazard; `avaliar_lista(3)` and `trilha_lead` caller×ACL contradictions; `acquire_lote_lock` reachable EXECUTE ACL; and runtime assurance gaps.
+
+Bounded documentation authorization covers only the durable evidence/SFJM reconciliation necessary to record this acceptance and set STS-M2-04 as the next gate. It does not authorize STS-M2-04 implementation.
+
+Explicitly NOT authorized:
+
+- DDL/DML, migration, index creation/drop;
+- Supabase/Auth/data/runtime mutation;
+- RLS/policy/grant/revoke/default-privilege change;
+- function/RPC/trigger/Edge mutation;
+- hostile production/runtime testing;
+- deploy;
+- STS-M2-04 implementation;
+- Security Go;
+- Ready or merge unless separately authorized.
+
+
 ## 0.0000000000000000003 Product Authority — STS-M2-02 acceptance + bounded durable reconciliation — 2026-09-05
 
 Product Authority explicitly accepted:

@@ -1,5 +1,31 @@
 # FECH.AI — SFJM Evidence Freshness
 
+## 0.0000000000000000004 STS-M2-03 ACCEPTANCE EVIDENCE / DURABLE PROVENANCE — 2026-09-05
+
+Canonical durable artifact once merged:
+
+`docs/security/evidence/2026-09-05-sts-m2-03-index-acl-contradictions.md`
+
+Decision anchor:
+
+- FECH.AI main = `682837dab2c719330c2e6e72e885ed6de5e2f171`
+- SES main = `285b08206d334971b182e2d46646ba0b6938bdfe`
+- Supabase project = `uobxxgzshrmbtjfdolxd`
+- Backend/Data evidence SHA-256 = `b5a41bf04495ee9783cd70a1d08926611c8c78ecfb644f6178fba161207cb52f`
+
+Final specialist results:
+
+- `BACKEND_DATA_RECOMMENDS_STS_M2_03_ACCEPTANCE_WITH_RESIDUALS`
+- `ARCHITECTURE_RECOMMENDS_STS_M2_03_ACCEPTANCE_WITH_RESIDUALS`
+- `APPSEC_NOT_REQUIRED_FOR_STS_M2_03_ACCEPTANCE`
+
+Fresh current live write-policy split is `14 / 32` with `13 latent/grant-blocked + 19 false-predicate`. Historical M2-02 `15 / 31` remains historical accepted evidence; cause of the difference is `NOT DETERMINED`.
+
+Freshness invalidators include material index/catalog/statistics changes relevant to an index decision; grant/RLS/policy/MAINTAIN/default-privilege drift; relevant routine ACL/caller drift; new runtime evidence; or Product Authority scope changes.
+
+`STRUCTURAL/CATALOG EVIDENCE != RUNTIME ASSURANCE`; Security Go remains `NOT_GRANTED`.
+
+
 ## 0.0000000000000000003 STS-M2-02 ACCEPTANCE EVIDENCE / DURABLE PROVENANCE — 2026-09-05
 
 Canonical durable artifact once merged:

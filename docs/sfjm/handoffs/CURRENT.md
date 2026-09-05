@@ -1,5 +1,34 @@
 # FECH.AI — SFJM Current Product/Security Handoff
 
+## 0.0000000000000000004 CURRENT HANDOFF — STS-M2-03 accepted with residuals / STS-M2-04 next — 2026-09-05
+
+This handoff becomes current material continuity when the bounded STS-M2-03 documentation reconciliation is merged to canonical `main`.
+
+Canonical durable evidence:
+
+`docs/security/evidence/2026-09-05-sts-m2-03-index-acl-contradictions.md`
+
+State to preserve:
+
+```text
+STS-M2 = STARTED
+STS-M2-01 = COMPLETE / ACCEPTED
+STS-M2-02 = COMPLETE / ACCEPTED WITH RESIDUALS
+STS-M2-03 = COMPLETE / ACCEPTED WITH RESIDUALS
+Security Go = NOT_GRANTED
+```
+
+Current M2-03 AS-IS anchors include 201 public indexes; one definition-equal duplicate group; 46 write policies; current live `14 structurally authenticated-reachable / 32 non-reachable` split; 13 latent/grant-blocked policies; 19 false-predicate policies; 9 authenticated direct-write grant tables; 12 authenticated MAINTAIN tables; default-privilege future provisioning hazard; and bounded caller/ACL contradictions.
+
+Historical M2-02 `15/31` remains historical accepted evidence. The cause of the current `14/32` delta is `NOT DETERMINED`; do not globally reopen M2-02 without a material invalidation event.
+
+Next safe gate after merge:
+
+`STS-M2-04 — Política target de DEFINER / RLS / DML — READ_ONLY BOOTSTRAP FIRST`
+
+No index change, Supabase/Auth mutation, RLS/policy/grant/default-privilege change, runtime hostile testing, deploy, STS-M2-04 implementation or Security Go authority is carried forward.
+
+
 ## 0.0000000000000000003 CURRENT HANDOFF — STS-M2-02 accepted with residuals / STS-M2-03 next — 2026-09-05
 
 This handoff becomes current material continuity when the bounded STS-M2-02 documentation reconciliation is merged to canonical `main`.
