@@ -51,7 +51,18 @@ ARCHETYPE_ID = backend-data-platform-specialist
 PROJECT_ROLE = backend_data
 ```
 
-Material external specialist evidence is fingerprint-bound:
+Canonical consolidated detailed matrix:
+
+`docs/security/evidence/2026-09-05-sts-m2-04b3-routine-authority-classification.csv`
+
+```text
+canonical consolidated 113-row × 40-column matrix SHA-256 =
+df2a76d34b07edc347f84acbb7c71bad71be61095a7e40919c869925cc0b31eb
+```
+
+The canonical CSV above is the recoverable final B3 classification surface. It is derived from the original specialist 113-row baseline plus the bounded final adjudication delta.
+
+Historical external specialist provenance remains fingerprint-bound:
 
 ```text
 initial specialist report SHA-256 =
@@ -64,7 +75,7 @@ final five-row Master-Project adjudication delta SHA-256 =
 4695593f7e3c5e4e72ecf415d8b0cc19e6cb9c93583e89504e522ac9e6297c59
 ```
 
-The initial matrix is the 113-row classification baseline. The final adjudication delta supersedes only the five rows `031`, `036`, `047`, `119`, `127`, plus the aggregate totals affected by those corrections.
+The original specialist matrix is historical baseline evidence. The final adjudication delta supersedes only the five rows `031`, `036`, `047`, `119`, `127`, plus the aggregate totals affected by those corrections. The versioned canonical CSV above consolidates those two evidence layers into the final detailed `113 × 40` classification and is the current recoverable matrix for B3.
 
 Final specialist verdict after the bounded delta:
 
