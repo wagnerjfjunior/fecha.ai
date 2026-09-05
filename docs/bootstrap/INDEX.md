@@ -57,6 +57,22 @@ Se o domínio **não** possuir role SES adotado, usar o routing project-local ex
 
 Não inferir nem auto-adotar um arquétipo SES ausente do role map.
 
+Para role SES adotado, o projeto não deve abandonar sua própria trilha para iniciar certificação de um candidate/runtime SES mais novo apenas porque esse candidate existe ou foi usado anteriormente. A elegibilidade de consulta manual usa o role adotado, o archetype ACTIVE e o estado atual do ledger SES. Um candidate não corrente permanece lifecycle interno do SES.
+
+```text
+ADOPTED ROLE
++ ACTIVE ARCHETYPE
++ CURRENT SES LEDGER CERTIFICATION = YES
+→ CONSUMER CONSULTATION ELIGIBLE
+
+NONCURRENT SES CANDIDATE EXISTS
+!= FECH.AI BLOCKED
+
+CONSUMER_RECERTIFICATION_DETOUR_FORBIDDEN = YES
+```
+
+No caso Backend/Data, a existência do candidate v0.2 não exige que FECH.AI certifique v0.2 antes de continuar seu próprio STS/M2. Resultado de runtime/tool do especialista deve ser consumido com provenance e boundary próprios, sem promovê-lo automaticamente a certificação universal.
+
 Canonicidade de skill project-local exige simultaneamente:
 
 ```text
@@ -208,7 +224,7 @@ SFJM não substitui bootstrap, routing SES, registry ou evidência live.
 1. Resolver FECH.AI main live.
 2. Ler este INDEX.
 3. Ler SES_SPECIALIST_ROUTING.md.
-4. Para role SES adotado: resolver SES main + current adoption pointer quando material + Project Adapter + archetype + certificação + `core/protocols/MANUAL_SPECIALIST_HANDOFF_CONTRACT.md` + regra local aplicável; renderizar o destino manual usando o `CANONICAL_NAME` do arquétipo.
+4. Para role SES adotado: resolver SES main + current adoption pointer quando material + Project Adapter + archetype + certificação + `core/protocols/MANUAL_SPECIALIST_HANDOFF_CONTRACT.md` + regra local aplicável; renderizar o destino manual usando o `CANONICAL_NAME` do arquétipo; não inserir fechamento de certificação de candidate SES não corrente como próxima ação do FECH.AI salvo requisito explícito do próprio task/authority.
 5. Para domínio não adotado: resolver a skill project-local pelo registry FECH.AI.
 6. Ler os documentos comuns de bootstrap, incluindo o Modus Operandi.
 7. Ler governança quando entrega/aceite estiverem envolvidos.
