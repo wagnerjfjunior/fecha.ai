@@ -1,5 +1,43 @@
 # FECH.AI — SFJM Next Safe Action
 
+## 0.0000000000000000005 CURRENT SEMANTIC NEXT ACTION — SELECT NEXT BOUNDED STS-M2-04 TARGET-POLICY SLICE — 2026-09-05
+
+This section becomes current material continuity only after the B2 durable acceptance reconciliation is merged to canonical `main`.
+
+Accepted state:
+
+```text
+STS-M2-04B1 = COMPLETE / ACCEPTED WITH RESIDUALS
+STS-M2-04B2 = COMPLETE / ACCEPTED WITH RESIDUALS
+STS-M2-04 = IN PROGRESS / TARGET-POLICY DESIGN
+Security Go = NOT_GRANTED
+```
+
+Single next program decision:
+
+```text
+SELECT NEXT BOUNDED M2-04 TARGET-POLICY SLICE
+```
+
+Candidate slices:
+
+```text
+M2-04B3 = remaining routine classification
+M2-04C = RLS / FORCE RLS / direct DML / USING / WITH CHECK / policy composition
+M2-04D = trigger / trigger-helper authority
+```
+
+No candidate is automatically started or authorized.
+
+```text
+B2 ACCEPTED != B3 AUTHORIZED
+B2 ACCEPTED != M2-04C AUTHORIZED
+B2 ACCEPTED != M2-04D AUTHORIZED
+CURRENT CONTRADICTION != AUTHORIZED REMEDIATION
+```
+
+Next technical work requires separate Product Authority scope authorization. Until then: no implementation, SQL, Supabase/Auth mutation, GRANT/REVOKE, ALTER FUNCTION, owner/search_path change, runtime hostile testing, AppSec testing, deploy or Security Go.
+
 ## 0.0000000000000000004 CURRENT SEMANTIC NEXT ACTION — STS-M2-04B2 SCOPE PREPARATION ONLY — 2026-09-05
 
 Current accepted state:

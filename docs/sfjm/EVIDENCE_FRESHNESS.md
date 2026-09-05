@@ -1,5 +1,36 @@
 # FECH.AI — SFJM Evidence Freshness
 
+## 0.0000000000000000006 STS-M2-04B2 ACCEPTANCE EVIDENCE / DURABLE PROVENANCE — 2026-09-05
+
+Canonical durable artifact once merged:
+
+`docs/security/evidence/2026-09-05-sts-m2-04b2-high-risk-routine-authority-classification.md`
+
+Decision anchors:
+
+- FECH.AI decision/base main = `ca77d81c3d2a6209536664128bda209996a7f423`;
+- SES continuity ref = `a31e10cc3f0d1278c53c49e38151854d36ee9f3e`;
+- Backend/Data packet = `FECHAI-STS-M2-04B2-HIGH-RISK-ROUTINE-AUTHORITY-CLASSIFICATION`;
+- user-supplied specialist-result SHA-256 = `36f90006d772404cd8d2fd297a2a70ab2ff452f8b1b17491a734f7cff68cb2ad`;
+- exact B2 scope = 15 routines;
+- Product Authority status = `COMPLETE / ACCEPTED WITH RESIDUALS`;
+- Security Go = `NOT_GRANTED`.
+
+Accepted live/catalog evidence is point-in-time and bounded to the exact B2 classification surface. It includes current SECURITY DEFINER/owner/search_path/EXECUTE facts used by the specialist result and Master Project adjudication. It does not establish runtime exploitability, hostile-client PASS, cross-tenant PASS, search-path semantic safety or current implementation compliance with the B1 target.
+
+Freshness invalidators include material changes to any of the 15 routine bodies/signatures, security mode, owner, proconfig/search_path, EXECUTE ACL, canonical callers, direct dependencies, relevant RLS/direct-DML authority, trusted service-runtime evidence, runtime-negative evidence or Product Authority scope.
+
+Preserve:
+
+```text
+NO_VERSIONED_CALLER != RUNTIME UNUSED
+UNUSED_CANDIDATE != PROVEN UNUSED
+CALLER FOUND != EXECUTE SHOULD BE ADDED
+service_role EXECUTE != SERVICE_ONLY PROVEN
+DEFINER JUSTIFICATION NOT_PROVEN != AUTHORIZED CHANGE TO INVOKER
+STATIC/CATALOG CLASSIFICATION != RUNTIME ASSURANCE
+```
+
 ## 0.0000000000000000005 STS-M2-04B1 ACCEPTANCE EVIDENCE / DURABLE PROVENANCE — 2026-09-05
 
 Canonical durable artifact once merged:

@@ -1,5 +1,69 @@
 # FECH.AI — SFJM Authorizations
 
+## 0.0000000000000000006 Product Authority — STS-M2-04B2 acceptance + bounded durable reconciliation — 2026-09-05
+
+Product Authority explicitly accepted:
+
+```text
+STS-M2-04B2 =
+COMPLETE / ACCEPTED WITH RESIDUALS
+```
+
+Scope is limited to classification of exactly 15 high-risk routines under the already accepted B1 target policy.
+
+Accepted material results include:
+
+- `0/8` Group-A `ANON_COMMAND_EXCEPTION` proven;
+- current Group-A anon EXECUTE not justified by the target B1 contract;
+- `acquire_lote_lock(uuid,uuid)` = `DB_INTERNAL_HELPER`, with contradictory direct reachability;
+- `avaliar_lista(uuid,integer,text)` and `trilha_lead(uuid)` have canonical authenticated application callers but caller×ACL contradictions do not authorize adding authenticated EXECUTE;
+- `trilha_lead` requires tenant/object authority closure before reachability opening;
+- `service_role EXECUTE != SERVICE_ONLY proven`;
+- `NO_VERSIONED_CALLER != runtime unused`;
+- `UNUSED_CANDIDATE != proven unused != authorized to revoke`;
+- SECURITY DEFINER justification, owner and search_path obligations remain open where not proven;
+- static/catalog classification is not runtime assurance.
+
+Bounded documentation authorization for this reconciliation:
+
+```text
+base main =
+ca77d81c3d2a6209536664128bda209996a7f423
+
+branch =
+docs/sts-m2-04b2-high-risk-classification-acceptance
+
+exactly six files
+one coherent documentation commit
+one Draft PR
+rollback = one documentation revert
+```
+
+Explicitly NOT authorized:
+
+```text
+implementation
+SQL / DDL / DML / migration
+GRANT / REVOKE / ALTER DEFAULT PRIVILEGES
+ALTER FUNCTION
+SECURITY DEFINER/INVOKER change
+owner change
+search_path change
+RLS/policy change
+Supabase/Auth mutation
+runtime hostile testing
+AppSec testing
+B3 execution
+M2-04C execution
+M2-04D execution
+deploy
+Security Go
+Ready
+merge
+```
+
+PR #181 is out of scope and must remain untouched.
+
 ## 0.0000000000000000005 Product Authority — STS-M2-04B1 acceptance + bounded reconciliation + B2 scope preparation — 2026-09-05
 
 Product Authority explicitly accepted:
