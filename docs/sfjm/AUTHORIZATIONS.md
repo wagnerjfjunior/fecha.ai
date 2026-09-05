@@ -1,5 +1,72 @@
 # FECH.AI — SFJM Authorizations
 
+## 0.0000000000000000003 Product Authority — STS-M2-02 acceptance + bounded documentation reconciliation — 2026-09-05
+
+Product Authority explicitly accepted:
+
+```text
+STS-M2-02 = COMPLETE / ACCEPTED WITH RESIDUALS
+decision base main = afa92903bda1755241c1fea5d9fbb436f75231ca
+AS-IS DATABASE AUTHORITY MAP = SUFFICIENTLY UNDERSTOOD
+Security Go = NOT_GRANTED
+```
+
+Accepted specialist verdicts:
+
+```text
+BACKEND_DATA_RECOMMENDS_STS_M2_02_ACCEPTANCE_WITH_RESIDUALS
+ARCHITECTURE_RECOMMENDS_STS_M2_02_ACCEPTANCE_WITH_RESIDUALS
+APPSEC_RECOMMENDS_STS_M2_02_ACCEPTANCE_WITH_RESIDUALS
+```
+
+Authorized objective:
+
+```text
+STS_M2_02_ACCEPTANCE_NOT_DURABLY_RECORDED
+documentation-only
+one coherent commit
+Draft PR only
+rollback = one documentation revert
+```
+
+Authorized files are exactly:
+
+- `docs/security/evidence/2026-09-05-sts-m2-02-database-authority-map.md`
+- `docs/sfjm/CURRENT_STATE.md`
+- `docs/sfjm/NEXT_SAFE_ACTION.md`
+- `docs/sfjm/EVIDENCE_FRESHNESS.md`
+- `docs/sfjm/AUTHORIZATIONS.md`
+- `docs/sfjm/handoffs/CURRENT.md`
+
+Authorized lifecycle:
+
+```text
+create bounded documentation branch = AUTHORIZED
+one coherent commit = AUTHORIZED
+open Draft PR = AUTHORIZED
+Ready = NOT_AUTHORIZED
+merge = NOT_AUTHORIZED
+```
+
+Explicitly not authorized:
+
+```text
+DDL/DML
+migration
+Supabase/Auth mutation
+RLS/policy/grant/revoke/default privilege change
+function/RPC/trigger modification
+Edge Function modification
+runtime/production testing
+deploy
+STS-M2-03 implementation
+STS-M2-04 implementation
+Security Go
+Ready
+merge
+```
+
+
 ## 0.0000000000000000002 Product Authority — STS-M2-01 evidence/provenance correction through merge — 2026-09-04
 
 After the post-merge audit of PR #174 exposed two P2 documentation findings, Product Authority authorized resolving the problem completely, including correction, audit, Ready, pre-merge and merge.

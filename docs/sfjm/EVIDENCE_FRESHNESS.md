@@ -1,5 +1,42 @@
 # FECH.AI — SFJM Evidence Freshness
 
+## 0.0000000000000000003 STS-M2-02 ACCEPTANCE EVIDENCE / FRESHNESS — 2026-09-05
+
+Canonical durable artifact:
+
+```text
+docs/security/evidence/2026-09-05-sts-m2-02-database-authority-map.md
+```
+
+Decision and evidence anchors:
+
+```text
+FECH.AI exact main = afa92903bda1755241c1fea5d9fbb436f75231ca
+SES exact main = 285b08206d334971b182e2d46646ba0b6938bdfe
+Supabase project = uobxxgzshrmbtjfdolxd / Discador-MesaCliente
+
+Backend/Data supplied evidence SHA-256 = cc671280dc044f4d330c131dc5854b5aec19ebaadf7a2ff64da43bb62a33cb6b
+Architecture supplied evidence SHA-256 = 741014b5b75a8b1416b93c4e8af17d7024945a608f406cbe9428b6552e30a703
+AppSec supplied evidence SHA-256 = 6a69557f53df293be1f6e7364b5a8a581cf67ec5a95f2cc6f53fc795eda96a52
+```
+
+Accepted static/catalog closure:
+
+```text
+public routines = 160
+SECURITY DEFINER = 137
+actual SQL-DML = 57
+SECURITY DEFINER + actual SQL-DML = 56
+anon EXECUTE + actual SQL-DML = 8
+static caller provenance = 137 / 137 CLOSED
+NOT_DETERMINED static caller = 0
+```
+
+Preserved gaps include hostile anonymous execution, cross-tenant hostile-client effectiveness, RLS/policy adversarial effectiveness, `acquire_lote_lock` availability abuse, `avaliar_lista` runtime behavior, `trilha_lead` runtime behavior, no-versioned-caller runtime non-use and legacy reset RPC runtime non-use.
+
+Freshness invalidation is proportional to material changes in routines, policies, triggers, grants, RLS, default privileges, callers, production catalog, runtime evidence or Product Authority scope. Static/catalog acceptance is not runtime PASS.
+
+
 ## 0.0000000000000000002 STS-M2-01 DURABLE PROVENANCE CORRECTION — 2026-09-04
 
 Canonical accepted evidence artifact:

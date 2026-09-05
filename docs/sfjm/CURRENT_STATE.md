@@ -1,5 +1,45 @@
 # FECH.AI — SFJM Current Material State
 
+## 0.0000000000000000003 STS-M2-02 ACCEPTED WITH RESIDUALS — 2026-09-05
+
+Product Authority accepted the bounded STS-M2-02 mapping result on exact main:
+
+```text
+decision anchor main = afa92903bda1755241c1fea5d9fbb436f75231ca
+STS-M2 = STARTED
+STS-M2-01 = COMPLETE / ACCEPTED
+STS-M2-02 = COMPLETE / ACCEPTED WITH RESIDUALS
+AS-IS DATABASE AUTHORITY MAP = SUFFICIENTLY UNDERSTOOD
+Security Go = NOT_GRANTED
+```
+
+Durable accepted evidence:
+
+```text
+docs/security/evidence/2026-09-05-sts-m2-02-database-authority-map.md
+```
+
+Specialist convergence:
+
+```text
+BACKEND_DATA_RECOMMENDS_STS_M2_02_ACCEPTANCE_WITH_RESIDUALS
+ARCHITECTURE_RECOMMENDS_STS_M2_02_ACCEPTANCE_WITH_RESIDUALS
+APPSEC_RECOMMENDS_STS_M2_02_ACCEPTANCE_WITH_RESIDUALS
+```
+
+Accepted residuals remain open without waiver: default-privilege hazard; anon EXECUTE / 8 anon actual-DML routines; three anon Mesa mutators without a current canonical app caller; `acquire_lote_lock` PUBLIC/anon exposure; latent grant/RLS/policy combinations; `avaliar_lista(3)` and `trilha_lead` caller×ACL contradictions; service/no-versioned-caller privileged routines; legacy `redefinir_senha_corretor`; and runtime hostile-client/cross-tenant assurance gaps.
+
+Runtime hostile-client, cross-tenant and related effectiveness remain `NOT_TESTED / NOT_DETERMINED` where recorded. Acceptance does not imply target architecture implemented, remediation complete or Security Go.
+
+Once this reconciliation is merged, the next safe action is:
+
+```text
+STS-M2-03 — ÍNDICES / ACL CONTRADITÓRIAS — READ_ONLY FIRST
+```
+
+No STS-M2-03 implementation authority is introduced.
+
+
 ## 0.0000000000000000002 STS-M2-01 AUDITABILITY CORRECTION — 2026-09-04
 
 The accepted STS-M2-01 result is now backed by a durable row-level evidence artifact:
