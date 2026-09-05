@@ -113,6 +113,31 @@ architecture
 
 The current transport remains manual copy/paste under the SES Manual Specialist Handoff Contract.
 
+## Consumer consultation / SES release boundary
+
+For mapped roles, FECH.AI consultation eligibility is determined by the adopted role, ACTIVE archetype and current SES certification ledger.
+
+```text
+ADOPTED ROLE
++ ACTIVE ARCHETYPE
++ CURRENT SES LEDGER CERTIFICATION = YES
+→ CONSULTATION ELIGIBLE
+
+NONCURRENT SES CANDIDATE EXISTS
+!= FECH.AI PROJECT BLOCKED
+
+CONSUMER_RECERTIFICATION_DETOUR_FORBIDDEN = YES
+```
+
+FECH.AI must not turn a pending/newer SES Builder candidate into its own next safe action unless the FECH.AI task or Product Authority explicitly requires that exact candidate fingerprint as a certified dependency.
+
+For Backend/Data specifically, the certified `backend-data-platform-specialist` remains routable. The v0.2 candidate/runtime delta is an SES release-lifecycle concern and is not a generic prerequisite for STS/M2 work. Project-local Supabase Action evidence remains governed by the FECH.AI tool contract and actual invocation/provenance.
+
+```text
+PROJECT_LOCAL_TOOL_PROOF != UNIVERSAL SES RUNTIME CERTIFICATION
+UNIVERSAL RUNTIME CERTIFICATION GAP != PROJECT_LOCAL TOOL UNUSABLE
+```
+
 ## Backend live-database admission rule
 
 For `backend_data`, a request that requires current Supabase/database state must not silently degrade into repository-only analysis.
