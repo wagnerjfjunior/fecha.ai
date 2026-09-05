@@ -1,5 +1,55 @@
 # FECH.AI — SFJM Authorizations
 
+## 0.0000000000000000003 Product Authority — STS-M2-02 acceptance + bounded durable reconciliation — 2026-09-05
+
+Product Authority explicitly accepted:
+
+- `STS-M2-02 = COMPLETE / ACCEPTED WITH RESIDUALS`
+- decision anchor main = `afa92903bda1755241c1fea5d9fbb436f75231ca`
+- `STS-M2-02 AS-IS DATABASE AUTHORITY MAP = SUFFICIENTLY UNDERSTOOD`
+- `Security Go = NOT_GRANTED`
+
+Accepted specialist verdicts:
+
+- `BACKEND_DATA_RECOMMENDS_STS_M2_02_ACCEPTANCE_WITH_RESIDUALS`
+- `ARCHITECTURE_RECOMMENDS_STS_M2_02_ACCEPTANCE_WITH_RESIDUALS`
+- `APPSEC_RECOMMENDS_STS_M2_02_ACCEPTANCE_WITH_RESIDUALS`
+
+Accepted residuals are preserved without waiver: broad/default privilege hazard; anon EXECUTE surface; eight anon-executable actual-DML routines; three anon Mesa mutators without current canonical app caller; `acquire_lote_lock` PUBLIC/anon exposure; latent grant/RLS/policy combinations; `avaliar_lista(3)` caller×ACL contradiction; `trilha_lead` caller×ACL contradiction; service-only/no-versioned-caller privileged routines; legacy `redefinir_senha_corretor`; and runtime hostile-client/cross-tenant assurance gaps.
+
+Bounded documentation authorization:
+
+- base = `afa92903bda1755241c1fea5d9fbb436f75231ca`
+- branch = `docs/sts-m2-02-authority-map-acceptance`
+- objective = `STS_M2_02_ACCEPTANCE_NOT_DURABLY_RECORDED`
+- one coherent commit;
+- Draft PR authorized;
+- rollback = one documentation revert.
+
+Authorized files — exactly six:
+
+1. `docs/security/evidence/2026-09-05-sts-m2-02-database-authority-map.md`
+2. `docs/sfjm/CURRENT_STATE.md`
+3. `docs/sfjm/NEXT_SAFE_ACTION.md`
+4. `docs/sfjm/EVIDENCE_FRESHNESS.md`
+5. `docs/sfjm/AUTHORIZATIONS.md`
+6. `docs/sfjm/handoffs/CURRENT.md`
+
+Explicitly NOT authorized:
+
+- DDL/DML or migration;
+- Supabase/Auth mutation;
+- RLS/policy/grant/revoke/default-privilege change;
+- function/RPC/trigger or Edge Function modification;
+- runtime/production hostile testing;
+- deploy;
+- STS-M2-03 implementation;
+- STS-M2-04 implementation;
+- Security Go;
+- Ready;
+- merge.
+
+
 ## 0.0000000000000000002 Product Authority — STS-M2-01 evidence/provenance correction through merge — 2026-09-04
 
 After the post-merge audit of PR #174 exposed two P2 documentation findings, Product Authority authorized resolving the problem completely, including correction, audit, Ready, pre-merge and merge.

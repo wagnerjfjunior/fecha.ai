@@ -1,5 +1,34 @@
 # FECH.AI — SFJM Current Product/Security Handoff
 
+## 0.0000000000000000003 CURRENT HANDOFF — STS-M2-02 accepted with residuals / STS-M2-03 next — 2026-09-05
+
+This handoff becomes current material continuity when the bounded STS-M2-02 documentation reconciliation is merged to canonical `main`.
+
+Canonical durable evidence:
+
+`docs/security/evidence/2026-09-05-sts-m2-02-database-authority-map.md`
+
+State to preserve:
+
+- `STS-M2-01 = COMPLETE / ACCEPTED`
+- `STS-M2-02 = COMPLETE / ACCEPTED WITH RESIDUALS`
+- public routines = 160;
+- SECURITY DEFINER = 137;
+- caller provenance = 137 / 137 CLOSED;
+- actual SQL-DML = 57;
+- SECURITY DEFINER + actual DML = 56;
+- anon + actual DML = 8;
+- Security Go = `NOT_GRANTED`.
+
+Receiving conversations must preserve all accepted residuals and runtime gaps from the durable artifact. No hostile-client, cross-tenant, RLS adversarial, lock-abuse or caller×ACL runtime PASS is implied.
+
+Next safe action after merge:
+
+`STS-M2-03 — ÍNDICES / ACL CONTRADITÓRIAS — READ_ONLY FIRST`
+
+No implementation, Supabase/Auth mutation, grant/RLS/policy change, deploy, STS-M2-04 implementation or Security Go authority is carried forward.
+
+
 ## 0.0000000000000000002 CURRENT HANDOFF — STS-M2-01 durable matrix/provenance anchor — 2026-09-04
 
 For STS-M2-01, receiving conversations must use:
