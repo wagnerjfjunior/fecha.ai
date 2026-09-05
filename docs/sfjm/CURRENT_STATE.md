@@ -1,5 +1,40 @@
 # FECH.AI — SFJM Current Material State
 
+## 0.0000000000000000005 STS-M2-04B1 COMPLETE / ACCEPTED WITH RESIDUALS — 2026-09-05
+
+Product Authority accepted the bounded target-policy package `STS-M2-04B1 — Routine Authority Policy Core` on decision-anchor main `ca77d81c3d2a6209536664128bda209996a7f423`.
+
+Canonical durable evidence:
+
+`docs/security/evidence/2026-09-05-sts-m2-04b1-routine-authority-policy.md`
+
+```text
+STS-M2 = STARTED
+STS-M2-01 = COMPLETE / ACCEPTED
+STS-M2-02 = COMPLETE / ACCEPTED WITH RESIDUALS
+STS-M2-03 = COMPLETE / ACCEPTED WITH RESIDUALS
+STS-M2-04 = IN PROGRESS / TARGET-POLICY DESIGN
+STS-M2-04B1 = COMPLETE / ACCEPTED WITH RESIDUALS
+STS-M2-04B2 = NOT STARTED / EXECUTION NOT AUTHORIZED
+Security Go = NOT_GRANTED
+```
+
+Accepted B1 target rules:
+
+```text
+SECURITY DEFINER = PRIVILEGED EXCEPTION
+SECURITY INVOKER = PREFERRED DEFAULT WHEN CALLER AUTHORITY IS DELIBERATELY SUFFICIENT
+
+routine authority =
+caller + routine class + EXECUTE ACL + security mode + owner authority
++ actor/tenant/role derivation + side effects + transitive authority + proof obligation
+```
+
+The current 160-routine surface is not declared compliant with B1. Per-routine classification, current owner/search_path semantic compliance, caller×ACL residuals and hostile-client/cross-tenant runtime assurance remain unresolved.
+
+Product Authority authorized B2 **scope preparation only**. B2 substantive classification, implementation, SQL/Supabase mutation, runtime testing, Ready, merge, deploy and Security Go remain unauthorized.
+
+
 ## 0.0000000000000000004 STS-M2-03 COMPLETE / ACCEPTED WITH RESIDUALS — 2026-09-05
 
 Product Authority accepted STS-M2-03 on exact main `682837dab2c719330c2e6e72e885ed6de5e2f171`.

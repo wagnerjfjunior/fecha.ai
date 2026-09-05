@@ -1,5 +1,28 @@
 # FECH.AI — SFJM Evidence Freshness
 
+## 0.0000000000000000005 STS-M2-04B1 ACCEPTANCE EVIDENCE / DURABLE PROVENANCE — 2026-09-05
+
+Canonical durable artifact once merged:
+
+`docs/security/evidence/2026-09-05-sts-m2-04b1-routine-authority-policy.md`
+
+Decision/evidence anchors:
+
+```text
+FECH.AI decision-anchor main = ca77d81c3d2a6209536664128bda209996a7f423
+SES specialist-result ref = a31e10cc3f0d1278c53c49e38151854d36ee9f3e
+specialist packet = FECHAI-STS-M2-04B1-ROUTINE-AUTHORITY-POLICY-CORE
+specialist result SHA-256 = 8171310f4101831ba34623dac9aff37b13e04aeb02f81808fc163d693cf801bf
+Product Authority decision = COMPLETE / ACCEPTED WITH RESIDUALS
+```
+
+Accepted target semantics include `SECURITY DEFINER = PRIVILEGED EXCEPTION`, INVOKER as the preferred default when caller authority is deliberately sufficient, and the combined caller/class/EXECUTE/security-mode/owner/tenant-role/side-effect/transitive-authority contract.
+
+Freshness invalidators are evidence-specific: material change to the accepted B1 target policy; routine signature/security-mode/owner/search_path/ACL drift relevant to downstream classification; caller/provenance drift; grants/default-principal semantics; Product Authority scope change; or new runtime evidence material to a claim.
+
+Current per-routine compliance and hostile-client/cross-tenant runtime effectiveness remain `NOT_DETERMINED`. B1 acceptance is not a runtime or Security Go PASS.
+
+
 ## 0.0000000000000000004 STS-M2-03 ACCEPTANCE EVIDENCE / DURABLE PROVENANCE — 2026-09-05
 
 Canonical durable artifact once merged:

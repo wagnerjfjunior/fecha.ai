@@ -1,5 +1,38 @@
 # FECH.AI — SFJM Next Safe Action
 
+## 0.0000000000000000004 CURRENT SEMANTIC NEXT ACTION — STS-M2-04B2 SCOPE PREPARATION ONLY — 2026-09-05
+
+Current accepted state:
+
+```text
+STS-M2-04B1 = COMPLETE / ACCEPTED WITH RESIDUALS
+Security Go = NOT_GRANTED
+```
+
+Single next safe action:
+
+`STS-M2-04B2 — reconstruct and freeze the bounded high-risk routine-classification scope; READ_ONLY preparation only.`
+
+Preparation must:
+
+- consume `docs/security/evidence/2026-09-05-sts-m2-04b1-routine-authority-policy.md`;
+- consume accepted M2-02/M2-03 evidence without globally reopening it absent material invalidation;
+- reconstruct the exact signatures/objects for the high-risk candidate categories;
+- prioritize PUBLIC/anon mutative exposure, caller×ACL contradictions, service-only/client-ACL contradictions, privileged no-versioned-caller cases, lock/concurrency exposure and legacy privileged surfaces;
+- define the exact B2 object list, evidence matrix, proof obligations, prohibited areas and rollback implications before requesting execution authority;
+- route to `SES — Backend & Data Platform Specialist` when the prepared packet is later authorized for execution.
+
+Candidate categories for scope reconstruction include the 8 anon+actual-DML routines, PUBLIC EXECUTE routines, `acquire_lote_lock(uuid,uuid)`, `avaliar_lista(uuid, integer, text)`, `trilha_lead(uuid)`, service-only privileged routines with broader client ACL, privileged no-versioned-caller routines and legacy `redefinir_senha_corretor`.
+
+```text
+B2 SCOPE PREPARATION = AUTHORIZED
+B2 SUBSTANTIVE CLASSIFICATION = NOT_AUTHORIZED
+B2 REMEDIATION / IMPLEMENTATION = NOT_AUTHORIZED
+```
+
+No SQL, DDL/DML, Supabase/Auth/data mutation, GRANT/REVOKE/default-privilege change, routine/owner/search_path mutation, hostile runtime testing, deploy, Ready, merge or Security Go is authorized.
+
+
 ## 0.0000000000000000003 CURRENT SEMANTIC NEXT ACTION — STS-M2-04 READ_ONLY TARGET-POLICY BOOTSTRAP — 2026-09-05
 
 This section becomes the current semantic next action only after the STS-M2-03 acceptance reconciliation is merged to canonical `main`.

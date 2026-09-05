@@ -1,5 +1,52 @@
 # FECH.AI — SFJM Authorizations
 
+## 0.0000000000000000005 Product Authority — STS-M2-04B1 acceptance + bounded reconciliation + B2 scope preparation — 2026-09-05
+
+Product Authority explicitly accepted:
+
+- `STS-M2-04B1 = COMPLETE / ACCEPTED WITH RESIDUALS`;
+- scope limited to target routine-authority policy;
+- `SECURITY DEFINER = PRIVILEGED EXCEPTION`;
+- `SECURITY INVOKER = preferred default when caller authority is deliberately sufficient`;
+- caller + routine class + EXECUTE ACL + security mode + owner + actor/tenant/role derivation + side effects + transitive authority form one coherent authority contract.
+
+Product Authority subsequently authorized:
+
+- bounded documentation mutation to reconcile this B1 acceptance;
+- preparation of the STS-M2-04B2 bounded scope.
+
+This authorization permits a documentation-only branch/commit and Draft PR for the reconciliation. It does not grant Ready or merge.
+
+Authorized reconciliation files are exactly:
+
+1. `docs/security/evidence/2026-09-05-sts-m2-04b1-routine-authority-policy.md`
+2. `docs/sfjm/CURRENT_STATE.md`
+3. `docs/sfjm/NEXT_SAFE_ACTION.md`
+4. `docs/sfjm/EVIDENCE_FRESHNESS.md`
+5. `docs/sfjm/AUTHORIZATIONS.md`
+6. `docs/sfjm/handoffs/CURRENT.md`
+
+```text
+B2 SCOPE PREPARATION = AUTHORIZED
+B2 SUBSTANTIVE CLASSIFICATION = NOT_AUTHORIZED
+B2 IMPLEMENTATION = NOT_AUTHORIZED
+```
+
+Explicitly not authorized:
+
+- SQL, DDL/DML or migration;
+- Supabase/Auth/data mutation;
+- RLS/policy/grant/revoke/default-privilege change;
+- function/RPC/owner/search_path/trigger mutation;
+- hostile production/runtime testing;
+- deploy;
+- Ready;
+- merge;
+- Security Go.
+
+Rollback for this documentation reconciliation is one documentation revert.
+
+
 ## 0.0000000000000000004 Product Authority — STS-M2-03 acceptance + bounded durable reconciliation — 2026-09-05
 
 Product Authority explicitly accepted:
