@@ -1,5 +1,32 @@
 # FECH.AI — SFJM Current Material State
 
+## 0.0000000000000000006 STS-M2-04B2 COMPLETE / ACCEPTED WITH RESIDUALS — 2026-09-05
+
+Product Authority accepted `STS-M2-04B2 — High-Risk Routine Authority Classification` on decision/base main `ca77d81c3d2a6209536664128bda209996a7f423`.
+
+```text
+STS-M2 = STARTED
+STS-M2-01 = COMPLETE / ACCEPTED
+STS-M2-02 = COMPLETE / ACCEPTED WITH RESIDUALS
+STS-M2-03 = COMPLETE / ACCEPTED WITH RESIDUALS
+STS-M2-04B1 = COMPLETE / ACCEPTED WITH RESIDUALS
+STS-M2-04B2 = COMPLETE / ACCEPTED WITH RESIDUALS
+STS-M2-04 = IN PROGRESS / TARGET-POLICY DESIGN
+Security Go = NOT_GRANTED
+```
+
+Durable B2 evidence once this reconciliation is merged:
+
+`docs/security/evidence/2026-09-05-sts-m2-04b2-high-risk-routine-authority-classification.md`
+
+B2 is limited to exactly 15 high-risk routines. Accepted anchors include: `0/8` Group-A `ANON_COMMAND_EXCEPTION` proven; `acquire_lote_lock(uuid,uuid)` classified as `DB_INTERNAL_HELPER` with contradictory direct reachability; `avaliar_lista(uuid,integer,text)` and `trilha_lead(uuid)` with canonical authenticated application callers but caller×ACL contradictions; `trilha_lead` tenant/object authority not sufficiently proven; service-role reachability not treated as service-use proof; no-versioned-caller and unused-candidate states not treated as runtime non-use.
+
+Current `SECURITY DEFINER` justification remains `NOT_PROVEN / NOT_DETERMINED` where classified; owner `postgres` compatibility remains conditional; `search_path=public` does not prove target-safe search-path semantics; hostile/cross-tenant runtime assurance and independent AppSec assurance remain open.
+
+The B1 Product Authority decision is preserved as accepted task authority. Its durable documentation remains separate in PR #181 until that lifecycle is advanced. This B2 reconciliation does not modify PR #181.
+
+No implementation, SQL, GRANT/REVOKE, ALTER FUNCTION, owner/search_path change, Supabase/Auth mutation, runtime testing, AppSec testing, B3, M2-04C, M2-04D, deploy or Security Go is authorized.
+
 ## 0.0000000000000000005 STS-M2-04B1 COMPLETE / ACCEPTED WITH RESIDUALS — 2026-09-05
 
 Product Authority accepted the bounded target-policy package `STS-M2-04B1 — Routine Authority Policy Core` on decision-anchor main `ca77d81c3d2a6209536664128bda209996a7f423`.

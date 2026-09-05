@@ -1,5 +1,38 @@
 # FECH.AI — SFJM Current Product/Security Handoff
 
+## 0.0000000000000000006 CURRENT HANDOFF — STS-M2-04B2 accepted with residuals / next bounded-slice decision — 2026-09-05
+
+This handoff becomes current material continuity only when the B2 reconciliation is merged to canonical `main`.
+
+Canonical durable B2 evidence:
+
+`docs/security/evidence/2026-09-05-sts-m2-04b2-high-risk-routine-authority-classification.md`
+
+State to preserve:
+
+```text
+STS-M2 = STARTED
+STS-M2-01 = COMPLETE / ACCEPTED
+STS-M2-02 = COMPLETE / ACCEPTED WITH RESIDUALS
+STS-M2-03 = COMPLETE / ACCEPTED WITH RESIDUALS
+STS-M2-04B1 = COMPLETE / ACCEPTED WITH RESIDUALS
+STS-M2-04B2 = COMPLETE / ACCEPTED WITH RESIDUALS
+STS-M2-04 = IN PROGRESS / TARGET-POLICY DESIGN
+Security Go = NOT_GRANTED
+```
+
+B2 classified exactly 15 high-risk routines. Preserve: `0/8` anonymous-command exceptions proven; `acquire_lote_lock` internal-helper contradiction; `avaliar_lista(3)` / `trilha_lead` caller×ACL contradictions without implied GRANT authority; no-versioned-caller/unused-candidate uncertainty; unresolved DEFINER justification where indicated; conditional owner posture; `search_path` target compliance not determined; runtime/AppSec assurance gaps.
+
+PR #181 remains the separate B1 durable reconciliation and is not modified by this B2 PR.
+
+Next program decision:
+
+```text
+SELECT NEXT BOUNDED STS-M2-04 TARGET-POLICY SLICE
+```
+
+Candidate slices are B3, M2-04C and M2-04D, but none is authorized or started by this handoff. No technical remediation, Supabase/Auth mutation, runtime testing, AppSec testing, deploy or Security Go authority is carried forward.
+
 ## 0.0000000000000000005 CURRENT HANDOFF — STS-M2-04B1 accepted / B2 scope preparation next — 2026-09-05
 
 Canonical durable B1 evidence once this reconciliation is merged:
