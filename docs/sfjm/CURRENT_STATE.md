@@ -1,5 +1,41 @@
 # FECH.AI — SFJM Current Material State
 
+## 0.0000000000000000003 STS-M2-02 COMPLETE / ACCEPTED WITH RESIDUALS — 2026-09-05
+
+Product Authority accepted STS-M2-02 on the exact decision anchor:
+
+- FECH.AI main: `afa92903bda1755241c1fea5d9fbb436f75231ca`
+- status: `COMPLETE / ACCEPTED WITH RESIDUALS`
+- semantic boundary: `STS-M2-02 AS-IS DATABASE AUTHORITY MAP = SUFFICIENTLY UNDERSTOOD`
+- Security Go: `NOT_GRANTED`
+
+Durable accepted evidence:
+
+`docs/security/evidence/2026-09-05-sts-m2-02-database-authority-map.md`
+
+Independent specialist convergence:
+
+- `BACKEND_DATA_RECOMMENDS_STS_M2_02_ACCEPTANCE_WITH_RESIDUALS`
+- `ARCHITECTURE_RECOMMENDS_STS_M2_02_ACCEPTANCE_WITH_RESIDUALS`
+- `APPSEC_RECOMMENDS_STS_M2_02_ACCEPTANCE_WITH_RESIDUALS`
+
+Accepted canonical mapping anchors:
+
+- public routines = 160
+- SECURITY DEFINER = 137
+- static caller provenance = 137 / 137 CLOSED
+- actual SQL-DML routines = 57
+- SECURITY DEFINER + actual SQL-DML = 56
+- anon EXECUTE + actual SQL-DML = 8
+- metric conflict = RESOLVED
+
+Accepted residuals remain explicit and are not waived: broad/default privilege hazard; anon EXECUTE surface; eight anon actual-DML routines; three anon Mesa mutators without a current canonical app caller; `acquire_lote_lock` PUBLIC/anon exposure; latent grant/RLS/policy combinations; `avaliar_lista(3)` and `trilha_lead` caller×ACL contradictions; service-only/no-versioned-caller privileged routines; legacy `redefinir_senha_corretor`; and runtime hostile-client/cross-tenant assurance gaps.
+
+Runtime hostile-client, cross-tenant, RLS/policy adversarial effectiveness, lock-abuse, caller×ACL runtime behavior and no-caller runtime non-use remain `NOT_TESTED`, `NOT_DETERMINED` or `NOT_PROVEN` where applicable.
+
+This acceptance does not authorize remediation or implementation. Once this bounded reconciliation is merged to canonical main, the next safe action is `STS-M2-03 — ÍNDICES / ACL CONTRADITÓRIAS — READ_ONLY FIRST`.
+
+
 ## 0.0000000000000000002 STS-M2-01 AUDITABILITY CORRECTION — 2026-09-04
 
 The accepted STS-M2-01 result is now backed by a durable row-level evidence artifact:
