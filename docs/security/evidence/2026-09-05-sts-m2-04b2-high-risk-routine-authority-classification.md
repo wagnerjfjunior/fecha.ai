@@ -43,7 +43,7 @@ USER-SUPPLIED SPECIALIST RESULT SHA-256:
 36f90006d772404cd8d2fd297a2a70ab2ff452f8b1b17491a734f7cff68cb2ad
 ```
 
-The separate B1 durable reconciliation remains PR #181 and is not modified by this B2 reconciliation.
+The B1 durable reconciliation was merged via PR #181 and is canonical on main `0b4868ef80e69bab5f0397c29af4474fb097e739`. This B2 reconciliation preserves that canonical B1 state and does not rewrite B1.
 
 ## 2. Accepted B1 policy inherited
 

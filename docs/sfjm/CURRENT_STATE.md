@@ -23,7 +23,7 @@ B2 is limited to exactly 15 high-risk routines. Accepted anchors include: `0/8` 
 
 Current `SECURITY DEFINER` justification remains `NOT_PROVEN / NOT_DETERMINED` where classified; owner `postgres` compatibility remains conditional; `search_path=public` does not prove target-safe search-path semantics; hostile/cross-tenant runtime assurance and independent AppSec assurance remain open.
 
-The B1 Product Authority decision is preserved as accepted task authority. Its durable documentation remains separate in PR #181 until that lifecycle is advanced. This B2 reconciliation does not modify PR #181.
+The B1 Product Authority decision and durable documentation were merged via PR #181 and are canonical on main `0b4868ef80e69bab5f0397c29af4474fb097e739`. This B2 reconciliation preserves that canonical B1 state and does not rewrite B1.
 
 No implementation, SQL, GRANT/REVOKE, ALTER FUNCTION, owner/search_path change, Supabase/Auth mutation, runtime testing, AppSec testing, B3, M2-04C, M2-04D, deploy or Security Go is authorized.
 

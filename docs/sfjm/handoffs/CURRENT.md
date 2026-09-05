@@ -23,7 +23,7 @@ Security Go = NOT_GRANTED
 
 B2 classified exactly 15 high-risk routines. Preserve: `0/8` anonymous-command exceptions proven; `acquire_lote_lock` internal-helper contradiction; `avaliar_lista(3)` / `trilha_lead` caller×ACL contradictions without implied GRANT authority; no-versioned-caller/unused-candidate uncertainty; unresolved DEFINER justification where indicated; conditional owner posture; `search_path` target compliance not determined; runtime/AppSec assurance gaps.
 
-PR #181 remains the separate B1 durable reconciliation and is not modified by this B2 PR.
+The B1 durable reconciliation was merged via PR #181 and is canonical on main `0b4868ef80e69bab5f0397c29af4474fb097e739`. This B2 PR preserves that canonical B1 state and does not rewrite B1.
 
 Next program decision:
 
