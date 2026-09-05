@@ -79,6 +79,40 @@ For FECH.AI specialist domains not mapped above, continue using `docs/skills/fec
 
 Do not infer a replacement for GPT4/GPT5 or any other local specialist merely because a related SES archetype may exist later.
 
+## Manual handoff target identity
+
+For any mapped SES role, the operational destination shown to the user is not the project-local skill title or a legacy GPT label.
+
+Resolve:
+
+```text
+ROLE
+→ ARCHETYPE_ID
+→ SES archetypes/REGISTRY.md
+→ CANONICAL_NAME
+→ SPECIALIST_TARGET_NAME
+```
+
+Required invariant:
+
+```text
+SPECIALIST_TARGET_NAME = ARCHETYPE_REGISTRY.CANONICAL_NAME
+LEGACY_ALIAS != SPECIALIST_TARGET_NAME
+PROJECT_LOCAL_RULES != SPECIALIST_TARGET_NAME
+```
+
+Therefore, for example:
+
+```text
+architecture
+→ software-systems-architect
+→ SES — Software Systems Architect
+```
+
+`GPT1`, `GPT1.5`, `FECH.AI Arquiteto SaaS`, `GPT7` and equivalent historical/project-local labels may appear only as continuity/context. They must not be rendered as the destination in instructions such as "envie ao", "cole no", "consulte" or "abra o especialista" when an SES archetype is selected.
+
+The current transport remains manual copy/paste under the SES Manual Specialist Handoff Contract.
+
 ## Backend live-database admission rule
 
 For `backend_data`, a request that requires current Supabase/database state must not silently degrade into repository-only analysis.
