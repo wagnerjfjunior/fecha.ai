@@ -1,5 +1,45 @@
 # FECH.AI — SFJM Current Product/Security Handoff
 
+## 0.0000000000000000003 CURRENT HANDOFF — STS-M2-02 accepted / STS-M2-03 next — 2026-09-05
+
+This handoff becomes current material continuity when the bounded reconciliation is merged to canonical `main`.
+
+```text
+FECH.AI decision anchor main = afa92903bda1755241c1fea5d9fbb436f75231ca
+STS-M2 = STARTED
+STS-M2-01 = COMPLETE / ACCEPTED
+STS-M2-02 = COMPLETE / ACCEPTED WITH RESIDUALS
+Security Go = NOT_GRANTED
+```
+
+Durable STS-M2-02 evidence:
+
+```text
+docs/security/evidence/2026-09-05-sts-m2-02-database-authority-map.md
+```
+
+Receiving conversations must preserve:
+
+```text
+public routines = 160
+SECURITY DEFINER = 137
+actual SQL-DML = 57
+SECURITY DEFINER + actual SQL-DML = 56
+anon EXECUTE + actual SQL-DML = 8
+static caller provenance = 137 / 137 CLOSED
+```
+
+Accepted residuals are carried forward without waiver and are routed to STS-M2-03 / M2-04 / M2-05 / M3 / M5 as recorded in the durable artifact.
+
+Next safe action after merge:
+
+```text
+STS-M2-03 — ÍNDICES / ACL CONTRADITÓRIAS — READ_ONLY FIRST
+```
+
+No authority is carried forward for database/runtime mutation, STS-M2-03 implementation, STS-M2-04 implementation, deploy, Ready, merge or Security Go.
+
+
 ## 0.0000000000000000002 CURRENT HANDOFF — STS-M2-01 durable matrix/provenance anchor — 2026-09-04
 
 For STS-M2-01, receiving conversations must use:

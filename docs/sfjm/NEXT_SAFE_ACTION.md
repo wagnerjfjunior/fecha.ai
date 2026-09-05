@@ -1,5 +1,41 @@
 # FECH.AI — SFJM Next Safe Action
 
+## 0.0000000000000000002 CURRENT SEMANTIC NEXT ACTION — STS-M2-03 READ_ONLY — 2026-09-05
+
+This section becomes the current semantic next action when this bounded STS-M2-02 acceptance reconciliation is merged to canonical `main`.
+
+```text
+STS-M2 = STARTED
+STS-M2-01 = COMPLETE / ACCEPTED
+STS-M2-02 = COMPLETE / ACCEPTED WITH RESIDUALS
+Security Go = NOT_GRANTED
+```
+
+### Single next safe action
+
+```text
+STS-M2-03 — ÍNDICES / ACL CONTRADITÓRIAS — READ_ONLY FIRST
+
+→ resolve FECH.AI main live
+→ bootstrap current Backend/Data + Architecture routing; add AppSec if security significance is material
+→ inventory current indexes and usage/statistics evidence required by the task
+→ enumerate contradictory/redundant ACL candidates carried from STS-M2-02
+→ distinguish current effective access from latent grant/policy combinations
+→ produce bounded STS-M2-03 evidence/acceptance package
+
+NO DDL/DML
+NO migration
+NO index mutation
+NO grant/revoke
+NO RLS/policy/RPC/trigger mutation
+NO Auth/Edge mutation
+NO deploy
+NO Security Go
+```
+
+Do not reopen STS-M2-01, the 160-routine universe, the 137 SECURITY DEFINER inventory, the resolved `59/57/56/8` metrics or the `137/137` static caller-provenance closure absent material invalidation.
+
+
 ## 0.0000000000000000001 CURRENT SEMANTIC NEXT ACTION — STS-M2-02 READ_ONLY MAP — 2026-09-04
 
 Once this reconciliation is present on canonical `main`, the previous STS-M2-01 next-action section becomes historical lineage.
