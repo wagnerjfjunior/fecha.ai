@@ -1,5 +1,34 @@
 # FECH.AI — SFJM Next Safe Action
 
+## 0.0000000000000000006 CURRENT SEMANTIC NEXT ACTION — SELECT / AUTHORIZE NEXT BOUNDED M2-04 SLICE — 2026-09-05
+
+This section becomes current material continuity only after the B3 durable acceptance reconciliation is merged to canonical `main`.
+
+Accepted state:
+
+```text
+STS-M2-04B1 = COMPLETE / ACCEPTED WITH RESIDUALS
+STS-M2-04B2 = COMPLETE / ACCEPTED WITH RESIDUALS
+STS-M2-04B3 CLASSIFICATION = COMPLETE / ACCEPTED
+Security Go = NOT_GRANTED
+```
+
+Next Product Authority decision:
+
+```text
+SELECT / AUTHORIZE THE NEXT BOUNDED M2-04 SLICE
+```
+
+M2-04C has the strongest direct dependency because `56` B3 target-security-mode decisions remain `NOT_DETERMINED` pending RLS/FORCE RLS/direct-DML/USING/WITH CHECK/policy-composition evidence. M2-04D remains required for the 9 SECURITY DEFINER trigger-provenance routines excluded from B3.
+
+```text
+B3 ACCEPTED != M2-04C AUTHORIZED
+B3 ACCEPTED != M2-04D AUTHORIZED
+FIVE BLOCKING AUTHORITY FINDINGS != AUTHORIZED REMEDIATION
+```
+
+Until separately authorized: no implementation, SQL, Supabase/Auth mutation, GRANT/REVOKE, ALTER FUNCTION, owner/search_path change, RLS/policy change, AppSec execution, hostile runtime testing, deploy or Security Go.
+
 ## 0.0000000000000000005 CURRENT SEMANTIC NEXT ACTION — SELECT NEXT BOUNDED STS-M2-04 TARGET-POLICY SLICE — 2026-09-05
 
 This section becomes current material continuity only after the B2 durable acceptance reconciliation is merged to canonical `main`.

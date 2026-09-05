@@ -1,5 +1,31 @@
 # FECH.AI — SFJM Current Material State
 
+## 0.0000000000000000007 STS-M2-04B3 CLASSIFICATION COMPLETE / ACCEPTED — 2026-09-05
+
+This section becomes current material continuity only after the B3 reconciliation is merged to canonical `main`.
+
+Product Authority accepted `STS-M2-04B3 CLASSIFICATION` as `COMPLETE / ACCEPTED` with coverage `113 / 113`.
+
+```text
+STS-M2-04B1 = COMPLETE / ACCEPTED WITH RESIDUALS
+STS-M2-04B2 = COMPLETE / ACCEPTED WITH RESIDUALS
+STS-M2-04B3 CLASSIFICATION = COMPLETE / ACCEPTED
+STS-M2-04 = IN PROGRESS / TARGET-POLICY DESIGN
+Security Go = NOT_GRANTED
+```
+
+Durable B3 evidence after merge:
+
+`docs/security/evidence/2026-09-05-sts-m2-04b3-remaining-routine-authority-classification.md`
+
+B3 closes classification for the 113 remaining non-trigger SECURITY DEFINER routines. Accepted target-mode distribution is `55 DEFINER / 2 INVOKER / 56 NOT_DETERMINED`.
+
+The following remain `BLOCKING CURRENT AUTHORITY FINDINGS` and are not waived: `031 gerenciar_lista`, `036 get_dashboard_master`, `047 get_stats_horario`, `119 relatorio_fornecedor`, `127 solicitar_lote_forcado`.
+
+`56 TARGET_SECURITY_MODE = NOT_DETERMINED` remain dependent on M2-04C where caller sufficiency depends on RLS/direct-table authority. The 9 SECURITY DEFINER trigger-provenance routines remain reserved for M2-04D.
+
+No implementation, Supabase/Auth mutation, AppSec execution, M2-04C, M2-04D, Ready, merge, deploy or Security Go is authorized.
+
 ## 0.0000000000000000006 STS-M2-04B2 COMPLETE / ACCEPTED WITH RESIDUALS — 2026-09-05
 
 Product Authority accepted `STS-M2-04B2 — High-Risk Routine Authority Classification` on decision/base main `ca77d81c3d2a6209536664128bda209996a7f423`.

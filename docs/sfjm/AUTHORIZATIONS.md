@@ -1,5 +1,50 @@
 # FECH.AI — SFJM Authorizations
 
+## 0.0000000000000000007 Product Authority — STS-M2-04B3 classification acceptance + bounded durable reconciliation — 2026-09-05
+
+Product Authority explicitly accepted:
+
+```text
+STS-M2-04B3 CLASSIFICATION = COMPLETE / ACCEPTED
+COVERAGE = 113 / 113
+```
+
+Accepted with five findings preserved as `BLOCKING CURRENT AUTHORITY FINDINGS`:
+
+```text
+031 gerenciar_lista(uuid,text,text)
+036 get_dashboard_master()
+047 get_stats_horario()
+119 relatorio_fornecedor(uuid)
+127 solicitar_lote_forcado(uuid)
+```
+
+Product Authority also accepted that `56 TARGET_SECURITY_MODE` decisions remain `NOT_DETERMINED` and depend on M2-04C evidence.
+
+Security Go remains `NOT_GRANTED`.
+
+Authorized mutation is limited to the bounded documentation reconciliation corresponding to this acceptance: one durable B3 evidence artifact plus the five SFJM continuity views.
+
+Explicitly NOT authorized:
+
+```text
+implementation
+Supabase/Auth/data mutation
+SQL / DDL / DML / migration
+GRANT / REVOKE / ALTER DEFAULT PRIVILEGES
+SECURITY DEFINER/INVOKER change
+owner / search_path change
+RLS / policy change
+AppSec execution
+runtime hostile testing
+M2-04C execution
+M2-04D execution
+Ready
+merge
+deploy
+Security Go
+```
+
 ## 0.0000000000000000006 Product Authority — STS-M2-04B2 acceptance + bounded durable reconciliation — 2026-09-05
 
 Product Authority explicitly accepted:
