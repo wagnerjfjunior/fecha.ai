@@ -1,6 +1,25 @@
 # FECH.AI — SFJM Current Product/Security Handoff
 
-## 0.0000000000000000007 CURRENT HANDOFF — STS-M2-04B3 classification accepted / five authority blockers preserved — 2026-09-05
+## 0.0000000000000000008 CURRENT HANDOFF — STS-M2-04B3 / DEF55 revised acceptance / six authority blockers preserved — 2026-09-05
+
+This handoff becomes canonical after PR #183 merge. Resolve the live PR head before every lifecycle gate.
+
+```text
+STS-M2-04B3 CLASSIFICATION = COMPLETE / ACCEPTED
+coverage = 113 / 113
+target mode = 52 DEFINER / 4 INVOKER / 57 NOT_DETERMINED
+justification = 52 PROVEN_BY_BODY_CONTRACT / 6 NOT_PROVEN / 51 NOT_DETERMINED / 4 NOT_REQUIRED
+blockers = 004,031,036,047,119,127
+Security Go = NOT_GRANTED
+```
+
+Canonical revised CSV SHA-256: `e609f4fa3bc6d21b8c75d85bd2a4a3409e9ece8b3c4d66ffdb5e52055052a61d`.
+
+Key delta: 52 DEFINER rows now carry routine-specific elevation reasons; `004` is NOT_DETERMINED/BLOCKING; `052` and `106` target INVOKER; `126` is TRANSITIVE_MUTATIVE with runtime assurance required; live identity signatures corrected for `021`, `022`, `028`, `032`.
+
+PR #183 is authorized only through exact-head review, Ready revalidation and pre-merge. Merge/deploy/Supabase/M2-04C/M2-04D/AppSec-active execution remain unauthorized.
+
+## 0.0000000000000000007 HISTORICAL — ORIGINAL STS-M2-04B3 HANDOFF / SUPERSEDED BY 0.0000000000000000008 — 2026-09-05
 
 This handoff becomes current material continuity only after the B3 acceptance reconciliation is merged to canonical `main`.
 

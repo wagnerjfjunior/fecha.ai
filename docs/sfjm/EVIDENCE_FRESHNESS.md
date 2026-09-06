@@ -1,6 +1,32 @@
 # FECH.AI — SFJM Evidence Freshness
 
-## 0.0000000000000000007 STS-M2-04B3 ACCEPTANCE EVIDENCE / DURABLE PROVENANCE — 2026-09-05
+## 0.0000000000000000008 STS-M2-04B3 / DEF55 REVISED CANONICAL EVIDENCE — 2026-09-05
+
+Current recoverable canonical matrix:
+
+`docs/security/evidence/2026-09-05-sts-m2-04b3-routine-authority-classification.csv`
+
+```text
+rows = 113
+columns = 40
+SHA-256 = e609f4fa3bc6d21b8c75d85bd2a4a3409e9ece8b3c4d66ffdb5e52055052a61d
+
+target mode = 52 DEFINER / 4 INVOKER / 57 NOT_DETERMINED
+justification = 52 PROVEN_BY_BODY_CONTRACT / 6 NOT_PROVEN / 51 NOT_DETERMINED / 4 NOT_REQUIRED
+blockers = 004,031,036,047,119,127
+```
+
+Historical fingerprints retained for provenance:
+
+```text
+original specialist baseline = 3abd2d09d4d17a0584a982c8fc6926a0266e4385883454a046f085f59f04a889
+pre-DEF55 consolidated matrix = df2a76d34b07edc347f84acbb7c71bad71be61095a7e40919c869925cc0b31eb
+five-row adjudication delta = 4695593f7e3c5e4e72ecf415d8b0cc19e6cb9c93583e89504e522ac9e6297c59
+```
+
+The previous `55/2/56` aggregate and df2a76d34b07edc347f84acbb7c71bad71be61095a7e40919c869925cc0b31eb fingerprint are historical and superseded by this revised canonical entry. Freshness is invalidated by any material change to B3 routine identity/body, authority mode, owner/search_path, EXECUTE ACL, caller/provenance, direct/transitive effects, relevant RLS/direct-DML composition or Product Authority scope.
+
+## 0.0000000000000000007 HISTORICAL — ORIGINAL STS-M2-04B3 ACCEPTANCE EVIDENCE / SUPERSEDED BY 0.0000000000000000008 — 2026-09-05
 
 Canonical durable artifact after merge:
 

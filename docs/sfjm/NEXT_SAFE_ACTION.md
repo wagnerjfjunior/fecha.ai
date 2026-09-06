@@ -1,6 +1,32 @@
 # FECH.AI — SFJM Next Safe Action
 
-## 0.0000000000000000006 CURRENT SEMANTIC NEXT ACTION — SELECT / AUTHORIZE NEXT BOUNDED M2-04 SLICE — 2026-09-05
+## 0.0000000000000000007 CURRENT TRANSITION ACTION — PR #183 revised DEF55 lifecycle through pre-merge — 2026-09-05
+
+Accepted revised B3 state:
+
+```text
+coverage = 113 / 113
+target mode = 52 DEFINER / 4 INVOKER / 57 NOT_DETERMINED
+blockers = 004,031,036,047,119,127
+Security Go = NOT_GRANTED
+```
+
+While PR #183 remains open, the authorized transition is:
+
+```text
+reconcile same 7 files
+→ resolve corresponding review threads
+→ new exact-head review
+→ Ready lifecycle revalidation
+→ new exact-head pre-merge
+→ STOP
+```
+
+Merge is not authorized. M2-04C, M2-04D, Supabase mutation, implementation, deploy and active AppSec/runtime hostile testing remain not authorized.
+
+After a future separately authorized merge, the next program-level decision remains selection/authorization of the next bounded M2-04 slice; `57` B3 mode decisions retain M2-04C dependencies where direct authority/RLS composition is material.
+
+## 0.0000000000000000006 HISTORICAL — PRE-DEF55-REVISION NEXT ACTION / SUPERSEDED — 2026-09-05
 
 This section becomes current material continuity only after the B3 durable acceptance reconciliation is merged to canonical `main`.
 

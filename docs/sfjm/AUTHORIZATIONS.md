@@ -1,5 +1,29 @@
 # FECH.AI — SFJM Authorizations
 
+## 0.0000000000000000008 Product Authority — STS-M2-04B3 / DEF55 revised adjudication + PR #183 reconciliation authority — 2026-09-05
+
+Product Authority accepted the revised 55/55 provenance/live-body adjudication:
+
+```text
+STS-M2-04B3 CLASSIFICATION = COMPLETE / ACCEPTED
+COVERAGE = 113 / 113
+
+TARGET DEFINER = 52
+TARGET INVOKER = 4
+TARGET NOT_DETERMINED = 57
+
+PROVEN_BY_BODY_CONTRACT = 52
+NOT_PROVEN = 6
+NOT_DETERMINED = 51
+NOT_REQUIRED = 4
+```
+
+Exactly six current authority blockers are preserved: `004`, `031`, `036`, `047`, `119`, `127`.
+
+Authorized for PR #183 only: reconcile the accepted corrections inside the same seven files, update the canonical fingerprint, resolve corresponding review threads, perform a new exact-head review, revalidate Ready and conduct a new exact-head pre-merge.
+
+Explicitly NOT authorized: merge, deploy, Supabase/Auth/data mutation, SQL/DDL/DML/migration, GRANT/REVOKE/ALTER FUNCTION, RLS/policy change, M2-04C, M2-04D, active AppSec/runtime hostile testing, implementation or Security Go.
+
 ## 0.0000000000000000007 Product Authority — STS-M2-04B3 classification acceptance + bounded durable reconciliation — 2026-09-05
 
 Product Authority explicitly accepted:
