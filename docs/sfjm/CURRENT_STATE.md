@@ -1,5 +1,33 @@
 # FECH.AI — SFJM Current Material State
 
+## 0.0000000000000000009 STS-M2-04B3 / PR #183 MERGED STATE RATIFIED — AUTHORITY/LIFECYCLE PROVENANCE EXCEPTION — 2026-09-06
+
+Product Authority ratified `main` commit `53a70f814e8b695439358ebe609850f25bf636a9`, produced by merge of PR #183 final head `d805194c5f896766af24e4d4a56869c91d31a60c`.
+
+```text
+PR #183 = CLOSED / MERGED
+merged state = ACCEPTED BY PRODUCT AUTHORITY
+authority/lifecycle provenance exception = RECORDED
+historical exact-head merge authorization = NOT_RECOVERED
+retroactive authorization fabrication = NO
+revert = NOT_REQUIRED
+```
+
+The exception affects lifecycle provenance only. It does not reopen or modify the completed B3 adjudication:
+
+```text
+STS-M2-04B1 = COMPLETE / ACCEPTED WITH RESIDUALS
+STS-M2-04B2 = COMPLETE / ACCEPTED WITH RESIDUALS
+STS-M2-04B3 CLASSIFICATION = COMPLETE / ACCEPTED
+B3 coverage = 113 / 113
+target mode = 52 DEFINER / 4 INVOKER / 57 NOT_DETERMINED
+blockers = 004,031,036,047,119,127
+Security Go = NOT_GRANTED
+```
+
+No B3 technical re-audit, DEF55 replay or PR #183 lifecycle replay is required absent a new material contradiction. M2-04C and M2-04D remain not authorized.
+
+
 ## 0.0000000000000000008 STS-M2-04B3 / DEF55 REVISED CLASSIFICATION COMPLETE / ACCEPTED — 2026-09-05
 
 This section becomes canonical continuity only after PR #183 is merged. Within the open PR it records the accepted revised decision.

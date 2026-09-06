@@ -1,5 +1,33 @@
 # FECH.AI — SFJM Current Product/Security Handoff
 
+## 0.0000000000000000009 CURRENT HANDOFF — PR #183 merged state ratified / provenance exception recorded — 2026-09-06
+
+```text
+repository = wagnerjfjunior/fecha.ai
+accepted main = 53a70f814e8b695439358ebe609850f25bf636a9
+PR #183 = CLOSED / MERGED
+PR #183 final head = d805194c5f896766af24e4d4a56869c91d31a60c
+Product Authority = RATIFIED MERGED STATE
+exception = AUTHORITY/LIFECYCLE PROVENANCE EXCEPTION
+historical exact-head merge authority = NOT_RECOVERED
+revert = NOT_REQUIRED
+```
+
+Preserve the completed B3 state without replay:
+
+```text
+STS-M2-04B3 CLASSIFICATION = COMPLETE / ACCEPTED
+coverage = 113 / 113
+target mode = 52 DEFINER / 4 INVOKER / 57 NOT_DETERMINED
+blockers = 004,031,036,047,119,127
+Security Go = NOT_GRANTED
+```
+
+The ratification corrects current authority meaning without rewriting history. It does not create standing merge authority and does not authorize M2-04C, M2-04D, implementation, Supabase/Auth mutation, active AppSec/runtime testing, deploy or Security Go.
+
+Next handoff after bounded provenance reconciliation: Product Authority selection/authorization of the next bounded STS-M2-04 slice. Do not reconstruct or re-audit B3 absent material contradictory evidence.
+
+
 ## 0.0000000000000000008 CURRENT HANDOFF — STS-M2-04B3 / DEF55 revised acceptance / six authority blockers preserved — 2026-09-05
 
 This handoff becomes canonical after PR #183 merge. Resolve the live PR head before every lifecycle gate.
