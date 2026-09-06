@@ -1,5 +1,37 @@
 # FECH.AI — SFJM Authorizations
 
+## 0.0000000000000000009 Product Authority — PR #183 merge ratification / authority-lifecycle provenance exception — 2026-09-06
+
+Product Authority explicitly ratified the already-merged PR #183 state and accepted merge commit `53a70f814e8b695439358ebe609850f25bf636a9` as the valid FECH.AI `main` publication of the completed STS-M2-04B3 / DEF55 adjudication.
+
+Historical lifecycle provenance is preserved rather than rewritten:
+
+```text
+PR #183 final head = d805194c5f896766af24e4d4a56869c91d31a60c
+merge commit = 53a70f814e8b695439358ebe609850f25bf636a9
+merge executed by = wagnerjfjunior
+pre-merge authority recoverable for exact final head = NOT_RECOVERED
+canonical authority before merge = MERGE NOT_AUTHORIZED
+current Product Authority decision = RATIFY MERGED STATE
+exception class = AUTHORITY/LIFECYCLE PROVENANCE EXCEPTION
+revert = NOT_REQUIRED
+```
+
+This ratification accepts the current merged state; it does **not** fabricate retroactive pre-merge authorization and does not convert the historical provenance gap into a prior gate PASS.
+
+The accepted B3 technical/classification state remains unchanged:
+
+```text
+STS-M2-04B3 CLASSIFICATION = COMPLETE / ACCEPTED
+coverage = 113 / 113
+target mode = 52 DEFINER / 4 INVOKER / 57 NOT_DETERMINED
+blockers = 004,031,036,047,119,127
+Security Go = NOT_GRANTED
+```
+
+This exception grants no standing or reusable authority for future Ready, merge, deploy, Supabase/Auth mutation, implementation, M2-04C, M2-04D, active AppSec/runtime testing or Security Go. Future lifecycle gates remain independently authorized and exact-head bound.
+
+
 ## 0.0000000000000000008 Product Authority — STS-M2-04B3 / DEF55 revised adjudication + PR #183 reconciliation authority — 2026-09-05
 
 Product Authority accepted the revised 55/55 provenance/live-body adjudication:

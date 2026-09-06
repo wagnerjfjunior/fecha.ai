@@ -1,5 +1,35 @@
 # FECH.AI — SFJM Evidence Freshness
 
+## 0.0000000000000000009 PR #183 MERGE RATIFICATION / PROVENANCE EXCEPTION EVIDENCE — 2026-09-06
+
+Current lifecycle anchors independently re-resolved before reconciliation:
+
+```text
+FECH.AI main = 53a70f814e8b695439358ebe609850f25bf636a9
+PR #183 = CLOSED / MERGED
+PR #183 base = 0333cea749dc33a6040955077afe67bd22c2fbe9
+PR #183 final head = d805194c5f896766af24e4d4a56869c91d31a60c
+merge commit = 53a70f814e8b695439358ebe609850f25bf636a9
+merged by = wagnerjfjunior
+three P2 review threads = RESOLVED
+final head Vercel status = SUCCESS
+```
+
+Authority evidence at the merged final state explicitly preserved `merge = NOT_AUTHORIZED`; no later exact-head pre-merge/merge authorization was recovered before the merge event. Product Authority subsequently ratified the merged state on 2026-09-06.
+
+Evidence interpretation:
+
+```text
+MERGE OCCURRED = PROVEN
+PRE-MERGE AUTHORIZATION FOR FINAL HEAD = NOT_RECOVERED
+MERGED STATE NOW RATIFIED = PRODUCT_AUTHORITY_DECISION
+RETROACTIVE PRE-AUTHORIZATION CLAIM = PROHIBITED
+AUTHORITY/LIFECYCLE PROVENANCE EXCEPTION = CURRENT
+```
+
+This provenance exception does not invalidate the canonical DEF55 matrix fingerprint `e609f4fa3bc6d21b8c75d85bd2a4a3409e9ece8b3c4d66ffdb5e52055052a61d` or the accepted 113/113 classification. Freshness of B3 technical evidence remains governed by the invalidators recorded in the preceding B3 evidence entry.
+
+
 ## 0.0000000000000000008 STS-M2-04B3 / DEF55 REVISED CANONICAL EVIDENCE — 2026-09-05
 
 Current recoverable canonical matrix:

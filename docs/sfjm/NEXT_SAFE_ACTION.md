@@ -1,5 +1,28 @@
 # FECH.AI — SFJM Next Safe Action
 
+## 0.0000000000000000008 CURRENT ACTION — close ratified PR #183 provenance exception, then select next bounded M2-04 slice — 2026-09-06
+
+The PR #183 merge state has been ratified by Product Authority. Do not replay DEF55, the three resolved P2 findings, Ready, pre-merge or merge.
+
+```text
+main = 53a70f814e8b695439358ebe609850f25bf636a9
+PR #183 = CLOSED / MERGED / RATIFIED
+B3 CLASSIFICATION = COMPLETE / ACCEPTED
+AUTHORITY/LIFECYCLE PROVENANCE EXCEPTION = RECORDED
+Security Go = NOT_GRANTED
+```
+
+After this bounded SFJM exception reconciliation reaches its authorized lifecycle endpoint, the next program-level action is:
+
+```text
+SELECT / AUTHORIZE THE NEXT BOUNDED STS-M2-04 SLICE
+```
+
+M2-04C remains the strongest direct dependency because 57 B3 target-security-mode decisions remain NOT_DETERMINED where RLS/FORCE RLS/direct-DML/USING/WITH CHECK/policy composition is material. M2-04D remains required for the nine trigger-provenance routines outside B3.
+
+No M2-04C/M2-04D implementation, Supabase/Auth mutation, SQL/DDL/DML, deploy, hostile runtime testing or Security Go is authorized by this reconciliation.
+
+
 ## 0.0000000000000000007 CURRENT TRANSITION ACTION — PR #183 revised DEF55 lifecycle through pre-merge — 2026-09-05
 
 Accepted revised B3 state:
