@@ -1,6 +1,73 @@
 # FECH.AI — SFJM Current Product/Security Handoff
 
-## 0.0000000000000000013 CURRENT HANDOFF — STS-M2-04C complete / accepted with bounded authority residuals — 2026-09-06
+## 0.0000000000000000014 CURRENT HANDOFF — STS-M2-04D complete / accepted; M2-04E not authorized — 2026-09-06
+
+~~~text
+repository = wagnerjfjunior/fecha.ai
+M2-04D decision/evidence base = e380387fe341dcf42527ce70ded45fd894447aa5
+CURRENT FECH.AI main = RESOLVE LIVE
+SES evidence base = a31e10cc3f0d1278c53c49e38151854d36ee9f3e
+Supabase = uobxxgzshrmbtjfdolxd / Discador-MesaCliente
+environment = Pilot Production / multi-tenant / multiempresa
+Security Go = NOT_GRANTED
+~~~
+
+Preserve:
+
+~~~text
+M2-04C = CLOSED / PRESERVE
+M2-04C projection = 68 DEFINER / 40 INVOKER / 5 NOT_DETERMINED / 113
+
+M2-04D =
+COMPLETE / ACCEPTED TRIGGER AUTHORITY CONTRACT
+
+D FUNCTIONS = 9
+D TRIGGER INSTANCES = 18
+
+TARGET =
+8 DEFINER
+1 INVOKER
+0 NOT_DETERMINED
+
+DIRECT CLIENT EXECUTE =
+0 required
+9 not required
+0 NOT_DETERMINED
+~~~
+
+Durable evidence:
+
+~~~text
+docs/security/evidence/2026-09-06-sts-m2-04d-trigger-authority-classification.md
+Git blob = 7fdc63a95d81661598937aa0bdfa654bcb9db66a
+source packet SHA-256 =
+6927b61338555fef95cc25892bb6097e815839b53bc217e0229084c5e5220389
+~~~
+
+Future backlog only:
+
+~~~text
+D-01 111 DEFINER -> INVOKER
+D-02 remove direct EXECUTE 011–015
+D-03 remove service_role direct EXECUTE 030
+D-04 remove anon/auth/service direct EXECUTE 075
+D-05 optional search_path hardening
+D-06 audit runtime assurance
+D-07 030/075 hostile/cross-tenant assurance
+D-08 130 concurrency assurance
+~~~
+
+Next candidate:
+
+~~~text
+STS-M2-04E — architecture synthesis
+STATUS = NOT_AUTHORIZED
+M2-04F = NOT_AUTHORIZED
+~~~
+
+No implementation, Supabase/Auth mutation, trigger/function/grant/RLS/policy change, hostile runtime testing, Ready, merge, deploy or Security Go is carried by this handoff.
+
+## 0.0000000000000000013 HISTORICAL / SUPERSEDED HANDOFF — STS-M2-04C complete / accepted with bounded authority residuals — 2026-09-06
 
 ```text
 repository = wagnerjfjunior/fecha.ai

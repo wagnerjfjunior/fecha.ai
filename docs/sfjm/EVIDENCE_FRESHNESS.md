@@ -1,5 +1,58 @@
 # FECH.AI — SFJM Evidence Freshness
 
+## 0.0000000000000000014 STS-M2-04D SPECIALIST PACKET + DURABLE ACCEPTANCE EVIDENCE — 2026-09-06
+
+~~~text
+M2-04D decision/evidence base =
+e380387fe341dcf42527ce70ded45fd894447aa5
+
+CURRENT FECH.AI main =
+RESOLVE LIVE
+
+SES evidence ref =
+a31e10cc3f0d1278c53c49e38151854d36ee9f3e
+
+Supabase target =
+uobxxgzshrmbtjfdolxd / Discador-MesaCliente
+
+specialist source =
+Markdown(20260906-200207).md colado
+
+specialist source SHA-256 =
+6927b61338555fef95cc25892bb6097e815839b53bc217e0229084c5e5220389
+
+specialist source bytes = 44144
+specialist source Python splitlines() = 1165
+specialist source newline count = 1164
+
+durable evidence path =
+docs/security/evidence/2026-09-06-sts-m2-04d-trigger-authority-classification.md
+
+durable evidence Git blob =
+7fdc63a95d81661598937aa0bdfa654bcb9db66a
+
+final durable evidence SHA-256 =
+NOT_INDEPENDENTLY_RECOMPUTED_INSIDE_ATOMIC_GIT_COMMIT
+~~~
+
+Accepted evidence result:
+
+~~~text
+9 / 9 trigger functions classified
+18 / 18 trigger instances covered
+TARGET DEFINER = 8
+TARGET INVOKER = 1
+TARGET NOT_DETERMINED = 0
+DIRECT CLIENT EXECUTE REQUIRED = 0
+NOT REQUIRED = 9
+NOT_DETERMINED = 0
+MATERIAL_DRIFT = NO
+~~~
+
+Freshness invalidation events include material change to any of the nine trigger function bodies, attached trigger definitions/enabled state, relevant function EXECUTE ACLs, effective owner/search_path, protected authority objects, accepted C/B dependencies, or Product Authority scope.
+
+The absence of a second SHA-256 field is not an evidence gap: the source packet SHA-256 is independently verified provenance, and the exact durable repository object is content-addressed by its Git blob. A later SHA-256 may be recorded only if independently recomputed without creating a lifecycle documentation loop.
+
 ## 0.0000000000000000013 STS-M2-04C/C4 CONSOLIDATION PACKET + MASTER-PROJECT FINAL DELTA REVALIDATION — 2026-09-06
 
 ```text
