@@ -77,7 +77,7 @@ Evidence-discipline correction: branch/commit ref resolution is not INTEGRAL_REA
 No implementation, Supabase/Auth mutation, SQL/DDL/DML, RLS/policy/grant/function change, hostile runtime testing, Ready, merge, deploy or Security Go is authorized.
 
 
-## 0.0000000000000000010 STS-M2-04C STARTED — C1 COMPLETE / C2 NEXT — 2026-09-06
+## 0.0000000000000000010 HISTORICAL / SUPERSEDED — STS-M2-04C STARTED — C1 COMPLETE / C2 NEXT — 2026-09-06
 
 Product Authority authorized `STS-M2-04C` as a bounded read-only RLS/direct-authority analysis slice.
 

@@ -63,7 +63,7 @@ No mutation, remediation implementation, M2-04D/E/F, Ready, merge, deploy or Sec
 All lower-numbered action sections below are historical/superseded.
 
 
-## 0.0000000000000000009 CURRENT ACTION — STS-M2-04C2 policy-helper graph / USING-WITH CHECK / direct-DML authority — 2026-09-06
+## 0.0000000000000000009 HISTORICAL / SUPERSEDED ACTION — STS-M2-04C2 policy-helper graph / USING-WITH CHECK / direct-DML authority — 2026-09-06
 
 M2-04C is authorized and started.
 
