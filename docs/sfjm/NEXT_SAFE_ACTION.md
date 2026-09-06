@@ -29,8 +29,10 @@ C2 must not re-run B1/B2/B3 and must not implement remediation.
 
 After the complete C2 packet returns, the Master Project adjudicates it before moving to C3. The M2-04C authorization permits the bounded read-only analysis; it does not authorize mutation, Ready, merge, deploy, M2-04D/E/F or Security Go.
 
+All lower-numbered action sections below are historical/superseded and must not be treated as the current next action.
 
-## 0.0000000000000000008 CURRENT ACTION — close ratified PR #183 provenance exception, then select next bounded M2-04 slice — 2026-09-06
+
+## 0.0000000000000000008 HISTORICAL — SUPERSEDED ACTION — close ratified PR #183 provenance exception, then select next bounded M2-04 slice — 2026-09-06
 
 The PR #183 merge state has been ratified by Product Authority. Do not replay DEF55, the three resolved P2 findings, Ready, pre-merge or merge unless new material contradictory evidence invalidates the accepted B3 state or lifecycle evidence.
 
@@ -53,7 +55,7 @@ M2-04C remains the strongest direct dependency because 57 B3 target-security-mod
 No M2-04C/M2-04D implementation, Supabase/Auth mutation, SQL/DDL/DML, deploy, hostile runtime testing or Security Go is authorized by this reconciliation.
 
 
-## 0.0000000000000000007 CURRENT TRANSITION ACTION — PR #183 revised DEF55 lifecycle through pre-merge — 2026-09-05
+## 0.0000000000000000007 HISTORICAL — SUPERSEDED TRANSITION ACTION — PR #183 revised DEF55 lifecycle through pre-merge — 2026-09-05
 
 Accepted revised B3 state:
 

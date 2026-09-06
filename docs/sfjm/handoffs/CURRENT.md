@@ -41,8 +41,10 @@ Next handoff target: SES — Backend & Data Platform Specialist for C2. Return t
 
 No implementation, Supabase/Auth mutation, SQL/DDL/DML, policy/RLS/grant/function change, hostile runtime testing, M2-04D/E/F, Ready, merge, deploy or Security Go is carried by this handoff.
 
+All lower-numbered handoff sections below are historical/superseded and do not override this current handoff.
 
-## 0.0000000000000000009 CURRENT HANDOFF — PR #183 merged state ratified / provenance exception recorded — 2026-09-06
+
+## 0.0000000000000000009 HISTORICAL HANDOFF — PR #183 merged state ratified / provenance exception recorded — SUPERSEDED BY M2-04C HANDOFF — 2026-09-06
 
 ```text
 repository = wagnerjfjunior/fecha.ai
@@ -70,7 +72,7 @@ The ratification corrects current authority meaning without rewriting history. I
 Next handoff after bounded provenance reconciliation: Product Authority selection/authorization of the next bounded STS-M2-04 slice. Do not reconstruct or re-audit B3 absent material contradictory evidence.
 
 
-## 0.0000000000000000008 CURRENT HANDOFF — STS-M2-04B3 / DEF55 revised acceptance / six authority blockers preserved — 2026-09-05
+## 0.0000000000000000008 HISTORICAL HANDOFF — STS-M2-04B3 / DEF55 revised acceptance / six authority blockers preserved — SUPERSEDED — 2026-09-05
 
 This handoff becomes canonical after PR #183 merge. Resolve the live PR head before every lifecycle gate.
 

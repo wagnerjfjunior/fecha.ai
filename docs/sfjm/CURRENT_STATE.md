@@ -47,8 +47,10 @@ blockers = 004,031,036,047,119,127
 
 Next semantic action is M2-04C2: policy-helper graph, USING/WITH CHECK semantics, direct-DML authority and C2 dependency inputs for exactly the 57 unresolved B3 routines. No implementation or security mutation is authorized.
 
+All lower-numbered sections below are historical continuity and do not override this current M2-04C state.
 
-## 0.0000000000000000009 STS-M2-04B3 / PR #183 MERGED STATE RATIFIED — AUTHORITY/LIFECYCLE PROVENANCE EXCEPTION — 2026-09-06
+
+## 0.0000000000000000009 HISTORICAL — STS-M2-04B3 / PR #183 MERGED STATE RATIFIED — SUPERSEDED BY M2-04C CURRENT STATE — 2026-09-06
 
 Product Authority ratified `main` commit `53a70f814e8b695439358ebe609850f25bf636a9`, produced by merge of PR #183 final head `d805194c5f896766af24e4d4a56869c91d31a60c`.
 
@@ -76,7 +78,7 @@ Security Go = NOT_GRANTED
 No B3 technical re-audit, DEF55 replay or PR #183 lifecycle replay is required absent a new material contradiction. M2-04C and M2-04D remain not authorized.
 
 
-## 0.0000000000000000008 STS-M2-04B3 / DEF55 REVISED CLASSIFICATION COMPLETE / ACCEPTED — 2026-09-05
+## 0.0000000000000000008 HISTORICAL — STS-M2-04B3 / DEF55 REVISED CLASSIFICATION COMPLETE / ACCEPTED — SUPERSEDED BY CURRENT M2-04C STATE — 2026-09-05
 
 This section becomes canonical continuity only after PR #183 is merged. Within the open PR it records the accepted revised decision.
 
@@ -96,7 +98,7 @@ Exactly six current authority blockers remain: `004`, `031`, `036`, `047`, `119`
 
 M2-04C and M2-04D remain NOT authorized. PR #183 lifecycle is authorized through new exact-head review, Ready revalidation and pre-merge only; merge remains separately prohibited.
 
-## 0.0000000000000000007 STS-M2-04B3 CLASSIFICATION COMPLETE / ACCEPTED — 2026-09-05
+## 0.0000000000000000007 HISTORICAL — STS-M2-04B3 CLASSIFICATION COMPLETE / ACCEPTED — SUPERSEDED BY LATER B3/M2-04C STATE — 2026-09-05
 
 This section becomes current material continuity only after the B3 reconciliation is merged to canonical `main`.
 
