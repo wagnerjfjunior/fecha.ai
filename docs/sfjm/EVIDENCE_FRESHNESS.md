@@ -1,5 +1,48 @@
 # FECH.AI — SFJM Evidence Freshness
 
+## 0.0000000000000000011 STS-M2-04C/C2 SPECIALIST PACKET + MASTER-PROJECT DELTA REVALIDATION — 2026-09-06
+
+```text
+specialist packet = Markdown(20260906-172407).md colado
+SHA-256 = ccf108437f1d84ceac29095ecb1f86a3a63c64d5278d8eb17c02588d3a633afa
+lines = 505
+bytes = 78213
+specialist verdict = COMPLETE WITH RESIDUAL EVIDENCE GAPS / READY FOR BOUNDED C3
+```
+
+Anchors independently revalidated:
+
+```text
+FECH.AI main = ca30c70e505a9dd8398cd7dace067c95397f96fe
+SES main = a31e10cc3f0d1278c53c49e38151854d36ee9f3e
+Supabase project = uobxxgzshrmbtjfdolxd
+material drift = NO
+```
+
+Material live claims delta-revalidated by Master Project:
+
+```text
+postgres.rolbypassrls = true
+service_role.rolbypassrls = true
+authenticated.rolbypassrls = false
+anon.rolbypassrls = false
+12 named policy helpers = SECURITY DEFINER / owner postgres
+9 authenticated direct-write tables = revalidated
+blocker bodies 004/031/036/047/119/127 = proportionally re-read live
+pme_message_usage RPC-centered append-only authority = versioned on current main
+```
+
+Coverage correction:
+
+```text
+BRANCH_OR_COMMIT_REF_RESOLUTION != INTEGRAL_READ_OF_REPOSITORY
+```
+
+The B3 CSV remains PARTIAL_READ for C2 because the 57-row unresolved dependency subset was consumed rather than the 113-row classification being replayed. This is acceptable for C2.
+
+C2 evidence is invalidated by material changes to helper bodies/modes/owners/ACLs, table ACL/RLS/policies, relevant blocker bodies, the B3 unresolved set or Product Authority scope.
+
+
 ## 0.0000000000000000010 STS-M2-04C / C1 LIVE RLS-DML EVIDENCE — 2026-09-06
 
 Evidence anchors at C1 execution:

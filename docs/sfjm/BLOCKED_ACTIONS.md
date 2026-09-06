@@ -54,12 +54,12 @@ Security Go
 
 ```text
 C1 = COMPLETE
-C2 = AUTHORIZED / NEXT
-C3 = PENDING
+C2 = COMPLETE WITH RESIDUAL EVIDENCE GAPS / ACCEPTED
+C3 = AUTHORIZED / NEXT
 C4 = PENDING
 ```
 
-C2 may inspect GitHub and Supabase live read-only evidence. It may produce target-policy recommendations and classifications. It may not mutate the product or environment.
+C3 may inspect GitHub and Supabase live read-only evidence and adjudicate the 57 unresolved routine modes. It may not mutate the product or environment.
 
 ## 5. Evidence/lifecycle separation
 

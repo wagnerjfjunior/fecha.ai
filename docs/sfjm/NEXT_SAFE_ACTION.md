@@ -1,5 +1,36 @@
 # FECH.AI — SFJM Next Safe Action
 
+## 0.0000000000000000010 CURRENT ACTION — STS-M2-04C3 bounded 57-routine mode adjudication — 2026-09-06
+
+C2 has been adjudicated and accepted with bounded residual evidence gaps.
+
+```text
+C1 = COMPLETE
+C2 = COMPLETE WITH RESIDUAL EVIDENCE GAPS / ACCEPTED
+C3 = NEXT / AUTHORIZED READ_ONLY
+C4 = PENDING
+Security Go = NOT_GRANTED
+```
+
+C3 must adjudicate exactly the 57 B3 routines previously carrying TARGET_SECURITY_MODE = NOT_DETERMINED, consuming C2 input without replaying C1/C2/B3.
+
+For each routine, decide:
+
+```text
+TARGET DEFINER
+TARGET INVOKER
+REMAIN NOT_DETERMINED
+```
+
+with routine-specific authority rationale, caller sufficiency, recursion/privileged-boundary requirement, residual evidence and blocker status.
+
+At minimum 004, 031, 036, 047 and 127 enter C3 with explicit REMAIN_NOT_DETERMINED C2 input. 119 enters as an INVOKER candidate, but its prior blocker remains only partially resolved.
+
+No mutation, remediation implementation, M2-04D/E/F, Ready, merge, deploy or Security Go is authorized.
+
+All lower-numbered action sections below are historical/superseded.
+
+
 ## 0.0000000000000000009 CURRENT ACTION — STS-M2-04C2 policy-helper graph / USING-WITH CHECK / direct-DML authority — 2026-09-06
 
 M2-04C is authorized and started.
