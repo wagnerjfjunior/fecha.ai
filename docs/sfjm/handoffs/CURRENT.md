@@ -1,6 +1,53 @@
 # FECH.AI — SFJM Current Product/Security Handoff
 
-## 0.0000000000000000011 CURRENT HANDOFF — STS-M2-04C/C2 accepted / C3 ready for bounded execution — 2026-09-06
+## 0.0000000000000000012 CURRENT HANDOFF — STS-M2-04C/C3 accepted / C4 ready for bounded execution — 2026-09-06
+
+```text
+repository = wagnerjfjunior/fecha.ai
+FECH.AI main = ca30c70e505a9dd8398cd7dace067c95397f96fe
+SES main = a31e10cc3f0d1278c53c49e38151854d36ee9f3e
+Supabase = uobxxgzshrmbtjfdolxd / Discador-MesaCliente
+environment = Pilot Production / multi-tenant / multiempresa
+Product Authority = M2-04C READ_ONLY EXECUTION AUTHORIZED
+Security Go = NOT_GRANTED
+```
+
+Current decomposition:
+
+```text
+C1 = COMPLETE
+C2 = COMPLETE WITH RESIDUAL EVIDENCE GAPS / ACCEPTED
+C3 = COMPLETE WITH RESIDUAL NOT_DETERMINED / ACCEPTED
+C4 = NEXT / AUTHORIZED READ_ONLY
+```
+
+C3 result:
+
+```text
+57 / 57 rows adjudicated
+16 target DEFINER
+36 target INVOKER
+5 remain NOT_DETERMINED
+
+projected full B3 target distribution:
+68 DEFINER
+40 INVOKER
+5 NOT_DETERMINED
+113 total
+```
+
+Remaining authority blockers: `004`, `031`, `036`, `047`, `127`.
+
+Blocker `119 relatorio_fornecedor(uuid)` is resolved at target-mode authority level as INVOKER. Current live implementation remains unchanged and still DEFINER; no runtime safety claim follows from the target decision.
+
+C4 must consolidate the target RLS/direct-DML contract, residuals and handoff without forcing the five unresolved authority decisions.
+
+No implementation, Supabase/Auth mutation, SQL/DDL/DML, policy/RLS/grant/function change, hostile runtime testing, M2-04D/E/F, Ready, merge, deploy or Security Go is carried by this handoff.
+
+All lower-numbered handoff sections below are historical/superseded.
+
+
+## 0.0000000000000000011 HISTORICAL / SUPERSEDED HANDOFF — STS-M2-04C/C2 accepted / C3 ready for bounded execution — 2026-09-06
 
 ```text
 repository = wagnerjfjunior/fecha.ai
@@ -42,7 +89,7 @@ No implementation, Supabase/Auth mutation, SQL/DDL/DML, policy/RLS/grant/functio
 All lower-numbered handoff sections below are historical/superseded.
 
 
-## 0.0000000000000000010 CURRENT HANDOFF — STS-M2-04C started / C1 complete / C2 ready for specialist execution — 2026-09-06
+## 0.0000000000000000010 HISTORICAL / SUPERSEDED HANDOFF — STS-M2-04C started / C1 complete / C2 ready for specialist execution — 2026-09-06
 
 ```text
 repository = wagnerjfjunior/fecha.ai

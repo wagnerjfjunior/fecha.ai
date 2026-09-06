@@ -1,6 +1,53 @@
 # FECH.AI — SFJM Current Material State
 
-## 0.0000000000000000011 STS-M2-04C/C2 COMPLETE WITH RESIDUAL EVIDENCE GAPS — C3 NEXT — 2026-09-06
+## 0.0000000000000000012 STS-M2-04C/C3 COMPLETE WITH RESIDUAL NOT_DETERMINED — C4 NEXT — 2026-09-06
+
+Master Project adjudicated the complete Backend/Data C3 packet against live FECH.AI/Supabase evidence.
+
+```text
+STS-M2-04C1 = COMPLETE
+STS-M2-04C2 = COMPLETE WITH RESIDUAL EVIDENCE GAPS / ACCEPTED
+STS-M2-04C3 = COMPLETE WITH RESIDUAL NOT_DETERMINED / ACCEPTED
+STS-M2-04C4 = NEXT / AUTHORIZED READ_ONLY
+Security Go = NOT_GRANTED
+```
+
+C3 adjudicated exactly the 57 routines that entered from B3 as TARGET_SECURITY_MODE = NOT_DETERMINED:
+
+```text
+NEW TARGET DEFINER = 16
+NEW TARGET INVOKER = 36
+REMAIN NOT_DETERMINED = 5
+TOTAL = 57
+```
+
+Projected complete B3 target distribution for C4 consolidation:
+
+```text
+DEFINER = 68
+INVOKER = 40
+NOT_DETERMINED = 5
+TOTAL = 113
+```
+
+The five bounded unresolved authority cases are:
+
+```text
+004 aprovar_rejeitar_mesa = NOT_DETERMINED / BLOCKER REMAINS
+031 gerenciar_lista = NOT_DETERMINED / BLOCKER REMAINS
+036 get_dashboard_master = NOT_DETERMINED / BLOCKER REMAINS
+047 get_stats_horario = NOT_DETERMINED / BLOCKER REMAINS
+127 solicitar_lote_forcado = NOT_DETERMINED / BLOCKER REMAINS
+```
+
+Blocker 119 `relatorio_fornecedor(uuid)` is resolved at target-mode authority level as INVOKER because caller/RLS composition supplies the list/tenant boundary that current postgres-owned DEFINER bypasses. This is a target-contract decision, not a claim that the current live implementation has changed or is runtime-proven safe.
+
+C3 also confirms that privileged authority can be localized in lower callees for wrappers such as 054, 107–109, 126 and 137, while core policy-recursive helpers retain routine-specific DEFINER justification.
+
+No canonical B3 CSV modification, function-mode change, Supabase/Auth mutation, SQL/DDL/DML, RLS/policy/grant change, hostile runtime testing, Ready, merge, deploy or Security Go occurred.
+
+
+## 0.0000000000000000011 HISTORICAL / SUPERSEDED — STS-M2-04C/C2 COMPLETE WITH RESIDUAL EVIDENCE GAPS — 2026-09-06
 
 Master Project adjudicated the complete Backend/Data C2 packet against live FECH.AI/Supabase evidence.
 

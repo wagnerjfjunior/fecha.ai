@@ -55,11 +55,23 @@ Security Go
 ```text
 C1 = COMPLETE
 C2 = COMPLETE WITH RESIDUAL EVIDENCE GAPS / ACCEPTED
-C3 = AUTHORIZED / NEXT
-C4 = PENDING
+C3 = COMPLETE WITH RESIDUAL NOT_DETERMINED / ACCEPTED
+C4 = AUTHORIZED / NEXT
 ```
 
-C3 may inspect GitHub and Supabase live read-only evidence and adjudicate the 57 unresolved routine modes. It may not mutate the product or environment.
+C4 may consolidate the accepted C1/C2/C3 target RLS/direct-DML contract and preserve unresolved authority cases. It may not mutate the product or environment.
+
+## 5. Current unresolved M2-04C authority blockers
+
+```text
+004 aprovar_rejeitar_mesa
+031 gerenciar_lista
+036 get_dashboard_master
+047 get_stats_horario
+127 solicitar_lote_forcado
+```
+
+Blocker 119 `relatorio_fornecedor(uuid)` is resolved at target-mode authority level as INVOKER, but implementation/runtime assurance remains separately blocked.
 
 ## 5. Evidence/lifecycle separation
 

@@ -1,6 +1,38 @@
 # FECH.AI — SFJM Next Safe Action
 
-## 0.0000000000000000010 CURRENT ACTION — STS-M2-04C3 bounded 57-routine mode adjudication — 2026-09-06
+## 0.0000000000000000011 CURRENT ACTION — STS-M2-04C4 target RLS/direct-DML contract consolidation — 2026-09-06
+
+C3 has been adjudicated and accepted with five bounded NOT_DETERMINED authority cases.
+
+```text
+C1 = COMPLETE
+C2 = COMPLETE WITH RESIDUAL EVIDENCE GAPS / ACCEPTED
+C3 = COMPLETE WITH RESIDUAL NOT_DETERMINED / ACCEPTED
+C4 = NEXT / AUTHORIZED READ_ONLY
+Security Go = NOT_GRANTED
+```
+
+C4 must consolidate the M2-04C target contract using the accepted C1/C2/C3 evidence without replaying those phases.
+
+Required C4 inputs:
+
+```text
+projected target modes = 68 DEFINER / 40 INVOKER / 5 NOT_DETERMINED
+remaining blockers = 004,031,036,047,127
+119 = resolved at target-mode authority level
+direct-DML target classifications from C2
+core policy-helper recursion contract
+wrapper-vs-callee privilege localization decisions from C3
+```
+
+C4 may preserve NOT_DETERMINED where Product Authority or object/actor contract evidence is still genuinely missing. It must not force closure merely to obtain 113/113 final modes.
+
+No mutation, implementation, M2-04D/E/F, Ready, merge, deploy or Security Go is authorized.
+
+All lower-numbered action sections below are historical/superseded.
+
+
+## 0.0000000000000000010 HISTORICAL / SUPERSEDED ACTION — STS-M2-04C3 bounded 57-routine mode adjudication — 2026-09-06
 
 C2 has been adjudicated and accepted with bounded residual evidence gaps.
 

@@ -1,5 +1,50 @@
 # FECH.AI — SFJM Evidence Freshness
 
+## 0.0000000000000000012 STS-M2-04C/C3 SPECIALIST PACKET + MASTER-PROJECT DELTA REVALIDATION — 2026-09-06
+
+```text
+uploaded artifact = Markdown(20260906-174939).md colado
+artifact SHA-256 = 0e6c40a3cd515219fb6b24d5f0aaf10e63291d19da485d5e946c47fbb08d88d5
+artifact lines = 761
+artifact bytes = 150441
+C3 verdict = COMPLETE WITH RESIDUAL NOT_DETERMINED / READY FOR C4
+```
+
+The uploaded artifact contains the preceding C2 continuity plus the C3 result; C3 itself contains exactly 57 adjudication rows.
+
+Master Project independently revalidated:
+
+```text
+FECH.AI main = ca30c70e505a9dd8398cd7dace067c95397f96fe
+SES main = a31e10cc3f0d1278c53c49e38151854d36ee9f3e
+PR #186 head before C3 reconciliation = be403e92b92e564ed970d9cb3aa0bff27322890b
+material drift = NO
+
+57 target signatures remain live
+57/57 current mode = SECURITY DEFINER
+57/57 current owner = postgres
+one additional avaliar_lista(uuid,integer,text) overload exists outside the C3 set and does not invalidate the four-argument C3 identity
+```
+
+Discriminating live bodies were proportionally re-read for C3 mode decisions including 044, 054, 107–109, 119, 126, 127 and 137. Versioned B3 evidence independently confirms `solicitar_lote(uuid)` remains a separately accepted target DEFINER privileged allocation boundary; therefore adjudicating `solicitar_lote_core(uuid)` as INVOKER does not transfer allocation DML authority to the ordinary caller.
+
+C3 aggregate integrity independently checked:
+
+```text
+DEFINER = 16
+INVOKER = 36
+NOT_DETERMINED = 5
+16 + 36 + 5 = 57
+
+projected B3:
+68 DEFINER + 40 INVOKER + 5 NOT_DETERMINED = 113
+```
+
+All C3 INVOKER targets carry CALLER_AUTHORITY_SUFFICIENT = YES in the specialist matrix. All C3 DEFINER targets carry PRIVILEGED_BOUNDARY_REQUIRED = YES.
+
+Residual invalidators include material drift in any of the 57 routine bodies/modes/owners, relevant caller ACLs/RLS/policies, lower privileged callees, B3 authority contracts, or Product Authority scope decisions for the five unresolved rows.
+
+
 ## 0.0000000000000000011 STS-M2-04C/C2 SPECIALIST PACKET + MASTER-PROJECT DELTA REVALIDATION — 2026-09-06
 
 ```text
