@@ -1,5 +1,47 @@
 # FECH.AI — SFJM Current Product/Security Handoff
 
+## 0.0000000000000000010 CURRENT HANDOFF — STS-M2-04C started / C1 complete / C2 ready for specialist execution — 2026-09-06
+
+```text
+repository = wagnerjfjunior/fecha.ai
+M2-04C start anchor = ca30c70e505a9dd8398cd7dace067c95397f96fe
+SES anchor observed = a31e10cc3f0d1278c53c49e38151854d36ee9f3e
+Supabase = uobxxgzshrmbtjfdolxd / Discador-MesaCliente
+environment = Pilot Production / multi-tenant / multiempresa
+Product Authority = M2-04C READ_ONLY EXECUTION AUTHORIZED
+Security Go = NOT_GRANTED
+```
+
+Current internal decomposition:
+
+```text
+C1 live RLS/FORCE/ACL/policy inventory = COMPLETE
+C2 policy-helper graph + USING/WITH CHECK + direct-DML authority = NEXT
+C3 57-routine mode adjudication = PENDING
+C4 target RLS/direct-DML contract consolidation = PENDING
+```
+
+C1 key observations:
+
+```text
+44 / 44 public tables RLS enabled
+30 / 44 FORCE RLS
+14 / 44 FORCE RLS false
+0 tables with anon direct privilege
+28 tables with authenticated SELECT
+9 tables with authenticated direct write privilege
+57 B3 routines remain TARGET_SECURITY_MODE NOT_DETERMINED
+postgres.rolbypassrls = true
+central policy helpers = SECURITY DEFINER / owner postgres as observed
+```
+
+Preserve B3 acceptance and blockers `004,031,036,047,119,127`; do not replay DEF55 absent material contradictory evidence.
+
+Next handoff target: SES — Backend & Data Platform Specialist for C2. Return the complete C2 result to the FECH.AI Master Project for adjudication before C3.
+
+No implementation, Supabase/Auth mutation, SQL/DDL/DML, policy/RLS/grant/function change, hostile runtime testing, M2-04D/E/F, Ready, merge, deploy or Security Go is carried by this handoff.
+
+
 ## 0.0000000000000000009 CURRENT HANDOFF — PR #183 merged state ratified / provenance exception recorded — 2026-09-06
 
 ```text

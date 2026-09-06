@@ -1,5 +1,83 @@
 # FECH.AI — SFJM Evidence Freshness
 
+## 0.0000000000000000010 STS-M2-04C / C1 LIVE RLS-DML EVIDENCE — 2026-09-06
+
+Evidence anchors at C1 execution:
+
+```text
+FECH.AI main = ca30c70e505a9dd8398cd7dace067c95397f96fe
+SES main = a31e10cc3f0d1278c53c49e38151854d36ee9f3e
+Supabase project = uobxxgzshrmbtjfdolxd / Discador-MesaCliente
+B3 CSV blob = cf3baa6e5a6ab6465688de8f6af43cba7c27d3bd
+B3 canonical matrix fingerprint = e609f4fa3bc6d21b8c75d85bd2a4a3409e9ece8b3c4d66ffdb5e52055052a61d
+```
+
+Live C1 observations:
+
+```text
+public tables = 44
+RLS enabled = 44 / 44
+FORCE RLS = 30 / 44
+FORCE RLS false = 14 / 44
+anon with any direct table privilege = 0
+authenticated with SELECT = 28
+authenticated with INSERT/UPDATE/DELETE on at least one operation = 9
+```
+
+Observed `FORCE RLS = false` tables:
+
+```text
+mesa_cliente_desconto_politicas
+mesa_cliente_fluxo_operacoes
+mesa_cliente_fluxo_parcelas
+mesa_cliente_politica_premio_faixas
+mesa_cliente_politicas_financeiras
+mesa_cliente_unidade_enriquecimentos
+mesa_fluxo_pagamentos_canonico
+pme_cadence_steps
+pme_cadences
+pme_call_scripts
+pme_lead_message_state
+pme_message_templates
+pme_message_usage
+root_audit_logs
+```
+
+Observed authenticated direct-write tables:
+
+```text
+lista_avaliacoes
+logs
+mesa_cliente_unidade_enriquecimentos
+pme_cadence_steps
+pme_cadences
+pme_call_scripts
+pme_lead_message_state
+pme_message_templates
+pme_message_usage
+```
+
+Material helper/role observations:
+
+```text
+central policy helpers observed SECURITY DEFINER = YES
+central helper owner = postgres
+postgres.rolbypassrls = true
+```
+
+The canonical B3 matrix was parsed as 113 rows × 40 columns and contains exactly 57 `TARGET_SECURITY_MODE = NOT_DETERMINED` rows for C2/C3 dependency analysis.
+
+C1 evidence is point-in-time live catalog evidence. It is invalidated proportionally by material changes to RLS/FORCE RLS, table ACLs, policy roles/USING/WITH CHECK, helper bodies/modes/owners/ACLs, relevant routine bodies/call graph, B3 matrix identity or Product Authority scope.
+
+```text
+RLS ENABLED != POLICY CORRECT
+FORCE RLS != DEFINER BODY GOVERNED BY RLS
+GRANT EXISTS != BUSINESS AUTHORITY PROVEN
+C1 INVENTORY COMPLETE != M2-04C COMPLETE
+STATIC/CATALOG COMPOSITION != RUNTIME ASSURANCE
+```
+
+
 ## 0.0000000000000000009 PR #183 MERGE RATIFICATION / PROVENANCE EXCEPTION EVIDENCE — 2026-09-06
 
 Current lifecycle anchors independently re-resolved before reconciliation:

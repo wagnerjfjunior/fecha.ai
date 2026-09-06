@@ -1,5 +1,35 @@
 # FECH.AI — SFJM Next Safe Action
 
+## 0.0000000000000000009 CURRENT ACTION — STS-M2-04C2 policy-helper graph / USING-WITH CHECK / direct-DML authority — 2026-09-06
+
+M2-04C is authorized and started.
+
+```text
+M2-04C1 = COMPLETE
+M2-04C2 = NEXT
+M2-04C3 = PENDING
+M2-04C4 = PENDING
+Security Go = NOT_GRANTED
+```
+
+Execute the bounded C2 read-only specialist task using the adopted SES Backend & Data Platform Specialist.
+
+C2 must produce:
+
+```text
+policy-helper dependency graph
+table × operation RLS/policy composition
+USING / WITH CHECK semantics
+authenticated direct-DML target classification
+57 / 57 routine C2 dependency inputs
+RLS-composition impact on blockers 004,031,036,047,119,127
+```
+
+C2 must not re-run B1/B2/B3 and must not implement remediation.
+
+After the complete C2 packet returns, the Master Project adjudicates it before moving to C3. The M2-04C authorization permits the bounded read-only analysis; it does not authorize mutation, Ready, merge, deploy, M2-04D/E/F or Security Go.
+
+
 ## 0.0000000000000000008 CURRENT ACTION — close ratified PR #183 provenance exception, then select next bounded M2-04 slice — 2026-09-06
 
 The PR #183 merge state has been ratified by Product Authority. Do not replay DEF55, the three resolved P2 findings, Ready, pre-merge or merge unless new material contradictory evidence invalidates the accepted B3 state or lifecycle evidence.

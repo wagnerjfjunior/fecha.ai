@@ -1,5 +1,53 @@
 # FECH.AI — SFJM Current Material State
 
+## 0.0000000000000000010 STS-M2-04C STARTED — C1 COMPLETE / C2 NEXT — 2026-09-06
+
+Product Authority authorized `STS-M2-04C` as a bounded read-only RLS/direct-authority analysis slice.
+
+```text
+FECH.AI main at M2-04C start = ca30c70e505a9dd8398cd7dace067c95397f96fe
+SES main observed = a31e10cc3f0d1278c53c49e38151854d36ee9f3e
+Supabase = uobxxgzshrmbtjfdolxd / Discador-MesaCliente
+environment = Pilot Production / SaaS multi-tenant / multiempresa
+Security Go = NOT_GRANTED
+```
+
+Operational decomposition:
+
+```text
+M2-04C1 = COMPLETE / MASTER-PROJECT LIVE READ-ONLY INVENTORY
+M2-04C2 = NEXT
+M2-04C3 = PENDING
+M2-04C4 = PENDING
+```
+
+C1 live observations material to C2/C3:
+
+```text
+public tables = 44
+RLS enabled = 44 / 44
+FORCE RLS = 30 / 44
+FORCE RLS false = 14 / 44
+anon direct table privilege = 0 tables
+authenticated direct SELECT = 28 tables
+authenticated direct write privilege = 9 tables
+B3 target mode NOT_DETERMINED = 57 routines
+```
+
+C1 is inventory/evidence, not a vulnerability verdict and not a blanket argument for INVOKER or FORCE RLS. Central RLS policy helpers are currently SECURITY DEFINER/owner `postgres`; live role evidence shows `postgres.rolbypassrls = true`, so C2 must analyze helper/body/policy composition rather than assume RLS governs DEFINER execution.
+
+Preserve B3 without replay:
+
+```text
+STS-M2-04B3 = COMPLETE / ACCEPTED
+coverage = 113 / 113
+target mode = 52 DEFINER / 4 INVOKER / 57 NOT_DETERMINED
+blockers = 004,031,036,047,119,127
+```
+
+Next semantic action is M2-04C2: policy-helper graph, USING/WITH CHECK semantics, direct-DML authority and C2 dependency inputs for exactly the 57 unresolved B3 routines. No implementation or security mutation is authorized.
+
+
 ## 0.0000000000000000009 STS-M2-04B3 / PR #183 MERGED STATE RATIFIED — AUTHORITY/LIFECYCLE PROVENANCE EXCEPTION — 2026-09-06
 
 Product Authority ratified `main` commit `53a70f814e8b695439358ebe609850f25bf636a9`, produced by merge of PR #183 final head `d805194c5f896766af24e4d4a56869c91d31a60c`.
