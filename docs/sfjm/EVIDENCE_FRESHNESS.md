@@ -15,15 +15,15 @@ three P2 review threads = RESOLVED
 final head Vercel status = SUCCESS
 ```
 
-Authority evidence at the merged final state explicitly preserved `merge = NOT_AUTHORIZED`; no later exact-head pre-merge/merge authorization was recovered before the merge event. Product Authority subsequently ratified the merged state on 2026-09-06.
+Authority evidence at the merged final state explicitly permitted a new exact-head pre-merge while preserving `merge = NOT_AUTHORIZED`. No separate merge authorization was recovered before the merge event. Product Authority subsequently ratified the merged state on 2026-09-06.
 
 Evidence interpretation:
 
 ```text
 MERGE OCCURRED = PROVEN
-PRE-MERGE AUTHORIZATION FOR FINAL HEAD = NOT_RECOVERED
+PRE-MERGE LIFECYCLE AUTHORITY = AUTHORIZED
 MERGED STATE NOW RATIFIED = PRODUCT_AUTHORITY_DECISION
-RETROACTIVE PRE-AUTHORIZATION CLAIM = PROHIBITED
+RETROACTIVE MERGE-AUTHORIZATION CLAIM = PROHIBITED
 AUTHORITY/LIFECYCLE PROVENANCE EXCEPTION = CURRENT
 ```
 

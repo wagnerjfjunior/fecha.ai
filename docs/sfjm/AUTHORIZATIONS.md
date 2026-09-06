@@ -10,14 +10,14 @@ Historical lifecycle provenance is preserved rather than rewritten:
 PR #183 final head = d805194c5f896766af24e4d4a56869c91d31a60c
 merge commit = 53a70f814e8b695439358ebe609850f25bf636a9
 merge executed by = wagnerjfjunior
-pre-merge authority recoverable for exact final head = NOT_RECOVERED
+pre-merge lifecycle authority = AUTHORIZED (new exact-head pre-merge permitted)
 canonical authority before merge = MERGE NOT_AUTHORIZED
 current Product Authority decision = RATIFY MERGED STATE
 exception class = AUTHORITY/LIFECYCLE PROVENANCE EXCEPTION
 revert = NOT_REQUIRED
 ```
 
-This ratification accepts the current merged state; it does **not** fabricate retroactive pre-merge authorization and does not convert the historical provenance gap into a prior gate PASS.
+This ratification accepts the current merged state; it preserves the already-recorded authority to conduct a new exact-head pre-merge. It does **not** fabricate retroactive merge authorization and does not convert the missing merge-authority provenance into a prior merge gate PASS.
 
 The accepted B3 technical/classification state remains unchanged:
 

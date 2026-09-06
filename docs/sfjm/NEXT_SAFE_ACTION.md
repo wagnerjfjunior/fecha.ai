@@ -2,10 +2,10 @@
 
 ## 0.0000000000000000008 CURRENT ACTION — close ratified PR #183 provenance exception, then select next bounded M2-04 slice — 2026-09-06
 
-The PR #183 merge state has been ratified by Product Authority. Do not replay DEF55, the three resolved P2 findings, Ready, pre-merge or merge.
+The PR #183 merge state has been ratified by Product Authority. Do not replay DEF55, the three resolved P2 findings, Ready, pre-merge or merge unless new material contradictory evidence invalidates the accepted B3 state or lifecycle evidence.
 
 ```text
-main = 53a70f814e8b695439358ebe609850f25bf636a9
+ratified merge anchor = 53a70f814e8b695439358ebe609850f25bf636a9
 PR #183 = CLOSED / MERGED / RATIFIED
 B3 CLASSIFICATION = COMPLETE / ACCEPTED
 AUTHORITY/LIFECYCLE PROVENANCE EXCEPTION = RECORDED
