@@ -1,6 +1,138 @@
 # FECH.AI — SFJM Next Safe Action
 
-## 0.0000000000000000008 CURRENT ACTION — close ratified PR #183 provenance exception, then select next bounded M2-04 slice — 2026-09-06
+## 0.0000000000000000012 CURRENT ACTION — select / authorize next bounded M2-04 slice after M2-04C closure — 2026-09-06
+
+M2-04C is closed as:
+
+```text
+STS-M2-04C =
+COMPLETE / ACCEPTED WITH BOUNDED AUTHORITY RESIDUALS
+
+target projection =
+68 DEFINER / 40 INVOKER / 5 NOT_DETERMINED / 113 total
+
+Security Go = NOT_GRANTED
+```
+
+Do not replay C1/C2/C3/C4 absent material contradictory evidence.
+
+The five bounded authority residuals `004`, `031`, `036`, `047` and `127` now leave M2-04C as downstream Product Authority/Backend-Data decision or remediation inputs; they do not keep the C analysis slice open.
+
+Next program gate:
+
+```text
+PRODUCT AUTHORITY SELECT / AUTHORIZE NEXT BOUNDED M2-04 SLICE
+```
+
+Natural sequential candidate:
+
+```text
+STS-M2-04D — trigger provenance / trigger classification
+```
+
+M2-04D is NOT_AUTHORIZED by the M2-04C authorization and must not begin until separately authorized.
+
+No implementation, remediation, Supabase/Auth mutation, SQL/DDL/DML, RLS/policy/grant/function change, hostile runtime testing, Ready, merge, deploy or Security Go is authorized by this state.
+
+All lower-numbered action sections below are historical/superseded.
+
+
+## 0.0000000000000000011 HISTORICAL / SUPERSEDED ACTION — STS-M2-04C4 target RLS/direct-DML contract consolidation — 2026-09-06
+
+C3 has been adjudicated and accepted with five bounded NOT_DETERMINED authority cases.
+
+```text
+C1 = COMPLETE
+C2 = COMPLETE WITH RESIDUAL EVIDENCE GAPS / ACCEPTED
+C3 = COMPLETE WITH RESIDUAL NOT_DETERMINED / ACCEPTED
+C4 = NEXT / AUTHORIZED READ_ONLY
+Security Go = NOT_GRANTED
+```
+
+C4 must consolidate the M2-04C target contract using the accepted C1/C2/C3 evidence without replaying those phases.
+
+Required C4 inputs:
+
+```text
+projected target modes = 68 DEFINER / 40 INVOKER / 5 NOT_DETERMINED
+remaining blockers = 004,031,036,047,127
+119 = resolved at target-mode authority level
+direct-DML target classifications from C2
+core policy-helper recursion contract
+wrapper-vs-callee privilege localization decisions from C3
+```
+
+C4 may preserve NOT_DETERMINED where Product Authority or object/actor contract evidence is still genuinely missing. It must not force closure merely to obtain 113/113 final modes.
+
+No mutation, implementation, M2-04D/E/F, Ready, merge, deploy or Security Go is authorized.
+
+All lower-numbered action sections below are historical/superseded.
+
+
+## 0.0000000000000000010 HISTORICAL / SUPERSEDED ACTION — STS-M2-04C3 bounded 57-routine mode adjudication — 2026-09-06
+
+C2 has been adjudicated and accepted with bounded residual evidence gaps.
+
+```text
+C1 = COMPLETE
+C2 = COMPLETE WITH RESIDUAL EVIDENCE GAPS / ACCEPTED
+C3 = NEXT / AUTHORIZED READ_ONLY
+C4 = PENDING
+Security Go = NOT_GRANTED
+```
+
+C3 must adjudicate exactly the 57 B3 routines previously carrying TARGET_SECURITY_MODE = NOT_DETERMINED, consuming C2 input without replaying C1/C2/B3.
+
+For each routine, decide:
+
+```text
+TARGET DEFINER
+TARGET INVOKER
+REMAIN NOT_DETERMINED
+```
+
+with routine-specific authority rationale, caller sufficiency, recursion/privileged-boundary requirement, residual evidence and blocker status.
+
+At minimum 004, 031, 036, 047 and 127 enter C3 with explicit REMAIN_NOT_DETERMINED C2 input. 119 enters as an INVOKER candidate, but its prior blocker remains only partially resolved.
+
+No mutation, remediation implementation, M2-04D/E/F, Ready, merge, deploy or Security Go is authorized.
+
+All lower-numbered action sections below are historical/superseded.
+
+
+## 0.0000000000000000009 HISTORICAL / SUPERSEDED ACTION — STS-M2-04C2 policy-helper graph / USING-WITH CHECK / direct-DML authority — 2026-09-06
+
+M2-04C is authorized and started.
+
+```text
+M2-04C1 = COMPLETE
+M2-04C2 = NEXT
+M2-04C3 = PENDING
+M2-04C4 = PENDING
+Security Go = NOT_GRANTED
+```
+
+Execute the bounded C2 read-only specialist task using the adopted SES Backend & Data Platform Specialist.
+
+C2 must produce:
+
+```text
+policy-helper dependency graph
+table × operation RLS/policy composition
+USING / WITH CHECK semantics
+authenticated direct-DML target classification
+57 / 57 routine C2 dependency inputs
+RLS-composition impact on blockers 004,031,036,047,119,127
+```
+
+C2 must not re-run B1/B2/B3 and must not implement remediation.
+
+After the complete C2 packet returns, the Master Project adjudicates it before moving to C3. The M2-04C authorization permits the bounded read-only analysis; it does not authorize mutation, Ready, merge, deploy, M2-04D/E/F or Security Go.
+
+All lower-numbered action sections below are historical/superseded and must not be treated as the current next action.
+
+
+## 0.0000000000000000008 HISTORICAL — SUPERSEDED ACTION — close ratified PR #183 provenance exception, then select next bounded M2-04 slice — 2026-09-06
 
 The PR #183 merge state has been ratified by Product Authority. Do not replay DEF55, the three resolved P2 findings, Ready, pre-merge or merge unless new material contradictory evidence invalidates the accepted B3 state or lifecycle evidence.
 
@@ -23,7 +155,7 @@ M2-04C remains the strongest direct dependency because 57 B3 target-security-mod
 No M2-04C/M2-04D implementation, Supabase/Auth mutation, SQL/DDL/DML, deploy, hostile runtime testing or Security Go is authorized by this reconciliation.
 
 
-## 0.0000000000000000007 CURRENT TRANSITION ACTION — PR #183 revised DEF55 lifecycle through pre-merge — 2026-09-05
+## 0.0000000000000000007 HISTORICAL — SUPERSEDED TRANSITION ACTION — PR #183 revised DEF55 lifecycle through pre-merge — 2026-09-05
 
 Accepted revised B3 state:
 
@@ -78,7 +210,7 @@ FIVE BLOCKING AUTHORITY FINDINGS != AUTHORIZED REMEDIATION
 
 Until separately authorized: no implementation, SQL, Supabase/Auth mutation, GRANT/REVOKE, ALTER FUNCTION, owner/search_path change, RLS/policy change, AppSec execution, hostile runtime testing, deploy or Security Go.
 
-## 0.0000000000000000005 CURRENT SEMANTIC NEXT ACTION — SELECT NEXT BOUNDED STS-M2-04 TARGET-POLICY SLICE — 2026-09-05
+## 0.0000000000000000005 HISTORICAL / SUPERSEDED SEMANTIC NEXT ACTION — SELECT NEXT BOUNDED STS-M2-04 TARGET-POLICY SLICE — 2026-09-05
 
 This section becomes current material continuity only after the B2 durable acceptance reconciliation is merged to canonical `main`.
 
@@ -116,7 +248,7 @@ CURRENT CONTRADICTION != AUTHORIZED REMEDIATION
 
 Next technical work requires separate Product Authority scope authorization. Until then: no implementation, SQL, Supabase/Auth mutation, GRANT/REVOKE, ALTER FUNCTION, owner/search_path change, runtime hostile testing, AppSec testing, deploy or Security Go.
 
-## 0.0000000000000000004 CURRENT SEMANTIC NEXT ACTION — STS-M2-04B2 SCOPE PREPARATION ONLY — 2026-09-05
+## 0.0000000000000000004 HISTORICAL / SUPERSEDED SEMANTIC NEXT ACTION — STS-M2-04B2 SCOPE PREPARATION ONLY — 2026-09-05
 
 Current accepted state:
 
@@ -149,7 +281,7 @@ B2 REMEDIATION / IMPLEMENTATION = NOT_AUTHORIZED
 No SQL, DDL/DML, Supabase/Auth/data mutation, GRANT/REVOKE/default-privilege change, routine/owner/search_path mutation, hostile runtime testing, deploy, Ready, merge or Security Go is authorized.
 
 
-## 0.0000000000000000003 CURRENT SEMANTIC NEXT ACTION — STS-M2-04 READ_ONLY TARGET-POLICY BOOTSTRAP — 2026-09-05
+## 0.0000000000000000003 HISTORICAL / SUPERSEDED SEMANTIC NEXT ACTION — STS-M2-04 READ_ONLY TARGET-POLICY BOOTSTRAP — 2026-09-05
 
 This section becomes the current semantic next action only after the STS-M2-03 acceptance reconciliation is merged to canonical `main`.
 
@@ -184,7 +316,7 @@ Not authorized:
 - no Security Go.
 
 
-## 0.0000000000000000002 CURRENT SEMANTIC NEXT ACTION — STS-M2-03 READ_ONLY — 2026-09-05
+## 0.0000000000000000002 HISTORICAL / SUPERSEDED SEMANTIC NEXT ACTION — STS-M2-03 READ_ONLY — 2026-09-05
 
 This section becomes the current semantic next action only after the STS-M2-02 acceptance reconciliation is merged to canonical `main`.
 
@@ -219,7 +351,7 @@ Not authorized by the STS-M2-02 acceptance:
 - no Security Go.
 
 
-## 0.0000000000000000001 CURRENT SEMANTIC NEXT ACTION — STS-M2-02 READ_ONLY MAP — 2026-09-04
+## 0.0000000000000000001 HISTORICAL / SUPERSEDED SEMANTIC NEXT ACTION — STS-M2-02 READ_ONLY MAP — 2026-09-04
 
 Once this reconciliation is present on canonical `main`, the previous STS-M2-01 next-action section becomes historical lineage.
 
@@ -254,7 +386,7 @@ NO Security Go
 
 M2-01 residual evidence remains visible and may be consumed by later M2 tasks; do not reopen the accepted 44-table matrix absent a material invalidation event.
 
-## 0.000000000000000000 CURRENT SEMANTIC NEXT ACTION — STS-M2 bootstrap / STS-M2-01 scope reconstruction — 2026-09-04
+## 0.000000000000000000 HISTORICAL / SUPERSEDED SEMANTIC NEXT ACTION — STS-M2 bootstrap / STS-M2-01 scope reconstruction — 2026-09-04
 
 This section defines the semantic next action only when this adjudication is present on canonical `main`. PR lifecycle must still be resolved live.
 
@@ -288,7 +420,7 @@ STS-M2-01 — MATRIZ DE 43 TABELAS
 
 Do not confuse `STS-M2` with `B0-M2` or `PRODUCT_MODULE_M2`.
 
-## 0.00000000000000000 CURRENT NEXT SAFE ACTION — M2 bootstrap / M2-01 scope reconstruction — 2026-09-04
+## 0.00000000000000000 HISTORICAL / SUPERSEDED NEXT SAFE ACTION — M2 bootstrap / M2-01 scope reconstruction — 2026-09-04
 
 ```text
 repository = wagnerjfjunior/fecha.ai
@@ -382,7 +514,7 @@ M2-01 requires a separate bounded bootstrap/scope gate; this record does not sta
 
 Do not execute J4, IMP-003, rollback/reapply, production smoke or OC-01 and do not grant Security Go.
 
-## 0.000000000000000 CURRENT NEXT SAFE ACTION — after PR #166 merge/deploy — 2026-09-03
+## 0.000000000000000 HISTORICAL / SUPERSEDED NEXT SAFE ACTION — after PR #166 merge/deploy — 2026-09-03
 
 The pre-merge review and merge of PR #166 are consumed and no longer current actions.
 

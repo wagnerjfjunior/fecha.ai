@@ -1,6 +1,204 @@
 # FECH.AI — SFJM Current Product/Security Handoff
 
-## 0.0000000000000000009 CURRENT HANDOFF — PR #183 merged state ratified / provenance exception recorded — 2026-09-06
+## 0.0000000000000000013 CURRENT HANDOFF — STS-M2-04C complete / accepted with bounded authority residuals — 2026-09-06
+
+```text
+repository = wagnerjfjunior/fecha.ai
+M2-04C decision/evidence base = ca30c70e505a9dd8398cd7dace067c95397f96fe
+CURRENT FECH.AI main = RESOLVE LIVE
+SES evidence base = a31e10cc3f0d1278c53c49e38151854d36ee9f3e
+Supabase = uobxxgzshrmbtjfdolxd / Discador-MesaCliente
+environment = Pilot Production / multi-tenant / multiempresa
+Security Go = NOT_GRANTED
+```
+
+M2-04C final state:
+
+```text
+C1 = COMPLETE
+C2 = COMPLETE WITH RESIDUAL EVIDENCE GAPS / ACCEPTED
+C3 = COMPLETE WITH RESIDUAL NOT_DETERMINED / ACCEPTED
+C4 = COMPLETE / ACCEPTED
+
+STS-M2-04C =
+COMPLETE / ACCEPTED WITH BOUNDED AUTHORITY RESIDUALS
+```
+
+Durable C3 per-routine evidence:
+
+```text
+docs/security/evidence/2026-09-06-sts-m2-04c-c3-routine-mode-adjudication.csv
+rows = 57
+content SHA-256 = cdc028d5874d4e7f2c783e9380def40373ed525fec89514f1becd073f36027ab
+Git blob = 716c23d5f549eb465f3393cdfc5989dda82b69a7
+```
+
+Receiving sessions must resolve current FECH.AI `main` live before lifecycle or implementation decisions; the SHA above is an M2-04C evidence base, not a perpetual current-main assertion.
+
+Target projection:
+
+```text
+68 DEFINER
+40 INVOKER
+5 NOT_DETERMINED
+113 total
+```
+
+Five bounded residual authority cases:
+
+```text
+004 aprovar_rejeitar_mesa(uuid,text,text)
+031 gerenciar_lista(uuid,text,text)
+036 get_dashboard_master()
+047 get_stats_horario()
+127 solicitar_lote_forcado(uuid)
+```
+
+119 `relatorio_fornecedor(uuid)` is resolved at target-authority level as INVOKER; live implementation remains SECURITY DEFINER and no runtime assurance is implied.
+
+Do not replay C1/C2/C3/C4 absent material contradictory evidence.
+
+Next program handoff requires Product Authority selection/authorization of the next bounded M2-04 slice. The natural sequential candidate is `STS-M2-04D` trigger provenance/classification. M2-04D/E/F remain NOT_AUTHORIZED.
+
+No implementation, Supabase/Auth mutation, SQL/DDL/DML, policy/RLS/grant/function change, hostile runtime testing, Ready, merge, deploy or Security Go is carried by this handoff.
+
+All lower-numbered handoff sections below are historical/superseded.
+
+
+## 0.0000000000000000012 HISTORICAL / SUPERSEDED HANDOFF — STS-M2-04C/C3 accepted / C4 ready for bounded execution — 2026-09-06
+
+```text
+repository = wagnerjfjunior/fecha.ai
+FECH.AI main = ca30c70e505a9dd8398cd7dace067c95397f96fe
+SES main = a31e10cc3f0d1278c53c49e38151854d36ee9f3e
+Supabase = uobxxgzshrmbtjfdolxd / Discador-MesaCliente
+environment = Pilot Production / multi-tenant / multiempresa
+Product Authority = M2-04C READ_ONLY EXECUTION AUTHORIZED
+Security Go = NOT_GRANTED
+```
+
+Current decomposition:
+
+```text
+C1 = COMPLETE
+C2 = COMPLETE WITH RESIDUAL EVIDENCE GAPS / ACCEPTED
+C3 = COMPLETE WITH RESIDUAL NOT_DETERMINED / ACCEPTED
+C4 = NEXT / AUTHORIZED READ_ONLY
+```
+
+C3 result:
+
+```text
+57 / 57 rows adjudicated
+16 target DEFINER
+36 target INVOKER
+5 remain NOT_DETERMINED
+
+projected full B3 target distribution:
+68 DEFINER
+40 INVOKER
+5 NOT_DETERMINED
+113 total
+```
+
+Remaining authority blockers: `004`, `031`, `036`, `047`, `127`.
+
+Blocker `119 relatorio_fornecedor(uuid)` is resolved at target-mode authority level as INVOKER. Current live implementation remains unchanged and still DEFINER; no runtime safety claim follows from the target decision.
+
+C4 must consolidate the target RLS/direct-DML contract, residuals and handoff without forcing the five unresolved authority decisions.
+
+No implementation, Supabase/Auth mutation, SQL/DDL/DML, policy/RLS/grant/function change, hostile runtime testing, M2-04D/E/F, Ready, merge, deploy or Security Go is carried by this handoff.
+
+All lower-numbered handoff sections below are historical/superseded.
+
+
+## 0.0000000000000000011 HISTORICAL / SUPERSEDED HANDOFF — STS-M2-04C/C2 accepted / C3 ready for bounded execution — 2026-09-06
+
+```text
+repository = wagnerjfjunior/fecha.ai
+FECH.AI main = ca30c70e505a9dd8398cd7dace067c95397f96fe
+SES main = a31e10cc3f0d1278c53c49e38151854d36ee9f3e
+Supabase = uobxxgzshrmbtjfdolxd / Discador-MesaCliente
+environment = Pilot Production / multi-tenant / multiempresa
+Product Authority = M2-04C READ_ONLY EXECUTION AUTHORIZED
+Security Go = NOT_GRANTED
+```
+
+Current decomposition:
+
+```text
+C1 = COMPLETE
+C2 = COMPLETE WITH RESIDUAL EVIDENCE GAPS / ACCEPTED
+C3 = NEXT / AUTHORIZED READ_ONLY
+C4 = PENDING
+```
+
+C2 specialist packet SHA-256:
+`ccf108437f1d84ceac29095ecb1f86a3a63c64d5278d8eb17c02588d3a633afa`
+
+Master Project independently revalidated the material live premises and accepted C2 for bounded C3. Preserve the residual gap around a fresh exhaustive application direct-DML callsite sweep.
+
+C3 scope = exactly 57 previously unresolved B3 routine modes. Do not reopen B3 outside those 57 and do not replay C1/C2 absent material contradiction.
+
+```text
+004 DOES NOT RESOLVE
+031 PARTIALLY RESOLVES
+036 PARTIALLY RESOLVES
+047 PARTIALLY RESOLVES
+119 PARTIALLY RESOLVES
+127 DOES NOT RESOLVE
+```
+
+No implementation, Supabase/Auth mutation, SQL/DDL/DML, policy/RLS/grant/function change, hostile runtime testing, M2-04D/E/F, Ready, merge, deploy or Security Go is carried by this handoff.
+
+All lower-numbered handoff sections below are historical/superseded.
+
+
+## 0.0000000000000000010 HISTORICAL / SUPERSEDED HANDOFF — STS-M2-04C started / C1 complete / C2 ready for specialist execution — 2026-09-06
+
+```text
+repository = wagnerjfjunior/fecha.ai
+M2-04C start anchor = ca30c70e505a9dd8398cd7dace067c95397f96fe
+SES anchor observed = a31e10cc3f0d1278c53c49e38151854d36ee9f3e
+Supabase = uobxxgzshrmbtjfdolxd / Discador-MesaCliente
+environment = Pilot Production / multi-tenant / multiempresa
+Product Authority = M2-04C READ_ONLY EXECUTION AUTHORIZED
+Security Go = NOT_GRANTED
+```
+
+Current internal decomposition:
+
+```text
+C1 live RLS/FORCE/ACL/policy inventory = COMPLETE
+C2 policy-helper graph + USING/WITH CHECK + direct-DML authority = NEXT
+C3 57-routine mode adjudication = PENDING
+C4 target RLS/direct-DML contract consolidation = PENDING
+```
+
+C1 key observations:
+
+```text
+44 / 44 public tables RLS enabled
+30 / 44 FORCE RLS
+14 / 44 FORCE RLS false
+0 tables with anon direct privilege
+28 tables with authenticated SELECT
+9 tables with authenticated direct write privilege
+57 B3 routines remain TARGET_SECURITY_MODE NOT_DETERMINED
+postgres.rolbypassrls = true
+central policy helpers = SECURITY DEFINER / owner postgres as observed
+```
+
+Preserve B3 acceptance and blockers `004,031,036,047,119,127`; do not replay DEF55 absent material contradictory evidence.
+
+Next handoff target: SES — Backend & Data Platform Specialist for C2. Return the complete C2 result to the FECH.AI Master Project for adjudication before C3.
+
+No implementation, Supabase/Auth mutation, SQL/DDL/DML, policy/RLS/grant/function change, hostile runtime testing, M2-04D/E/F, Ready, merge, deploy or Security Go is carried by this handoff.
+
+All lower-numbered handoff sections below are historical/superseded and do not override this current handoff.
+
+
+## 0.0000000000000000009 HISTORICAL HANDOFF — PR #183 merged state ratified / provenance exception recorded — SUPERSEDED BY M2-04C HANDOFF — 2026-09-06
 
 ```text
 repository = wagnerjfjunior/fecha.ai
@@ -28,7 +226,7 @@ The ratification corrects current authority meaning without rewriting history. I
 Next handoff after bounded provenance reconciliation: Product Authority selection/authorization of the next bounded STS-M2-04 slice. Do not reconstruct or re-audit B3 absent material contradictory evidence.
 
 
-## 0.0000000000000000008 CURRENT HANDOFF — STS-M2-04B3 / DEF55 revised acceptance / six authority blockers preserved — 2026-09-05
+## 0.0000000000000000008 HISTORICAL HANDOFF — STS-M2-04B3 / DEF55 revised acceptance / six authority blockers preserved — SUPERSEDED — 2026-09-05
 
 This handoff becomes canonical after PR #183 merge. Resolve the live PR head before every lifecycle gate.
 
@@ -72,7 +270,7 @@ M2-04C is the strongest next dependency because 56 B3 mode decisions remain unre
 
 No next slice, remediation, AppSec execution, Supabase mutation, Ready, merge, deploy or Security Go authority is carried by this handoff.
 
-## 0.0000000000000000006 CURRENT HANDOFF — STS-M2-04B2 accepted with residuals / next bounded-slice decision — 2026-09-05
+## 0.0000000000000000006 HISTORICAL / SUPERSEDED HANDOFF — STS-M2-04B2 accepted with residuals / next bounded-slice decision — 2026-09-05
 
 This handoff becomes current material continuity only when the B2 reconciliation is merged to canonical `main`.
 
@@ -105,7 +303,7 @@ SELECT NEXT BOUNDED STS-M2-04 TARGET-POLICY SLICE
 
 Candidate slices are B3, M2-04C and M2-04D, but none is authorized or started by this handoff. No technical remediation, Supabase/Auth mutation, runtime testing, AppSec testing, deploy or Security Go authority is carried forward.
 
-## 0.0000000000000000005 CURRENT HANDOFF — STS-M2-04B1 accepted / B2 scope preparation next — 2026-09-05
+## 0.0000000000000000005 HISTORICAL / SUPERSEDED HANDOFF — STS-M2-04B1 accepted / B2 scope preparation next — 2026-09-05
 
 Canonical durable B1 evidence once this reconciliation is merged:
 
@@ -145,7 +343,7 @@ Do not reopen B1 merely because B2 discovers current non-compliance.
 No B2 substantive classification, remediation, SQL/Supabase/Auth mutation, runtime hostile testing, Ready, merge, deploy or Security Go authority is carried forward.
 
 
-## 0.0000000000000000004 CURRENT HANDOFF — STS-M2-03 accepted with residuals / STS-M2-04 next — 2026-09-05
+## 0.0000000000000000004 HISTORICAL / SUPERSEDED HANDOFF — STS-M2-03 accepted with residuals / STS-M2-04 next — 2026-09-05
 
 This handoff becomes current material continuity when the bounded STS-M2-03 documentation reconciliation is merged to canonical `main`.
 
@@ -174,7 +372,7 @@ Next safe gate after merge:
 No index change, Supabase/Auth mutation, RLS/policy/grant/default-privilege change, runtime hostile testing, deploy, STS-M2-04 implementation or Security Go authority is carried forward.
 
 
-## 0.0000000000000000003 CURRENT HANDOFF — STS-M2-02 accepted with residuals / STS-M2-03 next — 2026-09-05
+## 0.0000000000000000003 HISTORICAL / SUPERSEDED HANDOFF — STS-M2-02 accepted with residuals / STS-M2-03 next — 2026-09-05
 
 This handoff becomes current material continuity when the bounded STS-M2-02 documentation reconciliation is merged to canonical `main`.
 
@@ -203,7 +401,7 @@ Next safe action after merge:
 No implementation, Supabase/Auth mutation, grant/RLS/policy change, deploy, STS-M2-04 implementation or Security Go authority is carried forward.
 
 
-## 0.0000000000000000002 CURRENT HANDOFF — STS-M2-01 durable matrix/provenance anchor — 2026-09-04
+## 0.0000000000000000002 HISTORICAL / SUPERSEDED HANDOFF — STS-M2-01 durable matrix/provenance anchor — 2026-09-04
 
 For STS-M2-01, receiving conversations must use:
 
@@ -226,7 +424,7 @@ Security Go = NOT_GRANTED
 
 Do not reopen M2-01 absent material invalidation. Do not infer implementation authority from the accepted matrix.
 
-## 0.0000000000000000001 CURRENT HANDOFF — STS-M2-01 accepted / STS-M2-02 next — 2026-09-04
+## 0.0000000000000000001 HISTORICAL / SUPERSEDED HANDOFF — STS-M2-01 accepted / STS-M2-02 next — 2026-09-04
 
 This handoff becomes current material continuity when merged to canonical `main`.
 
@@ -265,7 +463,7 @@ Receiving conversation contract:
 
 This reconciliation is self-closing after merge; do not create a lifecycle-only follow-up SFJM PR.
 
-## 0.000000000000000000 CURRENT HANDOFF — program hierarchy/Core DoD adjudicated / STS-M2 next — 2026-09-04
+## 0.000000000000000000 HISTORICAL / SUPERSEDED HANDOFF — program hierarchy/Core DoD adjudicated / STS-M2 next — 2026-09-04
 
 This handoff meaning becomes canonical only when the PR #170 adjudication is present on FECH.AI `main`.
 
@@ -303,7 +501,7 @@ Receiving conversations must qualify ambiguous milestone references as `PRODUCT_
 
 No authority is inherited for STS-M2 implementation, Supabase/Auth, runtime, production, deploy, Security Go, Ready or merge.
 
-## 0.00000000000000000 CURRENT HANDOFF — M1 closed / M2 bootstrap next — 2026-09-04
+## 0.00000000000000000 HISTORICAL / SUPERSEDED HANDOFF — M1 closed / M2 bootstrap next — 2026-09-04
 
 ```text
 repository = wagnerjfjunior/fecha.ai
@@ -394,7 +592,7 @@ Reopen deferred J4 evidence only after the exact Supabase Pro + isolated non-pro
 Next specialist/agent must first validate the exact PR-09 head and the six-file diff. It must not
 start M2, execute OC-01/J4, grant Security Go, mark Ready or merge without fresh explicit authority.
 
-## 0.000000000000000 CURRENT HANDOFF — PR #166 merged and Vercel deployed — 2026-09-03
+## 0.000000000000000 HISTORICAL / SUPERSEDED HANDOFF — PR #166 merged and Vercel deployed — 2026-09-03
 
 ```text
 repository: wagnerjfjunior/fecha.ai

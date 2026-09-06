@@ -1,6 +1,184 @@
 # FECH.AI — SFJM Current Material State
 
-## 0.0000000000000000009 STS-M2-04B3 / PR #183 MERGED STATE RATIFIED — AUTHORITY/LIFECYCLE PROVENANCE EXCEPTION — 2026-09-06
+## 0.0000000000000000013 STS-M2-04C COMPLETE / ACCEPTED WITH BOUNDED AUTHORITY RESIDUALS — 2026-09-06
+
+Master Project adjudicated the C4 consolidation packet and closes the M2-04C analysis/design slice.
+
+```text
+STS-M2-04C1 = COMPLETE
+STS-M2-04C2 = COMPLETE WITH RESIDUAL EVIDENCE GAPS / ACCEPTED
+STS-M2-04C3 = COMPLETE WITH RESIDUAL NOT_DETERMINED / ACCEPTED
+STS-M2-04C4 = COMPLETE / ACCEPTED
+
+STS-M2-04C =
+COMPLETE / ACCEPTED WITH BOUNDED AUTHORITY RESIDUALS
+
+Security Go = NOT_GRANTED
+```
+
+Durable per-routine C3 adjudication evidence:
+
+```text
+path = docs/security/evidence/2026-09-06-sts-m2-04c-c3-routine-mode-adjudication.csv
+rows = 57
+content SHA-256 = cdc028d5874d4e7f2c783e9380def40373ed525fec89514f1becd073f36027ab
+Git blob = 716c23d5f549eb465f3393cdfc5989dda82b69a7
+```
+
+Final target-mode projection preserved:
+
+```text
+DEFINER = 68
+INVOKER = 40
+NOT_DETERMINED = 5
+TOTAL = 113
+```
+
+The five remaining target-authority residuals are bounded and explicitly handed off rather than forcing false closure:
+
+```text
+004 aprovar_rejeitar_mesa(uuid,text,text)
+031 gerenciar_lista(uuid,text,text)
+036 get_dashboard_master()
+047 get_stats_horario()
+127 solicitar_lote_forcado(uuid)
+```
+
+Blocker 119 `relatorio_fornecedor(uuid)` remains resolved at target-authority level as INVOKER. Its live implementation remains postgres-owned SECURITY DEFINER; implementation/runtime assurance has not occurred.
+
+M2-04C establishes target authority architecture only. It does not prove implementation, runtime effectiveness, AppSec assurance, deploy or Security Go.
+
+M2-04D/E/F remain not executed and not authorized by the M2-04C authority. The next program action is to select/authorize the next bounded M2-04 slice; M2-04D trigger classification is the natural sequential candidate.
+
+
+## 0.0000000000000000012 HISTORICAL / SUPERSEDED — STS-M2-04C/C3 COMPLETE WITH RESIDUAL NOT_DETERMINED — 2026-09-06
+
+Master Project adjudicated the complete Backend/Data C3 packet against live FECH.AI/Supabase evidence.
+
+```text
+STS-M2-04C1 = COMPLETE
+STS-M2-04C2 = COMPLETE WITH RESIDUAL EVIDENCE GAPS / ACCEPTED
+STS-M2-04C3 = COMPLETE WITH RESIDUAL NOT_DETERMINED / ACCEPTED
+STS-M2-04C4 = NEXT / AUTHORIZED READ_ONLY
+Security Go = NOT_GRANTED
+```
+
+C3 adjudicated exactly the 57 routines that entered from B3 as TARGET_SECURITY_MODE = NOT_DETERMINED:
+
+```text
+NEW TARGET DEFINER = 16
+NEW TARGET INVOKER = 36
+REMAIN NOT_DETERMINED = 5
+TOTAL = 57
+```
+
+Projected complete B3 target distribution for C4 consolidation:
+
+```text
+DEFINER = 68
+INVOKER = 40
+NOT_DETERMINED = 5
+TOTAL = 113
+```
+
+The five bounded unresolved authority cases are:
+
+```text
+004 aprovar_rejeitar_mesa = NOT_DETERMINED / BLOCKER REMAINS
+031 gerenciar_lista = NOT_DETERMINED / BLOCKER REMAINS
+036 get_dashboard_master = NOT_DETERMINED / BLOCKER REMAINS
+047 get_stats_horario = NOT_DETERMINED / BLOCKER REMAINS
+127 solicitar_lote_forcado = NOT_DETERMINED / BLOCKER REMAINS
+```
+
+Blocker 119 `relatorio_fornecedor(uuid)` is resolved at target-mode authority level as INVOKER because caller/RLS composition supplies the list/tenant boundary that current postgres-owned DEFINER bypasses. This is a target-contract decision, not a claim that the current live implementation has changed or is runtime-proven safe.
+
+C3 also confirms that privileged authority can be localized in lower callees for wrappers such as 054, 107–109, 126 and 137, while core policy-recursive helpers retain routine-specific DEFINER justification.
+
+No canonical B3 CSV modification, function-mode change, Supabase/Auth mutation, SQL/DDL/DML, RLS/policy/grant change, hostile runtime testing, Ready, merge, deploy or Security Go occurred.
+
+
+## 0.0000000000000000011 HISTORICAL / SUPERSEDED — STS-M2-04C/C2 COMPLETE WITH RESIDUAL EVIDENCE GAPS — 2026-09-06
+
+Master Project adjudicated the complete Backend/Data C2 packet against live FECH.AI/Supabase evidence.
+
+```text
+STS-M2-04C1 = COMPLETE
+STS-M2-04C2 = COMPLETE WITH RESIDUAL EVIDENCE GAPS / ACCEPTED
+STS-M2-04C3 = NEXT / AUTHORIZED READ_ONLY
+STS-M2-04C4 = PENDING
+Security Go = NOT_GRANTED
+```
+
+Accepted C2 conclusions: policy-helper graph materially complete; material RLS/policy surface covered live; 57/57 unresolved B3 routines received C2 dependency input; core policy-helper recursion materially proven; six B3 blockers received C2 impact classification.
+
+```text
+004 = DOES NOT RESOLVE
+031 = PARTIALLY RESOLVES
+036 = PARTIALLY RESOLVES
+047 = PARTIALLY RESOLVES
+119 = PARTIALLY RESOLVES
+127 = DOES NOT RESOLVE
+```
+
+Residual evidence gap: no fresh exhaustive current application direct-DML callsite sweep. This does not block bounded C3 where live caller/table/policy composition is already sufficient.
+
+Evidence-discipline correction: branch/commit ref resolution is not INTEGRAL_READ of a repository. This corrects the specialist packet wording only and does not invalidate C2 technical conclusions.
+
+No implementation, Supabase/Auth mutation, SQL/DDL/DML, RLS/policy/grant/function change, hostile runtime testing, Ready, merge, deploy or Security Go is authorized.
+
+
+## 0.0000000000000000010 HISTORICAL / SUPERSEDED — STS-M2-04C STARTED — C1 COMPLETE / C2 NEXT — 2026-09-06
+
+Product Authority authorized `STS-M2-04C` as a bounded read-only RLS/direct-authority analysis slice.
+
+```text
+FECH.AI main at M2-04C start = ca30c70e505a9dd8398cd7dace067c95397f96fe
+SES main observed = a31e10cc3f0d1278c53c49e38151854d36ee9f3e
+Supabase = uobxxgzshrmbtjfdolxd / Discador-MesaCliente
+environment = Pilot Production / SaaS multi-tenant / multiempresa
+Security Go = NOT_GRANTED
+```
+
+Operational decomposition:
+
+```text
+M2-04C1 = COMPLETE / MASTER-PROJECT LIVE READ-ONLY INVENTORY
+M2-04C2 = NEXT
+M2-04C3 = PENDING
+M2-04C4 = PENDING
+```
+
+C1 live observations material to C2/C3:
+
+```text
+public tables = 44
+RLS enabled = 44 / 44
+FORCE RLS = 30 / 44
+FORCE RLS false = 14 / 44
+anon direct table privilege = 0 tables
+authenticated direct SELECT = 28 tables
+authenticated direct write privilege = 9 tables
+B3 target mode NOT_DETERMINED = 57 routines
+```
+
+C1 is inventory/evidence, not a vulnerability verdict and not a blanket argument for INVOKER or FORCE RLS. Central RLS policy helpers are currently SECURITY DEFINER/owner `postgres`; live role evidence shows `postgres.rolbypassrls = true`, so C2 must analyze helper/body/policy composition rather than assume RLS governs DEFINER execution.
+
+Preserve B3 without replay:
+
+```text
+STS-M2-04B3 = COMPLETE / ACCEPTED
+coverage = 113 / 113
+target mode = 52 DEFINER / 4 INVOKER / 57 NOT_DETERMINED
+blockers = 004,031,036,047,119,127
+```
+
+Next semantic action is M2-04C2: policy-helper graph, USING/WITH CHECK semantics, direct-DML authority and C2 dependency inputs for exactly the 57 unresolved B3 routines. No implementation or security mutation is authorized.
+
+All lower-numbered sections below are historical continuity and do not override this current M2-04C state.
+
+
+## 0.0000000000000000009 HISTORICAL — STS-M2-04B3 / PR #183 MERGED STATE RATIFIED — SUPERSEDED BY M2-04C CURRENT STATE — 2026-09-06
 
 Product Authority ratified `main` commit `53a70f814e8b695439358ebe609850f25bf636a9`, produced by merge of PR #183 final head `d805194c5f896766af24e4d4a56869c91d31a60c`.
 
@@ -28,7 +206,7 @@ Security Go = NOT_GRANTED
 No B3 technical re-audit, DEF55 replay or PR #183 lifecycle replay is required absent a new material contradiction. M2-04C and M2-04D remain not authorized.
 
 
-## 0.0000000000000000008 STS-M2-04B3 / DEF55 REVISED CLASSIFICATION COMPLETE / ACCEPTED — 2026-09-05
+## 0.0000000000000000008 HISTORICAL — STS-M2-04B3 / DEF55 REVISED CLASSIFICATION COMPLETE / ACCEPTED — SUPERSEDED BY CURRENT M2-04C STATE — 2026-09-05
 
 This section becomes canonical continuity only after PR #183 is merged. Within the open PR it records the accepted revised decision.
 
@@ -48,7 +226,7 @@ Exactly six current authority blockers remain: `004`, `031`, `036`, `047`, `119`
 
 M2-04C and M2-04D remain NOT authorized. PR #183 lifecycle is authorized through new exact-head review, Ready revalidation and pre-merge only; merge remains separately prohibited.
 
-## 0.0000000000000000007 STS-M2-04B3 CLASSIFICATION COMPLETE / ACCEPTED — 2026-09-05
+## 0.0000000000000000007 HISTORICAL — STS-M2-04B3 CLASSIFICATION COMPLETE / ACCEPTED — SUPERSEDED BY LATER B3/M2-04C STATE — 2026-09-05
 
 This section becomes current material continuity only after the B3 reconciliation is merged to canonical `main`.
 
@@ -409,7 +587,7 @@ admission relies on that control classification.
 
 Reopen the deferred J4 evidence only when the exact three-part trigger is satisfied.
 
-## 0.000000000000000 CURRENT SEMANTIC OVERRIDE — PR #166 post-merge/post-deploy — 2026-09-03
+## 0.000000000000000 HISTORICAL / SUPERSEDED SEMANTIC OVERRIDE — PR #166 post-merge/post-deploy — 2026-09-03
 
 This section is the current lifecycle truth for PR #166. Older pre-merge/merge next-action
 wording remains historical evidence and is no longer the current action.

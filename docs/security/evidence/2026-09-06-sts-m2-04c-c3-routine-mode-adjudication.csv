@@ -1,0 +1,58 @@
+ORDINAL,EXACT_SIGNATURE,TARGET_SECURITY_MODE,TARGET_MODE_RATIONALE,CALLER_AUTHORITY_SUFFICIENT,PRIVILEGED_BOUNDARY_REQUIRED,BLOCKER_STATUS,RESIDUAL_EVIDENCE
+004,"aprovar_rejeitar_mesa(uuid,text,text)",NOT_DETERMINED,"Privileged Mesa UPDATE exists, but p_simulacao_id tenant/ownership authorization before bypassed DML is not proven.",NOT_DETERMINED,NOT_PROVEN,REMAINS,Exact object binding is missing.
+010,audit_trail_actor_context(),INVOKER,Intended internal caller can read its actor profile under caller authority; no independent elevation is required.,YES,NO,NONE,"Direct client EXECUTE remains an ACL/class residual, not a mode reason."
+017,"avaliar_lista(uuid,integer,text,uuid)",INVOKER,Wrapper has no local privileged DML; mutation authority remains in avaliar_lote.,YES,NO,NONE,Nested callee authority must remain bounded.
+018,"avaliar_lote(uuid,integer,text)",DEFINER,Caller lacks the required direct mutation authority; routine binds actor/object and performs the evaluation state transition as one protected command.,NO,YES,NONE,Runtime/concurrency assurance remains separate.
+019,"corretor_tem_acesso_lista(uuid,uuid,uuid,uuid)",INVOKER,Required protected reads are available under caller/RLS composition; no local escape is necessary.,YES,NO,NONE,Internal-helper direct reachability remains ACL work.
+031,"gerenciar_lista(uuid,text,text)",NOT_DETERMINED,"Mutation spans listas/leads/logs, but is_gestor() does not prove authorization over supplied p_lista_id; caller ACL is also contradictory.",NOT_DETERMINED,NOT_PROVEN,REMAINS,Need tenant/object binding and canonical caller/EXECUTE decision.
+033,get_contagens_corretor(),INVOKER,Authenticated SELECT + RLS supplies the intended broker-scoped read authority.,YES,NO,NONE,Runtime assurance only.
+034,get_corretores_time(uuid),INVOKER,Time/company visibility can remain governed by caller RLS; no extra read privilege is required.,YES,NO,NONE,None mode-blocking.
+035,"get_dashboard_gestor(date,date,uuid)",INVOKER,RLS plus validated hierarchy supplies intended gestor/team scope.,YES,NO,NONE,Runtime effectiveness untested.
+036,get_dashboard_master(),NOT_DETERMINED,INVOKER would tenant-scope the reads; evidence does not prove whether product intent is tenant-scoped gestor or global/master visibility.,NOT_DETERMINED,NOT_PROVEN,REMAINS,Product/global-vs-tenant authority decision required.
+037,get_dashboard_stats(uuid),INVOKER,Caller table privileges and RLS supply tenant/object scope.,YES,NO,NONE,None mode-blocking.
+038,get_empreendimentos_mesa(uuid),DEFINER,Authenticated caller lacks required direct Mesa inventory reads; body derives/binds the requested company before returning bounded projection.,NO,YES,NONE,ACL hardening remains separate.
+039,get_empresa_mesa_config(uuid),DEFINER,Required configuration tables are not directly available to caller; body establishes tenant authority.,NO,YES,NONE,Runtime assurance remains.
+040,get_funil_stats(uuid),INVOKER,Existing SELECT/RLS composition supplies the intended tenant-scoped funnel view.,YES,NO,NONE,None mode-blocking.
+041,get_funil_stats_corretor(),INVOKER,Broker-owned read authority is already supplied by caller/RLS.,YES,NO,NONE,None.
+042,"get_historico_mesas(uuid,uuid,uuid,text,text,integer,integer)",DEFINER,Mesa history tables are not directly readable by authenticated caller; body provides explicit tenant/object-bounded projection.,NO,YES,NONE,Runtime effectiveness unproven.
+043,"get_kpi_operacional(timestamptz,timestamptz)",INVOKER,Required LeadOps reads are available under RLS; absence of a current app caller does not itself require elevation.,YES,NO,NONE,Lifecycle/reachability remains residual.
+044,get_listas_ativas(),INVOKER,"Live body performs local reads of corretores/listas/times/leads, all intended to remain tenant/hierarchy scoped; privileged root derivation already lives in lower helpers. No separate wrapper elevation is necessary.",YES,NO,NONE,Lower core helpers remain privileged.
+045,get_mesa_cliente_desconto_politica(uuid),DEFINER,Live body reads protected empreendimento/company/policy relations unavailable as ordinary caller reads and explicitly verifies tenant before policy disclosure.,NO,YES,NONE,Direct client EXECUTE is an ACL residual.
+046,get_meus_times(),INVOKER,"Caller/RLS hierarchy is sufficient for ""my teams"" semantics.",YES,NO,NONE,None mode-blocking.
+047,get_stats_horario(),NOT_DETERMINED,Gestor/root gate precedes global lead aggregation; evidence does not establish whether gestor is intentionally cross-tenant.,NOT_DETERMINED,NOT_PROVEN,REMAINS,Need product authority distinguishing root-global from tenant-gestor scope.
+048,get_unidades_mesa(uuid),DEFINER,Caller lacks direct access to required Mesa inventory/enrichment relations; body provides empreendimento/tenant-bound projection.,NO,YES,NONE,Anonymous EXECUTE residual is separate.
+054,is_admin_global(),INVOKER,Live body is only SELECT is_root(); all required privilege is already isolated in is_root. A second DEFINER layer adds no independent authority requirement.,YES,NO,NONE,Callee is_root remains privileged.
+055,is_admin_local(),DEFINER,It is used from policies on the protected hierarchy it reads; INVOKER would create policy/self-authority recursion.,NO,YES,NONE,Direct client EXECUTE should not be inferred as required.
+056,is_gestor(),DEFINER,Same protected corretores policy recursion/identity derivation requirement.,NO,YES,NONE,ACL residual only.
+057,is_root(),DEFINER,Reads root/admin identity relations while participating transitively in their RLS graph; ordinary caller cannot safely derive the same authority through RLS.,NO,YES,NONE,Runtime assurance remains.
+058,lead_tem_acao_real(uuid),INVOKER,Required lead/log reads remain appropriately caller/RLS scoped.,YES,NO,NONE,Internal-helper ACL residual.
+059,leads_email_tab(),INVOKER,Existing caller SELECT/RLS supplies broker-scoped result; missing active caller does not prove elevation need.,YES,NO,NONE,Caller lifecycle unresolved.
+061,listar_funil_estagios(),INVOKER,RLS handles shared/tenant funnel-stage visibility.,YES,NO,NONE,None.
+062,listar_listas_corretor(),INVOKER,Caller/RLS plus non-elevated helper composition supplies list visibility.,YES,NO,NONE,None.
+063,listar_lotes_pendentes_avaliacao(),INVOKER,RLS supplies intended lot/broker visibility.,YES,NO,NONE,Caller lifecycle unresolved.
+064,listar_membros_visibilidade(),INVOKER,Current caller/RLS hierarchy supplies intended visibility members.,YES,NO,NONE,None.
+066,lot_status_health_check(),INVOKER,No proven independent privileged read is required; caller/RLS can govern the diagnostic scope.,YES,NO,NONE,Internal EXECUTE mismatch remains.
+070,"mesa_cliente_assert_empreendimento_empresa(uuid,uuid)",DEFINER,Live body must read protected empreendimentos to establish an authoritative empresa↔empreendimento relation unavailable to ordinary caller.,NO,YES,NONE,Input company itself is not treated as authority; equality is proven against trusted row.
+072,mesa_cliente_can_access_empresa(uuid),INVOKER,Lower privileged identity helper provides root context and caller/RLS can evaluate same-company membership; wrapper needs no separate elevation.,YES,NO,NONE,Direct client EXECUTE remains inappropriate for internal class.
+073,mesa_cliente_can_admin_empresa(uuid),INVOKER,Admin/company predicate can execute under caller authority with lower root helper retaining its own boundary.,YES,NO,NONE,ACL residual.
+074,mesa_cliente_current_corretor_context(),INVOKER,Authenticated caller can resolve its own RLS-visible corretor context.,YES,NO,NONE,Internal-helper ACL remains.
+092,meu_funil(),INVOKER,Self/broker funnel reads are already RLS-authorized.,YES,NO,NONE,None.
+093,"meu_historico(integer,integer)",INVOKER,Self-history is precisely a caller/RLS-scoped query.,YES,NO,NONE,Lifecycle unresolved only.
+094,meus_leads_email(),INVOKER,Self lead visibility is governed by RLS.,YES,NO,NONE,None.
+095,meus_lembretes(),INVOKER,Self reminder visibility requires no privileged escape.,YES,NO,NONE,Lifecycle unresolved.
+096,minha_carteira(),INVOKER,Caller/RLS is the intended portfolio authority.,YES,NO,NONE,None.
+097,minha_producao(),INVOKER,Caller/RLS is sufficient for own production metrics.,YES,NO,NONE,None.
+101,my_corretor_id(),DEFINER,Identity helper reads corretores while being consumed inside that relation's RLS graph; INVOKER would recurse/default-deny.,NO,YES,NONE,Client EXECUTE is not needed by policy evaluation itself.
+102,my_empresa_id(),DEFINER,Tenant derivation from trusted corretor row is part of the same self-referential RLS graph.,NO,YES,NONE,ACL residual.
+103,my_time_id(),DEFINER,Team derivation participates in protected hierarchy policy composition and requires escape from recursive caller RLS.,NO,YES,NONE,ACL residual.
+104,my_times_como_gestor(),DEFINER,Transitive corretores↔times policy composition is circular under INVOKER; trusted hierarchy lookup needs privileged escape.,NO,YES,NONE,ACL residual.
+107,pme_can_access_empresa(uuid),INVOKER,Live body only composes is_root() and my_empresa_id(); those lower helpers retain required privilege. PME wrapper itself has no independent table escape.,YES,NO,NONE,Internal-helper EXECUTE remains separate.
+108,pme_can_consume_empresa(uuid),INVOKER,"Its corretores self-row lookup is available under authenticated RLS, while root elevation remains isolated in is_root.",YES,NO,NONE,No PME-table recursion proven.
+109,pme_is_empresa_admin(uuid),INVOKER,Same-company admin predicate can be evaluated from caller-visible self row; core root check remains separately privileged.,YES,NO,NONE,No PME-table self-recursion.
+119,relatorio_fornecedor(uuid),INVOKER,"Under INVOKER, supplied p_lista_id can only resolve rows exposed by listas/leads/lista_avaliacoes RLS; this supplies the tenant/list binding missing from the current postgres-DEFINER execution.",YES,NO,RESOLVED,"Runtime hostile assurance is still not performed, but the target-mode authority question is closed statically."
+120,"relatorio_historico_corretor(date,date,text,integer,integer)",INVOKER,Report is caller/broker-scoped and direct SELECT/RLS is sufficient.,YES,NO,NONE,None mode-blocking.
+126,solicitar_lote_core(uuid),INVOKER,"Live body performs no local DML: it enforces self/root gate and delegates the actual privileged allocation to accepted privileged callees (is_root, solicitar_lote). Its own DEFINER layer is unnecessary.",YES,NO,NONE,"p_user_id/forced-user semantics remain relevant to 127, but not to 126's local mode requirement."
+127,solicitar_lote_forcado(uuid),NOT_DETERMINED,"Wrapper claims forced-user semantics but solicitar_lote_core ultimately calls solicitar_lote(NULL), whose actor is auth.uid(); requested forced actor is not proven to control allocation.",NOT_DETERMINED,NOT_PROVEN,REMAINS,Need authoritative forced-user semantics and full actor-binding contract.
+128,"t1_can_update_corretor_row_strict(uuid,uuid,text,boolean,boolean)",DEFINER,This predicate executes inside corretores UPDATE RLS and reads protected identity/hierarchy relations; INVOKER would re-enter policy evaluation.,NO,YES,NONE,Execute ACL remains separate.
+129,t1_is_root_strict(),DEFINER,Live body reads admins to derive trusted root identity; ordinary caller has no direct table authority. No separate recursion proof is necessary.,NO,YES,NONE,Direct client EXECUTE is not justified by internal-helper class.
+137,"validar_mesa_cliente_desconto(uuid,numeric,numeric)",INVOKER,"Live body has no direct protected-table access; privileged policy retrieval is entirely delegated to get_mesa_cliente_desconto_politica, which retains the necessary DEFINER boundary.",YES,NO,NONE,Internal-helper ACL residual.

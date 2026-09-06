@@ -1,5 +1,45 @@
 # FECH.AI — SFJM Authorizations
 
+## 0.0000000000000000010 Product Authority — STS-M2-04C authorized / C1–C4 read-only decomposition / SFJM reconciliation — 2026-09-06
+
+Product Authority explicitly authorized starting `STS-M2-04C`.
+
+Under the FECH.AI fail-closed and Supabase READ_ONLY default, this authorizes the bounded M2-04C investigation/adjudication using GitHub and live-database read-only evidence.
+
+```text
+STS-M2-04C1 = live RLS / FORCE RLS / ACL / policy inventory
+STS-M2-04C2 = policy-helper graph + USING/WITH CHECK + direct-DML authority
+STS-M2-04C3 = 57-routine mode adjudication
+STS-M2-04C4 = target RLS / direct-DML contract consolidation
+```
+
+The decomposition is operational only and does not create new program milestones or widen M2-04C authority.
+
+```text
+M2-04C READ_ONLY EXECUTION = AUTHORIZED
+GitHub/static evidence read = AUTHORIZED
+Supabase live catalog/read-only evidence = AUTHORIZED
+C1–C4 bounded analysis/adjudication = AUTHORIZED
+
+implementation = NOT_AUTHORIZED
+SQL / DDL / DML mutation = NOT_AUTHORIZED
+migration = NOT_AUTHORIZED
+RLS / FORCE RLS / policy mutation = NOT_AUTHORIZED
+GRANT / REVOKE = NOT_AUTHORIZED
+SECURITY DEFINER / INVOKER mutation = NOT_AUTHORIZED
+owner / search_path mutation = NOT_AUTHORIZED
+Supabase / Auth / business-data mutation = NOT_AUTHORIZED
+active hostile/cross-tenant runtime testing = NOT_AUTHORIZED
+M2-04D / M2-04E / M2-04F execution = NOT_AUTHORIZED
+Ready = NOT_AUTHORIZED
+merge = NOT_AUTHORIZED
+deploy = NOT_AUTHORIZED
+Security Go = NOT_GRANTED
+```
+
+Product Authority also authorized this bounded SFJM documentation reconciliation so continuity reflects the M2-04C start, C1 result and C2 next action.
+
+
 ## 0.0000000000000000009 Product Authority — PR #183 merge ratification / authority-lifecycle provenance exception — 2026-09-06
 
 Product Authority explicitly ratified the already-merged PR #183 state and accepted merge commit `53a70f814e8b695439358ebe609850f25bf636a9` as the valid FECH.AI `main` publication of the completed STS-M2-04B3 / DEF55 adjudication.

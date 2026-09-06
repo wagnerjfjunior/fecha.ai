@@ -1,5 +1,220 @@
 # FECH.AI — SFJM Evidence Freshness
 
+## 0.0000000000000000013 STS-M2-04C/C4 CONSOLIDATION PACKET + MASTER-PROJECT FINAL DELTA REVALIDATION — 2026-09-06
+
+```text
+uploaded artifact = Markdown(20260906-180503).md colado
+artifact SHA-256 = 8bec01816fe72c0b9bb6605435b3f5e3cd537572929753fd93ab5949dc113125
+artifact lines = 1107
+artifact bytes = 108298
+C4 verdict = COMPLETE
+M2-04C verdict = COMPLETE / ACCEPTED WITH BOUNDED AUTHORITY RESIDUALS
+```
+
+Master Project independently revalidated before closure:
+
+```text
+FECH.AI main = ca30c70e505a9dd8398cd7dace067c95397f96fe
+SES main = a31e10cc3f0d1278c53c49e38151854d36ee9f3e
+PR #186 prior head = 59f2ebad1551bb430569c346a4e53aa34a9028ac
+material drift = NO
+
+004 / 031 / 036 / 047 / 127 = live signatures present; current mode SECURITY DEFINER / owner postgres
+119 relatorio_fornecedor(uuid) = live SECURITY DEFINER / owner postgres
+119 target authority = INVOKER / accepted from C3
+```
+
+C4 preserves the accepted C3 projection:
+
+```text
+68 DEFINER
+40 INVOKER
+5 NOT_DETERMINED
+TOTAL 113
+```
+
+Coverage discipline:
+
+```text
+C4 = consolidation against accepted C1/C2/C3 evidence
+repository-wide reread = NOT_PERFORMED
+full 113-routine live re-audit = NOT_PERFORMED
+critical residual/live surface = PARTIAL_READ / proportional revalidation
+```
+
+The five unresolved modes are explicit bounded authority decisions, not missing C4 coverage. M2-04C closure is invalidated only by material drift in the accepted C1/C2/C3 contracts, the five residual routine bodies/authority requirements, 119 target-mode evidence, or Product Authority scope.
+
+
+## 0.0000000000000000012 STS-M2-04C/C3 SPECIALIST PACKET + MASTER-PROJECT DELTA REVALIDATION — 2026-09-06
+
+```text
+source upload = Markdown(20260906-174939).md colado
+source SHA-256 = 0e6c40a3cd515219fb6b24d5f0aaf10e63291d19da485d5e946c47fbb08d88d5
+source lines = 761
+source bytes = 150441
+versioned C3 evidence = docs/security/evidence/2026-09-06-sts-m2-04c-c3-routine-mode-adjudication.csv
+versioned rows = 57
+versioned content SHA-256 = cdc028d5874d4e7f2c783e9380def40373ed525fec89514f1becd073f36027ab
+versioned Git blob = 716c23d5f549eb465f3393cdfc5989dda82b69a7
+C3 verdict = COMPLETE WITH RESIDUAL NOT_DETERMINED / READY FOR C4
+```
+
+The uploaded artifact contains the preceding C2 continuity plus the C3 result; C3 itself contains exactly 57 adjudication rows.
+
+Master Project independently revalidated:
+
+```text
+FECH.AI main = ca30c70e505a9dd8398cd7dace067c95397f96fe
+SES main = a31e10cc3f0d1278c53c49e38151854d36ee9f3e
+PR #186 head before C3 reconciliation = be403e92b92e564ed970d9cb3aa0bff27322890b
+material drift = NO
+
+57 target signatures remain live
+57/57 current mode = SECURITY DEFINER
+57/57 current owner = postgres
+one additional avaliar_lista(uuid,integer,text) overload exists outside the C3 set and does not invalidate the four-argument C3 identity
+```
+
+Discriminating live bodies were proportionally re-read for C3 mode decisions including 044, 054, 107–109, 119, 126, 127 and 137. Versioned B3 evidence independently confirms `solicitar_lote(uuid)` remains a separately accepted target DEFINER privileged allocation boundary; therefore adjudicating `solicitar_lote_core(uuid)` as INVOKER does not transfer allocation DML authority to the ordinary caller.
+
+C3 aggregate integrity independently checked:
+
+```text
+DEFINER = 16
+INVOKER = 36
+NOT_DETERMINED = 5
+16 + 36 + 5 = 57
+
+projected B3:
+68 DEFINER + 40 INVOKER + 5 NOT_DETERMINED = 113
+```
+
+All C3 INVOKER targets carry CALLER_AUTHORITY_SUFFICIENT = YES in the specialist matrix. All C3 DEFINER targets carry PRIVILEGED_BOUNDARY_REQUIRED = YES.
+
+Residual invalidators include material drift in any of the 57 routine bodies/modes/owners, relevant caller ACLs/RLS/policies, lower privileged callees, B3 authority contracts, or Product Authority scope decisions for the five unresolved rows.
+
+
+## 0.0000000000000000011 STS-M2-04C/C2 SPECIALIST PACKET + MASTER-PROJECT DELTA REVALIDATION — 2026-09-06
+
+```text
+specialist packet = Markdown(20260906-172407).md colado
+SHA-256 = ccf108437f1d84ceac29095ecb1f86a3a63c64d5278d8eb17c02588d3a633afa
+lines = 505
+bytes = 78213
+specialist verdict = COMPLETE WITH RESIDUAL EVIDENCE GAPS / READY FOR BOUNDED C3
+```
+
+Anchors independently revalidated:
+
+```text
+FECH.AI main = ca30c70e505a9dd8398cd7dace067c95397f96fe
+SES main = a31e10cc3f0d1278c53c49e38151854d36ee9f3e
+Supabase project = uobxxgzshrmbtjfdolxd
+material drift = NO
+```
+
+Material live claims delta-revalidated by Master Project:
+
+```text
+postgres.rolbypassrls = true
+service_role.rolbypassrls = true
+authenticated.rolbypassrls = false
+anon.rolbypassrls = false
+12 named policy helpers = SECURITY DEFINER / owner postgres
+9 authenticated direct-write tables = revalidated
+blocker bodies 004/031/036/047/119/127 = proportionally re-read live
+pme_message_usage RPC-centered append-only authority = versioned on current main
+```
+
+Coverage correction:
+
+```text
+BRANCH_OR_COMMIT_REF_RESOLUTION != INTEGRAL_READ_OF_REPOSITORY
+```
+
+The B3 CSV remains PARTIAL_READ for C2 because the 57-row unresolved dependency subset was consumed rather than the 113-row classification being replayed. This is acceptable for C2.
+
+C2 evidence is invalidated by material changes to helper bodies/modes/owners/ACLs, table ACL/RLS/policies, relevant blocker bodies, the B3 unresolved set or Product Authority scope.
+
+
+## 0.0000000000000000010 STS-M2-04C / C1 LIVE RLS-DML EVIDENCE — 2026-09-06
+
+Evidence anchors at C1 execution:
+
+```text
+FECH.AI main = ca30c70e505a9dd8398cd7dace067c95397f96fe
+SES main = a31e10cc3f0d1278c53c49e38151854d36ee9f3e
+Supabase project = uobxxgzshrmbtjfdolxd / Discador-MesaCliente
+B3 CSV blob = cf3baa6e5a6ab6465688de8f6af43cba7c27d3bd
+B3 canonical matrix fingerprint = e609f4fa3bc6d21b8c75d85bd2a4a3409e9ece8b3c4d66ffdb5e52055052a61d
+```
+
+Live C1 observations:
+
+```text
+public tables = 44
+RLS enabled = 44 / 44
+FORCE RLS = 30 / 44
+FORCE RLS false = 14 / 44
+anon with any direct table privilege = 0
+authenticated with SELECT = 28
+authenticated with INSERT/UPDATE/DELETE on at least one operation = 9
+```
+
+Observed `FORCE RLS = false` tables:
+
+```text
+mesa_cliente_desconto_politicas
+mesa_cliente_fluxo_operacoes
+mesa_cliente_fluxo_parcelas
+mesa_cliente_politica_premio_faixas
+mesa_cliente_politicas_financeiras
+mesa_cliente_unidade_enriquecimentos
+mesa_fluxo_pagamentos_canonico
+pme_cadence_steps
+pme_cadences
+pme_call_scripts
+pme_lead_message_state
+pme_message_templates
+pme_message_usage
+root_audit_logs
+```
+
+Observed authenticated direct-write tables:
+
+```text
+lista_avaliacoes
+logs
+mesa_cliente_unidade_enriquecimentos
+pme_cadence_steps
+pme_cadences
+pme_call_scripts
+pme_lead_message_state
+pme_message_templates
+pme_message_usage
+```
+
+Material helper/role observations:
+
+```text
+central policy helpers observed SECURITY DEFINER = YES
+central helper owner = postgres
+postgres.rolbypassrls = true
+```
+
+The canonical B3 matrix was parsed as 113 rows × 40 columns and contains exactly 57 `TARGET_SECURITY_MODE = NOT_DETERMINED` rows for C2/C3 dependency analysis.
+
+C1 evidence is point-in-time live catalog evidence. It is invalidated proportionally by material changes to RLS/FORCE RLS, table ACLs, policy roles/USING/WITH CHECK, helper bodies/modes/owners/ACLs, relevant routine bodies/call graph, B3 matrix identity or Product Authority scope.
+
+```text
+RLS ENABLED != POLICY CORRECT
+FORCE RLS != DEFINER BODY GOVERNED BY RLS
+GRANT EXISTS != BUSINESS AUTHORITY PROVEN
+C1 INVENTORY COMPLETE != M2-04C COMPLETE
+STATIC/CATALOG COMPOSITION != RUNTIME ASSURANCE
+```
+
+
 ## 0.0000000000000000009 PR #183 MERGE RATIFICATION / PROVENANCE EXCEPTION EVIDENCE — 2026-09-06
 
 Current lifecycle anchors independently re-resolved before reconciliation:
