@@ -1,6 +1,71 @@
 # FECH.AI — SFJM Current Material State
 
-## 0.0000000000000000013 STS-M2-04C COMPLETE / ACCEPTED WITH BOUNDED AUTHORITY RESIDUALS — 2026-09-06
+## 0.0000000000000000014 CURRENT — STS-M2-04D COMPLETE / ACCEPTED TRIGGER AUTHORITY CONTRACT — 2026-09-06
+
+Master Project accepted the bounded trigger-authority classification after independent live reconciliation.
+
+~~~text
+STS-M2-04C =
+COMPLETE / ACCEPTED WITH BOUNDED AUTHORITY RESIDUALS
+
+M2-04C projection =
+68 DEFINER
+40 INVOKER
+5 NOT_DETERMINED
+113 total
+
+STS-M2-04D =
+COMPLETE / ACCEPTED TRIGGER AUTHORITY CONTRACT
+
+M2-04D trigger functions =
+8 DEFINER
+1 INVOKER
+0 NOT_DETERMINED
+9 total
+
+D trigger instances =
+18 / 18 covered
+~~~
+
+Durable D evidence:
+
+~~~text
+path = docs/security/evidence/2026-09-06-sts-m2-04d-trigger-authority-classification.md
+source packet SHA-256 =
+6927b61338555fef95cc25892bb6097e815839b53bc217e0229084c5e5220389
+Git blob = 7fdc63a95d81661598937aa0bdfa654bcb9db66a
+~~~
+
+Target D modes:
+
+~~~text
+DEFINER = 011,012,013,014,015,030,075,130
+INVOKER = 111
+~~~
+
+Direct client EXECUTE target:
+
+~~~text
+required = 0
+not required = 9
+not determined = 0
+~~~
+
+Do not combine the C 113-routine distribution with the D nine-trigger-function distribution into a new global authority projection inside D. Cross-slice synthesis belongs to STS-M2-04E.
+
+M2-04D establishes target trigger authority architecture only.
+
+~~~text
+D-01 through D-08 remediation = NOT_IMPLEMENTED
+runtime hostile/concurrency assurance = NOT_PERFORMED
+M2-04E = NOT_AUTHORIZED
+M2-04F = NOT_AUTHORIZED
+Security Go = NOT_GRANTED
+~~~
+
+Next semantic gate is Product Authority selection/authorization of STS-M2-04E — architecture synthesis.
+
+## 0.0000000000000000013 HISTORICAL / SUPERSEDED — STS-M2-04C COMPLETE / ACCEPTED WITH BOUNDED AUTHORITY RESIDUALS — 2026-09-06
 
 Master Project adjudicated the C4 consolidation packet and closes the M2-04C analysis/design slice.
 

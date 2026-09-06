@@ -1,5 +1,66 @@
 # FECH.AI — SFJM Authorizations
 
+## 0.0000000000000000014 Product Authority — STS-M2-04D READ_ONLY execution + acceptance + bounded durable reconciliation — 2026-09-06
+
+Product Authority separately authorized STS-M2-04D after M2-04C closure.
+
+~~~text
+STS-M2-04D READ_ONLY EXECUTION = AUTHORIZED
+GitHub READ_ONLY = AUTHORIZED
+bounded Supabase catalog/function/trigger READ_ONLY = AUTHORIZED
+target trigger authority classification = AUTHORIZED
+~~~
+
+The resulting Backend/Data specialist packet was adjudicated by the Master Project as:
+
+~~~text
+STS-M2-04D =
+COMPLETE / ACCEPTED TRIGGER AUTHORITY CONTRACT
+
+D FUNCTIONS = 9
+D TRIGGER INSTANCES = 18
+TARGET DEFINER = 8
+TARGET INVOKER = 1
+TARGET NOT_DETERMINED = 0
+
+DIRECT CLIENT EXECUTE TARGET-REQUIRED = 0
+TARGET-NOT-REQUIRED = 9
+NOT_DETERMINED = 0
+~~~
+
+Product Authority then authorized this bounded documentation-only reconciliation:
+
+~~~text
+branch creation = AUTHORIZED
+exact 7-file documentation mutation = AUTHORIZED
+one coherent documentation commit = AUTHORIZED
+Draft PR creation = AUTHORIZED
+~~~
+
+This authority does not retroactively widen the earlier M2-04C grant.
+
+Still NOT AUTHORIZED:
+
+~~~text
+D-01 through D-08 implementation
+Supabase/Auth/data mutation
+SQL / DDL / DML
+migration
+ALTER FUNCTION
+CREATE / DROP / ALTER TRIGGER
+GRANT / REVOKE
+RLS / policy mutation
+owner / search_path runtime mutation
+runtime hostile/concurrency testing
+M2-04E execution
+M2-04F execution
+Ready
+pre-merge approval
+merge
+deploy
+Security Go
+~~~
+
 ## 0.0000000000000000010 Product Authority — STS-M2-04C authorized / C1–C4 read-only decomposition / SFJM reconciliation — 2026-09-06
 
 Product Authority explicitly authorized starting `STS-M2-04C`.
