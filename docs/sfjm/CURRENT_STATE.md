@@ -1,6 +1,48 @@
 # FECH.AI — SFJM Current Material State
 
-## 0.0000000000000000012 STS-M2-04C/C3 COMPLETE WITH RESIDUAL NOT_DETERMINED — C4 NEXT — 2026-09-06
+## 0.0000000000000000013 STS-M2-04C COMPLETE / ACCEPTED WITH BOUNDED AUTHORITY RESIDUALS — 2026-09-06
+
+Master Project adjudicated the C4 consolidation packet and closes the M2-04C analysis/design slice.
+
+```text
+STS-M2-04C1 = COMPLETE
+STS-M2-04C2 = COMPLETE WITH RESIDUAL EVIDENCE GAPS / ACCEPTED
+STS-M2-04C3 = COMPLETE WITH RESIDUAL NOT_DETERMINED / ACCEPTED
+STS-M2-04C4 = COMPLETE / ACCEPTED
+
+STS-M2-04C =
+COMPLETE / ACCEPTED WITH BOUNDED AUTHORITY RESIDUALS
+
+Security Go = NOT_GRANTED
+```
+
+Final target-mode projection preserved:
+
+```text
+DEFINER = 68
+INVOKER = 40
+NOT_DETERMINED = 5
+TOTAL = 113
+```
+
+The five remaining target-authority residuals are bounded and explicitly handed off rather than forcing false closure:
+
+```text
+004 aprovar_rejeitar_mesa(uuid,text,text)
+031 gerenciar_lista(uuid,text,text)
+036 get_dashboard_master()
+047 get_stats_horario()
+127 solicitar_lote_forcado(uuid)
+```
+
+Blocker 119 `relatorio_fornecedor(uuid)` remains resolved at target-authority level as INVOKER. Its live implementation remains postgres-owned SECURITY DEFINER; implementation/runtime assurance has not occurred.
+
+M2-04C establishes target authority architecture only. It does not prove implementation, runtime effectiveness, AppSec assurance, deploy or Security Go.
+
+M2-04D/E/F remain not executed and not authorized by the M2-04C authority. The next program action is to select/authorize the next bounded M2-04 slice; M2-04D trigger classification is the natural sequential candidate.
+
+
+## 0.0000000000000000012 HISTORICAL / SUPERSEDED — STS-M2-04C/C3 COMPLETE WITH RESIDUAL NOT_DETERMINED — 2026-09-06
 
 Master Project adjudicated the complete Backend/Data C3 packet against live FECH.AI/Supabase evidence.
 

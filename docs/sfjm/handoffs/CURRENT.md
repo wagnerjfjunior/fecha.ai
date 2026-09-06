@@ -1,6 +1,59 @@
 # FECH.AI — SFJM Current Product/Security Handoff
 
-## 0.0000000000000000012 CURRENT HANDOFF — STS-M2-04C/C3 accepted / C4 ready for bounded execution — 2026-09-06
+## 0.0000000000000000013 CURRENT HANDOFF — STS-M2-04C complete / accepted with bounded authority residuals — 2026-09-06
+
+```text
+repository = wagnerjfjunior/fecha.ai
+FECH.AI main = ca30c70e505a9dd8398cd7dace067c95397f96fe
+SES main = a31e10cc3f0d1278c53c49e38151854d36ee9f3e
+Supabase = uobxxgzshrmbtjfdolxd / Discador-MesaCliente
+environment = Pilot Production / multi-tenant / multiempresa
+Security Go = NOT_GRANTED
+```
+
+M2-04C final state:
+
+```text
+C1 = COMPLETE
+C2 = COMPLETE WITH RESIDUAL EVIDENCE GAPS / ACCEPTED
+C3 = COMPLETE WITH RESIDUAL NOT_DETERMINED / ACCEPTED
+C4 = COMPLETE / ACCEPTED
+
+STS-M2-04C =
+COMPLETE / ACCEPTED WITH BOUNDED AUTHORITY RESIDUALS
+```
+
+Target projection:
+
+```text
+68 DEFINER
+40 INVOKER
+5 NOT_DETERMINED
+113 total
+```
+
+Five bounded residual authority cases:
+
+```text
+004 aprovar_rejeitar_mesa(uuid,text,text)
+031 gerenciar_lista(uuid,text,text)
+036 get_dashboard_master()
+047 get_stats_horario()
+127 solicitar_lote_forcado(uuid)
+```
+
+119 `relatorio_fornecedor(uuid)` is resolved at target-authority level as INVOKER; live implementation remains SECURITY DEFINER and no runtime assurance is implied.
+
+Do not replay C1/C2/C3/C4 absent material contradictory evidence.
+
+Next program handoff requires Product Authority selection/authorization of the next bounded M2-04 slice. The natural sequential candidate is `STS-M2-04D` trigger provenance/classification. M2-04D/E/F remain NOT_AUTHORIZED.
+
+No implementation, Supabase/Auth mutation, SQL/DDL/DML, policy/RLS/grant/function change, hostile runtime testing, Ready, merge, deploy or Security Go is carried by this handoff.
+
+All lower-numbered handoff sections below are historical/superseded.
+
+
+## 0.0000000000000000012 HISTORICAL / SUPERSEDED HANDOFF — STS-M2-04C/C3 accepted / C4 ready for bounded execution — 2026-09-06
 
 ```text
 repository = wagnerjfjunior/fecha.ai

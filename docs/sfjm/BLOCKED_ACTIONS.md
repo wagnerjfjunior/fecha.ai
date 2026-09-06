@@ -1,6 +1,6 @@
 # FECH.AI — SFJM Blocked Actions
 
-**Status:** `STS-M2-04C_ACTIVE / READ_ONLY_TARGET_POLICY / FAIL_CLOSED`  
+**Status:** `STS-M2-04C_COMPLETE_WITH_BOUNDED_RESIDUALS / NEXT_SLICE_NOT_AUTHORIZED / FAIL_CLOSED`  
 **Updated:** `2026-09-06`  
 **Repository:** `wagnerjfjunior/fecha.ai`
 
@@ -23,7 +23,7 @@ Security Go
 broad paid commercialization dependent on Security Go
 unbounded production/security testing
 active hostile-client or cross-tenant runtime testing
-production mutation for M2-04C evidence acquisition
+production mutation or remediation derived from M2-04C without separate authorization
 ```
 
 ## 3. STS-M2-04C mutation blocks
@@ -56,10 +56,12 @@ Security Go
 C1 = COMPLETE
 C2 = COMPLETE WITH RESIDUAL EVIDENCE GAPS / ACCEPTED
 C3 = COMPLETE WITH RESIDUAL NOT_DETERMINED / ACCEPTED
-C4 = AUTHORIZED / NEXT
+C4 = COMPLETE / ACCEPTED
+
+M2-04C = COMPLETE / ACCEPTED WITH BOUNDED AUTHORITY RESIDUALS
 ```
 
-C4 may consolidate the accepted C1/C2/C3 target RLS/direct-DML contract and preserve unresolved authority cases. It may not mutate the product or environment.
+M2-04C analysis is closed. The five residual authority cases remain bounded downstream decision/remediation inputs. M2-04D/E/F are not authorized and must not begin without a new Product Authority decision.
 
 ## 5. Current unresolved M2-04C authority blockers
 

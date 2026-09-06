@@ -1,5 +1,50 @@
 # FECH.AI — SFJM Evidence Freshness
 
+## 0.0000000000000000013 STS-M2-04C/C4 CONSOLIDATION PACKET + MASTER-PROJECT FINAL DELTA REVALIDATION — 2026-09-06
+
+```text
+uploaded artifact = Markdown(20260906-180503).md colado
+artifact SHA-256 = 8bec01816fe72c0b9bb6605435b3f5e3cd537572929753fd93ab5949dc113125
+artifact lines = 1107
+artifact bytes = 108298
+C4 verdict = COMPLETE
+M2-04C verdict = COMPLETE / ACCEPTED WITH BOUNDED AUTHORITY RESIDUALS
+```
+
+Master Project independently revalidated before closure:
+
+```text
+FECH.AI main = ca30c70e505a9dd8398cd7dace067c95397f96fe
+SES main = a31e10cc3f0d1278c53c49e38151854d36ee9f3e
+PR #186 prior head = 59f2ebad1551bb430569c346a4e53aa34a9028ac
+material drift = NO
+
+004 / 031 / 036 / 047 / 127 = live signatures present; current mode SECURITY DEFINER / owner postgres
+119 relatorio_fornecedor(uuid) = live SECURITY DEFINER / owner postgres
+119 target authority = INVOKER / accepted from C3
+```
+
+C4 preserves the accepted C3 projection:
+
+```text
+68 DEFINER
+40 INVOKER
+5 NOT_DETERMINED
+TOTAL 113
+```
+
+Coverage discipline:
+
+```text
+C4 = consolidation against accepted C1/C2/C3 evidence
+repository-wide reread = NOT_PERFORMED
+full 113-routine live re-audit = NOT_PERFORMED
+critical residual/live surface = PARTIAL_READ / proportional revalidation
+```
+
+The five unresolved modes are explicit bounded authority decisions, not missing C4 coverage. M2-04C closure is invalidated only by material drift in the accepted C1/C2/C3 contracts, the five residual routine bodies/authority requirements, 119 target-mode evidence, or Product Authority scope.
+
+
 ## 0.0000000000000000012 STS-M2-04C/C3 SPECIALIST PACKET + MASTER-PROJECT DELTA REVALIDATION — 2026-09-06
 
 ```text

@@ -1,6 +1,43 @@
 # FECH.AI — SFJM Next Safe Action
 
-## 0.0000000000000000011 CURRENT ACTION — STS-M2-04C4 target RLS/direct-DML contract consolidation — 2026-09-06
+## 0.0000000000000000012 CURRENT ACTION — select / authorize next bounded M2-04 slice after M2-04C closure — 2026-09-06
+
+M2-04C is closed as:
+
+```text
+STS-M2-04C =
+COMPLETE / ACCEPTED WITH BOUNDED AUTHORITY RESIDUALS
+
+target projection =
+68 DEFINER / 40 INVOKER / 5 NOT_DETERMINED / 113 total
+
+Security Go = NOT_GRANTED
+```
+
+Do not replay C1/C2/C3/C4 absent material contradictory evidence.
+
+The five bounded authority residuals `004`, `031`, `036`, `047` and `127` now leave M2-04C as downstream Product Authority/Backend-Data decision or remediation inputs; they do not keep the C analysis slice open.
+
+Next program gate:
+
+```text
+PRODUCT AUTHORITY SELECT / AUTHORIZE NEXT BOUNDED M2-04 SLICE
+```
+
+Natural sequential candidate:
+
+```text
+STS-M2-04D — trigger provenance / trigger classification
+```
+
+M2-04D is NOT_AUTHORIZED by the M2-04C authorization and must not begin until separately authorized.
+
+No implementation, remediation, Supabase/Auth mutation, SQL/DDL/DML, RLS/policy/grant/function change, hostile runtime testing, Ready, merge, deploy or Security Go is authorized by this state.
+
+All lower-numbered action sections below are historical/superseded.
+
+
+## 0.0000000000000000011 HISTORICAL / SUPERSEDED ACTION — STS-M2-04C4 target RLS/direct-DML contract consolidation — 2026-09-06
 
 C3 has been adjudicated and accepted with five bounded NOT_DETERMINED authority cases.
 
