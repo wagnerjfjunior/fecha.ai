@@ -110,7 +110,7 @@ FIVE BLOCKING AUTHORITY FINDINGS != AUTHORIZED REMEDIATION
 
 Until separately authorized: no implementation, SQL, Supabase/Auth mutation, GRANT/REVOKE, ALTER FUNCTION, owner/search_path change, RLS/policy change, AppSec execution, hostile runtime testing, deploy or Security Go.
 
-## 0.0000000000000000005 CURRENT SEMANTIC NEXT ACTION — SELECT NEXT BOUNDED STS-M2-04 TARGET-POLICY SLICE — 2026-09-05
+## 0.0000000000000000005 HISTORICAL / SUPERSEDED SEMANTIC NEXT ACTION — SELECT NEXT BOUNDED STS-M2-04 TARGET-POLICY SLICE — 2026-09-05
 
 This section becomes current material continuity only after the B2 durable acceptance reconciliation is merged to canonical `main`.
 
@@ -148,7 +148,7 @@ CURRENT CONTRADICTION != AUTHORIZED REMEDIATION
 
 Next technical work requires separate Product Authority scope authorization. Until then: no implementation, SQL, Supabase/Auth mutation, GRANT/REVOKE, ALTER FUNCTION, owner/search_path change, runtime hostile testing, AppSec testing, deploy or Security Go.
 
-## 0.0000000000000000004 CURRENT SEMANTIC NEXT ACTION — STS-M2-04B2 SCOPE PREPARATION ONLY — 2026-09-05
+## 0.0000000000000000004 HISTORICAL / SUPERSEDED SEMANTIC NEXT ACTION — STS-M2-04B2 SCOPE PREPARATION ONLY — 2026-09-05
 
 Current accepted state:
 
@@ -181,7 +181,7 @@ B2 REMEDIATION / IMPLEMENTATION = NOT_AUTHORIZED
 No SQL, DDL/DML, Supabase/Auth/data mutation, GRANT/REVOKE/default-privilege change, routine/owner/search_path mutation, hostile runtime testing, deploy, Ready, merge or Security Go is authorized.
 
 
-## 0.0000000000000000003 CURRENT SEMANTIC NEXT ACTION — STS-M2-04 READ_ONLY TARGET-POLICY BOOTSTRAP — 2026-09-05
+## 0.0000000000000000003 HISTORICAL / SUPERSEDED SEMANTIC NEXT ACTION — STS-M2-04 READ_ONLY TARGET-POLICY BOOTSTRAP — 2026-09-05
 
 This section becomes the current semantic next action only after the STS-M2-03 acceptance reconciliation is merged to canonical `main`.
 
@@ -216,7 +216,7 @@ Not authorized:
 - no Security Go.
 
 
-## 0.0000000000000000002 CURRENT SEMANTIC NEXT ACTION — STS-M2-03 READ_ONLY — 2026-09-05
+## 0.0000000000000000002 HISTORICAL / SUPERSEDED SEMANTIC NEXT ACTION — STS-M2-03 READ_ONLY — 2026-09-05
 
 This section becomes the current semantic next action only after the STS-M2-02 acceptance reconciliation is merged to canonical `main`.
 
@@ -251,7 +251,7 @@ Not authorized by the STS-M2-02 acceptance:
 - no Security Go.
 
 
-## 0.0000000000000000001 CURRENT SEMANTIC NEXT ACTION — STS-M2-02 READ_ONLY MAP — 2026-09-04
+## 0.0000000000000000001 HISTORICAL / SUPERSEDED SEMANTIC NEXT ACTION — STS-M2-02 READ_ONLY MAP — 2026-09-04
 
 Once this reconciliation is present on canonical `main`, the previous STS-M2-01 next-action section becomes historical lineage.
 
@@ -286,7 +286,7 @@ NO Security Go
 
 M2-01 residual evidence remains visible and may be consumed by later M2 tasks; do not reopen the accepted 44-table matrix absent a material invalidation event.
 
-## 0.000000000000000000 CURRENT SEMANTIC NEXT ACTION — STS-M2 bootstrap / STS-M2-01 scope reconstruction — 2026-09-04
+## 0.000000000000000000 HISTORICAL / SUPERSEDED SEMANTIC NEXT ACTION — STS-M2 bootstrap / STS-M2-01 scope reconstruction — 2026-09-04
 
 This section defines the semantic next action only when this adjudication is present on canonical `main`. PR lifecycle must still be resolved live.
 
@@ -320,7 +320,7 @@ STS-M2-01 — MATRIZ DE 43 TABELAS
 
 Do not confuse `STS-M2` with `B0-M2` or `PRODUCT_MODULE_M2`.
 
-## 0.00000000000000000 CURRENT NEXT SAFE ACTION — M2 bootstrap / M2-01 scope reconstruction — 2026-09-04
+## 0.00000000000000000 HISTORICAL / SUPERSEDED NEXT SAFE ACTION — M2 bootstrap / M2-01 scope reconstruction — 2026-09-04
 
 ```text
 repository = wagnerjfjunior/fecha.ai
@@ -414,7 +414,7 @@ M2-01 requires a separate bounded bootstrap/scope gate; this record does not sta
 
 Do not execute J4, IMP-003, rollback/reapply, production smoke or OC-01 and do not grant Security Go.
 
-## 0.000000000000000 CURRENT NEXT SAFE ACTION — after PR #166 merge/deploy — 2026-09-03
+## 0.000000000000000 HISTORICAL / SUPERSEDED NEXT SAFE ACTION — after PR #166 merge/deploy — 2026-09-03
 
 The pre-merge review and merge of PR #166 are consumed and no longer current actions.
 

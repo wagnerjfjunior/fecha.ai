@@ -116,7 +116,7 @@ M2-04C is the strongest next dependency because 56 B3 mode decisions remain unre
 
 No next slice, remediation, AppSec execution, Supabase mutation, Ready, merge, deploy or Security Go authority is carried by this handoff.
 
-## 0.0000000000000000006 CURRENT HANDOFF — STS-M2-04B2 accepted with residuals / next bounded-slice decision — 2026-09-05
+## 0.0000000000000000006 HISTORICAL / SUPERSEDED HANDOFF — STS-M2-04B2 accepted with residuals / next bounded-slice decision — 2026-09-05
 
 This handoff becomes current material continuity only when the B2 reconciliation is merged to canonical `main`.
 
@@ -149,7 +149,7 @@ SELECT NEXT BOUNDED STS-M2-04 TARGET-POLICY SLICE
 
 Candidate slices are B3, M2-04C and M2-04D, but none is authorized or started by this handoff. No technical remediation, Supabase/Auth mutation, runtime testing, AppSec testing, deploy or Security Go authority is carried forward.
 
-## 0.0000000000000000005 CURRENT HANDOFF — STS-M2-04B1 accepted / B2 scope preparation next — 2026-09-05
+## 0.0000000000000000005 HISTORICAL / SUPERSEDED HANDOFF — STS-M2-04B1 accepted / B2 scope preparation next — 2026-09-05
 
 Canonical durable B1 evidence once this reconciliation is merged:
 
@@ -189,7 +189,7 @@ Do not reopen B1 merely because B2 discovers current non-compliance.
 No B2 substantive classification, remediation, SQL/Supabase/Auth mutation, runtime hostile testing, Ready, merge, deploy or Security Go authority is carried forward.
 
 
-## 0.0000000000000000004 CURRENT HANDOFF — STS-M2-03 accepted with residuals / STS-M2-04 next — 2026-09-05
+## 0.0000000000000000004 HISTORICAL / SUPERSEDED HANDOFF — STS-M2-03 accepted with residuals / STS-M2-04 next — 2026-09-05
 
 This handoff becomes current material continuity when the bounded STS-M2-03 documentation reconciliation is merged to canonical `main`.
 
@@ -218,7 +218,7 @@ Next safe gate after merge:
 No index change, Supabase/Auth mutation, RLS/policy/grant/default-privilege change, runtime hostile testing, deploy, STS-M2-04 implementation or Security Go authority is carried forward.
 
 
-## 0.0000000000000000003 CURRENT HANDOFF — STS-M2-02 accepted with residuals / STS-M2-03 next — 2026-09-05
+## 0.0000000000000000003 HISTORICAL / SUPERSEDED HANDOFF — STS-M2-02 accepted with residuals / STS-M2-03 next — 2026-09-05
 
 This handoff becomes current material continuity when the bounded STS-M2-02 documentation reconciliation is merged to canonical `main`.
 
@@ -247,7 +247,7 @@ Next safe action after merge:
 No implementation, Supabase/Auth mutation, grant/RLS/policy change, deploy, STS-M2-04 implementation or Security Go authority is carried forward.
 
 
-## 0.0000000000000000002 CURRENT HANDOFF — STS-M2-01 durable matrix/provenance anchor — 2026-09-04
+## 0.0000000000000000002 HISTORICAL / SUPERSEDED HANDOFF — STS-M2-01 durable matrix/provenance anchor — 2026-09-04
 
 For STS-M2-01, receiving conversations must use:
 
@@ -270,7 +270,7 @@ Security Go = NOT_GRANTED
 
 Do not reopen M2-01 absent material invalidation. Do not infer implementation authority from the accepted matrix.
 
-## 0.0000000000000000001 CURRENT HANDOFF — STS-M2-01 accepted / STS-M2-02 next — 2026-09-04
+## 0.0000000000000000001 HISTORICAL / SUPERSEDED HANDOFF — STS-M2-01 accepted / STS-M2-02 next — 2026-09-04
 
 This handoff becomes current material continuity when merged to canonical `main`.
 
@@ -309,7 +309,7 @@ Receiving conversation contract:
 
 This reconciliation is self-closing after merge; do not create a lifecycle-only follow-up SFJM PR.
 
-## 0.000000000000000000 CURRENT HANDOFF — program hierarchy/Core DoD adjudicated / STS-M2 next — 2026-09-04
+## 0.000000000000000000 HISTORICAL / SUPERSEDED HANDOFF — program hierarchy/Core DoD adjudicated / STS-M2 next — 2026-09-04
 
 This handoff meaning becomes canonical only when the PR #170 adjudication is present on FECH.AI `main`.
 
@@ -347,7 +347,7 @@ Receiving conversations must qualify ambiguous milestone references as `PRODUCT_
 
 No authority is inherited for STS-M2 implementation, Supabase/Auth, runtime, production, deploy, Security Go, Ready or merge.
 
-## 0.00000000000000000 CURRENT HANDOFF — M1 closed / M2 bootstrap next — 2026-09-04
+## 0.00000000000000000 HISTORICAL / SUPERSEDED HANDOFF — M1 closed / M2 bootstrap next — 2026-09-04
 
 ```text
 repository = wagnerjfjunior/fecha.ai
@@ -438,7 +438,7 @@ Reopen deferred J4 evidence only after the exact Supabase Pro + isolated non-pro
 Next specialist/agent must first validate the exact PR-09 head and the six-file diff. It must not
 start M2, execute OC-01/J4, grant Security Go, mark Ready or merge without fresh explicit authority.
 
-## 0.000000000000000 CURRENT HANDOFF — PR #166 merged and Vercel deployed — 2026-09-03
+## 0.000000000000000 HISTORICAL / SUPERSEDED HANDOFF — PR #166 merged and Vercel deployed — 2026-09-03
 
 ```text
 repository: wagnerjfjunior/fecha.ai

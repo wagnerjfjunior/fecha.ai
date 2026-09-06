@@ -459,7 +459,7 @@ admission relies on that control classification.
 
 Reopen the deferred J4 evidence only when the exact three-part trigger is satisfied.
 
-## 0.000000000000000 CURRENT SEMANTIC OVERRIDE — PR #166 post-merge/post-deploy — 2026-09-03
+## 0.000000000000000 HISTORICAL / SUPERSEDED SEMANTIC OVERRIDE — PR #166 post-merge/post-deploy — 2026-09-03
 
 This section is the current lifecycle truth for PR #166. Older pre-merge/merge next-action
 wording remains historical evidence and is no longer the current action.
