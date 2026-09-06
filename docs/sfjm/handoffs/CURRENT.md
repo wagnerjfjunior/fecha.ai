@@ -4,8 +4,9 @@
 
 ```text
 repository = wagnerjfjunior/fecha.ai
-FECH.AI main = ca30c70e505a9dd8398cd7dace067c95397f96fe
-SES main = a31e10cc3f0d1278c53c49e38151854d36ee9f3e
+M2-04C decision/evidence base = ca30c70e505a9dd8398cd7dace067c95397f96fe
+CURRENT FECH.AI main = RESOLVE LIVE
+SES evidence base = a31e10cc3f0d1278c53c49e38151854d36ee9f3e
 Supabase = uobxxgzshrmbtjfdolxd / Discador-MesaCliente
 environment = Pilot Production / multi-tenant / multiempresa
 Security Go = NOT_GRANTED
@@ -22,6 +23,17 @@ C4 = COMPLETE / ACCEPTED
 STS-M2-04C =
 COMPLETE / ACCEPTED WITH BOUNDED AUTHORITY RESIDUALS
 ```
+
+Durable C3 per-routine evidence:
+
+```text
+docs/security/evidence/2026-09-06-sts-m2-04c-c3-routine-mode-adjudication.csv
+rows = 57
+content SHA-256 = cdc028d5874d4e7f2c783e9380def40373ed525fec89514f1becd073f36027ab
+Git blob = 716c23d5f549eb465f3393cdfc5989dda82b69a7
+```
+
+Receiving sessions must resolve current FECH.AI `main` live before lifecycle or implementation decisions; the SHA above is an M2-04C evidence base, not a perpetual current-main assertion.
 
 Target projection:
 

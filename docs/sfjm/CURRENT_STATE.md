@@ -16,6 +16,15 @@ COMPLETE / ACCEPTED WITH BOUNDED AUTHORITY RESIDUALS
 Security Go = NOT_GRANTED
 ```
 
+Durable per-routine C3 adjudication evidence:
+
+```text
+path = docs/security/evidence/2026-09-06-sts-m2-04c-c3-routine-mode-adjudication.csv
+rows = 57
+content SHA-256 = cdc028d5874d4e7f2c783e9380def40373ed525fec89514f1becd073f36027ab
+Git blob = 716c23d5f549eb465f3393cdfc5989dda82b69a7
+```
+
 Final target-mode projection preserved:
 
 ```text

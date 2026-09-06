@@ -48,10 +48,14 @@ The five unresolved modes are explicit bounded authority decisions, not missing 
 ## 0.0000000000000000012 STS-M2-04C/C3 SPECIALIST PACKET + MASTER-PROJECT DELTA REVALIDATION — 2026-09-06
 
 ```text
-uploaded artifact = Markdown(20260906-174939).md colado
-artifact SHA-256 = 0e6c40a3cd515219fb6b24d5f0aaf10e63291d19da485d5e946c47fbb08d88d5
-artifact lines = 761
-artifact bytes = 150441
+source upload = Markdown(20260906-174939).md colado
+source SHA-256 = 0e6c40a3cd515219fb6b24d5f0aaf10e63291d19da485d5e946c47fbb08d88d5
+source lines = 761
+source bytes = 150441
+versioned C3 evidence = docs/security/evidence/2026-09-06-sts-m2-04c-c3-routine-mode-adjudication.csv
+versioned rows = 57
+versioned content SHA-256 = cdc028d5874d4e7f2c783e9380def40373ed525fec89514f1becd073f36027ab
+versioned Git blob = 716c23d5f549eb465f3393cdfc5989dda82b69a7
 C3 verdict = COMPLETE WITH RESIDUAL NOT_DETERMINED / READY FOR C4
 ```
 
