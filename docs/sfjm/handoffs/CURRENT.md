@@ -1,5 +1,49 @@
 # FECH.AI — SFJM Current Product/Security Handoff
 
+## 0.0000000000000000008 CURRENT HANDOFF — STS-M2-04B3 / DEF55 revised acceptance / six authority blockers preserved — 2026-09-05
+
+This handoff becomes canonical after PR #183 merge. Resolve the live PR head before every lifecycle gate.
+
+```text
+STS-M2-04B3 CLASSIFICATION = COMPLETE / ACCEPTED
+coverage = 113 / 113
+target mode = 52 DEFINER / 4 INVOKER / 57 NOT_DETERMINED
+justification = 52 PROVEN_BY_BODY_CONTRACT / 6 NOT_PROVEN / 51 NOT_DETERMINED / 4 NOT_REQUIRED
+blockers = 004,031,036,047,119,127
+Security Go = NOT_GRANTED
+```
+
+Canonical revised CSV SHA-256: `e609f4fa3bc6d21b8c75d85bd2a4a3409e9ece8b3c4d66ffdb5e52055052a61d`.
+
+Key delta: 52 DEFINER rows now carry routine-specific elevation reasons; `004` is NOT_DETERMINED/BLOCKING; `052` and `106` target INVOKER; `126` is TRANSITIVE_MUTATIVE with runtime assurance required; live identity signatures corrected for `021`, `022`, `028`, `032`.
+
+PR #183 is authorized only through exact-head review, Ready revalidation and pre-merge. Merge/deploy/Supabase/M2-04C/M2-04D/AppSec-active execution remain unauthorized.
+
+## 0.0000000000000000007 HISTORICAL — ORIGINAL STS-M2-04B3 HANDOFF / SUPERSEDED BY 0.0000000000000000008 — 2026-09-05
+
+This handoff becomes current material continuity only after the B3 acceptance reconciliation is merged to canonical `main`.
+
+Canonical durable B3 evidence after merge:
+
+`docs/security/evidence/2026-09-05-sts-m2-04b3-remaining-routine-authority-classification.md`
+
+State to preserve:
+
+```text
+STS-M2-04B1 = COMPLETE / ACCEPTED WITH RESIDUALS
+STS-M2-04B2 = COMPLETE / ACCEPTED WITH RESIDUALS
+STS-M2-04B3 CLASSIFICATION = COMPLETE / ACCEPTED
+B3 coverage = 113 / 113
+target mode = 55 DEFINER / 2 INVOKER / 56 NOT_DETERMINED
+Security Go = NOT_GRANTED
+```
+
+Five current authority findings remain `BLOCKING`: `031`, `036`, `047`, `119`, `127`. They are blockers in the current authority design, not evidence that B3 classification is incomplete.
+
+M2-04C is the strongest next dependency because 56 B3 mode decisions remain unresolved pending RLS/direct-authority composition. M2-04D remains required for the 9 SECURITY DEFINER trigger-provenance routines outside B3.
+
+No next slice, remediation, AppSec execution, Supabase mutation, Ready, merge, deploy or Security Go authority is carried by this handoff.
+
 ## 0.0000000000000000006 CURRENT HANDOFF — STS-M2-04B2 accepted with residuals / next bounded-slice decision — 2026-09-05
 
 This handoff becomes current material continuity only when the B2 reconciliation is merged to canonical `main`.

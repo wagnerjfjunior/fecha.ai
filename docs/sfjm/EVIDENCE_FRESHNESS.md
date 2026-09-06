@@ -1,5 +1,62 @@
 # FECH.AI — SFJM Evidence Freshness
 
+## 0.0000000000000000008 STS-M2-04B3 / DEF55 REVISED CANONICAL EVIDENCE — 2026-09-05
+
+Current recoverable canonical matrix:
+
+`docs/security/evidence/2026-09-05-sts-m2-04b3-routine-authority-classification.csv`
+
+```text
+rows = 113
+columns = 40
+SHA-256 = e609f4fa3bc6d21b8c75d85bd2a4a3409e9ece8b3c4d66ffdb5e52055052a61d
+
+target mode = 52 DEFINER / 4 INVOKER / 57 NOT_DETERMINED
+justification = 52 PROVEN_BY_BODY_CONTRACT / 6 NOT_PROVEN / 51 NOT_DETERMINED / 4 NOT_REQUIRED
+blockers = 004,031,036,047,119,127
+```
+
+Historical fingerprints retained for provenance:
+
+```text
+original specialist baseline = 3abd2d09d4d17a0584a982c8fc6926a0266e4385883454a046f085f59f04a889
+pre-DEF55 consolidated matrix = df2a76d34b07edc347f84acbb7c71bad71be61095a7e40919c869925cc0b31eb
+five-row adjudication delta = 4695593f7e3c5e4e72ecf415d8b0cc19e6cb9c93583e89504e522ac9e6297c59
+```
+
+The previous `55/2/56` aggregate and df2a76d34b07edc347f84acbb7c71bad71be61095a7e40919c869925cc0b31eb fingerprint are historical and superseded by this revised canonical entry. Freshness is invalidated by any material change to B3 routine identity/body, authority mode, owner/search_path, EXECUTE ACL, caller/provenance, direct/transitive effects, relevant RLS/direct-DML composition or Product Authority scope.
+
+## 0.0000000000000000007 HISTORICAL — ORIGINAL STS-M2-04B3 ACCEPTANCE EVIDENCE / SUPERSEDED BY 0.0000000000000000008 — 2026-09-05
+
+Canonical durable artifact after merge:
+
+`docs/security/evidence/2026-09-05-sts-m2-04b3-remaining-routine-authority-classification.md`
+
+Decision/evidence anchors:
+
+- FECH.AI Product Authority acceptance main = `0333cea749dc33a6040955077afe67bd22c2fbe9`;
+- SES evidence ref = `a31e10cc3f0d1278c53c49e38151854d36ee9f3e`;
+- specialist report SHA-256 = `b74d0f2d8b3655e0d04860743fe45ee54ecf234b8778a6f573e39ae9a4b39320`;
+- 113-row matrix CSV SHA-256 = `3abd2d09d4d17a0584a982c8fc6926a0266e4385883454a046f085f59f04a889`;
+- final five-row adjudication-delta SHA-256 = `4695593f7e3c5e4e72ecf415d8b0cc19e6cb9c93583e89504e522ac9e6297c59`;
+- final coverage = `113 / 113`;
+- target mode = `55 DEFINER / 2 INVOKER / 56 NOT_DETERMINED`;
+- Security Go = `NOT_GRANTED`.
+
+The final delta supersedes only B3 rows `031`, `036`, `047`, `119`, `127` and the aggregates affected by those corrections. Other `108 / 108` B3 rows remain unchanged.
+
+Freshness invalidators include material changes to any B3 routine body/signature, security mode, owner, search_path/proconfig, EXECUTE ACL, canonical caller/provenance, direct/transitive authority, relevant RLS/direct-DML composition, or Product Authority scope.
+
+Preserve:
+
+```text
+CLASSIFICATION COMPLETE != CURRENT AUTHORITY SAFE
+TARGET_MODE_NOT_DETERMINED != TARGET_INVOKER
+OWNER postgres OBSERVED != TARGET OWNER ACCEPTED
+search_path PRESENT != search_path SAFE
+STRUCTURALLY OBSERVED CONTROL != CONTROL PROVEN EFFECTIVE AT RUNTIME
+```
+
 ## 0.0000000000000000006 STS-M2-04B2 ACCEPTANCE EVIDENCE / DURABLE PROVENANCE — 2026-09-05
 
 Canonical durable artifact once merged:
