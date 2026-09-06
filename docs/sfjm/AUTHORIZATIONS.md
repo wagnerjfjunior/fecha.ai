@@ -1,5 +1,36 @@
 # FECH.AI — SFJM Authorizations
 
+## 0.0000000000000000009 Product Authority — post-merge correction authority after PR #183 — 2026-09-05
+
+Product Authority instructed the Master Project to correct the material post-merge continuity state after PR #183 had already been merged.
+
+Authorized scope for the follow-up correction:
+
+```text
+documentation-only SFJM post-merge reconciliation
+resolve already-addressed PR #183 review threads
+create bounded follow-up PR from canonical main
+exact-head review
+Ready lifecycle revalidation
+exact-head pre-merge
+```
+
+Not authorized by this instruction:
+
+```text
+merge of the follow-up PR
+deploy
+Supabase/Auth/data mutation
+SQL / DDL / DML / migration
+GRANT / REVOKE / ALTER FUNCTION
+RLS / policy change
+M2-04C execution
+M2-04D execution
+active AppSec/runtime hostile testing
+runtime implementation
+Security Go
+```
+
 ## 0.0000000000000000008 Product Authority — STS-M2-04B3 / DEF55 revised adjudication + PR #183 reconciliation authority — 2026-09-05
 
 Product Authority accepted the revised 55/55 provenance/live-body adjudication:

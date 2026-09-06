@@ -1,5 +1,31 @@
 # FECH.AI — SFJM Next Safe Action
 
+## 0.0000000000000000008 CURRENT SAFE ACTION — POST-MERGE CONTINUITY RECONCILIATION, THEN SELECT NEXT BOUNDED M2-04 SLICE — 2026-09-05
+
+PR #183 has already merged to canonical main `53a70f814e8b695439358ebe609850f25bf636a9`; there is no remaining PR #183 Ready/pre-merge/merge gate.
+
+For this bounded follow-up continuity PR:
+
+```text
+scope = SFJM post-merge reconciliation only
+→ exact-head review
+→ Ready lifecycle revalidation
+→ exact-head pre-merge
+→ STOP
+```
+
+Merge of this follow-up remains separately authorized.
+
+After a future separately authorized merge of this continuity PR, the next program-level action is:
+
+```text
+Product Authority selects and authorizes the next bounded M2-04 slice.
+```
+
+The B3 matrix retains `57` target-mode decisions that are `NOT_DETERMINED`; some explicitly depend on M2-04C evidence about RLS, direct-DML authority and caller sufficiency. That dependency does not itself authorize M2-04C execution.
+
+M2-04D, Supabase mutation, implementation, deploy, active AppSec/runtime hostile testing and Security Go remain unauthorized.
+
 ## 0.0000000000000000007 CURRENT TRANSITION ACTION — PR #183 revised DEF55 lifecycle through pre-merge — 2026-09-05
 
 Accepted revised B3 state:

@@ -1,5 +1,31 @@
 # FECH.AI — SFJM Evidence Freshness
 
+## 0.0000000000000000009 STS-M2-04B3 POST-MERGE FRESHNESS ANCHOR — 2026-09-05
+
+Canonical merge state:
+
+```text
+PR #183 final head = d805194c5f896766af24e4d4a56869c91d31a60c
+PR #183 merge commit = 53a70f814e8b695439358ebe609850f25bf636a9
+merged_at = 2026-09-06T01:49:49Z
+canonical main at reconciliation start = 53a70f814e8b695439358ebe609850f25bf636a9
+```
+
+Canonical B3 evidence:
+
+```text
+rows = 113
+columns = 40
+SHA-256 = e609f4fa3bc6d21b8c75d85bd2a4a3409e9ece8b3c4d66ffdb5e52055052a61d
+target mode = 52 DEFINER / 4 INVOKER / 57 NOT_DETERMINED
+justification = 52 PROVEN_BY_BODY_CONTRACT / 6 NOT_PROVEN / 51 NOT_DETERMINED / 4 NOT_REQUIRED
+blockers = 004,031,036,047,119,127
+```
+
+The three Codex P2 review threads opened against PR #183 were resolved after the merged head incorporated their corrections.
+
+This freshness anchor is invalidated by any material change to the 113-routine identity/body set, target authority mode, owner/search_path, EXECUTE ACL, caller/provenance, direct/transitive effects, relevant RLS/direct-DML composition, or Product Authority scope.
+
 ## 0.0000000000000000008 STS-M2-04B3 / DEF55 REVISED CANONICAL EVIDENCE — 2026-09-05
 
 Current recoverable canonical matrix:
