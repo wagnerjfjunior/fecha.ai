@@ -1,10 +1,39 @@
 # FECH.AI — SFJM Blocked Actions
 
-**Status:** B2_TARGET_CONTRACT_CLOSURE_ACCEPTED / FINAL_M2_04_ADJUDICATION_PENDING / FAIL_CLOSED  
+## 0. Current STS-M2-04 closure boundary — 2026-09-07
+
+~~~text
+STS-M2-04 =
+COMPLETE / ACCEPTED WITH IMPLEMENTATION-LIFECYCLE-RUNTIME RESIDUALS
+
+M2-05 =
+NEXT ELIGIBLE / EXECUTION NOT_AUTHORIZED
+~~~
+
+Blocked unless separately and explicitly authorized:
+
+~~~text
+implementation of any M2-04 target disposition
+ALTER FUNCTION / SECURITY DEFINER-INVOKER change
+owner/search_path mutation
+GRANT / REVOKE / default privilege change
+RLS/policy/direct-DML mutation
+lifecycle retirement/deletion/replacement
+hostile-client/cross-tenant runtime testing
+M2-05 execution
+M2-06 execution
+Ready / merge of this documentation publication
+deploy / production mutation
+Security Go
+~~~
+
+M2-04 target-policy analysis must not be replayed without a material invalidator.
+
+**Status:** STS_M2_04_ACCEPTED / M2_05_ELIGIBLE_NOT_AUTHORIZED / FAIL_CLOSED  
 **Updated:** 2026-09-07  
 **Repository:** wagnerjfjunior/fecha.ai
 
-## 3. Current B2-closure boundary — 2026-09-07
+## 3. Historical / superseded B2-closure boundary — 2026-09-07
 
 ~~~text
 B2 High-Risk Target-Contract Closure execution = COMPLETE READ_ONLY
@@ -149,7 +178,7 @@ Separate C3 implementation/runtime blocker retained:
 ~~~
 
 
-## 5. Current M2-04 gate
+## 5. Historical / superseded M2-04 gate
 
 ~~~text
 next bounded STS-M2-04 action = NOT_SELECTED

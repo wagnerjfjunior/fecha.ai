@@ -1,5 +1,79 @@
 # FECH.AI — SFJM Evidence Freshness
 
+## 0.0000000000000000022 CURRENT EVIDENCE — FINAL STS-M2-04 WBS CLOSURE ACCEPTANCE — 2026-09-07
+
+Final adjudication anchor:
+
+~~~text
+FECH.AI main =
+6357c1b4df207683b60de26daa53248d44dce84a
+
+SES main =
+a31e10cc3f0d1278c53c49e38151854d36ee9f3e
+
+STS-M2-04 =
+COMPLETE / ACCEPTED WITH
+IMPLEMENTATION-LIFECYCLE-RUNTIME RESIDUALS
+~~~
+
+WBS objective consumed:
+
+~~~text
+M2-04 — Política target de DEFINER / RLS / DML — 20h
+~~~
+
+Material durable evidence revalidated on the exact acceptance main:
+
+~~~text
+WBS
+blob c6fe2e339c4de33dfb8265912ba6b63380270c4e
+= INTEGRAL_READ
+
+B1 routine authority policy
+blob 15e771e99ce3e424ba4a869a00d4965bed733fc3
+= INTEGRAL_READ
+
+B2 high-risk classification
+blob bfa43f6936b2a381552dbb95f5306f13069142af
+= INTEGRAL_READ
+
+B3 remaining routine classification
+blob 96d31bb3c471ddbc606f391aff13cb7674358e8b
+= INTEGRAL_READ
+
+C4 target RLS / direct-DML contract
+blob 01eefe744946a9f916ac0789780f77c5444aa799
+= INTEGRAL_READ
+
+D trigger authority
+blob 7fdc63a95d81661598937aa0bdfa654bcb9db66a
+= INTEGRAL_READ
+
+E architecture synthesis
+blob 07365cae5a353bd2407512ddde0d3d4cf880352f
+= INTEGRAL_READ
+~~~
+
+Current SFJM material views were read on the same exact main. No global B1/B2/B3/C/D/E replay was performed.
+
+Drift check from the accepted B2/E evidence anchors to the final acceptance main found documentation-only changes and no technical/runtime files.
+
+Final evidence conclusion:
+
+~~~text
+TARGET DEFINER / INVOKER POLICY = COMPLETE
+RLS TARGET CONTRACT = COMPLETE
+DIRECT-DML TARGET CONTRACT = COMPLETE
+TRIGGER TARGET AUTHORITY = COMPLETE
+TARGET-AUTHORITY SEMANTIC BLOCKERS = 0
+
+CURRENT IMPLEMENTATION TARGET-COMPLIANT = NOT_PROVEN
+APPSEC PASS = NOT_PERFORMED
+RUNTIME ASSURANCE = NOT_PERFORMED
+SECURITY GO = NOT_GRANTED
+~~~
+
+Freshness invalidators include material technical changes to routine definitions/modes/ACLs/owners/search_path, RLS/policies/direct-DML authority, trigger authority, canonical callers/lifecycle semantics, or contradictory runtime/AppSec evidence.
 
 ## 0.0000000000000000021 CURRENT EVIDENCE — PR #192 CONFLICT RECONCILIATION AGAINST PR #191 MAIN — 2026-09-07
 

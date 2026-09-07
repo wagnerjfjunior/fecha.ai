@@ -1,7 +1,61 @@
 # FECH.AI — SFJM Next Safe Action
 
+## 0.0000000000000000020 CURRENT ACTION — M2-05 ELIGIBLE / PRODUCT AUTHORITY AUTHORIZATION REQUIRED — 2026-09-07
 
-## 0.0000000000000000019 CURRENT ACTION — FINAL STS-M2-04 WBS CLOSURE ADJUDICATION — 2026-09-07
+STS-M2-04 is now accepted as:
+
+~~~text
+COMPLETE / ACCEPTED WITH
+IMPLEMENTATION-LIFECYCLE-RUNTIME RESIDUALS
+~~~
+
+The next eligible WBS milestone is:
+
+~~~text
+M2-05 — Database Contract Map — 20h
+~~~
+
+Eligibility is not execution authority.
+
+Single next program gate:
+
+~~~text
+PRODUCT AUTHORITY:
+SELECT / AUTHORIZE A BOUNDED M2-05 READ_ONLY
+SCOPE + EVIDENCE RECONSTRUCTION
+
+M2-05 execution = NOT_AUTHORIZED
+~~~
+
+Immediate documentation-publication gate for this reconciliation:
+
+~~~text
+fresh exact-head review of the documentation PR
+then STOP for Product Authority lifecycle decision
+~~~
+
+Still prohibited:
+
+~~~text
+implementation
+Supabase/Auth/data mutation
+ALTER FUNCTION / SECURITY MODE change
+GRANT / REVOKE / default privilege change
+owner/search_path mutation
+RLS/policy/direct-DML mutation
+lifecycle retirement
+hostile-client/cross-tenant runtime testing
+M2-05 execution
+M2-06 execution
+Ready
+merge
+deploy
+Security Go
+~~~
+
+Do not reopen B1/B2/B3/C/D/E or STS-M2-04 absent a material invalidation event.
+
+## 0.0000000000000000019 HISTORICAL / SUPERSEDED ACTION — FINAL STS-M2-04 WBS CLOSURE ADJUDICATION — 2026-09-07
 
 Product Authority has accepted the bounded B2 High-Risk Target-Contract Closure.
 

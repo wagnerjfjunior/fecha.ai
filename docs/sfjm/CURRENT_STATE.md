@@ -1,7 +1,94 @@
 # FECH.AI — SFJM Current Material State
 
+## 0.0000000000000000020 CURRENT — STS-M2-04 COMPLETE / ACCEPTED WITH IMPLEMENTATION-LIFECYCLE-RUNTIME RESIDUALS — 2026-09-07
 
-## 0.0000000000000000019 CURRENT — B2 HIGH-RISK TARGET-CONTRACT CLOSURE ACCEPTED BY PRODUCT AUTHORITY — 2026-09-07
+Product Authority explicitly accepted the final STS-M2-04 WBS closure against exact canonical main:
+
+~~~text
+FECH.AI main =
+6357c1b4df207683b60de26daa53248d44dce84a
+
+STS-M2-04 =
+COMPLETE / ACCEPTED WITH
+IMPLEMENTATION-LIFECYCLE-RUNTIME RESIDUALS
+
+WBS objective closed =
+TARGET POLICY FOR DEFINER / RLS / DML
+~~~
+
+Accepted evidence stack:
+
+~~~text
+B1 routine-authority policy = COMPLETE / ACCEPTED WITH RESIDUALS
+B2 original 15-routine classification = COMPLETE / ACCEPTED WITH RESIDUALS
+B2 target-contract closure = COMPLETE / ACCEPTED WITH IMPLEMENTATION-LIFECYCLE-RUNTIME RESIDUALS
+B3 classification = COMPLETE / ACCEPTED
+C = COMPLETE / ACCEPTED WITH BOUNDED AUTHORITY RESIDUALS
+D = COMPLETE / ACCEPTED TRIGGER AUTHORITY CONTRACT
+E = COMPLETE / ACCEPTED WITH IMPLEMENTATION-LIFECYCLE-RUNTIME RESIDUALS
+~~~
+
+Closure meaning:
+
+~~~text
+TARGET DEFINER / INVOKER POLICY = COMPLETE
+HIGH-RISK B2 TARGET CONTRACT = COMPLETE
+REMAINING ROUTINE TARGET AUTHORITY = COMPLETE
+RLS TARGET CONTRACT = COMPLETE
+DIRECT-DML TARGET CONTRACT = COMPLETE
+TRIGGER TARGET AUTHORITY = COMPLETE
+TARGET-AUTHORITY SEMANTIC BLOCKERS = 0
+~~~
+
+Preserved residual boundary:
+
+~~~text
+CURRENT IMPLEMENTATION TARGET-COMPLIANT = NOT_PROVEN
+IMPLEMENTATION REMEDIATION = NOT_PERFORMED
+LIFECYCLE REMEDIATION = NOT_PERFORMED
+APPSEC PASS = NOT_PERFORMED
+RUNTIME ASSURANCE = NOT_PERFORMED
+SECURITY GO = NOT_GRANTED
+~~~
+
+C4 design/evidence residuals remain explicitly open and are not waived by the STS-M2-04 closure:
+
+~~~text
+lista_avaliacoes resulting-row protected relationship integrity =
+NOT INDEPENDENTLY PROVEN
+
+leads resulting-row empresa_id relationship =
+NOT INDEPENDENTLY PROVEN
+
+times resulting-row empresa relationship =
+NOT INDEPENDENTLY RESTATED / NOT FULLY PROVEN
+
+fresh exhaustive application direct-DML callsite sweep =
+NOT PERFORMED
+~~~
+
+These are preserved evidence/implementation-assurance inputs for downstream work. They do not reopen the accepted target-policy decision and do not change:
+
+~~~text
+STS-M2-04 =
+COMPLETE / ACCEPTED WITH
+IMPLEMENTATION-LIFECYCLE-RUNTIME RESIDUALS
+~~~
+
+No homogeneous 137-routine mode synthesis is created by this closure. B2, B3/C3/E and D retain their accepted slice boundaries.
+
+Program continuation:
+
+~~~text
+M2-04F semantics = NOT CANONICALLY CREATED
+M2-05 = NEXT ELIGIBLE WBS MILESTONE
+M2-05 execution = NOT_AUTHORIZED
+M2-06 execution = NOT_AUTHORIZED
+~~~
+
+This acceptance authorizes only bounded SFJM documentation reconciliation. It does not authorize implementation, Supabase/Auth/data mutation, Ready, merge, deploy, M2-05, M2-06 or Security Go.
+
+## 0.0000000000000000019 HISTORICAL / SUPERSEDED — B2 HIGH-RISK TARGET-CONTRACT CLOSURE ACCEPTED BY PRODUCT AUTHORITY — 2026-09-07
 
 Product Authority explicitly accepted the exact READ_ONLY B2 closure result produced from:
 
