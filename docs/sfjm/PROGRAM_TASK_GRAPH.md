@@ -96,7 +96,7 @@ Security Go = NOT_GRANTED
 
 | Parent | Task | Label | Hours | Operational state |
 |---|---|---|---:|---|
-| M2 | M2-01 | Matriz de tabelas | 20 | COMPLETE |
+| M2 | M2-01 | Matriz de 43 tabelas | 20 | COMPLETE |
 | M2 | M2-02 | Mapa routines / policies / triggers / grants | 24 | COMPLETE_WITH_RESIDUALS |
 | M2 | M2-03 | Índices / ACL contraditórias | 16 | COMPLETE_WITH_RESIDUALS |
 | M2 | M2-04 | Política target de DEFINER / RLS / DML | 20 | COMPLETE_WITH_RESIDUALS |
@@ -142,15 +142,15 @@ The following nodes are not new WBS milestones. They are execution-discovered co
 
 ~~~text
 M2-04 = COMPLETE_WITH_RESIDUALS
-├── STS-M2-04B = COMPLETE
-│   ├── STS-M2-04B1 = COMPLETE
-│   ├── STS-M2-04B2 = COMPLETE_WITH_RESIDUALS
-│   └── STS-M2-04B3 = COMPLETE
-├── STS-M2-04C = COMPLETE_WITH_RESIDUALS
+├── STS-M2-04B = COMPLETE_WITH_RESIDUALS
+│   ├── STS-M2-04B1 = COMPLETE_WITH_RESIDUALS / ACCEPTED
+│   ├── STS-M2-04B2 = COMPLETE_WITH_RESIDUALS / ACCEPTED
+│   └── STS-M2-04B3 = COMPLETE / ACCEPTED
+├── STS-M2-04C = COMPLETE_WITH_RESIDUALS / ACCEPTED
 │   ├── STS-M2-04C1 = COMPLETE
-│   ├── STS-M2-04C2 = COMPLETE_WITH_RESIDUAL_EVIDENCE_GAPS / ACCEPTED
-│   ├── STS-M2-04C3 = COMPLETE_WITH_RESIDUAL_NOT_DETERMINED / ACCEPTED
-│   └── STS-M2-04C4 = COMPLETE / ACCEPTED
+│   ├── STS-M2-04C2 = COMPLETE_WITH_RESIDUALS / ACCEPTED
+│   ├── STS-M2-04C3 = COMPLETE / ACCEPTED; historical NOT_DETERMINED resolved downstream by E
+│   └── STS-M2-04C4 = COMPLETE / ACCEPTED; design/evidence residuals preserved
 ├── STS-M2-04D = COMPLETE / ACCEPTED
 └── STS-M2-04E = COMPLETE_WITH_RESIDUALS / ACCEPTED
 ~~~
