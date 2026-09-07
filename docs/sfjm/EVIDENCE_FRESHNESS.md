@@ -5,8 +5,11 @@
 Acceptance/publication base:
 
 ~~~text
-FECH.AI main =
+acceptance/publication base main =
 e07254ef6b2d7184e749463727df2e6d404226a7
+
+canonical main after PR #195 merge =
+d6953ea3071ada55fbcd97f21c848f5c6424ca3f
 
 environment =
 Pilot Production / SaaS multi-tenant / multiempresa
@@ -15,13 +18,34 @@ Security Go =
 NOT_GRANTED
 ~~~
 
-Durable M2-05 evidence candidate:
+Durable M2-05 evidence on canonical main:
 
 ~~~text
 docs/security/evidence/2026-09-07-sts-m2-05-database-contract-map.md
 blob 8b2875e1bc095329482de095028ed31b37091d63
 coverage = contract-level accepted M2-05 result
-lifecycle = PR_HEAD_ONLY until separately reviewed/merged
+lifecycle = MERGED_CANONICAL_MAIN via PR #195
+reviewed head = 643fb532e2860bdc53cbbddef529e3b9ed4e8709
+merge commit = d6953ea3071ada55fbcd97f21c848f5c6424ca3f
+~~~
+
+Post-merge lifecycle evidence:
+
+~~~text
+PR #195 = MERGED / CLOSED
+merge commit = d6953ea3071ada55fbcd97f21c848f5c6424ca3f
+canonical main = d6953ea3071ada55fbcd97f21c848f5c6424ca3f
+Vercel commit status observed during reconciliation = SUCCESS
+GitHub Actions PR workflow runs on merge commit = 0
+~~~
+
+Preserve lifecycle separation:
+
+~~~text
+MERGED != RUNTIME VALIDATED
+VERCEL SUCCESS != APPSEC PASS
+VERCEL SUCCESS != SECURITY GO
+M2-06 = ELIGIBLE_NOT_AUTHORIZED
 ~~~
 
 Material accepted upstream evidence was re-read on the exact publication base without replaying closed analyses:

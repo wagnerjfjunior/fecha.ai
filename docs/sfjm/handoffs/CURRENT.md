@@ -5,6 +5,7 @@
 ~~~text
 repository = wagnerjfjunior/fecha.ai
 acceptance/publication base main = e07254ef6b2d7184e749463727df2e6d404226a7
+canonical main after PR #195 merge = d6953ea3071ada55fbcd97f21c848f5c6424ca3f
 environment = Pilot Production / SaaS multi-tenant / multiempresa
 Security Go = NOT_GRANTED
 ~~~
@@ -30,7 +31,7 @@ Accepted coverage:
 new M2-05 semantic blockers = 0
 ~~~
 
-Durable candidate artifact:
+Durable canonical artifact:
 
 ~~~text
 docs/security/evidence/2026-09-07-sts-m2-05-database-contract-map.md
@@ -60,8 +61,10 @@ Publication lifecycle:
 
 ~~~text
 Product Authority acceptance = YES
-M2-05 documentation branch = candidate
-canonical main publication = pending separate review/merge authorization
+PR #195 = MERGED / CLOSED
+reviewed candidate head = 643fb532e2860bdc53cbbddef529e3b9ed4e8709
+merge commit = d6953ea3071ada55fbcd97f21c848f5c6424ca3f
+canonical main publication = MERGED_CANONICAL
 ~~~
 
 

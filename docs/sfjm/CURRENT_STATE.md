@@ -8,6 +8,9 @@ Product Authority explicitly accepted STS-M2-05 and authorized this bounded docu
 acceptance/publication base main =
 e07254ef6b2d7184e749463727df2e6d404226a7
 
+canonical main after PR #195 merge =
+d6953ea3071ada55fbcd97f21c848f5c6424ca3f
+
 STS-M2-05 =
 COMPLETE / ACCEPTED WITH
 IMPLEMENTATION-LIFECYCLE-CALLSITE-EVIDENCE-
@@ -26,7 +29,7 @@ Accepted completion basis:
 new M2-05 semantic blockers = 0
 ~~~
 
-Durable evidence candidate on this PR head:
+Durable evidence on canonical main:
 
 ~~~text
 docs/security/evidence/2026-09-07-sts-m2-05-database-contract-map.md
@@ -83,8 +86,10 @@ Publication lifecycle:
 
 ~~~text
 Product Authority acceptance = RECORDED
-documentation candidate = PR_HEAD_ONLY until separately reviewed/merged
-main canonical publication = NOT_YET_MERGED
+PR #195 = MERGED / CLOSED
+reviewed candidate head = 643fb532e2860bdc53cbbddef529e3b9ed4e8709
+merge commit = d6953ea3071ada55fbcd97f21c848f5c6424ca3f
+main canonical publication = MERGED_CANONICAL
 ~~~
 
 

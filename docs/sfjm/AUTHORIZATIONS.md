@@ -1,5 +1,54 @@
 # FECH.AI — SFJM Authorizations
 
+## 0.0000000000000000025 Product Authority — PR #195 merge + bounded post-merge SFJM reconciliation — 2026-09-07
+
+Product Authority explicitly authorized merge of PR #195 only on exact head:
+
+~~~text
+PR = #195
+authorized head = 643fb532e2860bdc53cbbddef529e3b9ed4e8709
+~~~
+
+GitHub live execution result:
+
+~~~text
+PR #195 = MERGED / CLOSED
+merged head = 643fb532e2860bdc53cbbddef529e3b9ed4e8709
+merge commit = d6953ea3071ada55fbcd97f21c848f5c6424ca3f
+canonical main after merge = d6953ea3071ada55fbcd97f21c848f5c6424ca3f
+~~~
+
+Product Authority then explicitly authorized a bounded post-merge SFJM reconciliation on that exact main to:
+
+~~~text
+record PR #195 as merged
+update canonical M2-05 provenance
+preserve M2-06 = ELIGIBLE_NOT_AUTHORIZED
+~~~
+
+Authorized mutation class:
+
+~~~text
+documentation / SFJM only
+one principal risk = stale post-merge lifecycle/provenance state
+normal branch + single documentation commit + Draft PR publication
+~~~
+
+This authorization does NOT authorize:
+
+~~~text
+Ready or merge of the reconciliation PR
+deploy
+runtime/frontend mutation
+Supabase/Auth/data mutation
+SQL / DDL / DML
+RLS/policy/grant/function/trigger mutation
+M2-06 execution
+M3 execution
+Security Go
+commercialization authorization
+~~~
+
 ## 0.0000000000000000024 Product Authority — STS-M2-05 acceptance publication / SFJM reconciliation — 2026-09-07
 
 Product Authority explicitly accepted:

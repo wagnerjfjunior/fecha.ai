@@ -61,9 +61,12 @@ blob f0217fdbdf6f9eff5243b3b60f9c87d35c269e1e
 acceptance/publication base main =
 e07254ef6b2d7184e749463727df2e6d404226a7
 
-M2-05 durable evidence candidate =
+M2-05 durable evidence on canonical main =
 docs/security/evidence/2026-09-07-sts-m2-05-database-contract-map.md
 blob 8b2875e1bc095329482de095028ed31b37091d63
+PR #195 = MERGED / CLOSED
+merge commit = d6953ea3071ada55fbcd97f21c848f5c6424ca3f
+canonical main = d6953ea3071ada55fbcd97f21c848f5c6424ca3f
 
 M2-05 =
 COMPLETE_WITH_RESIDUALS / ACCEPTED
@@ -77,7 +80,7 @@ ACTIVE
 
 The historical WBS label `Matriz de 43 tabelas` is preserved. The accepted/live canonical database universe for M2-05 is 44 tables.
 
-This graph records program state only. The new documentation remains PR_HEAD_ONLY until separately reviewed and merged; it does not grant M2-06 execution authority.
+This graph records program state only. The M2-05 documentation is merged/canonical via PR #195; this post-merge reconciliation does not grant M2-06 execution authority.
 
 ## 3. Consumer state vocabulary
 

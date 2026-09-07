@@ -20,6 +20,8 @@ NOT_GRANTED
 
 M2-05 execution itself is no longer a current blocker: the authorized READ_ONLY work is complete and Product Authority has accepted the result.
 
+The M2-05 documentation publication is also no longer a current lifecycle blocker: PR #195 is merged and canonical on `d6953ea3071ada55fbcd97f21c848f5c6424ca3f`.
+
 Blocked unless separately and explicitly authorized:
 
 ~~~text
@@ -34,7 +36,7 @@ hostile-client/cross-tenant runtime testing
 exhaustive application callsite proof work if it requires scope beyond authorized READ_ONLY evidence
 M2-06 execution
 M3 execution
-Ready / merge of the M2-05 documentation publication
+Ready / merge of the post-merge SFJM reconciliation publication
 deploy / production mutation
 Security Go
 commercialization authorization

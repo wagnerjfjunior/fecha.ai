@@ -59,7 +59,7 @@ Security Go
 commercialization authorization
 ~~~
 
-The current documentation publication itself remains PR_HEAD_ONLY until a separate exact-head review and Product Authority lifecycle authorization.
+The M2-05 documentation publication is now merged and canonical via PR #195 at `d6953ea3071ada55fbcd97f21c848f5c6424ca3f`. The present post-merge SFJM reconciliation is documentation-only; its own Ready/merge remain separately gated.
 
 
 ## 0.0000000000000000021 HISTORICAL / SUPERSEDED ACTION — M2-05 DATABASE CONTRACT MAP / AUTHORIZATION REQUIRED — 2026-09-07
