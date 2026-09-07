@@ -55,6 +55,30 @@ blob f0217fdbdf6f9eff5243b3b60f9c87d35c269e1e
 = INTEGRAL_READ
 ~~~
 
+## 2.1 M2-05 acceptance reconciliation anchor
+
+~~~text
+acceptance/publication base main =
+e07254ef6b2d7184e749463727df2e6d404226a7
+
+M2-05 durable evidence candidate =
+docs/security/evidence/2026-09-07-sts-m2-05-database-contract-map.md
+blob 8b2875e1bc095329482de095028ed31b37091d63
+
+M2-05 =
+COMPLETE_WITH_RESIDUALS / ACCEPTED
+
+M2-06 =
+ELIGIBLE_NOT_AUTHORIZED
+
+M2 =
+ACTIVE
+~~~
+
+The historical WBS label `Matriz de 43 tabelas` is preserved. The accepted/live canonical database universe for M2-05 is 44 tables.
+
+This graph records program state only. The new documentation remains PR_HEAD_ONLY until separately reviewed and merged; it does not grant M2-06 execution authority.
+
 ## 3. Consumer state vocabulary
 
 ~~~text
@@ -85,9 +109,9 @@ SUPERSEDED
 ~~~text
 program = FECH.AI Security-to-Scale 2026
 current milestone = M2 — Database Simplification & Optimization Plan
-current next task = M2-05 — Database Contract Map
-M2-05 execution = NOT_AUTHORIZED
-M2-06 execution = NOT_AUTHORIZED
+current next task = M2-06 — Decisão arquitetural do banco
+M2-05 = COMPLETE_WITH_RESIDUALS / ACCEPTED
+M2-06 = ELIGIBLE_NOT_AUTHORIZED / execution NOT_AUTHORIZED
 M3..M6 execution = NOT_AUTHORIZED
 Security Go = NOT_GRANTED
 ~~~
@@ -100,8 +124,8 @@ Security Go = NOT_GRANTED
 | M2 | M2-02 | Mapa routines / policies / triggers / grants | 24 | COMPLETE_WITH_RESIDUALS |
 | M2 | M2-03 | Índices / ACL contraditórias | 16 | COMPLETE_WITH_RESIDUALS |
 | M2 | M2-04 | Política target de DEFINER / RLS / DML | 20 | COMPLETE_WITH_RESIDUALS |
-| M2 | M2-05 | Database Contract Map | 20 | ELIGIBLE_NOT_AUTHORIZED |
-| M2 | M2-06 | Decisão arquitetural do banco | 16 | PLANNED_NOT_AUTHORIZED |
+| M2 | M2-05 | Database Contract Map | 20 | COMPLETE_WITH_RESIDUALS |
+| M2 | M2-06 | Decisão arquitetural do banco | 16 | ELIGIBLE_NOT_AUTHORIZED |
 | M3 | M3-01 | Identity / membership / team / role model | 24 | PLANNED_NOT_AUTHORIZED |
 | M3 | M3-02 | Authority contract por contexto | 28 | PLANNED_NOT_AUTHORIZED |
 | M3 | M3-03 | Allowlist de RPCs privilegiadas | 24 | PLANNED_NOT_AUTHORIZED |
@@ -169,6 +193,20 @@ Security Go = NOT_GRANTED
 ~~~
 
 These residuals do not reopen M2-04 unless a material invalidator changes the accepted decision.
+
+## 6.1 Accepted M2-05 contract overlay
+
+~~~text
+M2-05 = COMPLETE_WITH_RESIDUALS / ACCEPTED
+44 / 44 tables
+160 / 160 public routines
+23 / 23 non-DEFINER delta
+31 / 31 non-internal trigger instances
+10 / 10 bounded contexts
+M2-06 = ELIGIBLE_NOT_AUTHORIZED
+~~~
+
+M2-05 residual implementation/lifecycle/callsite-evidence/runtime/AppSec work is preserved and does not reopen the accepted Database Contract Map unless a material invalidator changes the decision.
 
 ## 7. Future decomposition rule
 

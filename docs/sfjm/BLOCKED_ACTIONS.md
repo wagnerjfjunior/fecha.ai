@@ -1,6 +1,49 @@
 # FECH.AI — SFJM Blocked Actions
 
-## 0. Current STS-M2-04 closure boundary — 2026-09-07
+## 0. CURRENT — STS-M2-05 accepted / M2-06 eligible but not authorized — 2026-09-07
+
+~~~text
+STS-M2-05 =
+COMPLETE / ACCEPTED WITH
+IMPLEMENTATION-LIFECYCLE-CALLSITE-EVIDENCE-
+RUNTIME-APPSEC RESIDUALS
+
+M2-06 =
+ELIGIBLE_NOT_AUTHORIZED
+
+M2 =
+ACTIVE
+
+Security Go =
+NOT_GRANTED
+~~~
+
+M2-05 execution itself is no longer a current blocker: the authorized READ_ONLY work is complete and Product Authority has accepted the result.
+
+Blocked unless separately and explicitly authorized:
+
+~~~text
+implementation of M2-04/M2-05 target dispositions
+implementation/lifecycle remediation
+ALTER FUNCTION / SECURITY DEFINER-INVOKER change
+owner/search_path mutation
+GRANT / REVOKE / default privilege change
+RLS/policy/direct-DML mutation
+lifecycle retirement/deletion/replacement
+hostile-client/cross-tenant runtime testing
+exhaustive application callsite proof work if it requires scope beyond authorized READ_ONLY evidence
+M2-06 execution
+M3 execution
+Ready / merge of the M2-05 documentation publication
+deploy / production mutation
+Security Go
+commercialization authorization
+~~~
+
+The next safe program gate is Product Authority authorization of bounded READ_ONLY STS-M2-06. Do not infer M2-06 execution authority from eligibility.
+
+
+## 0.1 Historical / superseded STS-M2-04 closure boundary — 2026-09-07
 
 ~~~text
 STS-M2-04 =
@@ -29,7 +72,7 @@ Security Go
 
 M2-04 target-policy analysis must not be replayed without a material invalidator.
 
-**Status:** STS_M2_04_ACCEPTED / M2_05_ELIGIBLE_NOT_AUTHORIZED / FAIL_CLOSED  
+**Status:** HISTORICAL_STS_M2_04_ACCEPTED / HISTORICAL_M2_05_ELIGIBLE_NOT_AUTHORIZED / SUPERSEDED  
 **Updated:** 2026-09-07  
 **Repository:** wagnerjfjunior/fecha.ai
 

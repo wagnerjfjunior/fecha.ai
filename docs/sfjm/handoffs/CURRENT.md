@@ -1,6 +1,71 @@
 # FECH.AI — SFJM Current Product/Security Handoff
 
-## 0.0000000000000000021 CURRENT HANDOFF — PROGRAM TASK GRAPH PUBLISHED / M2-05 NEXT — 2026-09-07
+## 0.0000000000000000022 CURRENT HANDOFF — STS-M2-05 ACCEPTED / M2-06 NEXT GATE — 2026-09-07
+
+~~~text
+repository = wagnerjfjunior/fecha.ai
+acceptance/publication base main = e07254ef6b2d7184e749463727df2e6d404226a7
+environment = Pilot Production / SaaS multi-tenant / multiempresa
+Security Go = NOT_GRANTED
+~~~
+
+Product Authority accepted:
+
+~~~text
+STS-M2-05 =
+COMPLETE / ACCEPTED WITH
+IMPLEMENTATION-LIFECYCLE-CALLSITE-EVIDENCE-
+RUNTIME-APPSEC RESIDUALS
+~~~
+
+Accepted coverage:
+
+~~~text
+44 / 44 tables
+160 / 160 public routines
+137 SECURITY DEFINER through accepted B2 + B3/C3/E + D slices
+23 / 23 non-DEFINER routines
+31 / 31 non-internal trigger instances
+10 / 10 bounded contexts
+new M2-05 semantic blockers = 0
+~~~
+
+Durable candidate artifact:
+
+~~~text
+docs/security/evidence/2026-09-07-sts-m2-05-database-contract-map.md
+blob 8b2875e1bc095329482de095028ed31b37091d63
+~~~
+
+Program continuation:
+
+~~~text
+M2-05 = COMPLETE_WITH_RESIDUALS / ACCEPTED
+M2-06 = ELIGIBLE_NOT_AUTHORIZED
+M2 = ACTIVE
+~~~
+
+Next specialist/program action:
+
+~~~text
+PRODUCT AUTHORITY / NEW M2-06 CONVERSATION
+authorize bounded READ_ONLY STS-M2-06 Database Architecture Decision
+reconstruct evidence needed to adjudicate:
+EVOLVE_IN_PLACE vs V2_STRANGLER vs NEW_DATABASE
+~~~
+
+Do not execute M2-06 under this handoff. No implementation, runtime, Supabase/Auth/data mutation, Ready, merge, deploy, Security Go or commercialization authority is carried forward.
+
+Publication lifecycle:
+
+~~~text
+Product Authority acceptance = YES
+M2-05 documentation branch = candidate
+canonical main publication = pending separate review/merge authorization
+~~~
+
+
+## 0.0000000000000000021 HISTORICAL / SUPERSEDED HANDOFF — PROGRAM TASK GRAPH PUBLISHED / M2-05 NEXT — 2026-09-07
 
 ~~~text
 repository = wagnerjfjunior/fecha.ai

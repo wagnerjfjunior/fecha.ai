@@ -103,6 +103,7 @@ GITHUB != conversation warehouse
 | M2-04C4 | **candidate standalone durable contract in this hardening PR** + SFJM | `docs/security/evidence/2026-09-06-sts-m2-04c-c4-target-rls-dml-contract.md` + existing SFJM | RECORDED | source SHA-256 `8bec01816fe72c0b9bb6605435b3f5e3cd537572929753fd93ab5949dc113125`; raw source remains noncanonical | CURRENT MAIN: reconstructible via SFJM; standalone durability becomes PASS only after merge |
 | M2-04D | `2026-09-06-sts-m2-04d-trigger-authority-classification.md` | `7fdc63a95d81661598937aa0bdfa654bcb9db66a` | RECORDED | source SHA-256 `6927b61338555fef95cc25892bb6097e815839b53bc217e0229084c5e5220389`; complete material 9/9 + 18/18 surface already durable | STRONG PASS |
 | M2-04E | `2026-09-06-sts-m2-04e-architecture-synthesis-acceptance.md` | `07365cae5a353bd2407512ddde0d3d4cf880352f` | RECORDED | synthesis built predominantly from exact versioned `INTEGRAL_READ` sources; no unique raw packet required | STRONG PASS |
+| M2-05 | `2026-09-07-sts-m2-05-database-contract-map.md` | `8b2875e1bc095329482de095028ed31b37091d63` | RECORDED BY PRODUCT AUTHORITY / PR_HEAD_ONLY UNTIL MERGE | accepted READ_ONLY result is preserved at contract/category level; a separate verbatim raw-run transcript is not versioned | PASS for accepted contract-level state; verbatim raw-run forensics remain partial |
 
 ## 5. Raw-source disposition
 

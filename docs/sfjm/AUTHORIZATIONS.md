@@ -1,5 +1,71 @@
 # FECH.AI — SFJM Authorizations
 
+## 0.0000000000000000024 Product Authority — STS-M2-05 acceptance publication / SFJM reconciliation — 2026-09-07
+
+Product Authority explicitly accepted:
+
+~~~text
+STS-M2-05 =
+COMPLETE / ACCEPTED WITH
+IMPLEMENTATION-LIFECYCLE-CALLSITE-EVIDENCE-
+RUNTIME-APPSEC RESIDUALS
+~~~
+
+Acceptance basis includes:
+
+~~~text
+44/44 canonical tables
+160/160 public routines
+137 SECURITY DEFINER through accepted B2 + B3/C3/E + D slices
+23/23 non-DEFINER routines
+31/31 non-internal trigger instances
+10/10 bounded contexts
+new semantic blockers = 0
+~~~
+
+Product Authority authorized exactly one bounded GitHub documentation implementation for:
+
+~~~text
+publish the accepted STS-M2-05 Database Contract Map
+record Product Authority acceptance
+reconcile current SFJM continuity
+transition M2-05 -> COMPLETE_WITH_RESIDUALS
+transition M2-06 -> ELIGIBLE_NOT_AUTHORIZED
+create branch / one documentation commit / push / Draft PR
+perform exact-head self-check
+~~~
+
+Authorized branch:
+
+~~~text
+docs/sts-m2-05-database-contract-map-acceptance
+~~~
+
+Principal risk:
+
+~~~text
+incorrect durable publication of accepted M2-05 state
+~~~
+
+This grant explicitly does NOT authorize:
+
+~~~text
+Ready
+merge
+deploy
+M2-06 execution
+M3 execution
+runtime/frontend mutation
+Supabase/Auth/data mutation
+DDL/DML
+RLS/policy/grant/function/trigger changes
+Security Go
+commercialization authorization
+~~~
+
+The write authority is consumed by publication of the Draft PR and exact-head self-check. A new head after independent review invalidates that review and requires fresh exact-head validation before any later lifecycle gate.
+
+
 ## 0.0000000000000000023 Product Authority — publish future task graph / SFJM continuity surface — 2026-09-07
 
 Product Authority requested that FECH.AI publish the already planned upcoming task structure so SFJM consumers can expose the real program hierarchy instead of relying on stale manual snapshots.
