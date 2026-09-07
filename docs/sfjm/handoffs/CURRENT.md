@@ -1,6 +1,87 @@
 # FECH.AI — SFJM Current Product/Security Handoff
 
-## 0.0000000000000000016 CURRENT HANDOFF — PR #189 corrected E contract; fresh exact-head review next — 2026-09-07
+## 0.0000000000000000017 CURRENT HANDOFF — PR #189 merged; corrected E contract on main; next bounded M2-04 action unselected — 2026-09-07
+
+~~~text
+repository = wagnerjfjunior/fecha.ai
+canonical main = 13eec5a6b720d67ed29a1837a01502123547ccb6
+PR #189 = MERGED / CLOSED
+merged head = b7baa29dbbfeeaee78e423f7950ba17390fac0e2
+merge commit = 13eec5a6b720d67ed29a1837a01502123547ccb6
+environment = Pilot Production / multi-tenant / multiempresa
+Security Go = NOT_GRANTED
+~~~
+
+Canonical corrected E continuity now on main:
+
+~~~text
+STS-M2-04E =
+COMPLETE / ACCEPTED WITH IMPLEMENTATION-LIFECYCLE-RUNTIME RESIDUALS
+
+FIVE-RESIDUAL E AUTHORITY ADJUDICATION = COMPLETE
+
+historical C3 =
+68 DEFINER / 40 INVOKER / 5 NOT_DETERMINED / 113 B3/C3 routines
+
+B3/C3 subset projection after E =
+70 DEFINER
+41 INVOKER
+0 semantic NOT_DETERMINED
+2 NON_MODE_LIFECYCLE
+113 B3/C3 routines
+
+B2 = separate accepted 15-routine slice with residuals
+D = separate accepted 9-trigger-routine target classification
+CROSS-SLICE 137-ROUTINE HOMOGENEOUS MODE SYNTHESIS = NOT CLAIMED
+~~~
+
+Material corrected decisions remain:
+
+~~~text
+031 -> DEFINER
+  ADMIN_LOCAL = tenant/company lifecycle authority
+  GESTOR = tenant + managed-team lifecycle authority
+  ROOT / ADMIN_GLOBAL != automatic tenant lifecycle authority
+
+036 -> NON_MODE_LIFECYCLE / RETIRE_CURRENT_SEMANTICS
+  future replacement = NOT DEFINED BY E
+  future replacement = NOT AUTHORIZED
+
+119 -> target INVOKER already resolved in C3
+  current implementation remains postgres-owned SECURITY DEFINER
+  implementation/runtime remediation remains open
+~~~
+
+Still open:
+
+~~~text
+004 implementation/security remediation
+031 implementation/caller-ACL remediation
+036 current-semantics retirement implementation
+047 global-body/RLS remediation
+119 current DEFINER -> target INVOKER remediation/runtime assurance
+127 retirement/deprecation implementation
+AppSec assurance
+hostile/cross-tenant runtime assurance
+Security Go
+~~~
+
+Next handoff:
+
+~~~text
+PRODUCT AUTHORITY SELECT / DEFINE
+NEXT BOUNDED STS-M2-04 ACTION
+
+next bounded STS-M2-04 action = NOT_SELECTED
+M2-04F semantics = NOT_CANONICALLY_DEFINED
+M2-04F execution = NOT_AUTHORIZED
+M2-05 = NOT_AUTHORIZED
+M2-06 = NOT_AUTHORIZED
+~~~
+
+Do not create a follow-up SFJM-only reconciliation merely because this documentation reconciliation itself later changes Draft/Ready/merge state. Require a new material event.
+
+## 0.0000000000000000016 HISTORICAL / SUPERSEDED HANDOFF — PRE-MERGE PR #189 corrected E contract; fresh exact-head review next — 2026-09-07
 
 ~~~text
 repository = wagnerjfjunior/fecha.ai
