@@ -1,5 +1,149 @@
 # FECH.AI — SFJM Evidence Freshness
 
+
+## 0.0000000000000000021 CURRENT EVIDENCE — PR #192 CONFLICT RECONCILIATION AGAINST PR #191 MAIN — 2026-09-07
+
+Reconciliation anchors:
+
+~~~text
+canonical main before reconciliation =
+ead9fe91d561145f883694452a54a6a289e42080
+
+PR #192 pre-reconciliation head =
+8f8c8dade4a495fe2b0edc48d11a08f5ccd3670f
+
+main drift source =
+PR #191 / docs: harden M1/M2 evidence provenance
+~~~
+
+Drift classification:
+
+~~~text
+technical/runtime/Supabase drift = NO
+documentation/provenance drift = YES
+overlapping SFJM files =
+docs/sfjm/AUTHORIZATIONS.md
+docs/sfjm/EVIDENCE_FRESHNESS.md
+~~~
+
+Reconciliation rule:
+
+~~~text
+PR #191 entries from canonical main = PRESERVED INTEGRALLY
+accepted B2 target-contract decisions = PRESERVED WITHOUT SEMANTIC CHANGE
+force push = NO
+technical mutation = NO
+~~~
+
+The PR #191 provenance hardening does not invalidate the B2 target-contract result. Fresh exact-head review is required after this reconciliation before any Ready decision.
+
+## 0.0000000000000000020 CURRENT ACCEPTANCE FRESHNESS — B2 TARGET-CONTRACT RESULT ACCEPTED — 2026-09-07
+
+Product Authority acceptance is bound to the exact result recorded on PR #192 parent head:
+
+~~~text
+accepted parent head =
+8e18c4abe4daca6e4e9240c567267fcfe774e5b9
+
+execution-base main =
+dd118baa89b68281bbd7c8df43c8e24c0e9b66bf
+
+live B2 fingerprint =
+33aea33ec2039d91f417b3980ea8cf43
+~~~
+
+The underlying READ_ONLY evidence remains fresh for this acceptance because no main drift or Supabase mutation was performed by the reconciliation.
+
+Acceptance does not expand proof:
+
+~~~text
+TARGET CONTRACT ACCEPTED != CURRENT IMPLEMENTATION COMPLIANT
+TARGET CONTRACT ACCEPTED != RUNTIME ASSURANCE
+TARGET CONTRACT ACCEPTED != APPSEC PASS
+TARGET CONTRACT ACCEPTED != SECURITY GO
+~~~
+
+Freshness invalidators remain the same as the underlying B2 closure evidence: material change to any of the 15 functions, their ACL/owner/search_path/security mode, relevant helper/RLS/direct-DML authority, canonical callers, lifecycle semantics, or contradictory runtime/AppSec evidence.
+
+
+## 0.0000000000000000019 CURRENT EVIDENCE — B2 HIGH-RISK TARGET-CONTRACT CLOSURE READ_ONLY — 2026-09-07
+
+Execution anchors:
+
+~~~text
+FECH.AI main = dd118baa89b68281bbd7c8df43c8e24c0e9b66bf
+FECH.AI main tree = b5774a4ed12f179bebcb1058a3bcf49eeebc4cbe
+SES main = a31e10cc3f0d1278c53c49e38151854d36ee9f3e
+Supabase project = uobxxgzshrmbtjfdolxd / Discador-MesaCliente
+Supabase project status = ACTIVE_HEALTHY
+live PostgreSQL = 17.6
+~~~
+
+Material source/read classification:
+
+~~~text
+docs/security/evidence/2026-09-05-sts-m2-04b1-routine-authority-policy.md
+blob 15e771e99ce3e424ba4a869a00d4965bed733fc3
+= INTEGRAL_READ
+
+docs/security/evidence/2026-09-05-sts-m2-04b2-high-risk-routine-authority-classification.md
+blob bfa43f6936b2a381552dbb95f5306f13069142af
+= INTEGRAL_READ
+
+current SFJM / governance / WBS / routing / Backend-Data project rules
+= PARTIAL_READ / MATERIAL-SECTIONS-ONLY
+
+B3/C/D/E accepted downstream state
+= CONSUMED AS ACCEPTED CONTINUITY / NO GLOBAL RE-RUN
+
+repository callsite search
+= BOUNDED SEARCH EVIDENCE / NOT INTEGRAL REPOSITORY READ
+~~~
+
+Live database evidence:
+
+~~~text
+exact B2 signatures resolved = 15 / 15
+pg_get_functiondef inspected = 15 / 15
+security mode / owner / proconfig / ACL inspected = 15 / 15
+aggregate live B2 fingerprint =
+33aea33ec2039d91f417b3980ea8cf43
+
+15 / 15 SECURITY DEFINER
+15 / 15 owner postgres
+15 / 15 search_path=public
+8 / 8 Group-A anon EXECUTE
+~~~
+
+Bounded supporting catalog evidence also inspected:
+
+- material table RLS/FORCE-RLS state;
+- material anon/authenticated table privileges;
+- material policies for Mesa financial, inventory, leads/funnel, list/rating, audit and actor tables;
+- public schema CREATE privilege for PUBLIC/anon/authenticated/service_role = false;
+- relevant transitive helper bodies including is_root, is_gestor, Mesa auth/admin helpers, solicitar_lote, registrar_root_audit, simular_troca_plano_empresa_root and calcular_score_lista.
+
+Runtime non-use proof remains unavailable:
+
+~~~text
+track_functions = none
+Group-D actual runtime use/nonuse = NOT_PROVEN
+NO_VERSIONED_CALLER != RUNTIME_UNUSED
+~~~
+
+Freshness / invalidation events for this result include:
+
+- any change to one of the 15 routine definitions/signatures/security modes/owners/search_path/ACLs;
+- material change to relevant RLS/policies/direct-DML grants or helper authority;
+- a new canonical caller for 4/5/7/12/13/14/15;
+- a new trusted service contract for 14/15;
+- Product Authority changing lifecycle/role/team semantics;
+- implementation of any candidate disposition;
+- material runtime/AppSec evidence that contradicts the current target assumptions.
+
+No database, Auth, RLS, policy, grant, routine, data, runtime or production mutation was executed.
+
+
 ## 0.0000000000000000018 M1/M2 PROVENANCE HARDENING — CURRENT EVIDENCE AVAILABILITY — 2026-09-07
 
 Product Authority authorized a bounded documentation-only provenance hardening after the read-only M1/M2 completeness audit.

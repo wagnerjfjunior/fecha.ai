@@ -1,6 +1,122 @@
 # FECH.AI — SFJM Current Product/Security Handoff
 
-## 0.0000000000000000017 CURRENT HANDOFF — PR #189 merged; corrected E contract on main; next bounded M2-04 action unselected — 2026-09-07
+
+## 0.0000000000000000019 CURRENT HANDOFF — B2 TARGET-CONTRACT ACCEPTED / FINAL STS-M2-04 ADJUDICATION NEXT — 2026-09-07
+
+~~~text
+repository = wagnerjfjunior/fecha.ai
+accepted B2 parent head = 8e18c4abe4daca6e4e9240c567267fcfe774e5b9
+execution-base main = dd118baa89b68281bbd7c8df43c8e24c0e9b66bf
+Supabase = uobxxgzshrmbtjfdolxd / Discador-MesaCliente
+Security Go = NOT_GRANTED
+~~~
+
+Product Authority has accepted the bounded 15-routine B2 target-contract closure.
+
+~~~text
+B2 HIGH-RISK TARGET-CONTRACT CLOSURE =
+COMPLETE / ACCEPTED WITH IMPLEMENTATION-LIFECYCLE-RUNTIME RESIDUALS
+~~~
+
+Accepted projection:
+
+~~~text
+6 ACTIVE TARGET DEFINER
+5 DEFINER_IF_RETAINED / DORMANT_NO_CLIENT_EXECUTE
+2 TARGET INVOKER
+2 NON_MODE_LIFECYCLE CANDIDATES
+15 TOTAL
+~~~
+
+No implementation or lifecycle mutation has occurred.
+
+Next receiver/action:
+
+~~~text
+PRODUCT AUTHORITY
+FINAL STS-M2-04 WBS CLOSURE ADJUDICATION
+
+question:
+does the accepted B1/B2/B3/C/D/E evidence satisfy
+M2-04 = target policy for DEFINER / RLS / DML
+with implementation/lifecycle/runtime residuals explicitly preserved?
+~~~
+
+If accepted, M2-05 becomes eligible but remains separately unauthorized.
+
+Do not infer:
+
+~~~text
+B2 accepted -> M2-04 automatically closed
+M2-04 closed -> M2-05 automatically authorized
+target accepted -> implementation compliant
+PR merge -> deploy/applied/runtime proof
+~~~
+
+Ready, merge, deploy, M2-05, M2-06 and Security Go remain separate Product Authority decisions.
+
+
+## 0.0000000000000000018 HISTORICAL / SUPERSEDED HANDOFF — B2 HIGH-RISK TARGET-CONTRACT CLOSURE RESULT READY FOR PRODUCT AUTHORITY — 2026-09-07
+
+~~~text
+repository = wagnerjfjunior/fecha.ai
+execution-base main = dd118baa89b68281bbd7c8df43c8e24c0e9b66bf
+environment = Pilot Production / multi-tenant / multiempresa
+Supabase = uobxxgzshrmbtjfdolxd / Discador-MesaCliente
+Security Go = NOT_GRANTED
+~~~
+
+Authorized bounded work has been executed READ_ONLY.
+
+~~~text
+STS-M2-04 B2 HIGH-RISK TARGET-CONTRACT CLOSURE =
+EXECUTED / RESULT READY FOR PRODUCT AUTHORITY ADJUDICATION
+
+exact scope = 15 B2 routines
+live fingerprint = 33aea33ec2039d91f417b3980ea8cf43
+Supabase mutation = NONE
+~~~
+
+Candidate target projection:
+
+~~~text
+6 ACTIVE TARGET DEFINER
+5 DEFINER_IF_RETAINED / DORMANT_NO_CLIENT_EXECUTE
+2 TARGET INVOKER
+2 NON_MODE_LIFECYCLE candidates
+15 total
+~~~
+
+Key lifecycle candidates requiring Product Authority adjudication:
+
+~~~text
+redefinir_senha_corretor
+-> RETIRE_LEGACY_SQL_RPC after dependency check
+
+registrar_audit_log
+-> RETIRE_OR_REPLACE_WITH_TRUSTED_INTERNAL_AUDIT_HELPER after dependency check
+~~~
+
+Callerless routines 4/5/7/12/13 are not declared unused. Their candidate target is fail-closed: no client EXECUTE until canonical caller/product semantics are proven.
+
+Next receiver/action:
+
+~~~text
+PRODUCT AUTHORITY ADJUDICATION
+
+accept the bounded result
+OR
+request one named delta
+
+then, if accepted:
+adjudicate final STS-M2-04 closure before any M2-05 authorization
+~~~
+
+No implementation, function/grant/RLS/owner/search_path mutation, lifecycle retirement, hostile testing, deploy, M2-05, M2-06 or Security Go is inherited from this handoff.
+
+Do not create another SFJM-only reconciliation merely because the publication carrying this handoff later advances through Draft/Ready/merge lifecycle.
+
+## 0.0000000000000000017 HISTORICAL / SUPERSEDED HANDOFF — PR #189 merged; corrected E contract on main; next bounded M2-04 action unselected — 2026-09-07
 
 ~~~text
 repository = wagnerjfjunior/fecha.ai

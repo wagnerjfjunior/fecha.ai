@@ -1,5 +1,118 @@
 # FECH.AI — SFJM Authorizations
 
+
+## 0.0000000000000000021 Product Authority — PR #192 bounded documentation conflict reconciliation — 2026-09-07
+
+Product Authority explicitly authorized a bounded documentation conflict reconciliation of PR #192 against exact main:
+
+~~~text
+main = ead9fe91d561145f883694452a54a6a289e42080
+PR #192 pre-reconciliation head = 8f8c8dade4a495fe2b0edc48d11a08f5ccd3670f
+scope = six existing PR #192 SFJM files only
+~~~
+
+Mandatory preservation:
+
+~~~text
+PR #191 merged provenance entries = PRESERVE INTEGRALLY
+B2 accepted decisions on PR #192 = PRESERVE WITHOUT SEMANTIC CHANGE
+~~~
+
+Explicitly NOT authorized:
+
+~~~text
+implementation
+Supabase mutation
+Ready
+merge to main
+deploy
+M2-05
+M2-06
+Security Go
+~~~
+
+After reconciliation, a fresh exact-head review is required and execution must stop for the next Product Authority gate.
+
+## 0.0000000000000000020 Product Authority — B2 High-Risk Target-Contract Closure acceptance / PR #192 reconciliation — 2026-09-07
+
+Product Authority explicitly accepted:
+
+~~~text
+STS-M2-04 — B2 High-Risk Target-Contract Closure result =
+ACCEPTED
+
+accepted exact parent head =
+8e18c4abe4daca6e4e9240c567267fcfe774e5b9
+~~~
+
+Product Authority also explicitly authorized the corresponding documentation reconciliation on PR #192.
+
+The acceptance is bounded to the already produced 15-routine READ_ONLY result. It does not authorize technical implementation or reinterpret current AS-IS state as compliant.
+
+Explicitly NOT authorized:
+
+~~~text
+implementation
+Supabase mutation
+migration
+ALTER FUNCTION
+GRANT / REVOKE
+RLS/policy mutation
+owner/search_path/security-mode mutation
+production mutation
+deploy
+Security Go
+Ready
+merge
+M2-05 execution
+M2-06 execution
+~~~
+
+This authorization is consumed by one coherent documentation-only update of the six existing PR #192 SFJM files. Any new head requires fresh exact-head revalidation before another lifecycle gate.
+
+
+## 0.0000000000000000019 Product Authority — STS-M2-04 B2 High-Risk Target-Contract Closure READ_ONLY + SFJM update — 2026-09-07
+
+Product Authority explicitly authorized:
+
+~~~text
+STS-M2-04 — B2 High-Risk Target-Contract Closure = AUTHORIZED READ_ONLY
+scope = exactly the 15 routines already classified in B2
+GitHub READ_ONLY = AUTHORIZED
+Supabase live READ_ONLY when necessary = AUTHORIZED
+~~~
+
+Product Authority explicitly did NOT authorize:
+
+~~~text
+implementation
+migration
+function alteration
+GRANT / REVOKE
+RLS/policy mutation
+production mutation
+deploy
+Security Go
+~~~
+
+The same user instruction explicitly requested that SFJM be updated to preserve the new authorization and continuity state. Therefore the bounded SFJM documentation reconciliation is authorized; it does not inherit Ready or merge authority.
+
+Execution consumed this authorization in READ_ONLY mode. Live Supabase capability preflight succeeded, exact 15/15 functions were inspected, and no Supabase mutation occurred.
+
+~~~text
+B2 closure execution = COMPLETED READ_ONLY
+result = READY FOR PRODUCT AUTHORITY ADJUDICATION
+result acceptance = NOT YET GRANTED
+STS-M2-04 final closure acceptance = NOT YET GRANTED
+M2-05 execution = NOT_AUTHORIZED
+M2-06 execution = NOT_AUTHORIZED
+Ready = NOT_AUTHORIZED
+merge = NOT_AUTHORIZED
+deploy = NOT_AUTHORIZED
+Security Go = NOT_GRANTED
+~~~
+
+
 ## 0.0000000000000000018 Product Authority — M1/M2 provenance hardening / anti-noise documentation boundary — 2026-09-07
 
 Product Authority explicitly authorized the bounded:

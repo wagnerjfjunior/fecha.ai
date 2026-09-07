@@ -1,6 +1,317 @@
 # FECH.AI — SFJM Current Material State
 
-## 0.0000000000000000017 CURRENT — PR #189 MERGED / STS-M2-04E CORRECTED CONTRACT ON MAIN — 2026-09-07
+
+## 0.0000000000000000019 CURRENT — B2 HIGH-RISK TARGET-CONTRACT CLOSURE ACCEPTED BY PRODUCT AUTHORITY — 2026-09-07
+
+Product Authority explicitly accepted the exact READ_ONLY B2 closure result produced from:
+
+~~~text
+accepted result parent head =
+8e18c4abe4daca6e4e9240c567267fcfe774e5b9
+
+execution-base main =
+dd118baa89b68281bbd7c8df43c8e24c0e9b66bf
+
+Supabase =
+uobxxgzshrmbtjfdolxd / Discador-MesaCliente
+
+live B2 fingerprint =
+33aea33ec2039d91f417b3980ea8cf43
+~~~
+
+Accepted bounded target/lifecycle projection:
+
+~~~text
+ACTIVE TARGET DEFINER = 6
+DEFINER_IF_RETAINED / DORMANT_NO_CLIENT_EXECUTE = 5
+TARGET INVOKER = 2
+NON_MODE_LIFECYCLE CANDIDATE = 2
+TOTAL = 15
+~~~
+
+Accepted exact dispositions:
+
+~~~text
+01 alterar_plano_empresa_root
+   -> PRIVILEGED_OPERATION / TARGET DEFINER / authenticated root entrypoint
+
+02 atualizar_status_empresa_root
+   -> PRIVILEGED_OPERATION / TARGET DEFINER / authenticated root entrypoint
+
+03 importar_mesa_cliente_disponibilidade_oficial
+   -> PRIVILEGED_OPERATION / TARGET DEFINER / authenticated tenant-admin/root entrypoint
+
+04 mesa_cliente_upsert_faixas_premio
+   -> PRIVILEGED_OPERATION / DEFINER_IF_RETAINED / DORMANT_NO_CLIENT_EXECUTE until canonical caller is proven
+
+05 mesa_cliente_upsert_politica_financeira
+   -> PRIVILEGED_OPERATION / DEFINER_IF_RETAINED / DORMANT_NO_CLIENT_EXECUTE until canonical caller is proven
+
+06 registrar_upload_arquivo_mesa
+   -> AUTHENTICATED_COMMAND / TARGET DEFINER / authenticated entrypoint
+
+07 salvar_mesa_cliente_desconto_politica
+   -> PRIVILEGED_OPERATION / DEFINER_IF_RETAINED / DORMANT_NO_CLIENT_EXECUTE until canonical caller is proven
+
+08 salvar_mesa_cliente_enriquecimento
+   -> AUTHENTICATED_COMMAND / TARGET DEFINER / authenticated RPC command boundary
+
+09 acquire_lote_lock
+   -> DB_INTERNAL_HELPER / TARGET INVOKER / NO DIRECT CLIENT EXECUTE
+
+10 avaliar_lista(uuid,integer,text)
+   -> AUTHENTICATED_COMMAND / TARGET DEFINER / authenticated entrypoint
+
+11 trilha_lead
+   -> AUTHENTICATED_QUERY / TARGET INVOKER / authenticated caller-visible lead scope
+
+12 dispensar_lembrete
+   -> AUTHENTICATED_COMMAND / DEFINER_IF_RETAINED / DORMANT_NO_CLIENT_EXECUTE until caller is proven
+
+13 mover_funil_batch
+   -> AUTHENTICATED_COMMAND / DEFINER_IF_RETAINED / DORMANT_NO_CLIENT_EXECUTE until caller + role/team scope are proven
+
+14 redefinir_senha_corretor
+   -> NON_MODE_LIFECYCLE candidate / RETIRE_LEGACY_SQL_RPC after dependency check
+
+15 registrar_audit_log
+   -> NON_MODE_LIFECYCLE candidate / RETIRE_OR_REPLACE_WITH_TRUSTED_INTERNAL_AUDIT_HELPER after dependency check
+~~~
+
+Accepted shared B2 target rules:
+
+~~~text
+PUBLIC EXECUTE target = 0 / 15
+anon EXECUTE target = 0 / 15
+service_role direct EXECUTE required by proven canonical caller = 0 / 15
+
+callerless retained routines =
+NO CLIENT EXECUTE until canonical caller/product contract is proven
+
+DEFINER owner target =
+controlled least-privilege owner boundary
+
+retained routine search_path target =
+deterministic safe object resolution with pg_catalog first
+and schema-qualified application objects
+~~~
+
+This acceptance closes the bounded B2 target-contract residual semantics. It does not implement them and does not convert current AS-IS into target compliance.
+
+Preserve:
+
+~~~text
+current 15/15 SECURITY DEFINER = AS-IS
+current 15/15 owner postgres = AS-IS
+current 15/15 search_path=public = AS-IS
+current 8/8 Group-A anon EXECUTE = AS-IS
+
+implementation remediation = NOT_PERFORMED
+lifecycle remediation = NOT_PERFORMED
+hostile-client runtime assurance = NOT_PROVEN
+cross-tenant runtime negatives = NOT_PROVEN where applicable
+Group-D runtime use/nonuse = NOT_PROVEN
+independent AppSec assurance = NOT_PERFORMED
+Security Go = NOT_GRANTED
+~~~
+
+Program boundary after this acceptance:
+
+~~~text
+B2 HIGH-RISK TARGET-CONTRACT CLOSURE =
+COMPLETE / ACCEPTED WITH IMPLEMENTATION-LIFECYCLE-RUNTIME RESIDUALS
+
+STS-M2-04 final WBS closure =
+NOT YET ADJUDICATED
+
+M2-04F semantics =
+NOT CANONICALLY CREATED
+
+M2-05 execution =
+NOT_AUTHORIZED
+
+M2-06 execution =
+NOT_AUTHORIZED
+~~~
+
+Next safe action is a bounded final STS-M2-04 closure adjudication against the already accepted B1/B2/B3/C/D/E target-policy evidence. No global replay is required absent a material invalidator.
+
+
+## 0.0000000000000000018 HISTORICAL / SUPERSEDED — STS-M2-04 B2 HIGH-RISK TARGET-CONTRACT CLOSURE EXECUTED / RESULT AWAITING PRODUCT AUTHORITY ADJUDICATION — 2026-09-07
+
+Current live execution anchor:
+
+~~~text
+repository = wagnerjfjunior/fecha.ai
+execution-base main = dd118baa89b68281bbd7c8df43c8e24c0e9b66bf
+environment = Pilot Production / SaaS multi-tenant / multiempresa
+Supabase = uobxxgzshrmbtjfdolxd / Discador-MesaCliente
+Security Go = NOT_GRANTED
+~~~
+
+Product Authority authorized exactly the bounded READ_ONLY closure of the 15 routines already classified in STS-M2-04B2, with GitHub READ_ONLY and Supabase live READ_ONLY when necessary. No implementation, migration, function change, GRANT/REVOKE, RLS/policy mutation, production mutation, deploy or Security Go was authorized.
+
+Live database capability preflight:
+
+~~~text
+REQUESTED_PROOF_LEVEL = LIVE_DATABASE_AUDIT
+REQUIRED_CAPABILITY = FECHAI_SUPABASE_LIVE_READ
+CAPABILITY_STATUS = AVAILABLE
+TARGET = uobxxgzshrmbtjfdolxd
+TASK_ADMISSION = ADMITTED
+~~~
+
+Execution result:
+
+~~~text
+B2 HIGH-RISK TARGET-CONTRACT CLOSURE =
+EXECUTED READ_ONLY / RESULT READY FOR PRODUCT AUTHORITY ADJUDICATION
+
+exact routines resolved live = 15 / 15
+live B2 function/metadata fingerprint =
+33aea33ec2039d91f417b3980ea8cf43
+
+15 / 15 current SECURITY DEFINER = YES
+15 / 15 current owner = postgres
+15 / 15 current proconfig includes search_path=public
+8 / 8 Group-A current anon EXECUTE = YES
+
+Supabase mutation = NONE
+runtime hostile testing = NONE
+AppSec assurance = NOT_PERFORMED
+~~~
+
+Versioned caller/provenance delta:
+
+~~~text
+ACTIVE VERSIONED APPLICATION CALLER:
+1 alterar_plano_empresa_root
+2 atualizar_status_empresa_root
+3 importar_mesa_cliente_disponibilidade_oficial
+6 registrar_upload_arquivo_mesa
+8 salvar_mesa_cliente_enriquecimento
+10 avaliar_lista(uuid,integer,text)
+11 trilha_lead
+
+DB_INTERNAL PARENT:
+9 acquire_lote_lock <- solicitar_lote(uuid)
+
+NO VERSIONED APPLICATION CALLER FOUND IN BOUNDED CURRENT-MAIN SEARCH:
+4 mesa_cliente_upsert_faixas_premio
+5 mesa_cliente_upsert_politica_financeira
+7 salvar_mesa_cliente_desconto_politica
+12 dispensar_lembrete
+13 mover_funil_batch
+14 redefinir_senha_corretor
+15 registrar_audit_log
+
+NO_VERSIONED_CALLER != RUNTIME_UNUSED
+~~~
+
+Candidate target-contract disposition returned for Product Authority adjudication:
+
+~~~text
+01 alterar_plano_empresa_root
+   -> PRIVILEGED_OPERATION / TARGET DEFINER / authenticated root entrypoint
+02 atualizar_status_empresa_root
+   -> PRIVILEGED_OPERATION / TARGET DEFINER / authenticated root entrypoint
+03 importar_mesa_cliente_disponibilidade_oficial
+   -> PRIVILEGED_OPERATION / TARGET DEFINER / authenticated tenant-admin/root entrypoint
+04 mesa_cliente_upsert_faixas_premio
+   -> PRIVILEGED_OPERATION / DEFINER_IF_RETAINED / DORMANT_NO_CLIENT_EXECUTE until canonical caller is proven
+05 mesa_cliente_upsert_politica_financeira
+   -> PRIVILEGED_OPERATION / DEFINER_IF_RETAINED / DORMANT_NO_CLIENT_EXECUTE until canonical caller is proven
+06 registrar_upload_arquivo_mesa
+   -> AUTHENTICATED_COMMAND / TARGET DEFINER / authenticated entrypoint
+07 salvar_mesa_cliente_desconto_politica
+   -> PRIVILEGED_OPERATION / DEFINER_IF_RETAINED / DORMANT_NO_CLIENT_EXECUTE until canonical caller is proven
+08 salvar_mesa_cliente_enriquecimento
+   -> AUTHENTICATED_COMMAND / TARGET DEFINER / authenticated RPC command boundary
+09 acquire_lote_lock
+   -> DB_INTERNAL_HELPER / TARGET INVOKER / NO DIRECT CLIENT EXECUTE
+10 avaliar_lista(uuid,integer,text)
+   -> AUTHENTICATED_COMMAND / TARGET DEFINER / authenticated entrypoint
+11 trilha_lead
+   -> AUTHENTICATED_QUERY / TARGET INVOKER / authenticated caller-visible lead scope
+12 dispensar_lembrete
+   -> AUTHENTICATED_COMMAND / DEFINER_IF_RETAINED / DORMANT_NO_CLIENT_EXECUTE until caller is proven
+13 mover_funil_batch
+   -> AUTHENTICATED_COMMAND / DEFINER_IF_RETAINED / DORMANT_NO_CLIENT_EXECUTE until caller + role/team scope are proven
+14 redefinir_senha_corretor
+   -> NON_MODE_LIFECYCLE candidate / RETIRE_LEGACY_SQL_RPC after dependency check
+15 registrar_audit_log
+   -> NON_MODE_LIFECYCLE candidate / RETIRE_OR_REPLACE_WITH_TRUSTED_INTERNAL_AUDIT_HELPER after dependency check
+~~~
+
+Candidate mode/lifecycle projection, not yet Product-Authority accepted:
+
+~~~text
+ACTIVE TARGET DEFINER = 6
+DEFINER_IF_RETAINED / DORMANT = 5
+TARGET INVOKER = 2
+NON_MODE_LIFECYCLE CANDIDATE = 2
+TOTAL = 15
+~~~
+
+Shared target contract proposed by the READ_ONLY closure:
+
+~~~text
+PUBLIC EXECUTE target = 0 / 15
+anon EXECUTE target = 0 / 15
+service_role direct EXECUTE required by proven canonical caller = 0 / 15
+
+active direct authenticated entrypoints proposed =
+1,2,3,6,8,10,11
+
+callerless retained routines =
+NO CLIENT EXECUTE until canonical caller/product contract is proven
+
+DEFINER owner target =
+controlled least-privilege owner boundary;
+current postgres ownership is not accepted as target-compliance proof
+
+retained routine search_path target =
+deterministic safe object resolution with pg_catalog first and
+schema-qualified application objects;
+current search_path=public is AS-IS evidence, not target-compliance proof
+~~~
+
+Material live RLS/DML composition supporting the candidate:
+
+- all material touched tables inspected in this closure have RLS enabled;
+- authenticated direct writes are absent on the privileged stock, company, financial-policy, lead/funnel and audit write surfaces material to the retained DEFINER decisions;
+- Mesa financial-policy tables explicitly deny authenticated direct INSERT/UPDATE/DELETE while allowing tenant-scoped reads;
+- mesa_cliente_unidade_enriquecimentos has authenticated DML grants but no live policy rows were returned by the bounded policy query, so direct-DML authority is not a substitute for the current RPC command boundary;
+- acquire_lote_lock performs only advisory locking and is called from solicitar_lote, so current DEFINER/client reachability is not justified by the body;
+- trilha_lead is read-only, has an active authenticated application caller, and its current body incorrectly treats lead-id specificity/GRANT as sufficient authority while the live function ACL state lacks authenticated EXECUTE.
+
+The candidate dispositions do not authorize implementation and do not prove runtime safety.
+
+Preserved assurance residuals:
+
+~~~text
+hostile-client runtime assurance = NOT_PROVEN
+cross-tenant runtime negatives = NOT_PROVEN where applicable
+Group-D actual runtime use/nonuse = NOT_PROVEN
+track_functions = none; database call statistics cannot prove non-use
+independent AppSec assurance = NOT_PERFORMED
+implementation remediation = NOT_PERFORMED
+Security Go = NOT_GRANTED
+~~~
+
+Decision boundary:
+
+~~~text
+RESULT PACKET != PRODUCT AUTHORITY ACCEPTANCE
+STS-M2-04 final closure = NOT YET ADJUDICATED
+M2-04F semantics = NOT CANONICALLY CREATED
+M2-05 execution = NOT_AUTHORIZED
+M2-06 execution = NOT_AUTHORIZED
+~~~
+
+Next safe action is Product Authority adjudication of this bounded 15-routine result. No global B1/B2/B3/C/D/E replay is required absent a material invalidator.
+
+## 0.0000000000000000017 HISTORICAL / SUPERSEDED — PR #189 MERGED / STS-M2-04E CORRECTED CONTRACT ON MAIN — 2026-09-07
 
 Canonical post-merge state:
 

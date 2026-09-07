@@ -1,6 +1,100 @@
 # FECH.AI — SFJM Next Safe Action
 
-## 0.0000000000000000016 CURRENT ACTION — select / define next bounded STS-M2-04 action after PR #189 merge — 2026-09-07
+
+## 0.0000000000000000019 CURRENT ACTION — FINAL STS-M2-04 WBS CLOSURE ADJUDICATION — 2026-09-07
+
+Product Authority has accepted the bounded B2 High-Risk Target-Contract Closure.
+
+Current accepted M2-04 evidence stack:
+
+~~~text
+B1 routine-authority policy = COMPLETE / ACCEPTED WITH RESIDUALS
+B2 original 15-routine classification = COMPLETE / ACCEPTED WITH RESIDUALS
+B2 target-contract closure = COMPLETE / ACCEPTED WITH IMPLEMENTATION-LIFECYCLE-RUNTIME RESIDUALS
+B3 classification = COMPLETE / ACCEPTED
+C = COMPLETE / ACCEPTED WITH BOUNDED AUTHORITY RESIDUALS
+D = COMPLETE / ACCEPTED TRIGGER AUTHORITY CONTRACT
+E = COMPLETE / ACCEPTED WITH IMPLEMENTATION-LIFECYCLE-RUNTIME RESIDUALS
+~~~
+
+Single next safe action:
+
+~~~text
+PRODUCT AUTHORITY:
+ADJUDICATE WHETHER STS-M2-04 =
+COMPLETE / ACCEPTED WITH IMPLEMENTATION-LIFECYCLE-RUNTIME RESIDUALS
+AGAINST THE WBS OBJECTIVE:
+TARGET POLICY FOR DEFINER / RLS / DML
+~~~
+
+This is an acceptance/gate decision only. It does not authorize implementation.
+
+If STS-M2-04 is accepted, M2-05 — Database Contract Map becomes the next eligible bounded milestone, but M2-05 execution still requires separate authorization.
+
+Still prohibited:
+
+~~~text
+implementation
+Supabase/Auth/data mutation
+ALTER FUNCTION
+GRANT / REVOKE
+owner/search_path/security-mode mutation
+RLS/policy/direct-DML mutation
+lifecycle retirement
+hostile-client/cross-tenant testing
+M2-05 execution
+M2-06 execution
+Ready
+merge
+deploy
+Security Go
+~~~
+
+
+## 0.0000000000000000018 HISTORICAL / SUPERSEDED ACTION — PRODUCT AUTHORITY ADJUDICATE B2 HIGH-RISK TARGET-CONTRACT CLOSURE RESULT — 2026-09-07
+
+The authorized READ_ONLY B2 High-Risk Target-Contract Closure has been executed against:
+
+~~~text
+FECH.AI main = dd118baa89b68281bbd7c8df43c8e24c0e9b66bf
+Supabase = uobxxgzshrmbtjfdolxd / Discador-MesaCliente
+live exact B2 routines = 15 / 15
+live B2 fingerprint = 33aea33ec2039d91f417b3980ea8cf43
+~~~
+
+The result is ready for Product Authority adjudication and is not self-accepting.
+
+Single next safe action:
+
+~~~text
+PRODUCT AUTHORITY:
+ACCEPT THE B2 HIGH-RISK TARGET-CONTRACT CLOSURE RESULT
+OR
+REQUEST ONE BOUNDED DELTA ON A NAMED DISPOSITION
+~~~
+
+If accepted, the Master Project may then adjudicate whether STS-M2-04 as a whole satisfies the WBS target-policy exit with implementation/lifecycle/runtime residuals preserved. M2-05 remains a separate authorization decision.
+
+Do not:
+
+~~~text
+re-run B1/B2/B3/C/D/E globally without material invalidation
+invent STS-M2-04F semantics
+implement any candidate disposition
+ALTER FUNCTION
+GRANT / REVOKE
+change owner/search_path/security mode
+change RLS/policies/direct-DML grants
+retire 14 or 15
+run hostile/cross-tenant tests
+start M2-05 or M2-06
+deploy
+grant Security Go
+~~~
+
+No further SFJM-only reconciliation is required merely because the documentation PR carrying this state later changes Draft/Ready/merge lifecycle.
+
+## 0.0000000000000000016 HISTORICAL / SUPERSEDED ACTION — select / define next bounded STS-M2-04 action after PR #189 merge — 2026-09-07
 
 Current durable state:
 
