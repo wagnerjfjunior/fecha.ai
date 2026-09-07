@@ -1,6 +1,87 @@
 # FECH.AI — SFJM Current Material State
 
-## 0.0000000000000000021 CURRENT — STS-M2-05 DATABASE CONTRACT MAP COMPLETE / ACCEPTED WITH RESIDUALS — 2026-09-07
+## 0.0000000000000000022 CURRENT — STS-M2-06 DATABASE ARCHITECTURE DECISION AUTHORIZED READ_ONLY — 2026-09-07
+
+Product Authority explicitly authorized initiation of STS-M2-06 from current canonical FECH.AI main:
+
+~~~text
+canonical main =
+f22b83bb7acec8692e0575185a88ca2755183b41
+
+environment =
+Pilot Production / SaaS multi-tenant / multiempresa
+
+STS-M2-06 =
+AUTHORIZED_READ_ONLY / READY_TO_EXECUTE
+
+STS-M2 =
+ACTIVE
+
+Security Go =
+NOT_GRANTED
+~~~
+
+WBS task and exit contract:
+
+~~~text
+M2-06 — Decisão arquitetural do banco — 16h
+
+decision =
+EVOLVE_IN_PLACE
+vs
+V2_STRANGLER
+vs
+NEW_DATABASE
+
+evidence required = YES
+~~~
+
+Canonical specialist:
+
+~~~text
+GPT1.5 — FECH.AI Arquiteto SaaS
+docs/skills/fechai-gpt1-architect-saas.md
+~~~
+
+STS-M2-06 must reconstruct enough current evidence to characterize the existing database architecture and compare the three allowed target directions. Material dimensions include multi-tenancy, trust boundaries, database contracts, coupling, callers/consumers, migration complexity, operational blast radius, rollback, observability/proof obligations and preserved STS-M2-01..STS-M2-05 residuals.
+
+Authorized:
+
+~~~text
+GitHub READ_ONLY
+bounded repository discovery / dependency tracing READ_ONLY
+bounded Supabase catalog / metadata / statistics READ_ONLY when materially necessary
+architecture synthesis and option comparison
+recommendation for Product Authority adjudication
+~~~
+
+Not authorized:
+
+~~~text
+implementation
+runtime/frontend mutation
+Supabase/Auth/data mutation
+SQL / DDL / DML mutation
+migration execution
+RLS / policy / grants / function / trigger mutation
+STS-M3 execution
+deploy
+Security Go
+~~~
+
+The STS-M2-06 result is not self-accepting. A recommendation or decision packet must return to Product Authority for explicit adjudication before implementation or STS-M2 closure.
+
+Current next safe action:
+
+~~~text
+EXECUTE BOUNDED STS-M2-06 READ_ONLY
+IN A NEW CONVERSATION
+AGAINST LIVE CANONICAL MAIN
+~~~
+
+This authorization publication is documentation-only and remains PR_HEAD_ONLY until separately reviewed/merged. The execution authority itself comes from Product Authority and is exact-scope bounded; repository publication does not widen it.
+
+## 0.0000000000000000021 HISTORICAL / SUPERSEDED — STS-M2-05 DATABASE CONTRACT MAP COMPLETE / ACCEPTED WITH RESIDUALS — 2026-09-07
 
 Product Authority explicitly accepted STS-M2-05 and authorized this bounded documentation-only publication from exact FECH.AI main:
 

@@ -1,5 +1,72 @@
 # FECH.AI — SFJM Authorizations
 
+## 0.0000000000000000026 Product Authority — STS-M2-06 Database Architecture Decision READ_ONLY start — 2026-09-07
+
+Product Authority explicitly authorized initiation of:
+
+~~~text
+STS-M2-06 — Database Architecture Decision
+WBS effort = 16h
+execution mode = BOUNDED READ_ONLY / EVIDENCE RECONSTRUCTION / ARCHITECTURE DECISION
+canonical FECH.AI main at authorization = f22b83bb7acec8692e0575185a88ca2755183b41
+environment = Pilot Production / SaaS multi-tenant / multiempresa
+~~~
+
+Authoritative WBS exit contract:
+
+~~~text
+decision =
+EVOLVE_IN_PLACE
+vs
+V2_STRANGLER
+vs
+NEW_DATABASE
+
+decision must be supported by evidence
+~~~
+
+Canonical specialist:
+
+~~~text
+GPT1.5 — FECH.AI Arquiteto SaaS
+skill = docs/skills/fechai-gpt1-architect-saas.md
+~~~
+
+Authorized evidence operations:
+
+~~~text
+GitHub / versioned evidence READ_ONLY
+repository discovery and callsite/dependency tracing READ_ONLY
+bounded Supabase catalog / metadata / statistics READ_ONLY when materially necessary
+architecture characterization
+multi-tenancy / trust-boundary analysis
+option comparison
+migration / blast-radius / rollback / proof-obligation analysis
+recommendation for Product Authority adjudication
+~~~
+
+The result may recommend one architecture but does not self-approve it.
+
+Explicitly NOT authorized:
+
+~~~text
+technical implementation
+runtime/frontend mutation
+Supabase/Auth/data mutation
+SQL / DDL / DML mutation
+migration execution
+RLS / policy / grant / owner / search_path mutation
+function / trigger / RPC / Edge Function mutation
+active hostile-client or cross-tenant production testing
+M3 execution
+Ready or merge of the M2-06 authorization publication
+deploy
+Security Go
+commercialization authorization
+~~~
+
+Product Authority also authorized this bounded SFJM documentation reconciliation and handoff publication so a new conversation can execute M2-06 without reconstructing authority from chat history. One documentation branch, one coherent documentation commit and one Draft PR are authorized. Ready and merge remain separate gates.
+
 ## 0.0000000000000000025 Product Authority — PR #195 merge + bounded post-merge SFJM reconciliation — 2026-09-07
 
 Product Authority explicitly authorized merge of PR #195 only on exact head:

@@ -1,6 +1,54 @@
 # FECH.AI — SFJM Blocked Actions
 
-## 0. CURRENT — STS-M2-05 accepted / M2-06 eligible but not authorized — 2026-09-07
+## 0. CURRENT — STS-M2-06 READ_ONLY AUTHORIZED / MUTATIONS STILL BLOCKED — 2026-09-07
+
+~~~text
+STS-M2-05 =
+COMPLETE / ACCEPTED WITH RESIDUALS
+
+STS-M2-06 =
+AUTHORIZED_READ_ONLY / READY_TO_EXECUTE
+
+STS-M2 =
+ACTIVE
+
+Security Go =
+NOT_GRANTED
+~~~
+
+STS-M2-06 bounded READ_ONLY execution is no longer blocked. Product Authority explicitly authorized evidence reconstruction and architecture decision work.
+
+Allowed within STS-M2-06:
+
+~~~text
+GitHub / repository READ_ONLY discovery
+bounded Supabase catalog / metadata / statistics READ_ONLY when materially necessary
+architecture characterization
+three-option comparison
+recommendation for Product Authority adjudication
+~~~
+
+Still blocked unless separately authorized:
+
+~~~text
+STS-M2-06 implementation
+runtime/frontend mutation
+Supabase/Auth/data mutation
+SQL / DDL / DML mutation
+migration execution
+RLS / policy / grants / owner / search_path mutation
+function / trigger / RPC / Edge Function mutation
+active hostile-client/cross-tenant production testing
+STS-M3 execution
+Ready / merge of this STS-M2-06 authorization publication
+deploy / production mutation
+Security Go
+commercialization authorization
+~~~
+
+STS-M2-06 completion/acceptance is not automatic. The result must return to Product Authority for adjudication.
+
+## 0.1 HISTORICAL / SUPERSEDED — STS-M2-05 accepted / M2-06 eligible but not authorized — 2026-09-07
 
 ~~~text
 STS-M2-05 =

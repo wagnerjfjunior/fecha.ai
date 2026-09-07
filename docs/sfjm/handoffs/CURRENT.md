@@ -1,6 +1,83 @@
 # FECH.AI — SFJM Current Product/Security Handoff
 
-## 0.0000000000000000022 CURRENT HANDOFF — STS-M2-05 ACCEPTED / M2-06 NEXT GATE — 2026-09-07
+## 0.0000000000000000023 CURRENT HANDOFF — STS-M2-06 AUTHORIZED READ_ONLY / NEW CONVERSATION — 2026-09-07
+
+~~~text
+repository = wagnerjfjunior/fecha.ai
+canonical main at authorization = f22b83bb7acec8692e0575185a88ca2755183b41
+environment = Pilot Production / SaaS multi-tenant / multiempresa
+current milestone = STS-M2
+current task = STS-M2-06 — Decisão arquitetural do banco
+STS-M2-06 = AUTHORIZED_READ_ONLY / READY_TO_EXECUTE
+Security Go = NOT_GRANTED
+~~~
+
+Product Authority explicitly authorized execution of STS-M2-06.
+
+Canonical specialist:
+
+~~~text
+GPT1.5 — FECH.AI Arquiteto SaaS
+skill = docs/skills/fechai-gpt1-architect-saas.md
+~~~
+
+Authoritative WBS outcome:
+
+~~~text
+EVOLVE_IN_PLACE
+vs
+V2_STRANGLER
+vs
+NEW_DATABASE
+
+with evidence
+~~~
+
+The new conversation must resolve live main independently, bootstrap normally, consume accepted STS-M2-01..STS-M2-05 evidence without global replay, and reconstruct only the additional architecture evidence required for STS-M2-06.
+
+Authorized:
+
+~~~text
+GitHub READ_ONLY
+repository discovery / callsite and dependency tracing READ_ONLY
+bounded Supabase catalog / metadata / statistics READ_ONLY when materially necessary
+architecture synthesis / comparison / recommendation
+~~~
+
+Explicitly not authorized:
+
+~~~text
+implementation
+runtime/frontend mutation
+Supabase/Auth/data mutation
+SQL / DDL / DML
+migration execution
+RLS / policy / grants / function / trigger mutation
+STS-M3 execution
+Ready
+merge
+deploy
+Security Go
+~~~
+
+Expected handback:
+
+~~~text
+Context Readiness Receipt
+current-state architecture characterization
+material evidence/coverage matrix
+three-option decision matrix
+trade-offs / multi-tenancy / security / operations
+migration / blast radius / rollback / proof obligations
+residuals and missing evidence
+recommended architecture
+confidence / conditions
+Product Authority adjudication request
+~~~
+
+Do not mark STS-M2-06 COMPLETE merely because a recommendation is produced.
+
+## 0.0000000000000000022 HISTORICAL / SUPERSEDED HANDOFF — STS-M2-05 ACCEPTED / M2-06 NEXT GATE — 2026-09-07
 
 ~~~text
 repository = wagnerjfjunior/fecha.ai

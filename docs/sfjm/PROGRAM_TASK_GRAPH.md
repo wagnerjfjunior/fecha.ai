@@ -33,6 +33,21 @@ docs/sfjm/NEXT_SAFE_ACTION.md
 
 A consumer must not silently turn `PLANNED` or `ELIGIBLE` into execution authority.
 
+Qualified identity contract outside the WBS:
+
+~~~text
+qualified milestone id = STS-Mx
+qualified task id = STS-Mx-yy
+compact WBS id = Mx-yy
+
+example:
+qualified_id = STS-M2-06
+wbs_id = M2-06
+parent_id = STS-M2
+~~~
+
+The compact WBS ID is preserved for exact parity with the WBS, but it is not the primary cross-program identity outside the WBS document.
+
 ## 2. Source anchors at publication
 
 ~~~text
@@ -55,32 +70,32 @@ blob f0217fdbdf6f9eff5243b3b60f9c87d35c269e1e
 = INTEGRAL_READ
 ~~~
 
-## 2.1 M2-05 acceptance reconciliation anchor
+## 2.1 STS-M2-05 acceptance reconciliation anchor
 
 ~~~text
 acceptance/publication base main =
 e07254ef6b2d7184e749463727df2e6d404226a7
 
-M2-05 durable evidence on canonical main =
+STS-M2-05 durable evidence on canonical main =
 docs/security/evidence/2026-09-07-sts-m2-05-database-contract-map.md
 blob 8b2875e1bc095329482de095028ed31b37091d63
 PR #195 = MERGED / CLOSED
 merge commit = d6953ea3071ada55fbcd97f21c848f5c6424ca3f
 canonical main = d6953ea3071ada55fbcd97f21c848f5c6424ca3f
 
-M2-05 =
+STS-M2-05 =
 COMPLETE_WITH_RESIDUALS / ACCEPTED
 
-M2-06 =
-ELIGIBLE_NOT_AUTHORIZED
+STS-M2-06 =
+AUTHORIZED_READ_ONLY / READY_TO_EXECUTE
 
-M2 =
+STS-M2 =
 ACTIVE
 ~~~
 
-The historical WBS label `Matriz de 43 tabelas` is preserved. The accepted/live canonical database universe for M2-05 is 44 tables.
+The historical WBS label `Matriz de 43 tabelas` is preserved. The accepted/live canonical database universe for STS-M2-05 is 44 tables.
 
-This graph records program state only. The M2-05 documentation is merged/canonical via PR #195; this post-merge reconciliation does not grant M2-06 execution authority.
+This graph records program state only. Product Authority has now separately granted bounded READ_ONLY STS-M2-06 execution authority. No implementation, STS-M3 execution, deploy or Security Go follows from that authorization.
 
 ## 3. Consumer state vocabulary
 
@@ -93,6 +108,9 @@ COMPLETE_WITH_RESIDUALS
 
 ACTIVE
 = current milestone or explicitly active authorized execution
+
+AUTHORIZED_READ_ONLY
+= execution is explicitly authorized for bounded READ_ONLY evidence/reasoning only; no mutation authority
 
 ELIGIBLE_NOT_AUTHORIZED
 = next structurally eligible task; execution authority has not been granted
@@ -111,64 +129,64 @@ SUPERSEDED
 
 ~~~text
 program = FECH.AI Security-to-Scale 2026
-current milestone = M2 — Database Simplification & Optimization Plan
-current next task = M2-06 — Decisão arquitetural do banco
-M2-05 = COMPLETE_WITH_RESIDUALS / ACCEPTED
-M2-06 = ELIGIBLE_NOT_AUTHORIZED / execution NOT_AUTHORIZED
-M3..M6 execution = NOT_AUTHORIZED
+current milestone = STS-M2 — Database Simplification & Optimization Plan
+current next task = STS-M2-06 — Decisão arquitetural do banco
+STS-M2-05 = COMPLETE_WITH_RESIDUALS / ACCEPTED
+STS-M2-06 = AUTHORIZED_READ_ONLY / READY_TO_EXECUTE
+STS-M3..STS-M6 execution = NOT_AUTHORIZED
 Security Go = NOT_GRANTED
 ~~~
 
 ## 5. WBS-derived task graph
 
-| Parent | Task | Label | Hours | Operational state |
-|---|---|---|---:|---|
-| M2 | M2-01 | Matriz de 43 tabelas | 20 | COMPLETE |
-| M2 | M2-02 | Mapa routines / policies / triggers / grants | 24 | COMPLETE_WITH_RESIDUALS |
-| M2 | M2-03 | Índices / ACL contraditórias | 16 | COMPLETE_WITH_RESIDUALS |
-| M2 | M2-04 | Política target de DEFINER / RLS / DML | 20 | COMPLETE_WITH_RESIDUALS |
-| M2 | M2-05 | Database Contract Map | 20 | COMPLETE_WITH_RESIDUALS |
-| M2 | M2-06 | Decisão arquitetural do banco | 16 | ELIGIBLE_NOT_AUTHORIZED |
-| M3 | M3-01 | Identity / membership / team / role model | 24 | PLANNED_NOT_AUTHORIZED |
-| M3 | M3-02 | Authority contract por contexto | 28 | PLANNED_NOT_AUTHORIZED |
-| M3 | M3-03 | Allowlist de RPCs privilegiadas | 24 | PLANNED_NOT_AUTHORIZED |
-| M3 | M3-04 | Redução de DML sensível direto | 24 | PLANNED_NOT_AUTHORIZED |
-| M3 | M3-05 | Fechamento Auth / Admin flows | 24 | PLANNED_NOT_AUTHORIZED |
-| M3 | M3-06 | Staging / test plan de segurança | 28 | PLANNED_NOT_AUTHORIZED |
-| M4 | M4-01 | AppShell / Shared Frontend Boundary | 20 | PLANNED_NOT_AUTHORIZED |
-| M4 | M4-02 | CRM + Funil Core Slice | 40 | PLANNED_NOT_AUTHORIZED |
-| M4 | M4-03 | LeadOps Execution Slice — Leads / Listas / Distribuição / Discador / Power Message Engine | 32 | PLANNED_NOT_AUTHORIZED |
-| M4 | M4-04 | MesaCliente Core Slice | 32 | PLANNED_NOT_AUTHORIZED |
-| M4 | M4-05 | Feature Gateways / API Boundaries | 24 | PLANNED_NOT_AUTHORIZED |
-| M4 | M4-06 | Core Functional Equivalence & Regression | 24 | PLANNED_NOT_AUTHORIZED |
-| M5 | M5-01 | Hostile-client suite isolada | 28 | PLANNED_NOT_AUTHORIZED |
-| M5 | M5-02 | Regressão tenant / role / auth / storage | 28 | PLANNED_NOT_AUTHORIZED |
-| M5 | M5-03 | Dependency / CVE gate | 12 | PLANNED_NOT_AUTHORIZED |
-| M5 | M5-04 | Secrets / config / deploy gate | 16 | PLANNED_NOT_AUTHORIZED |
-| M5 | M5-05 | Observabilidade / rollback / incidente | 24 | PLANNED_NOT_AUTHORIZED |
-| M5 | M5-06 | Adjudicação de residual risk | 20 | PLANNED_NOT_AUTHORIZED |
-| M6 | M6-01 | Security Evidence + Final AS-BUILT Package | 14 | PLANNED_NOT_AUTHORIZED |
-| M6 | M6-02 | Blocker closeout | 8 | PLANNED_NOT_AUTHORIZED |
-| M6 | M6-03 | Onboarding / support / operational runbooks | 18 | PLANNED_NOT_AUTHORIZED |
-| M6 | M6-04 | Decisão comercial controlada | 8 | PLANNED_NOT_AUTHORIZED |
-| M6 | M6-05 | Launch readiness + AS-BUILT acceptance review | 12 | PLANNED_NOT_AUTHORIZED |
+| Parent qualified | Qualified ID | WBS ID | Label | Hours | Operational state |
+|---|---|---|---|---:|---|
+| STS-M2 | STS-M2-01 | M2-01 | Matriz de 43 tabelas | 20 | COMPLETE |
+| STS-M2 | STS-M2-02 | M2-02 | Mapa routines / policies / triggers / grants | 24 | COMPLETE_WITH_RESIDUALS |
+| STS-M2 | STS-M2-03 | M2-03 | Índices / ACL contraditórias | 16 | COMPLETE_WITH_RESIDUALS |
+| STS-M2 | STS-M2-04 | M2-04 | Política target de DEFINER / RLS / DML | 20 | COMPLETE_WITH_RESIDUALS |
+| STS-M2 | STS-M2-05 | M2-05 | Database Contract Map | 20 | COMPLETE_WITH_RESIDUALS |
+| STS-M2 | STS-M2-06 | M2-06 | Decisão arquitetural do banco | 16 | AUTHORIZED_READ_ONLY |
+| STS-M3 | STS-M3-01 | M3-01 | Identity / membership / team / role model | 24 | PLANNED_NOT_AUTHORIZED |
+| STS-M3 | STS-M3-02 | M3-02 | Authority contract por contexto | 28 | PLANNED_NOT_AUTHORIZED |
+| STS-M3 | STS-M3-03 | M3-03 | Allowlist de RPCs privilegiadas | 24 | PLANNED_NOT_AUTHORIZED |
+| STS-M3 | STS-M3-04 | M3-04 | Redução de DML sensível direto | 24 | PLANNED_NOT_AUTHORIZED |
+| STS-M3 | STS-M3-05 | M3-05 | Fechamento Auth / Admin flows | 24 | PLANNED_NOT_AUTHORIZED |
+| STS-M3 | STS-M3-06 | M3-06 | Staging / test plan de segurança | 28 | PLANNED_NOT_AUTHORIZED |
+| STS-M4 | STS-M4-01 | M4-01 | AppShell / Shared Frontend Boundary | 20 | PLANNED_NOT_AUTHORIZED |
+| STS-M4 | STS-M4-02 | M4-02 | CRM + Funil Core Slice | 40 | PLANNED_NOT_AUTHORIZED |
+| STS-M4 | STS-M4-03 | M4-03 | LeadOps Execution Slice — Leads / Listas / Distribuição / Discador / Power Message Engine | 32 | PLANNED_NOT_AUTHORIZED |
+| STS-M4 | STS-M4-04 | M4-04 | MesaCliente Core Slice | 32 | PLANNED_NOT_AUTHORIZED |
+| STS-M4 | STS-M4-05 | M4-05 | Feature Gateways / API Boundaries | 24 | PLANNED_NOT_AUTHORIZED |
+| STS-M4 | STS-M4-06 | M4-06 | Core Functional Equivalence & Regression | 24 | PLANNED_NOT_AUTHORIZED |
+| STS-M5 | STS-M5-01 | M5-01 | Hostile-client suite isolada | 28 | PLANNED_NOT_AUTHORIZED |
+| STS-M5 | STS-M5-02 | M5-02 | Regressão tenant / role / auth / storage | 28 | PLANNED_NOT_AUTHORIZED |
+| STS-M5 | STS-M5-03 | M5-03 | Dependency / CVE gate | 12 | PLANNED_NOT_AUTHORIZED |
+| STS-M5 | STS-M5-04 | M5-04 | Secrets / config / deploy gate | 16 | PLANNED_NOT_AUTHORIZED |
+| STS-M5 | STS-M5-05 | M5-05 | Observabilidade / rollback / incidente | 24 | PLANNED_NOT_AUTHORIZED |
+| STS-M5 | STS-M5-06 | M5-06 | Adjudicação de residual risk | 20 | PLANNED_NOT_AUTHORIZED |
+| STS-M6 | STS-M6-01 | M6-01 | Security Evidence + Final AS-BUILT Package | 14 | PLANNED_NOT_AUTHORIZED |
+| STS-M6 | STS-M6-02 | M6-02 | Blocker closeout | 8 | PLANNED_NOT_AUTHORIZED |
+| STS-M6 | STS-M6-03 | M6-03 | Onboarding / support / operational runbooks | 18 | PLANNED_NOT_AUTHORIZED |
+| STS-M6 | STS-M6-04 | M6-04 | Decisão comercial controlada | 8 | PLANNED_NOT_AUTHORIZED |
+| STS-M6 | STS-M6-05 | M6-05 | Launch readiness + AS-BUILT acceptance review | 12 | PLANNED_NOT_AUTHORIZED |
 
 Milestone states:
 
 ~~~text
-M2 = ACTIVE
-M3 = PLANNED_NOT_AUTHORIZED
-M4 = PLANNED_NOT_AUTHORIZED
-M5 = PLANNED_NOT_AUTHORIZED
-M6 = PLANNED_NOT_AUTHORIZED
+STS-M2 = ACTIVE
+STS-M3 = PLANNED_NOT_AUTHORIZED
+STS-M4 = PLANNED_NOT_AUTHORIZED
+STS-M5 = PLANNED_NOT_AUTHORIZED
+STS-M6 = PLANNED_NOT_AUTHORIZED
 ~~~
 
-## 6. Execution-discovered decomposition — M2-04
+## 6. Execution-discovered decomposition — STS-M2-04
 
-The following nodes are not new WBS milestones. They are execution-discovered continuity children of M2-04.
+The following nodes are not new WBS milestones. They are execution-discovered continuity children of STS-M2-04.
 
 ~~~text
-M2-04 = COMPLETE_WITH_RESIDUALS
+STS-M2-04 = COMPLETE_WITH_RESIDUALS
 ├── STS-M2-04B = COMPLETE_WITH_RESIDUALS
 │   ├── STS-M2-04B1 = COMPLETE_WITH_RESIDUALS / ACCEPTED
 │   ├── STS-M2-04B2 = COMPLETE_WITH_RESIDUALS / ACCEPTED
@@ -182,9 +200,9 @@ M2-04 = COMPLETE_WITH_RESIDUALS
 └── STS-M2-04E = COMPLETE_WITH_RESIDUALS / ACCEPTED
 ~~~
 
-No `M2-04F` node is canonical or created by this graph.
+No `STS-M2-04F` node is canonical or created by this graph.
 
-Current M2-04 residual boundary remains:
+Current STS-M2-04 residual boundary remains:
 
 ~~~text
 implementation remediation = NOT_PERFORMED
@@ -195,21 +213,21 @@ runtime assurance = NOT_PERFORMED
 Security Go = NOT_GRANTED
 ~~~
 
-These residuals do not reopen M2-04 unless a material invalidator changes the accepted decision.
+These residuals do not reopen STS-M2-04 unless a material invalidator changes the accepted decision.
 
-## 6.1 Accepted M2-05 contract overlay
+## 6.1 Accepted STS-M2-05 contract overlay
 
 ~~~text
-M2-05 = COMPLETE_WITH_RESIDUALS / ACCEPTED
+STS-M2-05 = COMPLETE_WITH_RESIDUALS / ACCEPTED
 44 / 44 tables
 160 / 160 public routines
 23 / 23 non-DEFINER delta
 31 / 31 non-internal trigger instances
 10 / 10 bounded contexts
-M2-06 = ELIGIBLE_NOT_AUTHORIZED
+STS-M2-06 = ELIGIBLE_NOT_AUTHORIZED
 ~~~
 
-M2-05 residual implementation/lifecycle/callsite-evidence/runtime/AppSec work is preserved and does not reopen the accepted Database Contract Map unless a material invalidator changes the decision.
+STS-M2-05 residual implementation/lifecycle/callsite-evidence/runtime/AppSec work is preserved and does not reopen the accepted Database Contract Map unless a material invalidator changes the decision.
 
 ## 7. Future decomposition rule
 
@@ -218,17 +236,17 @@ Future WBS tasks start as one node only.
 Example:
 
 ~~~text
-M3-01 = PLANNED_NOT_AUTHORIZED
+STS-M3-01 = PLANNED_NOT_AUTHORIZED
 children = NONE YET
 ~~~
 
 If execution later requires a bounded split:
 
 ~~~text
-M3-01
-├── M3-01-A
-├── M3-01-B
-└── M3-01-C
+STS-M3-01
+├── STS-M3-01-A
+├── STS-M3-01-B
+└── STS-M3-01-C
 ~~~
 
 the children may be added here only when the decomposition is materially adopted.

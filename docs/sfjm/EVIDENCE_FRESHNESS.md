@@ -1,5 +1,53 @@
 # FECH.AI — SFJM Evidence Freshness
 
+## 0.0000000000000000025 CURRENT EVIDENCE — STS-M2-06 AUTHORIZATION / EXECUTION START BOUNDARY — 2026-09-07
+
+Authorization anchor:
+
+~~~text
+canonical FECH.AI main at issuance =
+f22b83bb7acec8692e0575185a88ca2755183b41
+
+Product Authority =
+Wagner / FECH.AI
+
+STS-M2-06 =
+AUTHORIZED_READ_ONLY / READY_TO_EXECUTE
+
+canonical specialist =
+GPT1.5 — FECH.AI Arquiteto SaaS
+
+Security Go =
+NOT_GRANTED
+~~~
+
+Material source state at authorization publication:
+
+~~~text
+WBS M2-06 task / exit contract = INTEGRAL_READ
+FECH.AI bootstrap / routing / registry / Modus Operandi = INTEGRAL_READ
+GPT1.5 canonical skill = INTEGRAL_READ
+governance index = INTEGRAL_READ
+current SFJM material views = INTEGRAL_READ
+SES FECH.AI adapter / software-systems-architect archetype = INTEGRAL_READ
+~~~
+
+The authorization does not itself produce STS-M2-06 architecture evidence.
+
+~~~text
+STS-M2-06 current-state characterization = NOT_YET_PRODUCED
+three-option decision matrix = NOT_YET_PRODUCED
+architecture recommendation = NOT_YET_PRODUCED
+Product Authority architecture adjudication = NOT_YET_GRANTED
+implementation = NOT_AUTHORIZED
+~~~
+
+Accepted STS-M2-01..STS-M2-05 evidence remains upstream input and must be consumed without global replay unless a material invalidator is found.
+
+Freshness is invalidated by material FECH.AI main drift affecting architecture evidence, material database/runtime changes, Product Authority scope change, or contradictory new evidence discovered during STS-M2-06. Ordinary time passage alone is not sufficient.
+
+No runtime, Supabase, Auth, data or production mutation occurred in this authorization publication.
+
 ## 0.0000000000000000024 CURRENT EVIDENCE — STS-M2-05 ACCEPTANCE PUBLICATION — 2026-09-07
 
 Acceptance/publication base:
