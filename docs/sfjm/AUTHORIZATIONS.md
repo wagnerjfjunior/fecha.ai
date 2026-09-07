@@ -1,5 +1,68 @@
 # FECH.AI — SFJM Authorizations
 
+## 0.0000000000000000016 Product Authority — PR #189 bounded post-review documentation correction — 2026-09-07
+
+Product Authority explicitly authorized one coherent documentation-only correction commit on the existing PR #189 branch from exact parent head:
+
+~~~text
+PR = #189
+branch = docs/sts-m2-04e-architecture-acceptance
+authorized parent head = 8f660bfcc753bb0f8012a823d5942e4528f441bb
+
+authorized findings =
+F-189-PM-01
+F-189-PM-02
+F-189-PM-03
+F-189-PM-04
+~~~
+
+The bounded correction must preserve these decisions:
+
+~~~text
+113 = B3/C3 ROUTINE SUBSET
+CROSS-SLICE 137-ROUTINE HOMOGENEOUS MODE SYNTHESIS = NOT CLAIMED
+
+031 =
+ADMIN_LOCAL tenant/company lifecycle branch
++ GESTOR tenant/managed-team lifecycle branch
+ROOT / ADMIN_GLOBAL != automatic tenant lifecycle authority
+
+036 current routine =
+NON_MODE_LIFECYCLE / RETIRE_CURRENT_SEMANTICS
+future replacement = NOT DEFINED BY E / NOT AUTHORIZED BY PR #189
+
+119 =
+target INVOKER already resolved
+current DEFINER implementation/runtime remediation remains blocked
+~~~
+
+Authorized mutation boundary:
+
+~~~text
+documentation-only
+existing PR #189 branch
+one coherent commit
+paths limited to the existing seven-file PR allowlist
+no additional path without separate demonstrated need and authorization
+~~~
+
+Still NOT AUTHORIZED by this correction:
+
+~~~text
+merge
+deploy
+Supabase/Auth/data mutation
+runtime implementation
+SQL / DDL / DML
+function/RLS/policy/grant/owner/search_path mutation
+M2-04F
+M2-05
+M2-06
+Security Go
+~~~
+
+The correction changes the PR head and invalidates all prior exact-head review/pre-merge gates. The required next gate is an independent fresh exact-head review of the corrected PR #189 head. Review-thread resolution is not inherited as a mutation authority from this entry.
+
 ## 0.0000000000000000015 Product Authority — STS-M2-04E acceptance + bounded durable reconciliation — 2026-09-06
 
 Product Authority explicitly accepted:

@@ -26,8 +26,9 @@ active hostile-client or cross-tenant runtime testing
 D-01 through D-08 technical remediation
 004 implementation/security remediation
 031 implementation/caller-ACL remediation
-036 lifecycle retirement/replacement implementation
+036 current-semantics retirement implementation
 047 global-body/RLS remediation
+119 current DEFINER -> target INVOKER implementation/runtime remediation
 127 retirement/deprecation implementation
 any next STS-M2-04 execution not separately selected/authorized
 M2-04F execution
@@ -53,9 +54,14 @@ COMPLETE / ACCEPTED TRIGGER AUTHORITY CONTRACT
 
 STS-M2-04E =
 COMPLETE / ACCEPTED WITH IMPLEMENTATION-LIFECYCLE-RUNTIME RESIDUALS
-70 target DEFINER / 41 target INVOKER
-0 semantic NOT_DETERMINED
-2 NON_MODE_LIFECYCLE / 113 inventoried routines
+FIVE-RESIDUAL E AUTHORITY ADJUDICATION = COMPLETE
+B3/C3 subset projection = 70 target DEFINER / 41 target INVOKER
+B3/C3 semantic NOT_DETERMINED = 0
+2 NON_MODE_LIFECYCLE / 113 B3/C3 routines
+CROSS-SLICE 137-ROUTINE HOMOGENEOUS MODE SYNTHESIS = NOT CLAIMED
+
+B2 = separate accepted 15-routine slice with residuals
+D = separate accepted 9-trigger-routine target classification
 ~~~
 
 C/D/E analysis is not blocked and must not be replayed without material invalidation.
@@ -73,8 +79,9 @@ C/D/E analysis is not blocked and must not be replayed without material invalida
 
 036 get_dashboard_master
   NON_MODE_LIFECYCLE
-  RETIRE_OR_REPLACE_CURRENT_SEMANTICS
-  implementation remains blocked pending separate authority
+  RETIRE_CURRENT_SEMANTICS
+  current-semantics retirement remains blocked pending separate authority
+  possible future replacement is NOT DEFINED BY E and NOT AUTHORIZED by this PR
 
 047 get_stats_horario
   target INVOKER / tenant-team scoped
@@ -87,7 +94,20 @@ C/D/E analysis is not blocked and must not be replayed without material invalida
   implementation remains blocked pending separate authority
 ~~~
 
-These are no longer Product Authority semantic blockers.
+The five E rows above are no longer Product Authority semantic blockers.
+
+Separate C3 implementation/runtime blocker retained:
+
+~~~text
+119 relatorio_fornecedor(uuid)
+  target INVOKER = RESOLVED
+  current implementation = postgres-owned SECURITY DEFINER
+  implementation remediation = NOT_PERFORMED
+  hostile/cross-tenant runtime assurance = NOT_PERFORMED
+  blocker class = IMPLEMENTATION / RUNTIME RESIDUAL
+  product semantic residual = NO
+~~~
+
 
 ## 5. Current M2-04 gate
 

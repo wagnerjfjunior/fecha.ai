@@ -18,12 +18,18 @@ STS-M2-04E =
 COMPLETE WITH IMPLEMENTATION / LIFECYCLE /
 RUNTIME-ASSURANCE RESIDUALS
 
-TARGET AUTHORITY SYNTHESIS =
+FIVE-RESIDUAL E AUTHORITY ADJUDICATION =
 COMPLETE
+
+B3/C3 TARGET-AUTHORITY SEMANTIC RESIDUALS =
+ZERO
 
 PRODUCT-AUTHORITY SEMANTIC RESIDUALS
 FOR 004 / 031 / 036 / 047 / 127 =
 ZERO
+
+CROSS-SLICE 137-ROUTINE HOMOGENEOUS MODE SYNTHESIS =
+NOT CLAIMED
 
 Security Go =
 NOT_GRANTED
@@ -69,7 +75,7 @@ C3 historical projection =
 68 DEFINER
 40 INVOKER
 5 NOT_DETERMINED
-113 total
+113 B3/C3 routines
 ```
 
 The five historical C3 NOT_DETERMINED rows were:
@@ -84,27 +90,38 @@ The five historical C3 NOT_DETERMINED rows were:
 
 E supersedes only their target-authority disposition. It does not rewrite C3 history.
 
+Scope identity remains:
+
+```text
+137 SECURITY DEFINER routines
+- 15 B2 routines
+- 9 M2-04D trigger-provenance routines
+= 113 B3/C3 routines
+```
+
+Therefore the 113-row result is the B3/C3 subset, not the complete 137-routine universe. B2 remains a separate accepted 15-routine slice with residuals, and M2-04D remains a separate accepted 9-trigger-routine target classification. E does not collapse B2 + B3/C3 + D into one homogeneous mode distribution.
+
 ## 4. E superseding five-row adjudication
 
 | Ord | Routine | E target disposition | Product semantics | Remaining class |
 |---|---|---|---|---|
 | 004 | `aprovar_rejeitar_mesa(uuid,text,text)` | `DEFINER` | RESOLVED | implementation + AppSec/runtime proof |
 | 031 | `gerenciar_lista(uuid,text,text)` | `DEFINER` | RESOLVED | implementation/caller-ACL + proof |
-| 036 | `get_dashboard_master()` | `NON_MODE_LIFECYCLE / RETIRE_OR_REPLACE_CURRENT_SEMANTICS` | RESOLVED | lifecycle/remediation |
+| 036 | `get_dashboard_master()` | `NON_MODE_LIFECYCLE / RETIRE_CURRENT_SEMANTICS` | RESOLVED | current-routine retirement/remediation |
 | 047 | `get_stats_horario()` | `INVOKER` | TENANT/TEAM-SCOPED / RESOLVED | global-body/RLS remediation + proof |
 | 127 | `solicitar_lote_forcado(uuid)` | `NON_MODE_LIFECYCLE / RETIRE_DEPRECATE` | SELF-ONLY LOT REQUEST / RESOLVED | lifecycle/remediation |
 
-E-level target-authority result:
+B3/C3 subset target projection after E:
 
 ```text
 70 target DEFINER
 41 target INVOKER
 0 target-authority semantic NOT_DETERMINED
 2 NON_MODE_LIFECYCLE dispositions
-113 inventoried routines
+113 B3/C3 routines
 ```
 
-Do not report `70 + 41 = 111 total routines`. The two lifecycle rows remain in the 113-routine inventory.
+Do not report `70 + 41 = 111 total routines`. The two lifecycle rows remain in the 113-routine B3/C3 subset. Do not promote this subset projection to a 137-routine cross-slice aggregate; B2 and D retain their own accepted classifications and residual boundaries.
 
 ## 5. 004 authority contract
 
@@ -126,25 +143,57 @@ Target mode is `DEFINER` because approval/rejection is a protected business tran
 
 ## 6. 031 authority contract
 
+`p_lista_id` is an object locator, not authority. The target contract preserves two tenant-side authority branches.
+
+ADMIN_LOCAL branch:
+
 ```text
-actor
--> auth.uid()
--> active gestor
+auth.uid()
+-> active admin_local
 -> actor empresa
--> supplied lista
--> listas.empresa_id
--> listas.time_id
--> time in my_times_como_gestor()
--> allowed lifecycle action
--> privileged mutation
+-> p_lista_id
+-> authoritative listas row
+-> listas.empresa_id = actor empresa
+-> permitted lifecycle action
+-> privileged coordinated mutation
 -> audit
 ```
 
-No independent `assigned_gestor_id` is invented.
+ADMIN_LOCAL is the tenant control plane and does not require:
 
-`lista_visibilidade` represents distribution/visibility and does not independently grant gestor lifecycle authority.
+```text
+listas.time_id in my_times_como_gestor()
+```
 
-Target mode is `DEFINER` because list lifecycle actions coordinate protected changes across list/lead/audit state and must be authorized by trusted tenant/team binding before privileged effect. The current caller/ACL contradiction and object binding remain implementation residuals.
+GESTOR branch:
+
+```text
+auth.uid()
+-> active gestor
+-> actor empresa
+-> p_lista_id
+-> authoritative listas row
+-> listas.empresa_id = actor empresa
+-> listas.time_id in my_times_como_gestor()
+-> permitted lifecycle action
+-> privileged coordinated mutation
+-> audit
+```
+
+GESTOR remains team-scoped.
+
+Preserve:
+
+```text
+ROOT / ADMIN_GLOBAL != ordinary ADMIN_LOCAL
+ROOT / ADMIN_GLOBAL != ordinary GESTOR
+platform authority != automatic tenant list lifecycle authority
+assigned_gestor_id = NOT_INVENTED
+lista_visibilidade = distribution / visibility authority
+lista_visibilidade != independent list lifecycle authority
+```
+
+Target mode remains `DEFINER` because list lifecycle actions coordinate protected changes across list/lead/audit state and must be authorized by trusted tenant/object binding before privileged effect. The current caller/ACL contradiction and object binding remain implementation residuals.
 
 ## 7. 036 / 047 root and gestor authority
 
@@ -167,7 +216,11 @@ Therefore:
 036 =
 current global commercial semantics NOT TARGET-COMPLIANT
 NON_MODE_LIFECYCLE
-RETIRE_OR_REPLACE_CURRENT_SEMANTICS
+RETIRE_CURRENT_SEMANTICS
+
+possible future platform-safe dashboard/replacement =
+NOT DEFINED BY E
+NOT AUTHORIZED BY THIS PR
 
 047 =
 tenant/team-scoped commercial statistics
@@ -203,8 +256,10 @@ current implementation/security blocker = YES
 
 036:
 E architecture blocker = NO
-current semantics = NOT TARGET-COMPLIANT
-lifecycle remediation = REQUIRED
+current global commercial semantics = NOT TARGET-COMPLIANT
+current routine semantics = RETIRE_CURRENT_SEMANTICS
+possible future replacement = NOT DEFINED BY E / NOT AUTHORIZED BY THIS PR
+lifecycle retirement remediation = REQUIRED
 
 047:
 E architecture blocker = NO
@@ -249,8 +304,9 @@ STS-M2-04E =
 COMPLETE / ACCEPTED WITH
 IMPLEMENTATION-LIFECYCLE-RUNTIME RESIDUALS
 
-TARGET AUTHORITY SYNTHESIS = COMPLETE
-FIVE SEMANTIC PRODUCT-AUTHORITY RESIDUALS = 0
+FIVE-RESIDUAL E AUTHORITY ADJUDICATION = COMPLETE
+B3/C3 TARGET-AUTHORITY SEMANTIC RESIDUALS = 0
+CROSS-SLICE 137-ROUTINE HOMOGENEOUS MODE SYNTHESIS = NOT CLAIMED
 
 CURRENT IMPLEMENTATION TARGET-COMPLIANT = NOT_PROVEN
 APPSEC PASS = NOT_PERFORMED
