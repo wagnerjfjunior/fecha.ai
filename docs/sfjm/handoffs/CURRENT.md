@@ -1,7 +1,50 @@
 # FECH.AI — SFJM Current Product/Security Handoff
 
+## 0.0000000000000000020 CURRENT HANDOFF — STS-M2-04 ACCEPTED / M2-05 NEXT ELIGIBLE BUT NOT AUTHORIZED — 2026-09-07
 
-## 0.0000000000000000019 CURRENT HANDOFF — B2 TARGET-CONTRACT ACCEPTED / FINAL STS-M2-04 ADJUDICATION NEXT — 2026-09-07
+~~~text
+repository = wagnerjfjunior/fecha.ai
+acceptance main = 6357c1b4df207683b60de26daa53248d44dce84a
+environment = Pilot Production / SaaS multi-tenant / multiempresa
+Security Go = NOT_GRANTED
+~~~
+
+Product Authority accepted:
+
+~~~text
+STS-M2-04 =
+COMPLETE / ACCEPTED WITH
+IMPLEMENTATION-LIFECYCLE-RUNTIME RESIDUALS
+~~~
+
+The accepted WBS objective is the target policy for DEFINER / RLS / DML. This is architecture/target closure only.
+
+Preserve:
+
+~~~text
+TARGET CONTRACT ACCEPTED != CURRENT IMPLEMENTATION COMPLIANT
+ARCHITECTURE COMPLETE != APPSEC PASS
+ARCHITECTURE COMPLETE != RUNTIME ASSURANCE
+ARCHITECTURE COMPLETE != SECURITY GO
+~~~
+
+Next receiver/action after canonical publication:
+
+~~~text
+PRODUCT AUTHORITY
+
+decide whether to authorize a bounded
+M2-05 — Database Contract Map
+READ_ONLY scope/evidence reconstruction
+~~~
+
+M2-05 execution remains NOT_AUTHORIZED until that explicit decision.
+
+No authority is carried forward for implementation, Supabase/Auth mutation, M2-05, M2-06, Ready, merge, deploy or Security Go.
+
+Do not create a follow-up SFJM-only PR merely for later Draft/Ready/merge lifecycle changes unless a material continuity event occurs.
+
+## 0.0000000000000000019 HISTORICAL / SUPERSEDED HANDOFF — B2 TARGET-CONTRACT ACCEPTED / FINAL STS-M2-04 ADJUDICATION NEXT — 2026-09-07
 
 ~~~text
 repository = wagnerjfjunior/fecha.ai

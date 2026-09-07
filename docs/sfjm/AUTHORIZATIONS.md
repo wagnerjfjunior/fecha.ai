@@ -1,5 +1,57 @@
 # FECH.AI — SFJM Authorizations
 
+## 0.0000000000000000022 Product Authority — final STS-M2-04 acceptance + bounded SFJM reconciliation — 2026-09-07
+
+Product Authority explicitly accepted:
+
+~~~text
+FECH.AI exact main =
+6357c1b4df207683b60de26daa53248d44dce84a
+
+STS-M2-04 =
+COMPLETE / ACCEPTED WITH
+IMPLEMENTATION-LIFECYCLE-RUNTIME RESIDUALS
+
+closure objective =
+TARGET POLICY FOR DEFINER / RLS / DML
+~~~
+
+Acceptance explicitly does NOT declare:
+
+~~~text
+current implementation target-compliant
+AppSec PASS
+runtime assurance
+Security Go
+~~~
+
+Product Authority authorized only the bounded documentation/SFJM reconciliation corresponding to this acceptance.
+
+Authorized documentation scope:
+
+~~~text
+docs/sfjm/CURRENT_STATE.md
+docs/sfjm/NEXT_SAFE_ACTION.md
+docs/sfjm/BLOCKED_ACTIONS.md
+docs/sfjm/EVIDENCE_FRESHNESS.md
+docs/sfjm/AUTHORIZATIONS.md
+docs/sfjm/handoffs/CURRENT.md
+~~~
+
+Explicitly NOT authorized:
+
+~~~text
+implementation
+Supabase/Auth/data mutation
+M2-05 execution
+M2-06 execution
+Ready
+merge
+deploy
+Security Go
+~~~
+
+After the bounded publication is created, fresh exact-head review is required and execution must stop for the next Product Authority gate.
 
 ## 0.0000000000000000021 Product Authority — PR #192 bounded documentation conflict reconciliation — 2026-09-07
 
