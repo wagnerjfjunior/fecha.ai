@@ -1,6 +1,56 @@
 # FECH.AI — SFJM Next Safe Action
 
-## 0.0000000000000000022 CURRENT ACTION — M2-06 DATABASE ARCHITECTURE DECISION / AUTHORIZATION REQUIRED — 2026-09-07
+## 0.0000000000000000023 CURRENT ACTION — EXECUTE STS-M2-06 DATABASE ARCHITECTURE DECISION READ_ONLY — 2026-09-07
+
+Product Authority has granted the previously missing execution authority.
+
+~~~text
+canonical FECH.AI main at authorization =
+f22b83bb7acec8692e0575185a88ca2755183b41
+
+M2-06 =
+AUTHORIZED_READ_ONLY / READY_TO_EXECUTE
+
+M2 =
+ACTIVE
+
+Security Go =
+NOT_GRANTED
+~~~
+
+Execute in a new conversation using the canonical architecture specialist:
+
+~~~text
+GPT1.5 — FECH.AI Arquiteto SaaS
+~~~
+
+Required decision space:
+
+~~~text
+EVOLVE_IN_PLACE
+vs
+V2_STRANGLER
+vs
+NEW_DATABASE
+~~~
+
+Required outcome:
+
+~~~text
+1. fresh current-state architecture characterization;
+2. evidence matrix for material database/trust-boundary/coupling constraints;
+3. option-by-option trade-off analysis;
+4. migration, blast-radius, rollback and proof obligations;
+5. explicit preserved residuals and missing evidence;
+6. architecture recommendation with confidence and conditions;
+7. Product Authority adjudication request.
+~~~
+
+Execution remains READ_ONLY. GitHub discovery and bounded Supabase catalog/metadata/statistics reads are allowed when materially necessary. Do not mutate runtime, frontend, Supabase/Auth/data, RLS, policies, grants, functions, triggers, migrations or production.
+
+Do not execute M3. Do not implement the recommended architecture. Do not grant Security Go.
+
+## 0.0000000000000000022 HISTORICAL / SUPERSEDED ACTION — M2-06 DATABASE ARCHITECTURE DECISION / AUTHORIZATION REQUIRED — 2026-09-07
 
 STS-M2-05 has been explicitly accepted by Product Authority as:
 

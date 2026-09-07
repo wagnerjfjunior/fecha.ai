@@ -72,7 +72,7 @@ M2-05 =
 COMPLETE_WITH_RESIDUALS / ACCEPTED
 
 M2-06 =
-ELIGIBLE_NOT_AUTHORIZED
+AUTHORIZED_READ_ONLY / READY_TO_EXECUTE
 
 M2 =
 ACTIVE
@@ -80,7 +80,7 @@ ACTIVE
 
 The historical WBS label `Matriz de 43 tabelas` is preserved. The accepted/live canonical database universe for M2-05 is 44 tables.
 
-This graph records program state only. The M2-05 documentation is merged/canonical via PR #195; this post-merge reconciliation does not grant M2-06 execution authority.
+This graph records program state only. Product Authority has now separately granted bounded READ_ONLY M2-06 execution authority. No implementation, M3 execution, deploy or Security Go follows from that authorization.
 
 ## 3. Consumer state vocabulary
 
@@ -93,6 +93,9 @@ COMPLETE_WITH_RESIDUALS
 
 ACTIVE
 = current milestone or explicitly active authorized execution
+
+AUTHORIZED_READ_ONLY
+= execution is explicitly authorized for bounded READ_ONLY evidence/reasoning only; no mutation authority
 
 ELIGIBLE_NOT_AUTHORIZED
 = next structurally eligible task; execution authority has not been granted
@@ -114,7 +117,7 @@ program = FECH.AI Security-to-Scale 2026
 current milestone = M2 — Database Simplification & Optimization Plan
 current next task = M2-06 — Decisão arquitetural do banco
 M2-05 = COMPLETE_WITH_RESIDUALS / ACCEPTED
-M2-06 = ELIGIBLE_NOT_AUTHORIZED / execution NOT_AUTHORIZED
+M2-06 = AUTHORIZED_READ_ONLY / READY_TO_EXECUTE
 M3..M6 execution = NOT_AUTHORIZED
 Security Go = NOT_GRANTED
 ~~~
@@ -128,7 +131,7 @@ Security Go = NOT_GRANTED
 | M2 | M2-03 | Índices / ACL contraditórias | 16 | COMPLETE_WITH_RESIDUALS |
 | M2 | M2-04 | Política target de DEFINER / RLS / DML | 20 | COMPLETE_WITH_RESIDUALS |
 | M2 | M2-05 | Database Contract Map | 20 | COMPLETE_WITH_RESIDUALS |
-| M2 | M2-06 | Decisão arquitetural do banco | 16 | ELIGIBLE_NOT_AUTHORIZED |
+| M2 | M2-06 | Decisão arquitetural do banco | 16 | AUTHORIZED_READ_ONLY |
 | M3 | M3-01 | Identity / membership / team / role model | 24 | PLANNED_NOT_AUTHORIZED |
 | M3 | M3-02 | Authority contract por contexto | 28 | PLANNED_NOT_AUTHORIZED |
 | M3 | M3-03 | Allowlist de RPCs privilegiadas | 24 | PLANNED_NOT_AUTHORIZED |
