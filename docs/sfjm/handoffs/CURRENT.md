@@ -1,6 +1,53 @@
 # FECH.AI — SFJM Current Product/Security Handoff
 
-## 0.0000000000000000020 CURRENT HANDOFF — STS-M2-04 ACCEPTED / M2-05 NEXT ELIGIBLE BUT NOT AUTHORIZED — 2026-09-07
+## 0.0000000000000000021 CURRENT HANDOFF — PROGRAM TASK GRAPH PUBLISHED / M2-05 NEXT — 2026-09-07
+
+~~~text
+repository = wagnerjfjunior/fecha.ai
+program = FECH.AI Security-to-Scale 2026
+current milestone = M2
+next task = M2-05 — Database Contract Map
+M2-05 execution = NOT_AUTHORIZED
+Security Go = NOT_GRANTED
+~~~
+
+Canonical continuity surfaces:
+
+~~~text
+WBS structure =
+docs/roadmap/fechai-security-to-scale-2026-wbs.md
+
+operational task/decomposition overlay =
+docs/sfjm/PROGRAM_TASK_GRAPH.md
+
+principal material state =
+docs/sfjm/CURRENT_STATE.md
+
+next semantic action =
+docs/sfjm/NEXT_SAFE_ACTION.md
+~~~
+
+The task graph exposes:
+
+~~~text
+M2-05 / M2-06
+M3-01..M3-06
+M4-01..M4-06
+M5-01..M5-06
+M6-01..M6-05
+and the accepted execution-discovered M2-04B/C/D/E decomposition
+~~~
+
+Next receiver/action:
+
+~~~text
+PRODUCT AUTHORITY / NEW M2-05 CONVERSATION
+authorize bounded READ_ONLY M2-05 Database Contract Map scope/evidence reconstruction
+~~~
+
+Do not infer publication of future tasks as execution authority. M2-06, M3..M6, implementation, Supabase mutation, deploy and Security Go remain separately gated.
+
+## 0.0000000000000000020 HISTORICAL / SUPERSEDED HANDOFF — STS-M2-04 ACCEPTED / M2-05 NEXT ELIGIBLE BUT NOT AUTHORIZED — 2026-09-07
 
 ~~~text
 repository = wagnerjfjunior/fecha.ai

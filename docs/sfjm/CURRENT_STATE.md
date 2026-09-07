@@ -86,6 +86,22 @@ M2-05 execution = NOT_AUTHORIZED
 M2-06 execution = NOT_AUTHORIZED
 ~~~
 
+Program task/decomposition continuity is now published through:
+
+~~~text
+docs/sfjm/PROGRAM_TASK_GRAPH.md
+
+structural source =
+docs/roadmap/fechai-security-to-scale-2026-wbs.md
+
+current task graph position =
+M2-05 ELIGIBLE_NOT_AUTHORIZED
+→ M2-06 PLANNED_NOT_AUTHORIZED
+→ M3..M6 PLANNED_NOT_AUTHORIZED
+~~~
+
+The task graph also preserves the execution-discovered M2-04B/C/D/E hierarchy without creating M2-04F or reopening the accepted M2-04 closure.
+
 This acceptance authorizes only bounded SFJM documentation reconciliation. It does not authorize implementation, Supabase/Auth/data mutation, Ready, merge, deploy, M2-05, M2-06 or Security Go.
 
 ## 0.0000000000000000019 HISTORICAL / SUPERSEDED — B2 HIGH-RISK TARGET-CONTRACT CLOSURE ACCEPTED BY PRODUCT AUTHORITY — 2026-09-07
