@@ -1,6 +1,178 @@
 # FECH.AI — SFJM Current Material State
 
-## 0.0000000000000000014 CURRENT — STS-M2-04D COMPLETE / ACCEPTED TRIGGER AUTHORITY CONTRACT — 2026-09-06
+## 0.0000000000000000016 CURRENT — STS-M2-04E CORRECTED BOUNDED AUTHORITY STATE — 2026-09-07
+
+Product Authority authorized the bounded PR #189 post-review correction without reopening B/C/D globally.
+
+~~~text
+STS-M2-04E =
+COMPLETE / ACCEPTED WITH IMPLEMENTATION-LIFECYCLE-RUNTIME RESIDUALS
+
+FIVE-RESIDUAL E AUTHORITY ADJUDICATION = COMPLETE
+B3/C3 TARGET-AUTHORITY SEMANTIC RESIDUALS = ZERO
+CROSS-SLICE 137-ROUTINE HOMOGENEOUS MODE SYNTHESIS = NOT CLAIMED
+
+historical C3 =
+68 DEFINER / 40 INVOKER / 5 NOT_DETERMINED / 113 B3/C3 routines
+
+B3/C3 subset target projection after E =
+70 target DEFINER
+41 target INVOKER
+0 target-authority semantic NOT_DETERMINED
+2 NON_MODE_LIFECYCLE
+113 B3/C3 routines
+
+B2 = separate accepted 15-routine slice with residuals
+M2-04D = separate accepted 9-trigger-routine target classification
+~~~
+
+Corrected target decisions material to continuity:
+
+~~~text
+031 gerenciar_lista(uuid,text,text)
+  -> TARGET DEFINER
+  -> ADMIN_LOCAL branch = tenant/company scoped
+  -> GESTOR branch = tenant + managed-team scoped
+  -> ROOT / ADMIN_GLOBAL is not an automatic tenant lifecycle shortcut
+  -> implementation/caller-ACL remediation REQUIRED
+
+036 get_dashboard_master()
+  -> NON_MODE_LIFECYCLE / RETIRE_CURRENT_SEMANTICS
+  -> current global commercial semantics NOT TARGET-COMPLIANT
+  -> possible future replacement NOT DEFINED BY E
+  -> possible future replacement NOT AUTHORIZED BY PR #189
+
+119 relatorio_fornecedor(uuid)
+  -> TARGET INVOKER already RESOLVED in C3
+  -> current implementation remains postgres-owned SECURITY DEFINER
+  -> implementation/runtime remediation REQUIRED
+  -> implementation residual, not product semantic residual
+~~~
+
+Preserve:
+
+~~~text
+ROOT / ADMIN_GLOBAL = PLATFORM CONTROL PLANE
+ADMIN_LOCAL = TENANT CONTROL PLANE
+GESTOR = TEAM CONTROL PLANE
+CORRETOR = INDIVIDUAL BUSINESS PLANE
+platform authority != automatic tenant business authority
+
+TARGET CONTRACT != CURRENT IMPLEMENTATION
+VERSIONED != MERGED != APPLIED != DEPLOYED != RUNTIME_TESTED
+implementation remediation = NOT_PERFORMED
+lifecycle remediation = NOT_PERFORMED
+AppSec assurance = NOT_PERFORMED
+hostile/cross-tenant runtime assurance = NOT_PERFORMED
+Security Go = NOT_GRANTED
+M2-04F semantics = NOT_CANONICALLY_DEFINED
+M2-04F execution = NOT_AUTHORIZED
+~~~
+
+Immediate lifecycle gate after the authorized correction commit:
+
+~~~text
+PR #189 = OPEN
+fresh independent exact-head review of the corrected head = REQUIRED
+merge = NOT_AUTHORIZED
+deploy = NOT_AUTHORIZED
+~~~
+
+After that exact-head gate, the program-level semantic continuation remains Product Authority selection/definition of the next bounded M2-04 action; no lettered slice is inferred.
+
+## 0.0000000000000000015 HISTORICAL / SUPERSEDED — PRE-CORRECTION STS-M2-04E TARGET AUTHORITY SYNTHESIS WORDING — 2026-09-06
+
+Product Authority accepted the bounded STS-M2-04E synthesis and five-residual delta.
+
+~~~text
+decision base main =
+aa266df3124f407a3f2c155c8f8ab5c193707783
+
+durable E evidence =
+docs/security/evidence/2026-09-06-sts-m2-04e-architecture-synthesis-acceptance.md
+
+durable E Git blob =
+6f6a9bd1f181dfcf34ab979284338e497fb09f61
+
+STS-M2-04C historical projection =
+68 DEFINER / 40 INVOKER / 5 NOT_DETERMINED / 113
+
+STS-M2-04D =
+COMPLETE / ACCEPTED TRIGGER AUTHORITY CONTRACT
+8 DEFINER / 1 INVOKER / 0 NOT_DETERMINED
+9 trigger functions / 18 trigger instances
+
+STS-M2-04E =
+COMPLETE / ACCEPTED WITH IMPLEMENTATION-LIFECYCLE-RUNTIME RESIDUALS
+~~~
+
+E supersedes only the five C3 residual target-authority decisions; C3 history remains unchanged.
+
+~~~text
+004 aprovar_rejeitar_mesa(uuid,text,text)
+  -> TARGET DEFINER
+  -> product semantics RESOLVED
+  -> implementation/security remediation REQUIRED
+
+031 gerenciar_lista(uuid,text,text)
+  -> TARGET DEFINER
+  -> product semantics RESOLVED
+  -> implementation/caller-ACL remediation REQUIRED
+
+036 get_dashboard_master()
+  -> NON_MODE_LIFECYCLE
+  -> RETIRE_OR_REPLACE_CURRENT_SEMANTICS
+  -> current global commercial semantics NOT TARGET-COMPLIANT
+
+047 get_stats_horario()
+  -> TARGET INVOKER
+  -> tenant/team-scoped
+  -> current global-body/RLS remediation REQUIRED
+
+127 solicitar_lote_forcado(uuid)
+  -> NON_MODE_LIFECYCLE
+  -> RETIRE / DEPRECATE
+  -> lot request product semantics = SELF-ONLY
+~~~
+
+E-level target-authority projection:
+
+~~~text
+70 target DEFINER
+41 target INVOKER
+0 target-authority semantic NOT_DETERMINED
+2 NON_MODE_LIFECYCLE
+113 inventoried routines
+~~~
+
+The two lifecycle dispositions remain in the 113 inventory; do not misstate 70+41 as the complete routine count.
+
+Issue #133 authority remains binding:
+
+~~~text
+ROOT / ADMIN_GLOBAL = PLATFORM CONTROL PLANE
+ADMIN_LOCAL = TENANT CONTROL PLANE
+GESTOR = TEAM CONTROL PLANE
+CORRETOR = INDIVIDUAL BUSINESS PLANE
+platform authority != automatic tenant business authority
+~~~
+
+Preserve:
+
+~~~text
+TARGET CONTRACT RESOLVED != CURRENT IMPLEMENTATION COMPLIANT
+implementation remediation = NOT_PERFORMED
+lifecycle remediation = NOT_PERFORMED
+AppSec assurance = NOT_PERFORMED
+runtime hostile/cross-tenant assurance = NOT_PERFORMED
+Security Go = NOT_GRANTED
+M2-04F semantics = NOT_CANONICALLY_DEFINED
+M2-04F execution = NOT_AUTHORIZED
+~~~
+
+Next semantic gate: Product Authority selects/defines the next bounded M2-04 action from the accepted C/D/E state. No implementation authority is inherited.
+
+## 0.0000000000000000014 HISTORICAL / SUPERSEDED — STS-M2-04D COMPLETE / ACCEPTED TRIGGER AUTHORITY CONTRACT — 2026-09-06
 
 Master Project accepted the bounded trigger-authority classification after independent live reconciliation.
 

@@ -1,6 +1,6 @@
 # FECH.AI — SFJM Blocked Actions
 
-**Status:** STS-M2-04D_COMPLETE_ACCEPTED / M2-04E_NOT_AUTHORIZED / FAIL_CLOSED  
+**Status:** STS-M2-04E_COMPLETE_ACCEPTED / NEXT_M2_04_UNSELECTED / FAIL_CLOSED  
 **Updated:** 2026-09-06  
 **Repository:** wagnerjfjunior/fecha.ai
 
@@ -24,75 +24,112 @@ broad paid commercialization dependent on Security Go
 unbounded production/security testing
 active hostile-client or cross-tenant runtime testing
 D-01 through D-08 technical remediation
-M2-04E execution
+004 implementation/security remediation
+031 implementation/caller-ACL remediation
+036 current-semantics retirement implementation
+047 global-body/RLS remediation
+119 current DEFINER -> target INVOKER implementation/runtime remediation
+127 retirement/deprecation implementation
+any next STS-M2-04 execution not separately selected/authorized
 M2-04F execution
+M2-05 execution
+M2-06 execution
 Supabase/Auth/business-data mutation
 Ready
 merge
 deploy
 ~~~
 
-## 3. M2-04D closure and mutation blocks
+## 3. Closed architecture slices
 
 ~~~text
+STS-M2-04C =
+COMPLETE / ACCEPTED
+historical projection = 68 DEFINER / 40 INVOKER / 5 NOT_DETERMINED / 113
+
 STS-M2-04D =
 COMPLETE / ACCEPTED TRIGGER AUTHORITY CONTRACT
+8 DEFINER / 1 INVOKER / 0 NOT_DETERMINED
+9 functions / 18 trigger instances
 
-analysis/design = CLOSED
-technical remediation = NOT_AUTHORIZED
+STS-M2-04E =
+COMPLETE / ACCEPTED WITH IMPLEMENTATION-LIFECYCLE-RUNTIME RESIDUALS
+FIVE-RESIDUAL E AUTHORITY ADJUDICATION = COMPLETE
+B3/C3 subset projection = 70 target DEFINER / 41 target INVOKER
+B3/C3 semantic NOT_DETERMINED = 0
+2 NON_MODE_LIFECYCLE / 113 B3/C3 routines
+CROSS-SLICE 137-ROUTINE HOMOGENEOUS MODE SYNTHESIS = NOT CLAIMED
+
+B2 = separate accepted 15-routine slice with residuals
+D = separate accepted 9-trigger-routine target classification
 ~~~
 
-Blocked technical actions include:
+C/D/E analysis is not blocked and must not be replayed without material invalidation.
+
+## 4. E residual implementation/lifecycle blocks
 
 ~~~text
-ALTER FUNCTION
-SECURITY DEFINER / INVOKER runtime change
-CREATE / DROP / ALTER TRIGGER
-GRANT / REVOKE
-owner / search_path runtime mutation
-migration creation/application
-SQL / DDL / DML mutation
-RLS / policy mutation
-runtime/frontend implementation
-Edge Function / Vercel deployment
-runtime hostile/concurrency assurance
+004 aprovar_rejeitar_mesa
+  target DEFINER resolved
+  current implementation remediation remains blocked pending separate authority
+
+031 gerenciar_lista
+  target DEFINER resolved
+  current implementation/caller-ACL remediation remains blocked pending separate authority
+
+036 get_dashboard_master
+  NON_MODE_LIFECYCLE
+  RETIRE_CURRENT_SEMANTICS
+  current-semantics retirement remains blocked pending separate authority
+  possible future replacement is NOT DEFINED BY E and NOT AUTHORIZED by this PR
+
+047 get_stats_horario
+  target INVOKER / tenant-team scoped
+  current global-body/RLS remediation remains blocked pending separate authority
+
+127 solicitar_lote_forcado
+  NON_MODE_LIFECYCLE
+  RETIRE / DEPRECATE
+  product lot request = SELF-ONLY
+  implementation remains blocked pending separate authority
 ~~~
 
-M2-04D is no longer blocked as an analysis slice. Only its technical remediation and assurance backlog remain blocked.
+The five E rows above are no longer Product Authority semantic blockers.
 
-## 4. Current M2-04 gate
+Separate C3 implementation/runtime blocker retained:
 
 ~~~text
-M2-04C = COMPLETE / ACCEPTED WITH BOUNDED AUTHORITY RESIDUALS
-M2-04D = COMPLETE / ACCEPTED TRIGGER AUTHORITY CONTRACT
-M2-04E = NOT_AUTHORIZED
-M2-04F = NOT_AUTHORIZED
+119 relatorio_fornecedor(uuid)
+  target INVOKER = RESOLVED
+  current implementation = postgres-owned SECURITY DEFINER
+  implementation remediation = NOT_PERFORMED
+  hostile/cross-tenant runtime assurance = NOT_PERFORMED
+  blocker class = IMPLEMENTATION / RUNTIME RESIDUAL
+  product semantic residual = NO
+~~~
+
+
+## 5. Current M2-04 gate
+
+~~~text
+next bounded STS-M2-04 action = NOT_SELECTED
+M2-04F semantics = NOT_CANONICALLY_DEFINED
+M2-04F execution = NOT_AUTHORIZED
 Security Go = NOT_GRANTED
 ~~~
 
-## 5. Current unresolved M2-04C authority blockers
+## 6. Evidence/lifecycle separation
 
-```text
-004 aprovar_rejeitar_mesa
-031 gerenciar_lista
-036 get_dashboard_master
-047 get_stats_horario
-127 solicitar_lote_forcado
-```
-
-Blocker 119 `relatorio_fornecedor(uuid)` is resolved at target-mode authority level as INVOKER, but implementation/runtime assurance remains separately blocked.
-
-## 5. Evidence/lifecycle separation
-
-```text
+~~~text
 STATIC != LIVE != RUNTIME
 VERSIONED != MERGED != APPLIED != DEPLOYED != RUNTIME_TESTED
+TARGET CONTRACT RESOLVED != CURRENT IMPLEMENTATION COMPLIANT
 RLS ENABLED != POLICY CORRECT
 FORCE RLS != SECURITY DEFINER CONSTRAINED BY RLS
 MERGEABLE != APPROVED
 LIVE_DATABASE_VALIDATED != SECURITY_GO
-```
+~~~
 
-## 6. Removal rule
+## 7. Removal rule
 
 Remove or narrow a blocker only when an exact Product Authority decision and sufficient material evidence change the current safe action.

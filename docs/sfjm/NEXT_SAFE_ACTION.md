@@ -1,6 +1,78 @@
 # FECH.AI — SFJM Next Safe Action
 
-## 0.0000000000000000013 CURRENT ACTION — Product Authority select / authorize STS-M2-04E architecture synthesis — 2026-09-06
+## 0.0000000000000000015 CURRENT ACTION — fresh exact-head review of corrected PR #189 — 2026-09-07
+
+The authorized documentation correction changes the PR head and invalidates every prior exact-head review/pre-merge gate for PR #189.
+
+~~~text
+PR #189 = OPEN
+branch = docs/sts-m2-04e-architecture-acceptance
+pre-correction parent head = 8f660bfcc753bb0f8012a823d5942e4528f441bb
+corrected head = RESOLVE LIVE
+
+NEXT =
+INDEPENDENT FRESH EXACT-HEAD REVIEW
+OF THE CORRECTED PR #189 HEAD
+
+merge = NOT_AUTHORIZED
+deploy = NOT_AUTHORIZED
+Security Go = NOT_GRANTED
+~~~
+
+The review must validate the four bounded corrections F-189-PM-01 through F-189-PM-04, final blobs, diff, checks, reviews, threads, mergeability and main drift. It must preserve historical C3/D evidence and distinguish target contract from current implementation.
+
+Program-level continuation after a valid PR lifecycle gate remains:
+
+~~~text
+PRODUCT AUTHORITY SELECT / DEFINE
+THE NEXT BOUNDED STS-M2-04 ACTION
+
+M2-04F semantics = NOT_CANONICALLY_DEFINED
+M2-04F execution = NOT_AUTHORIZED
+~~~
+
+No implementation, Supabase/Auth mutation, SQL/DDL/DML, runtime remediation, lifecycle retirement, Ready transition, merge, deploy or Security Go is authorized by this record.
+
+## 0.0000000000000000014 HISTORICAL / SUPERSEDED — PRE-CORRECTION PROGRAM-LEVEL ACTION WORDING — 2026-09-06
+
+Current material state:
+
+~~~text
+STS-M2-04C = COMPLETE / ACCEPTED WITH HISTORICAL 68/40/5 PROJECTION
+STS-M2-04D = COMPLETE / ACCEPTED TRIGGER AUTHORITY CONTRACT
+STS-M2-04E = COMPLETE / ACCEPTED WITH IMPLEMENTATION-LIFECYCLE-RUNTIME RESIDUALS
+
+E target =
+70 DEFINER
+41 INVOKER
+0 semantic NOT_DETERMINED
+2 NON_MODE_LIFECYCLE
+113 inventoried routines
+
+Security Go = NOT_GRANTED
+~~~
+
+Do not replay C, D or E absent material contradictory evidence.
+
+Next program gate:
+
+~~~text
+PRODUCT AUTHORITY SELECT / DEFINE
+THE NEXT BOUNDED STS-M2-04 ACTION
+~~~
+
+Do not infer a lettered slice merely from sequence.
+
+~~~text
+M2-04F semantics = NOT_CANONICALLY_DEFINED
+M2-04F execution = NOT_AUTHORIZED
+M2-05 execution = NOT_AUTHORIZED
+M2-06 execution = NOT_AUTHORIZED
+~~~
+
+No implementation, Supabase/Auth mutation, SQL/DDL/DML, migration, function/grant/RLS/policy mutation, lifecycle retirement, hostile runtime testing, Ready, merge, deploy or Security Go is authorized by this state.
+
+## 0.0000000000000000013 HISTORICAL / SUPERSEDED ACTION — Product Authority select / authorize STS-M2-04E architecture synthesis — 2026-09-06
 
 Current state:
 
