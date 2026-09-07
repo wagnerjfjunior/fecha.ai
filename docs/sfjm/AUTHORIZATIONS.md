@@ -1,5 +1,63 @@
 # FECH.AI — SFJM Authorizations
 
+## 0.0000000000000000015 Product Authority — STS-M2-04E acceptance + bounded documentation/SFJM reconciliation — 2026-09-06
+
+Product Authority formally accepted:
+
+~~~text
+STS-M2-04E =
+COMPLETE / ACCEPTED WITH IMPLEMENTATION,
+LIFECYCLE AND RUNTIME-ASSURANCE RESIDUALS
+~~~
+
+Accepted five-residual target disposition:
+
+~~~text
+004 = SECURITY DEFINER
+031 = SECURITY DEFINER
+036 = RETIRE_OR_REPLACE_CURRENT_SEMANTICS / NON-MODE LIFECYCLE
+047 = SECURITY INVOKER / tenant-team scoped
+127 = RETIRE / DEPRECATE forced-user capability / NON-MODE LIFECYCLE
+semantic Product-Authority NOT_DETERMINED among five = 0
+~~~
+
+Authorized for this bounded reconciliation:
+
+~~~text
+resolve FECH.AI/SES live refs = AUTHORIZED
+GitHub documentation read = AUTHORIZED
+create branch docs/sts-m2-04e-target-authority-acceptance = AUTHORIZED
+create/update only the bounded E evidence + SFJM reconciliation files = AUTHORIZED
+documentation commit(s) within this single principal risk = AUTHORIZED
+Draft PR creation = AUTHORIZED
+exact-head read-only verification = AUTHORIZED
+~~~
+
+Explicitly NOT AUTHORIZED:
+
+~~~text
+Ready
+merge
+deploy
+Supabase/Auth/data mutation
+SQL / DDL / DML
+migration
+function body or security-mode runtime change
+owner / search_path change
+GRANT / REVOKE
+RLS / policy / trigger mutation
+frontend / src/App.jsx change
+004 / 031 / 036 / 047 / 127 technical remediation
+AppSec execution
+hostile/cross-tenant runtime testing
+M2-04F definition or execution
+M2-05 / M2-06 execution
+Security Go
+~~~
+
+STS-M2-04F remains NOT EXECUTED / NOT AUTHORIZED / SEMANTIC SCOPE NOT YET CANONICALLY FROZEN.
+
+
 ## 0.0000000000000000014 Product Authority — STS-M2-04D READ_ONLY execution + acceptance + bounded durable reconciliation — 2026-09-06
 
 Product Authority separately authorized STS-M2-04D after M2-04C closure.

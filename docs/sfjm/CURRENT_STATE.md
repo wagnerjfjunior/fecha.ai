@@ -1,5 +1,76 @@
 # FECH.AI — SFJM Current Material State
 
+## 0.0000000000000000015 CURRENT — STS-M2-04E COMPLETE / ACCEPTED TARGET AUTHORITY SYNTHESIS — 2026-09-06
+
+Product Authority formally accepted STS-M2-04E after bounded architecture reconstruction and final five-residual adjudication.
+
+~~~text
+STS-M2-04E =
+COMPLETE / ACCEPTED WITH IMPLEMENTATION,
+LIFECYCLE AND RUNTIME-ASSURANCE RESIDUALS
+
+TOTAL INVENTORIED ROUTINES = 113
+TARGET DEFINER = 70
+TARGET INVOKER = 41
+SEMANTIC TARGET-AUTHORITY NOT_DETERMINED = 0
+NON-MODE LIFECYCLE DISPOSITIONS = 2
+~~~
+
+Final five-residual disposition:
+
+~~~text
+004 aprovar_rejeitar_mesa(uuid,text,text)
+  TARGET = SECURITY DEFINER
+
+031 gerenciar_lista(uuid,text,text)
+  TARGET = SECURITY DEFINER
+
+036 get_dashboard_master()
+  CURRENT GLOBAL COMMERCIAL SEMANTICS = NOT TARGET-COMPLIANT
+  TARGET DISPOSITION = RETIRE_OR_REPLACE_CURRENT_SEMANTICS
+  CLASS = NON-MODE LIFECYCLE
+
+047 get_stats_horario()
+  TARGET = SECURITY INVOKER
+  SCOPE = authenticated tenant/team gestor statistics
+
+127 solicitar_lote_forcado(uuid)
+  FORCED-USER CAPABILITY = NOT PART OF TARGET PRODUCT
+  TARGET DISPOSITION = RETIRE / DEPRECATE
+  CLASS = NON-MODE LIFECYCLE
+~~~
+
+Historical C3 provenance remains unchanged:
+
+~~~text
+C3 = 68 DEFINER / 40 INVOKER / 5 NOT_DETERMINED / 113
+~~~
+
+Preserve:
+
+~~~text
+TARGET AUTHORITY RESOLVED != CURRENT IMPLEMENTATION CORRECT
+TARGET AUTHORITY RESOLVED != APPSEC PASS
+TARGET AUTHORITY RESOLVED != RUNTIME ASSURANCE
+TARGET AUTHORITY RESOLVED != SECURITY GO
+~~~
+
+Implementation/lifecycle remediation remains NOT_IMPLEMENTED. AppSec and hostile/cross-tenant runtime assurance remain NOT_PERFORMED. Security Go remains NOT_GRANTED.
+
+M2-04F remains:
+
+~~~text
+NOT EXECUTED
+NOT AUTHORIZED
+SEMANTIC SCOPE NOT YET CANONICALLY FROZEN
+~~~
+
+Durable E evidence:
+`docs/security/evidence/2026-09-06-sts-m2-04e-target-authority-synthesis.md`
+
+Next gate after this documentation-only reconciliation is exact-head review of this Draft PR. Ready, merge, implementation, M2-04F definition/execution and Security Go require separate Product Authority authority.
+
+
 ## 0.0000000000000000014 CURRENT — STS-M2-04D COMPLETE / ACCEPTED TRIGGER AUTHORITY CONTRACT — 2026-09-06
 
 Master Project accepted the bounded trigger-authority classification after independent live reconciliation.
