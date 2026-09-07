@@ -1,5 +1,67 @@
 # FECH.AI — SFJM Authorizations
 
+## 0.0000000000000000018 Product Authority — M1/M2 provenance hardening / anti-noise documentation boundary — 2026-09-07
+
+Product Authority explicitly authorized the bounded:
+
+~~~text
+M1/M2 DOCUMENTATION / PROVENANCE HARDENING
+DOCUMENTATION_ONLY
+~~~
+
+Product Authority also required that the repository must not become a conversational dump.
+
+For this hardening, the admitted mutation scope is exactly:
+
+~~~text
+docs/security/evidence/M1_M2_PROVENANCE_MANIFEST.md
+docs/security/evidence/2026-09-06-sts-m2-04c-c4-target-rls-dml-contract.md
+docs/sfjm/EVIDENCE_FRESHNESS.md
+docs/sfjm/AUTHORIZATIONS.md
+~~~
+
+Purpose:
+
+~~~text
+1. publish one central M1/M2 provenance manifest;
+2. add one standalone durable C4 contract because that structural evidence artifact was genuinely missing;
+3. record evidence availability/freshness;
+4. record this authorization and the anti-noise boundary.
+~~~
+
+Explicit non-goals / prohibited repository content:
+
+~~~text
+bulk chat transcripts
+salutations / conversational filler
+assistant reasoning
+duplicate prompts
+tool chatter
+redundant handoffs
+raw specialist packets whose material decision-grade evidence
+is already preserved equivalently
+~~~
+
+Raw packet admission requires decision-grade unique value, provenance binding, sanitization, deduplication and bounded scope.
+
+This authorization does NOT authorize:
+
+~~~text
+runtime/code mutation
+Supabase/Auth/data mutation
+SQL / DDL / DML
+migration
+RLS/policy/grant/function/trigger changes
+deploy
+Security Go
+M2 technical gate replay
+retroactive lifecycle fabrication
+Ready
+merge
+~~~
+
+One documentation commit and one Draft PR are authorized for this bounded hardening. Ready and merge remain separate Product Authority gates.
+
 ## 0.0000000000000000017 Product Authority — PR #189 exact-head merge + post-merge SFJM reconciliation — 2026-09-07
 
 Product Authority explicitly authorized merge of PR #189 only on exact head:
