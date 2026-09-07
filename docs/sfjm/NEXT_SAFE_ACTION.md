@@ -1,6 +1,68 @@
 # FECH.AI — SFJM Next Safe Action
 
-## 0.0000000000000000021 CURRENT ACTION — M2-05 DATABASE CONTRACT MAP / AUTHORIZATION REQUIRED — 2026-09-07
+## 0.0000000000000000022 CURRENT ACTION — M2-06 DATABASE ARCHITECTURE DECISION / AUTHORIZATION REQUIRED — 2026-09-07
+
+STS-M2-05 has been explicitly accepted by Product Authority as:
+
+~~~text
+COMPLETE / ACCEPTED WITH
+IMPLEMENTATION-LIFECYCLE-CALLSITE-EVIDENCE-
+RUNTIME-APPSEC RESIDUALS
+~~~
+
+Current program state:
+
+~~~text
+M2-01 = COMPLETE
+M2-02 = COMPLETE WITH RESIDUALS
+M2-03 = COMPLETE WITH RESIDUALS
+M2-04 = COMPLETE / ACCEPTED WITH IMPLEMENTATION-LIFECYCLE-RUNTIME RESIDUALS
+M2-05 = COMPLETE / ACCEPTED WITH IMPLEMENTATION-LIFECYCLE-CALLSITE-EVIDENCE-RUNTIME-APPSEC RESIDUALS
+M2-06 = ELIGIBLE_NOT_AUTHORIZED
+M2 = ACTIVE
+Security Go = NOT_GRANTED
+~~~
+
+Single next safe program action:
+
+~~~text
+PRODUCT AUTHORITY:
+AUTHORIZE BOUNDED STS-M2-06
+DATABASE ARCHITECTURE DECISION
+READ_ONLY SCOPE / EVIDENCE RECONSTRUCTION
+~~~
+
+M2-06 owns:
+
+~~~text
+EVOLVE_IN_PLACE
+vs
+V2_STRANGLER
+vs
+NEW_DATABASE
+~~~
+
+Do not decide or execute M2-06 under the M2-05 publication authority.
+
+Still prohibited until separately authorized:
+
+~~~text
+M2-06 execution
+M3 execution
+runtime/frontend implementation
+Supabase/Auth/data mutation
+migration / RLS / grants / policies / function / trigger mutation
+Ready
+merge
+deploy
+Security Go
+commercialization authorization
+~~~
+
+The current documentation publication itself remains PR_HEAD_ONLY until a separate exact-head review and Product Authority lifecycle authorization.
+
+
+## 0.0000000000000000021 HISTORICAL / SUPERSEDED ACTION — M2-05 DATABASE CONTRACT MAP / AUTHORIZATION REQUIRED — 2026-09-07
 
 Canonical task continuity surface:
 

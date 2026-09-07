@@ -1,6 +1,94 @@
 # FECH.AI — SFJM Current Material State
 
-## 0.0000000000000000020 CURRENT — STS-M2-04 COMPLETE / ACCEPTED WITH IMPLEMENTATION-LIFECYCLE-RUNTIME RESIDUALS — 2026-09-07
+## 0.0000000000000000021 CURRENT — STS-M2-05 DATABASE CONTRACT MAP COMPLETE / ACCEPTED WITH RESIDUALS — 2026-09-07
+
+Product Authority explicitly accepted STS-M2-05 and authorized this bounded documentation-only publication from exact FECH.AI main:
+
+~~~text
+acceptance/publication base main =
+e07254ef6b2d7184e749463727df2e6d404226a7
+
+STS-M2-05 =
+COMPLETE / ACCEPTED WITH
+IMPLEMENTATION-LIFECYCLE-CALLSITE-EVIDENCE-
+RUNTIME-APPSEC RESIDUALS
+~~~
+
+Accepted completion basis:
+
+~~~text
+44 / 44 canonical tables mapped
+160 / 160 public routine universe represented
+137 SECURITY DEFINER routines consumed through accepted B2 + B3/C3/E + D evidence
+23 / 23 non-DEFINER routines mapped by M2-05
+31 / 31 non-internal trigger instances represented
+10 / 10 bounded database contexts represented
+new M2-05 semantic blockers = 0
+~~~
+
+Durable evidence candidate on this PR head:
+
+~~~text
+docs/security/evidence/2026-09-07-sts-m2-05-database-contract-map.md
+blob 8b2875e1bc095329482de095028ed31b37091d63
+~~~
+
+Preserve:
+
+~~~text
+TARGET CONTRACT ACCEPTED != TARGET IMPLEMENTED
+DATABASE CONTRACT MAP COMPLETE != SECURITY ASSURANCE COMPLETE
+BOUNDED STATIC CALLSITE SEARCH != EXHAUSTIVE APPLICATION CALLSITE PROOF
+~~~
+
+Current residual boundary remains open:
+
+~~~text
+current implementation target-compliant = NOT_PROVEN
+implementation remediation = NOT_PERFORMED
+lifecycle remediation = NOT_PERFORMED
+exhaustive application direct-DML callsite proof = NOT_ESTABLISHED
+AppSec PASS = NOT_PERFORMED
+hostile-client assurance = NOT_PROVEN
+cross-tenant runtime assurance = NOT_PROVEN
+Security Go = NOT_GRANTED
+~~~
+
+Program state:
+
+~~~text
+M2-01 = COMPLETE
+M2-02 = COMPLETE WITH RESIDUALS
+M2-03 = COMPLETE WITH RESIDUALS
+M2-04 = COMPLETE / ACCEPTED WITH IMPLEMENTATION-LIFECYCLE-RUNTIME RESIDUALS
+M2-05 = COMPLETE / ACCEPTED WITH IMPLEMENTATION-LIFECYCLE-CALLSITE-EVIDENCE-RUNTIME-APPSEC RESIDUALS
+M2-06 = ELIGIBLE_NOT_AUTHORIZED
+M2 = ACTIVE
+~~~
+
+M2 is not closed. M2-06 remains a separate Product Authority gate.
+
+Single next program gate:
+
+~~~text
+PRODUCT AUTHORITY:
+AUTHORIZE BOUNDED STS-M2-06
+DATABASE ARCHITECTURE DECISION
+READ_ONLY SCOPE / EVIDENCE RECONSTRUCTION
+~~~
+
+M2-06 owns the future EVOLVE_IN_PLACE vs V2_STRANGLER vs NEW_DATABASE decision. No M2-06 execution, Ready, merge, deploy, Supabase/runtime mutation or Security Go is authorized by this state.
+
+Publication lifecycle:
+
+~~~text
+Product Authority acceptance = RECORDED
+documentation candidate = PR_HEAD_ONLY until separately reviewed/merged
+main canonical publication = NOT_YET_MERGED
+~~~
+
+
+## 0.0000000000000000020 HISTORICAL / SUPERSEDED — STS-M2-04 COMPLETE / ACCEPTED WITH IMPLEMENTATION-LIFECYCLE-RUNTIME RESIDUALS — 2026-09-07
 
 Product Authority explicitly accepted the final STS-M2-04 WBS closure against exact canonical main:
 

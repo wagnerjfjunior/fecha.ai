@@ -1,6 +1,76 @@
 # FECH.AI — SFJM Evidence Freshness
 
-## 0.0000000000000000023 CURRENT EVIDENCE — PROGRAM TASK GRAPH PUBLICATION — 2026-09-07
+## 0.0000000000000000024 CURRENT EVIDENCE — STS-M2-05 ACCEPTANCE PUBLICATION — 2026-09-07
+
+Acceptance/publication base:
+
+~~~text
+FECH.AI main =
+e07254ef6b2d7184e749463727df2e6d404226a7
+
+environment =
+Pilot Production / SaaS multi-tenant / multiempresa
+
+Security Go =
+NOT_GRANTED
+~~~
+
+Durable M2-05 evidence candidate:
+
+~~~text
+docs/security/evidence/2026-09-07-sts-m2-05-database-contract-map.md
+blob 8b2875e1bc095329482de095028ed31b37091d63
+coverage = contract-level accepted M2-05 result
+lifecycle = PR_HEAD_ONLY until separately reviewed/merged
+~~~
+
+Material accepted upstream evidence was re-read on the exact publication base without replaying closed analyses:
+
+~~~text
+M2-01 blob 281fe7372882310e186abfd068b4b4f1baab011d = INTEGRAL_READ
+M2-02 blob ec723587ee003427e592873efcc2fe4ef5aae615 = INTEGRAL_READ
+M2-03 blob 3d5cf2d890e4c5f7b37d9f01a926a8a50d0f8cc9 = INTEGRAL_READ
+M2-04B1 blob 15e771e99ce3e424ba4a869a00d4965bed733fc3 = INTEGRAL_READ
+M2-04B2 blob bfa43f6936b2a381552dbb95f5306f13069142af = INTEGRAL_READ
+M2-04B3 narrative blob 96d31bb3c471ddbc606f391aff13cb7674358e8b = INTEGRAL_READ
+M2-04B3 113x40 CSV blob cf3baa6e5a6ab6465688de8f6af43cba7c27d3bd = INTEGRAL_READ
+M2-04C3 CSV blob 716c23d5f549eb465f3393cdfc5989dda82b69a7 = INTEGRAL_READ
+M2-04C4 blob 01eefe744946a9f916ac0789780f77c5444aa799 = INTEGRAL_READ
+M2-04D blob 7fdc63a95d81661598937aa0bdfa654bcb9db66a = INTEGRAL_READ
+M2-04E blob 07365cae5a353bd2407512ddde0d3d4cf880352f = INTEGRAL_READ
+M1/M2 provenance manifest blob 7b7c84e713319a3a3c3de457e6e16239f1b1fd06 = INTEGRAL_READ
+current material SFJM views on publication base = INTEGRAL_READ
+~~~
+
+Accepted M2-05 coverage:
+
+~~~text
+tables = 44 / 44
+public routines = 160 / 160
+SECURITY DEFINER slice coverage = 137 / 137 through accepted non-homogeneous upstream slices
+non-DEFINER delta = 23 / 23
+trigger instances = 31 / 31
+bounded contexts = 10 / 10
+~~~
+
+Known proof limitations remain fresh and intentionally open:
+
+~~~text
+lista_avaliacoes resulting-row protected relationship integrity = NOT INDEPENDENTLY PROVEN
+leads resulting-row empresa_id relationship = NOT INDEPENDENTLY PROVEN
+times resulting-row empresa relationship = NOT INDEPENDENTLY RESTATED / NOT FULLY PROVEN
+exhaustive application direct-DML callsite proof = NOT_ESTABLISHED
+implementation remediation = NOT_PERFORMED
+lifecycle remediation = NOT_PERFORMED
+runtime hostile/cross-tenant assurance = NOT_PROVEN
+AppSec PASS = NOT_PERFORMED
+Security Go = NOT_GRANTED
+~~~
+
+Invalidation events for this acceptance publication include material main drift affecting accepted evidence, candidate-head change after review, a new contradiction in the documented M2-05 contract, or a Product Authority decision changing scope/status. Ordinary time passage alone is not an invalidator.
+
+
+## 0.0000000000000000023 HISTORICAL / SUPERSEDED EVIDENCE — PROGRAM TASK GRAPH PUBLICATION — 2026-09-07
 
 Publication base:
 
