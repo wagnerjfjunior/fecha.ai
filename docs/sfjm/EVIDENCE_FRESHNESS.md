@@ -1,6 +1,71 @@
 # FECH.AI — SFJM Evidence Freshness
 
-## 0.0000000000000000016 PR #189 POST-REVIEW CORRECTION — CURRENT EVIDENCE BOUNDARY — 2026-09-07
+## 0.0000000000000000017 PR #189 MERGE / POST-MERGE CONTINUITY ANCHOR — 2026-09-07
+
+~~~text
+pre-merge approved head =
+b7baa29dbbfeeaee78e423f7950ba17390fac0e2
+
+merge commit =
+13eec5a6b720d67ed29a1837a01502123547ccb6
+
+canonical main after merge =
+13eec5a6b720d67ed29a1837a01502123547ccb6
+
+PR #189 =
+MERGED / CLOSED
+
+merge authorization =
+EXPLICIT PRODUCT AUTHORITY / EXACT HEAD
+
+review threads before merge =
+4 / 4 RESOLVED
+
+Vercel commit status after merge =
+SUCCESS
+
+GitHub Actions workflow runs observed on merge commit =
+0
+~~~
+
+Final corrected E artifact now on canonical main:
+
+~~~text
+docs/security/evidence/2026-09-06-sts-m2-04e-architecture-synthesis-acceptance.md
+blob = 07365cae5a353bd2407512ddde0d3d4cf880352f
+~~~
+
+SFJM blobs merged by PR #189 before this post-merge reconciliation:
+
+~~~text
+CURRENT_STATE.md = 5a177c12b2b1c6b26f9e46d1e220511e8f21bbc7
+NEXT_SAFE_ACTION.md = 085c4391c3f5433670d5a53ebb45f05f1b86002b
+BLOCKED_ACTIONS.md = 532c004f26930ecdaf65a48f68a9a746129d01c3
+EVIDENCE_FRESHNESS.md = 082b6e1a917536d7354fb4862ae5d781c0c0074b
+AUTHORIZATIONS.md = 4de33a38dd6d42ee6bd70d8b77d5f780c0e53acb
+handoffs/CURRENT.md = 53ba34cc5132b513100e09862365f075587fb7b7
+~~~
+
+Those blobs correctly described the pre-merge lifecycle at the time they were reviewed, but their current-view sections became stale when PR #189 merged. Product Authority explicitly authorized this bounded SFJM post-merge documentation-only reconciliation.
+
+Preserve evidence separation:
+
+~~~text
+MERGED != SUPABASE APPLIED
+MERGED != RUNTIME TESTED
+VERCEL STATUS SUCCESS != APPSEC PASS
+VERCEL STATUS SUCCESS != SECURITY GO
+
+implementation remediation = NOT_PERFORMED
+lifecycle remediation = NOT_PERFORMED
+AppSec assurance = NOT_PERFORMED
+hostile/cross-tenant runtime assurance = NOT_PERFORMED
+Security Go = NOT_GRANTED
+~~~
+
+The next material program decision remains selection/definition of the next bounded STS-M2-04 action. M2-04F semantics remain not canonically defined.
+
+## 0.0000000000000000016 HISTORICAL / SUPERSEDED — PR #189 PRE-MERGE POST-REVIEW CORRECTION EVIDENCE BOUNDARY — 2026-09-07
 
 ~~~text
 correction parent head =

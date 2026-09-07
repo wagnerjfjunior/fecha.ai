@@ -1,5 +1,45 @@
 # FECH.AI — SFJM Authorizations
 
+## 0.0000000000000000017 Product Authority — PR #189 exact-head merge + post-merge SFJM reconciliation — 2026-09-07
+
+Product Authority explicitly authorized merge of PR #189 only on exact head:
+
+~~~text
+PR = #189
+authorized head = b7baa29dbbfeeaee78e423f7950ba17390fac0e2
+~~~
+
+GitHub live execution result:
+
+~~~text
+PR #189 = MERGED / CLOSED
+merged head = b7baa29dbbfeeaee78e423f7950ba17390fac0e2
+merge commit = 13eec5a6b720d67ed29a1837a01502123547ccb6
+canonical main after merge = 13eec5a6b720d67ed29a1837a01502123547ccb6
+~~~
+
+Product Authority then explicitly authorized:
+
+~~~text
+POST-MERGE SFJM RECONCILIATION =
+AUTHORIZED / DOCUMENTATION_ONLY
+~~~
+
+Bounded reconciliation scope:
+
+~~~text
+docs/sfjm/CURRENT_STATE.md
+docs/sfjm/NEXT_SAFE_ACTION.md
+docs/sfjm/BLOCKED_ACTIONS.md
+docs/sfjm/EVIDENCE_FRESHNESS.md
+docs/sfjm/AUTHORIZATIONS.md
+docs/sfjm/handoffs/CURRENT.md
+~~~
+
+This authority does not authorize any runtime/Supabase implementation, deploy, Security Go, M2-04F/M2-05/M2-06 execution, or Ready/merge of the reconciliation publication itself. Any such lifecycle transition remains a separate Product Authority decision.
+
+No new product semantics are created by this reconciliation.
+
 ## 0.0000000000000000016 Product Authority — PR #189 bounded post-review documentation correction — 2026-09-07
 
 Product Authority explicitly authorized one coherent documentation-only correction commit on the existing PR #189 branch from exact parent head:

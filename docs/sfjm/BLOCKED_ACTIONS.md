@@ -1,7 +1,7 @@
 # FECH.AI — SFJM Blocked Actions
 
-**Status:** STS-M2-04E_COMPLETE_ACCEPTED / NEXT_M2_04_UNSELECTED / FAIL_CLOSED  
-**Updated:** 2026-09-06  
+**Status:** STS-M2-04E_MERGED / NEXT_M2_04_UNSELECTED / FAIL_CLOSED  
+**Updated:** 2026-09-07  
 **Repository:** wagnerjfjunior/fecha.ai
 
 ## 1. Authority
@@ -35,8 +35,8 @@ M2-04F execution
 M2-05 execution
 M2-06 execution
 Supabase/Auth/business-data mutation
-Ready
-merge
+future Ready transitions not separately authorized
+future merges not separately authorized
 deploy
 ~~~
 
@@ -63,6 +63,17 @@ CROSS-SLICE 137-ROUTINE HOMOGENEOUS MODE SYNTHESIS = NOT CLAIMED
 B2 = separate accepted 15-routine slice with residuals
 D = separate accepted 9-trigger-routine target classification
 ~~~
+
+PR #189 lifecycle closure:
+
+~~~text
+PR #189 = MERGED / CLOSED
+authorized head = b7baa29dbbfeeaee78e423f7950ba17390fac0e2
+merge commit = 13eec5a6b720d67ed29a1837a01502123547ccb6
+corrected E contract = VERSIONED + MERGED
+~~~
+
+The completed PR #189 merge is not a current blocker. It does not clear any implementation, lifecycle, runtime or Security Go residual listed below.
 
 C/D/E analysis is not blocked and must not be replayed without material invalidation.
 

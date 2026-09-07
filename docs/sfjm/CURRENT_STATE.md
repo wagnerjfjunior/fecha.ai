@@ -1,6 +1,80 @@
 # FECH.AI — SFJM Current Material State
 
-## 0.0000000000000000016 CURRENT — STS-M2-04E CORRECTED BOUNDED AUTHORITY STATE — 2026-09-07
+## 0.0000000000000000017 CURRENT — PR #189 MERGED / STS-M2-04E CORRECTED CONTRACT ON MAIN — 2026-09-07
+
+Canonical post-merge state:
+
+~~~text
+PR #189 = MERGED / CLOSED
+authorized exact head = b7baa29dbbfeeaee78e423f7950ba17390fac0e2
+merge commit = 13eec5a6b720d67ed29a1837a01502123547ccb6
+current canonical main = 13eec5a6b720d67ed29a1837a01502123547ccb6
+
+corrected E evidence blob =
+07365cae5a353bd2407512ddde0d3d4cf880352f
+
+STS-M2-04E corrected contract =
+VERSIONED + MERGED
+~~~
+
+The merge closes the PR #189 documentation lifecycle. It does not prove implementation, Supabase application, runtime behavior, AppSec assurance, hostile/cross-tenant assurance or Security Go.
+
+Preserve:
+
+~~~text
+STS-M2-04E =
+COMPLETE / ACCEPTED WITH IMPLEMENTATION-LIFECYCLE-RUNTIME RESIDUALS
+
+FIVE-RESIDUAL E AUTHORITY ADJUDICATION = COMPLETE
+B3/C3 TARGET-AUTHORITY SEMANTIC RESIDUALS = ZERO
+CROSS-SLICE 137-ROUTINE HOMOGENEOUS MODE SYNTHESIS = NOT CLAIMED
+
+historical C3 =
+68 DEFINER / 40 INVOKER / 5 NOT_DETERMINED / 113 B3/C3 routines
+
+B3/C3 subset projection after E =
+70 target DEFINER
+41 target INVOKER
+0 target-authority semantic NOT_DETERMINED
+2 NON_MODE_LIFECYCLE
+113 B3/C3 routines
+
+B2 = separate accepted 15-routine slice with residuals
+M2-04D = separate accepted 9-trigger-routine target classification
+~~~
+
+Material residuals remain open and unchanged:
+
+~~~text
+004 implementation/security remediation = NOT_PERFORMED
+031 implementation/caller-ACL remediation = NOT_PERFORMED
+036 RETIRE_CURRENT_SEMANTICS lifecycle implementation = NOT_PERFORMED
+047 global-body/RLS remediation = NOT_PERFORMED
+119 current DEFINER -> target INVOKER remediation/runtime assurance = NOT_PERFORMED
+127 retirement/deprecation implementation = NOT_PERFORMED
+AppSec assurance = NOT_PERFORMED
+hostile/cross-tenant runtime assurance = NOT_PERFORMED
+Security Go = NOT_GRANTED
+~~~
+
+Vercel reported a successful integration status on the merge commit. This record does not independently classify that status as production runtime validation, smoke testing or Security Go.
+
+Next durable program action:
+
+~~~text
+PRODUCT AUTHORITY SELECT / DEFINE
+THE NEXT BOUNDED STS-M2-04 ACTION
+
+next bounded STS-M2-04 action = NOT_SELECTED
+M2-04F semantics = NOT_CANONICALLY_DEFINED
+M2-04F execution = NOT_AUTHORIZED
+M2-05 execution = NOT_AUTHORIZED
+M2-06 execution = NOT_AUTHORIZED
+~~~
+
+Absent a new material event, do not create another SFJM-only reconciliation merely because this reconciliation itself advances through GitHub lifecycle.
+
+## 0.0000000000000000016 HISTORICAL / SUPERSEDED — PRE-MERGE STS-M2-04E CORRECTED BOUNDED AUTHORITY STATE — 2026-09-07
 
 Product Authority authorized the bounded PR #189 post-review correction without reopening B/C/D globally.
 
