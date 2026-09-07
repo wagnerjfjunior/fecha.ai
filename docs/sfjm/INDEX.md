@@ -69,6 +69,9 @@ docs/sfjm/INDEX.md
 docs/sfjm/CURRENT_STATE.md
 → principal MATERIAL_RECORDED_STATE authority
 
+docs/sfjm/PROGRAM_TASK_GRAPH.md
+→ WBS-derived operational task/decomposition overlay for continuity consumers; WBS remains structural authority
+
 docs/sfjm/AUTHORIZATIONS.md
 → durable authority/provenance ledger
 
@@ -101,9 +104,10 @@ Before sensitive FECH.AI work:
 5. read governance when applicable;
 6. read this index;
 7. read `CURRENT_STATE.md`;
-8. read the thin blocker/action/authority/evidence/handoff views required by the decision;
-9. resolve every live GitHub/environment object material to the next action;
-10. reconcile `LIVE_RESOLVED_STATE + MATERIAL_RECORDED_STATE` before acting.
+8. when program/task continuity is material, read `PROGRAM_TASK_GRAPH.md`;
+9. read the thin blocker/action/authority/evidence/handoff views required by the decision;
+10. resolve every live GitHub/environment object material to the next action;
+11. reconcile `LIVE_RESOLVED_STATE + MATERIAL_RECORDED_STATE` before acting.
 
 If live state and recorded material meaning conflict, declare the conflict and preserve the more restrictive safe interpretation until resolved.
 

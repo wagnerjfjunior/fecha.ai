@@ -1,5 +1,41 @@
 # FECH.AI — SFJM Authorizations
 
+## 0.0000000000000000023 Product Authority — publish future task graph / SFJM continuity surface — 2026-09-07
+
+Product Authority requested that FECH.AI publish the already planned upcoming task structure so SFJM consumers can expose the real program hierarchy instead of relying on stale manual snapshots.
+
+Authorized scope:
+
+~~~text
+documentation/SFJM only
+publish WBS-derived future task structure
+publish execution-discovered M2-04 decomposition
+wire the new task graph into SFJM discovery/current/next/handoff/evidence
+~~~
+
+The publication must preserve:
+
+~~~text
+WBS = structural authority for planned IDs/labels/order/hours/exit contracts
+SFJM task graph = operational overlay only
+CURRENT_STATE = principal material-state authority
+Workspace = consumer, not FECH.AI authority
+~~~
+
+This authorization does not grant:
+
+~~~text
+M2-05 technical execution
+M2-06 execution
+M3..M6 execution
+implementation
+Supabase/Auth/data mutation
+deploy
+Security Go
+~~~
+
+The requested outcome is a durable published continuity surface from which the Workspace can later consume current and future task structure without inventing task state.
+
 ## 0.0000000000000000022 Product Authority — final STS-M2-04 acceptance + bounded SFJM reconciliation — 2026-09-07
 
 Product Authority explicitly accepted:

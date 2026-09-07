@@ -1,5 +1,52 @@
 # FECH.AI — SFJM Evidence Freshness
 
+## 0.0000000000000000023 CURRENT EVIDENCE — PROGRAM TASK GRAPH PUBLICATION — 2026-09-07
+
+Publication base:
+
+~~~text
+FECH.AI main =
+f7a6c69b8440b60181c7a4a9956c0f3c4268e9f6
+~~~
+
+Material source coverage:
+
+~~~text
+docs/roadmap/fechai-security-to-scale-2026-wbs.md
+blob c6fe2e339c4de33dfb8265912ba6b63380270c4e
+= INTEGRAL_READ
+
+docs/sfjm/CURRENT_STATE.md
+blob 7a2c6f236f75993d0b02e27f6a0864ca15cb0c83
+= INTEGRAL_READ
+
+docs/sfjm/NEXT_SAFE_ACTION.md
+blob f0217fdbdf6f9eff5243b3b60f9c87d35c269e1e
+= INTEGRAL_READ
+
+docs/sfjm/INDEX.md
+blob 3f83b38d7c6f4fea9d7d02dee5b3798bdfe2baad
+= INTEGRAL_READ
+
+Documentation Auditor canonical skill
+docs/skills/fechai-gpt0-documentation-auditor.md
+blob 282182a54b88f2344ea56ef8225e2519a96493e2
+= INTEGRAL_READ
+~~~
+
+The graph publishes WBS-derived future structure and accepted execution-discovered continuity. It does not prove implementation or runtime state and does not authorize future tasks.
+
+Invalidators include:
+
+- WBS structure/ID/order change;
+- Product Authority changing milestone/task state;
+- accepted task closure or reopening;
+- adoption of a new execution decomposition;
+- a material residual changing operational task state;
+- contradiction between graph and principal CURRENT_STATE.
+
+Ordinary PR lifecycle or main-SHA-only movement is not an invalidator by itself.
+
 ## 0.0000000000000000022 CURRENT EVIDENCE — FINAL STS-M2-04 WBS CLOSURE ACCEPTANCE — 2026-09-07
 
 Final adjudication anchor:

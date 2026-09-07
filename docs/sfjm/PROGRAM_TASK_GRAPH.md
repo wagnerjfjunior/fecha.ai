@@ -1,0 +1,274 @@
+# FECH.AI — SFJM Program Task Graph
+
+**Status:** `CURRENT / MATERIAL_EXECUTION_OVERLAY / WBS_DERIVED_STRUCTURE / WORKSPACE_CONSUMABLE`  
+**Updated:** 2026-09-07  
+**Repository:** `wagnerjfjunior/fecha.ai`
+
+## 1. Purpose
+
+This file publishes the FECH.AI program task graph for continuity consumers such as SFJM Workspace.
+
+It does not replace the WBS.
+
+Canonical separation:
+
+~~~text
+WBS STRUCTURE
+docs/roadmap/fechai-security-to-scale-2026-wbs.md
+= authority for planned milestone/task IDs, labels, order, hours and exit contracts
+
+PROGRAM TASK GRAPH
+docs/sfjm/PROGRAM_TASK_GRAPH.md
+= operational overlay for state, parent/children edges, execution-discovered decomposition,
+  residual continuity and next-task relationship
+
+CURRENT_STATE
+docs/sfjm/CURRENT_STATE.md
+= principal authority for current material product/security meaning
+
+NEXT_SAFE_ACTION
+docs/sfjm/NEXT_SAFE_ACTION.md
+= current semantic action/gate
+~~~
+
+A consumer must not silently turn `PLANNED` or `ELIGIBLE` into execution authority.
+
+## 2. Source anchors at publication
+
+~~~text
+publication base main =
+f7a6c69b8440b60181c7a4a9956c0f3c4268e9f6
+
+WBS =
+docs/roadmap/fechai-security-to-scale-2026-wbs.md
+blob c6fe2e339c4de33dfb8265912ba6b63380270c4e
+= INTEGRAL_READ
+
+CURRENT_STATE =
+docs/sfjm/CURRENT_STATE.md
+blob 7a2c6f236f75993d0b02e27f6a0864ca15cb0c83
+= INTEGRAL_READ
+
+NEXT_SAFE_ACTION =
+docs/sfjm/NEXT_SAFE_ACTION.md
+blob f0217fdbdf6f9eff5243b3b60f9c87d35c269e1e
+= INTEGRAL_READ
+~~~
+
+## 3. Consumer state vocabulary
+
+~~~text
+COMPLETE
+= accepted/closed material task; residuals may remain if explicitly preserved
+
+COMPLETE_WITH_RESIDUALS
+= accepted/closed task with preserved residual implementation/evidence/runtime/lifecycle work
+
+ACTIVE
+= current milestone or explicitly active authorized execution
+
+ELIGIBLE_NOT_AUTHORIZED
+= next structurally eligible task; execution authority has not been granted
+
+PLANNED_NOT_AUTHORIZED
+= future WBS task; no execution authority
+
+BLOCKED
+= cannot proceed until named condition/authority/evidence is satisfied
+
+SUPERSEDED
+= historical execution node retained only for continuity
+~~~
+
+## 4. Current program position
+
+~~~text
+program = FECH.AI Security-to-Scale 2026
+current milestone = M2 — Database Simplification & Optimization Plan
+current next task = M2-05 — Database Contract Map
+M2-05 execution = NOT_AUTHORIZED
+M2-06 execution = NOT_AUTHORIZED
+M3..M6 execution = NOT_AUTHORIZED
+Security Go = NOT_GRANTED
+~~~
+
+## 5. WBS-derived task graph
+
+| Parent | Task | Label | Hours | Operational state |
+|---|---|---|---:|---|
+| M2 | M2-01 | Matriz de 43 tabelas | 20 | COMPLETE |
+| M2 | M2-02 | Mapa routines / policies / triggers / grants | 24 | COMPLETE_WITH_RESIDUALS |
+| M2 | M2-03 | Índices / ACL contraditórias | 16 | COMPLETE_WITH_RESIDUALS |
+| M2 | M2-04 | Política target de DEFINER / RLS / DML | 20 | COMPLETE_WITH_RESIDUALS |
+| M2 | M2-05 | Database Contract Map | 20 | ELIGIBLE_NOT_AUTHORIZED |
+| M2 | M2-06 | Decisão arquitetural do banco | 16 | PLANNED_NOT_AUTHORIZED |
+| M3 | M3-01 | Identity / membership / team / role model | 24 | PLANNED_NOT_AUTHORIZED |
+| M3 | M3-02 | Authority contract por contexto | 28 | PLANNED_NOT_AUTHORIZED |
+| M3 | M3-03 | Allowlist de RPCs privilegiadas | 24 | PLANNED_NOT_AUTHORIZED |
+| M3 | M3-04 | Redução de DML sensível direto | 24 | PLANNED_NOT_AUTHORIZED |
+| M3 | M3-05 | Fechamento Auth / Admin flows | 24 | PLANNED_NOT_AUTHORIZED |
+| M3 | M3-06 | Staging / test plan de segurança | 28 | PLANNED_NOT_AUTHORIZED |
+| M4 | M4-01 | AppShell / Shared Frontend Boundary | 20 | PLANNED_NOT_AUTHORIZED |
+| M4 | M4-02 | CRM + Funil Core Slice | 40 | PLANNED_NOT_AUTHORIZED |
+| M4 | M4-03 | LeadOps Execution Slice — Leads / Listas / Distribuição / Discador / Power Message Engine | 32 | PLANNED_NOT_AUTHORIZED |
+| M4 | M4-04 | MesaCliente Core Slice | 32 | PLANNED_NOT_AUTHORIZED |
+| M4 | M4-05 | Feature Gateways / API Boundaries | 24 | PLANNED_NOT_AUTHORIZED |
+| M4 | M4-06 | Core Functional Equivalence & Regression | 24 | PLANNED_NOT_AUTHORIZED |
+| M5 | M5-01 | Hostile-client suite isolada | 28 | PLANNED_NOT_AUTHORIZED |
+| M5 | M5-02 | Regressão tenant / role / auth / storage | 28 | PLANNED_NOT_AUTHORIZED |
+| M5 | M5-03 | Dependency / CVE gate | 12 | PLANNED_NOT_AUTHORIZED |
+| M5 | M5-04 | Secrets / config / deploy gate | 16 | PLANNED_NOT_AUTHORIZED |
+| M5 | M5-05 | Observabilidade / rollback / incidente | 24 | PLANNED_NOT_AUTHORIZED |
+| M5 | M5-06 | Adjudicação de residual risk | 20 | PLANNED_NOT_AUTHORIZED |
+| M6 | M6-01 | Security Evidence + Final AS-BUILT Package | 14 | PLANNED_NOT_AUTHORIZED |
+| M6 | M6-02 | Blocker closeout | 8 | PLANNED_NOT_AUTHORIZED |
+| M6 | M6-03 | Onboarding / support / operational runbooks | 18 | PLANNED_NOT_AUTHORIZED |
+| M6 | M6-04 | Decisão comercial controlada | 8 | PLANNED_NOT_AUTHORIZED |
+| M6 | M6-05 | Launch readiness + AS-BUILT acceptance review | 12 | PLANNED_NOT_AUTHORIZED |
+
+Milestone states:
+
+~~~text
+M2 = ACTIVE
+M3 = PLANNED_NOT_AUTHORIZED
+M4 = PLANNED_NOT_AUTHORIZED
+M5 = PLANNED_NOT_AUTHORIZED
+M6 = PLANNED_NOT_AUTHORIZED
+~~~
+
+## 6. Execution-discovered decomposition — M2-04
+
+The following nodes are not new WBS milestones. They are execution-discovered continuity children of M2-04.
+
+~~~text
+M2-04 = COMPLETE_WITH_RESIDUALS
+├── STS-M2-04B = COMPLETE_WITH_RESIDUALS
+│   ├── STS-M2-04B1 = COMPLETE_WITH_RESIDUALS / ACCEPTED
+│   ├── STS-M2-04B2 = COMPLETE_WITH_RESIDUALS / ACCEPTED
+│   └── STS-M2-04B3 = COMPLETE / ACCEPTED
+├── STS-M2-04C = COMPLETE_WITH_RESIDUALS / ACCEPTED
+│   ├── STS-M2-04C1 = COMPLETE
+│   ├── STS-M2-04C2 = COMPLETE_WITH_RESIDUALS / ACCEPTED
+│   ├── STS-M2-04C3 = COMPLETE / ACCEPTED; historical NOT_DETERMINED resolved downstream by E
+│   └── STS-M2-04C4 = COMPLETE / ACCEPTED; design/evidence residuals preserved
+├── STS-M2-04D = COMPLETE / ACCEPTED
+└── STS-M2-04E = COMPLETE_WITH_RESIDUALS / ACCEPTED
+~~~
+
+No `M2-04F` node is canonical or created by this graph.
+
+Current M2-04 residual boundary remains:
+
+~~~text
+implementation remediation = NOT_PERFORMED
+lifecycle remediation = NOT_PERFORMED
+C4 design/evidence residuals = PRESERVED
+AppSec PASS = NOT_PERFORMED
+runtime assurance = NOT_PERFORMED
+Security Go = NOT_GRANTED
+~~~
+
+These residuals do not reopen M2-04 unless a material invalidator changes the accepted decision.
+
+## 7. Future decomposition rule
+
+Future WBS tasks start as one node only.
+
+Example:
+
+~~~text
+M3-01 = PLANNED_NOT_AUTHORIZED
+children = NONE YET
+~~~
+
+If execution later requires a bounded split:
+
+~~~text
+M3-01
+├── M3-01-A
+├── M3-01-B
+└── M3-01-C
+~~~
+
+the children may be added here only when the decomposition is materially adopted.
+
+Do not pre-invent child tasks.
+
+A decomposition update must preserve:
+
+~~~text
+parent task
+child IDs
+reason for split
+state
+dependencies
+residuals
+evidence
+authorization boundary
+next safe action
+~~~
+
+## 8. Workspace consumption contract
+
+A Workspace/dashboard consumer should reconstruct in this order:
+
+~~~text
+1. resolve FECH.AI main live
+2. read WBS structural source
+3. read PROGRAM_TASK_GRAPH
+4. read CURRENT_STATE
+5. read NEXT_SAFE_ACTION
+6. overlay LIVE_RESOLVED_STATE where required
+~~~
+
+Rendering rules:
+
+~~~text
+WBS task exists + no operational override
+→ render WBS task with structural state only
+
+task graph state exists
+→ render operational state from task graph
+
+execution-discovered children exist
+→ allow progressive expand/collapse
+
+ELIGIBLE_NOT_AUTHORIZED
+→ display as NEXT/ELIGIBLE, never ACTIVE
+
+COMPLETE_WITH_RESIDUALS
+→ display closed/accepted plus residual indicator; do not reopen parent
+
+unknown child decomposition
+→ show no children; do not infer
+
+main/source mismatch
+→ mark snapshot stale; do not silently claim current
+~~~
+
+The Workspace remains a consumer. It must not become authority for FECH.AI task state.
+
+## 9. Material update rule
+
+Update this graph only when one of these changes materially:
+
+~~~text
+a WBS task is accepted/closed
+a new WBS task becomes eligible/active
+an execution split is adopted
+a child task is completed/blocked/superseded
+a residual changes the task's operational meaning
+the next-task relationship changes
+a material invalidator reopens a previously accepted task
+~~~
+
+Do not update this graph merely because:
+
+~~~text
+a PR becomes Draft/Ready/merged
+main SHA changes with no semantic change
+a conversation changes
+a documentation-only lifecycle event occurs
+~~~
+
+This preserves the SFJM anti-loop rule.
