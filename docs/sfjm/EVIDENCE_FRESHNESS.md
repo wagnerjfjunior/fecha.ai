@@ -1,6 +1,35 @@
 # FECH.AI — SFJM Evidence Freshness
 
 
+## 0.0000000000000000019 CURRENT ACCEPTANCE FRESHNESS — B2 TARGET-CONTRACT RESULT ACCEPTED — 2026-09-07
+
+Product Authority acceptance is bound to the exact result recorded on PR #192 parent head:
+
+~~~text
+accepted parent head =
+8e18c4abe4daca6e4e9240c567267fcfe774e5b9
+
+execution-base main =
+dd118baa89b68281bbd7c8df43c8e24c0e9b66bf
+
+live B2 fingerprint =
+33aea33ec2039d91f417b3980ea8cf43
+~~~
+
+The underlying READ_ONLY evidence remains fresh for this acceptance because no main drift or Supabase mutation was performed by the reconciliation.
+
+Acceptance does not expand proof:
+
+~~~text
+TARGET CONTRACT ACCEPTED != CURRENT IMPLEMENTATION COMPLIANT
+TARGET CONTRACT ACCEPTED != RUNTIME ASSURANCE
+TARGET CONTRACT ACCEPTED != APPSEC PASS
+TARGET CONTRACT ACCEPTED != SECURITY GO
+~~~
+
+Freshness invalidators remain the same as the underlying B2 closure evidence: material change to any of the 15 functions, their ACL/owner/search_path/security mode, relevant helper/RLS/direct-DML authority, canonical callers, lifecycle semantics, or contradictory runtime/AppSec evidence.
+
+
 ## 0.0000000000000000018 CURRENT EVIDENCE — B2 HIGH-RISK TARGET-CONTRACT CLOSURE READ_ONLY — 2026-09-07
 
 Execution anchors:

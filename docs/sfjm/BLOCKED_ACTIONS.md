@@ -1,6 +1,6 @@
 # FECH.AI — SFJM Blocked Actions
 
-**Status:** B2_TARGET_CONTRACT_CLOSURE_EXECUTED / AWAITING_PRODUCT_AUTHORITY_ADJUDICATION / FAIL_CLOSED  
+**Status:** B2_TARGET_CONTRACT_CLOSURE_ACCEPTED / FINAL_M2_04_ADJUDICATION_PENDING / FAIL_CLOSED  
 **Updated:** 2026-09-07  
 **Repository:** wagnerjfjunior/fecha.ai
 
@@ -8,7 +8,7 @@
 
 ~~~text
 B2 High-Risk Target-Contract Closure execution = COMPLETE READ_ONLY
-Product Authority adjudication of result = PENDING
+Product Authority adjudication of result = ACCEPTED
 STS-M2-04 final closure = NOT YET ADJUDICATED
 ~~~
 
@@ -30,7 +30,7 @@ deploy / production mutation
 Security Go
 ~~~
 
-A repeated B2 closure re-audit without a material invalidator is not the next safe action.
+A repeated B2 closure re-audit without a material invalidator is not the next safe action. The next safe action is final STS-M2-04 WBS closure adjudication.
 
 
 ## 1. Authority

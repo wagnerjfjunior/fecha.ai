@@ -1,7 +1,143 @@
 # FECH.AI — SFJM Current Material State
 
 
-## 0.0000000000000000018 CURRENT — STS-M2-04 B2 HIGH-RISK TARGET-CONTRACT CLOSURE EXECUTED / RESULT AWAITING PRODUCT AUTHORITY ADJUDICATION — 2026-09-07
+## 0.0000000000000000019 CURRENT — B2 HIGH-RISK TARGET-CONTRACT CLOSURE ACCEPTED BY PRODUCT AUTHORITY — 2026-09-07
+
+Product Authority explicitly accepted the exact READ_ONLY B2 closure result produced from:
+
+~~~text
+accepted result parent head =
+8e18c4abe4daca6e4e9240c567267fcfe774e5b9
+
+execution-base main =
+dd118baa89b68281bbd7c8df43c8e24c0e9b66bf
+
+Supabase =
+uobxxgzshrmbtjfdolxd / Discador-MesaCliente
+
+live B2 fingerprint =
+33aea33ec2039d91f417b3980ea8cf43
+~~~
+
+Accepted bounded target/lifecycle projection:
+
+~~~text
+ACTIVE TARGET DEFINER = 6
+DEFINER_IF_RETAINED / DORMANT_NO_CLIENT_EXECUTE = 5
+TARGET INVOKER = 2
+NON_MODE_LIFECYCLE CANDIDATE = 2
+TOTAL = 15
+~~~
+
+Accepted exact dispositions:
+
+~~~text
+01 alterar_plano_empresa_root
+   -> PRIVILEGED_OPERATION / TARGET DEFINER / authenticated root entrypoint
+
+02 atualizar_status_empresa_root
+   -> PRIVILEGED_OPERATION / TARGET DEFINER / authenticated root entrypoint
+
+03 importar_mesa_cliente_disponibilidade_oficial
+   -> PRIVILEGED_OPERATION / TARGET DEFINER / authenticated tenant-admin/root entrypoint
+
+04 mesa_cliente_upsert_faixas_premio
+   -> PRIVILEGED_OPERATION / DEFINER_IF_RETAINED / DORMANT_NO_CLIENT_EXECUTE until canonical caller is proven
+
+05 mesa_cliente_upsert_politica_financeira
+   -> PRIVILEGED_OPERATION / DEFINER_IF_RETAINED / DORMANT_NO_CLIENT_EXECUTE until canonical caller is proven
+
+06 registrar_upload_arquivo_mesa
+   -> AUTHENTICATED_COMMAND / TARGET DEFINER / authenticated entrypoint
+
+07 salvar_mesa_cliente_desconto_politica
+   -> PRIVILEGED_OPERATION / DEFINER_IF_RETAINED / DORMANT_NO_CLIENT_EXECUTE until canonical caller is proven
+
+08 salvar_mesa_cliente_enriquecimento
+   -> AUTHENTICATED_COMMAND / TARGET DEFINER / authenticated RPC command boundary
+
+09 acquire_lote_lock
+   -> DB_INTERNAL_HELPER / TARGET INVOKER / NO DIRECT CLIENT EXECUTE
+
+10 avaliar_lista(uuid,integer,text)
+   -> AUTHENTICATED_COMMAND / TARGET DEFINER / authenticated entrypoint
+
+11 trilha_lead
+   -> AUTHENTICATED_QUERY / TARGET INVOKER / authenticated caller-visible lead scope
+
+12 dispensar_lembrete
+   -> AUTHENTICATED_COMMAND / DEFINER_IF_RETAINED / DORMANT_NO_CLIENT_EXECUTE until caller is proven
+
+13 mover_funil_batch
+   -> AUTHENTICATED_COMMAND / DEFINER_IF_RETAINED / DORMANT_NO_CLIENT_EXECUTE until caller + role/team scope are proven
+
+14 redefinir_senha_corretor
+   -> NON_MODE_LIFECYCLE candidate / RETIRE_LEGACY_SQL_RPC after dependency check
+
+15 registrar_audit_log
+   -> NON_MODE_LIFECYCLE candidate / RETIRE_OR_REPLACE_WITH_TRUSTED_INTERNAL_AUDIT_HELPER after dependency check
+~~~
+
+Accepted shared B2 target rules:
+
+~~~text
+PUBLIC EXECUTE target = 0 / 15
+anon EXECUTE target = 0 / 15
+service_role direct EXECUTE required by proven canonical caller = 0 / 15
+
+callerless retained routines =
+NO CLIENT EXECUTE until canonical caller/product contract is proven
+
+DEFINER owner target =
+controlled least-privilege owner boundary
+
+retained routine search_path target =
+deterministic safe object resolution with pg_catalog first
+and schema-qualified application objects
+~~~
+
+This acceptance closes the bounded B2 target-contract residual semantics. It does not implement them and does not convert current AS-IS into target compliance.
+
+Preserve:
+
+~~~text
+current 15/15 SECURITY DEFINER = AS-IS
+current 15/15 owner postgres = AS-IS
+current 15/15 search_path=public = AS-IS
+current 8/8 Group-A anon EXECUTE = AS-IS
+
+implementation remediation = NOT_PERFORMED
+lifecycle remediation = NOT_PERFORMED
+hostile-client runtime assurance = NOT_PROVEN
+cross-tenant runtime negatives = NOT_PROVEN where applicable
+Group-D runtime use/nonuse = NOT_PROVEN
+independent AppSec assurance = NOT_PERFORMED
+Security Go = NOT_GRANTED
+~~~
+
+Program boundary after this acceptance:
+
+~~~text
+B2 HIGH-RISK TARGET-CONTRACT CLOSURE =
+COMPLETE / ACCEPTED WITH IMPLEMENTATION-LIFECYCLE-RUNTIME RESIDUALS
+
+STS-M2-04 final WBS closure =
+NOT YET ADJUDICATED
+
+M2-04F semantics =
+NOT CANONICALLY CREATED
+
+M2-05 execution =
+NOT_AUTHORIZED
+
+M2-06 execution =
+NOT_AUTHORIZED
+~~~
+
+Next safe action is a bounded final STS-M2-04 closure adjudication against the already accepted B1/B2/B3/C/D/E target-policy evidence. No global replay is required absent a material invalidator.
+
+
+## 0.0000000000000000018 HISTORICAL / SUPERSEDED — STS-M2-04 B2 HIGH-RISK TARGET-CONTRACT CLOSURE EXECUTED / RESULT AWAITING PRODUCT AUTHORITY ADJUDICATION — 2026-09-07
 
 Current live execution anchor:
 

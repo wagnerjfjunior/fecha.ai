@@ -1,7 +1,57 @@
 # FECH.AI — SFJM Next Safe Action
 
 
-## 0.0000000000000000018 CURRENT ACTION — PRODUCT AUTHORITY ADJUDICATE B2 HIGH-RISK TARGET-CONTRACT CLOSURE RESULT — 2026-09-07
+## 0.0000000000000000019 CURRENT ACTION — FINAL STS-M2-04 WBS CLOSURE ADJUDICATION — 2026-09-07
+
+Product Authority has accepted the bounded B2 High-Risk Target-Contract Closure.
+
+Current accepted M2-04 evidence stack:
+
+~~~text
+B1 routine-authority policy = COMPLETE / ACCEPTED WITH RESIDUALS
+B2 original 15-routine classification = COMPLETE / ACCEPTED WITH RESIDUALS
+B2 target-contract closure = COMPLETE / ACCEPTED WITH IMPLEMENTATION-LIFECYCLE-RUNTIME RESIDUALS
+B3 classification = COMPLETE / ACCEPTED
+C = COMPLETE / ACCEPTED WITH BOUNDED AUTHORITY RESIDUALS
+D = COMPLETE / ACCEPTED TRIGGER AUTHORITY CONTRACT
+E = COMPLETE / ACCEPTED WITH IMPLEMENTATION-LIFECYCLE-RUNTIME RESIDUALS
+~~~
+
+Single next safe action:
+
+~~~text
+PRODUCT AUTHORITY:
+ADJUDICATE WHETHER STS-M2-04 =
+COMPLETE / ACCEPTED WITH IMPLEMENTATION-LIFECYCLE-RUNTIME RESIDUALS
+AGAINST THE WBS OBJECTIVE:
+TARGET POLICY FOR DEFINER / RLS / DML
+~~~
+
+This is an acceptance/gate decision only. It does not authorize implementation.
+
+If STS-M2-04 is accepted, M2-05 — Database Contract Map becomes the next eligible bounded milestone, but M2-05 execution still requires separate authorization.
+
+Still prohibited:
+
+~~~text
+implementation
+Supabase/Auth/data mutation
+ALTER FUNCTION
+GRANT / REVOKE
+owner/search_path/security-mode mutation
+RLS/policy/direct-DML mutation
+lifecycle retirement
+hostile-client/cross-tenant testing
+M2-05 execution
+M2-06 execution
+Ready
+merge
+deploy
+Security Go
+~~~
+
+
+## 0.0000000000000000018 HISTORICAL / SUPERSEDED ACTION — PRODUCT AUTHORITY ADJUDICATE B2 HIGH-RISK TARGET-CONTRACT CLOSURE RESULT — 2026-09-07
 
 The authorized READ_ONLY B2 High-Risk Target-Contract Closure has been executed against:
 
