@@ -1,6 +1,42 @@
 # FECH.AI — SFJM Evidence Freshness
 
 
+## 0.0000000000000000020 CURRENT EVIDENCE — PR #192 CONFLICT RECONCILIATION AGAINST PR #191 MAIN — 2026-09-07
+
+Reconciliation anchors:
+
+~~~text
+canonical main before reconciliation =
+ead9fe91d561145f883694452a54a6a289e42080
+
+PR #192 pre-reconciliation head =
+8f8c8dade4a495fe2b0edc48d11a08f5ccd3670f
+
+main drift source =
+PR #191 / docs: harden M1/M2 evidence provenance
+~~~
+
+Drift classification:
+
+~~~text
+technical/runtime/Supabase drift = NO
+documentation/provenance drift = YES
+overlapping SFJM files =
+docs/sfjm/AUTHORIZATIONS.md
+docs/sfjm/EVIDENCE_FRESHNESS.md
+~~~
+
+Reconciliation rule:
+
+~~~text
+PR #191 entries from canonical main = PRESERVED INTEGRALLY
+accepted B2 target-contract decisions = PRESERVED WITHOUT SEMANTIC CHANGE
+force push = NO
+technical mutation = NO
+~~~
+
+The PR #191 provenance hardening does not invalidate the B2 target-contract result. Fresh exact-head review is required after this reconciliation before any Ready decision.
+
 ## 0.0000000000000000019 CURRENT ACCEPTANCE FRESHNESS — B2 TARGET-CONTRACT RESULT ACCEPTED — 2026-09-07
 
 Product Authority acceptance is bound to the exact result recorded on PR #192 parent head:
@@ -106,6 +142,65 @@ Freshness / invalidation events for this result include:
 - material runtime/AppSec evidence that contradicts the current target assumptions.
 
 No database, Auth, RLS, policy, grant, routine, data, runtime or production mutation was executed.
+
+
+## 0.0000000000000000018 M1/M2 PROVENANCE HARDENING — CURRENT EVIDENCE AVAILABILITY — 2026-09-07
+
+Product Authority authorized a bounded documentation-only provenance hardening after the read-only M1/M2 completeness audit.
+
+Hardening base:
+
+~~~text
+FECH.AI main =
+dd118baa89b68281bbd7c8df43c8e24c0e9b66bf
+
+SES documentation-audit evidence ref =
+a31e10cc3f0d1278c53c49e38151854d36ee9f3e
+~~~
+
+Audit verdict carried into this hardening:
+
+~~~text
+CRITICAL M1/M2 DECISION DURABILITY = PASS
+CURRENT STATE RECONSTRUCTIBILITY FROM GITHUB = PASS
+PRODUCT AUTHORITY TRACEABILITY = PASS
+RAW SPECIALIST SOURCE FORENSICS = PARTIAL
+ROADMAP BLOCKER = NO
+~~~
+
+Bounded evidence additions:
+
+~~~text
+docs/security/evidence/M1_M2_PROVENANCE_MANIFEST.md
+  -> central decision/source/fingerprint/reconstructibility manifest
+  -> anti-noise repository admission policy
+
+docs/security/evidence/2026-09-06-sts-m2-04c-c4-target-rls-dml-contract.md
+  -> candidate standalone durable C4 target RLS/direct-DML contract
+  -> closes the prior C4 structural documentation gap only after merge
+~~~
+
+Raw source packets are intentionally NOT bulk-versioned by this hardening.
+
+Admission rule:
+
+~~~text
+RAW PACKET MAY ENTER GITHUB ONLY IF:
+decision-grade unique evidence
++ provenance-bound
++ sanitized
++ non-duplicative
++ bounded
+
+CHAT TRANSCRIPT / PROMPT / SALUTATION / TOOL CHATTER =
+DO_NOT_VERSION
+~~~
+
+M1 final specialist verdicts remain durable but their historical MANUAL_COPY_PASTE source texts are not exact-hash-bound in the current record. Do not fabricate retroactive exactness.
+
+M2-01/02/03, B1/B2, C2/C3 and D source packets retain their recorded hashes where available, but the canonical durable artifacts remain the operational authority.
+
+This hardening changes evidence availability/documentation structure only. It does not change the current M2 roadmap state, any technical decision, implementation state, Supabase/runtime state or Security Go.
 
 ## 0.0000000000000000017 PR #189 MERGE / POST-MERGE CONTINUITY ANCHOR — 2026-09-07
 
