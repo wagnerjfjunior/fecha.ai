@@ -1,5 +1,63 @@
 # FECH.AI — SFJM Evidence Freshness
 
+## 0.0000000000000000018 M1/M2 PROVENANCE HARDENING — CURRENT EVIDENCE AVAILABILITY — 2026-09-07
+
+Product Authority authorized a bounded documentation-only provenance hardening after the read-only M1/M2 completeness audit.
+
+Hardening base:
+
+~~~text
+FECH.AI main =
+dd118baa89b68281bbd7c8df43c8e24c0e9b66bf
+
+SES documentation-audit evidence ref =
+a31e10cc3f0d1278c53c49e38151854d36ee9f3e
+~~~
+
+Audit verdict carried into this hardening:
+
+~~~text
+CRITICAL M1/M2 DECISION DURABILITY = PASS
+CURRENT STATE RECONSTRUCTIBILITY FROM GITHUB = PASS
+PRODUCT AUTHORITY TRACEABILITY = PASS
+RAW SPECIALIST SOURCE FORENSICS = PARTIAL
+ROADMAP BLOCKER = NO
+~~~
+
+Bounded evidence additions:
+
+~~~text
+docs/security/evidence/M1_M2_PROVENANCE_MANIFEST.md
+  -> central decision/source/fingerprint/reconstructibility manifest
+  -> anti-noise repository admission policy
+
+docs/security/evidence/2026-09-06-sts-m2-04c-c4-target-rls-dml-contract.md
+  -> candidate standalone durable C4 target RLS/direct-DML contract
+  -> closes the prior C4 structural documentation gap only after merge
+~~~
+
+Raw source packets are intentionally NOT bulk-versioned by this hardening.
+
+Admission rule:
+
+~~~text
+RAW PACKET MAY ENTER GITHUB ONLY IF:
+decision-grade unique evidence
++ provenance-bound
++ sanitized
++ non-duplicative
++ bounded
+
+CHAT TRANSCRIPT / PROMPT / SALUTATION / TOOL CHATTER =
+DO_NOT_VERSION
+~~~
+
+M1 final specialist verdicts remain durable but their historical MANUAL_COPY_PASTE source texts are not exact-hash-bound in the current record. Do not fabricate retroactive exactness.
+
+M2-01/02/03, B1/B2, C2/C3 and D source packets retain their recorded hashes where available, but the canonical durable artifacts remain the operational authority.
+
+This hardening changes evidence availability/documentation structure only. It does not change the current M2 roadmap state, any technical decision, implementation state, Supabase/runtime state or Security Go.
+
 ## 0.0000000000000000017 PR #189 MERGE / POST-MERGE CONTINUITY ANCHOR — 2026-09-07
 
 ~~~text
