@@ -77,6 +77,20 @@ Product Authority adjudication request
 
 Do not mark STS-M2-06 COMPLETE merely because a recommendation is produced.
 
+Current issue/risk consumer surface:
+
+~~~text
+docs/sfjm/CURRENT_ISSUES.md
+
+CURRENT_TASK_BLOCKERS = 0
+RESIDUAL = 3
+DEFERRED_EVIDENCE = 3
+SECURITY_GATE = 3
+FUTURE_GATE = 1
+~~~
+
+A receiving consumer must not reconstruct "open problems" by flattening these classes.
+
 ## 0.0000000000000000022 HISTORICAL / SUPERSEDED HANDOFF — STS-M2-05 ACCEPTED / M2-06 NEXT GATE — 2026-09-07
 
 ~~~text

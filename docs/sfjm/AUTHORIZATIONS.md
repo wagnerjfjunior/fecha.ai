@@ -1,5 +1,44 @@
 # FECH.AI — SFJM Authorizations
 
+## 0.0000000000000000027 Product Authority — STS naming + current issue lifecycle + Workspace normalization — 2026-09-07
+
+Product Authority authorized the bounded normalization program end-to-end.
+
+Authorized phases:
+
+~~~text
+A = FECH.AI STS naming normalization
+B = FECH.AI current blocker/residual/deferred/gate lifecycle normalization
+C = SFJM Workspace consumer/rendering normalization
+~~~
+
+Lifecycle authority within those exact bounded scopes:
+
+~~~text
+branch
+documentation / consumer-model edits
+commit
+PR
+fresh exact-head review
+bounded in-scope correction
+Ready
+fresh pre-merge revalidation
+merge
+post-merge validation
+~~~
+
+Preserve:
+
+~~~text
+STS-M2-05 = COMPLETE / ACCEPTED WITH RESIDUALS
+STS-M2-06 = AUTHORIZED_READ_ONLY / READY_TO_EXECUTE
+no runtime/Supabase/product mutation
+no Security Go change
+~~~
+
+A new Product Authority authorization is required only for a new material finding outside naming/current-issue/Workspace-consumption scope.
+
+
 ## 0.0000000000000000026 Product Authority — STS-M2-06 Database Architecture Decision READ_ONLY start — 2026-09-07
 
 Product Authority explicitly authorized initiation of:

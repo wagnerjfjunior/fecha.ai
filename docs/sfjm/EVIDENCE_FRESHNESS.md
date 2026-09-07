@@ -1,5 +1,56 @@
 # FECH.AI — SFJM Evidence Freshness
 
+## 0.0000000000000000026 CURRENT EVIDENCE — TYPED ISSUE / RISK / GATE CLASSIFICATION — 2026-09-07
+
+Validation anchor:
+
+~~~text
+FECH.AI main =
+0cb993a1eb86433975429da4a07a13fd3f373e16
+
+CURRENT_STATE =
+9cb81039a826d145fa9fdfad32278a0f06cd9d67
+= INTEGRAL_READ
+
+BLOCKED_ACTIONS =
+fca4e6e8085e335d4de073d2dbcf052562f1c496
+= INTEGRAL_READ
+
+NEXT_SAFE_ACTION =
+6cd13ba9f62a6d6645b1da471b3fb32075e5d80f
+= INTEGRAL_READ
+
+PROGRAM_TASK_GRAPH =
+146333eb4cbe589663c43edb4098e90b7865cf93
+= INTEGRAL_READ
+
+F1-02 remediation master plan =
+e7022ad4efdda4428e9d8261fdd666b47c914215
+= INTEGRAL_READ
+~~~
+
+Adjudicated current classification:
+
+~~~text
+CURRENT_TASK = STS-M2-06
+CURRENT_TASK_BLOCKERS = 0
+RESIDUAL = 3
+DEFERRED_EVIDENCE = 3
+SECURITY_GATE = 3
+FUTURE_GATE = 1
+~~~
+
+This evidence supports issue lifecycle classification only. It does not resolve the underlying residuals/deferred evidence/gates.
+
+Invalidators:
+
+- Product Authority changes STS-M2-06 or launch/security authority;
+- a current blocker is discovered;
+- a residual/deferred/gate changes state;
+- canonical evidence contradicts a typed item;
+- consumer source SHA no longer matches canonical state and freshness is claimed.
+
+
 ## 0.0000000000000000025 CURRENT EVIDENCE — STS-M2-06 AUTHORIZATION / EXECUTION START BOUNDARY — 2026-09-07
 
 Authorization anchor:
