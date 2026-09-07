@@ -1,5 +1,72 @@
 # FECH.AI — SFJM Authorizations
 
+## 0.0000000000000000015 Product Authority — STS-M2-04E acceptance + bounded durable reconciliation — 2026-09-06
+
+Product Authority explicitly accepted:
+
+~~~text
+STS-M2-04E =
+COMPLETE WITH IMPLEMENTATION / LIFECYCLE /
+RUNTIME-ASSURANCE RESIDUALS
+
+TARGET AUTHORITY SYNTHESIS = COMPLETE
+PRODUCT-AUTHORITY SEMANTIC RESIDUALS FOR 004/031/036/047/127 = ZERO
+Security Go = NOT_GRANTED
+~~~
+
+Accepted target dispositions:
+
+~~~text
+004 -> DEFINER
+031 -> DEFINER
+036 -> NON_MODE_LIFECYCLE / RETIRE_OR_REPLACE_CURRENT_SEMANTICS
+047 -> INVOKER / TENANT-TEAM SCOPED
+127 -> NON_MODE_LIFECYCLE / RETIRE_DEPRECATE / SELF-ONLY LOT REQUEST
+~~~
+
+Product Authority authorized one bounded documentation-only reconciliation:
+
+~~~text
+base main = aa266df3124f407a3f2c155c8f8ab5c193707783
+branch = docs/sts-m2-04e-architecture-acceptance
+
+exact file mutation =
+docs/security/evidence/2026-09-06-sts-m2-04e-architecture-synthesis-acceptance.md
+docs/sfjm/CURRENT_STATE.md
+docs/sfjm/NEXT_SAFE_ACTION.md
+docs/sfjm/BLOCKED_ACTIONS.md
+docs/sfjm/EVIDENCE_FRESHNESS.md
+docs/sfjm/AUTHORIZATIONS.md
+docs/sfjm/handoffs/CURRENT.md
+
+single coherent documentation commit = AUTHORIZED
+Draft PR creation = AUTHORIZED
+~~~
+
+Still NOT AUTHORIZED:
+
+~~~text
+Ready
+merge
+deploy
+Supabase/Auth/data mutation
+SQL / DDL / DML
+migration
+SECURITY DEFINER / INVOKER runtime change
+function/trigger/owner/search_path mutation
+GRANT / REVOKE
+RLS / policy mutation
+004/031/036/047/127 technical remediation
+D-01 through D-08 implementation
+active AppSec/hostile/cross-tenant runtime testing
+M2-04F execution
+M2-05 execution
+M2-06 execution
+Security Go
+~~~
+
+No semantics are granted to M2-04F by this authorization.
+
 ## 0.0000000000000000014 Product Authority — STS-M2-04D READ_ONLY execution + acceptance + bounded durable reconciliation — 2026-09-06
 
 Product Authority separately authorized STS-M2-04D after M2-04C closure.

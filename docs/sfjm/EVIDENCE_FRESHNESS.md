@@ -1,5 +1,62 @@
 # FECH.AI — SFJM Evidence Freshness
 
+## 0.0000000000000000015 STS-M2-04E ACCEPTED ARCHITECTURE SYNTHESIS + FIVE-RESIDUAL DELTA — 2026-09-06
+
+~~~text
+acceptance base main =
+aa266df3124f407a3f2c155c8f8ab5c193707783
+
+SES evidence ref =
+a31e10cc3f0d1278c53c49e38151854d36ee9f3e
+
+durable E evidence =
+docs/security/evidence/2026-09-06-sts-m2-04e-architecture-synthesis-acceptance.md
+
+durable E Git blob =
+6f6a9bd1f181dfcf34ab979284338e497fb09f61
+
+MUTATION CLASS =
+documentation-only
+
+Supabase/runtime mutation =
+NO
+~~~
+
+Material accepted result:
+
+~~~text
+C3 historical =
+68 DEFINER / 40 INVOKER / 5 NOT_DETERMINED / 113
+
+E superseding five-row target adjudication =
+004 DEFINER
+031 DEFINER
+036 NON_MODE_LIFECYCLE / RETIRE_OR_REPLACE_CURRENT_SEMANTICS
+047 INVOKER / tenant-team scoped
+127 NON_MODE_LIFECYCLE / RETIRE_DEPRECATE / SELF-ONLY lot request
+
+E aggregate =
+70 target DEFINER
+41 target INVOKER
+0 semantic target-authority NOT_DETERMINED
+2 NON_MODE_LIFECYCLE
+113 inventoried routines
+~~~
+
+Material evidence consumed includes accepted B1/B3/C3/D artifacts, live Issue #133, versioned B4 list/team binding evidence, MesaCliente approval call/workflow evidence and the explicit Product Authority E acceptance.
+
+Freshness is invalidated by a material Product Authority reversal or material drift in the five routine identities/contracts, Issue #133 authority boundary, list/team authority model, Mesa approval authority model, accepted B1/C/D target policy inputs, or evidence that changes the E target disposition.
+
+~~~text
+implementation remediation = NOT_PERFORMED
+lifecycle remediation = NOT_PERFORMED
+AppSec assurance = NOT_PERFORMED
+hostile/cross-tenant runtime assurance = NOT_PERFORMED
+Security Go = NOT_GRANTED
+~~~
+
+The publication of this evidence does not prove current runtime compliance.
+
 ## 0.0000000000000000014 STS-M2-04D SPECIALIST PACKET + DURABLE ACCEPTANCE EVIDENCE — 2026-09-06
 
 ~~~text

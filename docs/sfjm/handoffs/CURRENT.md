@@ -1,6 +1,74 @@
 # FECH.AI — SFJM Current Product/Security Handoff
 
-## 0.0000000000000000014 CURRENT HANDOFF — STS-M2-04D complete / accepted; M2-04E not authorized — 2026-09-06
+## 0.0000000000000000015 CURRENT HANDOFF — STS-M2-04E complete / accepted; next bounded M2-04 action unselected — 2026-09-06
+
+~~~text
+repository = wagnerjfjunior/fecha.ai
+E acceptance base main = aa266df3124f407a3f2c155c8f8ab5c193707783
+CURRENT FECH.AI main = RESOLVE LIVE
+SES evidence base = a31e10cc3f0d1278c53c49e38151854d36ee9f3e
+environment = Pilot Production / multi-tenant / multiempresa
+Security Go = NOT_GRANTED
+~~~
+
+Preserve:
+
+~~~text
+M2-04C historical projection =
+68 DEFINER / 40 INVOKER / 5 NOT_DETERMINED / 113
+
+M2-04D =
+COMPLETE / ACCEPTED
+8 DEFINER / 1 INVOKER / 0 NOT_DETERMINED
+9 functions / 18 trigger instances
+
+M2-04E =
+COMPLETE / ACCEPTED WITH IMPLEMENTATION-LIFECYCLE-RUNTIME RESIDUALS
+
+E target =
+70 DEFINER
+41 INVOKER
+0 semantic NOT_DETERMINED
+2 NON_MODE_LIFECYCLE
+113 inventoried routines
+~~~
+
+Durable E evidence:
+
+~~~text
+docs/security/evidence/2026-09-06-sts-m2-04e-architecture-synthesis-acceptance.md
+Git blob = 6f6a9bd1f181dfcf34ab979284338e497fb09f61
+~~~
+
+Five E dispositions:
+
+~~~text
+004 -> DEFINER / implementation-security residual
+031 -> DEFINER / implementation-caller-ACL residual
+036 -> NON_MODE_LIFECYCLE / RETIRE_OR_REPLACE_CURRENT_SEMANTICS
+047 -> INVOKER / tenant-team scoped / current global-body-RLS residual
+127 -> NON_MODE_LIFECYCLE / RETIRE_DEPRECATE / SELF-ONLY lot request
+~~~
+
+Receiving sessions must not ask Product Authority to re-decide the product semantics of these five absent material contradictory evidence.
+
+Issue #133 remains binding: root/admin_global is platform control plane and does not inherit ordinary tenant/team commercial authority.
+
+Next handoff:
+
+~~~text
+PRODUCT AUTHORITY SELECT / DEFINE
+NEXT BOUNDED STS-M2-04 ACTION
+
+M2-04F semantics = NOT_CANONICALLY_DEFINED
+M2-04F execution = NOT_AUTHORIZED
+M2-05 = NOT_AUTHORIZED
+M2-06 = NOT_AUTHORIZED
+~~~
+
+No implementation, Supabase/Auth mutation, SQL/DDL/DML, function/grant/RLS/policy change, lifecycle retirement, hostile runtime testing, Ready, merge, deploy or Security Go is carried by this handoff.
+
+## 0.0000000000000000014 HISTORICAL / SUPERSEDED HANDOFF — STS-M2-04D complete / accepted; M2-04E not authorized — 2026-09-06
 
 ~~~text
 repository = wagnerjfjunior/fecha.ai
