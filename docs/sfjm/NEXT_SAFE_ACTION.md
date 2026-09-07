@@ -50,6 +50,15 @@ Execution remains READ_ONLY. GitHub discovery and bounded Supabase catalog/metad
 
 Do not execute STS-M3. Do not implement the recommended architecture. Do not grant Security Go.
 
+Current issue classification:
+
+~~~text
+source = docs/sfjm/CURRENT_ISSUES.md
+CURRENT_TASK_BLOCKERS = 0
+~~~
+
+Residuals, deferred evidence and future/security gates remain visible but do not block the authorized STS-M2-06 READ_ONLY task merely by existing.
+
 ## 0.0000000000000000022 HISTORICAL / SUPERSEDED ACTION — M2-06 DATABASE ARCHITECTURE DECISION / AUTHORIZATION REQUIRED — 2026-09-07
 
 STS-M2-05 has been explicitly accepted by Product Authority as:

@@ -81,6 +81,20 @@ AGAINST LIVE CANONICAL MAIN
 
 This authorization publication is documentation-only and remains PR_HEAD_ONLY until separately reviewed/merged. The execution authority itself comes from Product Authority and is exact-scope bounded; repository publication does not widen it.
 
+Current issue/risk lifecycle view:
+
+~~~text
+docs/sfjm/CURRENT_ISSUES.md
+
+CURRENT_TASK_BLOCKERS = 0
+RESIDUAL = 3
+DEFERRED_EVIDENCE = 3
+SECURITY_GATE = 3
+FUTURE_GATE = 1
+~~~
+
+This classification prevents residuals/deferred/future gates from being counted as current blockers. It does not waive or resolve them.
+
 ## 0.0000000000000000021 HISTORICAL / SUPERSEDED — STS-M2-05 DATABASE CONTRACT MAP COMPLETE / ACCEPTED WITH RESIDUALS — 2026-09-07
 
 Product Authority explicitly accepted STS-M2-05 and authorized this bounded documentation-only publication from exact FECH.AI main:

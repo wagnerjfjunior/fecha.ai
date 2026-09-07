@@ -1,34 +1,26 @@
 # FECH.AI — SFJM Blocked Actions
 
-## 0. CURRENT — STS-M2-06 READ_ONLY AUTHORIZED / MUTATIONS STILL BLOCKED — 2026-09-07
+## 0. CURRENT — STS-M2-06 READ_ONLY AUTHORIZED / CURRENT TASK BLOCKERS = 0 — 2026-09-07
+
+Canonical typed issue view:
 
 ~~~text
-STS-M2-05 =
-COMPLETE / ACCEPTED WITH RESIDUALS
+docs/sfjm/CURRENT_ISSUES.md
+~~~
 
+Current task:
+
+~~~text
 STS-M2-06 =
 AUTHORIZED_READ_ONLY / READY_TO_EXECUTE
 
-STS-M2 =
-ACTIVE
-
-Security Go =
-NOT_GRANTED
+CURRENT_TASK_BLOCKERS =
+0
 ~~~
 
-STS-M2-06 bounded READ_ONLY execution is no longer blocked. Product Authority explicitly authorized evidence reconstruction and architecture decision work.
+STS-M2-06 bounded READ_ONLY evidence/reasoning work is not blocked.
 
-Allowed within STS-M2-06:
-
-~~~text
-GitHub / repository READ_ONLY discovery
-bounded Supabase catalog / metadata / statistics READ_ONLY when materially necessary
-architecture characterization
-three-option comparison
-recommendation for Product Authority adjudication
-~~~
-
-Still blocked unless separately authorized:
+The following remain prohibited without separate authority, but are authorization boundaries rather than current blocker-count items:
 
 ~~~text
 STS-M2-06 implementation
@@ -40,13 +32,21 @@ RLS / policy / grants / owner / search_path mutation
 function / trigger / RPC / Edge Function mutation
 active hostile-client/cross-tenant production testing
 STS-M3 execution
-Ready / merge of this STS-M2-06 authorization publication
 deploy / production mutation
 Security Go
 commercialization authorization
 ~~~
 
-STS-M2-06 completion/acceptance is not automatic. The result must return to Product Authority for adjudication.
+Current non-blocking open facts are classified separately:
+
+~~~text
+RESIDUAL = 3
+DEFERRED_EVIDENCE = 3
+SECURITY_GATE = 3
+FUTURE_GATE = 1
+~~~
+
+Do not count residuals, deferred evidence or future/security gates as current blockers unless their exact contract changes.
 
 ## 0.1 HISTORICAL / SUPERSEDED — STS-M2-05 accepted / M2-06 eligible but not authorized — 2026-09-07
 
