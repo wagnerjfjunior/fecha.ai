@@ -1,5 +1,48 @@
 # FECH.AI — SFJM Evidence Freshness
 
+## 0.0000000000000000015 STS-M2-04E TARGET AUTHORITY ACCEPTANCE EVIDENCE — 2026-09-06
+
+~~~text
+decision base FECH.AI main =
+aa266df3124f407a3f2c155c8f8ab5c193707783
+
+SES ref =
+a31e10cc3f0d1278c53c49e38151854d36ee9f3e
+
+environment =
+Pilot Production / SaaS multi-tenant / multiempresa
+
+durable evidence path =
+docs/security/evidence/2026-09-06-sts-m2-04e-target-authority-synthesis.md
+~~~
+
+Accepted architecture result:
+
+~~~text
+113 inventoried routines
+70 target DEFINER
+41 target INVOKER
+0 semantic target-authority NOT_DETERMINED
+2 non-mode lifecycle dispositions: 036, 127
+~~~
+
+Five-residual closure:
+
+~~~text
+004 = DEFINER
+031 = DEFINER
+036 = RETIRE_OR_REPLACE_CURRENT_SEMANTICS
+047 = INVOKER / tenant-team scoped
+127 = RETIRE / DEPRECATE forced-user capability
+~~~
+
+Freshness invalidators include material changes to the relevant routine bodies, caller/EXECUTE contracts, list/team authority model, MesaCliente approval semantics, Root/Admin Global authority contract, RLS/policy composition used by 047, or a new Product Authority decision changing the target product semantics.
+
+Preserve historical C3 evidence at 68/40/5. This E-level synthesis supersedes only the unresolved semantic disposition of the five residual rows; it does not rewrite C3 history.
+
+Implementation, lifecycle remediation, AppSec and runtime assurance remain open/not performed. Security Go remains NOT_GRANTED.
+
+
 ## 0.0000000000000000014 STS-M2-04D SPECIALIST PACKET + DURABLE ACCEPTANCE EVIDENCE — 2026-09-06
 
 ~~~text

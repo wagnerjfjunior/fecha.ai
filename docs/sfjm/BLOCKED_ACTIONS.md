@@ -1,8 +1,42 @@
 # FECH.AI — SFJM Blocked Actions
 
-**Status:** STS-M2-04D_COMPLETE_ACCEPTED / M2-04E_NOT_AUTHORIZED / FAIL_CLOSED  
+**Status:** STS-M2-04E_COMPLETE_ACCEPTED / IMPLEMENTATION_RESIDUALS_BLOCKED / M2-04F_UNFROZEN / FAIL_CLOSED  
 **Updated:** 2026-09-06  
 **Repository:** wagnerjfjunior/fecha.ai
+
+## 0. Current STS-M2-04E blocker interpretation
+
+STS-M2-04E semantic target-authority analysis is closed and accepted.
+
+The five former semantic blockers are no longer Product-Authority NOT_DETERMINED:
+
+~~~text
+004 = DEFINER target
+031 = DEFINER target
+036 = lifecycle RETIRE_OR_REPLACE_CURRENT_SEMANTICS
+047 = INVOKER target / tenant-team scoped
+127 = lifecycle RETIRE / DEPRECATE
+~~~
+
+What remains blocked is implementation/lifecycle remediation and assurance, not E target-authority semantics.
+
+Blocked without separate authorization:
+
+~~~text
+004 technical remediation
+031 technical remediation / caller×ACL reconciliation
+036 retirement/replacement implementation
+047 global-body/RLS remediation
+127 retirement/deprecation implementation
+AppSec execution
+hostile/cross-tenant runtime assurance
+M2-04F definition/execution
+Ready
+merge
+deploy
+Security Go
+~~~
+
 
 ## 1. Authority
 

@@ -1,5 +1,41 @@
 # FECH.AI — SFJM Current Product/Security Handoff
 
+## 0.0000000000000000015 CURRENT HANDOFF — STS-M2-04E accepted; documentation reconciliation Draft PR next — 2026-09-06
+
+~~~text
+repository = wagnerjfjunior/fecha.ai
+decision base main = aa266df3124f407a3f2c155c8f8ab5c193707783
+SES = a31e10cc3f0d1278c53c49e38151854d36ee9f3e
+environment = Pilot Production / multi-tenant / multiempresa
+Security Go = NOT_GRANTED
+~~~
+
+Accepted E state:
+
+~~~text
+STS-M2-04E = COMPLETE / ACCEPTED
+004 = DEFINER target
+031 = DEFINER target
+036 = RETIRE_OR_REPLACE_CURRENT_SEMANTICS / lifecycle
+047 = INVOKER target / tenant-team scoped
+127 = RETIRE / DEPRECATE / lifecycle
+
+113 total
+70 target DEFINER
+41 target INVOKER
+0 semantic target-authority NOT_DETERMINED
+2 non-mode lifecycle dispositions
+~~~
+
+Do not rewrite historical C3: 68 DEFINER / 40 INVOKER / 5 NOT_DETERMINED / 113 remains historical provenance.
+
+Implementation/lifecycle remediation, AppSec and hostile/cross-tenant runtime assurance remain open/not performed.
+
+M2-04F is NOT EXECUTED / NOT AUTHORIZED / SEMANTIC SCOPE NOT YET CANONICALLY FROZEN.
+
+Receiving conversation must resolve GitHub live first and, for this reconciliation lifecycle, validate the exact Draft PR base/head/commits/changed files/diff/final files/checks before any next authorization. No Ready, merge, deploy, runtime, Supabase/Auth or Security Go authority is inherited.
+
+
 ## 0.0000000000000000014 CURRENT HANDOFF — STS-M2-04D complete / accepted; M2-04E not authorized — 2026-09-06
 
 ~~~text
