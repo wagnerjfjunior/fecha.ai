@@ -1,6 +1,43 @@
 # FECH.AI — SFJM Blocked Actions
 
-## 0. CURRENT — STS-M2-06 READ_ONLY AUTHORIZED / CURRENT TASK BLOCKERS = 0 — 2026-09-07
+## 0. CURRENT — STS-M2-06 ACCEPTED / STS-M3 EXECUTION STILL BLOCKED — 2026-09-07
+
+~~~text
+STS-M2-06 = COMPLETE / ACCEPTED
+DATABASE STRATEGY = V2_STRANGLER / SAME_DATABASE_FIRST
+STS-M2 = COMPLETE / ACCEPTED WITH RESIDUALS
+STS-M3 = NEXT_ELIGIBLE / NOT_AUTHORIZED
+Security Go = NOT_GRANTED
+~~~
+
+The architecture decision is no longer blocked or pending.
+
+Still blocked unless separately authorized:
+
+~~~text
+V2 technical implementation
+runtime/frontend mutation
+Supabase/Auth/data mutation
+SQL / DDL / DML mutation
+migration execution
+RLS / policy / grants / owner / search_path mutation
+function / trigger / RPC / Edge Function mutation
+database cloning / second production database
+data backfill
+dual-write implementation
+active hostile-client/cross-tenant production testing
+STS-M3 execution
+deploy / production mutation
+Security Go
+commercialization authorization
+~~~
+
+PR review/Draft/Ready/merge/base/head/check facts are lifecycle state and must be resolved live from GitHub; this material blocker view does not own or freeze them.
+
+STS-M3-01 is structurally next eligible but has no execution authority. Any STS-M3-01 execution requires separate Product Authority authorization.
+
+
+## 0.2 HISTORICAL / SUPERSEDED — STS-M2-06 READ_ONLY AUTHORIZED / CURRENT TASK BLOCKERS = 0 — 2026-09-07
 
 Canonical typed issue view:
 

@@ -1,5 +1,69 @@
 # FECH.AI — SFJM Authorizations
 
+## 0.0000000000000000028 Product Authority — STS-M2-06 acceptance + bounded publication — 2026-09-07
+
+Product Authority explicitly accepts:
+
+~~~text
+STS-M2-06 = COMPLETE / ACCEPTED
+DATABASE ARCHITECTURE STRATEGY = V2_STRANGLER / SAME_DATABASE_FIRST
+STS-M2 = COMPLETE / ACCEPTED WITH RESIDUALS
+~~~
+
+Accepted target interpretation:
+
+~~~text
+INITIAL PHYSICAL PERSISTENCE = CURRENT SUPABASE / POSTGRESQL DATABASE
+IMPLEMENTATION MODEL =
+VERSIONED BOUNDED-CONTEXT CONTRACTS
++ FEATURE-SPECIFIC GATEWAYS
++ SERVER-SIDE AUTHORITY
++ INCREMENTAL CONSUMER CUTOVER
++ EXPLICIT LEGACY RETIREMENT
+
+NEW PRODUCTION DATABASE = NOT SELECTED AT THIS STAGE
+~~~
+
+Product Authority authorizes only the bounded documentation/SFJM publication of this accepted decision.
+
+The previous STS-M2-06 authorization publication was merged through PR #197 at merge commit:
+
+~~~text
+0cb993a1eb86433975429da4a07a13fd3f373e16
+~~~
+
+Current publication base:
+
+~~~text
+83186f5775e563e150329fa0b95dd1d7f3f3a516
+~~~
+
+Explicitly not authorized by this acceptance:
+
+~~~text
+V2 technical implementation
+runtime/frontend mutation
+Supabase/Auth/data mutation
+DDL / DML
+migration execution
+RLS / policy / grant / owner / search_path mutation
+function / trigger / RPC / Edge Function mutation
+database cloning
+new Supabase project
+new production database
+data backfill
+dual-write implementation
+STS-M3 execution
+Ready
+merge
+deploy
+Security Go
+commercialization authorization
+~~~
+
+One bounded documentation branch, one coherent documentation commit and one Draft PR are authorized. Ready and merge remain separate gates.
+
+
 ## 0.0000000000000000027 Product Authority — STS naming + current issue lifecycle + Workspace normalization — 2026-09-07
 
 Product Authority authorized the bounded normalization program end-to-end.

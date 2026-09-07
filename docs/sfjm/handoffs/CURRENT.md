@@ -1,6 +1,61 @@
 # FECH.AI — SFJM Current Product/Security Handoff
 
-## 0.0000000000000000023 CURRENT HANDOFF — STS-M2-06 AUTHORIZED READ_ONLY / NEW CONVERSATION — 2026-09-07
+## 0.0000000000000000024 CURRENT HANDOFF — STS-M2-06 ACCEPTED / STS-M2 CLOSED WITH RESIDUALS — 2026-09-07
+
+~~~text
+repository = wagnerjfjunior/fecha.ai
+analysis base main = f22b83bb7acec8692e0575185a88ca2755183b41
+authorization publication merge = 0cb993a1eb86433975429da4a07a13fd3f373e16
+acceptance publication base main = 83186f5775e563e150329fa0b95dd1d7f3f3a516
+environment = Pilot Production / SaaS multi-tenant / multiempresa
+
+STS-M2-06 = COMPLETE / PRODUCT_AUTHORITY_ACCEPTED
+STS-M2 = COMPLETE / ACCEPTED WITH RESIDUALS
+DATABASE STRATEGY = V2_STRANGLER / SAME_DATABASE_FIRST
+STS-M3 = NEXT_ELIGIBLE / NOT_AUTHORIZED
+STS-M3-01 = NEXT_ELIGIBLE / NOT_AUTHORIZED
+Security Go = NOT_GRANTED
+~~~
+
+Selected architecture meaning:
+
+~~~text
+current Supabase/PostgreSQL remains initial physical system of record
+v2 contracts are introduced per bounded context
+authority remains server-side
+consumer cutover is incremental
+legacy retirement is explicit and evidence-gated
+dual-write/shadow state is exceptional and temporary
+new production database is not selected at this stage
+~~~
+
+Preserve without reopening:
+
+~~~text
+current implementation target-compliant = NOT_PROVEN
+implementation/lifecycle remediation = NOT_PERFORMED
+exhaustive application callsite proof = NOT_ESTABLISHED
+hostile-client/cross-tenant runtime assurance = NOT_PROVEN
+AppSec PASS = NOT_PERFORMED
+Security Go = NOT_GRANTED
+~~~
+
+Lifecycle boundary:
+
+~~~text
+PR review / Draft / Ready / merge / base / head / checks
+= RESOLVE LIVE FROM GITHUB
+= NOT OWNED BY THIS MATERIAL HANDOFF
+
+NEXT MATERIAL PROGRAM GATE
+= SEPARATE PRODUCT AUTHORITY AUTHORIZATION
+  FOR BOUNDED STS-M3-01
+~~~
+
+Do not start STS-M3, implement V2, mutate Supabase, deploy or grant Security Go under this handoff.
+
+
+## 0.0000000000000000023 HISTORICAL / SUPERSEDED HANDOFF — STS-M2-06 AUTHORIZED READ_ONLY / NEW CONVERSATION — 2026-09-07
 
 ~~~text
 repository = wagnerjfjunior/fecha.ai

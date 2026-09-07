@@ -1,5 +1,33 @@
 # FECH.AI — SFJM Program Task Graph
 
+## 0. CURRENT ACCEPTED ARCHITECTURE OVERRIDE — STS-M2-06 / STS-M2 CLOSURE — 2026-09-07
+
+~~~text
+publication base main =
+83186f5775e563e150329fa0b95dd1d7f3f3a516
+
+STS-M2-06 =
+COMPLETE / ACCEPTED
+
+DATABASE STRATEGY =
+V2_STRANGLER / SAME_DATABASE_FIRST
+
+STS-M2 =
+COMPLETE_WITH_RESIDUALS / ACCEPTED
+
+STS-M3 =
+ELIGIBLE_NOT_AUTHORIZED
+
+STS-M3-01 =
+ELIGIBLE_NOT_AUTHORIZED
+
+Security Go =
+NOT_GRANTED
+~~~
+
+This override is the current operational meaning for the task graph. The structural WBS IDs, hours, labels and order remain unchanged.
+
+
 **Status:** `CURRENT / MATERIAL_EXECUTION_OVERLAY / WBS_DERIVED_STRUCTURE / WORKSPACE_CONSUMABLE`  
 **Updated:** 2026-09-07  
 **Repository:** `wagnerjfjunior/fecha.ai`
@@ -87,15 +115,15 @@ STS-M2-05 =
 COMPLETE_WITH_RESIDUALS / ACCEPTED
 
 STS-M2-06 =
-AUTHORIZED_READ_ONLY / READY_TO_EXECUTE
+COMPLETE / ACCEPTED
 
 STS-M2 =
-ACTIVE
+COMPLETE_WITH_RESIDUALS / ACCEPTED
 ~~~
 
 The historical WBS label `Matriz de 43 tabelas` is preserved. The accepted/live canonical database universe for STS-M2-05 is 44 tables.
 
-This graph records program state only. Product Authority has now separately granted bounded READ_ONLY STS-M2-06 execution authority. No implementation, STS-M3 execution, deploy or Security Go follows from that authorization.
+This graph records program state only. Product Authority has accepted STS-M2-06 with `V2_STRANGLER / SAME_DATABASE_FIRST`. STS-M2 is complete with preserved residuals. STS-M3 is next eligible but remains not authorized. No implementation, deploy or Security Go follows from this acceptance.
 
 ## 3. Consumer state vocabulary
 
@@ -129,10 +157,12 @@ SUPERSEDED
 
 ~~~text
 program = FECH.AI Security-to-Scale 2026
-current milestone = STS-M2 — Database Simplification & Optimization Plan
-current next task = STS-M2-06 — Decisão arquitetural do banco
+completed milestone = STS-M2 — Database Simplification & Optimization Plan
+current next task = STS-M3-01 — Identity / membership / team / role model
 STS-M2-05 = COMPLETE_WITH_RESIDUALS / ACCEPTED
-STS-M2-06 = AUTHORIZED_READ_ONLY / READY_TO_EXECUTE
+STS-M2-06 = COMPLETE / ACCEPTED
+STS-M2 = COMPLETE_WITH_RESIDUALS / ACCEPTED
+STS-M3 = NEXT_ELIGIBLE / NOT_AUTHORIZED
 STS-M3..STS-M6 execution = NOT_AUTHORIZED
 Security Go = NOT_GRANTED
 ~~~
@@ -146,8 +176,8 @@ Security Go = NOT_GRANTED
 | STS-M2 | STS-M2-03 | M2-03 | Índices / ACL contraditórias | 16 | COMPLETE_WITH_RESIDUALS |
 | STS-M2 | STS-M2-04 | M2-04 | Política target de DEFINER / RLS / DML | 20 | COMPLETE_WITH_RESIDUALS |
 | STS-M2 | STS-M2-05 | M2-05 | Database Contract Map | 20 | COMPLETE_WITH_RESIDUALS |
-| STS-M2 | STS-M2-06 | M2-06 | Decisão arquitetural do banco | 16 | AUTHORIZED_READ_ONLY |
-| STS-M3 | STS-M3-01 | M3-01 | Identity / membership / team / role model | 24 | PLANNED_NOT_AUTHORIZED |
+| STS-M2 | STS-M2-06 | M2-06 | Decisão arquitetural do banco | 16 | COMPLETE |
+| STS-M3 | STS-M3-01 | M3-01 | Identity / membership / team / role model | 24 | ELIGIBLE_NOT_AUTHORIZED |
 | STS-M3 | STS-M3-02 | M3-02 | Authority contract por contexto | 28 | PLANNED_NOT_AUTHORIZED |
 | STS-M3 | STS-M3-03 | M3-03 | Allowlist de RPCs privilegiadas | 24 | PLANNED_NOT_AUTHORIZED |
 | STS-M3 | STS-M3-04 | M3-04 | Redução de DML sensível direto | 24 | PLANNED_NOT_AUTHORIZED |
@@ -174,8 +204,8 @@ Security Go = NOT_GRANTED
 Milestone states:
 
 ~~~text
-STS-M2 = ACTIVE
-STS-M3 = PLANNED_NOT_AUTHORIZED
+STS-M2 = COMPLETE_WITH_RESIDUALS / ACCEPTED
+STS-M3 = ELIGIBLE_NOT_AUTHORIZED
 STS-M4 = PLANNED_NOT_AUTHORIZED
 STS-M5 = PLANNED_NOT_AUTHORIZED
 STS-M6 = PLANNED_NOT_AUTHORIZED
@@ -224,7 +254,7 @@ STS-M2-05 = COMPLETE_WITH_RESIDUALS / ACCEPTED
 23 / 23 non-DEFINER delta
 31 / 31 non-internal trigger instances
 10 / 10 bounded contexts
-STS-M2-06 = AUTHORIZED_READ_ONLY / READY_TO_EXECUTE
+STS-M2-06 = COMPLETE / ACCEPTED
 ~~~
 
 STS-M2-05 residual implementation/lifecycle/callsite-evidence/runtime/AppSec work is preserved and does not reopen the accepted Database Contract Map unless a material invalidator changes the decision.

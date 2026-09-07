@@ -1,6 +1,39 @@
 # FECH.AI — SFJM Next Safe Action
 
-## 0.0000000000000000023 CURRENT ACTION — EXECUTE STS-M2-06 DATABASE ARCHITECTURE DECISION READ_ONLY — 2026-09-07
+## 0.0000000000000000024 CURRENT MATERIAL GATE — STS-M3-01 REQUIRES SEPARATE PRODUCT AUTHORITY AUTHORIZATION — 2026-09-07
+
+~~~text
+STS-M2-06 = COMPLETE / PRODUCT_AUTHORITY_ACCEPTED
+DATABASE STRATEGY = V2_STRANGLER / SAME_DATABASE_FIRST
+STS-M2 = COMPLETE / ACCEPTED WITH RESIDUALS
+STS-M3 = NEXT_ELIGIBLE / NOT_AUTHORIZED
+Security Go = NOT_GRANTED
+~~~
+
+Current program execution authority:
+
+~~~text
+CURRENT_AUTHORIZED_EXECUTION = NONE
+STS-M3 execution = NOT_AUTHORIZED
+V2 implementation = NOT_AUTHORIZED
+Supabase/Auth/data mutation = NOT_AUTHORIZED
+deploy = NOT_AUTHORIZED
+Security Go = NOT_GRANTED
+~~~
+
+Next material program gate:
+
+~~~text
+SEPARATE PRODUCT AUTHORITY AUTHORIZATION
+FOR BOUNDED STS-M3-01
+~~~
+
+Before any action, reconstruct live GitHub lifecycle and material state. PR review/Draft/Ready/merge/base/head/check facts are resolved live from GitHub and are not owned or frozen by this file.
+
+Do not start STS-M3 and do not implement V2 without separate Product Authority authorization.
+
+
+## 0.0000000000000000023 HISTORICAL / SUPERSEDED ACTION — EXECUTE STS-M2-06 DATABASE ARCHITECTURE DECISION READ_ONLY — 2026-09-07
 
 Product Authority has granted the previously missing execution authority.
 

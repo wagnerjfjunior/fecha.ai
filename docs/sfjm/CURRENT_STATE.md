@@ -1,6 +1,106 @@
 # FECH.AI — SFJM Current Material State
 
-## 0.0000000000000000022 CURRENT — STS-M2-06 DATABASE ARCHITECTURE DECISION AUTHORIZED READ_ONLY — 2026-09-07
+## 0.0000000000000000023 CURRENT — STS-M2-06 ACCEPTED / STS-M2 COMPLETE WITH RESIDUALS — 2026-09-07
+
+Product Authority explicitly accepted the STS-M2-06 architecture decision produced from the bounded READ_ONLY analysis.
+
+~~~text
+analysis base main =
+f22b83bb7acec8692e0575185a88ca2755183b41
+
+authorization publication =
+PR #197 / MERGED
+merge commit =
+0cb993a1eb86433975429da4a07a13fd3f373e16
+
+current publication base main =
+83186f5775e563e150329fa0b95dd1d7f3f3a516
+
+environment =
+Pilot Production / SaaS multi-tenant / multiempresa
+~~~
+
+Accepted architecture decision:
+
+~~~text
+STS-M2-06 =
+COMPLETE / ACCEPTED
+
+DATABASE STRATEGY =
+V2_STRANGLER / SAME_DATABASE_FIRST
+
+INITIAL PHYSICAL PERSISTENCE =
+CURRENT SUPABASE / POSTGRESQL DATABASE
+
+NEW PRODUCTION DATABASE =
+NOT SELECTED AT THIS STAGE
+~~~
+
+Canonical interpretation:
+
+~~~text
+V2_STRANGLER
+!= SECOND DATABASE NOW
+!= BIG-BANG REWRITE
+!= MICROSERVICES REQUIREMENT
+
+SAME_DATABASE_FIRST
+!= PURE UNBOUNDED EVOLVE_IN_PLACE
+~~~
+
+Accepted M2 closure:
+
+~~~text
+STS-M2-01 = COMPLETE
+STS-M2-02 = COMPLETE WITH RESIDUALS
+STS-M2-03 = COMPLETE WITH RESIDUALS
+STS-M2-04 = COMPLETE / ACCEPTED WITH RESIDUALS
+STS-M2-05 = COMPLETE / ACCEPTED WITH RESIDUALS
+STS-M2-06 = COMPLETE / ACCEPTED
+
+STS-M2 =
+COMPLETE / ACCEPTED WITH
+IMPLEMENTATION-LIFECYCLE-CALLSITE-
+RUNTIME-APPSEC RESIDUALS
+~~~
+
+Preserved residual boundary:
+
+~~~text
+current implementation target-compliant = NOT_PROVEN
+implementation remediation = NOT_PERFORMED
+lifecycle remediation = NOT_PERFORMED
+exhaustive application direct-DML callsite proof = NOT_ESTABLISHED
+lista_avaliacoes resulting-row relationship integrity = NOT INDEPENDENTLY PROVEN
+leads resulting-row empresa relationship = NOT INDEPENDENTLY PROVEN
+times resulting-row empresa relationship = NOT FULLY PROVEN
+hostile-client / cross-tenant runtime assurance = NOT_PROVEN
+AppSec PASS = NOT_PERFORMED
+assistente-ai live Edge Function vs versioned source parity = NOT_ESTABLISHED
+Security Go = NOT_GRANTED
+~~~
+
+Program continuation:
+
+~~~text
+STS-M3 = NEXT_ELIGIBLE / NOT_AUTHORIZED
+STS-M3-01 = NEXT_ELIGIBLE / NOT_AUTHORIZED
+STS-M3 execution = NOT_AUTHORIZED
+~~~
+
+M2 completion does not authorize implementation, V2 runtime work, Supabase/Auth/data mutation, STS-M3 execution, deploy, Security Go or commercialization.
+
+Current issue/risk lifecycle view remains typed through:
+
+~~~text
+docs/sfjm/CURRENT_ISSUES.md
+CURRENT_BLOCKER_COUNT = 0
+~~~
+
+Publication lifecycle facts such as review state, Draft/Ready, merge state, base/head and checks must be resolved live from GitHub and are not owned by this MATERIAL_RECORDED_STATE. The next material program gate is separate Product Authority authorization for bounded STS-M3-01; no STS-M3 execution authority exists here.
+
+
+## 0.0000000000000000022 HISTORICAL / SUPERSEDED — STS-M2-06 DATABASE ARCHITECTURE DECISION AUTHORIZED READ_ONLY — 2026-09-07
 
 Product Authority explicitly authorized initiation of STS-M2-06 from current canonical FECH.AI main:
 

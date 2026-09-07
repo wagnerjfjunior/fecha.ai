@@ -1,6 +1,69 @@
 # FECH.AI — SFJM Evidence Freshness
 
-## 0.0000000000000000026 CURRENT EVIDENCE — TYPED ISSUE / RISK / GATE CLASSIFICATION — 2026-09-07
+## 0.0000000000000000027 CURRENT EVIDENCE — STS-M2-06 ACCEPTANCE / M2 CLOSURE PUBLICATION — 2026-09-07
+
+~~~text
+STS-M2-06 analysis base main =
+f22b83bb7acec8692e0575185a88ca2755183b41
+
+authorization publication merge =
+PR #197
+0cb993a1eb86433975429da4a07a13fd3f373e16
+
+current publication base main =
+83186f5775e563e150329fa0b95dd1d7f3f3a516
+
+Product Authority =
+Wagner / FECH.AI
+
+STS-M2-06 =
+COMPLETE / ACCEPTED
+
+DATABASE STRATEGY =
+V2_STRANGLER / SAME_DATABASE_FIRST
+
+STS-M2 =
+COMPLETE / ACCEPTED WITH RESIDUALS
+
+Security Go =
+NOT_GRANTED
+~~~
+
+Decision-grade M2-06 evidence preserved by Product Authority acceptance:
+
+~~~text
+public tables = 44
+RLS enabled = 44 / 44
+accepted bounded contexts = 10
+M2-05 dispositions = KEEP 40 / INTERNAL 4 / CONSOLIDATE 0 / RETIRE 0 / REMODEL 0
+public routines = 160
+current SECURITY DEFINER routines = 137
+non-DEFINER routines = 23
+non-internal trigger instances = 31
+live applied migration ledger observed during M2-06 = 149
+physical database scale problem = NOT_PROVEN
+primary current database complexity = authority / security boundary / legacy compatibility / application coupling
+~~~
+
+Preserved evidence gaps:
+
+~~~text
+current implementation target-compliant = NOT_PROVEN
+exhaustive application direct-DML callsite proof = NOT_ESTABLISHED
+lista_avaliacoes resulting-row relationship integrity = NOT INDEPENDENTLY PROVEN
+leads resulting-row empresa relationship = NOT INDEPENDENTLY PROVEN
+times resulting-row empresa relationship = NOT FULLY PROVEN
+hostile-client / cross-tenant runtime assurance = NOT_PROVEN
+AppSec PASS = NOT_PERFORMED
+assistente-ai live Edge Function vs versioned source parity = NOT_ESTABLISHED
+~~~
+
+This publication produces no runtime, Supabase, Auth, data or production mutation.
+
+Freshness is invalidated by material architecture/database/runtime drift, contradictory new evidence, or a Product Authority change to the selected strategy.
+
+
+## 0.0000000000000000026 HISTORICAL / SUPERSEDED EVIDENCE — TYPED ISSUE / RISK / GATE CLASSIFICATION — 2026-09-07
 
 Validation anchor:
 
@@ -51,7 +114,7 @@ Invalidators:
 - consumer source SHA no longer matches canonical state and freshness is claimed.
 
 
-## 0.0000000000000000025 CURRENT EVIDENCE — STS-M2-06 AUTHORIZATION / EXECUTION START BOUNDARY — 2026-09-07
+## 0.0000000000000000025 HISTORICAL / SUPERSEDED EVIDENCE — STS-M2-06 AUTHORIZATION / EXECUTION START BOUNDARY — 2026-09-07
 
 Authorization anchor:
 
