@@ -178,7 +178,7 @@ Separate C3 implementation/runtime blocker retained:
 ~~~
 
 
-## 5. Current M2-04 gate
+## 5. Historical / superseded M2-04 gate
 
 ~~~text
 next bounded STS-M2-04 action = NOT_SELECTED

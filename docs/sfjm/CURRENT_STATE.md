@@ -51,6 +51,30 @@ RUNTIME ASSURANCE = NOT_PERFORMED
 SECURITY GO = NOT_GRANTED
 ~~~
 
+C4 design/evidence residuals remain explicitly open and are not waived by the STS-M2-04 closure:
+
+~~~text
+lista_avaliacoes resulting-row protected relationship integrity =
+NOT INDEPENDENTLY PROVEN
+
+leads resulting-row empresa_id relationship =
+NOT INDEPENDENTLY PROVEN
+
+times resulting-row empresa relationship =
+NOT INDEPENDENTLY RESTATED / NOT FULLY PROVEN
+
+fresh exhaustive application direct-DML callsite sweep =
+NOT PERFORMED
+~~~
+
+These are preserved evidence/implementation-assurance inputs for downstream work. They do not reopen the accepted target-policy decision and do not change:
+
+~~~text
+STS-M2-04 =
+COMPLETE / ACCEPTED WITH
+IMPLEMENTATION-LIFECYCLE-RUNTIME RESIDUALS
+~~~
+
 No homogeneous 137-routine mode synthesis is created by this closure. B2, B3/C3/E and D retain their accepted slice boundaries.
 
 Program continuation:
