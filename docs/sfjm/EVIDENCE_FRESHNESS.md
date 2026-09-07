@@ -11,7 +11,7 @@ f22b83bb7acec8692e0575185a88ca2755183b41
 Product Authority =
 Wagner / FECH.AI
 
-M2-06 =
+STS-M2-06 =
 AUTHORIZED_READ_ONLY / READY_TO_EXECUTE
 
 canonical specialist =
@@ -32,19 +32,19 @@ current SFJM material views = INTEGRAL_READ
 SES FECH.AI adapter / software-systems-architect archetype = INTEGRAL_READ
 ~~~
 
-The authorization does not itself produce M2-06 architecture evidence.
+The authorization does not itself produce STS-M2-06 architecture evidence.
 
 ~~~text
-M2-06 current-state characterization = NOT_YET_PRODUCED
+STS-M2-06 current-state characterization = NOT_YET_PRODUCED
 three-option decision matrix = NOT_YET_PRODUCED
 architecture recommendation = NOT_YET_PRODUCED
 Product Authority architecture adjudication = NOT_YET_GRANTED
 implementation = NOT_AUTHORIZED
 ~~~
 
-Accepted M2-01..M2-05 evidence remains upstream input and must be consumed without global replay unless a material invalidator is found.
+Accepted STS-M2-01..STS-M2-05 evidence remains upstream input and must be consumed without global replay unless a material invalidator is found.
 
-Freshness is invalidated by material FECH.AI main drift affecting architecture evidence, material database/runtime changes, Product Authority scope change, or contradictory new evidence discovered during M2-06. Ordinary time passage alone is not sufficient.
+Freshness is invalidated by material FECH.AI main drift affecting architecture evidence, material database/runtime changes, Product Authority scope change, or contradictory new evidence discovered during STS-M2-06. Ordinary time passage alone is not sufficient.
 
 No runtime, Supabase, Auth, data or production mutation occurred in this authorization publication.
 

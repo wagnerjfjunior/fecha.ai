@@ -6,9 +6,9 @@
 repository = wagnerjfjunior/fecha.ai
 canonical main at authorization = f22b83bb7acec8692e0575185a88ca2755183b41
 environment = Pilot Production / SaaS multi-tenant / multiempresa
-current milestone = M2
-current task = M2-06 — Decisão arquitetural do banco
-M2-06 = AUTHORIZED_READ_ONLY / READY_TO_EXECUTE
+current milestone = STS-M2
+current task = STS-M2-06 — Decisão arquitetural do banco
+STS-M2-06 = AUTHORIZED_READ_ONLY / READY_TO_EXECUTE
 Security Go = NOT_GRANTED
 ~~~
 
@@ -33,7 +33,7 @@ NEW_DATABASE
 with evidence
 ~~~
 
-The new conversation must resolve live main independently, bootstrap normally, consume accepted M2-01..M2-05 evidence without global replay, and reconstruct only the additional architecture evidence required for M2-06.
+The new conversation must resolve live main independently, bootstrap normally, consume accepted STS-M2-01..STS-M2-05 evidence without global replay, and reconstruct only the additional architecture evidence required for STS-M2-06.
 
 Authorized:
 
@@ -53,7 +53,7 @@ Supabase/Auth/data mutation
 SQL / DDL / DML
 migration execution
 RLS / policy / grants / function / trigger mutation
-M3 execution
+STS-M3 execution
 Ready
 merge
 deploy
@@ -75,7 +75,7 @@ confidence / conditions
 Product Authority adjudication request
 ~~~
 
-Do not mark M2-06 COMPLETE merely because a recommendation is produced.
+Do not mark STS-M2-06 COMPLETE merely because a recommendation is produced.
 
 ## 0.0000000000000000022 HISTORICAL / SUPERSEDED HANDOFF — STS-M2-05 ACCEPTED / M2-06 NEXT GATE — 2026-09-07
 

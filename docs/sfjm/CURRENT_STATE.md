@@ -14,7 +14,7 @@ Pilot Production / SaaS multi-tenant / multiempresa
 STS-M2-06 =
 AUTHORIZED_READ_ONLY / READY_TO_EXECUTE
 
-M2 =
+STS-M2 =
 ACTIVE
 
 Security Go =
@@ -43,7 +43,7 @@ GPT1.5 — FECH.AI Arquiteto SaaS
 docs/skills/fechai-gpt1-architect-saas.md
 ~~~
 
-M2-06 must reconstruct enough current evidence to characterize the existing database architecture and compare the three allowed target directions. Material dimensions include multi-tenancy, trust boundaries, database contracts, coupling, callers/consumers, migration complexity, operational blast radius, rollback, observability/proof obligations and preserved M2-01..M2-05 residuals.
+STS-M2-06 must reconstruct enough current evidence to characterize the existing database architecture and compare the three allowed target directions. Material dimensions include multi-tenancy, trust boundaries, database contracts, coupling, callers/consumers, migration complexity, operational blast radius, rollback, observability/proof obligations and preserved STS-M2-01..STS-M2-05 residuals.
 
 Authorized:
 
@@ -64,12 +64,12 @@ Supabase/Auth/data mutation
 SQL / DDL / DML mutation
 migration execution
 RLS / policy / grants / function / trigger mutation
-M3 execution
+STS-M3 execution
 deploy
 Security Go
 ~~~
 
-The M2-06 result is not self-accepting. A recommendation or decision packet must return to Product Authority for explicit adjudication before implementation or M2 closure.
+The STS-M2-06 result is not self-accepting. A recommendation or decision packet must return to Product Authority for explicit adjudication before implementation or STS-M2 closure.
 
 Current next safe action:
 

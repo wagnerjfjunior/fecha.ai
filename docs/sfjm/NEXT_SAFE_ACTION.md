@@ -8,10 +8,10 @@ Product Authority has granted the previously missing execution authority.
 canonical FECH.AI main at authorization =
 f22b83bb7acec8692e0575185a88ca2755183b41
 
-M2-06 =
+STS-M2-06 =
 AUTHORIZED_READ_ONLY / READY_TO_EXECUTE
 
-M2 =
+STS-M2 =
 ACTIVE
 
 Security Go =
@@ -48,7 +48,7 @@ Required outcome:
 
 Execution remains READ_ONLY. GitHub discovery and bounded Supabase catalog/metadata/statistics reads are allowed when materially necessary. Do not mutate runtime, frontend, Supabase/Auth/data, RLS, policies, grants, functions, triggers, migrations or production.
 
-Do not execute M3. Do not implement the recommended architecture. Do not grant Security Go.
+Do not execute STS-M3. Do not implement the recommended architecture. Do not grant Security Go.
 
 ## 0.0000000000000000022 HISTORICAL / SUPERSEDED ACTION — M2-06 DATABASE ARCHITECTURE DECISION / AUTHORIZATION REQUIRED — 2026-09-07
 

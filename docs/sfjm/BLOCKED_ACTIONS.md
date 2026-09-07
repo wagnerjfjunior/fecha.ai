@@ -3,13 +3,13 @@
 ## 0. CURRENT — STS-M2-06 READ_ONLY AUTHORIZED / MUTATIONS STILL BLOCKED — 2026-09-07
 
 ~~~text
-M2-05 =
+STS-M2-05 =
 COMPLETE / ACCEPTED WITH RESIDUALS
 
-M2-06 =
+STS-M2-06 =
 AUTHORIZED_READ_ONLY / READY_TO_EXECUTE
 
-M2 =
+STS-M2 =
 ACTIVE
 
 Security Go =
@@ -18,7 +18,7 @@ NOT_GRANTED
 
 STS-M2-06 bounded READ_ONLY execution is no longer blocked. Product Authority explicitly authorized evidence reconstruction and architecture decision work.
 
-Allowed within M2-06:
+Allowed within STS-M2-06:
 
 ~~~text
 GitHub / repository READ_ONLY discovery
@@ -31,7 +31,7 @@ recommendation for Product Authority adjudication
 Still blocked unless separately authorized:
 
 ~~~text
-M2-06 implementation
+STS-M2-06 implementation
 runtime/frontend mutation
 Supabase/Auth/data mutation
 SQL / DDL / DML mutation
@@ -39,14 +39,14 @@ migration execution
 RLS / policy / grants / owner / search_path mutation
 function / trigger / RPC / Edge Function mutation
 active hostile-client/cross-tenant production testing
-M3 execution
-Ready / merge of this M2-06 authorization publication
+STS-M3 execution
+Ready / merge of this STS-M2-06 authorization publication
 deploy / production mutation
 Security Go
 commercialization authorization
 ~~~
 
-M2-06 completion/acceptance is not automatic. The result must return to Product Authority for adjudication.
+STS-M2-06 completion/acceptance is not automatic. The result must return to Product Authority for adjudication.
 
 ## 0.1 HISTORICAL / SUPERSEDED — STS-M2-05 accepted / M2-06 eligible but not authorized — 2026-09-07
 
