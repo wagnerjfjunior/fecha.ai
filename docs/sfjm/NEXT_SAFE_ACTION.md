@@ -94,7 +94,7 @@ grant Security Go
 
 No further SFJM-only reconciliation is required merely because the documentation PR carrying this state later changes Draft/Ready/merge lifecycle.
 
-## 0.0000000000000000016 CURRENT ACTION — select / define next bounded STS-M2-04 action after PR #189 merge — 2026-09-07
+## 0.0000000000000000016 HISTORICAL / SUPERSEDED ACTION — select / define next bounded STS-M2-04 action after PR #189 merge — 2026-09-07
 
 Current durable state:
 

@@ -311,7 +311,7 @@ M2-06 execution = NOT_AUTHORIZED
 
 Next safe action is Product Authority adjudication of this bounded 15-routine result. No global B1/B2/B3/C/D/E replay is required absent a material invalidator.
 
-## 0.0000000000000000017 CURRENT — PR #189 MERGED / STS-M2-04E CORRECTED CONTRACT ON MAIN — 2026-09-07
+## 0.0000000000000000017 HISTORICAL / SUPERSEDED — PR #189 MERGED / STS-M2-04E CORRECTED CONTRACT ON MAIN — 2026-09-07
 
 Canonical post-merge state:
 

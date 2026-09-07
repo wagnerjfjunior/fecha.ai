@@ -116,7 +116,7 @@ No implementation, function/grant/RLS/owner/search_path mutation, lifecycle reti
 
 Do not create another SFJM-only reconciliation merely because the publication carrying this handoff later advances through Draft/Ready/merge lifecycle.
 
-## 0.0000000000000000017 CURRENT HANDOFF — PR #189 merged; corrected E contract on main; next bounded M2-04 action unselected — 2026-09-07
+## 0.0000000000000000017 HISTORICAL / SUPERSEDED HANDOFF — PR #189 merged; corrected E contract on main; next bounded M2-04 action unselected — 2026-09-07
 
 ~~~text
 repository = wagnerjfjunior/fecha.ai
