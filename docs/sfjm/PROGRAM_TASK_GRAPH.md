@@ -224,7 +224,7 @@ STS-M2-05 = COMPLETE_WITH_RESIDUALS / ACCEPTED
 23 / 23 non-DEFINER delta
 31 / 31 non-internal trigger instances
 10 / 10 bounded contexts
-STS-M2-06 = ELIGIBLE_NOT_AUTHORIZED
+STS-M2-06 = AUTHORIZED_READ_ONLY / READY_TO_EXECUTE
 ~~~
 
 STS-M2-05 residual implementation/lifecycle/callsite-evidence/runtime/AppSec work is preserved and does not reopen the accepted Database Contract Map unless a material invalidator changes the decision.
