@@ -1,5 +1,65 @@
 # FECH.AI — SFJM Authorizations
 
+## 0.0000000000000000029 Product Authority — STS-M3-01 acceptance + bounded publication — 2026-09-07
+
+Product Authority explicitly accepts:
+
+~~~text
+STS-M3-01 = COMPLETE / ACCEPTED
+
+IDENTITY CONTRACT = FROZEN
+MEMBERSHIP CONTRACT = FROZEN
+TENANT ROLE CONTRACT = FROZEN
+TEAM CONTRACT = FROZEN
+PLATFORM ROOT CONTRACT = FROZEN
+~~~
+
+Publication base:
+
+~~~text
+661ef0014576d473088add0052d751e0a47d306e
+~~~
+
+Product Authority authorizes only:
+
+~~~text
+one bounded documentation branch
+one coherent documentation commit
+one Draft PR
+durable M3-01 decision artifact
+material SFJM reconciliation
+~~~
+
+Explicitly not authorized:
+
+~~~text
+M3-01 implementation/remediation
+STS-M3-02 substantive execution
+runtime/frontend/App.jsx mutation
+Supabase/Auth/data mutation
+DDL / DML / migration execution
+RLS / policy / grant / owner / search_path mutation
+function / trigger / RPC / Edge Function mutation
+Vercel / GitHub Actions mutation
+production mutation
+SES mutation
+sfjm-workspace mutation
+Ready
+merge
+deploy
+Security Go
+commercialization authorization
+~~~
+
+Next gate after this candidate publication:
+
+~~~text
+FRESH EXACT-HEAD DOCUMENTATION / SFJM REVIEW
+~~~
+
+Ready and merge remain separate Product Authority gates.
+
+
 ## 0.0000000000000000028 Product Authority — STS-M2-06 acceptance + bounded publication — 2026-09-07
 
 Product Authority explicitly accepts:

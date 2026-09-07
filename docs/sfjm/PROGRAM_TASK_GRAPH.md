@@ -1,6 +1,31 @@
 # FECH.AI — SFJM Program Task Graph
 
-## 0. CURRENT ACCEPTED ARCHITECTURE OVERRIDE — STS-M2-06 / STS-M2 CLOSURE — 2026-09-07
+## 0. CURRENT EXECUTION OVERLAY — STS-M3-01 ACCEPTED / STS-M3-02 NEXT — 2026-09-07
+
+~~~text
+publication base main =
+661ef0014576d473088add0052d751e0a47d306e
+
+STS-M2 =
+COMPLETE_WITH_RESIDUALS / ACCEPTED
+
+STS-M3 =
+ACTIVE
+
+STS-M3-01 =
+COMPLETE / ACCEPTED
+
+STS-M3-02 =
+ELIGIBLE_NOT_AUTHORIZED
+
+Security Go =
+NOT_GRANTED
+~~~
+
+This override is the current operational meaning for continuity consumers and SFJM Workspace. Structural WBS IDs, labels, order and hours remain unchanged.
+
+
+## 0.1 HISTORICAL / SUPERSEDED ARCHITECTURE OVERRIDE — STS-M2-06 / STS-M2 CLOSURE — 2026-09-07
 
 ~~~text
 publication base main =
@@ -123,7 +148,7 @@ COMPLETE_WITH_RESIDUALS / ACCEPTED
 
 The historical WBS label `Matriz de 43 tabelas` is preserved. The accepted/live canonical database universe for STS-M2-05 is 44 tables.
 
-This graph records program state only. Product Authority has accepted STS-M2-06 with `V2_STRANGLER / SAME_DATABASE_FIRST`. STS-M2 is complete with preserved residuals. STS-M3 is next eligible but remains not authorized. No implementation, deploy or Security Go follows from this acceptance.
+This graph records program state only. Product Authority has accepted STS-M2-06 with `V2_STRANGLER / SAME_DATABASE_FIRST`. STS-M2 is complete with preserved residuals. STS-M3 is ACTIVE after accepted STS-M3-01 closure. STS-M3-02 is next eligible but remains not authorized. No implementation, deploy or Security Go follows from this acceptance.
 
 ## 3. Consumer state vocabulary
 
@@ -158,12 +183,15 @@ SUPERSEDED
 ~~~text
 program = FECH.AI Security-to-Scale 2026
 completed milestone = STS-M2 — Database Simplification & Optimization Plan
-current next task = STS-M3-01 — Identity / membership / team / role model
+current milestone = STS-M3 — Backend Authority Contract Freeze
+current next task = STS-M3-02 — Authority contract por contexto
 STS-M2-05 = COMPLETE_WITH_RESIDUALS / ACCEPTED
 STS-M2-06 = COMPLETE / ACCEPTED
 STS-M2 = COMPLETE_WITH_RESIDUALS / ACCEPTED
-STS-M3 = NEXT_ELIGIBLE / NOT_AUTHORIZED
-STS-M3..STS-M6 execution = NOT_AUTHORIZED
+STS-M3 = ACTIVE
+STS-M3-01 = COMPLETE / ACCEPTED
+STS-M3-02 = ELIGIBLE_NOT_AUTHORIZED
+STS-M3-02..STS-M6 execution = NOT_AUTHORIZED
 Security Go = NOT_GRANTED
 ~~~
 
@@ -177,8 +205,8 @@ Security Go = NOT_GRANTED
 | STS-M2 | STS-M2-04 | M2-04 | Política target de DEFINER / RLS / DML | 20 | COMPLETE_WITH_RESIDUALS |
 | STS-M2 | STS-M2-05 | M2-05 | Database Contract Map | 20 | COMPLETE_WITH_RESIDUALS |
 | STS-M2 | STS-M2-06 | M2-06 | Decisão arquitetural do banco | 16 | COMPLETE |
-| STS-M3 | STS-M3-01 | M3-01 | Identity / membership / team / role model | 24 | ELIGIBLE_NOT_AUTHORIZED |
-| STS-M3 | STS-M3-02 | M3-02 | Authority contract por contexto | 28 | PLANNED_NOT_AUTHORIZED |
+| STS-M3 | STS-M3-01 | M3-01 | Identity / membership / team / role model | 24 | COMPLETE |
+| STS-M3 | STS-M3-02 | M3-02 | Authority contract por contexto | 28 | ELIGIBLE_NOT_AUTHORIZED |
 | STS-M3 | STS-M3-03 | M3-03 | Allowlist de RPCs privilegiadas | 24 | PLANNED_NOT_AUTHORIZED |
 | STS-M3 | STS-M3-04 | M3-04 | Redução de DML sensível direto | 24 | PLANNED_NOT_AUTHORIZED |
 | STS-M3 | STS-M3-05 | M3-05 | Fechamento Auth / Admin flows | 24 | PLANNED_NOT_AUTHORIZED |

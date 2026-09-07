@@ -3,7 +3,7 @@
 **Status:** `CURRENT / TYPED CONTINUITY VIEW / DERIVED FROM CURRENT_STATE + MATERIAL EVIDENCE`  
 **Updated:** 2026-09-07  
 **Repository:** `wagnerjfjunior/fecha.ai`  
-**Validation anchor:** `83186f5775e563e150329fa0b95dd1d7f3f3a516`
+**Validation anchor:** `661ef0014576d473088add0052d751e0a47d306e` (publication base; candidate PR head must be resolved live)
 
 ## 1. Authority boundary
 
@@ -57,16 +57,16 @@ SUPERSEDED
 
 ## 3. Current counts
 
-At validation anchor `83186f5775e563e150329fa0b95dd1d7f3f3a516`:
+At publication base anchor `661ef0014576d473088add0052d751e0a47d306e`:
 
 ~~~text
-CURRENT_TASK = STS-M3-01
+CURRENT_TASK = STS-M3-02
 CURRENT_TASK_STATE = ELIGIBLE_NOT_AUTHORIZED
 CURRENT_AUTHORIZED_EXECUTION = NONE
 
 BLOCKING = 0
 REQUIRED_CURRENT = 0
-RESIDUAL = 3
+RESIDUAL = 6
 DEFERRED_EVIDENCE = 3
 SECURITY_GATE = 3
 FUTURE_GATE = 1
@@ -89,21 +89,24 @@ These counts are semantic classes, not a count of every non-PASS program fact.
 | STS-RESIDUAL-M2-TARGET-COMPLIANCE | RESIDUAL | STS-M2-04 / STS-M2-05 | OPEN / NOT_PROVEN | NO | implementation assurance | `docs/sfjm/CURRENT_STATE.md` | implementation + independent validation sufficient to establish target compliance | RESIDUAL_RISKS |
 | STS-RESIDUAL-M2-04-E | RESIDUAL | STS-M2-04 | OPEN | NO | later implementation/lifecycle/runtime assurance | `docs/sfjm/BLOCKED_ACTIONS.md` | close exact residuals 004, 031, 036, 047, 119, 127 under separately authorized implementation/lifecycle/runtime work | RESIDUAL_RISKS |
 | STS-RESIDUAL-M2-04D | RESIDUAL | STS-M2-04D | OPEN / NOT_IMPLEMENTED | NO | trigger remediation assurance | `docs/sfjm/BLOCKED_ACTIONS.md` | implement/adjudicate D-01..D-08 under separately authorized remediation | RESIDUAL_RISKS |
-| STS-GATE-M3-M6 | FUTURE_GATE | STS-M3..STS-M6 | STS-M3 NEXT_ELIGIBLE / NOT_AUTHORIZED | NO | future milestones | `docs/sfjm/PROGRAM_TASK_GRAPH.md` | Product Authority may separately authorize bounded STS-M3-01 after STS-M2 acceptance publication lifecycle is completed | ROADMAP_GATES |
+| STS-RESIDUAL-M3-01-ROOT-DUAL | RESIDUAL | STS-M3-01 | PROVEN LIVE / NOT_REMEDIATED | NO | platform-root canonicalization | `docs/security/evidence/2026-09-07-sts-m3-01-identity-membership-team-role-model.md` | migrate callers to canonical public.admins root authority, prove zero legacy dependency, then separately authorize retirement | RESIDUAL_RISKS |
+| STS-RESIDUAL-M3-01-TEAM-LIFECYCLE | RESIDUAL | STS-M3-01 / Issue #135 | PROVEN LIVE / NOT_REMEDIATED | NO | team lifecycle authority | `docs/security/evidence/2026-09-07-sts-m3-01-identity-membership-team-role-model.md` | separately governed lifecycle remediation with same-tenant/role/state invariants and rollback | RESIDUAL_RISKS |
+| STS-RESIDUAL-M3-01-CREATE-USER | RESIDUAL | STS-M3-01 / STS-M3-05 | PROVEN LIVE / NOT_REMEDIATED | NO | Auth/Admin authority alignment | `docs/security/evidence/2026-09-07-sts-m3-01-identity-membership-team-role-model.md` | close under STS-M3-05 with server-derived canonical authority and independent validation | RESIDUAL_RISKS |
+| STS-GATE-M3-M6 | FUTURE_GATE | STS-M3..STS-M6 | STS-M3 ACTIVE / STS-M3-02 NEXT_ELIGIBLE / NOT_AUTHORIZED | NO | future milestones | `docs/sfjm/PROGRAM_TASK_GRAPH.md` | Product Authority may separately authorize bounded STS-M3-02 READ_ONLY-first work | ROADMAP_GATES |
 
 ## 5. Current task authorization boundary — not a blocker count
 
-STS-M2-06 is now:
+STS-M3-01 is now:
 
 ~~~text
 COMPLETE / PRODUCT_AUTHORITY_ACCEPTED
-DATABASE STRATEGY = V2_STRANGLER / SAME_DATABASE_FIRST
+IDENTITY / MEMBERSHIP / ROLE / TEAM / PLATFORM ROOT CONTRACTS = FROZEN
 ~~~
 
 The next program task is:
 
 ~~~text
-STS-M3-01 = ELIGIBLE_NOT_AUTHORIZED
+STS-M3-02 = ELIGIBLE_NOT_AUTHORIZED
 ~~~
 
 The following remain prohibited without additional authority:
@@ -116,7 +119,7 @@ SQL / DDL / DML mutation
 migration execution
 RLS / policy / grant / owner / search_path mutation
 function / trigger / RPC / Edge Function mutation
-STS-M3 execution
+STS-M3-02 execution
 deploy / production mutation
 Security Go
 commercialization authorization
@@ -133,6 +136,7 @@ Do not render the following as current problems:
 | `STS-M2-05 execution = NOT_AUTHORIZED` | SUPERSEDED — STS-M2-05 is COMPLETE / ACCEPTED WITH RESIDUALS |
 | `STS-M2-06 execution = NOT_AUTHORIZED` | SUPERSEDED — STS-M2-06 was authorized, executed READ_ONLY, and is now COMPLETE / ACCEPTED |
 | `STS-M2-06 = AUTHORIZED_READ_ONLY / READY_TO_EXECUTE` | SUPERSEDED — Product Authority accepted V2_STRANGLER / SAME_DATABASE_FIRST and closed STS-M2-06 |
+| `STS-M3-01 = ELIGIBLE_NOT_AUTHORIZED` | SUPERSEDED — STS-M3-01 is COMPLETE / ACCEPTED and STS-M3-02 is next eligible |
 | `next STS-M2-04 action = NOT_SELECTED` | SUPERSEDED — STS-M2-04 is COMPLETE / ACCEPTED WITH RESIDUALS |
 | `STS-M2-04F execution` | NOT_CURRENT / NONCANONICAL — no canonical STS-M2-04F task exists |
 
