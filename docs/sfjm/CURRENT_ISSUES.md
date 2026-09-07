@@ -3,7 +3,7 @@
 **Status:** `CURRENT / TYPED CONTINUITY VIEW / DERIVED FROM CURRENT_STATE + MATERIAL EVIDENCE`  
 **Updated:** 2026-09-07  
 **Repository:** `wagnerjfjunior/fecha.ai`  
-**Validation anchor:** `0cb993a1eb86433975429da4a07a13fd3f373e16`
+**Validation anchor:** `83186f5775e563e150329fa0b95dd1d7f3f3a516`
 
 ## 1. Authority boundary
 
@@ -57,11 +57,12 @@ SUPERSEDED
 
 ## 3. Current counts
 
-At validation anchor `0cb993a1eb86433975429da4a07a13fd3f373e16`:
+At validation anchor `83186f5775e563e150329fa0b95dd1d7f3f3a516`:
 
 ~~~text
-CURRENT_TASK = STS-M2-06
-CURRENT_TASK_STATE = AUTHORIZED_READ_ONLY / READY_TO_EXECUTE
+CURRENT_TASK = STS-M3-01
+CURRENT_TASK_STATE = ELIGIBLE_NOT_AUTHORIZED
+CURRENT_AUTHORIZED_EXECUTION = NONE
 
 BLOCKING = 0
 REQUIRED_CURRENT = 0
@@ -77,7 +78,7 @@ These counts are semantic classes, not a count of every non-PASS program fact.
 
 ## 4. Current typed items
 
-| ID | Class | Scope | State | Blocking for current task? | Blocking for / relevance | Source @ 0cb993a1eb86 | Resolution / transition condition | Display policy |
+| ID | Class | Scope | State | Blocking for current task? | Blocking for / relevance | Source | Resolution / transition condition | Display policy |
 |---|---|---|---|---|---|---|---|---|
 | STS-GATE-SECURITY-GO | SECURITY_GATE | PROGRAM | OPEN / NOT_GRANTED | NO | Security Go / launch | `docs/sfjm/CURRENT_STATE.md` + `BLOCKED_ACTIONS.md` | explicit Product Authority Security Go after required evidence/assurance | PROGRAM_SECURITY_GATES |
 | STS-GATE-COMMERCIALIZATION | SECURITY_GATE | COMMERCIALIZATION | BLOCKED | NO | broad paid commercialization | `docs/sfjm/BLOCKED_ACTIONS.md` | separate Product Authority commercial decision when launch/security conditions permit | PROGRAM_SECURITY_GATES |
@@ -88,20 +89,27 @@ These counts are semantic classes, not a count of every non-PASS program fact.
 | STS-RESIDUAL-M2-TARGET-COMPLIANCE | RESIDUAL | STS-M2-04 / STS-M2-05 | OPEN / NOT_PROVEN | NO | implementation assurance | `docs/sfjm/CURRENT_STATE.md` | implementation + independent validation sufficient to establish target compliance | RESIDUAL_RISKS |
 | STS-RESIDUAL-M2-04-E | RESIDUAL | STS-M2-04 | OPEN | NO | later implementation/lifecycle/runtime assurance | `docs/sfjm/BLOCKED_ACTIONS.md` | close exact residuals 004, 031, 036, 047, 119, 127 under separately authorized implementation/lifecycle/runtime work | RESIDUAL_RISKS |
 | STS-RESIDUAL-M2-04D | RESIDUAL | STS-M2-04D | OPEN / NOT_IMPLEMENTED | NO | trigger remediation assurance | `docs/sfjm/BLOCKED_ACTIONS.md` | implement/adjudicate D-01..D-08 under separately authorized remediation | RESIDUAL_RISKS |
-| STS-GATE-M3-M6 | FUTURE_GATE | STS-M3..STS-M6 | NOT_AUTHORIZED | NO | future milestones | `docs/sfjm/PROGRAM_TASK_GRAPH.md` | sequential Product Authority authorization when each future milestone becomes eligible | ROADMAP_GATES |
+| STS-GATE-M3-M6 | FUTURE_GATE | STS-M3..STS-M6 | STS-M3 NEXT_ELIGIBLE / NOT_AUTHORIZED | NO | future milestones | `docs/sfjm/PROGRAM_TASK_GRAPH.md` | Product Authority may separately authorize bounded STS-M3-01 after STS-M2 acceptance publication lifecycle is completed | ROADMAP_GATES |
 
 ## 5. Current task authorization boundary — not a blocker count
 
-STS-M2-06 is currently:
+STS-M2-06 is now:
 
 ~~~text
-AUTHORIZED_READ_ONLY / READY_TO_EXECUTE
+COMPLETE / PRODUCT_AUTHORITY_ACCEPTED
+DATABASE STRATEGY = V2_STRANGLER / SAME_DATABASE_FIRST
+~~~
+
+The next program task is:
+
+~~~text
+STS-M3-01 = ELIGIBLE_NOT_AUTHORIZED
 ~~~
 
 The following remain prohibited without additional authority:
 
 ~~~text
-STS-M2-06 implementation
+V2 / STS-M2-06 implementation
 runtime/frontend mutation
 Supabase/Auth/data mutation
 SQL / DDL / DML mutation
@@ -123,7 +131,8 @@ Do not render the following as current problems:
 | Former item | Current disposition |
 |---|---|
 | `STS-M2-05 execution = NOT_AUTHORIZED` | SUPERSEDED — STS-M2-05 is COMPLETE / ACCEPTED WITH RESIDUALS |
-| `STS-M2-06 execution = NOT_AUTHORIZED` | SUPERSEDED — STS-M2-06 is AUTHORIZED_READ_ONLY / READY_TO_EXECUTE |
+| `STS-M2-06 execution = NOT_AUTHORIZED` | SUPERSEDED — STS-M2-06 was authorized, executed READ_ONLY, and is now COMPLETE / ACCEPTED |
+| `STS-M2-06 = AUTHORIZED_READ_ONLY / READY_TO_EXECUTE` | SUPERSEDED — Product Authority accepted V2_STRANGLER / SAME_DATABASE_FIRST and closed STS-M2-06 |
 | `next STS-M2-04 action = NOT_SELECTED` | SUPERSEDED — STS-M2-04 is COMPLETE / ACCEPTED WITH RESIDUALS |
 | `STS-M2-04F execution` | NOT_CURRENT / NONCANONICAL — no canonical STS-M2-04F task exists |
 

@@ -100,10 +100,11 @@ GITHUB != conversation warehouse
 | M2-04C1 | SFJM live RLS/DML evidence record | `docs/sfjm/EVIDENCE_FRESHNESS.md` | RECORDED | live evidence record; no default requirement to archive raw query transcript | PASS for accepted material result |
 | M2-04C2 | SFJM C2 specialist/evidence record | source packet SHA-256 `ccf108437f1d84ceac29095ecb1f86a3a63c64d5278d8eb17c02588d3a633afa` | RECORDED | `HASH_BOUND_RAW_NOT_VERSIONED` | PASS for accepted material result |
 | M2-04C3 | canonical 57-row adjudication CSV | `716c23d5f549eb465f3393cdfc5989dda82b69a7` | RECORDED | source SHA-256 `0e6c40a3cd515219fb6b24d5f0aaf10e63291d19da485d5e946c47fbb08d88d5`; final structured result versioned | STRONG PASS |
-| M2-04C4 | **candidate standalone durable contract in this hardening PR** + SFJM | `docs/security/evidence/2026-09-06-sts-m2-04c-c4-target-rls-dml-contract.md` + existing SFJM | RECORDED | source SHA-256 `8bec01816fe72c0b9bb6605435b3f5e3cd537572929753fd93ab5949dc113125`; raw source remains noncanonical | CURRENT MAIN: reconstructible via SFJM; standalone durability becomes PASS only after merge |
+| M2-04C4 | `2026-09-06-sts-m2-04c-c4-target-rls-dml-contract.md` + SFJM | `01eefe744946a9f916ac0789780f77c5444aa799` | RECORDED | source SHA-256 `8bec01816fe72c0b9bb6605435b3f5e3cd537572929753fd93ab5949dc113125`; raw source remains noncanonical | STRONG PASS — standalone durable contract is already canonical on current main |
 | M2-04D | `2026-09-06-sts-m2-04d-trigger-authority-classification.md` | `7fdc63a95d81661598937aa0bdfa654bcb9db66a` | RECORDED | source SHA-256 `6927b61338555fef95cc25892bb6097e815839b53bc217e0229084c5e5220389`; complete material 9/9 + 18/18 surface already durable | STRONG PASS |
 | M2-04E | `2026-09-06-sts-m2-04e-architecture-synthesis-acceptance.md` | `07365cae5a353bd2407512ddde0d3d4cf880352f` | RECORDED | synthesis built predominantly from exact versioned `INTEGRAL_READ` sources; no unique raw packet required | STRONG PASS |
 | M2-05 | `2026-09-07-sts-m2-05-database-contract-map.md` | `8b2875e1bc095329482de095028ed31b37091d63` | RECORDED BY PRODUCT AUTHORITY / MERGED CANONICAL MAIN via PR #195 @ `d6953ea3071ada55fbcd97f21c848f5c6424ca3f` | accepted READ_ONLY result is preserved at contract/category level; a separate verbatim raw-run transcript is not versioned | PASS for accepted contract-level state; verbatim raw-run forensics remain partial |
+| M2-06 | `2026-09-07-sts-m2-06-database-architecture-decision.md` | `861605bb48ce6331a462273f0a5fa906dcc87c87` | RECORDED BY PRODUCT AUTHORITY | bounded READ_ONLY architecture result + Product Authority acceptance; no raw chat transcript required | ACCEPTED DECISION RECONSTRUCTIBLE; canonical publication lifecycle must be resolved live from GitHub; selected strategy = `V2_STRANGLER / SAME_DATABASE_FIRST` |
 
 ### 4.1 M2-05 canonical publication anchor — 2026-09-07
 
@@ -116,6 +117,48 @@ M2-05 durable artifact blob = 8b2875e1bc095329482de095028ed31b37091d63
 ~~~
 
 This canonical publication records the already accepted M2-05 contract. It does not establish implementation completion, runtime/AppSec assurance, M2-06 execution authority or Security Go.
+
+
+## 4.2 M2-06 Product Authority acceptance publication — 2026-09-07
+
+~~~text
+analysis base main =
+f22b83bb7acec8692e0575185a88ca2755183b41
+
+authorization publication =
+PR #197 / MERGED
+merge commit =
+0cb993a1eb86433975429da4a07a13fd3f373e16
+
+acceptance publication base main =
+83186f5775e563e150329fa0b95dd1d7f3f3a516
+
+Product Authority decision =
+STS-M2-06 COMPLETE / ACCEPTED
+
+selected database strategy =
+V2_STRANGLER / SAME_DATABASE_FIRST
+
+STS-M2 =
+COMPLETE / ACCEPTED WITH RESIDUALS
+~~~
+
+Standalone durable M2-06 evidence artifact:
+
+~~~text
+docs/security/evidence/2026-09-07-sts-m2-06-database-architecture-decision.md
+blob = 861605bb48ce6331a462273f0a5fa906dcc87c87
+~~~
+
+Lifecycle is intentionally resolved live rather than frozen in this manifest:
+
+~~~text
+M2-06 DECISION = PRODUCT_AUTHORITY_ACCEPTED
+M2-06 DURABLE ARTIFACT = VERSIONED OBJECT
+CANONICAL PUBLICATION STATE = RESOLVE LIVE FROM GITHUB
+~~~
+
+This preserves lifecycle/provenance separation without requiring a post-merge reconciliation PR.
 
 ## 5. Raw-source disposition
 
@@ -148,15 +191,17 @@ RETROACTIVE EXACTNESS FABRICATION = FORBIDDEN
 
 A later recovered text may be kept outside canonical GitHub or admitted only as explicitly non-exact historical context unless exact provenance can be independently established.
 
-### 5.3 C4 structural gap
+### 5.3 C4 structural gap closure
 
-Before this hardening, M2-04C4 had a recorded source packet/hash and material SFJM result but no standalone durable evidence artifact.
+The former M2-04C4 structural documentation gap is closed. The standalone durable artifact is already canonical on current main:
 
-This hardening **proposes closure** of that structural documentation gap by adding:
+~~~text
+path = docs/security/evidence/2026-09-06-sts-m2-04c-c4-target-rls-dml-contract.md
+blob = 01eefe744946a9f916ac0789780f77c5444aa799
+introduced by commit = f747c3c092f838343d963798888d5b6f0b79f5d7
+~~~
 
-`docs/security/evidence/2026-09-06-sts-m2-04c-c4-target-rls-dml-contract.md`
-
-It does not alter the accepted C4 decision.
+This does not alter the accepted C4 decision; it reconciles provenance only.
 
 ## 6. Historical lifecycle provenance exception
 
@@ -178,8 +223,9 @@ CRITICAL M1/M2 DECISION DURABILITY = PASS
 CURRENT STATE RECONSTRUCTIBILITY FROM GITHUB = PASS
 PRODUCT AUTHORITY TRACEABILITY = PASS
 STRUCTURED B3/C3 EVIDENCE PRESERVATION = PASS
-C4 STANDALONE DURABILITY = CANDIDATE_UNTIL_THIS HARDENING IS MERGED
+C4 STANDALONE DURABILITY = PASS / CANONICAL ON MAIN
 RAW SPECIALIST SOURCE FORENSICS = PARTIAL
+M2-06 DECISION TRACEABILITY = PASS / PUBLICATION LIFECYCLE RESOLVED LIVE
 ROADMAP BLOCKER = NO
 SECURITY GO = NOT_GRANTED
 ```
