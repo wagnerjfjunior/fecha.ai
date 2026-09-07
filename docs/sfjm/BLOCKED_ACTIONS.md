@@ -1,8 +1,37 @@
 # FECH.AI — SFJM Blocked Actions
 
-**Status:** STS-M2-04E_MERGED / NEXT_M2_04_UNSELECTED / FAIL_CLOSED  
+**Status:** B2_TARGET_CONTRACT_CLOSURE_EXECUTED / AWAITING_PRODUCT_AUTHORITY_ADJUDICATION / FAIL_CLOSED  
 **Updated:** 2026-09-07  
 **Repository:** wagnerjfjunior/fecha.ai
+
+## 3. Current B2-closure boundary — 2026-09-07
+
+~~~text
+B2 High-Risk Target-Contract Closure execution = COMPLETE READ_ONLY
+Product Authority adjudication of result = PENDING
+STS-M2-04 final closure = NOT YET ADJUDICATED
+~~~
+
+Blocked unless separately and explicitly authorized:
+
+~~~text
+implementation of any B2 candidate disposition
+ALTER FUNCTION / SECURITY DEFINER-INVOKER change
+owner/search_path mutation
+GRANT / REVOKE / default privilege change
+RLS/policy/direct-DML mutation
+retirement/deletion of redefinir_senha_corretor
+retirement/replacement of registrar_audit_log
+hostile-client/cross-tenant runtime testing
+M2-05 execution
+M2-06 execution
+Ready / merge of the SFJM publication
+deploy / production mutation
+Security Go
+~~~
+
+A repeated B2 closure re-audit without a material invalidator is not the next safe action.
+
 
 ## 1. Authority
 

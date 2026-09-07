@@ -1,5 +1,47 @@
 # FECH.AI — SFJM Authorizations
 
+
+## 0.0000000000000000018 Product Authority — STS-M2-04 B2 High-Risk Target-Contract Closure READ_ONLY + SFJM update — 2026-09-07
+
+Product Authority explicitly authorized:
+
+~~~text
+STS-M2-04 — B2 High-Risk Target-Contract Closure = AUTHORIZED READ_ONLY
+scope = exactly the 15 routines already classified in B2
+GitHub READ_ONLY = AUTHORIZED
+Supabase live READ_ONLY when necessary = AUTHORIZED
+~~~
+
+Product Authority explicitly did NOT authorize:
+
+~~~text
+implementation
+migration
+function alteration
+GRANT / REVOKE
+RLS/policy mutation
+production mutation
+deploy
+Security Go
+~~~
+
+The same user instruction explicitly requested that SFJM be updated to preserve the new authorization and continuity state. Therefore the bounded SFJM documentation reconciliation is authorized; it does not inherit Ready or merge authority.
+
+Execution consumed this authorization in READ_ONLY mode. Live Supabase capability preflight succeeded, exact 15/15 functions were inspected, and no Supabase mutation occurred.
+
+~~~text
+B2 closure execution = COMPLETED READ_ONLY
+result = READY FOR PRODUCT AUTHORITY ADJUDICATION
+result acceptance = NOT YET GRANTED
+STS-M2-04 final closure acceptance = NOT YET GRANTED
+M2-05 execution = NOT_AUTHORIZED
+M2-06 execution = NOT_AUTHORIZED
+Ready = NOT_AUTHORIZED
+merge = NOT_AUTHORIZED
+deploy = NOT_AUTHORIZED
+Security Go = NOT_GRANTED
+~~~
+
 ## 0.0000000000000000017 Product Authority — PR #189 exact-head merge + post-merge SFJM reconciliation — 2026-09-07
 
 Product Authority explicitly authorized merge of PR #189 only on exact head:
