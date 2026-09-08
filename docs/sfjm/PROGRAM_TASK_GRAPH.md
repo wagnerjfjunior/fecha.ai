@@ -1,5 +1,23 @@
 # FECH.AI — SFJM Program Task Graph
 
+## 0. CURRENT EXECUTION OVERLAY — STS-M3-03 ACCEPTED / STS-M3-04 AUTHORIZED NOT INITIATED — 2026-09-08
+
+~~~text
+decision base main = ec42e7b087dd1bf9b7ddc0cf05316e9d3e7979be
+STS-M2 = COMPLETE_WITH_RESIDUALS / ACCEPTED
+STS-M3 = ACTIVE
+STS-M3-01 = COMPLETE / ACCEPTED / FROZEN
+STS-M3-02 = COMPLETE_WITH_RESIDUALS / ACCEPTED
+STS-M3-03 = COMPLETE_WITH_RESIDUALS / ACCEPTED
+STS-M3-04 = AUTHORIZED / NOT_INITIATED
+STS-M3-05 = PLANNED / NOT_AUTHORIZED
+STS-M3-06 = PLANNED / NOT_AUTHORIZED
+Security Go = NOT_GRANTED
+~~~
+
+This override is current operational meaning for continuity consumers/SFJM Workspace. WBS structure, labels, order and hours remain unchanged. M3-04 authorization does not mean execution has started and does not imply blanket mutation authority.
+
+
 ## 0. CURRENT POST-MERGE EXECUTION OVERLAY — PR #202 MERGED / STS-M3-03 NEXT — 2026-09-08
 
 ~~~text

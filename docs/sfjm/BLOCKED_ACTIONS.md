@@ -1,5 +1,40 @@
 # FECH.AI — SFJM Blocked Actions
 
+## 0. CURRENT — STS-M3-03 ACCEPTED / STS-M3-04 AUTHORIZED BUT NOT INITIATED — 2026-09-08
+
+~~~text
+STS-M3 = ACTIVE
+STS-M3-01 = COMPLETE / ACCEPTED / FROZEN
+STS-M3-02 = COMPLETE / ACCEPTED WITH RESIDUALS
+STS-M3-03 = COMPLETE / ACCEPTED WITH RESIDUALS
+STS-M3-04 = AUTHORIZED / NOT_INITIATED
+DATABASE STRATEGY = V2_STRANGLER / SAME_DATABASE_FIRST
+Security Go = NOT_GRANTED
+~~~
+
+STS-M3-04 task initiation is no longer blocked by missing Product Authority task authorization. It has simply not started.
+
+Still blocked unless an exact downstream sub-gate separately authorizes it:
+
+~~~text
+blanket runtime/frontend mutation
+blanket Supabase/Auth/data mutation
+SQL / DDL / DML mutation without bounded M3-04 implementation authority
+migration execution
+RLS / policy / grant / owner / search_path mutation without bounded authority
+RPC/function/trigger/Edge Function mutation without bounded authority
+BG-06 root support-mode implementation
+active hostile-client / cross-tenant production testing
+STS-M3-05 execution
+STS-M3-06 execution
+deploy / production mutation
+Security Go
+commercialization authorization
+~~~
+
+Accepted M3-03 residuals are downstream remediation/assurance inputs, not blockers to the completed M3-03 decision task.
+
+
 ## 0. CURRENT — STS-M3-02 ACCEPTED / STS-M3-03 EXECUTION BLOCKED PENDING AUTHORIZATION — 2026-09-08
 
 ~~~text

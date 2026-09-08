@@ -1,5 +1,29 @@
 # FECH.AI — SFJM Next Safe Action
 
+## 0.0000000000000000033 CURRENT MATERIAL GATE — STS-M3-04 AUTHORIZED / NOT INITIATED — 2026-09-08
+
+~~~text
+decision base main = ec42e7b087dd1bf9b7ddc0cf05316e9d3e7979be
+STS-M3 = ACTIVE
+STS-M3-01 = COMPLETE / ACCEPTED / FROZEN
+STS-M3-02 = COMPLETE / ACCEPTED WITH RESIDUALS
+STS-M3-03 = COMPLETE / ACCEPTED WITH RESIDUALS
+STS-M3-04 = AUTHORIZED / NOT_INITIATED
+DATABASE STRATEGY = V2_STRANGLER / SAME_DATABASE_FIRST
+Security Go = NOT_GRANTED
+~~~
+
+Single next material action:
+
+~~~text
+INITIATE STS-M3-04 — REDUÇÃO DE DML SENSÍVEL DIRETO
+under existing Product Authority task authorization
+after fresh live bootstrap/reconstruction
+~~~
+
+This publication does not initiate M3-04. Start with READ_ONLY reconstruction of sensitive direct-DML/RLS/table-grant/policy/RPC-only boundaries before any mutation proposal. No blanket SQL, migration, RLS, grant, RPC, Supabase/Auth/data, deploy or production mutation authority is inferred.
+
+
 ## 0.0000000000000000032 CURRENT MATERIAL GATE — PR #202 MERGED / STS-M3-03 REQUIRES SEPARATE PRODUCT AUTHORITY AUTHORIZATION — 2026-09-08
 
 ~~~text

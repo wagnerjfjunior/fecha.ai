@@ -1,5 +1,30 @@
 # FECH.AI — SFJM Current Product/Security Handoff
 
+## 0.0000000000000000033 CURRENT HANDOFF — STS-M3-03 ACCEPTED / STS-M3-04 AUTHORIZED NOT INITIATED — 2026-09-08
+
+~~~text
+repository = wagnerjfjunior/fecha.ai
+decision base main = ec42e7b087dd1bf9b7ddc0cf05316e9d3e7979be
+environment = Pilot Production / SaaS multi-tenant / multiempresa
+STS-M2 = COMPLETE / ACCEPTED WITH RESIDUALS
+DATABASE STRATEGY = V2_STRANGLER / SAME_DATABASE_FIRST
+STS-M3 = ACTIVE
+STS-M3-01 = COMPLETE / ACCEPTED / FROZEN
+STS-M3-02 = COMPLETE / ACCEPTED WITH RESIDUALS
+STS-M3-03 = COMPLETE / ACCEPTED WITH RESIDUALS
+STS-M3-04 = AUTHORIZED / NOT_INITIATED
+Security Go = NOT_GRANTED
+~~~
+
+Canonical M3-03 artifact:
+`docs/security/evidence/2026-09-08-sts-m3-03-privileged-rpc-allowlist.md`
+blob = `9b4c76648e34f324edfb2df205b2ba8691590817`
+
+Do not reopen M3-03 absent a material invalidator. Next program action is to initiate M3-04 under existing Product Authority task authorization after resolving live main/bootstrap. Start with READ_ONLY direct-DML/RLS/grant/policy/call-site reconstruction; do not infer blanket mutation authority.
+
+No Ready, merge, deploy, Security Go, BG-06 implementation or commercialization authority is carried by this handoff.
+
+
 ## 0.0000000000000000032 CURRENT POST-MERGE HANDOFF — PR #202 MERGED / STS-M3-03 NEXT ELIGIBLE — 2026-09-08
 
 ~~~text
