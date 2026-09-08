@@ -1,5 +1,34 @@
 # FECH.AI — SFJM Current Material State
 
+## 0.0000000000000000034 CURRENT — STS-M3-04-01 COMPLETE / ACCEPTED WITH RESIDUALS — 2026-09-08
+
+Product Authority formally accepts the first bounded STS-M3-04 implementation slice.
+
+~~~text
+canonical main = 1402395e708f69b0935ab2ba45489f717943b8b2
+environment = Pilot Production / SaaS multi-tenant / multiempresa
+STS-M3 = ACTIVE
+STS-M3-01 = COMPLETE / ACCEPTED / FROZEN
+STS-M3-02 = COMPLETE / ACCEPTED WITH RESIDUALS
+STS-M3-03 = COMPLETE / ACCEPTED WITH RESIDUALS
+STS-M3-04 = ACTIVE
+STS-M3-04-01 = COMPLETE / ACCEPTED WITH RESIDUALS
+PR #205 = MERGED / CLOSED
+approved head = 07f5dad3f805e319a0303e664752a2da7d0e3dfe
+merge commit / canonical main = 1402395e708f69b0935ab2ba45489f717943b8b2
+Supabase project = uobxxgzshrmbtjfdolxd
+migration apply = SUCCESS
+post-apply catalog validation = PASS
+post-apply smoke 16A = PASS
+Security Go = NOT_GRANTED
+~~~
+
+The accepted control removes authenticated direct INSERT on `public.pme_message_usage`, removes its INSERT policy, preserves authenticated SELECT, and preserves authenticated EXECUTE on `public.pme_registrar_message_usage(uuid,jsonb)`.
+
+Residuals remain explicit: hostile-client / independent AppSec effectiveness retest was not performed; individual lead ownership/assignment hardening inside the RPC remains outside this slice; the Supabase migration ledger recorded version `20260908184747` while the canonical repository filename prefix is `20260908233000` (existing apply-migration provenance convention); Security Go remains NOT_GRANTED.
+
+No next M3-04 implementation slice is authorized by this acceptance. The next material slice candidate remains separate and requires Product Authority authorization.
+
 ## 0.0000000000000000033 CURRENT — STS-M3-03 ACCEPTED / STS-M3-04 AUTHORIZED NOT INITIATED — 2026-09-08
 
 Product Authority materially advances the current program state:

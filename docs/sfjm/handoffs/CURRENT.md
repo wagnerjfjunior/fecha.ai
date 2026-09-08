@@ -1,5 +1,29 @@
 # FECH.AI — SFJM Current Product/Security Handoff
 
+## 0.0000000000000000034 CURRENT HANDOFF — STS-M3-04-01 COMPLETE / ACCEPTED WITH RESIDUALS — 2026-09-08
+
+~~~text
+repository = wagnerjfjunior/fecha.ai
+canonical main = 1402395e708f69b0935ab2ba45489f717943b8b2
+environment = Pilot Production / SaaS multi-tenant / multiempresa
+STS-M3 = ACTIVE
+STS-M3-04 = ACTIVE
+STS-M3-04-01 = COMPLETE / ACCEPTED WITH RESIDUALS
+PR #205 = MERGED / CLOSED
+approved head = 07f5dad3f805e319a0303e664752a2da7d0e3dfe
+Supabase project = uobxxgzshrmbtjfdolxd
+migration applied = YES
+post-apply catalog validation = PASS
+post-apply smoke = PASS
+Security Go = NOT_GRANTED
+~~~
+
+Do not reopen M3-04-01 absent a material invalidator. Preserve the accepted residuals: no independent hostile-client/AppSec retest; RPC individual lead ownership/assignment remains outside this slice; live migration ledger version `20260908184747` differs from repository filename prefix `20260908233000` under the existing apply-migration provenance convention.
+
+No next implementation slice is authorized. The next candidate is the bounded reduction of authenticated direct INSERT/UPDATE on `pme_lead_message_state`; fresh bootstrap and separate Product Authority authorization are required before any mutation.
+
+No Ready, merge, deploy, rollback, further Supabase mutation, Security Go or commercialization authority is carried by this handoff.
+
 ## 0.0000000000000000033 CURRENT HANDOFF — STS-M3-03 ACCEPTED / STS-M3-04 AUTHORIZED NOT INITIATED — 2026-09-08
 
 ~~~text

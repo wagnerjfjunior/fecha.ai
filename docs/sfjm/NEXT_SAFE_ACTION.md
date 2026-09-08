@@ -1,5 +1,33 @@
 # FECH.AI — SFJM Next Safe Action
 
+## 0.0000000000000000034 CURRENT MATERIAL GATE — STS-M3-04-01 ACCEPTED / NEXT SLICE NOT AUTHORIZED — 2026-09-08
+
+~~~text
+canonical main = 1402395e708f69b0935ab2ba45489f717943b8b2
+STS-M3 = ACTIVE
+STS-M3-04 = ACTIVE
+STS-M3-04-01 = COMPLETE / ACCEPTED WITH RESIDUALS
+PR #205 = MERGED / CLOSED
+Supabase apply = SUCCESS
+post-apply validation = PASS
+Security Go = NOT_GRANTED
+~~~
+
+Single next material action:
+
+~~~text
+PRODUCT AUTHORITY MAY SEPARATELY AUTHORIZE
+the next bounded STS-M3-04 direct-DML reduction slice
+
+current next-slice candidate =
+pme_lead_message_state authenticated direct INSERT/UPDATE reduction
+
+authorization =
+NOT_GRANTED
+~~~
+
+Before any next implementation mutation, resolve GitHub main live and reconstruct the exact current table grants, RLS/policies, RPC boundary, callers, rollback and acceptance tests. This acceptance does not authorize another migration, SQL/DDL/DML, RPC-body change, frontend mutation, deploy, rollback or Security Go.
+
 ## 0.0000000000000000033 CURRENT MATERIAL GATE — STS-M3-04 AUTHORIZED / NOT INITIATED — 2026-09-08
 
 ~~~text
