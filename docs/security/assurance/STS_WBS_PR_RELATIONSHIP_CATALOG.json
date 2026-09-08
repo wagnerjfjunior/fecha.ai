@@ -4818,5 +4818,116 @@
       148,
       150
     ]
+  },
+  "system_relationships": {
+    "sfjm_protocol": {
+      "repository": "wagnerjfjunior/StopJuniorMode",
+      "role": "Canonical SFJM protocol/research/governance/evaluation authority.",
+      "relation_to_fechai": "FECH.AI applies continuity principles but FECH.AI product/security decisions do not mutate protocol authority.",
+      "authority_boundary": "PROTOCOL_AUTHORITY_ONLY"
+    },
+    "fechai_project_local_sfjm": {
+      "repository": "wagnerjfjunior/fecha.ai",
+      "index_path": "docs/sfjm/INDEX.md",
+      "role": "Project-local material continuity, task-state, authorization, evidence-freshness and next-safe-action layer.",
+      "authority_boundary": "CONTINUITY_NOT_RUNTIME_SECURITY_BOUNDARY"
+    },
+    "sfjm_workspace": {
+      "repository": "wagnerjfjunior/sfjm-workspace",
+      "role": "Derived operational visualization/continuity product for external projects including FECH.AI.",
+      "authority_boundary": "WORKSPACE_OWNS_ITS_UI_PRODUCT_STATE_ONLY",
+      "external_project_rule": "FECH.AI remains authoritative for FECH.AI product/lifecycle/runtime/security/authorization truth.",
+      "current_sync_claim": "MANUAL_DERIVED_SNAPSHOT_UNLESS_FRESH_SYNC_EVIDENCE_PROVES_OTHERWISE"
+    },
+    "wbs": {
+      "repository": "wagnerjfjunior/fecha.ai",
+      "path": "docs/roadmap/fechai-security-to-scale-2026-wbs.md",
+      "role": "Structural program plan/decomposition/effort/sequencing authority."
+    },
+    "program_task_graph": {
+      "repository": "wagnerjfjunior/fecha.ai",
+      "path": "docs/sfjm/PROGRAM_TASK_GRAPH.md",
+      "role": "WBS-derived operational/decomposition overlay for continuity consumers and dashboard."
+    },
+    "dashboard": {
+      "role": "Projection of canonical WBS + SFJM operational state + PR/test/evidence relations.",
+      "authority_boundary": "DISPLAY_ONLY_NOT_FECHAI_AUTHORITY",
+      "stale_rule": "If represented FECH.AI ref differs from live FECH.AI, dashboard must mark snapshot stale."
+    },
+    "ses": {
+      "repository": "wagnerjfjunior/Specialist-Engineering-System",
+      "role": "Reusable specialist identity/archetype/certification and handoff contract authority.",
+      "relation_to_fechai": "FECH.AI routing selects adopted SES roles; FECH.AI remains authoritative for task/product/security/risk/lifecycle decisions.",
+      "authority_boundary": "SPECIALIST_PROVENANCE_NOT_PRODUCT_AUTHORITY"
+    }
+  },
+  "dashboard_consumption_order": [
+    "resolve FECH.AI main live",
+    "read FECH.AI WBS structural source",
+    "read FECH.AI PROGRAM_TASK_GRAPH",
+    "read FECH.AI CURRENT_STATE",
+    "read CURRENT_ISSUES when blocker/risk typing matters",
+    "read NEXT_SAFE_ACTION",
+    "read AUTHORIZATIONS and EVIDENCE_FRESHNESS when material",
+    "join STS/WBS/PR relationship catalog",
+    "join security assurance catalog",
+    "overlay live lifecycle/runtime/environment evidence where required"
+  ],
+  "specialist_resolution_contract": {
+    "authority_path": "docs/skills/SES_SPECIALIST_ROUTING.md",
+    "ses_repository": "wagnerjfjunior/Specialist-Engineering-System",
+    "current_material_security_program_mappings": [
+      {
+        "role": "documentation_audit",
+        "archetype_id": "documentation-auditor",
+        "canonical_name": "SES — Documentation Auditor"
+      },
+      {
+        "role": "architecture",
+        "archetype_id": "software-systems-architect",
+        "canonical_name": "SES — Software Systems Architect"
+      },
+      {
+        "role": "ux_ui",
+        "archetype_id": "ux-ui-app-specialist",
+        "canonical_name": "SES — UX/UI APP Specialist"
+      },
+      {
+        "role": "backend_data",
+        "archetype_id": "backend-data-platform-specialist",
+        "canonical_name": "SES — Backend & Data Platform Specialist"
+      },
+      {
+        "role": "lead_operations",
+        "archetype_id": "lead-operations-crm-specialist",
+        "canonical_name": "SES — Lead Operations & CRM Specialist"
+      },
+      {
+        "role": "application_security",
+        "archetype_id": "application-security-assurance-specialist",
+        "canonical_name": "SES — Application Security Assurance Specialist"
+      }
+    ],
+    "not_automatically_mapped_owner_domains": [
+      "Platform / CI-CD",
+      "SRE / Observability",
+      "MesaCliente domain-specific ownership unless separately adopted"
+    ],
+    "rules": [
+      "WBS owner domain != automatic SES archetype",
+      "Resolve SES main + FECH.AI Project Adapter + Archetype Registry + current certification for material consultation.",
+      "Legacy GPT label != operational specialist identity when SES role is adopted.",
+      "No adopted SES mapping -> use current project-local routing or mark unresolved; do not guess.",
+      "SPECIALIST PASS != PRODUCT AUTHORITY ACCEPTANCE",
+      "APPSEC PASS != SECURITY GO"
+    ]
+  },
+  "external_ref_observations": {
+    "observed_at": "2026-09-08",
+    "purpose": "Provenance only; all refs must be re-resolved live before material use.",
+    "fechai_main": "ea46d3d2dc39fc7f700c1d9ad9d747905c317c85",
+    "sfjm_protocol_main": "20ffdeed73c37522b2bee5941690a311885ab1ba",
+    "sfjm_workspace_main": "6a838a1ecdf1a21022f73e5382129f0a748db585",
+    "ses_main": "d9a148d8500b5b2790d295eea80d08dc99c58b42"
   }
 }
