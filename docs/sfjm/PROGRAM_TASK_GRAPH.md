@@ -1,5 +1,52 @@
 # FECH.AI — SFJM Program Task Graph
 
+
+## 0.0 CANONICAL SECURITY ASSURANCE CATALOG RELATION
+
+Security/test artifacts are related to this graph through the canonical machine-readable catalog:
+
+~~~text
+docs/security/assurance/SECURITY_ASSURANCE_CATALOG.json
+~~~
+
+Join contract:
+
+~~~text
+PROGRAM_TASK_GRAPH.Qualified ID
+=
+SECURITY_ASSURANCE_CATALOG.entries[].parent_qualified_id
+~~~
+
+Dashboard display contract:
+
+~~~text
+<parent_qualified_id> — <test / runner / workflow / evidence name>
+~~~
+
+Examples:
+
+~~~text
+STS-M1 — leads tenant integrity
+STS-M3-04 — PME usage tracking scope RLS cross tenant rollback
+STS-M4-04 — MesaCliente security / rollback / smoke artifact
+~~~
+
+The catalog assigns each artifact a stable `catalog_id` while preserving its original GitHub path and blob SHA.
+
+~~~text
+TASK DEFINITION AUTHORITY =
+this task graph + canonical WBS
+
+TEST / EVIDENCE RELATIONSHIP AUTHORITY =
+docs/security/assurance/SECURITY_ASSURANCE_CATALOG.json
+
+VERSIONED TEST != EXECUTED TEST
+EVIDENCE FILE != CURRENT PASS
+CATALOGED != SECURITY GO
+~~~
+
+`STS-SEC-UNMAPPED`, if it ever appears in the catalog, is a quarantine state and must be reconciled to a canonical STS parent before Security Go.
+
 ## 0. CURRENT EXECUTION OVERLAY — STS-M3-03 ACCEPTED / STS-M3-04 AUTHORIZED NOT INITIATED — 2026-09-08
 
 ~~~text
