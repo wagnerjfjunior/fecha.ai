@@ -35,17 +35,18 @@ ledger-version difference = ACCEPTABLE PROVENANCE RESIDUAL / existing apply-migr
 Security Go = NOT_GRANTED
 ~~~
 
-Authorized mutation class for this acceptance publication:
+Authorized mutation class for the acceptance publication and later bounded correction:
 
 ~~~text
 documentation / SFJM only
 one principal risk = stale material state after Product Authority acceptance
-one coherent documentation commit
-one Draft PR
-rollback = revert of the documentation commit
+initial acceptance publication commit = ab0434c42a6907fd776c326fb789f8fe1468f0f2
+bounded provenance correction commit = 9837215c238a6ce69711de189e390c012ccd2a7e
+special Product Authority lifecycle grant = correct remaining PR #206 documentation/metadata issues, perform fresh exact-head validation, Ready, fresh pre-merge validation and merge if gates pass
+rollback of the eventual publication on main = revert the PR #206 merge commit
 ~~~
 
-This acceptance does not authorize a next M3-04 slice, Ready, merge of the documentation PR, additional Supabase mutation, deploy, rollback, hostile testing or Security Go.
+This authority does not extend to a next M3-04 implementation slice, additional Supabase mutation, deploy, runtime/frontend change, rollback execution, hostile testing or Security Go.
 
 ## 0.0000000000000000033 Product Authority — STS-M3-03 acceptance + bounded publication + STS-M3-04 authorization — 2026-09-08
 
