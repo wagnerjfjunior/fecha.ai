@@ -15,6 +15,42 @@ docs/security/assurance/SECURITY_GO_PROGRAM.md
 
 This is the human entry point for understanding where the FECH.AI security program is going, how it will be proven and what must be true before Product Authority can grant Security Go.
 
+## 0.1 System relationship
+
+```text
+StopJuniorMode
+SFJM protocol / research
+        ↓ principles
+
+FECH.AI docs/sfjm/*
+project-local continuity
+        ↓ material state
+
+FECH.AI WBS + PROGRAM_TASK_GRAPH
+program structure + operational decomposition
+        ↓ canonical joins
+
+PR catalog + test/evidence catalog
+traceability
+        ↓ projection
+
+SFJM Workspace / Dashboard
+derived visualization
+
+SES
+specialist identity / archetype / certification
+        ↓ qualified review/execution provenance
+
+Product Authority
+authorization / acceptance / Security Go
+```
+
+Read the complete authority and methodology contract in:
+
+`docs/security/assurance/SECURITY_GO_PROGRAM.md`
+
+The Workspace/dashboard is not FECH.AI authority. SES specialists are not Product Authority. SFJM continuity is not runtime evidence.
+
 ## 1. Purpose
 
 This directory is the canonical discovery and relationship layer for FECH.AI security/test assurance artifacts.
