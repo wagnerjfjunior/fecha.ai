@@ -294,17 +294,17 @@ Future WBS tasks start as one node only.
 Example:
 
 ~~~text
-STS-M3-01 = PLANNED_NOT_AUTHORIZED
+STS-MX-YY = PLANNED_NOT_AUTHORIZED
 children = NONE YET
 ~~~
 
 If execution later requires a bounded split:
 
 ~~~text
-STS-M3-01
-├── STS-M3-01-A
-├── STS-M3-01-B
-└── STS-M3-01-C
+STS-MX-YY
+├── STS-MX-YY-A
+├── STS-MX-YY-B
+└── STS-MX-YY-C
 ~~~
 
 the children may be added here only when the decomposition is materially adopted.
