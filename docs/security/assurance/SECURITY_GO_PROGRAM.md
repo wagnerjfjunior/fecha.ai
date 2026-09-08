@@ -8,6 +8,45 @@
 
 ---
 
+## 0. External Auditor Quick Start
+
+If this link was provided to an independent AI/human auditor, do **not** assume the document is correct.
+
+Your assignment is:
+
+```text
+AUDIT THE SECURITY GO PROGRAM ITSELF
++
+AUDIT WHETHER ITS CLAIMS ARE TRACEABLE TO CURRENT EVIDENCE
++
+IDENTIFY MISSING ATTACK CLASSES, CONTROLS, TESTS OR PROOF
+```
+
+Start with:
+
+1. resolve FECH.AI `main` live;
+2. determine whether this document is on `main` or only a candidate PR head;
+3. follow the bootstrap in section 27;
+4. challenge all 22 security domains;
+5. use the evidence classes in section 10;
+6. use the findings contract in section 29;
+7. use the output format in section 33;
+8. answer the challenge questions in section 34.
+
+The auditor must not grant Security Go.
+
+Allowed final audit statuses are:
+
+```text
+SECURITY_GO_ASSURANCE_STATUS = NOT_READY
+
+or
+
+SECURITY_GO_ASSURANCE_STATUS = READY_FOR_PRODUCT_AUTHORITY_DECISION
+```
+
+Product Authority remains the only authority that may grant Security Go.
+
 ## 1. Why this document exists
 
 This is the canonical entry point for answering five questions:
