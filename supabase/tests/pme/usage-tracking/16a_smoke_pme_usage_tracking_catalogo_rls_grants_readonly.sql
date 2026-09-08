@@ -23,7 +23,7 @@ with expected_tables as (
     ('pme_call_scripts', array['SELECT','INSERT','UPDATE']::text[]),
     ('pme_cadences', array['SELECT','INSERT','UPDATE']::text[]),
     ('pme_cadence_steps', array['SELECT','INSERT','UPDATE']::text[]),
-    ('pme_lead_message_state', array['SELECT','INSERT','UPDATE']::text[]),
+    ('pme_lead_message_state', array['SELECT']::text[]),
     ('pme_message_usage', array['SELECT']::text[])
   ) v(table_name, expected_authenticated_privileges)
 ),
@@ -208,7 +208,7 @@ blocks as (
     'bloco', '02_policies_pme_catalogo',
     'status',
       case
-        when count(*) >= 16
+        when count(*) >= 14
          and exists (select 1 from policies where tablename = 'pme_message_usage' and cmd = 'SELECT')
          and not exists (select 1 from policies where tablename = 'pme_message_usage' and cmd in ('INSERT', 'UPDATE', 'DELETE'))
         then 'PASS'
