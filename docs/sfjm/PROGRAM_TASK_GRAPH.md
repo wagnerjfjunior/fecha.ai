@@ -384,6 +384,7 @@ Historical PRs may be related to the current WBS as `HISTORICAL_CONTRIBUTION_TO_
 | STS-M0 | STS-M0-03 | M0-03 | SFJM / Workspace baseline | 10 | COMPLETE |
 | STS-M0 | STS-M0-04 | M0-04 | Roadmap / governança única | 10 | COMPLETE |
 | PROGRAM | STS-M1 | M1 | Security Truth Baseline / F1-02 | 168 | COMPLETE_WITH_DEFERRED_SECURITY_ASSURANCE |
+| PROGRAM | STS-M2 | M2 | Database Simplification & Optimization Plan | 116 | COMPLETE_WITH_RESIDUALS |
 | STS-M2 | STS-M2-01 | M2-01 | Matriz de 43 tabelas | 20 | COMPLETE |
 | STS-M2 | STS-M2-02 | M2-02 | Mapa routines / policies / triggers / grants | 24 | COMPLETE_WITH_RESIDUALS |
 | STS-M2 | STS-M2-03 | M2-03 | Índices / ACL contraditórias | 16 | COMPLETE_WITH_RESIDUALS |
