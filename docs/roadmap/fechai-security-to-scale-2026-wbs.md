@@ -7,6 +7,55 @@
 **Governance adjudication:** `docs/governance/2026-09-04-fechai-bcr-security-to-scale-program-hierarchy-core-dod.md`  
 **Planning baseline canonicalization date:** 2026-09-04
 
+## 0. Canonical security / continuity navigation
+
+```text
+Security Go methodology / proof contract
+→ docs/security/assurance/SECURITY_GO_PROGRAM.md
+
+Structural WBS
+→ this file
+
+Operational task/decomposition overlay
+→ docs/sfjm/PROGRAM_TASK_GRAPH.md
+
+FECH.AI SFJM continuity protocol/application
+→ docs/sfjm/INDEX.md
+
+WBS / STS / PR relationship
+→ docs/security/assurance/STS_WBS_PR_RELATIONSHIP_CATALOG.json
+
+Test / evidence relationship
+→ docs/security/assurance/SECURITY_ASSURANCE_CATALOG.json
+
+Specialist routing
+→ docs/skills/SES_SPECIALIST_ROUTING.md
+```
+
+External relationship:
+
+```text
+SFJM protocol research/governance
+→ wagnerjfjunior/StopJuniorMode
+
+SFJM Workspace / dashboard product
+→ wagnerjfjunior/sfjm-workspace
+
+SES specialist system
+→ wagnerjfjunior/Specialist-Engineering-System
+```
+
+Authority invariant:
+
+```text
+WBS = structural planning authority
+SFJM = project continuity/material-state layer
+Workspace/dashboard = derived visualization
+SES = specialist identity/contract/certification layer
+GitHub/Supabase/runtime = live evidence authorities within scope
+Product Authority = material decision / lifecycle / Security Go authority
+```
+
 ## 1. Purpose
 
 This document is the FECH.AI-owned granular Work Breakdown Structure for the current Security-to-Scale 2026 program.
