@@ -289,11 +289,16 @@ D-01 through D-08 technical remediation
 047 global-body/RLS remediation
 119 current DEFINER -> target INVOKER implementation/runtime remediation
 127 retirement/deprecation implementation
-any next STS-M2-04 execution not separately selected/authorized
-M2-04F execution
-M2-05 execution
-M2-06 execution
+STS-M3-03 substantive execution
+M3-02 target implementation/remediation
+support-mode implementation
+legacy authority retirement
+runtime/frontend mutation
 Supabase/Auth/business-data mutation
+SQL / DDL / DML mutation
+migration execution
+RLS / policy / grant mutation
+RPC / function / Edge Function mutation
 future Ready transitions not separately authorized
 future merges not separately authorized
 deploy

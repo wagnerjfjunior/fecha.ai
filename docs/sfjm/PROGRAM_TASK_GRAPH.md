@@ -50,7 +50,7 @@ Security Go =
 NOT_GRANTED
 ~~~
 
-This override is the current operational meaning for continuity consumers and SFJM Workspace. Structural WBS IDs, labels, order and hours remain unchanged.
+This historical overlay is retained for provenance only and does not define current operational meaning for continuity consumers or SFJM Workspace. Structural WBS IDs, labels, order and hours remain unchanged.
 
 
 ## 0.1 HISTORICAL / SUPERSEDED ARCHITECTURE OVERRIDE — STS-M2-06 / STS-M2 CLOSURE — 2026-09-07
@@ -78,11 +78,11 @@ Security Go =
 NOT_GRANTED
 ~~~
 
-This override is the current operational meaning for the task graph. The structural WBS IDs, hours, labels and order remain unchanged.
+This historical architecture overlay is retained for provenance only and does not define current operational meaning for the task graph. The structural WBS IDs, hours, labels and order remain unchanged.
 
 
 **Status:** `CURRENT / MATERIAL_EXECUTION_OVERLAY / WBS_DERIVED_STRUCTURE / WORKSPACE_CONSUMABLE`  
-**Updated:** 2026-09-07  
+**Updated:** 2026-09-08  
 **Repository:** `wagnerjfjunior/fecha.ai`
 
 ## 1. Purpose
