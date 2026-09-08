@@ -4,7 +4,7 @@
 
 ~~~text
 repository = wagnerjfjunior/fecha.ai
-canonical main = 1402395e708f69b0935ab2ba45489f717943b8b2
+acceptance evidence base main = 1402395e708f69b0935ab2ba45489f717943b8b2
 environment = Pilot Production / SaaS multi-tenant / multiempresa
 STS-M3 = ACTIVE
 STS-M3-04 = ACTIVE

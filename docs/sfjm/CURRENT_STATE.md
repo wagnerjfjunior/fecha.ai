@@ -5,7 +5,7 @@
 Product Authority formally accepts the first bounded STS-M3-04 implementation slice.
 
 ~~~text
-canonical main = 1402395e708f69b0935ab2ba45489f717943b8b2
+acceptance evidence base main = 1402395e708f69b0935ab2ba45489f717943b8b2
 environment = Pilot Production / SaaS multi-tenant / multiempresa
 STS-M3 = ACTIVE
 STS-M3-01 = COMPLETE / ACCEPTED / FROZEN
@@ -15,7 +15,7 @@ STS-M3-04 = ACTIVE
 STS-M3-04-01 = COMPLETE / ACCEPTED WITH RESIDUALS
 PR #205 = MERGED / CLOSED
 approved head = 07f5dad3f805e319a0303e664752a2da7d0e3dfe
-merge commit / canonical main = 1402395e708f69b0935ab2ba45489f717943b8b2
+PR #205 merge commit / acceptance base main = 1402395e708f69b0935ab2ba45489f717943b8b2
 Supabase project = uobxxgzshrmbtjfdolxd
 migration apply = SUCCESS
 post-apply catalog validation = PASS

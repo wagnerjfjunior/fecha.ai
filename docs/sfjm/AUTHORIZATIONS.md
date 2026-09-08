@@ -12,7 +12,7 @@ COMPLETE / ACCEPTED WITH RESIDUALS
 Decision evidence base:
 
 ~~~text
-canonical main = 1402395e708f69b0935ab2ba45489f717943b8b2
+decision evidence base main = 1402395e708f69b0935ab2ba45489f717943b8b2
 PR #205 = MERGED / CLOSED
 approved head = 07f5dad3f805e319a0303e664752a2da7d0e3dfe
 merge commit = 1402395e708f69b0935ab2ba45489f717943b8b2
