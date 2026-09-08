@@ -8,7 +8,7 @@
 -- - validar ausência de EXECUTE para anon/public nas funções PME;
 -- - validar policies mínimas;
 -- - validar grants de tabela sem anon/public;
--- - validar pme_message_usage como append-only: SELECT/INSERT apenas para authenticated;
+-- - validar pme_message_usage com escrita RPC-only: SELECT direto apenas para authenticated;
 -- - não executar DDL/DML;
 -- - encerrar com ROLLBACK.
 --
@@ -24,7 +24,7 @@ with expected_tables as (
     ('pme_cadences', array['SELECT','INSERT','UPDATE']::text[]),
     ('pme_cadence_steps', array['SELECT','INSERT','UPDATE']::text[]),
     ('pme_lead_message_state', array['SELECT','INSERT','UPDATE']::text[]),
-    ('pme_message_usage', array['SELECT','INSERT']::text[])
+    ('pme_message_usage', array['SELECT']::text[])
   ) v(table_name, expected_authenticated_privileges)
 ),
 
@@ -208,10 +208,9 @@ blocks as (
     'bloco', '02_policies_pme_catalogo',
     'status',
       case
-        when count(*) >= 17
+        when count(*) >= 16
          and exists (select 1 from policies where tablename = 'pme_message_usage' and cmd = 'SELECT')
-         and exists (select 1 from policies where tablename = 'pme_message_usage' and cmd = 'INSERT')
-         and not exists (select 1 from policies where tablename = 'pme_message_usage' and cmd in ('UPDATE', 'DELETE'))
+         and not exists (select 1 from policies where tablename = 'pme_message_usage' and cmd in ('INSERT', 'UPDATE', 'DELETE'))
         then 'PASS'
         else 'FAIL'
       end,
@@ -290,21 +289,29 @@ blocks as (
   union all
 
   select jsonb_build_object(
-    'bloco', '05_append_only_pme_message_usage',
+    'bloco', '05_rpc_only_pme_message_usage',
     'status',
       case
         when exists (
           select 1
           from table_privileges_grouped
           where table_name = 'pme_message_usage'
-            and authenticated_privileges <@ array['SELECT','INSERT']::text[]
-            and array['SELECT','INSERT']::text[] <@ authenticated_privileges
+            and authenticated_privileges <@ array['SELECT']::text[]
+            and array['SELECT']::text[] <@ authenticated_privileges
         )
         and not exists (
           select 1
           from policies
           where tablename = 'pme_message_usage'
-            and cmd in ('UPDATE', 'DELETE')
+            and cmd in ('INSERT', 'UPDATE', 'DELETE')
+        )
+        and exists (
+          select 1
+          from func_catalog
+          where expected_proname = 'pme_registrar_message_usage'
+            and authenticated_execute = true
+            and anon_execute = false
+            and public_execute = false
         )
         then 'PASS'
         else 'FAIL'
@@ -332,7 +339,7 @@ blocks as (
             ),
             '[]'::jsonb
           ),
-        'regra', 'pme_message_usage deve ser append-only: SELECT/INSERT apenas; sem UPDATE/DELETE.'
+        'regra', 'pme_message_usage deve aceitar SELECT direto apenas; escrita authenticated somente via pme_registrar_message_usage(uuid,jsonb).'
       )
   )
 
