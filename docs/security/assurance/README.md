@@ -5,6 +5,16 @@
 **Generated from main:** `ea46d3d2dc39fc7f700c1d9ad9d747905c317c85`  
 **Canonical machine-readable catalog:** `docs/security/assurance/SECURITY_ASSURANCE_CATALOG.json`
 
+## 0. Start here — Security Go methodology
+
+Canonical program objective, methodology, proof model and final Security Go criteria:
+
+```text
+docs/security/assurance/SECURITY_GO_PROGRAM.md
+```
+
+This is the human entry point for understanding where the FECH.AI security program is going, how it will be proven and what must be true before Product Authority can grant Security Go.
+
 ## 1. Purpose
 
 This directory is the canonical discovery and relationship layer for FECH.AI security/test assurance artifacts.
