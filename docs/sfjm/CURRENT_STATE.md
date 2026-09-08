@@ -1,5 +1,111 @@
 # FECH.AI — SFJM Current Material State
 
+
+## 0.0000000000000000035 CURRENT — STS-M3-04-02 COMPLETE / ACCEPTED WITH RESIDUALS — 2026-09-08
+
+Product Authority formally accepts the second bounded STS-M3-04 direct-write reduction slice.
+
+~~~text
+acceptance evidence main =
+50777e6b28c172efc97dd0b4ea1dcb7ec8b52367
+
+environment =
+Pilot Production / SaaS multi-tenant / multiempresa
+
+STS-M3 =
+ACTIVE
+
+STS-M3-04 =
+ACTIVE
+
+STS-M3-04-01 =
+COMPLETE / ACCEPTED WITH RESIDUALS
+
+STS-M3-04-02 =
+COMPLETE / ACCEPTED WITH RESIDUALS
+
+PR #207 =
+MERGED / CLOSED
+
+reviewed head =
+3f52a93080bef5e251abad75f6726241799a0928
+
+merge commit =
+50777e6b28c172efc97dd0b4ea1dcb7ec8b52367
+
+Supabase project =
+uobxxgzshrmbtjfdolxd / Discador-MesaCliente / sa-east-1
+
+migration application =
+SUCCESS
+
+post-application read-only catalog validation =
+PASS
+
+runtime assurance =
+SEPARATE / NOT_PERFORMED
+
+Security Go =
+SEPARATE / NOT_GRANTED
+
+CURRENT_AUTHORIZED_TECHNICAL_EXECUTION =
+NONE
+~~~
+
+Accepted implementation result for `public.pme_lead_message_state`:
+
+~~~text
+authenticated SELECT = PRESERVED
+authenticated INSERT = REMOVED
+authenticated UPDATE = REMOVED
+authenticated DELETE = ABSENT
+anon direct privileges = ABSENT
+PUBLIC direct table grants = ABSENT
+RLS = PRESERVED
+pme_lead_message_state_select = PRESERVED
+INSERT policy = REMOVED
+UPDATE policy = REMOVED
+service_role privilege vector = PRESERVED
+~~~
+
+Canonical repository artifacts at the acceptance evidence main:
+
+~~~text
+supabase/migrations/20260908234500_sts_m3_04_02_pme_lead_message_state_direct_write_reduction.sql
+blob = 7c734f4b51ad57b8df25c63393085093fbb0edbb
+
+supabase/tests/pme/usage-tracking/16a_smoke_pme_usage_tracking_catalogo_rls_grants_readonly.sql
+blob = bf7a15001a510e3e6ce59e5208017fee57d48b27
+~~~
+
+Supabase migration ledger provenance remains explicitly distinct from the repository filename prefix:
+
+~~~text
+GitHub migration filename prefix =
+20260908234500
+
+Supabase migration ledger version =
+20260908200621
+
+Supabase migration ledger name =
+sts_m3_04_02_pme_lead_message_state_direct_write_reduction
+~~~
+
+This distinction is accepted as provenance metadata and is not classified as a blocker for STS-M3-04-02 closure.
+
+Residual boundary remains explicit and separate:
+
+~~~text
+runtime assurance = NOT_PERFORMED
+hostile-client active runtime validation = NOT_PERFORMED
+cross-tenant active runtime validation = NOT_PERFORMED
+Security Go = NOT_GRANTED
+~~~
+
+STS-M3-04-02 closure does not convert these residuals into PASS and does not grant Security Go. The absence of runtime assurance does not automatically reopen this accepted slice. Reopening requires a material invalidator or a new explicit Product Authority decision.
+
+No further STS-M3 technical execution is authorized by this acceptance. The next material STS-M3 gate requires separate Product Authority selection and authorization.
+
 ## 0.0000000000000000034 CURRENT — STS-M3-04-01 COMPLETE / ACCEPTED WITH RESIDUALS — 2026-09-08
 
 Product Authority formally accepts the first bounded STS-M3-04 implementation slice.

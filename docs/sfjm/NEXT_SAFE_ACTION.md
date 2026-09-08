@@ -1,5 +1,78 @@
 # FECH.AI — SFJM Next Safe Action
 
+
+## 0.0000000000000000035 CURRENT MATERIAL GATE — STS-M3-04-02 ACCEPTED / NEXT TECHNICAL GATE REQUIRES PRODUCT AUTHORITY — 2026-09-08
+
+~~~text
+acceptance evidence main =
+50777e6b28c172efc97dd0b4ea1dcb7ec8b52367
+
+STS-M3 =
+ACTIVE
+
+STS-M3-04 =
+ACTIVE
+
+STS-M3-04-01 =
+COMPLETE / ACCEPTED WITH RESIDUALS
+
+STS-M3-04-02 =
+COMPLETE / ACCEPTED WITH RESIDUALS
+
+PR #207 =
+MERGED / CLOSED
+
+Supabase application =
+SUCCESS
+
+post-application read-only catalog validation =
+PASS
+
+runtime assurance =
+SEPARATE / NOT_PERFORMED
+
+Security Go =
+SEPARATE / NOT_GRANTED
+
+CURRENT_AUTHORIZED_TECHNICAL_EXECUTION =
+NONE
+~~~
+
+STS-M3-04-02 is closed at its bounded implementation/catalog-validation contract. Do not replay or reopen the slice solely because runtime assurance remains unperformed.
+
+The current safe continuation is a Product Authority decision selecting and separately authorizing the next material STS-M3 gate.
+
+~~~text
+NEXT MATERIAL STS-M3 GATE =
+SEPARATE PRODUCT AUTHORITY SELECTION / AUTHORIZATION REQUIRED
+
+automatic STS-M3-04-03 selection =
+NO
+
+automatic STS-M3-04 closure =
+NO
+
+automatic STS-M3-05 execution =
+NO
+~~~
+
+Runtime assurance remains an independent residual track:
+
+~~~text
+hostile-client active runtime validation = NOT_PERFORMED
+cross-tenant active runtime validation = NOT_PERFORMED
+runtime assurance PASS = NOT CLAIMED
+~~~
+
+Security Go remains a separate gate:
+
+~~~text
+Security Go = NOT_GRANTED
+broad paid commercialization dependent on Security Go = NOT_AUTHORIZED
+~~~
+
+No runtime/frontend mutation, Supabase/Auth/data mutation, SQL/DDL/DML, migration application, rollback, RLS/policy/grant change, RPC/function/Edge Function mutation, deploy, hostile-client production test or Security Go is authorized by this material state.
+
 ## 0.0000000000000000034 CURRENT MATERIAL GATE — STS-M3-04-01 ACCEPTED / NEXT SLICE NOT AUTHORIZED — 2026-09-08
 
 ~~~text

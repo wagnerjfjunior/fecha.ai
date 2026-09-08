@@ -1,5 +1,54 @@
 # FECH.AI — SFJM Blocked Actions
 
+
+## 0.0000000000000000035 CURRENT — STS-M3-04-02 ACCEPTED / FURTHER TECHNICAL EXECUTION BLOCKED PENDING SEPARATE AUTHORIZATION — 2026-09-08
+
+~~~text
+STS-M3 = ACTIVE
+STS-M3-04 = ACTIVE
+STS-M3-04-01 = COMPLETE / ACCEPTED WITH RESIDUALS
+STS-M3-04-02 = COMPLETE / ACCEPTED WITH RESIDUALS
+runtime assurance = SEPARATE / NOT_PERFORMED
+Security Go = SEPARATE / NOT_GRANTED
+CURRENT_AUTHORIZED_TECHNICAL_EXECUTION = NONE
+~~~
+
+STS-M3-04-02 itself is not blocked and must not be reopened merely because its runtime-assurance residual remains unperformed.
+
+Still blocked unless separately and explicitly authorized by Product Authority:
+
+~~~text
+any next STS-M3 implementation slice
+automatic STS-M3-04-03 execution
+STS-M3-04 closure
+STS-M3-05 execution
+STS-M3-06 execution
+additional Supabase migration application
+additional SQL / DDL / DML
+RLS / policy / grant / owner / search_path mutation
+RPC / function / trigger / Edge Function mutation
+frontend/runtime mutation
+Auth mutation
+business-data mutation
+rollback of STS-M3-04-01 or STS-M3-04-02
+active hostile-client production testing
+active cross-tenant runtime testing
+deploy / production release action
+Security Go
+broad paid commercialization dependent on Security Go
+~~~
+
+Accepted residuals remain tracked but do not count as current blockers for the completed STS-M3-04-02 slice:
+
+~~~text
+runtime assurance = RESIDUAL / NOT_PERFORMED
+hostile-client runtime validation = RESIDUAL / NOT_PERFORMED
+cross-tenant runtime validation = RESIDUAL / NOT_PERFORMED
+Security Go = SEPARATE SECURITY GATE / NOT_GRANTED
+~~~
+
+Reopen STS-M3-04-02 only on a material invalidator or explicit Product Authority decision.
+
 ## 0.0000000000000000034 CURRENT — STS-M3-04-01 ACCEPTED / FURTHER M3-04 MUTATION BLOCKED PENDING AUTHORIZATION — 2026-09-08
 
 ~~~text
