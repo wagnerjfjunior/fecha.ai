@@ -14,6 +14,45 @@ WBS Qualified ID
   <-> SECURITY_ASSURANCE_CATALOG.entries[].parent_qualified_id
 ```
 
+## System relationship
+
+| Layer | Canonical source | Role | Must not be treated as |
+|---|---|---|---|
+| SFJM protocol | `wagnerjfjunior/StopJuniorMode` | continuity research/protocol/governance | FECH.AI product authority |
+| FECH.AI SFJM | `docs/sfjm/*` | durable material continuity/state/evidence/authorization ledger | live GitHub/Supabase/runtime proof |
+| WBS | `docs/roadmap/fechai-security-to-scale-2026-wbs.md` | structural task/program authority | runtime state |
+| Task Graph | `docs/sfjm/PROGRAM_TASK_GRAPH.md` | WBS-derived operational/decomposition overlay | independent WBS replacement |
+| SFJM Workspace | `wagnerjfjunior/sfjm-workspace` | derived operational visualization product | FECH.AI security/product authority |
+| Dashboard | Workspace projection | WBS/state/PR/test/evidence navigation | authorization or Security Go |
+| SES | `wagnerjfjunior/Specialist-Engineering-System` | specialist identity/archetype/certification | Product Authority |
+| Product Authority | FECH.AI | material decisions, lifecycle authorization, risk acceptance, Security Go | automatic specialist inference |
+
+Dashboard reconstruction order:
+
+```text
+FECH.AI live main
+→ WBS
+→ PROGRAM_TASK_GRAPH
+→ CURRENT_STATE / CURRENT_ISSUES
+→ NEXT_SAFE_ACTION / AUTHORIZATIONS / EVIDENCE_FRESHNESS
+→ PR relationships
+→ test/evidence relationships
+→ live lifecycle/runtime overlay
+```
+
+Current SES mappings material to this program:
+
+| FECH.AI role | Canonical SES specialist |
+|---|---|
+| `documentation_audit` | SES — Documentation Auditor |
+| `architecture` | SES — Software Systems Architect |
+| `ux_ui` | SES — UX/UI APP Specialist |
+| `backend_data` | SES — Backend & Data Platform Specialist |
+| `lead_operations` | SES — Lead Operations & CRM Specialist |
+| `application_security` | SES — Application Security Assurance Specialist |
+
+WBS owner domains with no adopted SES mapping must remain project-local/unresolved until routing is explicitly defined. Do not infer a nearby SES specialist.
+
 ## Coverage
 
 ```text
