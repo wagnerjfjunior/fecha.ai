@@ -172,14 +172,14 @@ SECURITY_GO = NOT_GRANTED
 **Issue #141 window:** 18 Sep–9 Oct  
 **Current state:** ELIGIBLE / NOT STARTED
 
-| ID | Task | Hours |
-|---|---|---:|
-| M2-01 | Matriz de 43 tabelas | 20h |
-| M2-02 | Mapa routines / policies / triggers / grants | 24h |
-| M2-03 | Índices / ACL contraditórias | 16h |
-| M2-04 | Política target de DEFINER / RLS / DML | 20h |
-| M2-05 | Database Contract Map | 20h |
-| M2-06 | Decisão arquitetural do banco | 16h |
+| ID | Qualified ID | Task | Hours |
+|---|---|---|---:|
+| M2-01 | STS-M2-01 | Matriz de 43 tabelas | 20h |
+| M2-02 | STS-M2-02 | Mapa routines / policies / triggers / grants | 24h |
+| M2-03 | STS-M2-03 | Índices / ACL contraditórias | 16h |
+| M2-04 | STS-M2-04 | Política target de DEFINER / RLS / DML | 20h |
+| M2-05 | STS-M2-05 | Database Contract Map | 20h |
+| M2-06 | STS-M2-06 | Decisão arquitetural do banco | 16h |
 
 Issue #141 exit contract remains authoritative:
 
