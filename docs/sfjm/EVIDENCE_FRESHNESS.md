@@ -1,5 +1,27 @@
 # FECH.AI — SFJM Evidence Freshness
 
+## 0.0000000000000000033 CURRENT EVIDENCE — STS-M3-03 ACCEPTED / M3-04 AUTHORIZED NOT INITIATED — 2026-09-08
+
+~~~text
+source repository = wagnerjfjunior/fecha.ai
+decision/publication base main = ec42e7b087dd1bf9b7ddc0cf05316e9d3e7979be
+STS-M3-03 = COMPLETE / ACCEPTED WITH RESIDUALS
+privileged candidate universe = 49
+candidate rows disposed = 49 / 49
+SERVICE_ONLY_COMMAND = 2 / 2 mapped
+STS-M3-04 = AUTHORIZED / NOT_INITIATED
+Security Go = NOT_GRANTED
+~~~
+
+Decision-grade artifact:
+`docs/security/evidence/2026-09-08-sts-m3-03-privileged-rpc-allowlist.md`
+blob = `9b4c76648e34f324edfb2df205b2ba8691590817`
+
+This publication records the Product Authority-accepted M3-03 READ_ONLY analysis and does not re-run the live database/runtime. Implementation target compliance, hostile runtime assurance and AppSec PASS remain unproven/not performed.
+
+Invalidators: material authority/schema/routine/runtime drift, contradictory evidence, Product Authority decision change, or authorized remediation that changes relevant implementation state.
+
+
 ## 0.0000000000000000032 CURRENT EVIDENCE — PR #202 MERGED / STS-M3-02 CANONICAL ON MAIN — 2026-09-08
 
 ~~~text

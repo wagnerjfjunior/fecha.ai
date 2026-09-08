@@ -1,5 +1,42 @@
 # FECH.AI — SFJM Current Material State
 
+## 0.0000000000000000033 CURRENT — STS-M3-03 ACCEPTED / STS-M3-04 AUTHORIZED NOT INITIATED — 2026-09-08
+
+Product Authority materially advances the current program state:
+
+~~~text
+decision base main = ec42e7b087dd1bf9b7ddc0cf05316e9d3e7979be
+environment = Pilot Production / SaaS multi-tenant / multiempresa
+STS-M2 = COMPLETE / ACCEPTED WITH RESIDUALS
+DATABASE STRATEGY = V2_STRANGLER / SAME_DATABASE_FIRST
+STS-M3 = ACTIVE
+STS-M3-01 = COMPLETE / ACCEPTED / FROZEN
+STS-M3-02 = COMPLETE / ACCEPTED WITH RESIDUALS
+STS-M3-03 = COMPLETE / ACCEPTED WITH RESIDUALS
+STS-M3-04 = AUTHORIZED / NOT_INITIATED
+Security Go = NOT_GRANTED
+~~~
+
+Accepted M3-03 result:
+
+~~~text
+public routine universe = 160
+privileged candidate universe = 49
+candidate rows disposed = 49 / 49
+service-only commands = 2 / 2 mapped
+allowlist completeness = PROVEN TO ACCEPTED BOUNDED STANDARD
+current implementation target-compliant as a whole = NO / NOT_PROVEN
+runtime hostile assurance = NOT_PERFORMED
+AppSec PASS = NOT_PERFORMED
+~~~
+
+Canonical artifact:
+`docs/security/evidence/2026-09-08-sts-m3-03-privileged-rpc-allowlist.md`
+blob = `9b4c76648e34f324edfb2df205b2ba8691590817`
+
+M3-04 is authorized but has not started. Fresh live bootstrap is required before initiation. This documentation publication performs no runtime/Supabase mutation.
+
+
 ## 0.0000000000000000032 CURRENT POST-MERGE — PR #202 MERGED / STS-M3-03 NEXT ELIGIBLE — 2026-09-08
 
 Product Authority authorized this bounded post-merge SFJM reconciliation after PR #202 merged on the exact approved head.

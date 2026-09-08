@@ -1,5 +1,40 @@
 # FECH.AI — SFJM Authorizations
 
+## 0.0000000000000000033 Product Authority — STS-M3-03 acceptance + bounded publication + STS-M3-04 authorization — 2026-09-08
+
+Product Authority explicitly decides:
+
+~~~text
+STS-M3-03 = COMPLETE / ACCEPTED WITH RESIDUALS
+STS-M3-04 — Redução de DML sensível direto = AUTHORIZED / NOT_INITIATED
+~~~
+
+Decision/publication base main:
+
+~~~text
+ec42e7b087dd1bf9b7ddc0cf05316e9d3e7979be
+~~~
+
+Authorized mutation class for this publication:
+
+~~~text
+documentation / SFJM only
+one principal risk = stale material state after Product Authority decision
+one coherent documentation commit
+one Draft PR
+rollback = revert of that single documentation commit
+~~~
+
+Durable M3-03 artifact:
+
+~~~text
+docs/security/evidence/2026-09-08-sts-m3-03-privileged-rpc-allowlist.md
+blob = 9b4c76648e34f324edfb2df205b2ba8691590817
+~~~
+
+This authority permits this bounded documentation publication and records M3-04 task authorization. It does not mark M3-04 as initiated and does not grant blanket runtime/Supabase mutation authority. Ready, merge, deploy, Security Go and commercialization remain separate Product Authority gates.
+
+
 ## 0.0000000000000000032 Product Authority — PR #202 merge + bounded post-merge SFJM reconciliation — 2026-09-08
 
 Product Authority separately authorized merge of PR #202 only on exact head:
