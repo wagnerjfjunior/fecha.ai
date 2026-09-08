@@ -1,6 +1,113 @@
 # FECH.AI — SFJM Current Product/Security Handoff
 
-## 0.0000000000000000025 CURRENT HANDOFF — STS-M3-01 ACCEPTED / STS-M3-02 NEXT ELIGIBLE — 2026-09-07
+## 0.0000000000000000030 CURRENT HANDOFF — STS-M3-02 ACCEPTED WITH RESIDUALS / STS-M3-03 NEXT ELIGIBLE — 2026-09-08
+
+~~~text
+repository = wagnerjfjunior/fecha.ai
+publication base main = c075a751c70ae24b5db8fcfc924c46fba6b10e3e
+environment = Pilot Production / SaaS multi-tenant / multiempresa
+
+STS-M2 = COMPLETE / ACCEPTED WITH RESIDUALS
+DATABASE STRATEGY = V2_STRANGLER / SAME_DATABASE_FIRST
+
+STS-M3 = ACTIVE
+STS-M3-01 = COMPLETE / ACCEPTED / FROZEN
+STS-M3-02 = COMPLETE / ACCEPTED WITH RESIDUALS
+STS-M3-03 = NEXT_ELIGIBLE / NOT_AUTHORIZED
+
+Security Go = NOT_GRANTED
+~~~
+
+Frozen M3-02 authority model:
+
+~~~text
+authenticated principal = auth.uid()
+
+tenant authority =
+canonical active corretores identity
++ active empresa
++ canonical tenant role
++ operation-specific permission
+
+team authority =
+same empresa
++ active team
++ times.gestor_id = canonical gestor
++ operation-specific permission
+
+individual business authority =
+same empresa
++ persisted ownership / assignment / responsibility relation
++ operation-specific permission
+
+platform root =
+active public.admins
++ role='admin_global'
++ explicit platform operation
+
+service-only trusted runtime authority =
+explicit SERVICE_ONLY_COMMAND
++ canonical trusted runtime
++ service owner
++ trusted server-side business / tenant authorization
++ bounded side-effect / secret boundary
++ runtime proof
++ revoke / kill path
+
+root tenant business access =
+NO IMPLICIT AUTHORITY
+
+exceptional root tenant support =
+explicit bounded audited support context only
+
+client-provided tenant / role / team / owner / permission =
+NOT AUTHORITY
+
+insufficient or inconsistent authority evidence =
+FAIL CLOSED / DENY
+~~~
+
+Preserve downstream:
+
+~~~text
+legacy is_root() dual authority
+legacy admin_global authority through corretores.role
+legacy is_admin_local / is_gestor compatibility authority
+admin_global → tenant authority inheritance in existing helpers
+admin_local → gestor inheritance in existing helpers
+root implicit tenant-business access in existing policies/RPCs
+legacy role/flag mixed authority surfaces
+support mode not implemented
+support-mode implementation owner = BG-06 / PARKED / NOT_AUTHORIZED
+service-only trusted-runtime runtime proof / compliance = NOT_PROVEN
+current implementation target compliance = NOT_PROVEN
+exhaustive privileged RPC compliance = NOT_PROVEN
+exhaustive direct-DML compliance = NOT_PROVEN
+hostile-client/cross-tenant assurance = NOT_PROVEN
+AppSec PASS = NOT_PERFORMED
+Security Go = NOT_GRANTED
+~~~
+
+Durable decision artifact:
+
+~~~text
+docs/security/evidence/2026-09-08-sts-m3-02-authority-contract-by-context.md
+~~~
+
+Single next material program gate:
+
+~~~text
+PRODUCT AUTHORITY MAY SEPARATELY AUTHORIZE
+STS-M3-03 — PRIVILEGED RPC ALLOWLIST
+
+STS-M3-03 =
+NEXT_ELIGIBLE / NOT_AUTHORIZED
+~~~
+
+No M3-03 execution, runtime/Supabase mutation, Ready, merge, deploy or Security Go is carried forward.
+
+
+## 0.0000000000000000025 HISTORICAL / SUPERSEDED HANDOFF — STS-M3-01 ACCEPTED / STS-M3-02 NEXT ELIGIBLE — 2026-09-07
 
 ~~~text
 repository = wagnerjfjunior/fecha.ai

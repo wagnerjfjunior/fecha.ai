@@ -1,6 +1,34 @@
 # FECH.AI — SFJM Program Task Graph
 
-## 0. CURRENT EXECUTION OVERLAY — STS-M3-01 ACCEPTED / STS-M3-02 NEXT — 2026-09-07
+## 0. CURRENT EXECUTION OVERLAY — STS-M3-02 ACCEPTED WITH RESIDUALS / STS-M3-03 NEXT — 2026-09-08
+
+~~~text
+publication base main =
+c075a751c70ae24b5db8fcfc924c46fba6b10e3e
+
+STS-M2 =
+COMPLETE_WITH_RESIDUALS / ACCEPTED
+
+STS-M3 =
+ACTIVE
+
+STS-M3-01 =
+COMPLETE / ACCEPTED / FROZEN
+
+STS-M3-02 =
+COMPLETE_WITH_RESIDUALS / ACCEPTED
+
+STS-M3-03 =
+ELIGIBLE_NOT_AUTHORIZED
+
+Security Go =
+NOT_GRANTED
+~~~
+
+This override is the current operational meaning for continuity consumers and SFJM Workspace. Structural WBS IDs, labels, order and hours remain unchanged. M3-03 is next eligible only; no execution authority is granted.
+
+
+## 0.1 HISTORICAL / SUPERSEDED EXECUTION OVERLAY — STS-M3-01 ACCEPTED / STS-M3-02 NEXT — 2026-09-07
 
 ~~~text
 publication base main =
@@ -22,7 +50,7 @@ Security Go =
 NOT_GRANTED
 ~~~
 
-This override is the current operational meaning for continuity consumers and SFJM Workspace. Structural WBS IDs, labels, order and hours remain unchanged.
+This historical overlay is retained for provenance only and does not define current operational meaning for continuity consumers or SFJM Workspace. Structural WBS IDs, labels, order and hours remain unchanged.
 
 
 ## 0.1 HISTORICAL / SUPERSEDED ARCHITECTURE OVERRIDE — STS-M2-06 / STS-M2 CLOSURE — 2026-09-07
@@ -50,11 +78,11 @@ Security Go =
 NOT_GRANTED
 ~~~
 
-This override is the current operational meaning for the task graph. The structural WBS IDs, hours, labels and order remain unchanged.
+This historical architecture overlay is retained for provenance only and does not define current operational meaning for the task graph. The structural WBS IDs, hours, labels and order remain unchanged.
 
 
 **Status:** `CURRENT / MATERIAL_EXECUTION_OVERLAY / WBS_DERIVED_STRUCTURE / WORKSPACE_CONSUMABLE`  
-**Updated:** 2026-09-07  
+**Updated:** 2026-09-08  
 **Repository:** `wagnerjfjunior/fecha.ai`
 
 ## 1. Purpose
@@ -148,7 +176,7 @@ COMPLETE_WITH_RESIDUALS / ACCEPTED
 
 The historical WBS label `Matriz de 43 tabelas` is preserved. The accepted/live canonical database universe for STS-M2-05 is 44 tables.
 
-This graph records program state only. Product Authority has accepted STS-M2-06 with `V2_STRANGLER / SAME_DATABASE_FIRST`. STS-M2 is complete with preserved residuals. STS-M3 is ACTIVE after accepted STS-M3-01 closure. STS-M3-02 is next eligible but remains not authorized. No implementation, deploy or Security Go follows from this acceptance.
+This graph records program state only. Product Authority has accepted STS-M2-06 with `V2_STRANGLER / SAME_DATABASE_FIRST`. STS-M2 is complete with preserved residuals. STS-M3 is ACTIVE. STS-M3-01 is accepted/frozen and STS-M3-02 is complete/accepted with residuals. STS-M3-03 is next eligible but remains not authorized. No implementation, deploy or Security Go follows from these acceptances.
 
 ## 3. Consumer state vocabulary
 
@@ -184,14 +212,15 @@ SUPERSEDED
 program = FECH.AI Security-to-Scale 2026
 completed milestone = STS-M2 — Database Simplification & Optimization Plan
 current milestone = STS-M3 — Backend Authority Contract Freeze
-current next task = STS-M3-02 — Authority contract por contexto
+current next task = STS-M3-03 — Allowlist de RPCs privilegiadas
 STS-M2-05 = COMPLETE_WITH_RESIDUALS / ACCEPTED
 STS-M2-06 = COMPLETE / ACCEPTED
 STS-M2 = COMPLETE_WITH_RESIDUALS / ACCEPTED
 STS-M3 = ACTIVE
 STS-M3-01 = COMPLETE / ACCEPTED
-STS-M3-02 = ELIGIBLE_NOT_AUTHORIZED
-STS-M3-02..STS-M6 execution = NOT_AUTHORIZED
+STS-M3-02 = COMPLETE_WITH_RESIDUALS / ACCEPTED
+STS-M3-03 = ELIGIBLE_NOT_AUTHORIZED
+STS-M3-03..STS-M6 execution = NOT_AUTHORIZED
 Security Go = NOT_GRANTED
 ~~~
 
@@ -206,8 +235,8 @@ Security Go = NOT_GRANTED
 | STS-M2 | STS-M2-05 | M2-05 | Database Contract Map | 20 | COMPLETE_WITH_RESIDUALS |
 | STS-M2 | STS-M2-06 | M2-06 | Decisão arquitetural do banco | 16 | COMPLETE |
 | STS-M3 | STS-M3-01 | M3-01 | Identity / membership / team / role model | 24 | COMPLETE |
-| STS-M3 | STS-M3-02 | M3-02 | Authority contract por contexto | 28 | ELIGIBLE_NOT_AUTHORIZED |
-| STS-M3 | STS-M3-03 | M3-03 | Allowlist de RPCs privilegiadas | 24 | PLANNED_NOT_AUTHORIZED |
+| STS-M3 | STS-M3-02 | M3-02 | Authority contract por contexto | 28 | COMPLETE_WITH_RESIDUALS |
+| STS-M3 | STS-M3-03 | M3-03 | Allowlist de RPCs privilegiadas | 24 | ELIGIBLE_NOT_AUTHORIZED |
 | STS-M3 | STS-M3-04 | M3-04 | Redução de DML sensível direto | 24 | PLANNED_NOT_AUTHORIZED |
 | STS-M3 | STS-M3-05 | M3-05 | Fechamento Auth / Admin flows | 24 | PLANNED_NOT_AUTHORIZED |
 | STS-M3 | STS-M3-06 | M3-06 | Staging / test plan de segurança | 28 | PLANNED_NOT_AUTHORIZED |
@@ -233,7 +262,7 @@ Milestone states:
 
 ~~~text
 STS-M2 = COMPLETE_WITH_RESIDUALS / ACCEPTED
-STS-M3 = ELIGIBLE_NOT_AUTHORIZED
+STS-M3 = ACTIVE
 STS-M4 = PLANNED_NOT_AUTHORIZED
 STS-M5 = PLANNED_NOT_AUTHORIZED
 STS-M6 = PLANNED_NOT_AUTHORIZED

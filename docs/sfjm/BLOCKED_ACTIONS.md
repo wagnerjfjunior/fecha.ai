@@ -1,6 +1,44 @@
 # FECH.AI — SFJM Blocked Actions
 
-## 0. CURRENT — STS-M3-01 ACCEPTED / STS-M3-02 EXECUTION BLOCKED PENDING AUTHORIZATION — 2026-09-07
+## 0. CURRENT — STS-M3-02 ACCEPTED / STS-M3-03 EXECUTION BLOCKED PENDING AUTHORIZATION — 2026-09-08
+
+~~~text
+STS-M3 = ACTIVE
+STS-M3-01 = COMPLETE / ACCEPTED / FROZEN
+STS-M3-02 = COMPLETE / ACCEPTED WITH RESIDUALS
+STS-M3-03 = NEXT_ELIGIBLE / NOT_AUTHORIZED
+DATABASE STRATEGY = V2_STRANGLER / SAME_DATABASE_FIRST
+Security Go = NOT_GRANTED
+~~~
+
+M3-02 analysis/publication is not a blocker. Its implementation/runtime/AppSec residuals are preserved for downstream bounded work.
+
+Still blocked unless separately authorized:
+
+~~~text
+STS-M3-03 substantive execution
+STS-M3-04 execution
+STS-M3-05 execution
+STS-M3-06 execution
+M3-02 target implementation/remediation
+support-mode implementation
+legacy root / role-flag retirement
+runtime/frontend/App.jsx mutation
+Supabase/Auth/data mutation
+SQL / DDL / DML mutation
+migration execution
+RLS / policy / grants / owner / search_path mutation
+function / trigger / RPC / Edge Function mutation
+active hostile-client / cross-tenant production testing
+deploy / production mutation
+Security Go
+commercialization authorization
+~~~
+
+Accepted M3-02 residuals are tracked as residual risks, not as blockers for the completed contract-freeze task.
+
+
+## 0.1 HISTORICAL / SUPERSEDED — STS-M3-01 ACCEPTED / STS-M3-02 EXECUTION BLOCKED PENDING AUTHORIZATION — 2026-09-07
 
 ~~~text
 STS-M3 = ACTIVE
@@ -251,11 +289,16 @@ D-01 through D-08 technical remediation
 047 global-body/RLS remediation
 119 current DEFINER -> target INVOKER implementation/runtime remediation
 127 retirement/deprecation implementation
-any next STS-M2-04 execution not separately selected/authorized
-M2-04F execution
-M2-05 execution
-M2-06 execution
+STS-M3-03 substantive execution
+M3-02 target implementation/remediation
+support-mode implementation
+legacy authority retirement
+runtime/frontend mutation
 Supabase/Auth/business-data mutation
+SQL / DDL / DML mutation
+migration execution
+RLS / policy / grant mutation
+RPC / function / Edge Function mutation
 future Ready transitions not separately authorized
 future merges not separately authorized
 deploy

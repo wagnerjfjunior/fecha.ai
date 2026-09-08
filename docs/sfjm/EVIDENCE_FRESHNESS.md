@@ -1,6 +1,63 @@
 # FECH.AI — SFJM Evidence Freshness
 
-## 0.0000000000000000028 CURRENT EVIDENCE — STS-M3-01 PRODUCT AUTHORITY ACCEPTANCE — 2026-09-07
+## 0.0000000000000000031 CURRENT EVIDENCE — STS-M3-02 PRODUCT AUTHORITY ACCEPTANCE / PR #202 CORRECTION RECONCILIATION — 2026-09-08
+
+~~~text
+publication base main =
+c075a751c70ae24b5db8fcfc924c46fba6b10e3e
+
+Product Authority =
+Wagner / FECH.AI
+
+STS-M3 =
+ACTIVE
+
+STS-M3-01 =
+COMPLETE / ACCEPTED / FROZEN
+
+STS-M3-02 =
+COMPLETE / ACCEPTED WITH RESIDUALS
+
+STS-M3-03 =
+NEXT_ELIGIBLE / NOT_AUTHORIZED
+
+Security Go =
+NOT_GRANTED
+~~~
+
+Current decision-grade authority anchor:
+
+~~~text
+docs/security/evidence/2026-09-08-sts-m3-02-authority-contract-by-context.md
+
+end-user/session principal = auth.uid()
+tenant identity = canonical active public.corretores
+tenant membership = corretores.empresa_id
+tenant role = corretores.role
+team = public.times / corretores.time_id / times.gestor_id
+platform root = active public.admins role='admin_global'
+platform root pure platform operation does not require corretores tenant identity
+service-only authority = explicit SERVICE_ONLY_COMMAND + canonical trusted runtime + service owner + trusted server-side business/tenant authorization + bounded side-effect/secret boundary + runtime proof + revoke/kill path
+service_role alone = NOT BUSINESS AUTHORIZATION
+exceptional root tenant support implementation owner = BG-06 / PARKED / NOT_AUTHORIZED
+~~~
+
+Current preserved gaps / invalidators:
+
+~~~text
+legacy root / tenant-role compatibility = NOT_REMEDIATED
+support mode = NOT_IMPLEMENTED
+service-only runtime proof / target compliance = NOT_PROVEN
+exhaustive privileged RPC compliance = NOT_PROVEN
+exhaustive direct-DML compliance = NOT_PROVEN
+hostile-client / cross-tenant assurance = NOT_PROVEN
+AppSec PASS = NOT_PERFORMED
+Security Go = NOT_GRANTED
+~~~
+
+Freshness is invalidated by material authority/schema/runtime drift, contradictory evidence, a Product Authority contract change, or any new head/content that changes these claims. Lifecycle state must still be resolved live from GitHub.
+
+## 0.0000000000000000028 HISTORICAL / SUPERSEDED EVIDENCE — STS-M3-01 PRODUCT AUTHORITY ACCEPTANCE — 2026-09-07
 
 ~~~text
 publication base main =

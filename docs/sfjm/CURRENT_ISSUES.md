@@ -1,9 +1,9 @@
 # FECH.AI — SFJM Current Issues / Risks / Gates
 
 **Status:** `CURRENT / TYPED CONTINUITY VIEW / DERIVED FROM CURRENT_STATE + MATERIAL EVIDENCE`  
-**Updated:** 2026-09-07  
+**Updated:** 2026-09-08  
 **Repository:** `wagnerjfjunior/fecha.ai`  
-**Validation anchor:** `661ef0014576d473088add0052d751e0a47d306e` (publication base; candidate PR head must be resolved live)
+**Validation anchor:** `c075a751c70ae24b5db8fcfc924c46fba6b10e3e` (STS-M3-02 publication base; candidate PR head must be resolved live)
 
 ## 1. Authority boundary
 
@@ -57,16 +57,16 @@ SUPERSEDED
 
 ## 3. Current counts
 
-At publication base anchor `661ef0014576d473088add0052d751e0a47d306e`:
+At STS-M3-02 publication base anchor `c075a751c70ae24b5db8fcfc924c46fba6b10e3e`:
 
 ~~~text
-CURRENT_TASK = STS-M3-02
+CURRENT_TASK = STS-M3-03
 CURRENT_TASK_STATE = ELIGIBLE_NOT_AUTHORIZED
 CURRENT_AUTHORIZED_EXECUTION = NONE
 
 BLOCKING = 0
 REQUIRED_CURRENT = 0
-RESIDUAL = 6
+RESIDUAL = 11
 DEFERRED_EVIDENCE = 3
 SECURITY_GATE = 3
 FUTURE_GATE = 1
@@ -92,21 +92,27 @@ These counts are semantic classes, not a count of every non-PASS program fact.
 | STS-RESIDUAL-M3-01-ROOT-DUAL | RESIDUAL | STS-M3-01 | PROVEN LIVE / NOT_REMEDIATED | NO | platform-root canonicalization | `docs/security/evidence/2026-09-07-sts-m3-01-identity-membership-team-role-model.md` | migrate callers to canonical public.admins root authority, prove zero legacy dependency, then separately authorize retirement | RESIDUAL_RISKS |
 | STS-RESIDUAL-M3-01-TEAM-LIFECYCLE | RESIDUAL | STS-M3-01 / Issue #135 | PROVEN LIVE / NOT_REMEDIATED | NO | team lifecycle authority | `docs/security/evidence/2026-09-07-sts-m3-01-identity-membership-team-role-model.md` | separately governed lifecycle remediation with same-tenant/role/state invariants and rollback | RESIDUAL_RISKS |
 | STS-RESIDUAL-M3-01-CREATE-USER | RESIDUAL | STS-M3-01 / STS-M3-05 | PROVEN LIVE / NOT_REMEDIATED | NO | Auth/Admin authority alignment | `docs/security/evidence/2026-09-07-sts-m3-01-identity-membership-team-role-model.md` | close under STS-M3-05 with server-derived canonical authority and independent validation | RESIDUAL_RISKS |
-| STS-GATE-M3-M6 | FUTURE_GATE | STS-M3..STS-M6 | STS-M3 ACTIVE / STS-M3-02 NEXT_ELIGIBLE / NOT_AUTHORIZED | NO | future milestones | `docs/sfjm/PROGRAM_TASK_GRAPH.md` | Product Authority may separately authorize bounded STS-M3-02 READ_ONLY-first work | ROADMAP_GATES |
+| STS-RESIDUAL-M3-02-LEGACY-AUTHORITY | RESIDUAL | STS-M3-02 / STS-M3-03 / STS-M3-05 | OPEN / TARGET_ACCEPTED_NOT_CONVERGED | NO | legacy authority convergence | `docs/security/evidence/2026-09-08-sts-m3-02-authority-contract-by-context.md` | map/migrate privileged callers and Auth/Admin compatibility surfaces under separately authorized downstream work | RESIDUAL_RISKS |
+| STS-RESIDUAL-M3-02-SUPPORT | RESIDUAL | STS-M3-02 / BG-06 / STS-M3-06 | NOT_IMPLEMENTED / BG-06_PARKED_NOT_AUTHORIZED | NO | exceptional root tenant support | `docs/security/evidence/2026-09-08-sts-m3-02-authority-contract-by-context.md` | separately authorize BG-06 before support-mode design/implementation, then independently validate under the security test plan | RESIDUAL_RISKS |
+| STS-RESIDUAL-M3-02-SERVICE-ONLY | RESIDUAL | STS-M3-02 / STS-M3-03 / STS-M3-06 | TARGET_CONTEXT_CLARIFIED / RUNTIME_PROOF_PRESERVED | NO | trusted service-only authority mapping and assurance | `docs/security/evidence/2026-09-08-sts-m3-02-authority-contract-by-context.md` | map every SERVICE_ONLY_COMMAND under M3-03 and prove trusted runtime, service owner, business/tenant binding, bounded side-effect/secret scope, runtime proof and revoke/kill path before runtime-compliance claims | RESIDUAL_RISKS |
+| STS-RESIDUAL-M3-03-RPC-COMPLIANCE | RESIDUAL | STS-M3-03 | NOT_PROVEN | NO | privileged RPC authority compliance | `docs/security/evidence/2026-09-08-sts-m3-02-authority-contract-by-context.md` | complete privileged RPC allowlist mapping against frozen authority contract | RESIDUAL_RISKS |
+| STS-RESIDUAL-M3-04-DML-COMPLIANCE | RESIDUAL | STS-M3-04 | NOT_PROVEN | NO | sensitive direct-DML authority compliance | `docs/security/evidence/2026-09-08-sts-m3-02-authority-contract-by-context.md` | reconcile direct DML, RLS, grants and RPC-only boundaries | RESIDUAL_RISKS |
+| STS-RESIDUAL-M3-06-AUTHORITY-ASSURANCE | RESIDUAL | STS-M3-06 | NOT_PROVEN / APPSEC_NOT_PERFORMED | NO | hostile-client / cross-tenant / AppSec authority assurance | `docs/security/evidence/2026-09-08-sts-m3-02-authority-contract-by-context.md` | execute separately authorized isolated negative assurance plan and AppSec review | RESIDUAL_RISKS |
+| STS-GATE-M3-M6 | FUTURE_GATE | STS-M3..STS-M6 | STS-M3 ACTIVE / STS-M3-02 ACCEPTED_WITH_RESIDUALS / STS-M3-03 NEXT_ELIGIBLE / NOT_AUTHORIZED | NO | future milestones | `docs/sfjm/PROGRAM_TASK_GRAPH.md` | Product Authority may separately authorize bounded STS-M3-03 work | ROADMAP_GATES |
 
 ## 5. Current task authorization boundary — not a blocker count
 
-STS-M3-01 is now:
+STS-M3-02 is now:
 
 ~~~text
-COMPLETE / PRODUCT_AUTHORITY_ACCEPTED
-IDENTITY / MEMBERSHIP / ROLE / TEAM / PLATFORM ROOT CONTRACTS = FROZEN
+COMPLETE / ACCEPTED WITH RESIDUALS
+AUTHORITY CONTRACT BY CONTEXT = FROZEN
 ~~~
 
 The next program task is:
 
 ~~~text
-STS-M3-02 = ELIGIBLE_NOT_AUTHORIZED
+STS-M3-03 = NEXT_ELIGIBLE / NOT_AUTHORIZED
 ~~~
 
 The following remain prohibited without additional authority:
@@ -119,7 +125,8 @@ SQL / DDL / DML mutation
 migration execution
 RLS / policy / grant / owner / search_path mutation
 function / trigger / RPC / Edge Function mutation
-STS-M3-02 execution
+STS-M3-03 substantive execution
+M3-02 target implementation/remediation
 deploy / production mutation
 Security Go
 commercialization authorization
@@ -136,7 +143,8 @@ Do not render the following as current problems:
 | `STS-M2-05 execution = NOT_AUTHORIZED` | SUPERSEDED — STS-M2-05 is COMPLETE / ACCEPTED WITH RESIDUALS |
 | `STS-M2-06 execution = NOT_AUTHORIZED` | SUPERSEDED — STS-M2-06 was authorized, executed READ_ONLY, and is now COMPLETE / ACCEPTED |
 | `STS-M2-06 = AUTHORIZED_READ_ONLY / READY_TO_EXECUTE` | SUPERSEDED — Product Authority accepted V2_STRANGLER / SAME_DATABASE_FIRST and closed STS-M2-06 |
-| `STS-M3-01 = ELIGIBLE_NOT_AUTHORIZED` | SUPERSEDED — STS-M3-01 is COMPLETE / ACCEPTED and STS-M3-02 is next eligible |
+| `STS-M3-01 = ELIGIBLE_NOT_AUTHORIZED` | SUPERSEDED — STS-M3-01 is COMPLETE / ACCEPTED |
+| `STS-M3-02 = ELIGIBLE_NOT_AUTHORIZED` | SUPERSEDED — STS-M3-02 is COMPLETE / ACCEPTED WITH RESIDUALS and STS-M3-03 is next eligible / not authorized |
 | `next STS-M2-04 action = NOT_SELECTED` | SUPERSEDED — STS-M2-04 is COMPLETE / ACCEPTED WITH RESIDUALS |
 | `STS-M2-04F execution` | NOT_CURRENT / NONCANONICAL — no canonical STS-M2-04F task exists |
 
