@@ -23,7 +23,7 @@ with expected_tables as (
     ('pme_call_scripts', array['SELECT','INSERT','UPDATE']::text[]),
     ('pme_cadences', array['SELECT','INSERT','UPDATE']::text[]),
     ('pme_cadence_steps', array['SELECT','INSERT','UPDATE']::text[]),
-    ('pme_lead_message_state', array['SELECT','INSERT','UPDATE']::text[]),
+    ('pme_lead_message_state', array['SELECT']::text[]),
     ('pme_message_usage', array['SELECT']::text[])
   ) v(table_name, expected_authenticated_privileges)
 ),
