@@ -1,6 +1,79 @@
 # FECH.AI — SFJM Current Material State
 
-## 0.0000000000000000023 CURRENT — STS-M2-06 ACCEPTED / STS-M2 COMPLETE WITH RESIDUALS — 2026-09-07
+## 0.0000000000000000024 CURRENT — STS-M3-01 ACCEPTED / STS-M3 ACTIVE — 2026-09-07
+
+Product Authority explicitly accepted the STS-M3-01 identity/membership/team/role model and authorized this bounded documentation/SFJM publication.
+
+~~~text
+publication base main =
+661ef0014576d473088add0052d751e0a47d306e
+
+environment =
+Pilot Production / SaaS multi-tenant / multiempresa
+
+STS-M2 =
+COMPLETE / ACCEPTED WITH RESIDUALS
+
+DATABASE STRATEGY =
+V2_STRANGLER / SAME_DATABASE_FIRST
+
+STS-M3 =
+ACTIVE
+
+STS-M3-01 =
+COMPLETE / ACCEPTED
+
+STS-M3-02 =
+NEXT_ELIGIBLE / NOT_AUTHORIZED
+
+Security Go =
+NOT_GRANTED
+~~~
+
+Frozen authority contract:
+
+~~~text
+authenticated principal = auth.uid()
+tenant application identity = public.corretores
+membership = corretores.empresa_id
+tenant role source = corretores.role
+team entity = public.times
+team membership = corretores.time_id
+team manager responsibility = times.gestor_id
+platform root source = active public.admins role=admin_global
+~~~
+
+Legacy authority remains explicitly transitional:
+
+~~~text
+corretores.role='admin_global' = LEGACY ROOT AUTHORITY / NOT REMOVED
+is_admin_local = LEGACY / DERIVED COMPATIBILITY
+is_gestor = LEGACY / DERIVED COMPATIBILITY
+~~~
+
+Preserved M3-01 residuals:
+
+~~~text
+ROOT DUAL AUTHORITY SOURCE = PROVEN LIVE
+ONE ACTIVE TEAM WITH ADMIN_LOCAL-AS-GESTOR LEGACY RELATION = PROVEN LIVE
+CRIA-USUARIO AUTHORITY DERIVATION DIFFERS FROM M3-01 TARGET = PROVEN
+current implementation target-compliant = NOT_PROVEN
+lifecycle remediation = NOT_PERFORMED
+hostile-client / cross-tenant assurance = NOT_PROVEN
+AppSec PASS = NOT_PERFORMED
+Security Go = NOT_GRANTED
+~~~
+
+Durable decision artifact:
+
+~~~text
+docs/security/evidence/2026-09-07-sts-m3-01-identity-membership-team-role-model.md
+~~~
+
+Current next material program gate is separate Product Authority authorization for bounded STS-M3-02 READ_ONLY-first work. No M3-02 execution authority follows from M3-01 acceptance.
+
+
+## 0.0000000000000000023 HISTORICAL / SUPERSEDED — STS-M2-06 ACCEPTED / STS-M2 COMPLETE WITH RESIDUALS — 2026-09-07
 
 Product Authority explicitly accepted the STS-M2-06 architecture decision produced from the bounded READ_ONLY analysis.
 

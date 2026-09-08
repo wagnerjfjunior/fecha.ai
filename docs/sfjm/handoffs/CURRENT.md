@@ -1,6 +1,67 @@
 # FECH.AI — SFJM Current Product/Security Handoff
 
-## 0.0000000000000000024 CURRENT HANDOFF — STS-M2-06 ACCEPTED / STS-M2 CLOSED WITH RESIDUALS — 2026-09-07
+## 0.0000000000000000025 CURRENT HANDOFF — STS-M3-01 ACCEPTED / STS-M3-02 NEXT ELIGIBLE — 2026-09-07
+
+~~~text
+repository = wagnerjfjunior/fecha.ai
+publication base main = 661ef0014576d473088add0052d751e0a47d306e
+environment = Pilot Production / SaaS multi-tenant / multiempresa
+
+STS-M2 = COMPLETE / ACCEPTED WITH RESIDUALS
+DATABASE STRATEGY = V2_STRANGLER / SAME_DATABASE_FIRST
+
+STS-M3 = ACTIVE
+STS-M3-01 = COMPLETE / ACCEPTED
+STS-M3-02 = NEXT_ELIGIBLE / NOT_AUTHORIZED
+
+Security Go = NOT_GRANTED
+~~~
+
+Frozen M3-01 authority model:
+
+~~~text
+auth principal = auth.uid()
+tenant application identity = public.corretores
+membership = corretores.empresa_id
+tenant role = corretores.role
+team entity = public.times
+team membership = corretores.time_id
+team manager = times.gestor_id
+platform root = active public.admins role=admin_global
+~~~
+
+Preserve without remediation under this handoff:
+
+~~~text
+corretores.role='admin_global' legacy root authority
+is_admin_local / is_gestor compatibility flags
+root dual authority residual
+one active admin_local-as-gestor team relation
+criar-usuario target divergence
+implementation target compliance = NOT_PROVEN
+hostile-client/cross-tenant assurance = NOT_PROVEN
+AppSec PASS = NOT_PERFORMED
+Security Go = NOT_GRANTED
+~~~
+
+Durable decision artifact:
+
+~~~text
+docs/security/evidence/2026-09-07-sts-m3-01-identity-membership-team-role-model.md
+~~~
+
+Single next material gate:
+
+~~~text
+PRODUCT AUTHORITY MAY SEPARATELY AUTHORIZE
+STS-M3-02 — AUTHORITY CONTRACT BY CONTEXT
+READ_ONLY FIRST
+~~~
+
+No M3-02 execution, runtime/Supabase mutation, Ready, merge, deploy or Security Go is carried forward.
+
+
+## 0.0000000000000000024 HISTORICAL / SUPERSEDED HANDOFF — STS-M2-06 ACCEPTED / STS-M2 CLOSED WITH RESIDUALS — 2026-09-07
 
 ~~~text
 repository = wagnerjfjunior/fecha.ai

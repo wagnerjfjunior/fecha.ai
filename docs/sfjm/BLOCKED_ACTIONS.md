@@ -1,6 +1,39 @@
 # FECH.AI — SFJM Blocked Actions
 
-## 0. CURRENT — STS-M2-06 ACCEPTED / STS-M3 EXECUTION STILL BLOCKED — 2026-09-07
+## 0. CURRENT — STS-M3-01 ACCEPTED / STS-M3-02 EXECUTION BLOCKED PENDING AUTHORIZATION — 2026-09-07
+
+~~~text
+STS-M3 = ACTIVE
+STS-M3-01 = COMPLETE / ACCEPTED
+STS-M3-02 = NEXT_ELIGIBLE / NOT_AUTHORIZED
+DATABASE STRATEGY = V2_STRANGLER / SAME_DATABASE_FIRST
+Security Go = NOT_GRANTED
+~~~
+
+M3-01 analysis/publication is not a blocker. Its implementation residuals are preserved for downstream bounded work.
+
+Still blocked unless separately authorized:
+
+~~~text
+STS-M3-02 substantive execution
+M3-01 target implementation/remediation
+legacy root/role-flag retirement
+runtime/frontend/App.jsx mutation
+Supabase/Auth/data mutation
+SQL / DDL / DML mutation
+migration execution
+RLS / policy / grants / owner / search_path mutation
+function / trigger / RPC / Edge Function mutation
+active hostile-client/cross-tenant production testing
+deploy / production mutation
+Security Go
+commercialization authorization
+~~~
+
+The proven M3-01 residuals are tracked as residual risks, not current task blockers.
+
+
+## 0.1 HISTORICAL / SUPERSEDED — STS-M2-06 ACCEPTED / STS-M3 EXECUTION STILL BLOCKED — 2026-09-07
 
 ~~~text
 STS-M2-06 = COMPLETE / ACCEPTED

@@ -1,6 +1,77 @@
 # FECH.AI — SFJM Evidence Freshness
 
-## 0.0000000000000000027 CURRENT EVIDENCE — STS-M2-06 ACCEPTANCE / M2 CLOSURE PUBLICATION — 2026-09-07
+## 0.0000000000000000028 CURRENT EVIDENCE — STS-M3-01 PRODUCT AUTHORITY ACCEPTANCE — 2026-09-07
+
+~~~text
+publication base main =
+661ef0014576d473088add0052d751e0a47d306e
+
+Product Authority =
+Wagner / FECH.AI
+
+STS-M3-01 =
+COMPLETE / ACCEPTED
+
+STS-M3 =
+ACTIVE
+
+STS-M3-02 =
+NEXT_ELIGIBLE / NOT_AUTHORIZED
+
+Security Go =
+NOT_GRANTED
+~~~
+
+Accepted decision-grade STS-M3-01 evidence from the bounded READ_ONLY analysis:
+
+~~~text
+canonical authenticated principal = auth.uid()
+canonical tenant application identity = public.corretores
+corretores.user_id = UNIQUE
+corretores.empresa_id = NOT NULL
+canonical membership = corretores.empresa_id
+canonical tenant role target = corretores.role
+canonical team entity = public.times
+team membership = corretores.time_id
+team manager responsibility = times.gestor_id
+canonical platform root target = active public.admins role=admin_global
+~~~
+
+Accepted live residual evidence:
+
+~~~text
+ROOT DUAL AUTHORITY SOURCE = PROVEN LIVE
+active public.admins rows = 1
+active corretores.role='admin_global' rows = 2
+identity represented in both sources = 1
+root represented only by public.admins = 0
+root represented only by corretores.role='admin_global' = 1
+
+ONE ACTIVE TEAM WITH ADMIN_LOCAL-AS-GESTOR LEGACY RELATION = PROVEN LIVE
+
+CRIA-USUARIO AUTHORITY DERIVATION DIFFERS FROM M3-01 TARGET = PROVEN
+GitHub blob = 866257371dcc85d22ae54cae3593b3e49a132d8e
+live Edge = criar-usuario version 19
+GitHub/live content length = 19012 / 19012
+exact string equality = TRUE
+~~~
+
+Preserved gaps:
+
+~~~text
+current implementation target-compliant = NOT_PROVEN
+implementation remediation = NOT_PERFORMED
+lifecycle remediation = NOT_PERFORMED
+exhaustive direct-DML/application callsite proof = NOT_ESTABLISHED
+hostile-client / cross-tenant assurance = NOT_PROVEN
+AppSec PASS = NOT_PERFORMED
+Security Go = NOT_GRANTED
+~~~
+
+This publication does not re-run or mutate the live database/runtime. It records the Product Authority-accepted M3-01 evidence and contract. Freshness is invalidated by material authority/schema/runtime drift, contradictory evidence or a Product Authority contract change.
+
+
+## 0.0000000000000000027 HISTORICAL / SUPERSEDED EVIDENCE — STS-M2-06 ACCEPTANCE / M2 CLOSURE PUBLICATION — 2026-09-07
 
 ~~~text
 STS-M2-06 analysis base main =
