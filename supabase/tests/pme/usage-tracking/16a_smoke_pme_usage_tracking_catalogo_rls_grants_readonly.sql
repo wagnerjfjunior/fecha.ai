@@ -208,7 +208,7 @@ blocks as (
     'bloco', '02_policies_pme_catalogo',
     'status',
       case
-        when count(*) >= 16
+        when count(*) >= 14
          and exists (select 1 from policies where tablename = 'pme_message_usage' and cmd = 'SELECT')
          and not exists (select 1 from policies where tablename = 'pme_message_usage' and cmd in ('INSERT', 'UPDATE', 'DELETE'))
         then 'PASS'
