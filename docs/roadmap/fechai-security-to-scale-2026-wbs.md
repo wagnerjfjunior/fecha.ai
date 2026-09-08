@@ -126,20 +126,22 @@ Hours are planning estimates for sequencing/capacity visibility, not timesheet e
 
 ## 4. M0 — Program Control / Truth Reconciliation — 36h
 
+**Qualified milestone:** `STS-M0`  
 **Issue #141 window:** 28 Aug–4 Sep  
 **State at canonicalization:** COMPLETE
 
-| ID | Task | Hours |
-|---|---|---:|
-| M0-01 | Inventário de PRs e continuidade | 8h |
-| M0-02 | Pacotes de especialistas e dependências | 8h |
-| M0-03 | SFJM / Workspace baseline | 10h |
-| M0-04 | Roadmap / governança única | 10h |
+| ID | Qualified ID | Task | Hours |
+|---|---|---|---:|
+| M0-01 | STS-M0-01 | Inventário de PRs e continuidade | 8h |
+| M0-02 | STS-M0-02 | Pacotes de especialistas e dependências | 8h |
+| M0-03 | STS-M0-03 | SFJM / Workspace baseline | 10h |
+| M0-04 | STS-M0-04 | Roadmap / governança única | 10h |
 
 Issue #141 exit remains authoritative for M0.
 
 ## 5. M1 — Security Truth Baseline / F1-02 — 168h
 
+**Qualified milestone:** `STS-M1`  
 **Issue #141 owners:** Backend/Data + AppSec + Documentation  
 **Issue #141 window:** 4–18 Sep  
 **Current state:** COMPLETE WITH DEFERRED SECURITY ASSURANCE
@@ -165,6 +167,7 @@ SECURITY_GO = NOT_GRANTED
 
 ## 6. M2 — Database Simplification & Optimization Plan — 116h
 
+**Qualified milestone:** `STS-M2`  
 **Issue #141 owners:** Backend/Data + Architecture  
 **Issue #141 window:** 18 Sep–9 Oct  
 **Current state:** ELIGIBLE / NOT STARTED
