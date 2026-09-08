@@ -1,5 +1,122 @@
 # FECH.AI — SFJM Authorizations
 
+## 0.0000000000000000030 Product Authority — STS-M3-02 acceptance + bounded publication — 2026-09-08
+
+Product Authority explicitly accepts:
+
+~~~text
+STS-M3-02 = COMPLETE / ACCEPTED WITH RESIDUALS
+
+AUTHORITY CONTRACT BY CONTEXT = FROZEN
+
+AUTHENTICATED PRINCIPAL = auth.uid()
+
+TENANT AUTHORITY =
+canonical active corretores identity
++ active empresa
++ canonical tenant role
++ operation-specific permission
+
+TEAM AUTHORITY =
+same empresa
++ active team
++ times.gestor_id = canonical gestor
++ operation-specific permission
+
+INDIVIDUAL BUSINESS AUTHORITY =
+same empresa
++ persisted ownership / assignment / responsibility relation
++ operation-specific permission
+
+PLATFORM ROOT AUTHORITY =
+active public.admins
++ role='admin_global'
++ explicit platform operation
+
+ROOT TENANT BUSINESS ACCESS =
+NO IMPLICIT AUTHORITY
+
+EXCEPTIONAL ROOT TENANT SUPPORT =
+explicit bounded audited support context only
+
+INSUFFICIENT OR INCONSISTENT AUTHORITY =
+FAIL CLOSED / DENY
+~~~
+
+Publication base:
+
+~~~text
+c075a751c70ae24b5db8fcfc924c46fba6b10e3e
+~~~
+
+Product Authority authorizes only:
+
+~~~text
+one bounded documentation branch
+one coherent documentation commit
+one Draft PR
+durable STS-M3-02 decision artifact
+material SFJM reconciliation
+~~~
+
+Allowed publication scope is limited to:
+
+~~~text
+docs/security/evidence/2026-09-08-sts-m3-02-authority-contract-by-context.md
+docs/sfjm/CURRENT_STATE.md
+docs/sfjm/CURRENT_ISSUES.md
+docs/sfjm/NEXT_SAFE_ACTION.md
+docs/sfjm/BLOCKED_ACTIONS.md
+docs/sfjm/AUTHORIZATIONS.md
+docs/sfjm/PROGRAM_TASK_GRAPH.md
+docs/sfjm/handoffs/CURRENT.md
+~~~
+
+Explicitly not authorized:
+
+~~~text
+runtime/frontend/App.jsx mutation
+Supabase/Auth/data mutation
+SQL / DDL / DML
+migration execution
+RLS / policy mutation
+GRANT / REVOKE
+owner / search_path mutation
+RPC/function body mutation
+trigger mutation
+Edge Function mutation
+support-mode implementation
+legacy authority retirement
+role/flag migration
+Vercel mutation
+GitHub Actions mutation
+production mutation
+hostile-client testing
+cross-tenant active testing
+STS-M3-03 substantive execution
+STS-M3-04 execution
+STS-M3-05 execution
+STS-M3-06 execution
+Ready
+merge
+deploy
+Security Go
+commercialization authorization
+SES mutation
+sfjm-workspace mutation
+~~~
+
+Next lifecycle gate after this candidate publication:
+
+~~~text
+FRESH EXACT-HEAD
+DOCUMENTATION / SFJM REVIEW
+OF THE STS-M3-02 PUBLICATION PR
+~~~
+
+Ready and merge remain separate Product Authority gates.
+
+
 ## 0.0000000000000000029 Product Authority — STS-M3-01 acceptance + bounded publication — 2026-09-07
 
 Product Authority explicitly accepts:
