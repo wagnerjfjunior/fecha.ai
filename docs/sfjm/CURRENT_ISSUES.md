@@ -3,7 +3,7 @@
 **Status:** `CURRENT / TYPED CONTINUITY VIEW / DERIVED FROM CURRENT_STATE + MATERIAL EVIDENCE`  
 **Updated:** 2026-09-08  
 **Repository:** `wagnerjfjunior/fecha.ai`  
-**Validation anchor:** `c075a751c70ae24b5db8fcfc924c46fba6b10e3e` (STS-M3-02 publication base; candidate PR head must be resolved live)
+**Validation anchor:** `665e3920b17849f45d8b3fcea015b1492219f115` (canonical main after PR #202 merge; future refs must be resolved live)
 
 ## 1. Authority boundary
 
@@ -57,7 +57,7 @@ SUPERSEDED
 
 ## 3. Current counts
 
-At STS-M3-02 publication base anchor `c075a751c70ae24b5db8fcfc924c46fba6b10e3e`:
+At canonical post-merge main `665e3920b17849f45d8b3fcea015b1492219f115` after PR #202 = MERGED / CLOSED:
 
 ~~~text
 CURRENT_TASK = STS-M3-03

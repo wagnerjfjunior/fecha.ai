@@ -1,6 +1,50 @@
 # FECH.AI — SFJM Current Product/Security Handoff
 
-## 0.0000000000000000030 CURRENT HANDOFF — STS-M3-02 ACCEPTED WITH RESIDUALS / STS-M3-03 NEXT ELIGIBLE — 2026-09-08
+## 0.0000000000000000032 CURRENT POST-MERGE HANDOFF — PR #202 MERGED / STS-M3-03 NEXT ELIGIBLE — 2026-09-08
+
+~~~text
+repository = wagnerjfjunior/fecha.ai
+canonical main = 665e3920b17849f45d8b3fcea015b1492219f115
+environment = Pilot Production / SaaS multi-tenant / multiempresa
+
+PR #202 = MERGED / CLOSED
+final approved head = c71a3e1a5f7c3d829b8379b085ba14f20b2f53cc
+merge commit = 665e3920b17849f45d8b3fcea015b1492219f115
+
+STS-M2 = COMPLETE / ACCEPTED WITH RESIDUALS
+DATABASE STRATEGY = V2_STRANGLER / SAME_DATABASE_FIRST
+
+STS-M3 = ACTIVE
+STS-M3-01 = COMPLETE / ACCEPTED / FROZEN
+STS-M3-02 = COMPLETE / ACCEPTED WITH RESIDUALS
+STS-M3-03 = NEXT_ELIGIBLE / NOT_AUTHORIZED
+
+CURRENT_AUTHORIZED_EXECUTION = NONE
+Security Go = NOT_GRANTED
+~~~
+
+Canonical M3-02 decision artifact:
+
+~~~text
+docs/security/evidence/2026-09-08-sts-m3-02-authority-contract-by-context.md
+blob = 6cf20f5298e183c34d9b560740b3d19c621fb7bb
+~~~
+
+The merge changes publication lifecycle/provenance only. Preserve the frozen M3-02 authority contract, all accepted residuals, BG-06 = PARKED / NOT_AUTHORIZED, and the distinction between target acceptance, implementation, runtime proof, AppSec PASS and Security Go.
+
+Single next material program gate:
+
+~~~text
+PRODUCT AUTHORITY MAY SEPARATELY AUTHORIZE
+STS-M3-03 — PRIVILEGED RPC ALLOWLIST
+
+STS-M3-03 =
+NEXT_ELIGIBLE / NOT_AUTHORIZED
+~~~
+
+No M3-03 execution, runtime/Supabase mutation, BG-06 implementation, deploy, production mutation or Security Go is carried forward.
+
+## 0.0000000000000000030 HISTORICAL / SUPERSEDED PRE-MERGE HANDOFF — STS-M3-02 ACCEPTED WITH RESIDUALS / STS-M3-03 NEXT ELIGIBLE — 2026-09-08
 
 ~~~text
 repository = wagnerjfjunior/fecha.ai

@@ -1,6 +1,39 @@
 # FECH.AI — SFJM Program Task Graph
 
-## 0. CURRENT EXECUTION OVERLAY — STS-M3-02 ACCEPTED WITH RESIDUALS / STS-M3-03 NEXT — 2026-09-08
+## 0. CURRENT POST-MERGE EXECUTION OVERLAY — PR #202 MERGED / STS-M3-03 NEXT — 2026-09-08
+
+~~~text
+canonical main =
+665e3920b17849f45d8b3fcea015b1492219f115
+
+PR #202 =
+MERGED / CLOSED
+
+merge commit =
+665e3920b17849f45d8b3fcea015b1492219f115
+
+STS-M2 =
+COMPLETE_WITH_RESIDUALS / ACCEPTED
+
+STS-M3 =
+ACTIVE
+
+STS-M3-01 =
+COMPLETE / ACCEPTED / FROZEN
+
+STS-M3-02 =
+COMPLETE_WITH_RESIDUALS / ACCEPTED
+
+STS-M3-03 =
+ELIGIBLE_NOT_AUTHORIZED
+
+Security Go =
+NOT_GRANTED
+~~~
+
+This override is the current operational meaning for continuity consumers and SFJM Workspace. Structural WBS IDs, labels, order and hours remain unchanged. PR #202 lifecycle is closed/merged; M3-03 is next eligible only and no execution authority is granted.
+
+## 0.1 HISTORICAL / SUPERSEDED PRE-MERGE EXECUTION OVERLAY — STS-M3-02 ACCEPTED WITH RESIDUALS / STS-M3-03 NEXT — 2026-09-08
 
 ~~~text
 publication base main =
@@ -25,10 +58,10 @@ Security Go =
 NOT_GRANTED
 ~~~
 
-This override is the current operational meaning for continuity consumers and SFJM Workspace. Structural WBS IDs, labels, order and hours remain unchanged. M3-03 is next eligible only; no execution authority is granted.
+This historical pre-merge overlay is retained for provenance only and does not define current operational meaning for continuity consumers or SFJM Workspace. Structural WBS IDs, labels, order and hours remain unchanged.
 
 
-## 0.1 HISTORICAL / SUPERSEDED EXECUTION OVERLAY — STS-M3-01 ACCEPTED / STS-M3-02 NEXT — 2026-09-07
+## 0.2 HISTORICAL / SUPERSEDED EXECUTION OVERLAY — STS-M3-01 ACCEPTED / STS-M3-02 NEXT — 2026-09-07
 
 ~~~text
 publication base main =
@@ -53,7 +86,7 @@ NOT_GRANTED
 This historical overlay is retained for provenance only and does not define current operational meaning for continuity consumers or SFJM Workspace. Structural WBS IDs, labels, order and hours remain unchanged.
 
 
-## 0.1 HISTORICAL / SUPERSEDED ARCHITECTURE OVERRIDE — STS-M2-06 / STS-M2 CLOSURE — 2026-09-07
+## 0.3 HISTORICAL / SUPERSEDED ARCHITECTURE OVERRIDE — STS-M2-06 / STS-M2 CLOSURE — 2026-09-07
 
 ~~~text
 publication base main =

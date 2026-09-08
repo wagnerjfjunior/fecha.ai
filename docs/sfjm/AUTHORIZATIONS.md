@@ -1,5 +1,73 @@
 # FECH.AI — SFJM Authorizations
 
+## 0.0000000000000000032 Product Authority — PR #202 merge + bounded post-merge SFJM reconciliation — 2026-09-08
+
+Product Authority separately authorized merge of PR #202 only on exact head:
+
+~~~text
+PR = #202
+authorized head = c71a3e1a5f7c3d829b8379b085ba14f20b2f53cc
+~~~
+
+GitHub live execution result:
+
+~~~text
+PR #202 = MERGED / CLOSED
+merged head = c71a3e1a5f7c3d829b8379b085ba14f20b2f53cc
+merge commit = 665e3920b17849f45d8b3fcea015b1492219f115
+canonical main after merge = 665e3920b17849f45d8b3fcea015b1492219f115
+~~~
+
+Product Authority then explicitly authorized this bounded post-merge SFJM reconciliation on that exact main to:
+
+~~~text
+record PR #202 as MERGED / CLOSED
+update canonical STS-M3-02 publication provenance to 665e3920b17849f45d8b3fcea015b1492219f115
+preserve STS-M3-03 = NEXT_ELIGIBLE / NOT_AUTHORIZED
+preserve all M3-02 residuals and Security Go = NOT_GRANTED
+~~~
+
+Authorized mutation class:
+
+~~~text
+documentation / SFJM only
+one principal risk = stale post-merge lifecycle/provenance state
+normal branch + one coherent documentation commit + Draft PR publication
+~~~
+
+Authorized reconciliation files:
+
+~~~text
+docs/sfjm/CURRENT_STATE.md
+docs/sfjm/EVIDENCE_FRESHNESS.md
+docs/sfjm/NEXT_SAFE_ACTION.md
+docs/sfjm/PROGRAM_TASK_GRAPH.md
+docs/sfjm/handoffs/CURRENT.md
+docs/sfjm/CURRENT_ISSUES.md
+docs/sfjm/AUTHORIZATIONS.md
+~~~
+
+This authorization does NOT authorize:
+
+~~~text
+STS-M3-03 substantive execution
+M3-02 target implementation/remediation
+BG-06 implementation
+runtime/frontend mutation
+Supabase/Auth/data mutation
+SQL / DDL / DML
+migration execution
+RLS / policy / grant / owner / search_path mutation
+RPC/function/trigger/Edge Function mutation
+hostile-client/cross-tenant active testing
+Ready or merge of this reconciliation PR
+deploy / production mutation
+Security Go
+commercialization authorization
+~~~
+
+Rollback for this documentation-only reconciliation is a simple revert of the single reconciliation commit. Ready and merge remain separate Product Authority gates.
+
 ## 0.0000000000000000031 Product Authority — PR #202 bounded correction/adjudication after new review evidence — 2026-09-08
 
 Product Authority explicitly authorized bounded correction/adjudication of PR #202 after new Codex review evidence invalidated the prior pre-merge gate.

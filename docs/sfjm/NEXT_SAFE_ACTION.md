@@ -1,6 +1,50 @@
 # FECH.AI — SFJM Next Safe Action
 
-## 0.0000000000000000030 CURRENT MATERIAL GATE — STS-M3-02 ACCEPTED / STS-M3-03 REQUIRES SEPARATE PRODUCT AUTHORITY AUTHORIZATION — 2026-09-08
+## 0.0000000000000000032 CURRENT MATERIAL GATE — PR #202 MERGED / STS-M3-03 REQUIRES SEPARATE PRODUCT AUTHORITY AUTHORIZATION — 2026-09-08
+
+~~~text
+canonical main =
+665e3920b17849f45d8b3fcea015b1492219f115
+
+PR #202 =
+MERGED / CLOSED
+
+STS-M3 = ACTIVE
+STS-M3-01 = COMPLETE / ACCEPTED / FROZEN
+STS-M3-02 = COMPLETE / ACCEPTED WITH RESIDUALS
+STS-M3-03 = NEXT_ELIGIBLE / NOT_AUTHORIZED
+DATABASE STRATEGY = V2_STRANGLER / SAME_DATABASE_FIRST
+Security Go = NOT_GRANTED
+~~~
+
+Current program execution authority:
+
+~~~text
+CURRENT_AUTHORIZED_EXECUTION = NONE
+STS-M3-03 substantive execution = NOT_AUTHORIZED
+M3-02 target implementation/remediation = NOT_AUTHORIZED
+BG-06 support-mode implementation = NOT_AUTHORIZED
+runtime/frontend implementation = NOT_AUTHORIZED
+Supabase/Auth/data mutation = NOT_AUTHORIZED
+deploy = NOT_AUTHORIZED
+Security Go = NOT_GRANTED
+~~~
+
+Single next material program gate:
+
+~~~text
+PRODUCT AUTHORITY MAY SEPARATELY AUTHORIZE:
+
+STS-M3-03 —
+PRIVILEGED RPC ALLOWLIST
+
+using canonical main 665e3920b17849f45d8b3fcea015b1492219f115
+and the frozen M3-01 + M3-02 contracts
+~~~
+
+Before STS-M3-03, resolve GitHub main live again and reconstruct the privileged routine inventory against the canonical authority contract. Do not reopen STS-M2, STS-M3-01 or STS-M3-02 absent a material invalidator.
+
+## 0.0000000000000000030 HISTORICAL / SUPERSEDED PRE-MERGE MATERIAL GATE — STS-M3-02 ACCEPTED / STS-M3-03 REQUIRES AUTHORIZATION — 2026-09-08
 
 ~~~text
 STS-M3 = ACTIVE

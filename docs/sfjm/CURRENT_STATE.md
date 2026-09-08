@@ -1,6 +1,85 @@
 # FECH.AI — SFJM Current Material State
 
-## 0.0000000000000000030 CURRENT — STS-M3-02 ACCEPTED WITH RESIDUALS / STS-M3 ACTIVE — 2026-09-08
+## 0.0000000000000000032 CURRENT POST-MERGE — PR #202 MERGED / STS-M3-03 NEXT ELIGIBLE — 2026-09-08
+
+Product Authority authorized this bounded post-merge SFJM reconciliation after PR #202 merged on the exact approved head.
+
+~~~text
+canonical main =
+665e3920b17849f45d8b3fcea015b1492219f115
+
+PR #202 =
+MERGED / CLOSED
+
+merged head =
+c71a3e1a5f7c3d829b8379b085ba14f20b2f53cc
+
+merge commit =
+665e3920b17849f45d8b3fcea015b1492219f115
+
+environment =
+Pilot Production / SaaS multi-tenant / multiempresa
+
+STS-M2 =
+COMPLETE / ACCEPTED WITH RESIDUALS
+
+DATABASE STRATEGY =
+V2_STRANGLER / SAME_DATABASE_FIRST
+
+STS-M3 =
+ACTIVE
+
+STS-M3-01 =
+COMPLETE / ACCEPTED / FROZEN
+
+STS-M3-02 =
+COMPLETE / ACCEPTED WITH RESIDUALS
+
+STS-M3-03 =
+NEXT_ELIGIBLE / NOT_AUTHORIZED
+
+CURRENT_AUTHORIZED_EXECUTION =
+NONE
+
+Security Go =
+NOT_GRANTED
+~~~
+
+The merge changes lifecycle/provenance only. It does not change the frozen STS-M3-02 authority contract:
+
+~~~text
+end-user/session principal = auth.uid()
+tenant authority = canonical active corretores identity + active empresa + canonical tenant role + operation-specific permission
+team authority = same empresa + active team + times.gestor_id = canonical gestor + operation-specific permission
+individual business authority = same empresa + persisted ownership/assignment/responsibility + operation-specific permission
+platform root = active public.admins + role='admin_global' + explicit platform operation
+service-only authority = explicit SERVICE_ONLY_COMMAND + canonical trusted runtime + service owner + trusted server-side business/tenant authorization + bounded side-effect/secret boundary + runtime proof + revoke/kill path
+root tenant business access = NO IMPLICIT AUTHORITY
+exceptional root tenant support = explicit bounded audited support context only
+support-mode implementation owner = BG-06 / PARKED / NOT_AUTHORIZED
+insufficient or inconsistent authority evidence = FAIL CLOSED / DENY
+~~~
+
+Durable decision artifact now canonical on main:
+
+~~~text
+docs/security/evidence/2026-09-08-sts-m3-02-authority-contract-by-context.md
+blob = 6cf20f5298e183c34d9b560740b3d19c621fb7bb
+~~~
+
+Single next material program gate:
+
+~~~text
+PRODUCT AUTHORITY MAY SEPARATELY AUTHORIZE
+STS-M3-03 — PRIVILEGED RPC ALLOWLIST
+
+STS-M3-03 =
+NEXT_ELIGIBLE / NOT_AUTHORIZED
+~~~
+
+No STS-M3-03 execution, runtime/frontend mutation, Supabase/Auth/data mutation, BG-06 implementation, deploy, production mutation or Security Go is authorized by this reconciliation.
+
+## 0.0000000000000000030 HISTORICAL / SUPERSEDED PRE-MERGE PUBLICATION STATE — STS-M3-02 ACCEPTED WITH RESIDUALS — 2026-09-08
 
 Product Authority explicitly accepted the STS-M3-02 authority contract by context and authorized this bounded documentation/SFJM publication.
 
