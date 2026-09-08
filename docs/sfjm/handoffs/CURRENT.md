@@ -45,6 +45,15 @@ active public.admins
 + role='admin_global'
 + explicit platform operation
 
+service-only trusted runtime authority =
+explicit SERVICE_ONLY_COMMAND
++ canonical trusted runtime
++ service owner
++ trusted server-side business / tenant authorization
++ bounded side-effect / secret boundary
++ runtime proof
++ revoke / kill path
+
 root tenant business access =
 NO IMPLICIT AUTHORITY
 
@@ -69,6 +78,8 @@ admin_local → gestor inheritance in existing helpers
 root implicit tenant-business access in existing policies/RPCs
 legacy role/flag mixed authority surfaces
 support mode not implemented
+support-mode implementation owner = BG-06 / PARKED / NOT_AUTHORIZED
+service-only trusted-runtime runtime proof / compliance = NOT_PROVEN
 current implementation target compliance = NOT_PROVEN
 exhaustive privileged RPC compliance = NOT_PROVEN
 exhaustive direct-DML compliance = NOT_PROVEN

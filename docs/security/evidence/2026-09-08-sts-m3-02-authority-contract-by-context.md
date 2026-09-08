@@ -176,22 +176,67 @@ active public.admins
 
 Root authority is a platform control-plane authority, not an implicit tenant business role.
 
-## 5. Canonical authorization decision model
+### 4.6 Trusted service-only authority
 
-Target server-side decision chain:
+The accepted M2 routine authority taxonomy includes `SERVICE_ONLY_COMMAND` as a distinct non-end-user authority context.
 
 ~~~text
-derive authenticated principal server-side
-→ resolve canonical active application identity
-→ validate active empresa when tenant context is required
-→ resolve canonical tenant role server-side
-→ resolve target resource tenant server-side
-→ validate same-tenant relation
-→ validate active team and manager relation when required
-→ validate persisted ownership / assignment / responsibility when required
-→ validate operation-specific permission
-→ validate explicit support context when exceptional root tenant access is required
-→ ALLOW
+SERVICE-ONLY AUTHORITY =
+explicit SERVICE_ONLY_COMMAND classification
++ canonical trusted runtime
++ service owner
++ business / tenant authorization derived from trusted server-side context
++ bounded side-effect scope
++ bounded credential / secret boundary
++ runtime proof
++ revoke / kill path
+~~~
+
+`service_role` capability by itself is never business authorization. A service-only operation is allowed only when the trusted-runtime contract proves the required actor/target/business binding and the bounded service controls for that operation.
+
+`AUTHENTICATED PRINCIPAL = auth.uid()` remains the canonical principal for end-user/session authority. It is not a requirement that an explicitly classified service-only trusted-runtime operation fabricate an end-user session.
+
+## 5. Canonical authorization decision model
+
+Target server-side decision chain branches by operation context:
+
+~~~text
+classify the operation context server-side
+
+IF explicit platform control-plane operation:
+  derive auth.uid() server-side
+  → resolve active public.admins root
+  → require role='admin_global'
+  → validate explicit platform operation
+  → ALLOW
+
+ELSE IF explicit SERVICE_ONLY_COMMAND:
+  resolve canonical trusted runtime
+  → resolve service owner
+  → derive required business / tenant authorization from trusted server-side context
+  → validate bounded side-effect scope
+  → validate credential / secret boundary
+  → require runtime proof and revoke / kill path
+  → ALLOW
+
+ELSE IF exceptional root tenant-support operation:
+  derive auth.uid() server-side
+  → resolve active public.admins root
+  → validate explicit bounded audited support context
+  → validate target empresa and permitted support operation
+  → ALLOW
+
+ELSE:
+  derive authenticated principal server-side
+  → resolve canonical active application identity
+  → validate active empresa when tenant context is required
+  → resolve canonical tenant role server-side
+  → resolve target resource tenant server-side
+  → validate same-tenant relation
+  → validate active team and manager relation when required
+  → validate persisted ownership / assignment / responsibility when required
+  → validate operation-specific permission
+  → ALLOW
 
 any insufficient, missing, ambiguous, inconsistent, foreign or expired authority evidence
 → DENY
@@ -212,7 +257,8 @@ FAIL CLOSED / DENY
 | Tenant organization control | Tenant-scoped organizational/admin operations | admin_local | actor and target resource must resolve to same active empresa | not automatically gestor; team relation required only for an operation that truly depends on a team | authoritative tenant/resource relation | active corretores identity + active empresa | no implicit root inheritance | required if platform root exceptionally enters tenant context | same tenant + canonical admin_local + operation permission | foreign tenant, inactive state, forged tenant/role, or missing permission | legacy admin_local compatibility and admin_local→gestor inheritance remain | M3-03 / M3-05 |
 | Team control | Team-scoped operational/admin operations | gestor | actor, team and resource must resolve to same empresa | active team + times.gestor_id = canonical gestor | authoritative team/resource relation | active gestor + active empresa + active team | no implicit root or admin_local inheritance | required for exceptional platform support | same tenant + managed active team + operation permission | foreign/cross-company team, inactive team, wrong manager, or missing permission | legacy gestor compatibility and inherited authority remain | M3-03 / M3-05 |
 | Individual business plane | Tenant business operations on assigned/owned/responsible records | corretor | actor and resource must resolve to same active empresa | same team only where the resource contract requires it | persisted ownership / assignment / responsibility relation | active corretores identity + active empresa | root does not inherit this plane | explicit support required for exceptional root access | same tenant + authoritative relation + operation permission | foreign tenant/owner, missing relation, forged ownership, or insufficient permission | exhaustive direct-DML compliance not proven | M3-04 / M3-06 |
-| Exceptional platform support | Explicitly approved tenant support action | canonical platform root in bounded support context | explicit target empresa | explicit target team only when needed by support scope | explicit support scope and target relation | root active + support context active/unexpired | only through support context | mandatory | canonical root + explicit bounded audited support context + permitted support operation | absent/invalid/expired support context or action outside scope | support mode not implemented | M3-05 / M3-06 |
+| Trusted service runtime | Operations explicitly classified as SERVICE_ONLY_COMMAND | canonical trusted runtime + service owner | authoritative business/tenant context when the operation targets tenant/business data | only when required by the service operation contract | authoritative actor/target/business relation derived from trusted server-side context | trusted runtime/credential/service owner must be valid and bounded | none by implication; service_role is not root authority | none unless the operation is separately a root-support path | service-only classification + trusted runtime + service owner + business/tenant authorization + bounded side-effect/secret boundary + runtime proof + revoke/kill path | service_role alone, unproven runtime/owner/business binding, excessive scope, missing runtime proof, or missing revoke path | accepted M2 taxonomy includes two SERVICE_ONLY_COMMAND routines; runtime assurance remains residual | M3-03 / M3-06 |
+| Exceptional platform support | Explicitly approved tenant support action | canonical platform root in bounded support context | explicit target empresa | explicit target team only when needed by support scope | explicit support scope and target relation | root active + support context active/unexpired | only through support context | mandatory | canonical root + explicit bounded audited support context + permitted support operation | absent/invalid/expired support context or action outside scope | support mode not implemented | BG-06 / M3-06 |
 
 The exact privileged RPC/function allowlist is intentionally not enumerated here; that is STS-M3-03 scope. The exact sensitive direct-DML migration/reduction inventory is intentionally not executed here; that is STS-M3-04 scope.
 
@@ -346,8 +392,9 @@ No support-mode schema, table, RPC, UI, token or implementation mechanism is sel
 
 | Condition | Target decision | Rationale |
 |---|---|---|
-| no session | DENY | no authenticated principal |
-| unknown auth.uid() | DENY | no canonical actor resolution |
+| no end-user session for an end-user/session authority operation | DENY | no authenticated principal |
+| no end-user session for an explicitly classified SERVICE_ONLY_COMMAND | continue only through the trusted service-only decision path; otherwise DENY | service-only authority is non-end-user and must prove the trusted-runtime contract |
+| unknown auth.uid() for a user/root authority operation | DENY | no canonical actor resolution |
 | missing corretores profile for tenant operation | DENY | tenant application identity absent |
 | duplicate / ambiguous active identity | DENY | authority cannot be resolved uniquely |
 | inactive profile | DENY | inactive actor has no tenant authority |
@@ -394,6 +441,8 @@ root implicit tenant-business access in existing policies/RPCs
 legacy role/flag mixed authority surfaces
 
 support mode not implemented
+
+service-only trusted-runtime runtime proof / compliance = NOT_PROVEN
 
 current implementation target-compliant = NOT_PROVEN
 
@@ -454,12 +503,16 @@ Sensitive Direct-DML Reduction
 STS-M3-05 =
 Auth / Admin Flows
 → lifecycle / provisioning / deprovisioning / role-team transitions /
-  criar-usuario / legacy compatibility convergence /
-  support-mode implementation when separately designed and authorized
+  criar-usuario / legacy compatibility convergence
+
+BG-06 =
+Explicit audited Root support mode by tenant
+→ separate pre-Security-Go backlog owner for support-mode design / implementation
+→ PARKED / NOT_AUTHORIZED unless Product Authority separately authorizes BG-06
 
 STS-M3-06 =
 Staging / Security Test Plan
-→ negative tenant/role/team/ownership/inactive/root/support/
+→ negative tenant/role/team/ownership/inactive/root/support/service-only/
   hostile-client validation
 ~~~
 

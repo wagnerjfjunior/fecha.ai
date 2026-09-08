@@ -1,5 +1,66 @@
 # FECH.AI — SFJM Authorizations
 
+## 0.0000000000000000031 Product Authority — PR #202 bounded correction/adjudication after new review evidence — 2026-09-08
+
+Product Authority explicitly authorized bounded correction/adjudication of PR #202 after new Codex review evidence invalidated the prior pre-merge gate.
+
+~~~text
+AUTHORIZED CORRECTION BASE HEAD =
+3ef7f76eb0364ed5e06cd5388e5dcf13108b694e
+
+F-202-03 = BLOCKING / SERVICE-ONLY AUTHORITY CONTEXT
+F-202-04 = REQUIRED IN THIS PR / CONTEXT-BRANCHED ROOT DECISION CHAIN
+F-202-05 = REQUIRED IN THIS PR / EVIDENCE_FRESHNESS RECONCILIATION
+F-202-06 = REQUIRED IN THIS PR / BG-06 SUPPORT-MODE OWNERSHIP
+~~~
+
+This correction reconciles STS-M3-02 with already accepted M2 authority policy; it does not create a new service capability.
+
+~~~text
+AUTHENTICATED PRINCIPAL =
+auth.uid()
+for end-user/session authority
+
+SERVICE-ONLY AUTHORITY =
+explicit SERVICE_ONLY_COMMAND
++ canonical trusted runtime
++ service owner
++ trusted server-side business / tenant authorization
++ bounded side-effect scope
++ bounded credential / secret boundary
++ runtime proof
++ revoke / kill path
+
+service_role capability alone =
+NOT BUSINESS AUTHORIZATION
+
+PLATFORM ROOT DECISION =
+branch directly to active public.admins + admin_global + explicit platform operation
+without requiring a corretores tenant identity for a pure platform operation
+
+ROOT SUPPORT-MODE IMPLEMENTATION OWNER =
+BG-06 / PARKED / NOT_AUTHORIZED
+
+STS-M3-05 =
+Auth / Admin lifecycle and compatibility convergence only
+not implicit BG-06 authorization
+~~~
+
+Authorized documentation correction scope is limited to:
+
+~~~text
+docs/security/evidence/2026-09-08-sts-m3-02-authority-contract-by-context.md
+docs/sfjm/EVIDENCE_FRESHNESS.md
+docs/sfjm/CURRENT_STATE.md
+docs/sfjm/CURRENT_ISSUES.md
+docs/sfjm/AUTHORIZATIONS.md
+docs/sfjm/handoffs/CURRENT.md
+~~~
+
+No runtime, frontend, Supabase, Auth, SQL, migration, RLS, policy, grant, RPC, function, Edge Function, Vercel, GitHub Actions, deploy, production, hostile-client test, STS-M3-03 execution, BG-06 implementation or Security Go is authorized.
+
+The existing Ready lifecycle state may remain mechanically true after a new commit, but any prior exact-head review, Ready gate, pre-merge gate and merge authorization are invalidated by the new head. A fresh exact-head review and fresh pre-merge authorization chain are required before merge.
+
 ## 0.0000000000000000030 Product Authority — STS-M3-02 acceptance + bounded publication — 2026-09-08
 
 Product Authority explicitly accepts:
