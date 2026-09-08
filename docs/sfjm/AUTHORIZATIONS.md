@@ -1,5 +1,53 @@
 # FECH.AI — SFJM Authorizations
 
+## 0.0000000000000000034 Product Authority — STS-M3-04-01 formal acceptance + bounded documentation/SFJM publication — 2026-09-08
+
+Product Authority explicitly decides:
+
+~~~text
+STS-M3-04-01 =
+COMPLETE / ACCEPTED WITH RESIDUALS
+~~~
+
+Decision evidence base:
+
+~~~text
+decision evidence base main = 1402395e708f69b0935ab2ba45489f717943b8b2
+PR #205 = MERGED / CLOSED
+approved head = 07f5dad3f805e319a0303e664752a2da7d0e3dfe
+merge commit = 1402395e708f69b0935ab2ba45489f717943b8b2
+Supabase project = uobxxgzshrmbtjfdolxd
+migration = 20260908233000_sts_m3_04_01_pme_message_usage_rpc_only.sql
+migration blob = 9e9e4aec6273624695638071f2d717f99d7a3586
+apply result = SUCCESS
+post-apply catalog validation = PASS
+post-apply smoke 16A = PASS
+~~~
+
+Accepted residuals include:
+
+~~~text
+independent hostile-client / AppSec effectiveness retest = NOT_PERFORMED
+individual lead ownership/assignment hardening in pme_registrar_message_usage = OUTSIDE THIS SLICE
+Supabase ledger version = 20260908184747
+repository migration filename prefix = 20260908233000
+ledger-version difference = ACCEPTABLE PROVENANCE RESIDUAL / existing apply-migration convention
+Security Go = NOT_GRANTED
+~~~
+
+Authorized mutation class for the acceptance publication and later bounded correction:
+
+~~~text
+documentation / SFJM only
+one principal risk = stale material state after Product Authority acceptance
+initial acceptance publication commit = ab0434c42a6907fd776c326fb789f8fe1468f0f2
+bounded provenance correction commit = 9837215c238a6ce69711de189e390c012ccd2a7e
+special Product Authority lifecycle grant = correct remaining PR #206 documentation/metadata issues, perform fresh exact-head validation, Ready, fresh pre-merge validation and merge if gates pass
+rollback of the eventual publication on main = revert the PR #206 merge commit
+~~~
+
+This authority does not extend to a next M3-04 implementation slice, additional Supabase mutation, deploy, runtime/frontend change, rollback execution, hostile testing or Security Go.
+
 ## 0.0000000000000000033 Product Authority — STS-M3-03 acceptance + bounded publication + STS-M3-04 authorization — 2026-09-08
 
 Product Authority explicitly decides:

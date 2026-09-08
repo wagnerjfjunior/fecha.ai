@@ -1,5 +1,34 @@
 # FECH.AI — SFJM Blocked Actions
 
+## 0.0000000000000000034 CURRENT — STS-M3-04-01 ACCEPTED / FURTHER M3-04 MUTATION BLOCKED PENDING AUTHORIZATION — 2026-09-08
+
+~~~text
+STS-M3 = ACTIVE
+STS-M3-04 = ACTIVE
+STS-M3-04-01 = COMPLETE / ACCEPTED WITH RESIDUALS
+Security Go = NOT_GRANTED
+~~~
+
+Still blocked unless separately authorized by Product Authority:
+
+~~~text
+next STS-M3-04 implementation slice
+additional Supabase migration application
+additional SQL / DDL / DML
+RLS / policy / grant changes outside accepted M3-04-01
+RPC body / trigger / Edge Function mutation
+frontend/runtime mutation
+rollback of M3-04-01
+hostile-client / cross-tenant active production testing
+STS-M3-05 execution
+STS-M3-06 execution
+deploy / production release action
+Security Go
+commercialization authorization
+~~~
+
+M3-04-01 accepted residuals remain tracked; acceptance does not convert them into PASS or authorize their remediation.
+
 ## 0. CURRENT — STS-M3-03 ACCEPTED / STS-M3-04 AUTHORIZED BUT NOT INITIATED — 2026-09-08
 
 ~~~text

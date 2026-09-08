@@ -1,5 +1,37 @@
 # FECH.AI — SFJM Evidence Freshness
 
+## 0.0000000000000000034 CURRENT EVIDENCE — STS-M3-04-01 APPLIED / VALIDATED / ACCEPTED — 2026-09-08
+
+~~~text
+source repository = wagnerjfjunior/fecha.ai
+acceptance evidence base main = 1402395e708f69b0935ab2ba45489f717943b8b2
+PR #205 = MERGED / CLOSED
+final approved head = 07f5dad3f805e319a0303e664752a2da7d0e3dfe
+merge commit = 1402395e708f69b0935ab2ba45489f717943b8b2
+migration blob = 9e9e4aec6273624695638071f2d717f99d7a3586
+Supabase project = uobxxgzshrmbtjfdolxd
+apply result = SUCCESS
+authenticated direct INSERT on pme_message_usage = FALSE
+direct write policies on pme_message_usage = 0
+authenticated SELECT = PRESERVED
+authenticated RPC EXECUTE = PRESERVED
+anon/public RPC EXECUTE = FALSE
+post-apply smoke 16A blocks 00-06 = PASS
+STS-M3-04-01 = COMPLETE / ACCEPTED WITH RESIDUALS
+Security Go = NOT_GRANTED
+~~~
+
+Supabase migration history records the applied operation as:
+
+~~~text
+version = 20260908184747
+name = sts_m3_04_01_pme_message_usage_rpc_only
+~~~
+
+The version differs from the canonical repository filename prefix `20260908233000`; this same apply-migration timestamp behavior exists on prior FECH.AI applied migrations and is retained as a provenance residual, not rewritten.
+
+Freshness invalidators: material grant/policy/RPC/schema drift; rollback; conflicting migration-history evidence; new hostile-client/AppSec evidence; head/main provenance change; or a later authorized slice that changes the same boundary.
+
 ## 0.0000000000000000033 CURRENT EVIDENCE — STS-M3-03 ACCEPTED / M3-04 AUTHORIZED NOT INITIATED — 2026-09-08
 
 ~~~text
