@@ -441,6 +441,426 @@ WBS → STS → PR → TEST → EVIDENCE → SECURITY DOMAIN
 
 ---
 
+## 9.1 SFJM protocol, FECH.AI continuity, Workspace and Dashboard
+
+Security assurance requires continuity, but continuity and security authority are different concerns.
+
+The canonical relationship is:
+
+```text
+SFJM PROTOCOL / RESEARCH
+wagnerjfjunior/StopJuniorMode
+        |
+        | principles / continuity model
+        v
+FECH.AI PROJECT-LOCAL SFJM
+docs/sfjm/*
+        |
+        | material state / task graph / evidence freshness /
+        | authorizations / next safe action
+        v
+SFJM WORKSPACE
+wagnerjfjunior/sfjm-workspace
+        |
+        | derived visualization / continuity representation
+        v
+DASHBOARD
+WBS + task state + residuals + evidence/test/PR relations
+```
+
+These layers must not be collapsed into one authority.
+
+### 9.1.1 SFJM protocol authority
+
+Canonical protocol/research repository:
+
+```text
+wagnerjfjunior/StopJuniorMode
+```
+
+Its role is to define and study cognitive/operational continuity, context regression, research protocols, protocol governance and protocol evidence.
+
+FECH.AI may apply SFJM principles, but a FECH.AI task, PR, dashboard choice or Workspace UI decision does not silently modify the SFJM protocol.
+
+```text
+FECH.AI PROJECT DECISION
+!= SFJM PROTOCOL CHANGE
+```
+
+A protocol change requires separate scope, evidence and authority in the protocol repository.
+
+### 9.1.2 FECH.AI project-local SFJM
+
+Canonical FECH.AI continuity entrypoint:
+
+`docs/sfjm/INDEX.md`
+
+FECH.AI SFJM preserves durable operational meaning across conversations, specialists, audits and execution cycles.
+
+Its authority map includes:
+
+- `CURRENT_STATE.md` — principal durable material-state view;
+- `PROGRAM_TASK_GRAPH.md` — WBS-derived operational decomposition;
+- `CURRENT_ISSUES.md` — blocker/residual/deferred/gate classification;
+- `AUTHORIZATIONS.md` — durable authority/provenance ledger;
+- `EVIDENCE_FRESHNESS.md` — evidence validity/invalidation ledger;
+- `NEXT_SAFE_ACTION.md` — semantic next action;
+- `BLOCKED_ACTIONS.md` — material blocked actions;
+- `handoffs/CURRENT.md` — current continuity pointer.
+
+But:
+
+```text
+SFJM
+!= PRODUCT FEATURE
+!= SECURITY BOUNDARY
+!= BUSINESS AUTHORITY
+!= GITHUB LIFECYCLE AUTHORITY
+!= SUPABASE LIVE TRUTH
+!= RUNTIME PROOF
+!= SECURITY GO AUTHORITY
+```
+
+The operative state is always reconstructed as:
+
+```text
+LIVE_RESOLVED_STATE
++
+MATERIAL_RECORDED_STATE
+```
+
+GitHub controls GitHub lifecycle truth; Supabase/runtime/Vercel control their own live evidence; Product Authority controls material authorization and Security Go.
+
+### 9.1.3 WBS relationship
+
+The FECH.AI WBS is the structural planning/decomposition authority:
+
+`docs/roadmap/fechai-security-to-scale-2026-wbs.md`
+
+SFJM does not replace the WBS.
+
+```text
+WBS
+= what work exists structurally,
+  hierarchy,
+  planning scope,
+  estimated effort,
+  program sequencing
+
+PROGRAM_TASK_GRAPH
+= operational projection of WBS tasks,
+  accepted execution-discovered children,
+  current material state,
+  continuity semantics
+```
+
+Therefore:
+
+```text
+WBS STRUCTURE
++
+SFJM OPERATIONAL STATE
+=
+DASHBOARD TASK MODEL
+```
+
+The task graph may add materially adopted execution children such as `STS-M3-04-03..10`, but it must preserve the WBS parent and cannot invent work silently.
+
+### 9.1.4 SFJM Workspace relationship
+
+Canonical Workspace product repository:
+
+```text
+wagnerjfjunior/sfjm-workspace
+```
+
+The Workspace is canonical for **its own product/UI state**.
+
+It is not canonical for FECH.AI product/security/runtime state.
+
+The Workspace boundary requires:
+
+```text
+EXTERNAL PROJECT
+REMAINS AUTHORITATIVE
+FOR ITS OWN
+PRODUCT / LIFECYCLE / RUNTIME / SECURITY / AUTHORIZATION TRUTH
+```
+
+Therefore the FECH.AI panel in SFJM Workspace is a derived representation.
+
+At any time:
+
+```text
+WORKSPACE SNAPSHOT
+!= FECH.AI CURRENT TRUTH
+```
+
+unless the snapshot has been freshly reconciled to FECH.AI live sources.
+
+No dashboard rendering can independently:
+
+- authorize a task;
+- mark a PR merged;
+- claim Supabase applied;
+- claim runtime PASS;
+- grant Security Go;
+- change FECH.AI WBS;
+- mutate FECH.AI.
+
+### 9.1.5 Dashboard consumption contract
+
+The dashboard should reconstruct FECH.AI in this order:
+
+```text
+1. resolve FECH.AI main live
+2. read WBS structural source
+3. read PROGRAM_TASK_GRAPH
+4. read CURRENT_STATE
+5. read CURRENT_ISSUES when blocker/risk classification matters
+6. read NEXT_SAFE_ACTION
+7. read AUTHORIZATIONS and EVIDENCE_FRESHNESS as required
+8. join PR relationships
+9. join test/evidence relationships
+10. overlay live lifecycle/runtime evidence where required
+```
+
+The machine joins are:
+
+```text
+WBS Qualified ID
+=
+PROGRAM_TASK_GRAPH Qualified ID
+=
+STS_WBS_PR_RELATIONSHIP_CATALOG.task_relations[].qualified_id
+=
+pull_request_relations[].primary_qualified_id / related_qualified_ids
+=
+SECURITY_ASSURANCE_CATALOG.entries[].parent_qualified_id
+```
+
+The dashboard is therefore a **projection**, not a source of truth.
+
+If its represented FECH.AI ref differs from live FECH.AI:
+
+```text
+DASHBOARD STATE = STALE
+```
+
+It must not silently present the snapshot as current.
+
+### 9.1.6 Anti-loop rule
+
+SFJM continuity must not generate recursive documentation work merely because lifecycle moved.
+
+```text
+PR MERGED
++ no material product/security meaning changed
+=
+NO NEW SFJM RECONCILIATION PR
+```
+
+Only material changes to program state, risk, authorization, evidence validity, next action or handoff meaning justify a continuity update.
+
+---
+
+## 9.2 SES specialists and Security Go
+
+Canonical SES repository:
+
+```text
+wagnerjfjunior/Specialist-Engineering-System
+```
+
+SES supplies reusable specialist identity, archetype contracts and certification/routing evidence.
+
+FECH.AI remains authoritative for:
+
+- product truth;
+- WBS;
+- task state;
+- business rules;
+- security requirements;
+- environments;
+- authorization;
+- risk acceptance;
+- Ready/merge/deploy decisions;
+- Security Go.
+
+```text
+SES SPECIALIST
+= qualified analytical/execution role
+
+SES SPECIALIST
+!= PRODUCT AUTHORITY
+!= FECH.AI SOURCE OF TRUTH
+!= AUTOMATIC TASK AUTHORIZATION
+!= SECURITY GO AUTHORITY
+```
+
+### 9.2.1 Specialist resolution path
+
+For a FECH.AI role adopted through SES:
+
+```text
+WBS / STS TASK
+        ↓
+required owner domain
+        ↓
+docs/skills/SES_SPECIALIST_ROUTING.md
+        ↓
+ROLE
+        ↓
+ARCHETYPE_ID
+        ↓
+SES projects/fechai/PROJECT_ADAPTER.md
+        ↓
+SES archetypes/REGISTRY.md
+        ↓
+CANONICAL_NAME
+        ↓
+current SES certification ledger
+        ↓
+FECH.AI project-local rules
+        ↓
+AUTHORIZED TASK EXECUTION / REVIEW
+```
+
+The specialist must be re-resolved live for material work.
+
+Historical labels such as `GPT0`, `GPT1`, `GPT1.5`, `GPT2`, `GPT3` and `GPT7` are continuity/project-local references only when the role has an adopted SES archetype.
+
+### 9.2.2 Current FECH.AI SES mappings material to the security program
+
+| FECH.AI role | SES archetype | Canonical specialist |
+|---|---|---|
+| `documentation_audit` | `documentation-auditor` | SES — Documentation Auditor |
+| `architecture` | `software-systems-architect` | SES — Software Systems Architect |
+| `ux_ui` | `ux-ui-app-specialist` | SES — UX/UI APP Specialist |
+| `backend_data` | `backend-data-platform-specialist` | SES — Backend & Data Platform Specialist |
+| `lead_operations` | `lead-operations-crm-specialist` | SES — Lead Operations & CRM Specialist |
+| `application_security` | `application-security-assurance-specialist` | SES — Application Security Assurance Specialist |
+
+The full current adoption matrix remains authoritative in:
+
+`docs/skills/SES_SPECIALIST_ROUTING.md`
+
+### 9.2.3 Roles not currently mapped to SES
+
+A WBS owner label does not automatically imply an SES archetype exists or has been adopted.
+
+For example, when the WBS names domains such as:
+
+- Platform / CI-CD;
+- SRE / Observability;
+- a domain-specific MesaCliente owner;
+
+the dashboard/assistant must resolve current FECH.AI routing.
+
+If no adopted SES mapping exists:
+
+```text
+NO ADOPTED SES ROLE
+→ use current project-local routing
+→ or mark specialist resolution pending
+→ DO NOT INVENT A NEARBY SES SPECIALIST
+```
+
+This is especially important for Security Go because false specialist identity would corrupt review provenance.
+
+### 9.2.4 Specialist relationship to WBS and Dashboard
+
+The WBS owns the work item.
+
+The task graph owns the operational decomposition.
+
+SES routing resolves **who is qualified to perform or independently assure that type of work**, subject to Product Authority authorization.
+
+The dashboard may display:
+
+```text
+qualified_id
+task name
+WBS state
+operational state
+owner domain
+resolved SES role
+canonical SES specialist name
+specialist resolution status
+PRs
+tests
+evidence
+residuals
+next gate
+```
+
+But:
+
+```text
+SPECIALIST DISPLAYED
+!= SPECIALIST INVOKED
+
+SPECIALIST INVOKED
+!= TASK AUTHORIZED
+
+SPECIALIST PASS
+!= PRODUCT AUTHORITY ACCEPTANCE
+
+APPSEC PASS
+!= SECURITY GO
+```
+
+### 9.2.5 Separation of duties
+
+For high-risk security gates, implementation and independent assurance should be separable.
+
+Example:
+
+```text
+Backend/Data
+→ reconstructs / implements database control
+
+Application Security
+→ independently challenges the security claim
+
+Documentation Auditor
+→ checks evidence/provenance/completeness where required
+
+Architecture
+→ validates system-boundary consistency where required
+
+Product Authority
+→ accepts risk and grants lifecycle decisions
+```
+
+No specialist may grant themselves the next lifecycle gate.
+
+### 9.2.6 Security Go handoff invariant
+
+Every final Security Go claim must be traceable to:
+
+```text
+WBS / STS OWNER
++
+EXACT IMPLEMENTATION PR
++
+TEST/EVIDENCE IDs
++
+EVIDENCE CLASS
++
+CURRENT REF / ENVIRONMENT
++
+SPECIALIST REVIEW PROVENANCE
++
+RESIDUAL-RISK DISPOSITION
++
+PRODUCT AUTHORITY DECISION
+```
+
+This makes SES part of the **assurance provenance**, while preserving FECH.AI and Product Authority as the decision authority.
+
+---
+
 ## 10. Evidence classes
 
 Every material security conclusion must state which evidence class supports it.
