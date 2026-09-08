@@ -28,6 +28,41 @@ docs/security/assurance/SECURITY_ASSURANCE_CATALOG.json
         +-- evidence
 ```
 
+## 1.1 Full program relationship layer
+
+The assurance catalog is one half of the dashboard relationship model.
+
+Canonical WBS / task / PR relationship:
+
+```text
+docs/security/assurance/STS_WBS_PR_RELATIONSHIP_CATALOG.json
+```
+
+Human view:
+
+```text
+docs/security/assurance/STS_WBS_PR_RELATIONSHIP_CATALOG.md
+```
+
+Full join:
+
+```text
+docs/roadmap/fechai-security-to-scale-2026-wbs.md
+        |
+        | Qualified ID
+        v
+docs/sfjm/PROGRAM_TASK_GRAPH.md
+        |
+        v
+STS_WBS_PR_RELATIONSHIP_CATALOG.json
+        |                         \
+        | PR relation              \ test/evidence relation
+        v                           v
+GitHub PRs                 SECURITY_ASSURANCE_CATALOG.json
+```
+
+The relationship catalog also includes future STS tasks through M6, the expanded M3-04 multi-tenant graph, 22 security attack domains and the GitHub Issue/PR shared-number namespace.
+
 ## 2. Naming
 
 Every catalog entry has:
