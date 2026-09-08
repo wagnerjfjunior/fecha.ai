@@ -17,7 +17,7 @@ WBS Qualified ID
 ## Coverage
 
 ```text
-WBS/STS task records = 45
+WBS/STS task records = 46
 GitHub pull requests cataloged = 197
 PRs without WBS relation = 0
 PRs needing manual reconciliation = 0
