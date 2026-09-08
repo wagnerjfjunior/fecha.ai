@@ -1,6 +1,55 @@
 # FECH.AI — SFJM Evidence Freshness
 
-## 0.0000000000000000031 CURRENT EVIDENCE — STS-M3-02 PRODUCT AUTHORITY ACCEPTANCE / PR #202 CORRECTION RECONCILIATION — 2026-09-08
+## 0.0000000000000000032 CURRENT EVIDENCE — PR #202 MERGED / STS-M3-02 CANONICAL ON MAIN — 2026-09-08
+
+~~~text
+source repository =
+wagnerjfjunior/fecha.ai
+
+canonical main =
+665e3920b17849f45d8b3fcea015b1492219f115
+
+PR #202 =
+MERGED / CLOSED
+
+final approved head =
+c71a3e1a5f7c3d829b8379b085ba14f20b2f53cc
+
+merge commit =
+665e3920b17849f45d8b3fcea015b1492219f115
+
+STS-M3-02 =
+COMPLETE / ACCEPTED WITH RESIDUALS
+
+STS-M3-03 =
+NEXT_ELIGIBLE / NOT_AUTHORIZED
+
+Security Go =
+NOT_GRANTED
+~~~
+
+Canonical decision-grade artifact after merge:
+
+~~~text
+docs/security/evidence/2026-09-08-sts-m3-02-authority-contract-by-context.md
+blob = 6cf20f5298e183c34d9b560740b3d19c621fb7bb
+~~~
+
+The final PR #202 artifact blob on canonical main matches the exact-head-reviewed blob. The merge is a lifecycle/provenance event only; it does not establish runtime target compliance, service-only runtime proof, support-mode implementation, hostile-client assurance, AppSec PASS or Security Go.
+
+Current next material task remains:
+
+~~~text
+STS-M3-03 =
+NEXT_ELIGIBLE / NOT_AUTHORIZED
+
+CURRENT_AUTHORIZED_EXECUTION =
+NONE
+~~~
+
+Freshness is invalidated by a later material authority/schema/runtime change, contradictory evidence, Product Authority contract change, or a new canonical-main event that changes these claims.
+
+## 0.0000000000000000031 HISTORICAL / SUPERSEDED PRE-MERGE EVIDENCE — STS-M3-02 ACCEPTANCE / PR #202 CORRECTION — 2026-09-08
 
 ~~~text
 publication base main =
