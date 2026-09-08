@@ -1435,3 +1435,583 @@ NO SECURITY GO BY PR COUNT.
 NO SECURITY GO BY GREEN BUILD ALONE.
 NO SECURITY GO WITH HIDDEN MATERIAL COVERAGE GAPS.
 ```
+
+
+---
+
+## 27. Independent AI / External Auditor Handoff Contract
+
+This section defines how an independent AI, specialist or human auditor should review this Security Go program.
+
+The auditor must **not** treat this document as proof that the controls exist.
+
+The document is the **claim/verification contract**.
+
+The auditor's job is to challenge it.
+
+### 27.1 Default audit mode
+
+Unless separately authorized:
+
+```text
+STRICT READ_ONLY
+NO CODE MUTATION
+NO DATABASE MUTATION
+NO AUTH MUTATION
+NO PRODUCTION ATTACKING
+NO DEPLOY
+NO READY
+NO MERGE
+NO SECURITY GO
+```
+
+The auditor may:
+
+- resolve canonical live refs;
+- read repository files;
+- inspect PRs, commits, diffs and final files;
+- inspect current READ_ONLY catalog/configuration evidence where access exists;
+- inspect versioned tests and evidence;
+- identify missing evidence;
+- challenge architecture/security assumptions;
+- classify findings;
+- propose bounded remediation.
+
+### 27.2 Auditor bootstrap
+
+An independent auditor must not begin from this document alone.
+
+Minimum reconstruction order:
+
+```text
+1. resolve FECH.AI main live
+2. identify whether this document is on main or only on a PR head
+3. read docs/bootstrap/INDEX.md
+4. read docs/skills/SES_SPECIALIST_ROUTING.md
+5. read common Modus Operandi
+6. read applicable governance
+7. read docs/sfjm/INDEX.md
+8. read current WBS
+9. read PROGRAM_TASK_GRAPH
+10. read CURRENT_STATE / CURRENT_ISSUES
+11. read AUTHORIZATIONS / EVIDENCE_FRESHNESS when material
+12. read this Security Go contract
+13. read machine relationship catalogs
+14. resolve exact live GitHub / Supabase / runtime evidence required by the audit
+```
+
+If this document exists only on a candidate PR head:
+
+```text
+CANDIDATE DOCUMENT
+!= CANONICAL MAIN POLICY
+```
+
+The auditor must report both the canonical main and candidate head.
+
+### 27.3 Auditor anti-confirmation rule
+
+The auditor must actively search for evidence that disproves FECH.AI's security claims.
+
+Required stance:
+
+```text
+DO NOT ASK:
+"Can I find evidence that this is safe?"
+
+ASK:
+"What realistic path would break this claim,
+and what evidence proves that path is denied?"
+```
+
+Absence of a discovered exploit is not PASS.
+
+### 27.4 Auditor source hierarchy
+
+For any material claim:
+
+```text
+LIVE TARGET STATE
+> exact final code/config at target ref
+> exact test execution evidence
+> exact versioned design/evidence contract
+> historical PR/diff
+> SFJM continuity representation
+> dashboard representation
+> conversation / memory / summary
+```
+
+No lower source may silently override a higher source.
+
+---
+
+## 28. Mandatory Asset, Trust-Boundary and Data Classification Model
+
+Security Go requires an explicit model of **what must be protected** and **where trust changes**.
+
+### 28.1 Asset inventory
+
+At minimum classify material assets in these groups:
+
+- identities and sessions;
+- tenant/company membership;
+- roles, permissions and team authority;
+- leads, lists, assignments and ownership;
+- CRM/funnel state;
+- MesaCliente financial/proposal state;
+- messaging/cadence state;
+- admin/root/platform operations;
+- database data and metadata;
+- Storage objects;
+- secrets and credentials;
+- integration/webhook credentials;
+- audit/security logs;
+- deployment artifacts and CI/CD credentials;
+- backups and recovery material;
+- personal data / PII.
+
+Each material asset must identify:
+
+```text
+OWNER
+TENANT SCOPE
+CONFIDENTIALITY REQUIREMENT
+INTEGRITY REQUIREMENT
+AVAILABILITY REQUIREMENT
+AUTHORITY BOUNDARY
+RETENTION / DELETION OBLIGATION
+EVIDENCE OWNER
+```
+
+### 28.2 Trust boundaries
+
+The final architecture/security package must explicitly identify trust transitions such as:
+
+```text
+Internet
+→ browser/client
+
+browser/client
+→ FECH.AI backend / API / RPC
+
+authenticated user
+→ tenant authorization
+
+tenant-local admin
+→ platform/global authority
+
+frontend
+→ Supabase
+
+RPC / function
+→ privileged database operation
+
+Edge Function
+→ service_role or external API
+
+FECH.AI
+→ third-party integration
+
+FECH.AI
+→ Storage
+
+GitHub
+→ CI/CD
+
+CI/CD
+→ Vercel / production
+
+support operator
+→ tenant support mode
+```
+
+Every trust boundary must have explicit authentication, authorization, validation and audit expectations.
+
+### 28.3 Data classification / LGPD
+
+FECH.AI handles real-user and business data. Security Go evidence must therefore classify at least:
+
+```text
+PUBLIC
+INTERNAL
+CONFIDENTIAL BUSINESS DATA
+PERSONAL DATA / PII
+SECURITY-SENSITIVE DATA
+SECRET / CREDENTIAL
+```
+
+For personal data / PII, the final assurance package must address applicable LGPD-relevant controls such as:
+
+- access minimization;
+- tenant isolation;
+- purpose-bound access;
+- logging without unnecessary PII leakage;
+- deletion/retention behavior where applicable;
+- incident handling;
+- backup/recovery exposure;
+- support/admin access;
+- third-party processor/integration boundaries.
+
+This document does not claim legal certification or full legal compliance by itself.
+
+---
+
+## 29. Findings Severity and Disposition Contract
+
+Independent audits need a common severity language.
+
+Every security finding must record:
+
+```text
+finding_id
+title
+security domain
+affected asset
+attacker class
+preconditions
+attack path
+impact
+likelihood
+evidence
+exploitability status
+current control
+recommended remediation
+WBS / STS owner
+PR owner if applicable
+rollback considerations
+final disposition
+```
+
+### 29.1 Severity scale
+
+Use at least:
+
+```text
+CRITICAL
+HIGH
+MEDIUM
+LOW
+INFORMATIONAL
+```
+
+Severity must be justified by FECH.AI business/security impact, not only a generic score.
+
+CVSS may be used as supplemental evidence where appropriate, but:
+
+```text
+CVSS
+!= FECH.AI BUSINESS RISK
+```
+
+### 29.2 Program finding classes
+
+Every finding must also map to exactly one program disposition:
+
+```text
+BLOCKING
+REQUIRED_BEFORE_SECURITY_GO
+ACCEPTABLE_WITH_EXPLICIT_RESIDUAL_RISK
+OWNED_BY_FUTURE_AUTHORIZED_GATE
+NOT_APPLICABLE_WITH_PROOF
+FALSE_POSITIVE_WITH_PROOF
+NOT_DETERMINED
+```
+
+Rules:
+
+```text
+CRITICAL open finding
+→ Security Go BLOCKED
+
+HIGH material exploitable finding
+→ Security Go BLOCKED unless explicitly remediated
+
+NOT_DETERMINED material finding
+→ Security Go BLOCKED
+
+FALSE_POSITIVE
+→ requires evidence, not assertion
+```
+
+---
+
+## 30. Reproducibility and Evidence Manifest
+
+Security assurance must be reproducible by another qualified reviewer.
+
+Every material executed test should eventually record:
+
+```text
+test_catalog_id
+test name
+security domain
+attacker class
+target environment
+target URL / service / DB project where safe to record
+tested repository commit
+tested migration/config version
+execution timestamp
+executor/specialist provenance
+exact command or harness
+preconditions
+expected result
+actual result
+PASS / FAIL / BLOCKED
+raw-output evidence location
+sensitive-output handling
+evidence hash/blob/ref where applicable
+freshness / invalidation trigger
+```
+
+### 30.1 Evidence integrity
+
+Where feasible, final evidence should be anchored by immutable refs:
+
+- Git commit SHA;
+- blob SHA;
+- PR exact head;
+- migration/version identifier;
+- test catalog ID;
+- immutable artifact checksum.
+
+Screenshots alone should not be the sole proof when machine-readable evidence is available.
+
+### 30.2 Sampling rule
+
+Sampling may be used only when the auditor explains:
+
+- the full universe;
+- the sampling method;
+- why the sample is representative;
+- what remains untested;
+- whether untested rows can change the verdict.
+
+A sample cannot justify an exhaustive PASS unless the control being sampled is itself proven universal.
+
+---
+
+## 31. Required Standards Coverage Matrix
+
+Before final Security Go, FECH.AI must maintain a matrix that maps its internal controls to external reference baselines.
+
+Minimum columns:
+
+| Field | Required |
+|---|---|
+| FECH.AI security domain | YES |
+| FECH.AI control/invariant | YES |
+| OWASP ASVS 5.x reference(s) | where applicable |
+| OWASP Top 10:2025 category | where applicable |
+| OWASP API Security Top 10:2023 category | where applicable |
+| NIST SSDF practice/task | where applicable |
+| STS/WBS owner | YES |
+| implementation PR(s) | YES |
+| test catalog ID(s) | YES |
+| evidence class | YES |
+| current result | YES |
+| residual | YES |
+
+The purpose is coverage discipline, not certification branding.
+
+```text
+MAPPED TO ASVS
+!= ASVS CERTIFIED
+
+MAPPED TO NIST SSDF
+!= NIST CERTIFIED
+```
+
+---
+
+## 32. Known-Gaps and Non-Claims Register
+
+An independent auditor must have one place to see what FECH.AI is **not currently claiming**.
+
+At minimum the current register must preserve:
+
+```text
+Security Go = NOT_GRANTED
+
+STS-M3-04 =
+ACTIVE / SCOPE_EXPANDED / REBASELINE_REQUIRED
+
+structural multi-tenant safety =
+NOT YET FULLY PROVEN
+
+global external attack resistance =
+NOT YET FULLY PROVEN
+
+global hostile-client assurance =
+NOT YET COMPLETE
+
+final tenant / role / auth / storage regression =
+NOT YET COMPLETE
+
+dependency / CVE final gate =
+NOT YET COMPLETE
+
+secrets / config / deploy final gate =
+NOT YET COMPLETE
+
+observability / rollback / incident final gate =
+NOT YET COMPLETE
+
+final Security Evidence + AS-BUILT package =
+NOT YET COMPLETE
+
+blocker closeout =
+NOT YET COMPLETE
+```
+
+The live auditor must re-resolve these states and may find additional gaps.
+
+This register is a minimum known-gap set, not an exhaustive claim that no other gap exists.
+
+---
+
+## 33. Required Independent Audit Output
+
+An external AI/human auditor reviewing this program should produce a report in this order.
+
+### A. Audit anchors
+
+```text
+FECH.AI live main
+candidate PR/head if any
+environment(s)
+material external refs
+date/time
+read coverage
+missing evidence
+```
+
+### B. Methodology review
+
+Answer:
+
+1. Is the Security Go methodology internally coherent?
+2. Does it distinguish static/live/runtime evidence correctly?
+3. Does it prevent cross-tenant and external-attack blind spots?
+4. Does it preserve Product Authority and specialist boundaries?
+5. Can the dashboard/SFJM model distort current truth?
+6. Are there unowned security domains or unresolved specialist mappings?
+7. Are the final Security Go criteria objectively testable?
+
+### C. Coverage audit
+
+For each of the 22 security domains:
+
+```text
+APPLICABLE / NOT_APPLICABLE_WITH_PROOF
+owner
+controls
+tests
+evidence
+coverage status
+blocking gap
+```
+
+### D. Attack-surface audit
+
+Challenge at least:
+
+- anonymous internet attacker;
+- authenticated Tenant A attacker;
+- compromised Tenant A admin;
+- compromised integration/service context;
+- malicious dependency/build path.
+
+Identify any attacker class missing from the model.
+
+### E. Traceability audit
+
+Verify:
+
+```text
+WBS
+→ STS
+→ PR
+→ test
+→ evidence
+→ security domain
+→ final gate
+```
+
+Report any orphaned task, PR, test, evidence or domain.
+
+### F. Evidence-quality audit
+
+For every material PASS, determine whether evidence is:
+
+```text
+E0 / E1 / E2 / E3 / E4 / E5 / E6 / E7 / E8
+```
+
+A static-only claim must not be accepted as hostile-runtime proof.
+
+### G. Findings
+
+Each finding must use the severity/disposition contract from this document.
+
+### H. Security Go verdict
+
+The auditor may emit only:
+
+```text
+SECURITY_GO_ASSURANCE_STATUS =
+NOT_READY
+
+or
+
+SECURITY_GO_ASSURANCE_STATUS =
+READY_FOR_PRODUCT_AUTHORITY_DECISION
+```
+
+An auditor does **not** grant Security Go.
+
+Final Security Go remains:
+
+```text
+PRODUCT AUTHORITY DECISION ONLY
+```
+
+### I. Single next safe action
+
+The audit must end with one bounded next safe action.
+
+It must not automatically mutate FECH.AI or open a remediation PR unless separately authorized.
+
+---
+
+## 34. Auditor Challenge Questions
+
+Before accepting the program as sufficient, an independent reviewer should be able to answer all of the following with evidence:
+
+1. Can Tenant A create a row that references Tenant B?
+2. Can Tenant A read, update or delete Tenant B data through any direct or indirect path?
+3. Can a tenant admin become platform root or affect another tenant?
+4. Can a low-privilege user invoke a privileged RPC/function/API?
+5. Can anonymous users invoke privileged behavior?
+6. Can protected fields be altered through mass assignment or column-level grants?
+7. Can browser-controlled input become SQL, HTML/JS, command, URL-fetch or unsafe parser input?
+8. Can FECH.AI be forced to access internal/private network resources?
+9. Can an attacker exhaust material API/database/parser resources?
+10. Can storage objects cross tenant boundaries?
+11. Can replay/race conditions duplicate sensitive business actions?
+12. Can integrations/webhooks be forged, replayed or tenant-confused?
+13. Can secrets or service credentials reach client bundles, logs or repositories?
+14. Can a compromised dependency/build/deploy path alter production?
+15. Can security-relevant events be detected and investigated?
+16. Can audit/log data itself be forged or leak PII?
+17. Can rollback/recovery reintroduce an old vulnerability?
+18. Can backup/restore paths expose tenant or secret data?
+19. Does every material security claim have current exact-ref evidence?
+20. Could a future reviewer reproduce the result without relying on this conversation?
+
+If any material question cannot be answered:
+
+```text
+NOT_DETERMINED
+```
+
+until evidence closes it.
