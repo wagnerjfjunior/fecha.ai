@@ -2,7 +2,7 @@
   "schema_version": "1.0",
   "title": "FECH.AI — STS / WBS / PR Relationship Catalog",
   "generated_date": "2026-09-09",
-  "generated_from_main": "157f0f6f1f9bd4e80cf909e95cc48aa76ebe97d5",
+  "generated_from_main": "dbc1e246b66d9726e7d3831085e62d27cab6908d",
   "repository": "wagnerjfjunior/fecha.ai",
   "contracts": {
     "wbs_authority": "docs/roadmap/fechai-security-to-scale-2026-wbs.md",
@@ -58,7 +58,9 @@
       "STS-M5-06",
       "STS-M5-07",
       "STS-M6"
-    ]
+    ],
+    "deferred_offensive_lab_authorization_pr": 213,
+    "deferred_offensive_lab_authorization_merge_commit": "dbc1e246b66d9726e7d3831085e62d27cab6908d"
   },
   "task_relations": [
     {
@@ -673,7 +675,8 @@
       "state": "AUTHORIZED_DEFERRED_NOT_CURRENT_ACTION",
       "hours": null,
       "pr_numbers": [
-        211
+        211,
+        213
       ],
       "hours_state": "REBASELINE_REQUIRED"
     },
@@ -686,7 +689,8 @@
       "hours": null,
       "hours_state": "REBASELINE_REQUIRED",
       "pr_numbers": [
-        211
+        211,
+        213
       ],
       "security_exit_requirement": "Deterministic non-production hostile-client environment and rollback."
     },
@@ -699,7 +703,8 @@
       "hours": null,
       "hours_state": "REBASELINE_REQUIRED",
       "pr_numbers": [
-        211
+        211,
+        213
       ],
       "security_exit_requirement": "F-08 remediated, removed or proven unreachable."
     },
@@ -712,7 +717,8 @@
       "hours": null,
       "hours_state": "REBASELINE_REQUIRED",
       "pr_numbers": [
-        211
+        211,
+        213
       ],
       "security_exit_requirement": "Secret ownership, request size and rate/abuse boundaries proven."
     },
@@ -725,7 +731,8 @@
       "hours": null,
       "hours_state": "REBASELINE_REQUIRED",
       "pr_numbers": [
-        211
+        211,
+        213
       ],
       "security_exit_requirement": "Deterministic identities, fixtures and evidence capture ready."
     },
@@ -738,7 +745,8 @@
       "hours": null,
       "hours_state": "REBASELINE_REQUIRED",
       "pr_numbers": [
-        211
+        211,
+        213
       ],
       "security_exit_requirement": "All M3 material findings resolved/refuted; zero material NOT_DETERMINED."
     },
@@ -1009,7 +1017,8 @@
         205,
         207,
         209,
-        211
+        211,
+        213
       ],
       "security_exit_requirement": "Current hostile-client exploit attempts fail in isolated environment."
     },
@@ -1079,7 +1088,8 @@
         207,
         208,
         209,
-        211
+        211,
+        213
       ],
       "security_exit_requirement": "Tenant/role/auth/storage cross-boundary regression passes."
     },
@@ -5006,15 +5016,43 @@
       "mapping_basis": "PRODUCT_AUTHORITY_ZERO_MATERIAL_RESIDUAL_WBS_AMENDMENT",
       "mapping_quality": "EXPLICIT_CURRENT_SCOPE",
       "merge_commit_sha": "719f0e98b58c7bf4d39485020d4389f8654da659"
+    },
+    {
+      "pr_number": 213,
+      "title": "docs(security): defer final offensive lab execution",
+      "state": "closed",
+      "merged": true,
+      "merged_at": "2026-09-09T22:37:15Z",
+      "head_branch": "docs/deferred-final-offensive-lab-authorization-20260909",
+      "head_sha": "3119515faa7a20d3cb43e11431bf2de6e3d87cc3",
+      "base_branch": "main",
+      "base_sha": "157f0f6f1f9bd4e80cf909e95cc48aa76ebe97d5",
+      "primary_qualified_id": "STS-M3-06",
+      "related_qualified_ids": [
+        "STS-M3-06-01",
+        "STS-M3-06-02",
+        "STS-M3-06-03",
+        "STS-M3-06-04",
+        "STS-M3-06-05",
+        "STS-M5-01",
+        "STS-M5-02",
+        "STS-M5-06",
+        "STS-M5-07",
+        "STS-M6-01"
+      ],
+      "relationship_type": "PROGRAM_NATIVE",
+      "mapping_basis": "PRODUCT_AUTHORITY_DEFERRED_FINAL_OFFENSIVE_LAB_AUTHORIZATION",
+      "mapping_quality": "EXPLICIT_CURRENT_SCOPE",
+      "merge_commit_sha": "dbc1e246b66d9726e7d3831085e62d27cab6908d"
     }
   ],
   "counts": {
     "tasks": 46,
-    "pull_requests": 197,
+    "pull_requests": 198,
     "prs_without_wbs_relation": 0,
     "prs_needing_manual_reconciliation": 0,
     "historical_pre_wbs_prs": 137,
-    "program_native_prs": 60,
+    "program_native_prs": 61,
     "attack_domains": 22,
     "issue_namespace_entries": 12
   },
@@ -5280,8 +5318,8 @@
     "ses_main": "d9a148d8500b5b2790d295eea80d08dc99c58b42"
   },
   "post_merge_reconciliation": {
-    "pr_number": 211,
-    "canonical_main": "719f0e98b58c7bf4d39485020d4389f8654da659",
+    "pr_number": 213,
+    "canonical_main": "dbc1e246b66d9726e7d3831085e62d27cab6908d",
     "reconciled_on": "2026-09-09",
     "runtime_mutation": "NONE",
     "supabase_mutation": "NONE"
