@@ -1,5 +1,52 @@
 # FECH.AI — SFJM Program Task Graph
 
+
+## 0.0 CANONICAL SECURITY ASSURANCE CATALOG RELATION
+
+Security/test artifacts are related to this graph through the canonical machine-readable catalog:
+
+~~~text
+docs/security/assurance/SECURITY_ASSURANCE_CATALOG.json
+~~~
+
+Join contract:
+
+~~~text
+PROGRAM_TASK_GRAPH.Qualified ID
+=
+SECURITY_ASSURANCE_CATALOG.entries[].parent_qualified_id
+~~~
+
+Dashboard display contract:
+
+~~~text
+<parent_qualified_id> — <test / runner / workflow / evidence name>
+~~~
+
+Examples:
+
+~~~text
+STS-M1 — leads tenant integrity
+STS-M3-04 — PME usage tracking scope RLS cross tenant rollback
+STS-M4-04 — MesaCliente security / rollback / smoke artifact
+~~~
+
+The catalog assigns each artifact a stable `catalog_id` while preserving its original GitHub path and blob SHA.
+
+~~~text
+TASK DEFINITION AUTHORITY =
+this task graph + canonical WBS
+
+TEST / EVIDENCE RELATIONSHIP AUTHORITY =
+docs/security/assurance/SECURITY_ASSURANCE_CATALOG.json
+
+VERSIONED TEST != EXECUTED TEST
+EVIDENCE FILE != CURRENT PASS
+CATALOGED != SECURITY GO
+~~~
+
+`STS-SEC-UNMAPPED`, if it ever appears in the catalog, is a quarantine state and must be reconciled to a canonical STS parent before Security Go.
+
 ## 0. CURRENT EXECUTION OVERLAY — STS-M3-03 ACCEPTED / STS-M3-04 AUTHORIZED NOT INITIATED — 2026-09-08
 
 ~~~text
@@ -263,22 +310,81 @@ SUPERSEDED
 program = FECH.AI Security-to-Scale 2026
 completed milestone = STS-M2 — Database Simplification & Optimization Plan
 current milestone = STS-M3 — Backend Authority Contract Freeze
-current next task = STS-M3-03 — Allowlist de RPCs privilegiadas
-STS-M2-05 = COMPLETE_WITH_RESIDUALS / ACCEPTED
-STS-M2-06 = COMPLETE / ACCEPTED
-STS-M2 = COMPLETE_WITH_RESIDUALS / ACCEPTED
-STS-M3 = ACTIVE
-STS-M3-01 = COMPLETE / ACCEPTED
-STS-M3-02 = COMPLETE_WITH_RESIDUALS / ACCEPTED
-STS-M3-03 = ELIGIBLE_NOT_AUTHORIZED
-STS-M3-03..STS-M6 execution = NOT_AUTHORIZED
-Security Go = NOT_GRANTED
+
+STS-M2 =
+COMPLETE_WITH_RESIDUALS / ACCEPTED
+
+STS-M3 =
+ACTIVE
+
+STS-M3-01 =
+COMPLETE / ACCEPTED
+
+STS-M3-02 =
+COMPLETE_WITH_RESIDUALS / ACCEPTED
+
+STS-M3-03 =
+COMPLETE_WITH_RESIDUALS / ACCEPTED
+
+STS-M3-04 =
+ACTIVE / SCOPE_EXPANDED / REBASELINE_REQUIRED
+
+STS-M3-04-01 =
+COMPLETE_WITH_RESIDUALS / ACCEPTED
+
+STS-M3-04-02 =
+COMPLETE_WITH_RESIDUALS / ACCEPTED
+
+STS-M3-04-03..STS-M3-04-10 =
+DEFINED_NOT_AUTHORIZED
+
+STS-M3-05..STS-M6 execution =
+NOT_AUTHORIZED
+
+CURRENT_AUTHORIZED_TECHNICAL_EXECUTION =
+NONE
+
+Security Go =
+NOT_GRANTED
 ~~~
+
+Current M3-04 closure condition:
+
+~~~text
+NO MATERIAL STRUCTURAL CROSS-TENANT GAP
++ NO UNJUSTIFIED SENSITIVE DIRECT-DML GAP
++ ZERO MATERIAL NOT_DETERMINED ROWS
++ INDEPENDENT APPSEC CLOSURE REVIEW
+~~~
+
+## 4.1 Program relationship join
+
+~~~text
+WBS qualified task
+<-> PROGRAM_TASK_GRAPH.Qualified ID
+<-> STS_WBS_PR_RELATIONSHIP_CATALOG.task_relations[].qualified_id
+<-> STS_WBS_PR_RELATIONSHIP_CATALOG.pull_request_relations[].primary_qualified_id / related_qualified_ids
+<-> SECURITY_ASSURANCE_CATALOG.entries[].parent_qualified_id
+~~~
+
+Canonical machine-readable PR/task relation:
+
+~~~text
+docs/security/assurance/STS_WBS_PR_RELATIONSHIP_CATALOG.json
+~~~
+
+Historical PRs may be related to the current WBS as `HISTORICAL_CONTRIBUTION_TO_CURRENT_WBS`; that relation does not retroactively claim that the historical PR executed or completed the later WBS task.
 
 ## 5. WBS-derived task graph
 
 | Parent qualified | Qualified ID | WBS ID | Label | Hours | Operational state |
 |---|---|---|---|---:|---|
+| STS-M0 | STS-M0-01 | M0-01 | Inventário de PRs e continuidade | 8 | COMPLETE |
+| STS-M0 | STS-M0-02 | M0-02 | Pacotes de especialistas e dependências | 8 | COMPLETE |
+| STS-M0 | STS-M0-03 | M0-03 | SFJM / Workspace baseline | 10 | COMPLETE |
+| STS-M0 | STS-M0-04 | M0-04 | Roadmap / governança única | 10 | COMPLETE |
+| PROGRAM | STS-M1 | M1 | Security Truth Baseline / F1-02 | 168 | COMPLETE_WITH_DEFERRED_SECURITY_ASSURANCE |
+| PROGRAM | STS-M2 | M2 | Database Simplification & Optimization Plan | 116 | COMPLETE_WITH_RESIDUALS |
 | STS-M2 | STS-M2-01 | M2-01 | Matriz de 43 tabelas | 20 | COMPLETE |
 | STS-M2 | STS-M2-02 | M2-02 | Mapa routines / policies / triggers / grants | 24 | COMPLETE_WITH_RESIDUALS |
 | STS-M2 | STS-M2-03 | M2-03 | Índices / ACL contraditórias | 16 | COMPLETE_WITH_RESIDUALS |
@@ -287,8 +393,18 @@ Security Go = NOT_GRANTED
 | STS-M2 | STS-M2-06 | M2-06 | Decisão arquitetural do banco | 16 | COMPLETE |
 | STS-M3 | STS-M3-01 | M3-01 | Identity / membership / team / role model | 24 | COMPLETE |
 | STS-M3 | STS-M3-02 | M3-02 | Authority contract por contexto | 28 | COMPLETE_WITH_RESIDUALS |
-| STS-M3 | STS-M3-03 | M3-03 | Allowlist de RPCs privilegiadas | 24 | ELIGIBLE_NOT_AUTHORIZED |
-| STS-M3 | STS-M3-04 | M3-04 | Redução de DML sensível direto | 24 | PLANNED_NOT_AUTHORIZED |
+| STS-M3 | STS-M3-03 | M3-03 | Allowlist de RPCs privilegiadas | 24 | COMPLETE_WITH_RESIDUALS |
+| STS-M3 | STS-M3-04 | M3-04 | Redução de DML sensível direto + Integridade Estrutural Multi-Tenant | REBASELINE | ACTIVE_REBASELINE_REQUIRED |
+| STS-M3-04 | STS-M3-04-01 | M3-04-01 | PME message usage RPC-only write boundary | historical | COMPLETE_WITH_RESIDUALS |
+| STS-M3-04 | STS-M3-04-02 | M3-04-02 | PME lead message state direct-write reduction | historical | COMPLETE_WITH_RESIDUALS |
+| STS-M3-04 | STS-M3-04-03 | M3-04-03 | Global Tenant Surface & Relationship Inventory | TBD | DEFINED_NOT_AUTHORIZED |
+| STS-M3-04 | STS-M3-04-04 | M3-04-04 | lista_avaliacoes Tenant-Relationship Hardening | TBD | DEFINED_NOT_AUTHORIZED |
+| STS-M3-04 | STS-M3-04-05 | M3-04-05 | PME Catalog Tenant-Relationship Hardening | TBD | DEFINED_NOT_AUTHORIZED |
+| STS-M3-04 | STS-M3-04-06 | M3-04-06 | Remaining Sensitive Direct-DML Adjudication & Remediation | TBD | DEFINED_NOT_AUTHORIZED |
+| STS-M3-04 | STS-M3-04-07 | M3-04-07 | Tenant-Bound Database Invariant Verification | TBD | DEFINED_NOT_AUTHORIZED |
+| STS-M3-04 | STS-M3-04-08 | M3-04-08 | Direct-Write / Bypass Call-Site Sweep | TBD | DEFINED_NOT_AUTHORIZED |
+| STS-M3-04 | STS-M3-04-09 | M3-04-09 | Structural Cross-Tenant Negative Proofs | TBD | DEFINED_NOT_AUTHORIZED |
+| STS-M3-04 | STS-M3-04-10 | M3-04-10 | Independent AppSec Closure Review | TBD | DEFINED_NOT_AUTHORIZED |
 | STS-M3 | STS-M3-05 | M3-05 | Fechamento Auth / Admin flows | 24 | PLANNED_NOT_AUTHORIZED |
 | STS-M3 | STS-M3-06 | M3-06 | Staging / test plan de segurança | 28 | PLANNED_NOT_AUTHORIZED |
 | STS-M4 | STS-M4-01 | M4-01 | AppShell / Shared Frontend Boundary | 20 | PLANNED_NOT_AUTHORIZED |
@@ -297,6 +413,7 @@ Security Go = NOT_GRANTED
 | STS-M4 | STS-M4-04 | M4-04 | MesaCliente Core Slice | 32 | PLANNED_NOT_AUTHORIZED |
 | STS-M4 | STS-M4-05 | M4-05 | Feature Gateways / API Boundaries | 24 | PLANNED_NOT_AUTHORIZED |
 | STS-M4 | STS-M4-06 | M4-06 | Core Functional Equivalence & Regression | 24 | PLANNED_NOT_AUTHORIZED |
+| STS-M5 | STS-M5-00 | M5-00 | Global Security Assurance Coverage Reconciliation | REBASELINE | PLANNED_NOT_AUTHORIZED |
 | STS-M5 | STS-M5-01 | M5-01 | Hostile-client suite isolada | 28 | PLANNED_NOT_AUTHORIZED |
 | STS-M5 | STS-M5-02 | M5-02 | Regressão tenant / role / auth / storage | 28 | PLANNED_NOT_AUTHORIZED |
 | STS-M5 | STS-M5-03 | M5-03 | Dependency / CVE gate | 12 | PLANNED_NOT_AUTHORIZED |

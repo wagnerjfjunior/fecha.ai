@@ -7,6 +7,55 @@
 **Governance adjudication:** `docs/governance/2026-09-04-fechai-bcr-security-to-scale-program-hierarchy-core-dod.md`  
 **Planning baseline canonicalization date:** 2026-09-04
 
+## 0. Canonical security / continuity navigation
+
+```text
+Security Go methodology / proof contract
+→ docs/security/assurance/SECURITY_GO_PROGRAM.md
+
+Structural WBS
+→ this file
+
+Operational task/decomposition overlay
+→ docs/sfjm/PROGRAM_TASK_GRAPH.md
+
+FECH.AI SFJM continuity protocol/application
+→ docs/sfjm/INDEX.md
+
+WBS / STS / PR relationship
+→ docs/security/assurance/STS_WBS_PR_RELATIONSHIP_CATALOG.json
+
+Test / evidence relationship
+→ docs/security/assurance/SECURITY_ASSURANCE_CATALOG.json
+
+Specialist routing
+→ docs/skills/SES_SPECIALIST_ROUTING.md
+```
+
+External relationship:
+
+```text
+SFJM protocol research/governance
+→ wagnerjfjunior/StopJuniorMode
+
+SFJM Workspace / dashboard product
+→ wagnerjfjunior/sfjm-workspace
+
+SES specialist system
+→ wagnerjfjunior/Specialist-Engineering-System
+```
+
+Authority invariant:
+
+```text
+WBS = structural planning authority
+SFJM = project continuity/material-state layer
+Workspace/dashboard = derived visualization
+SES = specialist identity/contract/certification layer
+GitHub/Supabase/runtime = live evidence authorities within scope
+Product Authority = material decision / lifecycle / Security Go authority
+```
+
 ## 1. Purpose
 
 This document is the FECH.AI-owned granular Work Breakdown Structure for the current Security-to-Scale 2026 program.
@@ -89,46 +138,59 @@ The final M6 gate also requires a professional indexed AS-BUILT package as defin
 
 ## 3. Planning totals
 
+The original 2026 planning baseline remains preserved for provenance, but Product Authority expanded the material scope of `STS-M3-04` on 2026-09-08 to include structural multi-tenant integrity and added `STS-M5-00` as a global security-assurance reconciliation gate.
+
+Therefore the old aggregate hours are no longer a reliable current forecast until a bounded rebaseline is approved.
+
 ```text
-CRITICAL_PATH_TOTAL = 832h
+HISTORICAL_CRITICAL_PATH_TOTAL = 832h
+
 M0 = 36h
 M1 = 168h
 M2 = 116h
-M3 = 152h
+M3 = REBASELINE_REQUIRED
 M4 = 172h
-M5 = 128h
+M5 = REBASELINE_REQUIRED
 M6 = 60h
 
-CURRENT_ACCEPTED_COMPLETE = 204h
-  M0 = 36h
-  M1 = 168h
+STS-M3-04 historical estimate = 24h
+STS-M3-04 current estimate = REBASELINE_REQUIRED
 
-REMAINING_CRITICAL_PATH = 628h
+STS-M5-00 = NEW / HOURS_NOT_YET_BASELINED
+
+CURRENT_ACCEPTED_COMPLETE =
+PRESERVE VERIFIED ACCEPTED TASK STATES;
+DO NOT RECOMPUTE FROM STALE AGGREGATE HOURS
+
+REMAINING_CRITICAL_PATH =
+REBASELINE_REQUIRED
 
 PRE_SECURITY_GO_BACKLOG = 116h
 PLANNED_FUTURE_BACKLOG = 104h
 ```
 
-Backlog hours are separate from the 832h critical path.
+Backlog hours remain separate from the historical 832h baseline.
 
 Hours are planning estimates for sequencing/capacity visibility, not timesheet evidence and not automatic progress.
 
 ## 4. M0 — Program Control / Truth Reconciliation — 36h
 
+**Qualified milestone:** `STS-M0`  
 **Issue #141 window:** 28 Aug–4 Sep  
 **State at canonicalization:** COMPLETE
 
-| ID | Task | Hours |
-|---|---|---:|
-| M0-01 | Inventário de PRs e continuidade | 8h |
-| M0-02 | Pacotes de especialistas e dependências | 8h |
-| M0-03 | SFJM / Workspace baseline | 10h |
-| M0-04 | Roadmap / governança única | 10h |
+| ID | Qualified ID | Task | Hours |
+|---|---|---|---:|
+| M0-01 | STS-M0-01 | Inventário de PRs e continuidade | 8h |
+| M0-02 | STS-M0-02 | Pacotes de especialistas e dependências | 8h |
+| M0-03 | STS-M0-03 | SFJM / Workspace baseline | 10h |
+| M0-04 | STS-M0-04 | Roadmap / governança única | 10h |
 
 Issue #141 exit remains authoritative for M0.
 
 ## 5. M1 — Security Truth Baseline / F1-02 — 168h
 
+**Qualified milestone:** `STS-M1`  
 **Issue #141 owners:** Backend/Data + AppSec + Documentation  
 **Issue #141 window:** 4–18 Sep  
 **Current state:** COMPLETE WITH DEFERRED SECURITY ASSURANCE
@@ -154,18 +216,19 @@ SECURITY_GO = NOT_GRANTED
 
 ## 6. M2 — Database Simplification & Optimization Plan — 116h
 
+**Qualified milestone:** `STS-M2`  
 **Issue #141 owners:** Backend/Data + Architecture  
 **Issue #141 window:** 18 Sep–9 Oct  
 **Current state:** ELIGIBLE / NOT STARTED
 
-| ID | Task | Hours |
-|---|---|---:|
-| M2-01 | Matriz de 43 tabelas | 20h |
-| M2-02 | Mapa routines / policies / triggers / grants | 24h |
-| M2-03 | Índices / ACL contraditórias | 16h |
-| M2-04 | Política target de DEFINER / RLS / DML | 20h |
-| M2-05 | Database Contract Map | 20h |
-| M2-06 | Decisão arquitetural do banco | 16h |
+| ID | Qualified ID | Task | Hours |
+|---|---|---|---:|
+| M2-01 | STS-M2-01 | Matriz de 43 tabelas | 20h |
+| M2-02 | STS-M2-02 | Mapa routines / policies / triggers / grants | 24h |
+| M2-03 | STS-M2-03 | Índices / ACL contraditórias | 16h |
+| M2-04 | STS-M2-04 | Política target de DEFINER / RLS / DML | 20h |
+| M2-05 | STS-M2-05 | Database Contract Map | 20h |
+| M2-06 | STS-M2-06 | Decisão arquitetural do banco | 16h |
 
 Issue #141 exit contract remains authoritative:
 
@@ -176,22 +239,58 @@ Issue #141 exit contract remains authoritative:
 - Database Contract Map;
 - decision `EVOLVE_IN_PLACE vs V2_STRANGLER vs NEW_DATABASE`, with evidence.
 
-## 7. M3 — Backend Authority Contract Freeze — 152h
+## 7. M3 — Backend Authority Contract Freeze — REBASELINE_REQUIRED
 
 **Issue #141 owners:** Backend/Data + AppSec + Architecture  
-**Issue #141 window:** 9–30 Oct  
-**State:** PLANNED
+**Issue #141 original window:** 9–30 Oct  
+**Current state:** ACTIVE  
+**Historical M3 planning total:** 152h  
+**Current planning status:** `REBASELINE_REQUIRED`
 
-| ID | Task | Hours |
-|---|---|---:|
-| M3-01 | Identity / membership / team / role model | 24h |
-| M3-02 | Authority contract por contexto | 28h |
-| M3-03 | Allowlist de RPCs privilegiadas | 24h |
-| M3-04 | Redução de DML sensível direto | 24h |
-| M3-05 | Fechamento Auth / Admin flows | 24h |
-| M3-06 | Staging / test plan de segurança | 28h |
+| ID | Qualified ID | Task | Hours / planning state |
+|---|---|---|---:|
+| M3-01 | STS-M3-01 | Identity / membership / team / role model | 24h |
+| M3-02 | STS-M3-02 | Authority contract por contexto | 28h |
+| M3-03 | STS-M3-03 | Allowlist de RPCs privilegiadas | 24h |
+| M3-04 | STS-M3-04 | Redução de DML sensível direto + Integridade Estrutural Multi-Tenant | REBASELINE_REQUIRED |
+| M3-05 | STS-M3-05 | Fechamento Auth / Admin flows | 24h |
+| M3-06 | STS-M3-06 | Staging / test plan de segurança | 28h |
 
-Issue #141 exit remains authoritative for M3.
+### 7.1 STS-M3-04 expanded execution graph
+
+Product Authority expands `STS-M3-04` from direct-DML reduction alone to a preventive structural multi-tenant safety gate.
+
+```text
+STS-M3-04 CANNOT CLOSE
+WHILE ANY MATERIAL STRUCTURAL TENANT-A -> TENANT-B PATH REMAINS POSSIBLE
+```
+
+The previous 24h estimate is preserved only as historical planning provenance and is no longer controlling.
+
+| Qualified ID | Task | Operational state | Hours |
+|---|---|---|---:|
+| STS-M3-04-01 | PME message usage RPC-only write boundary | COMPLETE_WITH_RESIDUALS | historical slice |
+| STS-M3-04-02 | PME lead message state direct-write reduction | COMPLETE_WITH_RESIDUALS | historical slice |
+| STS-M3-04-03 | Global Tenant Surface & Relationship Inventory | DEFINED_NOT_AUTHORIZED | TBD |
+| STS-M3-04-04 | `lista_avaliacoes` Tenant-Relationship Hardening | DEFINED_NOT_AUTHORIZED | TBD |
+| STS-M3-04-05 | PME Catalog Tenant-Relationship Hardening | DEFINED_NOT_AUTHORIZED | TBD |
+| STS-M3-04-06 | Remaining Sensitive Direct-DML Adjudication & Remediation | DEFINED_NOT_AUTHORIZED | TBD |
+| STS-M3-04-07 | Tenant-Bound Database Invariant Verification | DEFINED_NOT_AUTHORIZED | TBD |
+| STS-M3-04-08 | Direct-Write / Bypass Call-Site Sweep | DEFINED_NOT_AUTHORIZED | TBD |
+| STS-M3-04-09 | Structural Cross-Tenant Negative Proofs | DEFINED_NOT_AUTHORIZED | TBD |
+| STS-M3-04-10 | Independent AppSec Closure Review | DEFINED_NOT_AUTHORIZED | TBD |
+
+Closure rule:
+
+```text
+NO MATERIAL CROSS-TENANT STRUCTURAL GAP
++ NO UNJUSTIFIED SENSITIVE DIRECT-DML GAP
++ ZERO MATERIAL NOT_DETERMINED ROWS
++ INDEPENDENT APPSEC CLOSURE REVIEW
+-> STS-M3-04 MAY BE RECOMMENDED FOR PRODUCT AUTHORITY ACCEPTANCE
+```
+
+Issue #141 remains the parent program contract; this Product Authority scope amendment is the current FECH.AI granular WBS authority for M3-04.
 
 ## 8. M4 — Frontend Modularization / App.jsx Extraction — 172h
 
@@ -221,20 +320,27 @@ FUNCTIONAL_PASS != SECURITY_GO
 
 M4-06 cannot close without accepted functional-equivalence evidence for CRM, Funil, Discador, Power Message Engine and MesaCliente, including their material shared Leads/Listas/Distribuição dependencies. No tenant, role, ownership or sensitive business authority may be moved to the frontend during extraction.
 
-## 9. M5 — Integrated Security / Reliability Validation — 128h
+## 9. M5 — Integrated Security / Reliability Validation — REBASELINE_REQUIRED
 
 **Issue #141 owners:** AppSec + Platform/CI-CD + SRE/Observability + Backend/Data  
-**Issue #141 window:** 27 Nov–11 Dec  
-**State:** PLANNED
+**Issue #141 original window:** 27 Nov–11 Dec  
+**State:** PLANNED / NOT_AUTHORIZED  
+**Historical M5 planning total:** 128h  
+**Current planning status:** `REBASELINE_REQUIRED`
 
-| ID | Task | Hours |
-|---|---|---:|
-| M5-01 | Hostile-client suite isolada | 28h |
-| M5-02 | Regressão tenant / role / auth / storage | 28h |
-| M5-03 | Dependency / CVE gate | 12h |
-| M5-04 | Secrets / config / deploy gate | 16h |
-| M5-05 | Observabilidade / rollback / incidente | 24h |
-| M5-06 | Adjudicação de residual risk | 20h |
+| ID | Qualified ID | Task | Hours / planning state |
+|---|---|---|---:|
+| M5-00 | STS-M5-00 | Global Security Assurance Coverage Reconciliation | REBASELINE_REQUIRED |
+| M5-01 | STS-M5-01 | Hostile-client suite isolada | 28h |
+| M5-02 | STS-M5-02 | Regressão tenant / role / auth / storage | 28h |
+| M5-03 | STS-M5-03 | Dependency / CVE gate | 12h |
+| M5-04 | STS-M5-04 | Secrets / config / deploy gate | 16h |
+| M5-05 | STS-M5-05 | Observabilidade / rollback / incidente | 24h |
+| M5-06 | STS-M5-06 | Adjudicação de residual risk | 20h |
+
+`STS-M5-00` is the mandatory cross-program reconciliation gate that maps all prior accepted work and all material attack classes into current assurance coverage before integrated hostile-client validation can be considered complete.
+
+The early catalog/documentation foundation created before M5 does not start M5 and does not count as runtime assurance.
 
 Issue #141 exit remains authoritative for M5.
 
@@ -284,16 +390,62 @@ A parked item is not waived, passed or authorized.
 
 ## 13. Current continuation boundary
 
-At this canonicalization:
+Current Product Authority / SFJM program position at this WBS amendment:
 
 ```text
-STS-M1 = COMPLETE WITH DEFERRED SECURITY ASSURANCE
-STS-M2 = ELIGIBLE / NOT STARTED
-STS-M2-01 = MATRIZ DE 43 TABELAS / 20h
-STS-M2-01 execution = NOT_AUTHORIZED
+STS-M1 =
+COMPLETE WITH DEFERRED SECURITY ASSURANCE
+
+STS-M2 =
+COMPLETE / ACCEPTED WITH RESIDUALS
+
+STS-M3 =
+ACTIVE
+
+STS-M3-01 =
+COMPLETE / ACCEPTED
+
+STS-M3-02 =
+COMPLETE / ACCEPTED WITH RESIDUALS
+
+STS-M3-03 =
+COMPLETE / ACCEPTED WITH RESIDUALS
+
+STS-M3-04 =
+ACTIVE / SCOPE_EXPANDED / REBASELINE_REQUIRED
+
+STS-M3-04-01 =
+COMPLETE / ACCEPTED WITH RESIDUALS
+
+STS-M3-04-02 =
+COMPLETE / ACCEPTED WITH RESIDUALS
+
+STS-M3-04-03..10 =
+DEFINED / NOT_AUTHORIZED
+
+STS-M3-05 =
+PLANNED / NOT_AUTHORIZED
+
+STS-M3-06 =
+PLANNED / NOT_AUTHORIZED
+
+STS-M4..STS-M6 =
+PLANNED / NOT_AUTHORIZED
+
+Security Go =
+NOT_GRANTED
 ```
 
-The next semantic action is bounded STS-M2-01 scope/evidence reconstruction under FECH.AI bootstrap and current specialist routing. It is preparation/read-only unless separate Product Authority authority explicitly permits mutation.
+The canonical dashboard relationship layer is:
+
+```text
+WBS task / Qualified ID
+<-> docs/sfjm/PROGRAM_TASK_GRAPH.md
+<-> docs/security/assurance/STS_WBS_PR_RELATIONSHIP_CATALOG.json
+<-> docs/security/assurance/SECURITY_ASSURANCE_CATALOG.json
+```
+
+No future task execution, implementation, test run, deploy or Security Go is authorized by this WBS amendment.
 
 ## 14. Provenance
 
