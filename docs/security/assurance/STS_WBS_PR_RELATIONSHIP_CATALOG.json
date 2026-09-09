@@ -2,7 +2,7 @@
   "schema_version": "1.0",
   "title": "FECH.AI — STS / WBS / PR Relationship Catalog",
   "generated_date": "2026-09-09",
-  "generated_from_main": "ea46d3d2dc39fc7f700c1d9ad9d747905c317c85",
+  "generated_from_main": "157f0f6f1f9bd4e80cf909e95cc48aa76ebe97d5",
   "repository": "wagnerjfjunior/fecha.ai",
   "contracts": {
     "wbs_authority": "docs/roadmap/fechai-security-to-scale-2026-wbs.md",
@@ -35,7 +35,30 @@
     "m5_06_material_residual_elimination_gate": true,
     "m5_07_independent_appsec_review_added": true,
     "m6_security_go_candidate_requires_zero_material_open": true,
-    "amendment_pr": 211
+    "amendment_pr": 211,
+    "deferred_offensive_lab_authorized": true,
+    "deferred_offensive_lab_authorized_on": "2026-09-09",
+    "deferred_offensive_lab_current_action": false,
+    "deferred_offensive_lab_cost_gate": "EXPLICIT_COST_CONFIRMATION_REQUIRED",
+    "deferred_offensive_lab_data_scope": "SYNTHETIC_ONLY",
+    "deferred_offensive_lab_destructive_production_testing": false,
+    "deferred_offensive_lab_final_active_test": true,
+    "deferred_offensive_lab_sequence": [
+      "COMPLETE_APPLICABLE_M3_M4_AND_NON_OFFENSIVE_TEST_OBLIGATIONS",
+      "STS-M5-00",
+      "STS-M5-03",
+      "STS-M5-04",
+      "STS-M5-05",
+      "EXPLICIT_COST_CONFIRMATION",
+      "STS-M3-06-01",
+      "STS-M3-06-04",
+      "STS-M3-06-02_03_IF_STILL_OPEN",
+      "STS-M5-01",
+      "STS-M5-02",
+      "STS-M5-06",
+      "STS-M5-07",
+      "STS-M6"
+    ]
   },
   "task_relations": [
     {
@@ -647,7 +670,7 @@
       "qualified_id": "STS-M3-06",
       "parent": "STS-M3",
       "name": "Security Staging + Service Boundary Hardening",
-      "state": "PLANNED_NOT_AUTHORIZED",
+      "state": "AUTHORIZED_DEFERRED_NOT_CURRENT_ACTION",
       "hours": null,
       "pr_numbers": [
         211
@@ -659,7 +682,7 @@
       "qualified_id": "STS-M3-06-01",
       "parent": "STS-M3-06",
       "name": "Isolated security staging topology + fixtures",
-      "state": "DEFINED_NOT_AUTHORIZED",
+      "state": "AUTHORIZED_DEFERRED_COST_GATED",
       "hours": null,
       "hours_state": "REBASELINE_REQUIRED",
       "pr_numbers": [
@@ -672,7 +695,7 @@
       "qualified_id": "STS-M3-06-02",
       "parent": "STS-M3-06",
       "name": "mesa-worker-proxy auth/authorization disposition",
-      "state": "DEFINED_NOT_AUTHORIZED",
+      "state": "AUTHORIZED_DEFERRED_DO_NOT_EXECUTE_NOW",
       "hours": null,
       "hours_state": "REBASELINE_REQUIRED",
       "pr_numbers": [
@@ -685,7 +708,7 @@
       "qualified_id": "STS-M3-06-03",
       "parent": "STS-M3-06",
       "name": "Service-to-service credential / payload / rate boundary",
-      "state": "DEFINED_NOT_AUTHORIZED",
+      "state": "AUTHORIZED_DEFERRED_DO_NOT_EXECUTE_NOW",
       "hours": null,
       "hours_state": "REBASELINE_REQUIRED",
       "pr_numbers": [
@@ -698,7 +721,7 @@
       "qualified_id": "STS-M3-06-04",
       "parent": "STS-M3-06",
       "name": "Hostile-client / cross-tenant harness readiness",
-      "state": "DEFINED_NOT_AUTHORIZED",
+      "state": "AUTHORIZED_DEFERRED_COST_GATED",
       "hours": null,
       "hours_state": "REBASELINE_REQUIRED",
       "pr_numbers": [
@@ -711,7 +734,7 @@
       "qualified_id": "STS-M3-06-05",
       "parent": "STS-M3-06",
       "name": "M3 Final Security Implementation Closure",
-      "state": "DEFINED_NOT_AUTHORIZED",
+      "state": "AUTHORIZED_DEFERRED_FINAL_CLOSURE_HELD",
       "hours": null,
       "hours_state": "REBASELINE_REQUIRED",
       "pr_numbers": [
@@ -928,7 +951,7 @@
       "qualified_id": "STS-M5-01",
       "parent": "STS-M5",
       "name": "Hostile-client suite isolada",
-      "state": "PLANNED_NOT_AUTHORIZED",
+      "state": "AUTHORIZED_DEFERRED_FINAL_TEST",
       "hours": 28,
       "pr_numbers": [
         10,
@@ -995,7 +1018,7 @@
       "qualified_id": "STS-M5-02",
       "parent": "STS-M5",
       "name": "Regressão tenant / role / auth / storage",
-      "state": "PLANNED_NOT_AUTHORIZED",
+      "state": "AUTHORIZED_DEFERRED_FINAL_TEST",
       "hours": 28,
       "pr_numbers": [
         2,
