@@ -261,3 +261,14 @@ Total cataloged artifacts: **177**.
 | Catalog ID | Display name | Type | GitHub path | Assurance state |
 |---|---|---|---|---|
 | `STS-M4-05-D001` | STS-M4-05 — 2026 06 11 edge functions layering and saas security context | `ASSURANCE_DOCUMENT` | `docs/audits/architecture/2026-06-11-edge-functions-layering-and-saas-security-context.md` | `CATALOGED_NOT_EXECUTION_PROOF` |
+
+
+## 2026-09-09 live full-stack audit artifacts
+
+| Catalog ID | Parent | Artifact | State |
+|---|---|---|---|
+| `STS-M3-04-03-E20260909-01` | `STS-M3-04-03` | `docs/security/audits/2026-09-09-live-fullstack-security-audit.md` | `LIVE_READ_ONLY_AUDIT_FINDINGS_OPEN_REMEDIATION_REQUIRED` |
+| `STS-M3-04-03-E20260909-02` | `STS-M3-04-03` | `docs/security/audits/2026-09-09-live-db-evidence.md` | `LIVE_CATALOG_EVIDENCE_NOT_RUNTIME_NEGATIVE_PROOF` |
+| `STS-M3-04-03-D20260909-01` | `STS-M3-04-03` | `docs/security/audits/2026-09-09-security-audit-findings.json` | `FINDING_TO_WBS_TRACEABILITY` |
+
+These artifacts are evidence inputs, not Security Go and not hostile-client runtime proof.

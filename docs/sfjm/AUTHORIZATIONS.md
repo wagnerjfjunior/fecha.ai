@@ -1,5 +1,36 @@
 # FECH.AI — SFJM Authorizations
 
+## 0.0000000000000000036 Product Authority — 2026-09-09 live security audit publication + zero-residual WBS integration
+
+Product Authority explicitly authorizes the bounded GitHub documentation publication of the 2026-09-09 live READ_ONLY security audit, its sanitized evidence/finding ledger, and integration of every actionable finding into the FECH.AI Security-to-Scale WBS.
+
+Decision:
+
+~~~text
+historical accepted-with-residuals states = PRESERVE
+known actionable security finding = MUST RECEIVE EXPLICIT REMEDIATION + VERIFICATION TASK
+
+final STS-M3 = NO ACCEPTED ACTIONABLE RESIDUAL
+final STS-M5 = NO ACCEPTED ACTIONABLE RESIDUAL
+final STS-M6 = NO ACCEPTED ACTIONABLE RESIDUAL
+Security Go candidate = ZERO OPEN ACTIONABLE SECURITY FINDINGS
+~~~
+
+Authorized mutation class in this action:
+
+~~~text
+GitHub documentation / WBS / SFJM / assurance-catalog publication
+one principal risk = known live security findings not entering the mandatory critical path
+normal branch
+one coherent documentation commit
+Draft PR
+~~~
+
+This record does not infer technical execution authority for runtime/frontend/Supabase/Auth/data mutation, SQL/DDL/DML, migration, RLS/policy/grant/default-privilege mutation, RPC/function/trigger/Edge mutation, Vercel/runtime mutation, hostile-client production testing, deploy, Security Go or commercialization.
+
+Ready/merge remain exact-head lifecycle gates under normal FECH.AI governance; semantic integration of findings into the plan does not bypass those gates.
+
+
 ## 0.0000000000000000034 Product Authority — STS-M3-04-01 formal acceptance + bounded documentation/SFJM publication — 2026-09-08
 
 Product Authority explicitly decides:

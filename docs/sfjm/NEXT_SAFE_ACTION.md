@@ -1,5 +1,21 @@
 # FECH.AI — SFJM Next Safe Action
 
+## 0.0000000000000000036 CURRENT — AFTER 2026-09-09 AUDIT/WBS PUBLICATION
+
+~~~text
+CURRENT_AUTHORIZED_TECHNICAL_EXECUTION = NONE
+Security Go = NOT_GRANTED
+~~~
+
+The audit/WBS publication itself does not authorize remediation.
+
+The next logical evidence task remains `STS-M3-04-03 — Global Tenant Surface & Relationship Inventory`, subject to separate Product Authority execution authorization.
+
+The WBS now also defines, but does not authorize: `STS-M3-04-11..12`, `STS-M3-06-01..04`, `STS-M3-07-01..06`, `STS-M5-07`, `STS-M6-06`.
+
+No final M3/M5/M6/Security Go closure is permitted while F-01..F-10 or any later actionable canonical audit finding is open/unverified.
+
+
 
 ## 0.0000000000000000035 CURRENT MATERIAL GATE — STS-M3-04-02 ACCEPTED / NEXT TECHNICAL GATE REQUIRES PRODUCT AUTHORITY — 2026-09-08
 

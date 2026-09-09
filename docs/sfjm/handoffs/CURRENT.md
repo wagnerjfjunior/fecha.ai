@@ -1,5 +1,28 @@
 # FECH.AI — SFJM Current Product/Security Handoff
 
+## 0.0000000000000000036 CURRENT HANDOFF — 2026-09-09 LIVE SECURITY AUDIT -> ZERO-RESIDUAL WBS
+
+Preserve:
+
+~~~text
+main audit anchor = ac20a30fea9095f036d8d466e83794432d58ca89
+F-01..F-10 = OPEN_REMEDIATION_REQUIRED
+CURRENT_AUTHORIZED_TECHNICAL_EXECUTION = NONE
+Security Go = NOT_GRANTED
+~~~
+
+Do not lose or silently downgrade any finding. Use `docs/security/audits/2026-09-09-security-audit-findings.json` as the machine-readable finding-to-WBS map.
+
+Next logical technical evidence gate remains `STS-M3-04-03`, subject to separate Product Authority execution authorization.
+
+Final program rule:
+
+~~~text
+NO OPEN ACTIONABLE SECURITY FINDING
+-> prerequisite for final M3/M5/M6 closure and Security Go candidacy
+~~~
+
+
 ## 0.0000000000000000034 CURRENT HANDOFF — STS-M3-04-01 COMPLETE / ACCEPTED WITH RESIDUALS — 2026-09-08
 
 ~~~text

@@ -330,3 +330,18 @@ TASK COMPLETE != SECURITY PASS
 TEST VERSIONED != TEST EXECUTED
 CATALOGED != SECURITY GO
 ```
+
+
+## 2026-09-09 WBS security-audit amendment
+
+New structural nodes:
+- `STS-M3-04-11` — Default Privilege Fail-Closed Hardening
+- `STS-M3-04-12` — M3-04 Zero-Residual Closure Gate
+- `STS-M3-06-01..04` — staging / proxy / service-boundary / negative-test decomposition
+- `STS-M3-07` with `STS-M3-07-01..06` — privileged RPC/object-authority remediation
+- `STS-M5-07` — Independent Re-Audit Against All Canonical Security Findings
+- `STS-M6-06` — Independent Final Security Go Candidate Review
+
+Final-security contract: actionable findings cannot terminate as `ACCEPTED_WITH_RESIDUALS` at M3, M5, M6 or Security Go candidacy.
+
+Machine authority remains the JSON relationship catalog. PR #210 is explicitly related to `STS-M3-04-03` and the downstream M3/M5/M6 closure nodes. Because the catalog lives inside the same open PR, its `head_sha` is deliberately `RESOLVE_LIVE`; exact-head lifecycle evidence must be resolved from GitHub rather than self-embedded recursively.

@@ -1,8 +1,8 @@
 {
   "schema_version": "1.0",
   "title": "FECH.AI — STS / WBS / PR Relationship Catalog",
-  "generated_date": "2026-09-08",
-  "generated_from_main": "ea46d3d2dc39fc7f700c1d9ad9d747905c317c85",
+  "generated_date": "2026-09-09",
+  "generated_from_main": "ac20a30fea9095f036d8d466e83794432d58ca89",
   "repository": "wagnerjfjunior/fecha.ai",
   "contracts": {
     "wbs_authority": "docs/roadmap/fechai-security-to-scale-2026-wbs.md",
@@ -26,7 +26,13 @@
     "m3_04_current_hours_state": "REBASELINE_REQUIRED",
     "m5_00_added": true,
     "m5_current_hours_state": "REBASELINE_REQUIRED",
-    "global_critical_path_total_state": "REBASELINE_REQUIRED"
+    "global_critical_path_total_state": "REBASELINE_REQUIRED",
+    "m3_07_added": true,
+    "m3_06_scope_expanded": true,
+    "m5_06_zero_open_finding_gate": true,
+    "m5_07_added": true,
+    "m6_06_added": true,
+    "final_security_residual_policy": "ZERO_OPEN_ACTIONABLE_FINDINGS"
   },
   "task_relations": [
     {
@@ -491,9 +497,9 @@
       "wbs_id": "M3-06",
       "qualified_id": "STS-M3-06",
       "parent": "STS-M3",
-      "name": "Staging / test plan de segurança",
+      "name": "Staging / test plan de segurança + External Service Boundary Hardening",
       "state": "PLANNED_NOT_AUTHORIZED",
-      "hours": 28,
+      "hours": "REBASELINE_REQUIRED",
       "pr_numbers": []
     },
     {
@@ -847,9 +853,9 @@
       "wbs_id": "M5-06",
       "qualified_id": "STS-M5-06",
       "parent": "STS-M5",
-      "name": "Adjudicação de residual risk",
+      "name": "Residual Finding Elimination / Zero-Open-Finding Gate",
       "state": "PLANNED_NOT_AUTHORIZED",
-      "hours": 20,
+      "hours": "REBASELINE_REQUIRED",
       "pr_numbers": []
     },
     {
@@ -930,6 +936,141 @@
       "name": "Launch readiness + AS-BUILT acceptance review",
       "state": "PLANNED_NOT_AUTHORIZED",
       "hours": 12,
+      "pr_numbers": []
+    },
+    {
+      "wbs_id": "M3-04-11",
+      "qualified_id": "STS-M3-04-11",
+      "parent": "STS-M3-04",
+      "name": "Default Privilege Fail-Closed Hardening",
+      "state": "DEFINED_NOT_AUTHORIZED",
+      "hours": "REBASELINE_REQUIRED",
+      "pr_numbers": []
+    },
+    {
+      "wbs_id": "M3-04-12",
+      "qualified_id": "STS-M3-04-12",
+      "parent": "STS-M3-04",
+      "name": "M3-04 Zero-Residual Closure Gate",
+      "state": "DEFINED_NOT_AUTHORIZED",
+      "hours": "REBASELINE_REQUIRED",
+      "pr_numbers": []
+    },
+    {
+      "wbs_id": "M3-06-01",
+      "qualified_id": "STS-M3-06-01",
+      "parent": "STS-M3-06",
+      "name": "Isolated Security Staging / Fixture Contract",
+      "state": "DEFINED_NOT_AUTHORIZED",
+      "hours": "REBASELINE_REQUIRED",
+      "pr_numbers": []
+    },
+    {
+      "wbs_id": "M3-06-02",
+      "qualified_id": "STS-M3-06-02",
+      "parent": "STS-M3-06",
+      "name": "External Proxy / Worker Authentication & Resource Boundary Hardening",
+      "state": "DEFINED_NOT_AUTHORIZED",
+      "hours": "REBASELINE_REQUIRED",
+      "pr_numbers": []
+    },
+    {
+      "wbs_id": "M3-06-03",
+      "qualified_id": "STS-M3-06-03",
+      "parent": "STS-M3-06",
+      "name": "External Service / Integration Abuse & Rate-Limit Verification",
+      "state": "DEFINED_NOT_AUTHORIZED",
+      "hours": "REBASELINE_REQUIRED",
+      "pr_numbers": []
+    },
+    {
+      "wbs_id": "M3-06-04",
+      "qualified_id": "STS-M3-06-04",
+      "parent": "STS-M3-06",
+      "name": "M3 Security Negative-Test Matrix & Execution Plan",
+      "state": "DEFINED_NOT_AUTHORIZED",
+      "hours": "REBASELINE_REQUIRED",
+      "pr_numbers": []
+    },
+    {
+      "wbs_id": "M3-07",
+      "qualified_id": "STS-M3-07",
+      "parent": "STS-M3",
+      "name": "Privileged RPC / Object Authority Residual Remediation",
+      "state": "DEFINED_NOT_AUTHORIZED",
+      "hours": "REBASELINE_REQUIRED",
+      "pr_numbers": []
+    },
+    {
+      "wbs_id": "M3-07-01",
+      "qualified_id": "STS-M3-07-01",
+      "parent": "STS-M3-07",
+      "name": "Resource-Bound SECURITY DEFINER Remediation — Mesa Approval + Supplier Report",
+      "state": "DEFINED_NOT_AUTHORIZED",
+      "hours": "REBASELINE_REQUIRED",
+      "pr_numbers": []
+    },
+    {
+      "wbs_id": "M3-07-02",
+      "qualified_id": "STS-M3-07-02",
+      "parent": "STS-M3-07",
+      "name": "Tenant-Scoped Analytics / Dashboard RPC Remediation",
+      "state": "DEFINED_NOT_AUTHORIZED",
+      "hours": "REBASELINE_REQUIRED",
+      "pr_numbers": []
+    },
+    {
+      "wbs_id": "M3-07-03",
+      "qualified_id": "STS-M3-07-03",
+      "parent": "STS-M3-07",
+      "name": "Internal Helper Reachability + Lead Oracle Remediation",
+      "state": "DEFINED_NOT_AUTHORIZED",
+      "hours": "REBASELINE_REQUIRED",
+      "pr_numbers": []
+    },
+    {
+      "wbs_id": "M3-07-04",
+      "qualified_id": "STS-M3-07-04",
+      "parent": "STS-M3-07",
+      "name": "Anonymous RPC EXECUTE Allowlist Convergence",
+      "state": "DEFINED_NOT_AUTHORIZED",
+      "hours": "REBASELINE_REQUIRED",
+      "pr_numbers": []
+    },
+    {
+      "wbs_id": "M3-07-05",
+      "qualified_id": "STS-M3-07-05",
+      "parent": "STS-M3-07",
+      "name": "Privileged RPC Cross-Tenant / Anonymous Negative Proofs",
+      "state": "DEFINED_NOT_AUTHORIZED",
+      "hours": "REBASELINE_REQUIRED",
+      "pr_numbers": []
+    },
+    {
+      "wbs_id": "M3-07-06",
+      "qualified_id": "STS-M3-07-06",
+      "parent": "STS-M3-07",
+      "name": "Independent AppSec Privileged-Boundary Closure Review",
+      "state": "DEFINED_NOT_AUTHORIZED",
+      "hours": "REBASELINE_REQUIRED",
+      "pr_numbers": []
+    },
+    {
+      "wbs_id": "M5-07",
+      "qualified_id": "STS-M5-07",
+      "parent": "STS-M5",
+      "name": "Independent Re-Audit Against All Canonical Security Findings",
+      "state": "DEFINED_NOT_AUTHORIZED",
+      "hours": "REBASELINE_REQUIRED",
+      "pr_numbers": []
+    },
+    {
+      "wbs_id": "M6-06",
+      "qualified_id": "STS-M6-06",
+      "parent": "STS-M6",
+      "name": "Independent Final Security Go Candidate Review",
+      "state": "DEFINED_NOT_AUTHORIZED",
+      "hours": "REBASELINE_REQUIRED",
       "pr_numbers": []
     }
   ],
@@ -4641,11 +4782,11 @@
     {
       "pr_number": 209,
       "title": "docs: catalog STS security assurance artifacts",
-      "state": "open",
-      "merged": false,
-      "merged_at": null,
+      "state": "closed",
+      "merged": true,
+      "merged_at": "2026-09-09T07:26:02Z",
       "head_branch": "docs/security-assurance-sts-catalog-20260908",
-      "head_sha": "d806b1205a5c4b3275fa25afd3cdac701dc0f58e",
+      "head_sha": "37164763ab695e687acf5399870808b16b0b7da4",
       "base_branch": "main",
       "base_sha": "ea46d3d2dc39fc7f700c1d9ad9d747905c317c85",
       "primary_qualified_id": "STS-M5-00",
@@ -4657,17 +4798,43 @@
       "relationship_type": "PROGRAM_NATIVE",
       "mapping_basis": "PRODUCT_AUTHORITY_SECURITY_CATALOG_FOUNDATION",
       "mapping_quality": "EXPLICIT_CURRENT_SCOPE"
+    },
+    {
+      "pr_number": 210,
+      "title": "docs(security): integrate live audit into zero-residual WBS",
+      "state": "open",
+      "merged": false,
+      "merged_at": null,
+      "head_branch": "docs/security-audit-zero-residual-wbs-20260909-1822",
+      "head_sha": "RESOLVE_LIVE",
+      "base_branch": "main",
+      "base_sha": "ac20a30fea9095f036d8d466e83794432d58ca89",
+      "primary_qualified_id": "STS-M3-04-03",
+      "related_qualified_ids": [
+        "STS-M3-04",
+        "STS-M3-06",
+        "STS-M3-07",
+        "STS-M5-00",
+        "STS-M5-06",
+        "STS-M5-07",
+        "STS-M6-02",
+        "STS-M6-06"
+      ],
+      "relationship_type": "PROGRAM_NATIVE",
+      "mapping_basis": "PRODUCT_AUTHORITY_2026_09_09_LIVE_AUDIT_ZERO_RESIDUAL_WBS",
+      "mapping_quality": "EXPLICIT_CURRENT_SCOPE_HEAD_RESOLVE_LIVE"
     }
   ],
   "counts": {
-    "tasks": 46,
-    "pull_requests": 197,
+    "tasks": 61,
+    "pull_requests": 198,
     "prs_without_wbs_relation": 0,
     "prs_needing_manual_reconciliation": 0,
     "historical_pre_wbs_prs": 137,
-    "program_native_prs": 60,
+    "program_native_prs": 61,
     "attack_domains": 22,
-    "issue_namespace_entries": 12
+    "issue_namespace_entries": 12,
+    "actual_pull_requests_cataloged": 198
   },
   "program_issue_relations": [
     {

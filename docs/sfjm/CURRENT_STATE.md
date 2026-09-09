@@ -1,5 +1,50 @@
 # FECH.AI — SFJM Current Material State
 
+## 0.0000000000000000036 CURRENT — 2026-09-09 LIVE FULL-STACK SECURITY AUDIT INTEGRATED INTO ZERO-RESIDUAL WBS
+
+Product Authority authorizes the bounded GitHub documentation/WBS publication of the 2026-09-09 READ_ONLY GitHub + Supabase live security audit and decides that known actionable security findings cannot survive as accepted residuals at final SaaS/Security Go closure.
+
+~~~text
+audit main = ac20a30fea9095f036d8d466e83794432d58ca89
+Supabase project = uobxxgzshrmbtjfdolxd
+environment = Pilot Production / SaaS multi-tenant / multiempresa
+actionable findings = F-01..F-10 = OPEN_REMEDIATION_REQUIRED
+HIGH = 5
+MEDIUM = 3
+LOW = 2
+Security Go = NOT_GRANTED
+CURRENT_AUTHORIZED_TECHNICAL_EXECUTION = NONE
+~~~
+
+Canonical mapping:
+
+~~~text
+F-04 -> STS-M3-04-04
+F-05 -> STS-M3-04-05
+F-09 -> STS-M3-04-11
+F-01/F-02 -> STS-M3-07-01
+F-03 -> STS-M3-07-02
+F-06/F-07 -> STS-M3-07-03
+F-10 -> STS-M3-07-04
+F-08 -> STS-M3-06-02
+~~~
+
+Final closure directive:
+
+~~~text
+STS-M3 FINAL != ACCEPTED_WITH_RESIDUALS
+STS-M5 FINAL != ACCEPTED_WITH_RESIDUALS
+STS-M6 FINAL != ACCEPTED_WITH_RESIDUALS
+SECURITY_GO_CANDIDATE != ACCEPTED_WITH_RESIDUALS
+
+known actionable finding terminal state must be:
+REMEDIATED_VERIFIED
+or FALSE_POSITIVE_PROVEN / NOT_APPLICABLE_PROVEN
+~~~
+
+This publication does not authorize runtime/frontend/Supabase/Auth/data mutation, SQL/DDL/DML, migration, RLS/policy/grant/RPC/function/Edge mutation, hostile-client testing, deploy, production mutation or Security Go.
+
+
 
 ## 0.0000000000000000035 CURRENT — STS-M3-04-02 COMPLETE / ACCEPTED WITH RESIDUALS — 2026-09-08
 

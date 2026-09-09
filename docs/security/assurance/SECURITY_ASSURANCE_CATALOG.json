@@ -2,9 +2,9 @@
   "schema_version": "1.0",
   "title": "FECH.AI — Canonical Security Assurance Artifact Catalog",
   "repository": "wagnerjfjunior/fecha.ai",
-  "generated_from_main": "ea46d3d2dc39fc7f700c1d9ad9d747905c317c85",
+  "generated_from_main": "ac20a30fea9095f036d8d466e83794432d58ca89",
   "generated_from_tree": "e403fc3a312e16e9a99313ef28ae718547118750",
-  "generated_date": "2026-09-08",
+  "generated_date": "2026-09-09",
   "authority": "FECH.AI Product Authority + canonical GitHub main",
   "purpose": "Canonical join between STS qualified task IDs and versioned tests, runners, CI workflows, plans and evidence artifacts.",
   "naming_contract": {
@@ -33,14 +33,14 @@
     "A missing or unmapped material security artifact must be reconciled before Security Go."
   ],
   "counts": {
-    "total_entries": 177,
+    "total_entries": 180,
     "by_artifact_type": {
       "CI_WORKFLOW": 11,
-      "ASSURANCE_DOCUMENT": 4,
+      "ASSURANCE_DOCUMENT": 5,
       "TEST_PLAN": 1,
       "TEST_EVIDENCE": 14,
       "TEST_HARNESS_SPEC": 1,
-      "SECURITY_EVIDENCE": 52,
+      "SECURITY_EVIDENCE": 54,
       "TEST_RUNNER": 12,
       "EXECUTABLE_SQL_TEST": 79,
       "TEST_MATRIX": 1,
@@ -61,7 +61,8 @@
       "STS-M3-01": 1,
       "STS-M3-02": 1,
       "STS-M3-03": 1,
-      "STS-M2": 1
+      "STS-M2": 1,
+      "STS-M3-04-03": 3
     }
   },
   "entries": [
@@ -3295,6 +3296,84 @@
       "catalog_state": "VERSIONED_ON_MAIN",
       "assurance_state": "CATALOGED_NOT_EXECUTION_PROOF",
       "dashboard_join_key": "STS-M3-04"
+    },
+    {
+      "catalog_id": "STS-M3-04-03-E20260909-01",
+      "display_name": "STS-M3-04-03 — 2026-09-09 live full-stack security audit",
+      "parent_qualified_id": "STS-M3-04-03",
+      "related_sts": [
+        "STS-M3-04",
+        "STS-M3-06",
+        "STS-M3-07",
+        "STS-M5-00",
+        "STS-M5-07",
+        "STS-M6-02",
+        "STS-M6-06"
+      ],
+      "artifact_type": "SECURITY_EVIDENCE",
+      "path": "docs/security/audits/2026-09-09-live-fullstack-security-audit.md",
+      "source_blob_sha": "c6fa94a3b3e966c5310c10d7903e328dae0bd448",
+      "security_domains": [
+        "TENANT_ISOLATION_IDOR",
+        "FUNCTION_AUTHORIZATION",
+        "DATABASE_AUTHORIZATION",
+        "CONFIG_SECRETS_DEPLOY",
+        "RESOURCE_CONSUMPTION",
+        "INTEGRATIONS",
+        "XSS_OUTPUT_INJECTION"
+      ],
+      "catalog_state": "VERSIONED_ON_PR_HEAD",
+      "assurance_state": "LIVE_READ_ONLY_AUDIT_FINDINGS_OPEN_REMEDIATION_REQUIRED",
+      "dashboard_join_key": "STS-M3-04-03"
+    },
+    {
+      "catalog_id": "STS-M3-04-03-E20260909-02",
+      "display_name": "STS-M3-04-03 — 2026-09-09 live database evidence",
+      "parent_qualified_id": "STS-M3-04-03",
+      "related_sts": [
+        "STS-M3-04-04",
+        "STS-M3-04-05",
+        "STS-M3-04-11",
+        "STS-M3-07"
+      ],
+      "artifact_type": "SECURITY_EVIDENCE",
+      "path": "docs/security/audits/2026-09-09-live-db-evidence.md",
+      "source_blob_sha": "5fd04a0d588de0c91e3b94fded23473e0435e684",
+      "security_domains": [
+        "TENANT_ISOLATION_IDOR",
+        "DATABASE_AUTHORIZATION",
+        "FUNCTION_AUTHORIZATION"
+      ],
+      "catalog_state": "VERSIONED_ON_PR_HEAD",
+      "assurance_state": "LIVE_CATALOG_EVIDENCE_NOT_RUNTIME_NEGATIVE_PROOF",
+      "dashboard_join_key": "STS-M3-04-03"
+    },
+    {
+      "catalog_id": "STS-M3-04-03-D20260909-01",
+      "display_name": "STS-M3-04-03 — 2026-09-09 machine-readable audit finding ledger",
+      "parent_qualified_id": "STS-M3-04-03",
+      "related_sts": [
+        "STS-M3-04",
+        "STS-M3-06",
+        "STS-M3-07",
+        "STS-M5-00",
+        "STS-M5-06",
+        "STS-M5-07",
+        "STS-M6-02",
+        "STS-M6-06"
+      ],
+      "artifact_type": "ASSURANCE_DOCUMENT",
+      "path": "docs/security/audits/2026-09-09-security-audit-findings.json",
+      "source_blob_sha": "e2a6e56a71cb06896415a2dce7d577103b2ca589",
+      "security_domains": [
+        "TENANT_ISOLATION_IDOR",
+        "FUNCTION_AUTHORIZATION",
+        "DATABASE_AUTHORIZATION",
+        "CONFIG_SECRETS_DEPLOY"
+      ],
+      "catalog_state": "VERSIONED_ON_PR_HEAD",
+      "assurance_state": "FINDING_TO_WBS_TRACEABILITY",
+      "dashboard_join_key": "STS-M3-04-03"
     }
   ]
 }
