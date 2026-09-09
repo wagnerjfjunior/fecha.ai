@@ -1,7 +1,7 @@
 # FECH.AI — SFJM Current Issues / Risks / Gates
 
 **Status:** `CURRENT / TYPED CONTINUITY VIEW / DERIVED FROM CURRENT_STATE + MATERIAL EVIDENCE`  
-**Updated:** 2026-09-08  
+**Updated:** 2026-09-09  
 **Repository:** `wagnerjfjunior/fecha.ai`  
 **Decision anchor:** `ec42e7b087dd1bf9b7ddc0cf05316e9d3e7979be` (Product Authority M3-03 acceptance / M3-04 authorization; future refs must be resolved live)
 
@@ -37,7 +37,10 @@ REQUIRED_CURRENT
 = must be resolved inside the current task/PR
 
 RESIDUAL
-= known implementation/lifecycle/runtime/evidence debt preserved for later treatment
+= known historical/intermediate implementation/lifecycle/runtime/evidence debt preserved for explicit downstream treatment; not an acceptable final M3/M5/M6/Security Go terminal state
+
+SECURITY_REMEDIATION
+= actionable security finding that must reach REMEDIATED_VERIFIED or FALSE_POSITIVE_PROVEN / NOT_APPLICABLE_PROVEN before its owning milestone may close
 
 DEFERRED_EVIDENCE
 = evidence intentionally deferred until an explicit reopen condition
@@ -61,17 +64,19 @@ At Product Authority decision anchor `ec42e7b087dd1bf9b7ddc0cf05316e9d3e7979be`:
 
 ~~~text
 CURRENT_TASK = STS-M3-04
-CURRENT_TASK_STATE = AUTHORIZED_NOT_INITIATED
-CURRENT_AUTHORIZED_EXECUTION = STS-M3-04_TASK_AUTHORIZED_NOT_STARTED
+CURRENT_TASK_STATE = ACTIVE / SCOPE_EXPANDED / REBASELINE_REQUIRED
+CURRENT_AUTHORIZED_TECHNICAL_EXECUTION = NONE
 
 BLOCKING = 0
 REQUIRED_CURRENT = 0
+SECURITY_REMEDIATION = 10
 RESIDUAL = 12
 DEFERRED_EVIDENCE = 3
 SECURITY_GATE = 3
 FUTURE_GATE = 1
 
 CURRENT_BLOCKER_COUNT = 0
+FINAL_SECURITY_CLOSURE_FINDINGS_OPEN = 10
 ~~~
 
 These counts are semantic classes, not a count of every non-PASS program fact.
@@ -80,6 +85,16 @@ These counts are semantic classes, not a count of every non-PASS program fact.
 
 | ID | Class | Scope | State | Blocking for current task? | Blocking for / relevance | Source | Resolution / transition condition | Display policy |
 |---|---|---|---|---|---|---|---|---|
+| STS-AUDIT-20260909-F01 | SECURITY_REMEDIATION | STS-M3-07-01 | OPEN_REMEDIATION_REQUIRED | NO | M3 / Security Go | `docs/security/audits/2026-09-09-live-fullstack-security-audit.md` | resource-bind Mesa approval; negative proof + AppSec | PROGRAM_SECURITY_GATES |
+| STS-AUDIT-20260909-F02 | SECURITY_REMEDIATION | STS-M3-07-01 | OPEN_REMEDIATION_REQUIRED | NO | M3 / Security Go | `docs/security/audits/2026-09-09-live-fullstack-security-audit.md` | resource-bind supplier report; negative proof + AppSec | PROGRAM_SECURITY_GATES |
+| STS-AUDIT-20260909-F03 | SECURITY_REMEDIATION | STS-M3-07-02 | OPEN_REMEDIATION_REQUIRED | NO | M3 / Security Go | `docs/security/audits/2026-09-09-live-fullstack-security-audit.md` | tenant-scope global analytics RPCs | PROGRAM_SECURITY_GATES |
+| STS-AUDIT-20260909-F04 | SECURITY_REMEDIATION | STS-M3-04-04 | OPEN_REMEDIATION_REQUIRED | NO | M3-04 / Security Go | `docs/security/audits/2026-09-09-live-fullstack-security-audit.md` | tenant-bound lista_avaliacoes invariants + proof | PROGRAM_SECURITY_GATES |
+| STS-AUDIT-20260909-F05 | SECURITY_REMEDIATION | STS-M3-04-05 | OPEN_REMEDIATION_REQUIRED | NO | M3-04 / Security Go | `docs/security/audits/2026-09-09-live-fullstack-security-audit.md` | tenant-bound PME relationship invariants + proof | PROGRAM_SECURITY_GATES |
+| STS-AUDIT-20260909-F06 | SECURITY_REMEDIATION | STS-M3-07-03 | OPEN_REMEDIATION_REQUIRED | NO | M3 / Security Go | `docs/security/audits/2026-09-09-live-fullstack-security-audit.md` | remove/bind lead oracle reachability | PROGRAM_SECURITY_GATES |
+| STS-AUDIT-20260909-F07 | SECURITY_REMEDIATION | STS-M3-07-03 | OPEN_REMEDIATION_REQUIRED | NO | M3 / Security Go | `docs/security/audits/2026-09-09-live-fullstack-security-audit.md` | remove client reachability from lock helper | PROGRAM_SECURITY_GATES |
+| STS-AUDIT-20260909-F08 | SECURITY_REMEDIATION | STS-M3-06-02 | OPEN_REMEDIATION_REQUIRED / DEPLOYMENT_REACHABILITY_TO_VERIFY | NO | M3-06 / M5 / Security Go | `docs/security/audits/2026-09-09-live-fullstack-security-audit.md` | authenticate/limit or retire proxy after live proof | PROGRAM_SECURITY_GATES |
+| STS-AUDIT-20260909-F09 | SECURITY_REMEDIATION | STS-M3-04-11 | OPEN_REMEDIATION_REQUIRED | NO | M3-04 / M5-04 / Security Go | `docs/security/audits/2026-09-09-live-fullstack-security-audit.md` | fail-closed default ACL + fitness proof | PROGRAM_SECURITY_GATES |
+| STS-AUDIT-20260909-F10 | SECURITY_REMEDIATION | STS-M3-07-04 | OPEN_REMEDIATION_REQUIRED | NO | M3 / Security Go | `docs/security/audits/2026-09-09-live-fullstack-security-audit.md` | anon EXECUTE allowlist convergence + negative proof | PROGRAM_SECURITY_GATES |
 | STS-GATE-SECURITY-GO | SECURITY_GATE | PROGRAM | OPEN / NOT_GRANTED | NO | Security Go / launch | `docs/sfjm/CURRENT_STATE.md` + `BLOCKED_ACTIONS.md` | explicit Product Authority Security Go after required evidence/assurance | PROGRAM_SECURITY_GATES |
 | STS-GATE-COMMERCIALIZATION | SECURITY_GATE | COMMERCIALIZATION | BLOCKED | NO | broad paid commercialization | `docs/sfjm/BLOCKED_ACTIONS.md` | separate Product Authority commercial decision when launch/security conditions permit | PROGRAM_SECURITY_GATES |
 | STS-DEFER-J4 | DEFERRED_EVIDENCE | STS-M1 / F1-02 | DEFERRED | NO | deferred security assurance | `docs/security/evidence/F1-02_REMEDIATION_MASTER_PLAN.md` | Supabase Pro + isolated non-production environment + explicit Product Authority execution authorization | DEFERRED_EVIDENCE |

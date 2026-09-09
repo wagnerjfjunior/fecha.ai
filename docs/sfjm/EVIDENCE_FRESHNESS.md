@@ -1,5 +1,26 @@
 # FECH.AI — SFJM Evidence Freshness
 
+## 0.0000000000000000036 CURRENT — 2026-09-09 LIVE FULL-STACK SECURITY AUDIT
+
+~~~text
+audit GitHub main = ac20a30fea9095f036d8d466e83794432d58ca89
+Supabase live project = uobxxgzshrmbtjfdolxd
+database evidence mode = READ_ONLY CATALOG / DEFINITIONS / ACL / RLS / CONSTRAINTS
+finding ledger = F-01..F-10
+hostile-client runtime proof = NOT_PERFORMED
+Git history exhaustive secret scan = NOT_VERIFIED
+Security Go = NOT_GRANTED
+~~~
+
+Canonical durable artifacts after publication:
+- `docs/security/audits/2026-09-09-live-fullstack-security-audit.md`
+- `docs/security/audits/2026-09-09-live-db-evidence.md`
+- `docs/security/audits/2026-09-09-security-audit-findings.json`
+- `docs/security/audits/2026-09-09-github-issues.md`
+
+Invalidation events include changes to affected RPC bodies/ACLs, relevant tables/FKs/policies/default ACLs, proxy runtime/deployment, new security audit findings, or a new main head touching affected boundaries.
+
+
 ## 0.0000000000000000034 CURRENT EVIDENCE — STS-M3-04-01 APPLIED / VALIDATED / ACCEPTED — 2026-09-08
 
 ~~~text

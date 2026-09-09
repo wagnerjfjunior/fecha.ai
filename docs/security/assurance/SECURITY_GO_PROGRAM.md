@@ -1,6 +1,6 @@
 # FECH.AI — Security Go Program, Methodology & Proof Contract
 
-**Status:** `CANONICAL_SECURITY_GO_METHOD_V1 / PR_HEAD_ONLY / NOT_SECURITY_GO`  
+**Status:** `CANONICAL_SECURITY_GO_METHOD_V1 / CANONICAL_WHEN_MERGED_TO_MAIN / NOT_SECURITY_GO`  
 **Repository:** `wagnerjfjunior/fecha.ai`  
 **Program:** `FECH.AI Security-to-Scale 2026`  
 **Product Authority:** Wagner / FECH.AI  
@@ -96,7 +96,8 @@ material attack surface identified
 + tenant/auth/role/storage regression passed
 + supply-chain/config/deploy gates passed
 + observability/incident controls verified
-+ residual risk explicitly adjudicated
++ zero open actionable security finding across canonical audits and current assurance
++ any non-applicable finding proven with evidence rather than accepted as residual debt
 + evidence exact-ref/fresh/current
 + zero open blocking security finding
 ```
@@ -110,6 +111,23 @@ SECURITY GO = GRANTED
 Security Go is an internal FECH.AI release/security decision. It is **not** a third-party certification and must not be represented as OWASP, NIST or external auditor certification unless such certification separately occurs.
 
 ---
+
+## 2.1 Product Authority zero-residual final security contract — 2026-09-09
+
+Historical intermediate tasks may preserve `ACCEPTED_WITH_RESIDUALS` for truthful provenance. Final security milestones may not.
+
+```text
+FINAL STS-M3
+FINAL STS-M5
+FINAL STS-M6
+SECURITY_GO_CANDIDATE
+= NO ACCEPTED ACTIONABLE SECURITY RESIDUAL
+```
+
+Every actionable finding known before final Security Go candidacy must end as:
+`REMEDIATED_VERIFIED`, `FALSE_POSITIVE_PROVEN`, or `NOT_APPLICABLE_PROVEN`.
+
+`OPEN`, `ACCEPTED_WITH_RESIDUALS`, `NOT_DETERMINED`, `FIXED_NOT_VERIFIED` and silent waiver are invalid terminal states.
 
 ## 3. Core security principles
 
@@ -412,9 +430,23 @@ STS-M3-04-07 — Tenant-Bound Database Invariant Verification
 STS-M3-04-08 — Direct-Write / Bypass Call-Site Sweep
 STS-M3-04-09 — Structural Cross-Tenant Negative Proofs
 STS-M3-04-10 — Independent AppSec Closure Review
+STS-M3-04-11 — Default Privilege Fail-Closed Hardening
+STS-M3-04-12 — M3-04 Zero-Residual Closure Gate
 ```
 
-M3-04 cannot close while a material structural Tenant-A → Tenant-B path remains possible.
+M3-04 cannot close while a material structural Tenant-A → Tenant-B path remains possible or while F-04, F-05, F-09 (or any newly discovered M3-04-owned finding) remains open/unverified.
+
+Live-audit privileged-boundary track:
+
+```text
+STS-M3-06-02 — External Proxy / Worker Authentication & Resource Boundary Hardening
+STS-M3-07-01 — Resource-Bound SECURITY DEFINER Remediation
+STS-M3-07-02 — Tenant-Scoped Analytics / Dashboard RPC Remediation
+STS-M3-07-03 — Internal Helper Reachability + Lead Oracle Remediation
+STS-M3-07-04 — Anonymous RPC EXECUTE Allowlist Convergence
+STS-M3-07-05 — Privileged RPC Cross-Tenant / Anonymous Negative Proofs
+STS-M3-07-06 — Independent AppSec Privileged-Boundary Closure Review
+```
 
 ### Later security path
 
@@ -430,13 +462,15 @@ STS-M5-02 — Tenant / role / auth / storage regression
 STS-M5-03 — Dependency / CVE gate
 STS-M5-04 — Secrets / config / deploy gate
 STS-M5-05 — Observability / rollback / incident readiness
-STS-M5-06 — Residual-risk adjudication
+STS-M5-06 — Residual Finding Elimination / Zero-Open-Finding Gate
+STS-M5-07 — Independent Re-Audit Against All Canonical Security Findings
 
 STS-M6-01 — Final Security Evidence + AS-BUILT package
 STS-M6-02 — Security blocker closeout
 STS-M6-03 — Operational runbooks
 STS-M6-04 — Controlled commercial decision
 STS-M6-05 — Launch readiness + AS-BUILT acceptance review
+STS-M6-06 — Independent Final Security Go Candidate Review
 ```
 
 Security Go is a separate Product Authority decision after the required evidence exists.

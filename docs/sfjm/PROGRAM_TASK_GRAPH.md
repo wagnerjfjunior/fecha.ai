@@ -1,5 +1,29 @@
 # FECH.AI — SFJM Program Task Graph
 
+## 0. CURRENT EXECUTION OVERLAY — 2026-09-09 LIVE AUDIT INTEGRATED / ZERO-RESIDUAL FINAL CONTRACT
+
+~~~text
+audit main = ac20a30fea9095f036d8d466e83794432d58ca89
+STS-M3 = ACTIVE
+STS-M3-04 = ACTIVE / SCOPE_EXPANDED / REBASELINE_REQUIRED
+STS-M3-04-03..12 = DEFINED_NOT_AUTHORIZED where not already completed
+STS-M3-06 = PLANNED / SCOPE_EXPANDED / NOT_AUTHORIZED
+STS-M3-07 = DEFINED_NOT_AUTHORIZED
+STS-M5 = PLANNED / REBASELINE_REQUIRED
+STS-M6 = PLANNED / REBASELINE_REQUIRED
+F-01..F-10 = OPEN_REMEDIATION_REQUIRED
+CURRENT_AUTHORIZED_TECHNICAL_EXECUTION = NONE
+Security Go = NOT_GRANTED
+~~~
+
+Final milestone contract:
+
+~~~text
+M3/M5/M6 FINAL ACCEPTED_WITH_RESIDUALS = FORBIDDEN
+OPEN ACTIONABLE SECURITY FINDING = FINAL GATE BLOCK
+~~~
+
+
 
 ## 0.0 CANONICAL SECURITY ASSURANCE CATALOG RELATION
 
@@ -405,8 +429,21 @@ Historical PRs may be related to the current WBS as `HISTORICAL_CONTRIBUTION_TO_
 | STS-M3-04 | STS-M3-04-08 | M3-04-08 | Direct-Write / Bypass Call-Site Sweep | TBD | DEFINED_NOT_AUTHORIZED |
 | STS-M3-04 | STS-M3-04-09 | M3-04-09 | Structural Cross-Tenant Negative Proofs | TBD | DEFINED_NOT_AUTHORIZED |
 | STS-M3-04 | STS-M3-04-10 | M3-04-10 | Independent AppSec Closure Review | TBD | DEFINED_NOT_AUTHORIZED |
+| STS-M3-04 | STS-M3-04-11 | M3-04-11 | Default Privilege Fail-Closed Hardening | TBD | DEFINED_NOT_AUTHORIZED |
+| STS-M3-04 | STS-M3-04-12 | M3-04-12 | M3-04 Zero-Residual Closure Gate | TBD | DEFINED_NOT_AUTHORIZED |
 | STS-M3 | STS-M3-05 | M3-05 | Fechamento Auth / Admin flows | 24 | PLANNED_NOT_AUTHORIZED |
-| STS-M3 | STS-M3-06 | M3-06 | Staging / test plan de segurança | 28 | PLANNED_NOT_AUTHORIZED |
+| STS-M3 | STS-M3-06 | M3-06 | Staging / test plan de segurança + External Service Boundary Hardening | REBASELINE | PLANNED_NOT_AUTHORIZED |
+| STS-M3-06 | STS-M3-06-01 | M3-06-01 | Isolated Security Staging / Fixture Contract | TBD | DEFINED_NOT_AUTHORIZED |
+| STS-M3-06 | STS-M3-06-02 | M3-06-02 | External Proxy / Worker Authentication & Resource Boundary Hardening | TBD | DEFINED_NOT_AUTHORIZED |
+| STS-M3-06 | STS-M3-06-03 | M3-06-03 | External Service / Integration Abuse & Rate-Limit Verification | TBD | DEFINED_NOT_AUTHORIZED |
+| STS-M3-06 | STS-M3-06-04 | M3-06-04 | M3 Security Negative-Test Matrix & Execution Plan | TBD | DEFINED_NOT_AUTHORIZED |
+| STS-M3 | STS-M3-07 | M3-07 | Privileged RPC / Object Authority Residual Remediation | REBASELINE | DEFINED_NOT_AUTHORIZED |
+| STS-M3-07 | STS-M3-07-01 | M3-07-01 | Resource-Bound SECURITY DEFINER Remediation — Mesa Approval + Supplier Report | TBD | DEFINED_NOT_AUTHORIZED |
+| STS-M3-07 | STS-M3-07-02 | M3-07-02 | Tenant-Scoped Analytics / Dashboard RPC Remediation | TBD | DEFINED_NOT_AUTHORIZED |
+| STS-M3-07 | STS-M3-07-03 | M3-07-03 | Internal Helper Reachability + Lead Oracle Remediation | TBD | DEFINED_NOT_AUTHORIZED |
+| STS-M3-07 | STS-M3-07-04 | M3-07-04 | Anonymous RPC EXECUTE Allowlist Convergence | TBD | DEFINED_NOT_AUTHORIZED |
+| STS-M3-07 | STS-M3-07-05 | M3-07-05 | Privileged RPC Cross-Tenant / Anonymous Negative Proofs | TBD | DEFINED_NOT_AUTHORIZED |
+| STS-M3-07 | STS-M3-07-06 | M3-07-06 | Independent AppSec Privileged-Boundary Closure Review | TBD | DEFINED_NOT_AUTHORIZED |
 | STS-M4 | STS-M4-01 | M4-01 | AppShell / Shared Frontend Boundary | 20 | PLANNED_NOT_AUTHORIZED |
 | STS-M4 | STS-M4-02 | M4-02 | CRM + Funil Core Slice | 40 | PLANNED_NOT_AUTHORIZED |
 | STS-M4 | STS-M4-03 | M4-03 | LeadOps Execution Slice — Leads / Listas / Distribuição / Discador / Power Message Engine | 32 | PLANNED_NOT_AUTHORIZED |
@@ -419,12 +456,14 @@ Historical PRs may be related to the current WBS as `HISTORICAL_CONTRIBUTION_TO_
 | STS-M5 | STS-M5-03 | M5-03 | Dependency / CVE gate | 12 | PLANNED_NOT_AUTHORIZED |
 | STS-M5 | STS-M5-04 | M5-04 | Secrets / config / deploy gate | 16 | PLANNED_NOT_AUTHORIZED |
 | STS-M5 | STS-M5-05 | M5-05 | Observabilidade / rollback / incidente | 24 | PLANNED_NOT_AUTHORIZED |
-| STS-M5 | STS-M5-06 | M5-06 | Adjudicação de residual risk | 20 | PLANNED_NOT_AUTHORIZED |
+| STS-M5 | STS-M5-06 | M5-06 | Residual Finding Elimination / Zero-Open-Finding Gate | REBASELINE | PLANNED_NOT_AUTHORIZED |
+| STS-M5 | STS-M5-07 | M5-07 | Independent Re-Audit Against All Canonical Security Findings | REBASELINE | PLANNED_NOT_AUTHORIZED |
 | STS-M6 | STS-M6-01 | M6-01 | Security Evidence + Final AS-BUILT Package | 14 | PLANNED_NOT_AUTHORIZED |
 | STS-M6 | STS-M6-02 | M6-02 | Blocker closeout | 8 | PLANNED_NOT_AUTHORIZED |
 | STS-M6 | STS-M6-03 | M6-03 | Onboarding / support / operational runbooks | 18 | PLANNED_NOT_AUTHORIZED |
 | STS-M6 | STS-M6-04 | M6-04 | Decisão comercial controlada | 8 | PLANNED_NOT_AUTHORIZED |
 | STS-M6 | STS-M6-05 | M6-05 | Launch readiness + AS-BUILT acceptance review | 12 | PLANNED_NOT_AUTHORIZED |
+| STS-M6 | STS-M6-06 | M6-06 | Independent Final Security Go Candidate Review | REBASELINE | PLANNED_NOT_AUTHORIZED |
 
 Milestone states:
 

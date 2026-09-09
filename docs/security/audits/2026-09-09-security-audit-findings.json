@@ -1,0 +1,142 @@
+{
+  "schema_version": "1.0",
+  "title": "FECH.AI 2026-09-09 Live Security Audit Finding Ledger",
+  "repository": "wagnerjfjunior/fecha.ai",
+  "audited_main": "ac20a30fea9095f036d8d466e83794432d58ca89",
+  "environment": "Pilot Production / SaaS multi-tenant / multiempresa",
+  "closure_contract": {
+    "intermediate_accepted_with_residuals_allowed_for_history": true,
+    "final_m3_residuals_allowed": false,
+    "final_m5_residuals_allowed": false,
+    "final_m6_residuals_allowed": false,
+    "security_go_candidate_residuals_allowed": false,
+    "terminal_allowed_states": [
+      "REMEDIATED_VERIFIED",
+      "NOT_APPLICABLE_PROVEN",
+      "FALSE_POSITIVE_PROVEN"
+    ]
+  },
+  "findings": [
+    {
+      "id": "F-01",
+      "severity": "HIGH",
+      "state": "OPEN_REMEDIATION_REQUIRED",
+      "primary_wbs_task": "STS-M3-07-01",
+      "verification_tasks": [
+        "STS-M3-07-05",
+        "STS-M3-07-06",
+        "STS-M5-01",
+        "STS-M5-07"
+      ]
+    },
+    {
+      "id": "F-02",
+      "severity": "HIGH",
+      "state": "OPEN_REMEDIATION_REQUIRED",
+      "primary_wbs_task": "STS-M3-07-01",
+      "verification_tasks": [
+        "STS-M3-07-05",
+        "STS-M3-07-06",
+        "STS-M5-01",
+        "STS-M5-07"
+      ]
+    },
+    {
+      "id": "F-03",
+      "severity": "HIGH",
+      "state": "OPEN_REMEDIATION_REQUIRED",
+      "primary_wbs_task": "STS-M3-07-02",
+      "verification_tasks": [
+        "STS-M3-07-05",
+        "STS-M3-07-06",
+        "STS-M5-02",
+        "STS-M5-07"
+      ]
+    },
+    {
+      "id": "F-04",
+      "severity": "HIGH",
+      "state": "OPEN_REMEDIATION_REQUIRED",
+      "primary_wbs_task": "STS-M3-04-04",
+      "verification_tasks": [
+        "STS-M3-04-07",
+        "STS-M3-04-09",
+        "STS-M3-04-10",
+        "STS-M3-04-12"
+      ]
+    },
+    {
+      "id": "F-05",
+      "severity": "HIGH",
+      "state": "OPEN_REMEDIATION_REQUIRED",
+      "primary_wbs_task": "STS-M3-04-05",
+      "verification_tasks": [
+        "STS-M3-04-07",
+        "STS-M3-04-09",
+        "STS-M3-04-10",
+        "STS-M3-04-12"
+      ]
+    },
+    {
+      "id": "F-06",
+      "severity": "MEDIUM",
+      "state": "OPEN_REMEDIATION_REQUIRED",
+      "primary_wbs_task": "STS-M3-07-03",
+      "verification_tasks": [
+        "STS-M3-07-05",
+        "STS-M3-07-06",
+        "STS-M5-01",
+        "STS-M5-07"
+      ]
+    },
+    {
+      "id": "F-07",
+      "severity": "LOW",
+      "state": "OPEN_REMEDIATION_REQUIRED",
+      "primary_wbs_task": "STS-M3-07-03",
+      "verification_tasks": [
+        "STS-M3-07-05",
+        "STS-M3-07-06",
+        "STS-M5-01",
+        "STS-M5-07"
+      ]
+    },
+    {
+      "id": "F-08",
+      "severity": "MEDIUM",
+      "state": "OPEN_REMEDIATION_REQUIRED",
+      "primary_wbs_task": "STS-M3-06-02",
+      "verification_tasks": [
+        "STS-M3-06-03",
+        "STS-M3-06-04",
+        "STS-M5-01",
+        "STS-M5-04",
+        "STS-M5-07"
+      ]
+    },
+    {
+      "id": "F-09",
+      "severity": "MEDIUM",
+      "state": "OPEN_REMEDIATION_REQUIRED",
+      "primary_wbs_task": "STS-M3-04-11",
+      "verification_tasks": [
+        "STS-M3-04-07",
+        "STS-M3-04-10",
+        "STS-M5-04",
+        "STS-M5-07"
+      ]
+    },
+    {
+      "id": "F-10",
+      "severity": "LOW",
+      "state": "OPEN_REMEDIATION_REQUIRED",
+      "primary_wbs_task": "STS-M3-07-04",
+      "verification_tasks": [
+        "STS-M3-07-05",
+        "STS-M3-07-06",
+        "STS-M5-01",
+        "STS-M5-07"
+      ]
+    }
+  ]
+}

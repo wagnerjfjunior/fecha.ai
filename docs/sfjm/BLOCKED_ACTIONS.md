@@ -1,5 +1,23 @@
 # FECH.AI — SFJM Blocked Actions
 
+## 0.0000000000000000036 CURRENT — ZERO-RESIDUAL SECURITY CLOSURE BLOCK — 2026-09-09
+
+The following remain blocked while any actionable canonical security finding is `OPEN`, `ACCEPTED_WITH_RESIDUALS`, `NOT_DETERMINED` or `FIXED_NOT_VERIFIED`:
+
+~~~text
+STS-M3 final acceptance
+STS-M5 final acceptance
+STS-M6 final acceptance
+Security Go candidate recommendation
+Security Go grant
+broad paid commercialization represented as security-cleared
+~~~
+
+Historical accepted-with-residuals child states remain valid provenance, but their residuals must be consumed by explicit remediation/verification tasks before parent/final closure.
+
+This block does not authorize technical remediation.
+
+
 
 ## 0.0000000000000000035 CURRENT — STS-M3-04-02 ACCEPTED / FURTHER TECHNICAL EXECUTION BLOCKED PENDING SEPARATE AUTHORIZATION — 2026-09-08
 

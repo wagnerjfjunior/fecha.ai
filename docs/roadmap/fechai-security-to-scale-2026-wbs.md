@@ -138,7 +138,7 @@ The final M6 gate also requires a professional indexed AS-BUILT package as defin
 
 ## 3. Planning totals
 
-The original 2026 planning baseline remains preserved for provenance, but Product Authority expanded the material scope of `STS-M3-04` on 2026-09-08 to include structural multi-tenant integrity and added `STS-M5-00` as a global security-assurance reconciliation gate.
+The original 2026 planning baseline remains preserved for provenance. Product Authority expanded `STS-M3-04` on 2026-09-08 for structural multi-tenant integrity, and on 2026-09-09 integrated the live full-stack security audit into the critical path with mandatory zero-open-finding closure before M3/M5/M6 final acceptance and Security Go candidacy.
 
 Therefore the old aggregate hours are no longer a reliable current forecast until a bounded rebaseline is approved.
 
@@ -254,7 +254,8 @@ Issue #141 exit contract remains authoritative:
 | M3-03 | STS-M3-03 | Allowlist de RPCs privilegiadas | 24h |
 | M3-04 | STS-M3-04 | Redução de DML sensível direto + Integridade Estrutural Multi-Tenant | REBASELINE_REQUIRED |
 | M3-05 | STS-M3-05 | Fechamento Auth / Admin flows | 24h |
-| M3-06 | STS-M3-06 | Staging / test plan de segurança | 28h |
+| M3-06 | STS-M3-06 | Staging / test plan de segurança + External Service Boundary Hardening | REBASELINE_REQUIRED |
+| M3-07 | STS-M3-07 | Privileged RPC / Object Authority Residual Remediation | REBASELINE_REQUIRED |
 
 ### 7.1 STS-M3-04 expanded execution graph
 
@@ -279,18 +280,66 @@ The previous 24h estimate is preserved only as historical planning provenance an
 | STS-M3-04-08 | Direct-Write / Bypass Call-Site Sweep | DEFINED_NOT_AUTHORIZED | TBD |
 | STS-M3-04-09 | Structural Cross-Tenant Negative Proofs | DEFINED_NOT_AUTHORIZED | TBD |
 | STS-M3-04-10 | Independent AppSec Closure Review | DEFINED_NOT_AUTHORIZED | TBD |
+| STS-M3-04-11 | Default Privilege Fail-Closed Hardening | DEFINED_NOT_AUTHORIZED | TBD |
+| STS-M3-04-12 | M3-04 Zero-Residual Closure Gate | DEFINED_NOT_AUTHORIZED | TBD |
 
 Closure rule:
 
 ```text
 NO MATERIAL CROSS-TENANT STRUCTURAL GAP
 + NO UNJUSTIFIED SENSITIVE DIRECT-DML GAP
++ DEFAULT PRIVILEGES FAIL-CLOSED
 + ZERO MATERIAL NOT_DETERMINED ROWS
-+ INDEPENDENT APPSEC CLOSURE REVIEW
++ F-04 / F-05 / F-09 = REMEDIATED_VERIFIED OR FALSE_POSITIVE_PROVEN / NOT_APPLICABLE_PROVEN
++ INDEPENDENT APPSEC CLOSURE REVIEW = PASS
++ ZERO OPEN ACTIONABLE FINDINGS OWNED BY STS-M3-04
 -> STS-M3-04 MAY BE RECOMMENDED FOR PRODUCT AUTHORITY ACCEPTANCE
+
+STS-M3-04 FINAL = ACCEPTED_WITH_RESIDUALS
+-> FORBIDDEN
 ```
 
 Issue #141 remains the parent program contract; this Product Authority scope amendment is the current FECH.AI granular WBS authority for M3-04.
+
+### 7.2 2026-09-09 live-audit remediation graph
+
+Audit artifact: `docs/security/audits/2026-09-09-live-fullstack-security-audit.md`  
+Finding ledger: `docs/security/audits/2026-09-09-security-audit-findings.json`
+
+#### STS-M3-06 execution decomposition
+
+| Qualified ID | Task | Findings consumed | Operational state | Hours |
+|---|---|---|---|---:|
+| STS-M3-06-01 | Isolated Security Staging / Fixture Contract | assurance prerequisite | DEFINED_NOT_AUTHORIZED | TBD |
+| STS-M3-06-02 | External Proxy / Worker Authentication & Resource Boundary Hardening | F-08 | DEFINED_NOT_AUTHORIZED | TBD |
+| STS-M3-06-03 | External Service / Integration Abuse & Rate-Limit Verification | F-08 + SEC-11/14/19 | DEFINED_NOT_AUTHORIZED | TBD |
+| STS-M3-06-04 | M3 Security Negative-Test Matrix & Execution Plan | M3 closure | DEFINED_NOT_AUTHORIZED | TBD |
+
+#### STS-M3-07 — Privileged RPC / Object Authority Residual Remediation
+
+| Qualified ID | Task | Findings consumed | Operational state | Hours |
+|---|---|---|---|---:|
+| STS-M3-07-01 | Resource-Bound SECURITY DEFINER Remediation — Mesa Approval + Supplier Report | F-01, F-02 | DEFINED_NOT_AUTHORIZED | TBD |
+| STS-M3-07-02 | Tenant-Scoped Analytics / Dashboard RPC Remediation | F-03 | DEFINED_NOT_AUTHORIZED | TBD |
+| STS-M3-07-03 | Internal Helper Reachability + Lead Oracle Remediation | F-06, F-07 | DEFINED_NOT_AUTHORIZED | TBD |
+| STS-M3-07-04 | Anonymous RPC EXECUTE Allowlist Convergence | F-10 | DEFINED_NOT_AUTHORIZED | TBD |
+| STS-M3-07-05 | Privileged RPC Cross-Tenant / Anonymous Negative Proofs | F-01, F-02, F-03, F-06, F-07, F-10 | DEFINED_NOT_AUTHORIZED | TBD |
+| STS-M3-07-06 | Independent AppSec Privileged-Boundary Closure Review | M3-07 closure | DEFINED_NOT_AUTHORIZED | TBD |
+
+#### M3 zero-residual exit contract
+
+```text
+STS-M3 CANNOT CLOSE
+IF ANY KNOWN ACTIONABLE SECURITY FINDING IS:
+OPEN
+OR ACCEPTED_WITH_RESIDUALS
+OR NOT_DETERMINED
+OR REMEDIATION_NOT_VERIFIED
+```
+
+M3 final acceptance requires F-01..F-10 terminally `REMEDIATED_VERIFIED` or `FALSE_POSITIVE_PROVEN / NOT_APPLICABLE_PROVEN`, all inherited material security residuals consumed into explicit closure tasks, no unbound privileged object operation, no mixed-tenant relationship path, no fail-open default privilege path, isolated negative-proof execution, and independent AppSec PASS.
+
+This amendment defines work. It does not authorize technical execution.
 
 ## 8. M4 — Frontend Modularization / App.jsx Extraction — 172h
 
@@ -336,7 +385,8 @@ M4-06 cannot close without accepted functional-equivalence evidence for CRM, Fun
 | M5-03 | STS-M5-03 | Dependency / CVE gate | 12h |
 | M5-04 | STS-M5-04 | Secrets / config / deploy gate | 16h |
 | M5-05 | STS-M5-05 | Observabilidade / rollback / incidente | 24h |
-| M5-06 | STS-M5-06 | Adjudicação de residual risk | 20h |
+| M5-06 | STS-M5-06 | Residual Finding Elimination / Zero-Open-Finding Gate | REBASELINE_REQUIRED |
+| M5-07 | STS-M5-07 | Independent Re-Audit Against All Canonical Security Findings | REBASELINE_REQUIRED |
 
 `STS-M5-00` is the mandatory cross-program reconciliation gate that maps all prior accepted work and all material attack classes into current assurance coverage before integrated hostile-client validation can be considered complete.
 
@@ -344,7 +394,22 @@ The early catalog/documentation foundation created before M5 does not start M5 a
 
 Issue #141 exit remains authoritative for M5.
 
-## 10. M6 — Security Go Candidate / Commercial Readiness — 60h
+```text
+M5 MAY NOT CLOSE AS ACCEPTED_WITH_RESIDUALS.
+
+Every actionable finding from canonical historical security evidence,
+the 2026-09-09 live audit,
+M5 execution,
+and independent re-audit
+must be terminally:
+REMEDIATED_VERIFIED
+OR FALSE_POSITIVE_PROVEN / NOT_APPLICABLE_PROVEN.
+
+Any OPEN / ACCEPTED_WITH_RESIDUALS / NOT_DETERMINED actionable finding
+= M5 BLOCKED.
+```
+
+## 10. M6 — Security Go Candidate / Commercial Readiness — REBASELINE_REQUIRED
 
 **Qualified milestone:** `STS-M6`  
 **Issue #141 owners:** Product Authority + AppSec + Backend/Data + Architecture + SRE  
@@ -358,12 +423,13 @@ Issue #141 exit remains authoritative for M5.
 | M6-03 | STS-M6-03 | Onboarding / support / operational runbooks | 18h |
 | M6-04 | STS-M6-04 | Decisão comercial controlada | 8h |
 | M6-05 | STS-M6-05 | Launch readiness + AS-BUILT acceptance review | 12h |
+| M6-06 | STS-M6-06 | Independent Final Security Go Candidate Review | REBASELINE_REQUIRED |
 
 The professional AS-BUILT package must provide an indexed launch-scope view of system context, tenant/identity/authority, database contract, API/RPC/Edge boundaries, frontend/core slices, deployment topology, observability, backup/restore understanding, rollback, incident response, residual risks and specialist/operational ownership.
 
 Security Go and controlled commercialization remain separate Product Authority decisions.
 
-## 11. Separate pre-Security-Go backlog — 116h
+## 11. Mandatory pre-Security-Go closure backlog — historical 116h
 
 These items remain separate from the 832h critical path.
 
@@ -376,7 +442,7 @@ These items remain separate from the 832h critical path.
 | BG-05 | Team Lifecycle Authority / Issue #135 | 24h | PARKED |
 | BG-06 | Explicit audited Root support mode by tenant | 18h | PARKED |
 
-A parked item is not waived, passed or authorized.
+A parked item is not waived, passed or authorized. For final Security Go candidacy, every security-relevant BG item must be implemented and verified, or explicitly proven not applicable / superseded by a stronger control. `PARKED` is not an acceptable terminal Security Go state.
 
 ## 12. Separate planned/future backlog — 104h
 
@@ -420,17 +486,20 @@ COMPLETE / ACCEPTED WITH RESIDUALS
 STS-M3-04-02 =
 COMPLETE / ACCEPTED WITH RESIDUALS
 
-STS-M3-04-03..10 =
+STS-M3-04-03..12 =
 DEFINED / NOT_AUTHORIZED
 
 STS-M3-05 =
 PLANNED / NOT_AUTHORIZED
 
 STS-M3-06 =
-PLANNED / NOT_AUTHORIZED
+PLANNED / SCOPE_EXPANDED / NOT_AUTHORIZED
+
+STS-M3-07 =
+DEFINED / NOT_AUTHORIZED
 
 STS-M4..STS-M6 =
-PLANNED / NOT_AUTHORIZED
+PLANNED / REBASELINE_REQUIRED WHERE AMENDED / NOT_AUTHORIZED
 
 Security Go =
 NOT_GRANTED
