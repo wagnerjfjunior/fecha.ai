@@ -1,6 +1,38 @@
 # FECH.AI — SFJM Next Safe Action
 
-## 0.0000000000000000036 CURRENT MATERIAL GATE — ZERO-RESIDUAL WBS CANONICAL / NEXT TECHNICAL EXECUTION REQUIRES PRODUCT AUTHORITY — 2026-09-09
+## 0.0000000000000000037 CURRENT MATERIAL GATE — OFFENSIVE LAB AUTHORIZED FOR LATER / CONTINUE NORMAL WBS NOW — 2026-09-09
+
+~~~text
+STS-M3-06 + STS-M5-01 + STS-M5-02 =
+AUTHORIZED_DEFERRED
+
+OFFENSIVE LAB =
+NOT_CURRENT_ACTION
+
+COST-BEARING ENVIRONMENT =
+NOT_AUTHORIZED TO CREATE NOW
+
+CURRENT_IMMEDIATE_AUTHORIZED_TECHNICAL_EXECUTION =
+NONE
+
+Security Go =
+NOT_GRANTED
+~~~
+
+Single safe continuation:
+
+~~~text
+continue selecting/executing the normal next WBS task through the existing Product Authority task-by-task process
+
+DO NOT jump to the offensive lab
+DO NOT create the paid Supabase clone/branch now
+DO NOT execute hostile-client/cross-tenant attacks now
+~~~
+
+When all applicable non-offensive test obligations are complete, the preserved authorization becomes eligible for execution admission. At that time the remaining required gates are fresh bootstrap/current refs, isolated synthetic environment readiness, rollback/teardown and explicit Product Authority cost confirmation.
+
+
+## 0.0000000000000000036 HISTORICAL / SUPERSEDED MATERIAL GATE — ZERO-RESIDUAL WBS CANONICAL / NEXT TECHNICAL EXECUTION REQUIRES PRODUCT AUTHORITY — 2026-09-09
 
 ~~~text
 canonical main =
