@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0",
   "title": "FECH.AI — STS / WBS / PR Relationship Catalog",
-  "generated_date": "2026-09-08",
+  "generated_date": "2026-09-09",
   "generated_from_main": "ea46d3d2dc39fc7f700c1d9ad9d747905c317c85",
   "repository": "wagnerjfjunior/fecha.ai",
   "contracts": {
@@ -26,7 +26,16 @@
     "m3_04_current_hours_state": "REBASELINE_REQUIRED",
     "m5_00_added": true,
     "m5_current_hours_state": "REBASELINE_REQUIRED",
-    "global_critical_path_total_state": "REBASELINE_REQUIRED"
+    "global_critical_path_total_state": "REBASELINE_REQUIRED",
+    "zero_material_residual_final_closure": true,
+    "m3_03_implementation_convergence_added": true,
+    "m3_05_decomposition_added": true,
+    "m3_06_decomposition_added": true,
+    "m4_security_non_regression_mapped_all_six": true,
+    "m5_06_material_residual_elimination_gate": true,
+    "m5_07_independent_appsec_review_added": true,
+    "m6_security_go_candidate_requires_zero_material_open": true,
+    "amendment_pr": 211
   },
   "task_relations": [
     {
@@ -351,14 +360,93 @@
       "wbs_id": "M3-03",
       "qualified_id": "STS-M3-03",
       "parent": "STS-M3",
-      "name": "Allowlist de RPCs privilegiadas",
-      "state": "COMPLETE_WITH_RESIDUALS",
-      "hours": 24,
+      "name": "Privileged RPC Allowlist + Implementation Convergence",
+      "state": "COMPLETE_WITH_RESIDUALS_FINAL_CLOSURE_PENDING",
+      "hours": null,
       "pr_numbers": [
         202,
         203,
-        204
-      ]
+        204,
+        211
+      ],
+      "hours_state": "REBASELINE_REQUIRED"
+    },
+    {
+      "wbs_id": "M3-03-01",
+      "qualified_id": "STS-M3-03-01",
+      "parent": "STS-M3-03",
+      "name": "Accepted privileged RPC allowlist baseline",
+      "state": "HISTORICAL_ACCEPTED_EVIDENCE",
+      "hours": "historical",
+      "pr_numbers": [
+        211
+      ],
+      "security_exit_requirement": "Preserve accepted allowlist classification; no re-audit loop absent invalidator."
+    },
+    {
+      "wbs_id": "M3-03-02",
+      "qualified_id": "STS-M3-03-02",
+      "parent": "STS-M3-03",
+      "name": "Resource-Bound Privileged RPC Remediation",
+      "state": "DEFINED_NOT_AUTHORIZED",
+      "hours": null,
+      "hours_state": "REBASELINE_REQUIRED",
+      "pr_numbers": [
+        211
+      ],
+      "security_exit_requirement": "F-01/F-02 closed; resource UUIDs bound server-side to actor/tenant/object."
+    },
+    {
+      "wbs_id": "M3-03-03",
+      "qualified_id": "STS-M3-03-03",
+      "parent": "STS-M3-03",
+      "name": "Tenant-Scoped Analytics RPC Remediation",
+      "state": "DEFINED_NOT_AUTHORIZED",
+      "hours": null,
+      "hours_state": "REBASELINE_REQUIRED",
+      "pr_numbers": [
+        211
+      ],
+      "security_exit_requirement": "F-03 closed; non-root analytics scoped to canonical empresa/time."
+    },
+    {
+      "wbs_id": "M3-03-04",
+      "qualified_id": "STS-M3-03-04",
+      "parent": "STS-M3-03",
+      "name": "Internal-Helper Reachability Convergence",
+      "state": "DEFINED_NOT_AUTHORIZED",
+      "hours": null,
+      "hours_state": "REBASELINE_REQUIRED",
+      "pr_numbers": [
+        211
+      ],
+      "security_exit_requirement": "F-06/F-07 closed/refuted; internal helpers not directly client-reachable."
+    },
+    {
+      "wbs_id": "M3-03-05",
+      "qualified_id": "STS-M3-03-05",
+      "parent": "STS-M3-03",
+      "name": "RPC EXECUTE Principal Convergence",
+      "state": "DEFINED_NOT_AUTHORIZED",
+      "hours": null,
+      "hours_state": "REBASELINE_REQUIRED",
+      "pr_numbers": [
+        211
+      ],
+      "security_exit_requirement": "F-10 closed; client/anon/PUBLIC EXECUTE converges to explicit allowlist."
+    },
+    {
+      "wbs_id": "M3-03-06",
+      "qualified_id": "STS-M3-03-06",
+      "parent": "STS-M3-03",
+      "name": "Independent RPC Authority Closure Review",
+      "state": "DEFINED_NOT_AUTHORIZED",
+      "hours": null,
+      "hours_state": "REBASELINE_REQUIRED",
+      "pr_numbers": [
+        211
+      ],
+      "security_exit_requirement": "Zero material RPC authority gaps + zero material NOT_DETERMINED + independent PASS."
     },
     {
       "wbs_id": "M3-04",
@@ -478,23 +566,158 @@
       "wbs_id": "M3-05",
       "qualified_id": "STS-M3-05",
       "parent": "STS-M3",
-      "name": "Fechamento Auth / Admin flows",
+      "name": "Auth / Admin Final Closure",
       "state": "PLANNED_NOT_AUTHORIZED",
-      "hours": 24,
+      "hours": null,
       "pr_numbers": [
         2,
         120,
-        208
-      ]
+        208,
+        211
+      ],
+      "hours_state": "REBASELINE_REQUIRED"
+    },
+    {
+      "wbs_id": "M3-05-01",
+      "qualified_id": "STS-M3-05-01",
+      "parent": "STS-M3-05",
+      "name": "Create-user canonical authority convergence",
+      "state": "DEFINED_NOT_AUTHORIZED",
+      "hours": null,
+      "hours_state": "REBASELINE_REQUIRED",
+      "pr_numbers": [
+        211
+      ],
+      "security_exit_requirement": "Actor/tenant/role derived server-side."
+    },
+    {
+      "wbs_id": "M3-05-02",
+      "qualified_id": "STS-M3-05-02",
+      "parent": "STS-M3-05",
+      "name": "Password-reset / admin authority closure",
+      "state": "DEFINED_NOT_AUTHORIZED",
+      "hours": null,
+      "hours_state": "REBASELINE_REQUIRED",
+      "pr_numbers": [
+        211
+      ],
+      "security_exit_requirement": "Target user + tenant + privileged actor bound fail-closed."
+    },
+    {
+      "wbs_id": "M3-05-03",
+      "qualified_id": "STS-M3-05-03",
+      "parent": "STS-M3-05",
+      "name": "Root / admin-local / gestor compatibility cleanup",
+      "state": "DEFINED_NOT_AUTHORIZED",
+      "hours": null,
+      "hours_state": "REBASELINE_REQUIRED",
+      "pr_numbers": [
+        211
+      ],
+      "security_exit_requirement": "No legacy authority path contradicts canonical model."
+    },
+    {
+      "wbs_id": "M3-05-04",
+      "qualified_id": "STS-M3-05-04",
+      "parent": "STS-M3-05",
+      "name": "Auth/Admin negative proofs",
+      "state": "DEFINED_NOT_AUTHORIZED",
+      "hours": null,
+      "hours_state": "REBASELINE_REQUIRED",
+      "pr_numbers": [
+        211
+      ],
+      "security_exit_requirement": "Unauthorized/cross-tenant/role-escalation attempts denied."
+    },
+    {
+      "wbs_id": "M3-05-05",
+      "qualified_id": "STS-M3-05-05",
+      "parent": "STS-M3-05",
+      "name": "Independent Auth/Admin closure review",
+      "state": "DEFINED_NOT_AUTHORIZED",
+      "hours": null,
+      "hours_state": "REBASELINE_REQUIRED",
+      "pr_numbers": [
+        211
+      ],
+      "security_exit_requirement": "Zero material Auth/Admin residual + zero material NOT_DETERMINED."
     },
     {
       "wbs_id": "M3-06",
       "qualified_id": "STS-M3-06",
       "parent": "STS-M3",
-      "name": "Staging / test plan de segurança",
+      "name": "Security Staging + Service Boundary Hardening",
       "state": "PLANNED_NOT_AUTHORIZED",
-      "hours": 28,
-      "pr_numbers": []
+      "hours": null,
+      "pr_numbers": [
+        211
+      ],
+      "hours_state": "REBASELINE_REQUIRED"
+    },
+    {
+      "wbs_id": "M3-06-01",
+      "qualified_id": "STS-M3-06-01",
+      "parent": "STS-M3-06",
+      "name": "Isolated security staging topology + fixtures",
+      "state": "DEFINED_NOT_AUTHORIZED",
+      "hours": null,
+      "hours_state": "REBASELINE_REQUIRED",
+      "pr_numbers": [
+        211
+      ],
+      "security_exit_requirement": "Deterministic non-production hostile-client environment and rollback."
+    },
+    {
+      "wbs_id": "M3-06-02",
+      "qualified_id": "STS-M3-06-02",
+      "parent": "STS-M3-06",
+      "name": "mesa-worker-proxy auth/authorization disposition",
+      "state": "DEFINED_NOT_AUTHORIZED",
+      "hours": null,
+      "hours_state": "REBASELINE_REQUIRED",
+      "pr_numbers": [
+        211
+      ],
+      "security_exit_requirement": "F-08 remediated, removed or proven unreachable."
+    },
+    {
+      "wbs_id": "M3-06-03",
+      "qualified_id": "STS-M3-06-03",
+      "parent": "STS-M3-06",
+      "name": "Service-to-service credential / payload / rate boundary",
+      "state": "DEFINED_NOT_AUTHORIZED",
+      "hours": null,
+      "hours_state": "REBASELINE_REQUIRED",
+      "pr_numbers": [
+        211
+      ],
+      "security_exit_requirement": "Secret ownership, request size and rate/abuse boundaries proven."
+    },
+    {
+      "wbs_id": "M3-06-04",
+      "qualified_id": "STS-M3-06-04",
+      "parent": "STS-M3-06",
+      "name": "Hostile-client / cross-tenant harness readiness",
+      "state": "DEFINED_NOT_AUTHORIZED",
+      "hours": null,
+      "hours_state": "REBASELINE_REQUIRED",
+      "pr_numbers": [
+        211
+      ],
+      "security_exit_requirement": "Deterministic identities, fixtures and evidence capture ready."
+    },
+    {
+      "wbs_id": "M3-06-05",
+      "qualified_id": "STS-M3-06-05",
+      "parent": "STS-M3-06",
+      "name": "M3 Final Security Implementation Closure",
+      "state": "DEFINED_NOT_AUTHORIZED",
+      "hours": null,
+      "hours_state": "REBASELINE_REQUIRED",
+      "pr_numbers": [
+        211
+      ],
+      "security_exit_requirement": "All M3 material findings resolved/refuted; zero material NOT_DETERMINED."
     },
     {
       "wbs_id": "M4-01",
@@ -504,8 +727,11 @@
       "state": "PLANNED_NOT_AUTHORIZED",
       "hours": 20,
       "pr_numbers": [
-        170
-      ]
+        170,
+        211
+      ],
+      "security_exit_requirement": "No tenant/role/ownership/financial/privileged authority is decided in AppShell/client.",
+      "security_contract_state": "MAPPED_ZERO_RESIDUAL_AMENDMENT_PR_211"
     },
     {
       "wbs_id": "M4-02",
@@ -515,8 +741,11 @@
       "state": "PLANNED_NOT_AUTHORIZED",
       "hours": 40,
       "pr_numbers": [
-        170
-      ]
+        170,
+        211
+      ],
+      "security_exit_requirement": "CRM/Funil consume hardened server contracts; no tenant/ownership/direct-write regression.",
+      "security_contract_state": "MAPPED_ZERO_RESIDUAL_AMENDMENT_PR_211"
     },
     {
       "wbs_id": "M4-03",
@@ -545,8 +774,11 @@
         40,
         41,
         47,
-        170
-      ]
+        170,
+        211
+      ],
+      "security_exit_requirement": "LeadOps/PME preserve tenant/distribution/sensitive-DML boundaries.",
+      "security_contract_state": "MAPPED_ZERO_RESIDUAL_AMENDMENT_PR_211"
     },
     {
       "wbs_id": "M4-04",
@@ -586,8 +818,11 @@
         60,
         61,
         62,
-        170
-      ]
+        170,
+        211
+      ],
+      "security_exit_requirement": "MesaCliente preserves resource/tenant/service authorization boundaries.",
+      "security_contract_state": "MAPPED_ZERO_RESIDUAL_AMENDMENT_PR_211"
     },
     {
       "wbs_id": "M4-05",
@@ -601,8 +836,11 @@
         84,
         85,
         123,
-        170
-      ]
+        170,
+        211
+      ],
+      "security_exit_requirement": "Privileged feature gateways enforce server-side authority and consume hardened M3 APIs/RPCs.",
+      "security_contract_state": "MAPPED_ZERO_RESIDUAL_AMENDMENT_PR_211"
     },
     {
       "wbs_id": "M4-06",
@@ -665,8 +903,11 @@
         84,
         85,
         123,
-        170
-      ]
+        170,
+        211
+      ],
+      "security_exit_requirement": "Functional equivalence plus changed-boundary security regression across core modules.",
+      "security_contract_state": "MAPPED_ZERO_RESIDUAL_AMENDMENT_PR_211"
     },
     {
       "wbs_id": "M5-00",
@@ -677,8 +918,10 @@
       "hours": null,
       "hours_state": "REBASELINE_REQUIRED",
       "pr_numbers": [
-        209
-      ]
+        209,
+        211
+      ],
+      "security_exit_requirement": "Every material attack class/finding mapped to current proof; no material unmapped assurance item."
     },
     {
       "wbs_id": "M5-01",
@@ -742,8 +985,10 @@
         204,
         205,
         207,
-        209
-      ]
+        209,
+        211
+      ],
+      "security_exit_requirement": "Current hostile-client exploit attempts fail in isolated environment."
     },
     {
       "wbs_id": "M5-02",
@@ -810,8 +1055,10 @@
         206,
         207,
         208,
-        209
-      ]
+        209,
+        211
+      ],
+      "security_exit_requirement": "Tenant/role/auth/storage cross-boundary regression passes."
     },
     {
       "wbs_id": "M5-03",
@@ -820,7 +1067,10 @@
       "name": "Dependency / CVE gate",
       "state": "PLANNED_NOT_AUTHORIZED",
       "hours": 12,
-      "pr_numbers": []
+      "pr_numbers": [
+        211
+      ],
+      "security_exit_requirement": "No unremediated material dependency/CVE risk in launch scope."
     },
     {
       "wbs_id": "M5-04",
@@ -831,8 +1081,10 @@
       "hours": 16,
       "pr_numbers": [
         43,
-        88
-      ]
+        88,
+        211
+      ],
+      "security_exit_requirement": "No material secret/config/default-ACL/deploy/migration exposure."
     },
     {
       "wbs_id": "M5-05",
@@ -841,16 +1093,36 @@
       "name": "Observabilidade / rollback / incidente",
       "state": "PLANNED_NOT_AUTHORIZED",
       "hours": 24,
-      "pr_numbers": []
+      "pr_numbers": [
+        211
+      ],
+      "security_exit_requirement": "Detection, auditability, rollback and incident path proven."
     },
     {
       "wbs_id": "M5-06",
       "qualified_id": "STS-M5-06",
       "parent": "STS-M5",
-      "name": "Adjudicação de residual risk",
+      "name": "Material Residual Elimination Gate",
       "state": "PLANNED_NOT_AUTHORIZED",
-      "hours": 20,
-      "pr_numbers": []
+      "hours": null,
+      "pr_numbers": [
+        211
+      ],
+      "hours_state": "REBASELINE_REQUIRED",
+      "security_exit_requirement": "ZERO MATERIAL OPEN SECURITY FINDINGS + ZERO MATERIAL NOT_DETERMINED."
+    },
+    {
+      "wbs_id": "M5-07",
+      "qualified_id": "STS-M5-07",
+      "parent": "STS-M5",
+      "name": "Independent Integrated AppSec Final Review",
+      "state": "PLANNED_NOT_AUTHORIZED",
+      "hours": null,
+      "hours_state": "REBASELINE_REQUIRED",
+      "pr_numbers": [
+        211
+      ],
+      "security_exit_requirement": "Independent integrated AppSec PASS required before M6 nomination."
     },
     {
       "wbs_id": "M6-01",
@@ -893,8 +1165,10 @@
         204,
         206,
         208,
-        209
-      ]
+        209,
+        211
+      ],
+      "security_exit_requirement": "All material M3/M4/M5 evidence indexed and current."
     },
     {
       "wbs_id": "M6-02",
@@ -903,7 +1177,10 @@
       "name": "Blocker closeout",
       "state": "PLANNED_NOT_AUTHORIZED",
       "hours": 8,
-      "pr_numbers": []
+      "pr_numbers": [
+        211
+      ],
+      "security_exit_requirement": "Zero material blocker/open finding/NOT_DETERMINED."
     },
     {
       "wbs_id": "M6-03",
@@ -912,7 +1189,10 @@
       "name": "Onboarding / support / operational runbooks",
       "state": "PLANNED_NOT_AUTHORIZED",
       "hours": 18,
-      "pr_numbers": []
+      "pr_numbers": [
+        211
+      ],
+      "security_exit_requirement": "Support/onboarding cannot bypass tenant/authority controls."
     },
     {
       "wbs_id": "M6-04",
@@ -921,7 +1201,10 @@
       "name": "Decisão comercial controlada",
       "state": "PLANNED_NOT_AUTHORIZED",
       "hours": 8,
-      "pr_numbers": []
+      "pr_numbers": [
+        211
+      ],
+      "security_exit_requirement": "Commercial expansion only after technical/security closure."
     },
     {
       "wbs_id": "M6-05",
@@ -930,7 +1213,10 @@
       "name": "Launch readiness + AS-BUILT acceptance review",
       "state": "PLANNED_NOT_AUTHORIZED",
       "hours": 12,
-      "pr_numbers": []
+      "pr_numbers": [
+        211
+      ],
+      "security_exit_requirement": "Security Go consideration only after independent integrated PASS."
     }
   ],
   "attack_domain_ownership": [
@@ -4640,12 +4926,12 @@
     },
     {
       "pr_number": 209,
-      "title": "docs: catalog STS security assurance artifacts",
-      "state": "open",
-      "merged": false,
-      "merged_at": null,
+      "title": "docs: catalog STS WBS PR and security assurance relationships",
+      "state": "closed",
+      "merged": true,
+      "merged_at": "2026-09-09T07:26:02Z",
       "head_branch": "docs/security-assurance-sts-catalog-20260908",
-      "head_sha": "d806b1205a5c4b3275fa25afd3cdac701dc0f58e",
+      "head_sha": "37164763ab695e687acf5399870808b16b0b7da4",
       "base_branch": "main",
       "base_sha": "ea46d3d2dc39fc7f700c1d9ad9d747905c317c85",
       "primary_qualified_id": "STS-M5-00",
@@ -4656,6 +4942,45 @@
       ],
       "relationship_type": "PROGRAM_NATIVE",
       "mapping_basis": "PRODUCT_AUTHORITY_SECURITY_CATALOG_FOUNDATION",
+      "mapping_quality": "EXPLICIT_CURRENT_SCOPE"
+    },
+    {
+      "pr_number": 211,
+      "title": "docs(security): bind live audit findings to zero-residual WBS closure",
+      "state": "open",
+      "merged": false,
+      "merged_at": null,
+      "head_branch": "docs/security-audit-zero-residual-wbs-20260909",
+      "head_sha": null,
+      "base_branch": "main",
+      "base_sha": "ac20a30fea9095f036d8d466e83794432d58ca89",
+      "primary_qualified_id": "STS-M5-00",
+      "related_qualified_ids": [
+        "STS-M3-03",
+        "STS-M3-04",
+        "STS-M3-05",
+        "STS-M3-06",
+        "STS-M4-01",
+        "STS-M4-02",
+        "STS-M4-03",
+        "STS-M4-04",
+        "STS-M4-05",
+        "STS-M4-06",
+        "STS-M5-01",
+        "STS-M5-02",
+        "STS-M5-03",
+        "STS-M5-04",
+        "STS-M5-05",
+        "STS-M5-06",
+        "STS-M5-07",
+        "STS-M6-01",
+        "STS-M6-02",
+        "STS-M6-03",
+        "STS-M6-04",
+        "STS-M6-05"
+      ],
+      "relationship_type": "PROGRAM_NATIVE",
+      "mapping_basis": "PRODUCT_AUTHORITY_ZERO_MATERIAL_RESIDUAL_WBS_AMENDMENT",
       "mapping_quality": "EXPLICIT_CURRENT_SCOPE"
     }
   ],

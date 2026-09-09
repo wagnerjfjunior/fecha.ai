@@ -251,12 +251,40 @@ Issue #141 exit contract remains authoritative:
 |---|---|---|---:|
 | M3-01 | STS-M3-01 | Identity / membership / team / role model | 24h |
 | M3-02 | STS-M3-02 | Authority contract por contexto | 28h |
-| M3-03 | STS-M3-03 | Allowlist de RPCs privilegiadas | 24h |
+| M3-03 | STS-M3-03 | Privileged RPC Allowlist + Implementation Convergence | REBASELINE_REQUIRED |
 | M3-04 | STS-M3-04 | Redução de DML sensível direto + Integridade Estrutural Multi-Tenant | REBASELINE_REQUIRED |
-| M3-05 | STS-M3-05 | Fechamento Auth / Admin flows | 24h |
-| M3-06 | STS-M3-06 | Staging / test plan de segurança | 28h |
+| M3-05 | STS-M3-05 | Auth / Admin Final Closure | REBASELINE_REQUIRED |
+| M3-06 | STS-M3-06 | Security Staging + Service Boundary Hardening | REBASELINE_REQUIRED |
 
-### 7.1 STS-M3-04 expanded execution graph
+### 7.1 STS-M3-03 implementation-convergence graph
+
+The previously accepted privileged-RPC allowlist remains durable historical evidence, but it is not sufficient for final M3 security closure while implementation/ACL/resource-binding residuals remain open.
+
+| Qualified ID | Task | Operational state | Exit requirement |
+|---|---|---|---|
+| STS-M3-03-01 | Accepted privileged RPC allowlist baseline | HISTORICAL_ACCEPTED_EVIDENCE | preserve accepted classification universe; no re-audit loop absent invalidator |
+| STS-M3-03-02 | Resource-Bound Privileged RPC Remediation | DEFINED_NOT_AUTHORIZED | F-01/F-02 closed; supplied resource UUIDs bound server-side to actor/tenant/object authority |
+| STS-M3-03-03 | Tenant-Scoped Analytics RPC Remediation | DEFINED_NOT_AUTHORIZED | F-03 closed; non-root analytics scoped to canonical empresa/time |
+| STS-M3-03-04 | Internal-Helper Reachability Convergence | DEFINED_NOT_AUTHORIZED | F-06/F-07 closed/refuted; internal helpers not directly client-reachable |
+| STS-M3-03-05 | RPC EXECUTE Principal Convergence | DEFINED_NOT_AUTHORIZED | F-10 closed; anon/authenticated/PUBLIC EXECUTE converges to explicit allowlist |
+| STS-M3-03-06 | Independent RPC Authority Closure Review | DEFINED_NOT_AUTHORIZED | zero material RPC authority gaps + zero material NOT_DETERMINED |
+
+Closure rule:
+
+```text
+STS-M3-03 FINAL IMPLEMENTATION CLOSURE =
+ALLOWLIST COMPLETE
++ IMPLEMENTATION TARGET-COMPLIANT
++ RESOURCE/TENANT BINDING PROVEN
++ EXECUTE PRINCIPALS CONVERGED
++ ZERO MATERIAL RPC AUTHORITY FINDINGS
++ ZERO MATERIAL NOT_DETERMINED
++ INDEPENDENT REVIEW PASS
+```
+
+Historical `STS-M3-03 = COMPLETE / ACCEPTED WITH RESIDUALS` remains provenance only and cannot satisfy final M3 closure by itself.
+
+### 7.2 STS-M3-04 expanded execution graph
 
 Product Authority expands `STS-M3-04` from direct-DML reduction alone to a preventive structural multi-tenant safety gate.
 
@@ -292,6 +320,40 @@ NO MATERIAL CROSS-TENANT STRUCTURAL GAP
 
 Issue #141 remains the parent program contract; this Product Authority scope amendment is the current FECH.AI granular WBS authority for M3-04.
 
+### 7.3 STS-M3-05 Auth / Admin final closure graph
+
+| Qualified ID | Task | Operational state | Exit requirement |
+|---|---|---|---|
+| STS-M3-05-01 | Create-user canonical authority convergence | DEFINED_NOT_AUTHORIZED | actor/tenant/role derived server-side; no client authority |
+| STS-M3-05-02 | Password-reset / admin authority closure | DEFINED_NOT_AUTHORIZED | target user + tenant + privileged actor bound fail-closed |
+| STS-M3-05-03 | Root / admin-local / gestor compatibility cleanup | DEFINED_NOT_AUTHORIZED | no legacy authority path contradicts canonical authority model |
+| STS-M3-05-04 | Auth/Admin negative proofs | DEFINED_NOT_AUTHORIZED | unauthorized, cross-tenant and role-escalation attempts denied |
+| STS-M3-05-05 | Independent Auth/Admin closure review | DEFINED_NOT_AUTHORIZED | zero material Auth/Admin residual + zero material NOT_DETERMINED |
+
+### 7.4 STS-M3-06 Security staging + service-boundary graph
+
+| Qualified ID | Task | Operational state | Exit requirement |
+|---|---|---|---|
+| STS-M3-06-01 | Isolated security staging topology + fixtures | DEFINED_NOT_AUTHORIZED | deterministic non-production hostile-client environment and rollback |
+| STS-M3-06-02 | `mesa-worker-proxy` auth/authorization disposition | DEFINED_NOT_AUTHORIZED | F-08 remediated, removed or proven unreachable |
+| STS-M3-06-03 | Service-to-service credential / payload / rate boundary | DEFINED_NOT_AUTHORIZED | secret ownership, request-size and abuse/rate boundaries proven |
+| STS-M3-06-04 | Hostile-client / cross-tenant harness readiness | DEFINED_NOT_AUTHORIZED | deterministic identities, fixtures and evidence capture ready |
+| STS-M3-06-05 | M3 Final Security Implementation Closure | DEFINED_NOT_AUTHORIZED | all M3 material findings remediated/refuted + independent closure evidence |
+
+Final M3 invariant:
+
+```text
+FINAL_M3_SECURITY_IMPLEMENTATION_CLOSURE =
+STS-M3-03 FINAL IMPLEMENTATION CLOSURE PASS
++ STS-M3-04 PASS
++ STS-M3-05 PASS
++ STS-M3-06 IMPLEMENTATION/BOUNDARY PASS
++ ZERO MATERIAL OPEN IMPLEMENTATION FINDINGS
++ ZERO MATERIAL NOT_DETERMINED
+```
+
+`ACCEPTED_WITH_RESIDUALS` remains permitted as historical/intermediate provenance only; it is not a valid final M3 security closure state.
+
 ## 8. M4 — Frontend Modularization / App.jsx Extraction — 172h
 
 **Qualified milestone:** `STS-M4`  
@@ -320,6 +382,31 @@ FUNCTIONAL_PASS != SECURITY_GO
 
 M4-06 cannot close without accepted functional-equivalence evidence for CRM, Funil, Discador, Power Message Engine and MesaCliente, including their material shared Leads/Listas/Distribuição dependencies. No tenant, role, ownership or sensitive business authority may be moved to the frontend during extraction.
 
+### 8.1 M4 security non-regression map — all subtasks
+
+M4 remains architecture/product modularization. Every M4 child has an explicit security contract so frontend extraction cannot reintroduce authority or tenant-boundary defects already closed in M3.
+
+| Qualified ID | Structural task | Security/non-regression obligation |
+|---|---|---|
+| STS-M4-01 | AppShell / Shared Frontend Boundary | AppShell owns navigation/session presentation only; no tenant/role/ownership/financial/privileged authority is decided client-side |
+| STS-M4-02 | CRM + Funil Core Slice | consume hardened Lead/Funil server contracts; preserve tenant/ownership/history boundaries and no direct-write regression |
+| STS-M4-03 | LeadOps Execution Slice | preserve Leads/Listas/Distribuição/Discador/PME tenant invariants; no reintroduction of sensitive direct DML or client authority |
+| STS-M4-04 | MesaCliente Core Slice | preserve MesaCliente tenant/resource binding; no UI-only approval/admin boundary; service calls remain authenticated/authorized |
+| STS-M4-05 | Feature Gateways / API Boundaries | all privileged gateways consume M3 hardened APIs/RPCs; auth/tenant/role checks remain server-side |
+| STS-M4-06 | Core Functional Equivalence & Regression | prove product equivalence plus changed-boundary security regression across CRM, Funil, LeadOps/PME and MesaCliente |
+
+M4 closure rule:
+
+```text
+M4 FUNCTIONAL EQUIVALENCE PASS
++ ALL SIX M4 SECURITY NON-REGRESSION OBLIGATIONS PASS
++ ZERO NEW MATERIAL CLIENT-AUTHORITY REGRESSION
++ ZERO NEW MATERIAL TENANT/OWNERSHIP BYPASS
+= STS-M4 PASS
+```
+
+Any material M4 security regression reopens the owning M3 control or creates a bounded remediation child before M4 may close.
+
 ## 9. M5 — Integrated Security / Reliability Validation — REBASELINE_REQUIRED
 
 **Issue #141 owners:** AppSec + Platform/CI-CD + SRE/Observability + Backend/Data  
@@ -336,13 +423,42 @@ M4-06 cannot close without accepted functional-equivalence evidence for CRM, Fun
 | M5-03 | STS-M5-03 | Dependency / CVE gate | 12h |
 | M5-04 | STS-M5-04 | Secrets / config / deploy gate | 16h |
 | M5-05 | STS-M5-05 | Observabilidade / rollback / incidente | 24h |
-| M5-06 | STS-M5-06 | Adjudicação de residual risk | 20h |
+| M5-06 | STS-M5-06 | Material Residual Elimination Gate | REBASELINE_REQUIRED |
+| M5-07 | STS-M5-07 | Independent Integrated AppSec Final Review | REBASELINE_REQUIRED |
 
 `STS-M5-00` is the mandatory cross-program reconciliation gate that maps all prior accepted work and all material attack classes into current assurance coverage before integrated hostile-client validation can be considered complete.
 
 The early catalog/documentation foundation created before M5 does not start M5 and does not count as runtime assurance.
 
 Issue #141 exit remains authoritative for M5.
+
+### 9.1 M5 integrated assurance map — all subtasks
+
+| Qualified ID | Task | Mandatory outcome |
+|---|---|---|
+| STS-M5-00 | Global Security Assurance Coverage Reconciliation | every material attack class/finding mapped to current proof; no unmapped material artifact/finding |
+| STS-M5-01 | Isolated hostile-client suite | current tenant/auth/authority/service exploit attempts fail as designed |
+| STS-M5-02 | Tenant / role / auth / storage regression | cross-tenant, ownership, role and storage boundaries pass current runtime regression |
+| STS-M5-03 | Dependency / CVE gate | no unremediated material dependency vulnerability in launch scope |
+| STS-M5-04 | Secrets / config / deploy / migration gate | no material secret/config/default-ACL/deploy/migration exposure; includes F-09 proof |
+| STS-M5-05 | Observability / rollback / incident readiness | detection, auditability, rollback and incident response paths proven |
+| STS-M5-06 | Material Residual Elimination Gate | ZERO MATERIAL OPEN SECURITY FINDINGS and ZERO MATERIAL NOT_DETERMINED |
+| STS-M5-07 | Independent Integrated AppSec Final Review | independent PASS required before M6 nomination |
+
+M5 closure rule:
+
+```text
+NO CRITICAL OPEN
++ NO HIGH OPEN
++ NO MATERIAL MEDIUM OPEN
++ NO MATERIAL LOW OPEN THAT INVALIDATES A SECURITY INVARIANT
++ ZERO MATERIAL NOT_DETERMINED
++ CURRENT MAIN/DEPLOY/RUNTIME TEST EVIDENCE
++ INDEPENDENT APPSEC PASS
+= STS-M5 PASS
+```
+
+A non-material low/informational item may remain only with explicit AppSec proof that it violates no Security Go invariant and with a bounded post-launch owner. It cannot hide tenant isolation, authorization, authentication, privileged DML, secrets/config, runtime or deployment risk.
 
 ## 10. M6 — Security Go Candidate / Commercial Readiness — 60h
 
@@ -358,6 +474,30 @@ Issue #141 exit remains authoritative for M5.
 | M6-03 | STS-M6-03 | Onboarding / support / operational runbooks | 18h |
 | M6-04 | STS-M6-04 | Decisão comercial controlada | 8h |
 | M6-05 | STS-M6-05 | Launch readiness + AS-BUILT acceptance review | 12h |
+
+### 10.1 M6 Security Go candidate map — all subtasks
+
+| Qualified ID | Task | Security-specific exit requirement |
+|---|---|---|
+| STS-M6-01 | Security Evidence + Final AS-BUILT Package | all material M3/M4/M5 evidence indexed, immutable-provenanced and current |
+| STS-M6-02 | Blocker closeout | zero material security blocker, zero material open finding, zero material NOT_DETERMINED |
+| STS-M6-03 | Onboarding / support / operational runbooks | support/admin operations cannot bypass tenant/authority/security controls |
+| STS-M6-04 | Controlled commercial decision | commercial expansion only after technical/security closure evidence |
+| STS-M6-05 | Launch readiness + AS-BUILT acceptance review | Product Authority may consider Security Go only after independent integrated PASS |
+
+```text
+M6 CANDIDATE PRECONDITION =
+FINAL_M3_SECURITY_IMPLEMENTATION_CLOSURE PASS
++ M4 SECURITY NON-REGRESSION PASS
++ STS-M5 PASS
++ SECURITY ASSURANCE COVERAGE COMPLETE FOR MATERIAL CLASSES
++ CURRENT MAIN / DEPLOY / RUNTIME PROVENANCE
++ ZERO MATERIAL OPEN SECURITY FINDINGS
+
+M6 DOES NOT WAIVE OPEN MATERIAL SECURITY FINDINGS
+M6 DOES NOT CONVERT NOT_DETERMINED INTO PASS
+```
+
 
 The professional AS-BUILT package must provide an indexed launch-scope view of system context, tenant/identity/authority, database contract, API/RPC/Edge boundaries, frontend/core slices, deployment topology, observability, backup/restore understanding, rollback, incident response, residual risks and specialist/operational ownership.
 

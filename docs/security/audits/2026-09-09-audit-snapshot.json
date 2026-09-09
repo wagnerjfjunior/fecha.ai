@@ -1,0 +1,52 @@
+{
+  "project": "FECH.AI",
+  "repository": "wagnerjfjunior/fecha.ai",
+  "main_sha": "ac20a30fea9095f036d8d466e83794432d58ca89",
+  "date": "2026-09-09",
+  "environment": "Pilot Production / SaaS multi-tenant / multiempresa",
+  "database": "Supabase uobxxgzshrmbtjfdolxd / Discador-MesaCliente / PostgreSQL 17.6",
+  "coverage": {
+    "repository_tree_blobs": 634,
+    "backend_http_edge_handlers": "4/4 INTEGRAL_READ",
+    "public_tables": "44/44 RLS enabled",
+    "public_views": 8,
+    "public_policies": 82,
+    "public_functions": 160,
+    "security_definer": 137,
+    "anon_executable_public_functions": 31,
+    "anon_definer": 22,
+    "anon_mutation_hint": 9,
+    "public_triggers": 31,
+    "public_constraints": 271,
+    "authenticated_direct_write_tables": 7,
+    "anon_direct_public_table_privileges": 0,
+    "git_history_secret_scan": "NOT_VERIFIED",
+    "hostile_client_production": "NOT_PERFORMED"
+  },
+  "findings": [
+    {"id":"F-01","severity":"HIGH","title":"aprovar_rejeitar_mesa resource/tenant binding","wbs":"STS-M3-03-02","proof":"STS-M5-01/02"},
+    {"id":"F-02","severity":"HIGH","title":"relatorio_fornecedor cross-tenant read","wbs":"STS-M3-03-02","proof":"STS-M5-01/02"},
+    {"id":"F-03","severity":"HIGH","title":"global manager analytics RPCs","wbs":"STS-M3-03-03","proof":"STS-M5-02"},
+    {"id":"F-04","severity":"HIGH","title":"lista_avaliacoes mixed-tenant relationship integrity","wbs":"STS-M3-04-04/07/09","proof":"STS-M5-02"},
+    {"id":"F-05","severity":"HIGH","title":"PME catalog mixed-tenant relationship integrity","wbs":"STS-M3-04-05/07/09","proof":"STS-M5-02"},
+    {"id":"F-06","severity":"MEDIUM","title":"lead_tem_acao_real direct client reachability","wbs":"STS-M3-03-04","proof":"STS-M5-01"},
+    {"id":"F-07","severity":"LOW","title":"acquire_lote_lock anonymous internal-helper reachability","wbs":"STS-M3-03-04","proof":"STS-M5-01/05"},
+    {"id":"F-08","severity":"MEDIUM","title":"mesa-worker-proxy unauthenticated service boundary","wbs":"STS-M3-06-02/03","proof":"STS-M5-01/04"},
+    {"id":"F-09","severity":"MEDIUM","title":"public default privileges fail-open future-object posture","wbs":"STS-M3-04-06/07","proof":"STS-M5-04"},
+    {"id":"F-10","severity":"LOW","title":"broad anon-executable RPC surface","wbs":"STS-M3-03-05","proof":"STS-M5-00/01"}
+  ],
+  "final_closure_contract": {
+    "historical_accepted_with_residuals": "PRESERVED_AS_PROVENANCE",
+    "m3_final": "ZERO_MATERIAL_OPEN_IMPLEMENTATION_FINDINGS + ZERO_MATERIAL_NOT_DETERMINED",
+    "m5_final": "ZERO_MATERIAL_OPEN_SECURITY_FINDINGS + CURRENT_RUNTIME_PROOF + INDEPENDENT_APPSEC_PASS",
+    "m6_candidate": "INELIGIBLE_WHILE_ANY_MATERIAL_SECURITY_FINDING_REMAINS_OPEN",
+    "security_go": "NOT_GRANTED"
+  },
+  "limitations": [
+    "No hostile-client/cross-tenant active testing in production.",
+    "No customer row/PII data read for the audit; metadata/definitions/code only.",
+    "Full Git history secret scan remains NOT_VERIFIED.",
+    "Vendor-managed schemas were enumerated for ACL/RLS but not semantically reimplemented/audited line-by-line.",
+    "api/mesa-worker-proxy deployment/runtime reachability remained conditional at audit time."
+  ]
+}
