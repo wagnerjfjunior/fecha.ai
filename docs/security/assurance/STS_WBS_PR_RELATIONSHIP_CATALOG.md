@@ -2,7 +2,7 @@
 
 **Status:** `HUMAN_VIEW / JSON_IS_CANONICAL / DASHBOARD_JOIN_READY`  
 **Canonical source:** `docs/security/assurance/STS_WBS_PR_RELATIONSHIP_CATALOG.json`  
-**Source main:** `ea46d3d2dc39fc7f700c1d9ad9d747905c317c85`  
+**Source main:** `157f0f6f1f9bd4e80cf909e95cc48aa76ebe97d5`  
 
 ## Join contract
 
@@ -64,6 +64,10 @@ GitHub issue namespace entries = 12
 Security attack domains = 22
 ```
 
+## Deferred final offensive-lab authority — 2026-09-09
+
+The bounded future scopes `STS-M3-06`, `STS-M5-01` and `STS-M5-02` are authorized by Product Authority but are **not current execution**. The offensive suite is sequenced as the final active technical attack/test window. Any cost-bearing Supabase clone/branch/equivalent environment requires explicit cost confirmation at execution time; synthetic data only; no destructive production attack.
+
 ## Future / active task chain
 
 | Qualified ID | Task | State | Related PR count |
@@ -78,7 +82,7 @@ Security attack domains = 22
 | `STS-M3-04-09` | Structural Cross-Tenant Negative Proofs | `DEFINED_NOT_AUTHORIZED` | 0 |
 | `STS-M3-04-10` | Independent AppSec Closure Review | `DEFINED_NOT_AUTHORIZED` | 0 |
 | `STS-M3-05` | Fechamento Auth / Admin flows | `PLANNED_NOT_AUTHORIZED` | 3 |
-| `STS-M3-06` | Staging / test plan de segurança | `PLANNED_NOT_AUTHORIZED` | 0 |
+| `STS-M3-06` | Staging / test plan de segurança | `AUTHORIZED_DEFERRED_NOT_CURRENT_ACTION` | 0 |
 | `STS-M4-01` | AppShell / Shared Frontend Boundary | `PLANNED_NOT_AUTHORIZED` | 1 |
 | `STS-M4-02` | CRM + Funil Core Slice | `PLANNED_NOT_AUTHORIZED` | 1 |
 | `STS-M4-03` | LeadOps Execution Slice — Leads / Listas / Distribuição / Discador / Power Message Engine | `PLANNED_NOT_AUTHORIZED` | 20 |
@@ -86,8 +90,8 @@ Security attack domains = 22
 | `STS-M4-05` | Feature Gateways / API Boundaries | `PLANNED_NOT_AUTHORIZED` | 5 |
 | `STS-M4-06` | Core Functional Equivalence & Regression | `PLANNED_NOT_AUTHORIZED` | 54 |
 | `STS-M5-00` | Global Security Assurance Coverage Reconciliation | `PLANNED_NOT_AUTHORIZED_EARLY_CATALOG_FOUNDATION` | 1 |
-| `STS-M5-01` | Hostile-client suite isolada | `PLANNED_NOT_AUTHORIZED` | 55 |
-| `STS-M5-02` | Regressão tenant / role / auth / storage | `PLANNED_NOT_AUTHORIZED` | 58 |
+| `STS-M5-01` | Hostile-client suite isolada | `AUTHORIZED_DEFERRED_FINAL_TEST` | 55 |
+| `STS-M5-02` | Regressão tenant / role / auth / storage | `AUTHORIZED_DEFERRED_FINAL_TEST` | 58 |
 | `STS-M5-03` | Dependency / CVE gate | `PLANNED_NOT_AUTHORIZED` | 0 |
 | `STS-M5-04` | Secrets / config / deploy gate | `PLANNED_NOT_AUTHORIZED` | 2 |
 | `STS-M5-05` | Observabilidade / rollback / incidente | `PLANNED_NOT_AUTHORIZED` | 0 |
