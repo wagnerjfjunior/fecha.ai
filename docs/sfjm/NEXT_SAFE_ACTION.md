@@ -1,6 +1,44 @@
 # FECH.AI — SFJM Next Safe Action
 
-## 0.0000000000000000037 CURRENT MATERIAL GATE — OFFENSIVE LAB AUTHORIZED FOR LATER / CONTINUE NORMAL WBS NOW — 2026-09-09
+## 0.0000000000000000038 CURRENT MATERIAL GATE — PR #213 LIFECYCLE CLOSED / CONTINUE NORMAL WBS — 2026-09-09
+
+~~~text
+canonical main =
+dbc1e246b66d9726e7d3831085e62d27cab6908d
+
+PR #213 =
+MERGED / CLOSED
+
+STS-M3-06 =
+AUTHORIZED_DEFERRED / NOT_CURRENT_ACTION
+
+STS-M5-01 + STS-M5-02 =
+AUTHORIZED_DEFERRED_FINAL_TEST / NOT_CURRENT_ACTION
+
+COST-BEARING SECURITY LAB =
+NOT_AUTHORIZED TO CREATE NOW
+
+CURRENT_IMMEDIATE_AUTHORIZED_TECHNICAL_EXECUTION =
+NONE
+
+Security Go =
+NOT_GRANTED
+~~~
+
+Single safe continuation:
+
+~~~text
+continue the normal next FECH.AI WBS task through the existing Product Authority task-by-task process
+
+DO NOT jump to STS-M3-06 / STS-M5-01 / STS-M5-02
+DO NOT create a paid Supabase clone/branch now
+DO NOT use real customer/lead/business data for the future lab
+DO NOT execute destructive attacks in production
+~~~
+
+The preserved deferred authorization becomes executable only at its declared final-test admission window, with fresh bootstrap/live refs, isolated synthetic environment readiness, rollback/teardown and explicit cost confirmation when cost will be incurred.
+
+## 0.0000000000000000037 HISTORICAL / SUPERSEDED MATERIAL GATE — OFFENSIVE LAB AUTHORIZED FOR LATER / CONTINUE NORMAL WBS NOW — 2026-09-09
 
 ~~~text
 STS-M3-06 + STS-M5-01 + STS-M5-02 =
