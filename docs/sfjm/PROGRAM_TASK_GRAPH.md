@@ -1,7 +1,41 @@
 # FECH.AI — SFJM Program Task Graph
 
+## 0.0000000000000000038 CURRENT POST-MERGE OVERLAY — PR #213 / DEFERRED FINAL OFFENSIVE LAB AUTHORIZATION — 2026-09-09
 
-## 0.00 CURRENT POST-MERGE OVERLAY — PR #211 / ZERO-MATERIAL-RESIDUAL WBS — 2026-09-09
+~~~text
+canonical main = dbc1e246b66d9726e7d3831085e62d27cab6908d
+PR #213 = MERGED / CLOSED
+exact merged head = 3119515faa7a20d3cb43e11431bf2de6e3d87cc3
+
+STS-M3-06 =
+AUTHORIZED_DEFERRED / NOT_CURRENT_ACTION
+
+STS-M5-01 =
+AUTHORIZED_DEFERRED_FINAL_TEST / NOT_CURRENT_ACTION
+
+STS-M5-02 =
+AUTHORIZED_DEFERRED_FINAL_TEST / NOT_CURRENT_ACTION
+
+cost-bearing lab creation now =
+NOT_AUTHORIZED
+
+real-data offensive lab =
+FORBIDDEN
+
+destructive production attack =
+FORBIDDEN
+
+CURRENT_IMMEDIATE_AUTHORIZED_TECHNICAL_EXECUTION =
+NONE
+
+Security Go =
+NOT_GRANTED
+~~~
+
+PR #213 is now canonical lifecycle/provenance evidence for the deferred final offensive-test path. It changes no runtime or database object and does not promote the deferred tasks into current execution.
+
+
+## 0.00 HISTORICAL / SUPERSEDED POST-MERGE OVERLAY — PR #211 / ZERO-MATERIAL-RESIDUAL WBS — 2026-09-09
 
 ~~~text
 canonical main = 719f0e98b58c7bf4d39485020d4389f8654da659
