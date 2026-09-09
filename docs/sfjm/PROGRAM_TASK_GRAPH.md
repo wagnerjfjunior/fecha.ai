@@ -393,7 +393,13 @@ Historical PRs may be related to the current WBS as `HISTORICAL_CONTRIBUTION_TO_
 | STS-M2 | STS-M2-06 | M2-06 | Decisão arquitetural do banco | 16 | COMPLETE |
 | STS-M3 | STS-M3-01 | M3-01 | Identity / membership / team / role model | 24 | COMPLETE |
 | STS-M3 | STS-M3-02 | M3-02 | Authority contract por contexto | 28 | COMPLETE_WITH_RESIDUALS |
-| STS-M3 | STS-M3-03 | M3-03 | Allowlist de RPCs privilegiadas | 24 | COMPLETE_WITH_RESIDUALS |
+| STS-M3 | STS-M3-03 | M3-03 | Privileged RPC Allowlist + Implementation Convergence | REBASELINE | COMPLETE_WITH_RESIDUALS / FINAL_CLOSURE_PENDING |
+| STS-M3-03 | STS-M3-03-01 | M3-03-01 | Accepted privileged RPC allowlist baseline | historical | HISTORICAL_ACCEPTED_EVIDENCE |
+| STS-M3-03 | STS-M3-03-02 | M3-03-02 | Resource-Bound Privileged RPC Remediation | TBD | DEFINED_NOT_AUTHORIZED |
+| STS-M3-03 | STS-M3-03-03 | M3-03-03 | Tenant-Scoped Analytics RPC Remediation | TBD | DEFINED_NOT_AUTHORIZED |
+| STS-M3-03 | STS-M3-03-04 | M3-03-04 | Internal-Helper Reachability Convergence | TBD | DEFINED_NOT_AUTHORIZED |
+| STS-M3-03 | STS-M3-03-05 | M3-03-05 | RPC EXECUTE Principal Convergence | TBD | DEFINED_NOT_AUTHORIZED |
+| STS-M3-03 | STS-M3-03-06 | M3-03-06 | Independent RPC Authority Closure Review | TBD | DEFINED_NOT_AUTHORIZED |
 | STS-M3 | STS-M3-04 | M3-04 | Redução de DML sensível direto + Integridade Estrutural Multi-Tenant | REBASELINE | ACTIVE_REBASELINE_REQUIRED |
 | STS-M3-04 | STS-M3-04-01 | M3-04-01 | PME message usage RPC-only write boundary | historical | COMPLETE_WITH_RESIDUALS |
 | STS-M3-04 | STS-M3-04-02 | M3-04-02 | PME lead message state direct-write reduction | historical | COMPLETE_WITH_RESIDUALS |
@@ -405,8 +411,18 @@ Historical PRs may be related to the current WBS as `HISTORICAL_CONTRIBUTION_TO_
 | STS-M3-04 | STS-M3-04-08 | M3-04-08 | Direct-Write / Bypass Call-Site Sweep | TBD | DEFINED_NOT_AUTHORIZED |
 | STS-M3-04 | STS-M3-04-09 | M3-04-09 | Structural Cross-Tenant Negative Proofs | TBD | DEFINED_NOT_AUTHORIZED |
 | STS-M3-04 | STS-M3-04-10 | M3-04-10 | Independent AppSec Closure Review | TBD | DEFINED_NOT_AUTHORIZED |
-| STS-M3 | STS-M3-05 | M3-05 | Fechamento Auth / Admin flows | 24 | PLANNED_NOT_AUTHORIZED |
-| STS-M3 | STS-M3-06 | M3-06 | Staging / test plan de segurança | 28 | PLANNED_NOT_AUTHORIZED |
+| STS-M3 | STS-M3-05 | M3-05 | Auth / Admin Final Closure | REBASELINE | PLANNED_NOT_AUTHORIZED |
+| STS-M3-05 | STS-M3-05-01 | M3-05-01 | Create-user canonical authority convergence | TBD | DEFINED_NOT_AUTHORIZED |
+| STS-M3-05 | STS-M3-05-02 | M3-05-02 | Password-reset / admin authority closure | TBD | DEFINED_NOT_AUTHORIZED |
+| STS-M3-05 | STS-M3-05-03 | M3-05-03 | Root / admin-local / gestor compatibility cleanup | TBD | DEFINED_NOT_AUTHORIZED |
+| STS-M3-05 | STS-M3-05-04 | M3-05-04 | Auth/Admin negative proofs | TBD | DEFINED_NOT_AUTHORIZED |
+| STS-M3-05 | STS-M3-05-05 | M3-05-05 | Independent Auth/Admin closure review | TBD | DEFINED_NOT_AUTHORIZED |
+| STS-M3 | STS-M3-06 | M3-06 | Security Staging + Service Boundary Hardening | REBASELINE | PLANNED_NOT_AUTHORIZED |
+| STS-M3-06 | STS-M3-06-01 | M3-06-01 | Isolated security staging topology + fixtures | TBD | DEFINED_NOT_AUTHORIZED |
+| STS-M3-06 | STS-M3-06-02 | M3-06-02 | mesa-worker-proxy auth/authorization disposition | TBD | DEFINED_NOT_AUTHORIZED |
+| STS-M3-06 | STS-M3-06-03 | M3-06-03 | Service-to-service credential / payload / rate boundary | TBD | DEFINED_NOT_AUTHORIZED |
+| STS-M3-06 | STS-M3-06-04 | M3-06-04 | Hostile-client / cross-tenant harness readiness | TBD | DEFINED_NOT_AUTHORIZED |
+| STS-M3-06 | STS-M3-06-05 | M3-06-05 | M3 Final Security Implementation Closure | TBD | DEFINED_NOT_AUTHORIZED |
 | STS-M4 | STS-M4-01 | M4-01 | AppShell / Shared Frontend Boundary | 20 | PLANNED_NOT_AUTHORIZED |
 | STS-M4 | STS-M4-02 | M4-02 | CRM + Funil Core Slice | 40 | PLANNED_NOT_AUTHORIZED |
 | STS-M4 | STS-M4-03 | M4-03 | LeadOps Execution Slice — Leads / Listas / Distribuição / Discador / Power Message Engine | 32 | PLANNED_NOT_AUTHORIZED |
@@ -419,7 +435,8 @@ Historical PRs may be related to the current WBS as `HISTORICAL_CONTRIBUTION_TO_
 | STS-M5 | STS-M5-03 | M5-03 | Dependency / CVE gate | 12 | PLANNED_NOT_AUTHORIZED |
 | STS-M5 | STS-M5-04 | M5-04 | Secrets / config / deploy gate | 16 | PLANNED_NOT_AUTHORIZED |
 | STS-M5 | STS-M5-05 | M5-05 | Observabilidade / rollback / incidente | 24 | PLANNED_NOT_AUTHORIZED |
-| STS-M5 | STS-M5-06 | M5-06 | Adjudicação de residual risk | 20 | PLANNED_NOT_AUTHORIZED |
+| STS-M5 | STS-M5-06 | M5-06 | Material Residual Elimination Gate | REBASELINE | PLANNED_NOT_AUTHORIZED |
+| STS-M5 | STS-M5-07 | M5-07 | Independent Integrated AppSec Final Review | REBASELINE | PLANNED_NOT_AUTHORIZED |
 | STS-M6 | STS-M6-01 | M6-01 | Security Evidence + Final AS-BUILT Package | 14 | PLANNED_NOT_AUTHORIZED |
 | STS-M6 | STS-M6-02 | M6-02 | Blocker closeout | 8 | PLANNED_NOT_AUTHORIZED |
 | STS-M6 | STS-M6-03 | M6-03 | Onboarding / support / operational runbooks | 18 | PLANNED_NOT_AUTHORIZED |
@@ -483,6 +500,96 @@ STS-M2-06 = COMPLETE / ACCEPTED
 ~~~
 
 STS-M2-05 residual implementation/lifecycle/callsite-evidence/runtime/AppSec work is preserved and does not reopen the accepted Database Contract Map unless a material invalidator changes the decision.
+
+## 6.2 Adopted zero-material-residual security closure map — M3 through M6
+
+The 2026-09-09 Product Authority direction materially adopts the following decomposition and non-regression obligations. These are now explicit WBS/task-graph nodes or closure contracts; they are not execution authorization.
+
+### M3
+
+~~~text
+STS-M3-03
+├── 03-01 accepted allowlist baseline
+├── 03-02 resource-bound RPC remediation
+├── 03-03 tenant-scoped analytics remediation
+├── 03-04 internal-helper reachability convergence
+├── 03-05 EXECUTE principal convergence
+└── 03-06 independent RPC authority closure
+
+STS-M3-04
+├── 04-01..02 accepted historical slices
+├── 04-03 global tenant surface inventory
+├── 04-04 lista_avaliacoes hardening
+├── 04-05 PME catalog hardening
+├── 04-06 remaining DML/default-privilege remediation
+├── 04-07 invariant verification
+├── 04-08 bypass/call-site sweep
+├── 04-09 structural negative proofs
+└── 04-10 independent AppSec closure
+
+STS-M3-05
+├── 05-01 create-user authority
+├── 05-02 password-reset/admin authority
+├── 05-03 legacy role/root compatibility cleanup
+├── 05-04 negative proofs
+└── 05-05 independent closure
+
+STS-M3-06
+├── 06-01 isolated staging/fixtures
+├── 06-02 mesa-worker-proxy disposition
+├── 06-03 service credential/payload/rate boundary
+├── 06-04 hostile-client harness readiness
+└── 06-05 final M3 implementation closure
+~~~
+
+### M4 — all six structural subtasks carry security non-regression obligations
+
+| Qualified ID | Security obligation |
+|---|---|
+| STS-M4-01 | no business/tenant/role/ownership authority in AppShell |
+| STS-M4-02 | CRM/Funil consume hardened server contracts; no direct-write/tenant regression |
+| STS-M4-03 | LeadOps/PME preserve tenant, distribution and sensitive-DML boundaries |
+| STS-M4-04 | MesaCliente preserves resource/tenant/service authorization boundaries |
+| STS-M4-05 | privileged feature gateways enforce server-side authority |
+| STS-M4-06 | functional equivalence plus changed-boundary security regression |
+
+### M5 — all assurance subtasks
+
+~~~text
+STS-M5-00 coverage reconciliation
+STS-M5-01 isolated hostile-client suite
+STS-M5-02 tenant/role/auth/storage regression
+STS-M5-03 dependency/CVE gate
+STS-M5-04 secrets/config/deploy/migration gate
+STS-M5-05 observability/rollback/incident readiness
+STS-M5-06 material residual elimination gate
+STS-M5-07 independent integrated AppSec final review
+~~~
+
+### M6 — all launch/security-candidate subtasks
+
+~~~text
+STS-M6-01 current Security Evidence + AS-BUILT
+STS-M6-02 zero-material blocker/finding closeout
+STS-M6-03 secure onboarding/support/runbooks
+STS-M6-04 controlled commercial decision after technical closure
+STS-M6-05 launch readiness / Product Authority Security Go consideration
+~~~
+
+Program finish-line invariant:
+
+~~~text
+MATERIAL SECURITY FINDING OPEN
+=> OWNING TASK NOT FINAL-CLOSED
+=> M5 NOT PASS
+=> M6 NOT SECURITY-GO ELIGIBLE
+
+ZERO MATERIAL OPEN SECURITY FINDINGS
++ ZERO MATERIAL NOT_DETERMINED
++ CURRENT PROOF
++ INDEPENDENT APPSEC PASS
+= REQUIRED BEFORE M6 SECURITY-GO CANDIDACY
+~~~
 
 ## 7. Future decomposition rule
 
