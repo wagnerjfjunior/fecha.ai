@@ -334,11 +334,38 @@ Issue #141 remains the parent program contract; this Product Authority scope ame
 
 | Qualified ID | Task | Operational state | Exit requirement |
 |---|---|---|---|
-| STS-M3-06-01 | Isolated security staging topology + fixtures | DEFINED_NOT_AUTHORIZED | deterministic non-production hostile-client environment and rollback |
-| STS-M3-06-02 | `mesa-worker-proxy` auth/authorization disposition | DEFINED_NOT_AUTHORIZED | F-08 remediated, removed or proven unreachable |
-| STS-M3-06-03 | Service-to-service credential / payload / rate boundary | DEFINED_NOT_AUTHORIZED | secret ownership, request-size and abuse/rate boundaries proven |
-| STS-M3-06-04 | Hostile-client / cross-tenant harness readiness | DEFINED_NOT_AUTHORIZED | deterministic identities, fixtures and evidence capture ready |
-| STS-M3-06-05 | M3 Final Security Implementation Closure | DEFINED_NOT_AUTHORIZED | all M3 material findings remediated/refuted + independent closure evidence |
+| STS-M3-06-01 | Isolated security staging topology + fixtures | AUTHORIZED_DEFERRED / COST_GATED | deterministic non-production hostile-client environment and rollback |
+| STS-M3-06-02 | `mesa-worker-proxy` auth/authorization disposition | AUTHORIZED_DEFERRED / DO_NOT_EXECUTE_NOW | F-08 remediated, removed or proven unreachable |
+| STS-M3-06-03 | Service-to-service credential / payload / rate boundary | AUTHORIZED_DEFERRED / DO_NOT_EXECUTE_NOW | secret ownership, request-size and abuse/rate boundaries proven |
+| STS-M3-06-04 | Hostile-client / cross-tenant harness readiness | AUTHORIZED_DEFERRED / COST_GATED | deterministic identities, fixtures and evidence capture ready |
+| STS-M3-06-05 | M3 Final Security Implementation Closure | AUTHORIZED_DEFERRED / FINAL_CLOSURE_HELD | all M3 material findings remediated/refuted + independent closure evidence |
+
+Product Authority deferred-execution decision — 2026-09-09:
+
+```text
+STS-M3-06 =
+AUTHORIZED_DEFERRED / NOT_STARTED / NOT_CURRENT_ACTION
+
+STS-M5-01 + STS-M5-02 =
+AUTHORIZED_DEFERRED_FINAL_TEST / NOT_STARTED / NOT_CURRENT_ACTION
+
+OFFENSIVE LAB =
+SYNTHETIC DATA ONLY
+NO REAL CUSTOMER/LEAD DATA
+NO DESTRUCTIVE ATTACKS IN PRODUCTION
+
+PAID / PRO / CLONED SECURITY ENVIRONMENT =
+DO NOT CREATE NOW
+EXPLICIT COST CONFIRMATION REQUIRED AT EXECUTION TIME
+
+AUTHORIZATION IS DURABLE
+BUT EXECUTION ADMISSION STILL REQUIRES:
+fresh bootstrap + exact live refs + isolated environment ready + rollback
++ synthetic identities/fixtures + no production-destructive scope
++ explicit cost confirmation if the environment incurs cost
+```
+
+This authorization removes the future need to re-authorize the same bounded task scope solely because time passed. It does **not** make the lab the current action, does not authorize cost incurrence now, and is invalidated/re-scoped if the material target/environment/scope changes.
 
 Final M3 invariant:
 
@@ -418,8 +445,8 @@ Any material M4 security regression reopens the owning M3 control or creates a b
 | ID | Qualified ID | Task | Hours / planning state |
 |---|---|---|---:|
 | M5-00 | STS-M5-00 | Global Security Assurance Coverage Reconciliation | REBASELINE_REQUIRED |
-| M5-01 | STS-M5-01 | Hostile-client suite isolada | 28h |
-| M5-02 | STS-M5-02 | Regressão tenant / role / auth / storage | 28h |
+| M5-01 | STS-M5-01 | Hostile-client suite isolada | 28h / AUTHORIZED_DEFERRED_FINAL_TEST |
+| M5-02 | STS-M5-02 | Regressão tenant / role / auth / storage | 28h / AUTHORIZED_DEFERRED_FINAL_TEST |
 | M5-03 | STS-M5-03 | Dependency / CVE gate | 12h |
 | M5-04 | STS-M5-04 | Secrets / config / deploy gate | 16h |
 | M5-05 | STS-M5-05 | Observabilidade / rollback / incidente | 24h |
@@ -444,6 +471,36 @@ Issue #141 exit remains authoritative for M5.
 | STS-M5-05 | Observability / rollback / incident readiness | detection, auditability, rollback and incident response paths proven |
 | STS-M5-06 | Material Residual Elimination Gate | ZERO MATERIAL OPEN SECURITY FINDINGS and ZERO MATERIAL NOT_DETERMINED |
 | STS-M5-07 | Independent Integrated AppSec Final Review | independent PASS required before M6 nomination |
+
+### 9.2 Deferred final offensive-test sequencing
+
+Product Authority intentionally defers the **active offensive laboratory execution** until the end of the technical test sequence so FECH.AI can continue task-by-task without incurring the isolated-environment cost now.
+
+```text
+NORMAL WORK CONTINUES TASK-BY-TASK
+→ complete M3/M4 implementation and non-offensive proof obligations
+→ STS-M5-00 coverage reconciliation
+→ STS-M5-03 dependency/CVE gate
+→ STS-M5-04 secrets/config/deploy/migration gate
+→ STS-M5-05 observability/rollback/incident evidence
+→ all other applicable non-offensive technical test suites complete
+→ FINAL LAB ECONOMIC/ENVIRONMENT GATE
+   - Supabase isolated clone/branch capability available
+   - explicit cost confirmation by Product Authority
+   - synthetic-only fixtures
+   - rollback/teardown ready
+→ STS-M3-06-01 / STS-M3-06-04 lab + harness readiness
+→ close any remaining STS-M3-06-02 / 03 service-boundary prerequisites
+→ STS-M5-01 isolated hostile-client offensive suite
+→ STS-M5-02 tenant / role / auth / storage adversarial regression
+→ STS-M5-06 material residual elimination/adjudication
+→ STS-M5-07 independent integrated AppSec final review
+→ M6 candidate gates
+```
+
+Therefore STS-M5-01 and STS-M5-02 are the **last active technical attack/test execution**, while STS-M5-06, STS-M5-07 and M6 remain mandatory post-test closure/adjudication gates. No attack is authorized against production beyond non-destructive production-safe checks separately admitted by the applicable gate.
+
+The existing isolated-lab concept is reused; do not create a parallel lab track. Historical security planning already requires a separate Supabase security lab/branch only after cost confirmation.
 
 M5 closure rule:
 
