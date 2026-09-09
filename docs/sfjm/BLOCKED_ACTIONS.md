@@ -1,7 +1,44 @@
 # FECH.AI — SFJM Blocked Actions
 
+## 0.0000000000000000036 CURRENT — OFFENSIVE LAB HAS FUTURE AUTHORITY BUT EXECUTION IS CONDITION-BLOCKED — 2026-09-09
 
-## 0.0000000000000000035 CURRENT — STS-M3-04-02 ACCEPTED / FURTHER TECHNICAL EXECUTION BLOCKED PENDING SEPARATE AUTHORIZATION — 2026-09-08
+The following scopes are no longer blocked by missing Product Authority task authorization:
+
+~~~text
+STS-M3-06 bounded future scope
+STS-M5-01 isolated hostile-client suite
+STS-M5-02 tenant / role / auth / storage adversarial regression
+~~~
+
+They are nevertheless blocked from execution now by the Product Authority sequencing decision.
+
+Execution conditions that must all be true before admission:
+
+~~~text
+applicable prior implementation/non-offensive tests complete
+final offensive-test window reached
+isolated Supabase lab/clone/branch or equivalent ready
+synthetic-only data/fixtures
+rollback + teardown ready
+fresh bootstrap and exact current refs
+explicit cost confirmation if creating/maintaining the environment costs money
+~~~
+
+Still forbidden:
+
+~~~text
+offensive execution now
+paid environment creation now
+real-data use/exfiltration
+destructive attack in production
+scope expansion beyond the authorized lab
+automatic deploy
+automatic Security Go
+~~~
+
+
+
+## 0.0000000000000000035 HISTORICAL / SUPERSEDED — STS-M3-04-02 ACCEPTED / FURTHER TECHNICAL EXECUTION BLOCKED PENDING SEPARATE AUTHORIZATION — 2026-09-08
 
 ~~~text
 STS-M3 = ACTIVE
