@@ -1,6 +1,58 @@
 # FECH.AI — SFJM Current Material State
 
-## 0.0000000000000000036 CURRENT — PR #211 MERGED / ZERO-MATERIAL-RESIDUAL WBS CANONICAL — 2026-09-09
+## 0.0000000000000000037 CURRENT — FINAL OFFENSIVE LAB PRE-AUTHORIZED BUT DEFERRED — 2026-09-09
+
+Product Authority has authorized the bounded future STS-M3-06 + STS-M5-01 + STS-M5-02 offensive-security path, while explicitly ordering that it must not execute now.
+
+~~~text
+decision anchor main =
+157f0f6f1f9bd4e80cf909e95cc48aa76ebe97d5
+
+STS-M3-06 =
+AUTHORIZED_DEFERRED / NOT_STARTED / NOT_CURRENT_ACTION
+
+STS-M5-01 =
+AUTHORIZED_DEFERRED_FINAL_TEST / NOT_STARTED / NOT_CURRENT_ACTION
+
+STS-M5-02 =
+AUTHORIZED_DEFERRED_FINAL_TEST / NOT_STARTED / NOT_CURRENT_ACTION
+
+CURRENT_IMMEDIATE_AUTHORIZED_TECHNICAL_EXECUTION =
+NONE
+
+Security Go =
+NOT_GRANTED
+~~~
+
+Sequencing is material:
+
+~~~text
+continue FECH.AI WBS task-by-task
+→ complete applicable implementation + non-offensive test obligations
+→ reach final offensive-test window
+→ explicitly confirm cost
+→ provision/duplicate isolated Supabase security environment
+→ synthetic fixtures only
+→ execute STS-M5-01 + STS-M5-02 adversarial suites
+→ eliminate/adjudicate findings under STS-M5-06
+→ independent STS-M5-07 AppSec final review
+→ M6
+~~~
+
+Hard prohibitions remain:
+
+~~~text
+NO offensive execution now
+NO paid environment creation now
+NO real customer/lead/business data in the lab
+NO destructive attack in production
+NO Security Go by implication
+~~~
+
+The authorization is durable for the same bounded future scope. Execution admission later still requires fresh bootstrap, exact live refs, isolated-environment readiness, rollback/teardown and explicit cost confirmation when cost will be incurred.
+
+
+## 0.0000000000000000036 HISTORICAL / SUPERSEDED — PR #211 MERGED / ZERO-MATERIAL-RESIDUAL WBS CANONICAL — 2026-09-09
 
 Product Authority completed the documentation/governance publication that binds the 2026-09-09 live security audit into the canonical Security-to-Scale WBS.
 

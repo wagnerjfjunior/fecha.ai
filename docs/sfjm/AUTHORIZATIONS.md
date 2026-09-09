@@ -1,5 +1,82 @@
 # FECH.AI — SFJM Authorizations
 
+## 0.0000000000000000037 Product Authority — deferred final offensive-lab authorization — 2026-09-09
+
+Product Authority explicitly authorizes the bounded future scope:
+
+~~~text
+STS-M3-06 =
+AUTHORIZED_DEFERRED / NOT_STARTED / NOT_CURRENT_ACTION
+
+STS-M5-01 =
+AUTHORIZED_DEFERRED_FINAL_TEST / NOT_STARTED / NOT_CURRENT_ACTION
+
+STS-M5-02 =
+AUTHORIZED_DEFERRED_FINAL_TEST / NOT_STARTED / NOT_CURRENT_ACTION
+~~~
+
+Authorized future offensive scope:
+
+~~~text
+synthetic FECH.AI security laboratory
+cross-tenant testing
+hostile-client testing
+adversarial tenant / role / auth / storage regression
+synthetic identities and fixtures only
+no real customer/lead/business data
+no destructive attacks in production
+~~~
+
+Product Authority execution-order decision:
+
+~~~text
+DO NOT EXECUTE NOW
+
+continue the WBS task-by-task
+complete the remaining applicable implementation and non-offensive test obligations first
+
+the isolated offensive suite is the final active technical attack/test window
+before:
+STS-M5-06 residual elimination
+STS-M5-07 independent integrated AppSec final review
+M6 Security Go candidate gates
+~~~
+
+Economic/environment condition:
+
+~~~text
+isolated Supabase clone / branch / equivalent lab =
+planned but NOT to be created now
+
+cost-bearing environment creation =
+REQUIRES EXPLICIT COST CONFIRMATION AT EXECUTION TIME
+
+Supabase Pro / required paid capability =
+dependency to be satisfied when the final lab window is reached
+~~~
+
+Durability and admission contract:
+
+~~~text
+same bounded task scope does not require a new Product Authority task authorization merely because execution occurs later
+
+however execution still requires:
+fresh FECH.AI bootstrap
+current exact refs
+current target/environment reconstruction
+isolated non-production environment
+synthetic fixtures
+rollback/teardown
+safe evidence capture
+cost confirmation if any cost will be incurred
+
+material target/scope/environment drift =
+revalidate or re-scope before execution
+~~~
+
+This authorization does not authorize immediate execution, current cost incurrence, database cloning now, production mutation, destructive production testing, real-data exfiltration, deploy or Security Go.
+
+
 ## 0.0000000000000000034 Product Authority — STS-M3-04-01 formal acceptance + bounded documentation/SFJM publication — 2026-09-08
 
 Product Authority explicitly decides:

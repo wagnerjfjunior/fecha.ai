@@ -316,6 +316,12 @@ ACTIVE
 AUTHORIZED_READ_ONLY
 = execution is explicitly authorized for bounded READ_ONLY evidence/reasoning only; no mutation authority
 
+AUTHORIZED_DEFERRED
+= Product Authority has authorized the bounded task scope, but execution is intentionally not the current action and remains gated by named sequencing/environment/cost conditions
+
+AUTHORIZED_DEFERRED_FINAL_TEST
+= authorized offensive/adversarial test scope reserved for the final technical test window; no execution before the declared lab admission conditions
+
 ELIGIBLE_NOT_AUTHORIZED
 = next structurally eligible task; execution authority has not been granted
 
@@ -363,11 +369,23 @@ COMPLETE_WITH_RESIDUALS / ACCEPTED
 STS-M3-04-03..STS-M3-04-10 =
 DEFINED_NOT_AUTHORIZED
 
-STS-M3-05..STS-M6 execution =
-NOT_AUTHORIZED
+STS-M3-05 =
+PLANNED_NOT_AUTHORIZED
 
-CURRENT_AUTHORIZED_TECHNICAL_EXECUTION =
+STS-M3-06 =
+AUTHORIZED_DEFERRED / NOT_STARTED / NOT_CURRENT_ACTION
+
+STS-M5-01 + STS-M5-02 =
+AUTHORIZED_DEFERRED_FINAL_TEST / NOT_STARTED / NOT_CURRENT_ACTION
+
+STS-M4 + STS-M5-00 + STS-M5-03..07 + STS-M6 =
+PLANNED_NOT_AUTHORIZED unless separately authorized
+
+CURRENT_IMMEDIATE_AUTHORIZED_TECHNICAL_EXECUTION =
 NONE
+
+DEFERRED_FUTURE_AUTHORITY_DOES_NOT_AUTO_EXECUTE =
+YES
 
 Security Go =
 NOT_GRANTED
@@ -442,12 +460,12 @@ Historical PRs may be related to the current WBS as `HISTORICAL_CONTRIBUTION_TO_
 | STS-M3-05 | STS-M3-05-03 | M3-05-03 | Root / admin-local / gestor compatibility cleanup | TBD | DEFINED_NOT_AUTHORIZED |
 | STS-M3-05 | STS-M3-05-04 | M3-05-04 | Auth/Admin negative proofs | TBD | DEFINED_NOT_AUTHORIZED |
 | STS-M3-05 | STS-M3-05-05 | M3-05-05 | Independent Auth/Admin closure review | TBD | DEFINED_NOT_AUTHORIZED |
-| STS-M3 | STS-M3-06 | M3-06 | Security Staging + Service Boundary Hardening | REBASELINE | PLANNED_NOT_AUTHORIZED |
-| STS-M3-06 | STS-M3-06-01 | M3-06-01 | Isolated security staging topology + fixtures | TBD | DEFINED_NOT_AUTHORIZED |
-| STS-M3-06 | STS-M3-06-02 | M3-06-02 | mesa-worker-proxy auth/authorization disposition | TBD | DEFINED_NOT_AUTHORIZED |
-| STS-M3-06 | STS-M3-06-03 | M3-06-03 | Service-to-service credential / payload / rate boundary | TBD | DEFINED_NOT_AUTHORIZED |
-| STS-M3-06 | STS-M3-06-04 | M3-06-04 | Hostile-client / cross-tenant harness readiness | TBD | DEFINED_NOT_AUTHORIZED |
-| STS-M3-06 | STS-M3-06-05 | M3-06-05 | M3 Final Security Implementation Closure | TBD | DEFINED_NOT_AUTHORIZED |
+| STS-M3 | STS-M3-06 | M3-06 | Security Staging + Service Boundary Hardening | REBASELINE | AUTHORIZED_DEFERRED / NOT_CURRENT_ACTION |
+| STS-M3-06 | STS-M3-06-01 | M3-06-01 | Isolated security staging topology + fixtures | TBD | AUTHORIZED_DEFERRED / COST_GATED |
+| STS-M3-06 | STS-M3-06-02 | M3-06-02 | mesa-worker-proxy auth/authorization disposition | TBD | AUTHORIZED_DEFERRED / DO_NOT_EXECUTE_NOW |
+| STS-M3-06 | STS-M3-06-03 | M3-06-03 | Service-to-service credential / payload / rate boundary | TBD | AUTHORIZED_DEFERRED / DO_NOT_EXECUTE_NOW |
+| STS-M3-06 | STS-M3-06-04 | M3-06-04 | Hostile-client / cross-tenant harness readiness | TBD | AUTHORIZED_DEFERRED / COST_GATED |
+| STS-M3-06 | STS-M3-06-05 | M3-06-05 | M3 Final Security Implementation Closure | TBD | AUTHORIZED_DEFERRED / FINAL_CLOSURE_HELD |
 | STS-M4 | STS-M4-01 | M4-01 | AppShell / Shared Frontend Boundary | 20 | PLANNED_NOT_AUTHORIZED |
 | STS-M4 | STS-M4-02 | M4-02 | CRM + Funil Core Slice | 40 | PLANNED_NOT_AUTHORIZED |
 | STS-M4 | STS-M4-03 | M4-03 | LeadOps Execution Slice — Leads / Listas / Distribuição / Discador / Power Message Engine | 32 | PLANNED_NOT_AUTHORIZED |
@@ -455,8 +473,8 @@ Historical PRs may be related to the current WBS as `HISTORICAL_CONTRIBUTION_TO_
 | STS-M4 | STS-M4-05 | M4-05 | Feature Gateways / API Boundaries | 24 | PLANNED_NOT_AUTHORIZED |
 | STS-M4 | STS-M4-06 | M4-06 | Core Functional Equivalence & Regression | 24 | PLANNED_NOT_AUTHORIZED |
 | STS-M5 | STS-M5-00 | M5-00 | Global Security Assurance Coverage Reconciliation | REBASELINE | PLANNED_NOT_AUTHORIZED |
-| STS-M5 | STS-M5-01 | M5-01 | Hostile-client suite isolada | 28 | PLANNED_NOT_AUTHORIZED |
-| STS-M5 | STS-M5-02 | M5-02 | Regressão tenant / role / auth / storage | 28 | PLANNED_NOT_AUTHORIZED |
+| STS-M5 | STS-M5-01 | M5-01 | Hostile-client suite isolada | 28 | AUTHORIZED_DEFERRED_FINAL_TEST / LAB_REQUIRED |
+| STS-M5 | STS-M5-02 | M5-02 | Regressão tenant / role / auth / storage | 28 | AUTHORIZED_DEFERRED_FINAL_TEST / LAB_REQUIRED |
 | STS-M5 | STS-M5-03 | M5-03 | Dependency / CVE gate | 12 | PLANNED_NOT_AUTHORIZED |
 | STS-M5 | STS-M5-04 | M5-04 | Secrets / config / deploy gate | 16 | PLANNED_NOT_AUTHORIZED |
 | STS-M5 | STS-M5-05 | M5-05 | Observabilidade / rollback / incidente | 24 | PLANNED_NOT_AUTHORIZED |
@@ -476,6 +494,31 @@ STS-M3 = ACTIVE
 STS-M4 = PLANNED_NOT_AUTHORIZED
 STS-M5 = PLANNED_NOT_AUTHORIZED
 STS-M6 = PLANNED_NOT_AUTHORIZED
+~~~
+
+Deferred offensive-lab execution overlay:
+
+~~~text
+AUTHORIZATION_SOURCE = Product Authority / 2026-09-09
+STS-M3-06 = AUTHORIZED_DEFERRED
+STS-M5-01 = AUTHORIZED_DEFERRED_FINAL_TEST
+STS-M5-02 = AUTHORIZED_DEFERRED_FINAL_TEST
+
+CURRENT_ACTION = NO
+EXECUTE_NOW = NO
+REAL_DATA = FORBIDDEN
+DESTRUCTIVE_PRODUCTION_ATTACK = FORBIDDEN
+PAID_ENVIRONMENT_CREATION_NOW = NOT_AUTHORIZED
+
+FINAL_TEST_SEQUENCE =
+all applicable non-offensive tests
+→ explicit cost confirmation + isolated Supabase lab admission
+→ STS-M3-06 lab/harness readiness
+→ STS-M5-01 hostile-client
+→ STS-M5-02 cross-tenant/role/auth/storage adversarial regression
+→ STS-M5-06 residual elimination
+→ STS-M5-07 independent AppSec review
+→ M6
 ~~~
 
 ## 6. Execution-discovered decomposition — STS-M2-04
