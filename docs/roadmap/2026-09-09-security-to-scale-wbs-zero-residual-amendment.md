@@ -141,17 +141,26 @@ Expand final acceptance so no material Auth/Admin residual is merely carried for
 
 ## 4. M4 — frontend modularization with security non-regression
 
-M4 remains primarily architectural/product work, but its exit contract is strengthened:
+M4 remains primarily architectural/product work, but **all six structural subtasks now carry an explicit security non-regression obligation**.
+
+| Qualified ID | Structural task | Security/non-regression obligation |
+|---|---|---|
+| STS-M4-01 | AppShell / Shared Frontend Boundary | AppShell owns navigation/session presentation only; no tenant/role/ownership/financial/privileged authority is decided client-side |
+| STS-M4-02 | CRM + Funil Core Slice | consume hardened Lead/Funil server contracts; preserve tenant/ownership/history boundaries and prevent sensitive direct-write regression |
+| STS-M4-03 | LeadOps Execution Slice | preserve Leads/Listas/Distribuição/Discador/PME tenant invariants; no reintroduction of direct sensitive DML or browser authority |
+| STS-M4-04 | MesaCliente Core Slice | preserve resource/tenant binding; no UI-only approval/admin boundary; service calls remain authenticated and authorized |
+| STS-M4-05 | Feature Gateways / API Boundaries | every privileged gateway consumes hardened M3 APIs/RPCs and keeps auth/tenant/role checks server-side |
+| STS-M4-06 | Core Functional Equivalence & Regression | prove product equivalence plus changed-boundary security regression across CRM, Funil, LeadOps/PME and MesaCliente |
 
 ```text
 FRONTEND EXTRACTION MUST NOT
 MOVE TENANT / ROLE / OWNERSHIP / FINANCIAL / PRIVILEGED AUTHORITY TO CLIENT
 
-M4-05 Feature Gateways / API Boundaries
-must consume the hardened M3 contracts.
-
-M4-06 Core Functional Equivalence & Regression
-must include security-boundary regression for the changed gateways.
+M4 PASS REQUIRES =
+FUNCTIONAL EQUIVALENCE
++ ALL SIX M4 SECURITY NON-REGRESSION OBLIGATIONS PASS
++ ZERO NEW MATERIAL CLIENT-AUTHORITY REGRESSION
++ ZERO NEW MATERIAL TENANT/OWNERSHIP BYPASS
 ```
 
 Any newly discovered material authorization or tenant-isolation regression during M4 reopens the owning M3 closure item or creates a bounded remediation child before M4 can close.
