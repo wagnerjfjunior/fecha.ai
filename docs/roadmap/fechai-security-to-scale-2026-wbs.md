@@ -361,8 +361,8 @@ EXPLICIT COST CONFIRMATION REQUIRED AT EXECUTION TIME
 AUTHORIZATION IS DURABLE
 BUT EXECUTION ADMISSION STILL REQUIRES:
 fresh bootstrap + exact live refs + isolated environment ready + rollback
-+ synthetic identities/fixtures + no production-destructive scope
-+ explicit cost confirmation if the environment incurs cost
+synthetic identities/fixtures + no production-destructive scope
+explicit cost confirmation if the environment incurs cost
 ```
 
 This authorization removes the future need to re-authorize the same bounded task scope solely because time passed. It does **not** make the lab the current action, does not authorize cost incurrence now, and is invalidated/re-scoped if the material target/environment/scope changes.
