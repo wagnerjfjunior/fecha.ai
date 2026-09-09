@@ -1,6 +1,31 @@
 # FECH.AI — SFJM Program Task Graph
 
 
+## 0.00 CURRENT POST-MERGE OVERLAY — PR #211 / ZERO-MATERIAL-RESIDUAL WBS — 2026-09-09
+
+~~~text
+canonical main = 719f0e98b58c7bf4d39485020d4389f8654da659
+PR #211 = MERGED / CLOSED
+exact merged head = 64db0b4bbb374991505af4f8be5c0722a6b11be7
+
+M3-M6 mapping parity at merged head =
+51 / 51 expected IDs present in WBS + task graph + relationship catalog
+
+M4 security non-regression mapping =
+6 / 6 subtasks
+
+M5 structure =
+STS-M5-00..STS-M5-07
+
+M6 structure =
+STS-M6-01..STS-M6-05
+
+CURRENT_AUTHORIZED_TECHNICAL_EXECUTION = NONE
+Security Go = NOT_GRANTED
+~~~
+
+The zero-material-residual finish line is canonical planning/closure authority after PR #211. It changes no runtime or database object and grants no future task execution automatically.
+
 ## 0.0 CANONICAL SECURITY ASSURANCE CATALOG RELATION
 
 Security/test artifacts are related to this graph through the canonical machine-readable catalog:
@@ -47,7 +72,7 @@ CATALOGED != SECURITY GO
 
 `STS-SEC-UNMAPPED`, if it ever appears in the catalog, is a quarantine state and must be reconciled to a canonical STS parent before Security Go.
 
-## 0. CURRENT EXECUTION OVERLAY — STS-M3-03 ACCEPTED / STS-M3-04 AUTHORIZED NOT INITIATED — 2026-09-08
+## 0.01 HISTORICAL / SUPERSEDED EXECUTION OVERLAY — STS-M3-03 ACCEPTED / STS-M3-04 AUTHORIZED NOT INITIATED — 2026-09-08
 
 ~~~text
 decision base main = ec42e7b087dd1bf9b7ddc0cf05316e9d3e7979be
@@ -62,10 +87,10 @@ STS-M3-06 = PLANNED / NOT_AUTHORIZED
 Security Go = NOT_GRANTED
 ~~~
 
-This override is current operational meaning for continuity consumers/SFJM Workspace. WBS structure, labels, order and hours remain unchanged. M3-04 authorization does not mean execution has started and does not imply blanket mutation authority.
+This historical overlay is retained for provenance only. It is superseded by the 2026-09-09 PR #211 post-merge overlay and does not define current operational meaning.
 
 
-## 0. CURRENT POST-MERGE EXECUTION OVERLAY — PR #202 MERGED / STS-M3-03 NEXT — 2026-09-08
+## 0.02 HISTORICAL / SUPERSEDED POST-MERGE EXECUTION OVERLAY — PR #202 MERGED / STS-M3-03 NEXT — 2026-09-08
 
 ~~~text
 canonical main =

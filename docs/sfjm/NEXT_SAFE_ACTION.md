@@ -1,5 +1,38 @@
 # FECH.AI — SFJM Next Safe Action
 
+## 0.0000000000000000036 CURRENT MATERIAL GATE — ZERO-RESIDUAL WBS CANONICAL / NEXT TECHNICAL EXECUTION REQUIRES PRODUCT AUTHORITY — 2026-09-09
+
+~~~text
+canonical main =
+719f0e98b58c7bf4d39485020d4389f8654da659
+
+PR #211 =
+MERGED / CLOSED
+
+M3-M6 zero-material-residual WBS =
+CANONICAL
+
+CURRENT_AUTHORIZED_TECHNICAL_EXECUTION =
+NONE
+
+Security Go =
+NOT_GRANTED
+~~~
+
+The WBS now guarantees that all currently known material findings are bound to remediation and proof gates through M3-M6. This documentation merge does not automatically select or authorize the next technical child.
+
+Single safe continuation:
+
+~~~text
+PRODUCT AUTHORITY MUST SEPARATELY SELECT / AUTHORIZE
+the next bounded STS-M3 technical execution child
+
+automatic execution = NO
+automatic Supabase mutation = NO
+automatic deploy = NO
+automatic Security Go = NO
+~~~
+
 
 ## 0.0000000000000000035 CURRENT MATERIAL GATE — STS-M3-04-02 ACCEPTED / NEXT TECHNICAL GATE REQUIRES PRODUCT AUTHORITY — 2026-09-08
 

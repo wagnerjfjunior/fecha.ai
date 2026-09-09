@@ -1,5 +1,77 @@
 # FECH.AI — SFJM Current Material State
 
+## 0.0000000000000000036 CURRENT — PR #211 MERGED / ZERO-MATERIAL-RESIDUAL WBS CANONICAL — 2026-09-09
+
+Product Authority completed the documentation/governance publication that binds the 2026-09-09 live security audit into the canonical Security-to-Scale WBS.
+
+~~~text
+canonical main =
+719f0e98b58c7bf4d39485020d4389f8654da659
+
+PR #211 =
+MERGED / CLOSED
+
+approved exact head =
+64db0b4bbb374991505af4f8be5c0722a6b11be7
+
+merge commit =
+719f0e98b58c7bf4d39485020d4389f8654da659
+
+change class =
+DOCUMENTATION / WBS / SFJM / ASSURANCE RELATIONSHIP ONLY
+
+runtime mutation =
+NONE
+
+Supabase/Auth/data mutation =
+NONE
+
+STS-M3 =
+ACTIVE
+
+STS-M3-03 final implementation closure =
+PENDING UNDER NEW ZERO-MATERIAL-RESIDUAL CONTRACT
+
+STS-M3-04 =
+ACTIVE / REBASELINE_REQUIRED
+
+STS-M4 =
+PLANNED / SECURITY NON-REGRESSION MAPPED FOR ALL SIX SUBTASKS
+
+STS-M5 =
+PLANNED / STS-M5-00..07 MAPPED / ZERO MATERIAL OPEN REQUIRED
+
+STS-M6 =
+PLANNED / STS-M6-01..05 MAPPED / INELIGIBLE WHILE MATERIAL FINDING OPEN
+
+CURRENT_AUTHORIZED_TECHNICAL_EXECUTION =
+NONE
+
+Security Go =
+NOT_GRANTED
+~~~
+
+Canonical structural sources:
+
+~~~text
+docs/roadmap/fechai-security-to-scale-2026-wbs.md
+docs/sfjm/PROGRAM_TASK_GRAPH.md
+docs/security/assurance/STS_WBS_PR_RELATIONSHIP_CATALOG.json
+docs/roadmap/2026-09-09-security-to-scale-wbs-zero-residual-amendment.md
+docs/security/assurance/2026-09-09-audit-to-wbs-zero-residual-plan.md
+~~~
+
+Final security closure invariant now canonical:
+
+~~~text
+MATERIAL SECURITY FINDING OPEN
+=> OWNING TASK NOT FINAL-CLOSED
+=> M5 NOT PASS
+=> M6 NOT SECURITY-GO ELIGIBLE
+~~~
+
+This publication does not authorize any implementation slice, SQL/DDL/DML, migration, RLS/policy/grant/RPC mutation, deploy, hostile-client production test or Security Go.
+
 
 ## 0.0000000000000000035 CURRENT — STS-M3-04-02 COMPLETE / ACCEPTED WITH RESIDUALS — 2026-09-08
 

@@ -4947,11 +4947,11 @@
     {
       "pr_number": 211,
       "title": "docs(security): bind live audit findings to zero-residual WBS closure",
-      "state": "open",
-      "merged": false,
-      "merged_at": null,
+      "state": "closed",
+      "merged": true,
+      "merged_at": "2026-09-09T22:05:16Z",
       "head_branch": "docs/security-audit-zero-residual-wbs-20260909",
-      "head_sha": null,
+      "head_sha": "64db0b4bbb374991505af4f8be5c0722a6b11be7",
       "base_branch": "main",
       "base_sha": "ac20a30fea9095f036d8d466e83794432d58ca89",
       "primary_qualified_id": "STS-M5-00",
@@ -4981,7 +4981,8 @@
       ],
       "relationship_type": "PROGRAM_NATIVE",
       "mapping_basis": "PRODUCT_AUTHORITY_ZERO_MATERIAL_RESIDUAL_WBS_AMENDMENT",
-      "mapping_quality": "EXPLICIT_CURRENT_SCOPE"
+      "mapping_quality": "EXPLICIT_CURRENT_SCOPE",
+      "merge_commit_sha": "719f0e98b58c7bf4d39485020d4389f8654da659"
     }
   ],
   "counts": {
@@ -5254,5 +5255,12 @@
     "sfjm_protocol_main": "20ffdeed73c37522b2bee5941690a311885ab1ba",
     "sfjm_workspace_main": "6a838a1ecdf1a21022f73e5382129f0a748db585",
     "ses_main": "d9a148d8500b5b2790d295eea80d08dc99c58b42"
+  },
+  "post_merge_reconciliation": {
+    "pr_number": 211,
+    "canonical_main": "719f0e98b58c7bf4d39485020d4389f8654da659",
+    "reconciled_on": "2026-09-09",
+    "runtime_mutation": "NONE",
+    "supabase_mutation": "NONE"
   }
 }
