@@ -1,6 +1,65 @@
 # FECH.AI — SFJM Current Material State
 
-## 0.0000000000000000037 CURRENT — FINAL OFFENSIVE LAB PRE-AUTHORIZED BUT DEFERRED — 2026-09-09
+## 0.0000000000000000038 CURRENT — PR #213 MERGED / DEFERRED FINAL OFFENSIVE LAB AUTHORIZATION CANONICAL — 2026-09-09
+
+Product Authority completed the bounded documentation publication that preserves the future synthetic offensive-security lab authorization while explicitly keeping execution deferred.
+
+~~~text
+canonical main =
+dbc1e246b66d9726e7d3831085e62d27cab6908d
+
+PR #213 =
+MERGED / CLOSED
+
+approved exact head =
+3119515faa7a20d3cb43e11431bf2de6e3d87cc3
+
+merge commit =
+dbc1e246b66d9726e7d3831085e62d27cab6908d
+
+change class =
+DOCUMENTATION / WBS STATE / SFJM / ASSURANCE RELATIONSHIP ONLY
+
+runtime mutation =
+NONE
+
+Supabase/Auth/data mutation =
+NONE
+
+STS-M3-06 =
+AUTHORIZED_DEFERRED / NOT_STARTED / NOT_CURRENT_ACTION
+
+STS-M5-01 =
+AUTHORIZED_DEFERRED_FINAL_TEST / NOT_STARTED / NOT_CURRENT_ACTION
+
+STS-M5-02 =
+AUTHORIZED_DEFERRED_FINAL_TEST / NOT_STARTED / NOT_CURRENT_ACTION
+
+CURRENT_IMMEDIATE_AUTHORIZED_TECHNICAL_EXECUTION =
+NONE
+
+Security Go =
+NOT_GRANTED
+~~~
+
+Execution remains condition-gated:
+
+~~~text
+continue normal FECH.AI WBS task-by-task
+→ complete applicable implementation + non-offensive proof obligations
+→ reach the final offensive-test window
+→ explicitly confirm any environment cost
+→ provision isolated Supabase security lab/clone/branch or equivalent
+→ synthetic-only fixtures
+→ execute STS-M5-01 + STS-M5-02 adversarial suites
+→ STS-M5-06 residual elimination/adjudication
+→ STS-M5-07 independent integrated AppSec final review
+→ M6
+~~~
+
+This lifecycle reconciliation creates no new technical execution authority, no paid-environment authority, no destructive production-test authority and no Security Go.
+
+## 0.0000000000000000037 HISTORICAL / SUPERSEDED — FINAL OFFENSIVE LAB PRE-AUTHORIZED BUT DEFERRED — 2026-09-09
 
 Product Authority has authorized the bounded future STS-M3-06 + STS-M5-01 + STS-M5-02 offensive-security path, while explicitly ordering that it must not execute now.
 
