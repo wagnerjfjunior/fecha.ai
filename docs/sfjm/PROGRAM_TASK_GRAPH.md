@@ -1,6 +1,31 @@
 # FECH.AI — SFJM Program Task Graph
 
 
+## 0.00 CURRENT POST-MERGE OVERLAY — PR #211 / ZERO-MATERIAL-RESIDUAL WBS — 2026-09-09
+
+~~~text
+canonical main = 719f0e98b58c7bf4d39485020d4389f8654da659
+PR #211 = MERGED / CLOSED
+exact merged head = 64db0b4bbb374991505af4f8be5c0722a6b11be7
+
+M3-M6 mapping parity at merged head =
+51 / 51 expected IDs present in WBS + task graph + relationship catalog
+
+M4 security non-regression mapping =
+6 / 6 subtasks
+
+M5 structure =
+STS-M5-00..STS-M5-07
+
+M6 structure =
+STS-M6-01..STS-M6-05
+
+CURRENT_AUTHORIZED_TECHNICAL_EXECUTION = NONE
+Security Go = NOT_GRANTED
+~~~
+
+The zero-material-residual finish line is canonical planning/closure authority after PR #211. It changes no runtime or database object and grants no future task execution automatically.
+
 ## 0.0 CANONICAL SECURITY ASSURANCE CATALOG RELATION
 
 Security/test artifacts are related to this graph through the canonical machine-readable catalog:
