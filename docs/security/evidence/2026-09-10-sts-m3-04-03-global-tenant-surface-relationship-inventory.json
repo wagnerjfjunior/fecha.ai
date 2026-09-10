@@ -1,0 +1,119 @@
+{
+  "schema_version": "fechai.sts_m3_04_03.tenant_inventory.v1",
+  "generated_on": "2026-09-10",
+  "task": {
+    "qualified_id": "STS-M3-04-03",
+    "name": "Global Tenant Surface & Relationship Inventory",
+    "execution_mode": "READ_ONLY_EVIDENCE_FIRST",
+    "execution_state": "COMPLETE",
+    "product_authority_acceptance": "PENDING",
+    "publication_state": "PR_HEAD_ONLY"
+  },
+  "provenance": {
+    "repository": "wagnerjfjunior/fecha.ai",
+    "fechai_main_sha": "b274adac84f2d4a27a7a5147c551dc23469a610c",
+    "ses_repository": "wagnerjfjunior/Specialist-Engineering-System",
+    "ses_main_sha": "d9a148d8500b5b2790d295eea80d08dc99c58b42",
+    "environment": "FECH.AI Pilot Production / Supabase live catalog",
+    "pii_persisted_in_artifact": false
+  },
+  "surface_counts": {
+    "public_base_tables": 44,
+    "public_views": 8,
+    "public_policies": 82,
+    "public_user_triggers": 31,
+    "public_constraints": 271,
+    "public_functions": 160,
+    "tables_with_empresa_id": 38,
+    "tenant_tables_rls_enabled": 38,
+    "tenant_tables_force_rls": 25,
+    "composite_tenant_foreign_keys": 10,
+    "single_object_foreign_keys_between_tenant_tables": 83,
+    "single_object_foreign_keys_without_matching_composite_tenant_pair": 75
+  },
+  "cardinality_drift_vs_2026_09_09_audit": {
+    "public_base_tables": false,
+    "public_views": false,
+    "public_policies": false,
+    "public_user_triggers": false,
+    "public_constraints": false,
+    "public_functions": false,
+    "claim_scope": "object-class counts only; not byte-for-byte definition equivalence"
+  },
+  "findings": [
+    {
+      "id": "F-04",
+      "title": "lista_avaliacoes tenant relationship integrity",
+      "severity": "HIGH",
+      "state": "RECONFIRMED_OPEN",
+      "stored_mismatch_count_in_tested_relationships": 0,
+      "structural_gap": true,
+      "downstream": ["STS-M3-04-04", "STS-M3-04-07", "STS-M3-04-09"]
+    },
+    {
+      "id": "F-05",
+      "title": "PME catalog tenant relationship integrity",
+      "severity": "HIGH",
+      "state": "RECONFIRMED_OPEN",
+      "stored_mismatch_count_in_tested_relationships": 0,
+      "structural_gap": true,
+      "downstream": ["STS-M3-04-05", "STS-M3-04-07", "STS-M3-04-09"]
+    },
+    {
+      "id": "GTI-01",
+      "title": "leads.funil_estagio_id current-stage tenant invariant",
+      "severity": "TO_BE_ADJUDICATED",
+      "state": "PROVEN_LIVE_OPEN_NOT_REMEDIATED",
+      "stored_mismatch_count": 1,
+      "canonical_f_number_assigned": false,
+      "structural_invariant_missing": true,
+      "ordinary_authenticated_reproduction_through_reviewed_canonical_routines": "NOT_PROVEN",
+      "reviewed_write_routines": [
+        "mover_funil",
+        "mover_funil_batch",
+        "mover_funil_lote",
+        "registrar_feedback"
+      ],
+      "suggested_downstream": ["STS-M3-04-06", "STS-M3-04-07", "STS-M3-04-09"]
+    }
+  ],
+  "compensating_controls_observed": [
+    {
+      "surface": "lista_visibilidade",
+      "control": "tenant-aware trigger validation of list and polymorphic target"
+    },
+    {
+      "surface": "MesaCliente financial subset",
+      "control": "mesa_cliente_financeiro_assert_integridade() for reviewed financial relationships"
+    },
+    {
+      "surface": "authenticated-readable lot views",
+      "control": "security_invoker=true on vw_lotes_estado_oficial and vw_lotes_pendentes_avaliacao"
+    }
+  ],
+  "aggregate_consistency_summary": {
+    "lista_avaliacoes_tested_relationships_cross_tenant_mismatches": 0,
+    "pme_tested_relationships_cross_tenant_mismatches": 0,
+    "mesa_cliente_tested_relationships_cross_tenant_mismatches": 0,
+    "estoque_tested_relationships_cross_tenant_mismatches": 0,
+    "lead_current_stage_cross_tenant_mismatches": 1
+  },
+  "mutation_assertions": {
+    "supabase_mutation": "NONE",
+    "runtime_mutation": "NONE",
+    "rls_mutation": "NONE",
+    "grant_mutation": "NONE",
+    "policy_mutation": "NONE",
+    "rpc_mutation": "NONE",
+    "trigger_mutation": "NONE",
+    "data_repair": "NONE",
+    "hostile_client_test": "NOT_PERFORMED",
+    "security_go": "NOT_GRANTED"
+  },
+  "next_gate": {
+    "action": "PRODUCT_AUTHORITY_REVIEW_OR_ACCEPT_STS_M3_04_03_RESULT",
+    "automatic_start_sts_m3_04_04": false,
+    "automatic_ready": false,
+    "automatic_merge": false
+  }
+}
