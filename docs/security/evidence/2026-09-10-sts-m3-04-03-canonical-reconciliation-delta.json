@@ -1,0 +1,74 @@
+{
+  "schema_version": "fechai.sts_m3_04_03.canonical_reconciliation_delta.v1",
+  "scope": "PR #215 documentation-only correction",
+  "base_main": "b274adac84f2d4a27a7a5147c551dc23469a610c",
+  "task": "STS-M3-04-03",
+  "material_state": {
+    "execution": "READ_ONLY_EXECUTED",
+    "product_authority_acceptance": "PENDING",
+    "current_immediate_authorized_technical_execution": "NONE",
+    "next_child_automatic": false,
+    "security_go": "NOT_GRANTED"
+  },
+  "findings": {
+    "F-04": "RECONFIRMED_OPEN",
+    "F-05": "RECONFIRMED_OPEN",
+    "GTI-01": "PROVEN_LIVE_OPEN_NOT_REMEDIATED"
+  },
+  "required_canonical_projection": {
+    "docs/roadmap/fechai-security-to-scale-2026-wbs.md": {
+      "STS-M3-04-03": "READ_ONLY_EXECUTED / ACCEPTANCE_PENDING",
+      "STS-M3-04-04..10": "DEFINED_NOT_AUTHORIZED"
+    },
+    "docs/sfjm/PROGRAM_TASK_GRAPH.md": {
+      "STS-M3-04-03": "READ_ONLY_EXECUTED / ACCEPTANCE_PENDING",
+      "CURRENT_IMMEDIATE_AUTHORIZED_TECHNICAL_EXECUTION": "NONE"
+    },
+    "docs/sfjm/CURRENT_STATE.md": {
+      "event": "STS-M3-04-03 READ_ONLY execution produced F-04/F-05 reconfirmation plus GTI-01",
+      "acceptance": "PENDING"
+    },
+    "docs/sfjm/NEXT_SAFE_ACTION.md": {
+      "action": "FRESH_EXACT_HEAD_REVIEW_PR_215_THEN_PRODUCT_AUTHORITY_ADJUDICATION"
+    },
+    "docs/sfjm/AUTHORIZATIONS.md": {
+      "readonly_execution_authorized": true,
+      "documentation_pr_authorized": true,
+      "bounded_correction_authorized": true,
+      "fresh_exact_head_review_authorized": true,
+      "ready_authorized": false,
+      "merge_authorized": false,
+      "supabase_mutation_authorized": false
+    },
+    "docs/sfjm/EVIDENCE_FRESHNESS.md": {
+      "claim": "STS-M3-04-03 material inventory findings",
+      "anchor": "original live READ_ONLY execution against b274adac...",
+      "invalidators": [
+        "relevant schema/FK/constraint mutation",
+        "RLS/grant/policy/trigger/RPC mutation",
+        "GTI-01 row disposition",
+        "canonical funnel writer change",
+        "superseding audit adjudication"
+      ]
+    },
+    "docs/security/assurance/STS_WBS_PR_RELATIONSHIP_CATALOG.json": {
+      "pr_number": 215,
+      "primary_qualified_id": "STS-M3-04-03",
+      "relation": "CURRENT_EVIDENCE_PUBLICATION",
+      "state": "OPEN_DRAFT",
+      "acceptance": "PENDING"
+    }
+  },
+  "projection_status": {
+    "docs/sfjm/CURRENT_ISSUES.md": "DIRECTLY_UPDATED_IN_PR_215",
+    "human_and_machine_evidence": "DIRECTLY_UPDATED_IN_PR_215",
+    "full_nominal_relation_rowset": "NOT_DURABLY_CAPTURED_NO_SUPABASE_REPLAY",
+    "large_canonical_files": "DELTA_RECORDED_HERE_PENDING_SAFE_DIRECT_INTEGRATION"
+  },
+  "non_claims": [
+    "delta file is not itself a substitute for every canonical consumer until those consumers explicitly support it",
+    "no Product Authority acceptance is implied",
+    "no READY or MERGE authority is implied",
+    "no database/runtime mutation is implied"
+  ]
+}
