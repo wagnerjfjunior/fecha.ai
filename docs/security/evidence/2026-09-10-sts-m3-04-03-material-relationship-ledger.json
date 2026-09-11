@@ -1,0 +1,243 @@
+{
+  "schema_version": "fechai.sts_m3_04_03.material_relationship_ledger.v1",
+  "task": "STS-M3-04-03",
+  "purpose": "Durable material relationship ledger for the READ_ONLY tenant-surface inventory",
+  "provenance": {
+    "execution_base_main": "b274adac84f2d4a27a7a5147c551dc23469a610c",
+    "environment": "FECH.AI Pilot Production / Supabase live catalog",
+    "original_execution": "READ_ONLY",
+    "correction_mode": "GITHUB_DOCUMENTATION_ONLY_NO_SUPABASE_REPLAY",
+    "pii_in_artifact": false
+  },
+  "completeness_boundary": {
+    "original_live_aggregate_single_object_fk_without_tenant_pair_count": 75,
+    "full_nominal_75_rowset_persisted_during_original_session": false,
+    "full_nominal_75_rowset_reconstructed_during_this_correction": false,
+    "reason": "Product Authority correction scope explicitly forbids Supabase/runtime access; missing live rowset is not invented from aggregate counts.",
+    "reproduction_manifest": "docs/security/evidence/2026-09-10-sts-m3-04-03-readonly-reproduction-manifest.sql",
+    "future_exact_live_rowset_requires": "SEPARATELY_AUTHORIZED_READ_ONLY_REPLAY",
+    "claim": "This ledger is complete for the material relationships/findings explicitly adjudicated below, not for all 75 nominal simple-FK rows."
+  },
+  "material_relationships": [
+    {
+      "id": "REL-LEADS-CORRETOR",
+      "child": "public.leads",
+      "child_object_column": "corretor_id",
+      "child_tenant_column": "empresa_id",
+      "parent": "public.corretores",
+      "tenant_binding": "COMPOSITE_FK_PRESENT",
+      "evidence_class": "GITHUB_VERSIONED_PLUS_PREVIOUS_APPLIED_CATALOG_EVIDENCE",
+      "source": "supabase/migrations/20260830030000_appsec_m1_003_leads_tenant_integrity.sql",
+      "disposition": "STRUCTURALLY_TENANT_BOUND"
+    },
+    {
+      "id": "REL-LEADS-TIME",
+      "child": "public.leads",
+      "child_object_column": "time_id",
+      "child_tenant_column": "empresa_id",
+      "parent": "public.times",
+      "tenant_binding": "COMPOSITE_FK_PRESENT",
+      "evidence_class": "GITHUB_VERSIONED_PLUS_PREVIOUS_APPLIED_CATALOG_EVIDENCE",
+      "source": "supabase/migrations/20260830030000_appsec_m1_003_leads_tenant_integrity.sql",
+      "disposition": "STRUCTURALLY_TENANT_BOUND"
+    },
+    {
+      "id": "REL-LEADS-LISTA",
+      "child": "public.leads",
+      "child_object_column": "lista_id",
+      "child_tenant_column": "empresa_id",
+      "parent": "public.listas",
+      "tenant_binding": "COMPOSITE_FK_PRESENT",
+      "evidence_class": "GITHUB_VERSIONED_PLUS_PREVIOUS_APPLIED_CATALOG_EVIDENCE",
+      "source": "supabase/migrations/20260830030000_appsec_m1_003_leads_tenant_integrity.sql",
+      "disposition": "STRUCTURALLY_TENANT_BOUND"
+    },
+    {
+      "id": "REL-LEADS-LOTE",
+      "child": "public.leads",
+      "child_object_column": "lote_id",
+      "child_tenant_column": "empresa_id",
+      "parent": "public.lotes",
+      "tenant_binding": "COMPOSITE_FK_PRESENT",
+      "evidence_class": "GITHUB_VERSIONED_PLUS_PREVIOUS_APPLIED_CATALOG_EVIDENCE",
+      "source": "supabase/migrations/20260830030000_appsec_m1_003_leads_tenant_integrity.sql",
+      "disposition": "STRUCTURALLY_TENANT_BOUND"
+    },
+    {
+      "id": "GTI-01",
+      "child": "public.leads",
+      "child_object_column": "funil_estagio_id",
+      "child_tenant_column": "empresa_id",
+      "parent": "public.funil_estagios",
+      "parent_tenant_column": "empresa_id",
+      "tenant_binding": "SIMPLE_FK_ONLY_NO_CHILD_COMPOSITE_INVARIANT_OBSERVED",
+      "stored_cross_tenant_mismatch_count": 1,
+      "mismatch_evidence_class": "LIVE_OBSERVED_AGGREGATE_ONLY",
+      "row_identifiers_persisted": false,
+      "canonical_authenticated_routines_reviewed": [
+        "mover_funil",
+        "mover_funil_batch",
+        "mover_funil_lote",
+        "registrar_feedback"
+      ],
+      "ordinary_authenticated_reproduction_through_reviewed_routines": "NOT_PROVEN",
+      "disposition": "PROVEN_LIVE_OPEN_NOT_REMEDIATED",
+      "canonical_f_number_assigned": false,
+      "suggested_downstream": ["STS-M3-04-06", "STS-M3-04-07", "STS-M3-04-09"]
+    },
+    {
+      "id": "F-04-LISTA-AVALIACOES-LISTA",
+      "child": "public.lista_avaliacoes",
+      "child_object_column": "lista_id",
+      "child_tenant_column": "empresa_id",
+      "parent": "public.listas",
+      "tenant_binding": "SIMPLE_FK_NO_COMPOSITE_TENANT_FK",
+      "authenticated_write_exposure": ["INSERT", "UPDATE"],
+      "write_policy_boundary": "corretor_id = my_corretor_id(); no independent resulting-row list/tenant invariant",
+      "stored_mismatch_count_in_original_inventory": 0,
+      "disposition": "F-04_RECONFIRMED_OPEN",
+      "downstream": ["STS-M3-04-04", "STS-M3-04-07", "STS-M3-04-09"]
+    },
+    {
+      "id": "F-04-LISTA-AVALIACOES-LOTE",
+      "child": "public.lista_avaliacoes",
+      "child_object_column": "lote_id",
+      "child_tenant_column": "empresa_id",
+      "parent": "public.lotes",
+      "tenant_binding": "SIMPLE_FK_NO_COMPOSITE_TENANT_FK",
+      "authenticated_write_exposure": ["INSERT", "UPDATE"],
+      "stored_mismatch_count_in_original_inventory": 0,
+      "disposition": "F-04_RECONFIRMED_OPEN",
+      "downstream": ["STS-M3-04-04", "STS-M3-04-07", "STS-M3-04-09"]
+    },
+    {
+      "id": "F-04-LISTA-AVALIACOES-CORRETOR",
+      "child": "public.lista_avaliacoes",
+      "child_object_column": "corretor_id",
+      "child_tenant_column": "empresa_id",
+      "parent": "public.corretores",
+      "tenant_binding": "SIMPLE_FK_NO_COMPOSITE_TENANT_FK",
+      "authenticated_write_exposure": ["INSERT", "UPDATE"],
+      "stored_mismatch_count_in_original_inventory": 0,
+      "disposition": "F-04_RECONFIRMED_OPEN",
+      "downstream": ["STS-M3-04-04", "STS-M3-04-07", "STS-M3-04-09"]
+    },
+    {
+      "id": "F-05-PME-CADENCE-STEPS-CADENCE",
+      "child": "public.pme_cadence_steps",
+      "child_object_column": "cadence_id",
+      "child_tenant_column": "empresa_id",
+      "parent": "public.pme_cadences",
+      "tenant_binding": "SIMPLE_FK_NO_COMPOSITE_TENANT_FK",
+      "authenticated_write_exposure": ["INSERT", "UPDATE"],
+      "policy_boundary": "pme_is_empresa_admin(empresa_id)",
+      "stored_mismatch_count_in_original_inventory": 0,
+      "disposition": "F-05_RECONFIRMED_OPEN",
+      "downstream": ["STS-M3-04-05", "STS-M3-04-07", "STS-M3-04-09"]
+    },
+    {
+      "id": "F-05-PME-EMPREENDIMENTO-REFERENCES",
+      "children": [
+        "public.pme_cadences",
+        "public.pme_call_scripts",
+        "public.pme_message_templates"
+      ],
+      "child_object_column": "empreendimento_id",
+      "child_tenant_column": "empresa_id",
+      "parent": "public.empreendimentos",
+      "tenant_binding": "SIMPLE_FK_NO_UNIVERSAL_COMPOSITE_TENANT_FK",
+      "authenticated_write_exposure": ["INSERT", "UPDATE"],
+      "stored_mismatch_count_in_original_inventory": 0,
+      "disposition": "F-05_RECONFIRMED_OPEN",
+      "downstream": ["STS-M3-04-05", "STS-M3-04-07", "STS-M3-04-09"]
+    },
+    {
+      "id": "REL-FUNIL-MOV-LEAD",
+      "child": "public.funil_movimentacoes",
+      "child_object_column": "lead_id",
+      "child_tenant_column": "empresa_id",
+      "parent": "public.leads",
+      "tenant_binding": "COMPOSITE_TENANT_INVARIANT_VERSIONED",
+      "source": "supabase/migrations/20260831120000_m1_c_f01_funil_tenant_integrity.sql",
+      "disposition": "STRUCTURALLY_TENANT_BOUND_IN_VERSIONED_CONTROL"
+    },
+    {
+      "id": "REL-FUNIL-MOV-CURRENT-STAGE",
+      "child": "public.funil_movimentacoes",
+      "child_object_column": "estagio_id",
+      "child_tenant_column": "empresa_id",
+      "parent": "public.funil_estagios",
+      "tenant_binding": "COMPOSITE_TENANT_INVARIANT_VERSIONED",
+      "source": "supabase/migrations/20260831120000_m1_c_f01_funil_tenant_integrity.sql",
+      "disposition": "STRUCTURALLY_TENANT_BOUND_IN_VERSIONED_CONTROL"
+    },
+    {
+      "id": "REL-FUNIL-MOV-PREVIOUS-STAGE",
+      "child": "public.funil_movimentacoes",
+      "child_object_column": "estagio_anterior_id",
+      "child_tenant_column": "empresa_id",
+      "parent": "public.funil_estagios",
+      "tenant_binding": "COMPOSITE_TENANT_INVARIANT_VERSIONED",
+      "source": "supabase/migrations/20260831120000_m1_c_f01_funil_tenant_integrity.sql",
+      "disposition": "STRUCTURALLY_TENANT_BOUND_IN_VERSIONED_CONTROL"
+    },
+    {
+      "id": "REL-LISTA-VISIBILIDADE-LISTA",
+      "child": "public.lista_visibilidade",
+      "child_object_column": "lista_id",
+      "child_tenant_column": "empresa_id",
+      "parent": "public.listas",
+      "tenant_binding": "COMPOSITE_TENANT_FK_VERSIONED",
+      "source": "supabase/migrations/20260901175000_f1_02_b4_list_acl_tenant_integrity.sql",
+      "compensating_control": "tenant-aware polymorphic target trigger observed in original READ_ONLY inventory",
+      "disposition": "STRUCTURALLY_TENANT_BOUND"
+    }
+  ],
+  "compensating_controls": [
+    {
+      "surface": "public.lista_visibilidade",
+      "control": "tenant-aware list/polymorphic target validation trigger",
+      "classification": "OBSERVED_COMPENSATING_INVARIANT"
+    },
+    {
+      "surface": "MesaCliente financial subset",
+      "control": "mesa_cliente_financeiro_assert_integridade()",
+      "classification": "OBSERVED_FOR_REVIEWED_FINANCIAL_RELATIONSHIPS_ONLY"
+    },
+    {
+      "surface": "vw_lotes_estado_oficial + vw_lotes_pendentes_avaliacao",
+      "control": "security_invoker=true",
+      "classification": "CALLER_RLS_PRESERVED_FOR_REVIEWED_AUTHENTICATED_VIEWS"
+    }
+  ],
+  "no_fk_operational_candidates_from_original_inventory": [
+    {
+      "field": "public.listas.time_origem_id",
+      "state": "NO_VALUES_OBSERVED_AT_ORIGINAL_INVENTORY",
+      "classification": "STRUCTURAL_INVARIANT_REVIEW_REQUIRED"
+    },
+    {
+      "field": "public.mesa_cliente_unidade_enriquecimentos.empresa_id",
+      "classification": "STRUCTURAL_INVARIANT_REVIEW_REQUIRED"
+    },
+    {
+      "field": "public.mesa_fluxo_pagamentos_canonico.empresa_id",
+      "classification": "STRUCTURAL_INVARIANT_REVIEW_REQUIRED"
+    },
+    {
+      "field": "public.mesa_fluxo_pagamentos_canonico.created_by_*",
+      "classification": "STRUCTURAL_INVARIANT_REVIEW_REQUIRED"
+    },
+    {
+      "field": "public.pme_message_usage.feedback_id",
+      "classification": "STRUCTURAL_INVARIANT_REVIEW_REQUIRED"
+    }
+  ],
+  "non_claims": [
+    "75 simple FK rows do not equal 75 vulnerabilities",
+    "absence of stored mismatch does not prove preventive integrity",
+    "GITHUB_VERSIONED does not by itself prove current applied catalog",
+    "this correction does not execute the reproduction manifest",
+    "this correction does not remediate F-04, F-05 or GTI-01"
+  ]
+}

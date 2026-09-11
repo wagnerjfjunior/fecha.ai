@@ -1,6 +1,45 @@
 # FECH.AI — SFJM Program Task Graph
 
-## 0.0000000000000000038 CURRENT POST-MERGE OVERLAY — PR #213 / DEFERRED FINAL OFFENSIVE LAB AUTHORIZATION — 2026-09-09
+## 0.0000000000000000039 CURRENT MATERIAL EXECUTION OVERLAY — STS-M3-04-03 READ_ONLY EXECUTED / ACCEPTANCE PENDING — 2026-09-11
+
+~~~text
+execution base main = b274adac84f2d4a27a7a5147c551dc23469a610c
+publication PR = #215 / OPEN / DRAFT / PR_HEAD_ONLY
+
+STS-M3-04 =
+ACTIVE / SCOPE_EXPANDED / REBASELINE_REQUIRED
+
+STS-M3-04-03 =
+READ_ONLY_EXECUTED / ACCEPTANCE_PENDING
+
+F-04 =
+RECONFIRMED_OPEN
+
+F-05 =
+RECONFIRMED_OPEN
+
+GTI-01 =
+PROVEN_LIVE / OPEN / NOT_REMEDIATED
+
+STS-M3-04-04..STS-M3-04-10 =
+DEFINED_NOT_AUTHORIZED
+
+CURRENT_IMMEDIATE_AUTHORIZED_TECHNICAL_EXECUTION =
+NONE
+
+READY =
+NOT_AUTHORIZED
+
+MERGE =
+NOT_AUTHORIZED
+
+Security Go =
+NOT_GRANTED
+~~~
+
+This overlay records the material execution state only. `READ_ONLY_EXECUTED` does not mean accepted, remediated or complete. No next child, runtime mutation, Supabase mutation, READY, MERGE or Security Go follows automatically.
+
+## 0.0000000000000000038 CURRENT DEFERRED-LAB OVERLAY — PR #213 / DEFERRED FINAL OFFENSIVE LAB AUTHORIZATION — 2026-09-09
 
 ~~~text
 canonical main = dbc1e246b66d9726e7d3831085e62d27cab6908d
@@ -32,7 +71,7 @@ Security Go =
 NOT_GRANTED
 ~~~
 
-PR #213 is now canonical lifecycle/provenance evidence for the deferred final offensive-test path. It changes no runtime or database object and does not promote the deferred tasks into current execution.
+PR #213 is canonical lifecycle/provenance evidence for the deferred final offensive-test path. It changes no runtime or database object and does not promote the deferred tasks into current execution.
 
 
 ## 0.00 HISTORICAL / SUPERSEDED POST-MERGE OVERLAY — PR #211 / ZERO-MATERIAL-RESIDUAL WBS — 2026-09-09
@@ -121,7 +160,7 @@ STS-M3-06 = PLANNED / NOT_AUTHORIZED
 Security Go = NOT_GRANTED
 ~~~
 
-This historical overlay is retained for provenance only. It is superseded by the 2026-09-09 PR #211 post-merge overlay and does not define current operational meaning.
+This historical overlay is retained for provenance only. It is superseded by later material overlays and does not define current operational meaning.
 
 
 ## 0.02 HISTORICAL / SUPERSEDED POST-MERGE EXECUTION OVERLAY — PR #202 MERGED / STS-M3-03 NEXT — 2026-09-08
@@ -155,7 +194,7 @@ Security Go =
 NOT_GRANTED
 ~~~
 
-This override is the current operational meaning for continuity consumers and SFJM Workspace. Structural WBS IDs, labels, order and hours remain unchanged. PR #202 lifecycle is closed/merged; M3-03 is next eligible only and no execution authority is granted.
+This historical override is retained for provenance only. Structural WBS IDs, labels, order and hours remain unchanged.
 
 ## 0.1 HISTORICAL / SUPERSEDED PRE-MERGE EXECUTION OVERLAY — STS-M3-02 ACCEPTED WITH RESIDUALS / STS-M3-03 NEXT — 2026-09-08
 
@@ -239,7 +278,7 @@ This historical architecture overlay is retained for provenance only and does no
 
 
 **Status:** `CURRENT / MATERIAL_EXECUTION_OVERLAY / WBS_DERIVED_STRUCTURE / WORKSPACE_CONSUMABLE`  
-**Updated:** 2026-09-08  
+**Updated:** 2026-09-11  
 **Repository:** `wagnerjfjunior/fecha.ai`
 
 ## 1. Purpose
@@ -308,6 +347,8 @@ blob f0217fdbdf6f9eff5243b3b60f9c87d35c269e1e
 = INTEGRAL_READ
 ~~~
 
+These are historical publication anchors for the original task-graph baseline. Current material overlays below supersede stale operational states while preserving source history.
+
 ## 2.1 STS-M2-05 acceptance reconciliation anchor
 
 ~~~text
@@ -333,7 +374,7 @@ COMPLETE_WITH_RESIDUALS / ACCEPTED
 
 The historical WBS label `Matriz de 43 tabelas` is preserved. The accepted/live canonical database universe for STS-M2-05 is 44 tables.
 
-This graph records program state only. Product Authority has accepted STS-M2-06 with `V2_STRANGLER / SAME_DATABASE_FIRST`. STS-M2 is complete with preserved residuals. STS-M3 is ACTIVE. STS-M3-01 is accepted/frozen and STS-M3-02 is complete/accepted with residuals. STS-M3-03 is next eligible but remains not authorized. No implementation, deploy or Security Go follows from these acceptances.
+This graph records program state only. Product Authority has accepted STS-M2-06 with `V2_STRANGLER / SAME_DATABASE_FIRST`. STS-M2 is complete with preserved residuals. STS-M3 is ACTIVE. The current M3-04-03 state is governed by the material overlay above. No implementation, deploy or Security Go follows from those acceptances.
 
 ## 3. Consumer state vocabulary
 
@@ -349,6 +390,12 @@ ACTIVE
 
 AUTHORIZED_READ_ONLY
 = execution is explicitly authorized for bounded READ_ONLY evidence/reasoning only; no mutation authority
+
+READ_ONLY_EXECUTED
+= bounded READ_ONLY execution was performed; does not by itself imply acceptance, closure or mutation authority
+
+ACCEPTANCE_PENDING
+= execution result awaits Product Authority adjudication; no next-task, READY or MERGE authority follows automatically
 
 AUTHORIZED_DEFERRED
 = Product Authority has authorized the bounded task scope, but execution is intentionally not the current action and remains gated by named sequencing/environment/cost conditions
@@ -400,7 +447,10 @@ COMPLETE_WITH_RESIDUALS / ACCEPTED
 STS-M3-04-02 =
 COMPLETE_WITH_RESIDUALS / ACCEPTED
 
-STS-M3-04-03..STS-M3-04-10 =
+STS-M3-04-03 =
+READ_ONLY_EXECUTED / ACCEPTANCE_PENDING
+
+STS-M3-04-04..STS-M3-04-10 =
 DEFINED_NOT_AUTHORIZED
 
 STS-M3-05 =
@@ -480,7 +530,7 @@ Historical PRs may be related to the current WBS as `HISTORICAL_CONTRIBUTION_TO_
 | STS-M3 | STS-M3-04 | M3-04 | Redução de DML sensível direto + Integridade Estrutural Multi-Tenant | REBASELINE | ACTIVE_REBASELINE_REQUIRED |
 | STS-M3-04 | STS-M3-04-01 | M3-04-01 | PME message usage RPC-only write boundary | historical | COMPLETE_WITH_RESIDUALS |
 | STS-M3-04 | STS-M3-04-02 | M3-04-02 | PME lead message state direct-write reduction | historical | COMPLETE_WITH_RESIDUALS |
-| STS-M3-04 | STS-M3-04-03 | M3-04-03 | Global Tenant Surface & Relationship Inventory | TBD | DEFINED_NOT_AUTHORIZED |
+| STS-M3-04 | STS-M3-04-03 | M3-04-03 | Global Tenant Surface & Relationship Inventory | TBD | READ_ONLY_EXECUTED / ACCEPTANCE_PENDING |
 | STS-M3-04 | STS-M3-04-04 | M3-04-04 | lista_avaliacoes Tenant-Relationship Hardening | TBD | DEFINED_NOT_AUTHORIZED |
 | STS-M3-04 | STS-M3-04-05 | M3-04-05 | PME Catalog Tenant-Relationship Hardening | TBD | DEFINED_NOT_AUTHORIZED |
 | STS-M3-04 | STS-M3-04-06 | M3-04-06 | Remaining Sensitive Direct-DML Adjudication & Remediation | TBD | DEFINED_NOT_AUTHORIZED |
@@ -620,7 +670,7 @@ STS-M3-03
 
 STS-M3-04
 ├── 04-01..02 accepted historical slices
-├── 04-03 global tenant surface inventory
+├── 04-03 global tenant surface inventory — READ_ONLY_EXECUTED / ACCEPTANCE_PENDING
 ├── 04-04 lista_avaliacoes hardening
 ├── 04-05 PME catalog hardening
 ├── 04-06 remaining DML/default-privilege remediation
@@ -759,6 +809,9 @@ execution-discovered children exist
 ELIGIBLE_NOT_AUTHORIZED
 → display as NEXT/ELIGIBLE, never ACTIVE
 
+READ_ONLY_EXECUTED / ACCEPTANCE_PENDING
+→ display as executed evidence work awaiting Product Authority adjudication; never render as COMPLETE/ACCEPTED or as authority for the next child
+
 COMPLETE_WITH_RESIDUALS
 → display closed/accepted plus residual indicator; do not reopen parent
 
@@ -778,7 +831,7 @@ Update this graph only when one of these changes materially:
 ~~~text
 a WBS task is accepted/closed
 a new WBS task becomes eligible/active
-an execution split is adopted
+a bounded task execution changes the material operational state
 a child task is completed/blocked/superseded
 a residual changes the task's operational meaning
 the next-task relationship changes
