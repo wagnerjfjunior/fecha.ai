@@ -132,13 +132,13 @@ Deno.serve(async (req: Request) => {
     // Estes valores NÃO são a authority boundary do reset_password T3A.
     const { data: callerProfile } = await admin
       .from('corretores')
-      .select('id, empresa_id, is_admin_local, is_gestor, nome, email')
+      .select('id, empresa_id, role, ativo, is_admin_local, is_gestor, nome, email')
       .eq('user_id', caller.id)
       .single()
 
     const { data: adminData } = await admin
       .from('admins')
-      .select('id, nome, email')
+      .select('id, nome, email, ativo, role')
       .eq('user_id', caller.id)
       .single()
 
@@ -347,14 +347,36 @@ Deno.serve(async (req: Request) => {
     }
 
     // ═══════════════════════════════════════════════════════════════════════
-    // AÇÃO: CRIAR NOVO USUÁRIO — v17 behavior intentionally preserved
+    // AÇÃO: CRIAR NOVO USUÁRIO — G1E0-A2.1
+    // Organizational authority is finalized by a caller-JWT RPC. service_role
+    // remains operational only for Auth administration and server-authored audit.
     // ═══════════════════════════════════════════════════════════════════════
-    const isRoot = !!adminData
+    const isRoot = !!adminData && adminData.ativo === true && adminData.role === 'admin_global'
     const isAdminLocal = callerProfile?.is_admin_local === true
     const isGestor = callerProfile?.is_gestor === true
 
     if (!isRoot && !isAdminLocal && !isGestor) {
       return json({ error: 'Sem permissão. Apenas admin ou gestor podem criar usuários.' }, 403, cors)
+    }
+
+    // Fail closed on caller state used by this creation path. Historical
+    // admin_local rows may also carry is_gestor=true; role=admin_local plus the
+    // explicit admin-local flag remains unambiguous and takes precedence.
+    if (!isRoot) {
+      if (!callerProfile?.id || !callerProfile?.empresa_id) {
+        return json({ error: 'Não foi possível validar sua autorização.' }, 403, cors)
+      }
+
+      const callerRole = callerProfile.role
+      if (callerProfile.ativo !== true) {
+        return json({ error: 'Não foi possível validar sua autorização.' }, 403, cors)
+      }
+      if (
+        (isAdminLocal && callerRole !== 'admin_local') ||
+        (!isAdminLocal && isGestor && callerRole !== 'gestor')
+      ) {
+        return json({ error: 'Não foi possível validar sua autorização.' }, 403, cors)
+      }
     }
 
     const logId = `audit-${Date.now()}-${Math.random().toString(36).slice(2)}`
@@ -379,42 +401,85 @@ Deno.serve(async (req: Request) => {
       ip: rawClientIp,
     })
 
-    // Preserve the established creation authority rules while preventing an
-    // administrative Auth mutation from proceeding without an audit anchor.
     if (auditInsertError) {
       return json({ error: 'Não foi possível iniciar a criação do usuário.' }, 500, cors)
     }
 
-    const { nome, email, is_admin_local_novo, is_gestor_novo, time_id } = body
+    const { nome, email, is_admin_local_novo, is_gestor_novo } = body
     const password = body.password ?? body.senha
-    const empresa_id_alvo = body.empresa_id ?? callerProfile?.empresa_id
+    const empresaIdIntent = normalizeUuid(body.empresa_id)
+    const timeId = body.time_id == null ? null : normalizeUuid(body.time_id)
 
-    if (!email || !password || !nome) {
-      return json({ error: 'email, senha e nome são obrigatórios.' }, 400, cors)
+    if (
+      typeof email !== 'string' ||
+      typeof password !== 'string' ||
+      typeof nome !== 'string' ||
+      !email.trim() ||
+      !nome.trim() ||
+      password.length < 8
+    ) {
+      return json({ error: 'email, senha e nome são obrigatórios; senha deve ter no mínimo 8 caracteres.' }, 400, cors)
     }
 
-    // ─── Validação de tenant ───────────────────────────────────────────────
-    // ROOT pode criar em qualquer empresa
-    // Admin local e gestor só podem criar na própria empresa
-    if (!isRoot && empresa_id_alvo !== callerProfile?.empresa_id) {
-      return json({ error: 'Você só pode criar usuários na sua própria empresa.' }, 403, cors)
+    if (
+      (body.empresa_id != null && !empresaIdIntent) ||
+      (body.time_id != null && !timeId) ||
+      (is_admin_local_novo != null && typeof is_admin_local_novo !== 'boolean') ||
+      (is_gestor_novo != null && typeof is_gestor_novo !== 'boolean')
+    ) {
+      return json({ error: 'Dados de criação inválidos.' }, 400, cors)
     }
 
-    // Gestor NÃO pode criar admin_local nem outro gestor de outro time
-    if (isGestor && !isAdminLocal && !isRoot) {
-      if (is_admin_local_novo) {
-        return json({ error: 'Gestores não podem criar admin local.' }, 403, cors)
+    if (is_admin_local_novo === true && is_gestor_novo === true) {
+      return json({ error: 'Dados de criação inválidos.' }, 400, cors)
+    }
+
+    const targetRole =
+      is_admin_local_novo === true ? 'admin_local'
+        : is_gestor_novo === true ? 'gestor'
+          : 'corretor'
+
+    // Non-ROOT tenant is server-owned. A supplied empresa_id is only an equality
+    // assertion and can never override the caller tenant.
+    if (!isRoot && empresaIdIntent && empresaIdIntent !== callerProfile!.empresa_id) {
+      return json({ error: 'Não foi possível concluir a criação do usuário.' }, 403, cors)
+    }
+
+    const empresaIdTarget = isRoot ? empresaIdIntent : callerProfile!.empresa_id
+    if (!empresaIdTarget) {
+      return json({ error: 'Não foi possível concluir a criação do usuário.' }, 403, cors)
+    }
+
+    // Canonical role/time shape is rejected before the external Auth mutation.
+    if (targetRole === 'corretor' && !timeId) {
+      return json({ error: 'Time obrigatório para corretor.' }, 400, cors)
+    }
+    if (targetRole !== 'corretor' && timeId) {
+      return json({ error: 'Gestor e admin local não podem possuir time de membro na criação.' }, 400, cors)
+    }
+
+    // Pure Gestor may create only an ordinary Corretor.
+    if (!isRoot && !isAdminLocal && isGestor && targetRole !== 'corretor') {
+      return json({ error: 'Não foi possível concluir a criação do usuário.' }, 403, cors)
+    }
+
+    // Preliminary Time authorization reduces avoidable Auth writes. This is not
+    // final authority; the caller-JWT RPC revalidates and locks the same state.
+    if (targetRole === 'corretor') {
+      let timeQuery = admin
+        .from('times')
+        .select('id')
+        .eq('id', timeId!)
+        .eq('empresa_id', empresaIdTarget)
+        .eq('ativo', true)
+
+      if (!isRoot && !isAdminLocal && isGestor) {
+        timeQuery = timeQuery.eq('gestor_id', callerProfile!.id)
       }
-      // Gestor só pode criar corretor no seu próprio time
-      if (time_id) {
-        const { data: gestorTimes } = await admin
-          .from('times')
-          .select('id')
-          .eq('gestor_id', callerProfile!.id)
-        const gestorTimeIds = gestorTimes?.map((t: { id: string }) => t.id) ?? []
-        if (!gestorTimeIds.includes(time_id)) {
-          return json({ error: 'Você só pode criar corretores nos seus próprios times.' }, 403, cors)
-        }
+
+      const { data: eligibleTime, error: eligibleTimeError } = await timeQuery.maybeSingle()
+      if (eligibleTimeError || !eligibleTime) {
+        return json({ error: 'Destino não disponível.' }, 403, cors)
       }
     }
 
@@ -423,20 +488,18 @@ Deno.serve(async (req: Request) => {
       const { data: empresa } = await admin
         .from('empresas')
         .select('plano_id, planos(max_corretores)')
-        .eq('id', empresa_id_alvo)
+        .eq('id', empresaIdTarget)
         .single() as { data: { plano_id: string; planos: { max_corretores: number } } | null }
 
       if (empresa) {
         const { count } = await admin
           .from('corretores')
           .select('*', { count: 'exact', head: true })
-          .eq('empresa_id', empresa_id_alvo)
+          .eq('empresa_id', empresaIdTarget)
 
         const maxCorretores = empresa.planos?.max_corretores ?? 999
         if ((count ?? 0) >= maxCorretores) {
-          return json({
-            error: `Limite de ${maxCorretores} usuários atingido para o plano atual.`
-          }, 403, cors)
+          return json({ error: `Limite de ${maxCorretores} usuários atingido para o plano atual.` }, 403, cors)
         }
       }
     }
@@ -446,57 +509,304 @@ Deno.serve(async (req: Request) => {
       email,
       password,
       email_confirm: true,
+      app_metadata: {
+        fechai_creation_flow: 'g1e0a2_1',
+        fechai_creation_audit_id: logId,
+      },
     })
-    if (authError) {
+    if (authError || !authData.user?.id) {
       await admin.from('audit_logs')
         .update({
-          payload: { status: 'failed', error: authError.message },
-          depois: { status: 'failed', error: authError.message },
+          payload: { status: 'failed', stage: 'auth_create' },
+          depois: { status: 'failed', stage: 'auth_create' },
         })
         .eq('id', logId)
-      throw authError
+      return json({ error: 'Não foi possível concluir a criação do usuário.' }, 400, cors)
     }
 
-    // ─── Inserir na tabela corretores (v1.1.6 — role obrigatório) ─────────
-    const { error: dbError } = await admin.from('corretores').insert({
-      user_id:             authData.user.id,
-      empresa_id:          empresa_id_alvo,
-      time_id:             time_id ?? null,
-      nome,
-      email,
-      role:                is_admin_local_novo ? 'admin_local' : (is_gestor_novo ? 'gestor' : 'corretor'),
-      ativo:               true,
-      apto_para_receber:   !is_admin_local_novo && !is_gestor_novo,
-      is_admin_local:      is_admin_local_novo ?? false,
-      is_gestor:           is_gestor_novo ?? false,
-      must_change_password: true,
-      created_by:          callerProfile?.id ?? null,
-    })
+    // Establish a durable recovery anchor BEFORE profile creation. At least one
+    // durable channel must bind the Auth user_id to this creation attempt:
+    // (a) admin-only Auth app_metadata carrying the audit correlation id; or
+    // (b) the already-created audit_logs row updated with target_user_id.
+    //
+    // This guarantees that a later profile failure + unresolved Auth deletion
+    // cannot enter the compensation path without a previously established
+    // recoverable correlation anchor.
+    const authMetadataAnchorConfirmed =
+      authData.user.app_metadata?.fechai_creation_flow === 'g1e0a2_1' &&
+      authData.user.app_metadata?.fechai_creation_audit_id === logId
 
-    if (dbError) {
-      // Rollback: remover do auth se o insert no banco falhar
-      await admin.auth.admin.deleteUser(authData.user.id)
-      await admin.from('audit_logs')
-        .update({
-          payload: { status: 'rollback', error: dbError.message },
-          depois: { status: 'rollback', error: dbError.message },
-        })
-        .eq('id', logId)
-      throw dbError
+    const pendingAnchorPayload = {
+      status: 'auth_created_profile_pending',
+      stage: 'profile_pending',
+      recovery_user_id: authData.user.id,
+      recovery_required_if_stale: true,
     }
 
-    // ─── Atualizar log com sucesso ─────────────────────────────────────────
-    await admin.from('audit_logs')
+    const { error: pendingAnchorError } = await admin.from('audit_logs')
       .update({
-        payload: { status: 'success', user_id: authData.user.id },
-        depois: { status: 'success', user_id: authData.user.id },
+        target_user_id: authData.user.id,
+        payload: pendingAnchorPayload,
+        depois: pendingAnchorPayload,
       })
       .eq('id', logId)
+
+    const databaseAnchorConfirmed = !pendingAnchorError
+    const durableRecoveryAnchorConfirmed =
+      authMetadataAnchorConfirmed || databaseAnchorConfirmed
+
+    if (!durableRecoveryAnchorConfirmed) {
+      let deleteConfirmed = false
+      try {
+        const deletion = await admin.auth.admin.deleteUser(authData.user.id)
+        deleteConfirmed = !deletion.error
+      } catch {
+        deleteConfirmed = false
+      }
+
+      if (!deleteConfirmed) {
+        // The original audit attempt row was proven durable before Auth create
+        // and still carries target_email + correlation id. We do not proceed to
+        // profile creation without a user_id-bound durable anchor.
+        console.error('A2_1_DURABLE_ANCHOR_UNRESOLVED', {
+          audit_id: logId,
+          user_id: authData.user.id,
+        })
+      }
+
+      return json({ error: 'Não foi possível concluir a criação do usuário.' }, 500, cors)
+    }
+
+    // Bind this exact server-authored creation attempt to a short-lived,
+    // one-time database proof. Only service_role may mint it. The caller-JWT
+    // RPC must consume the proof and still performs all actor/tenant/role/Time
+    // authorization from auth.uid() + locked DB state.
+    let creationProofId: string | null = null
+    let creationProofError: unknown = null
+
+    try {
+      const result = await admin.rpc(
+        'a2_1_issue_user_creation_edge_proof',
+        {
+          p_actor_user_id: caller.id,
+          p_target_user_id: authData.user.id,
+          p_audit_id: logId,
+        }
+      )
+      creationProofId = normalizeUuid(result.data)
+      creationProofError = result.error
+    } catch (caught: unknown) {
+      creationProofError = caught
+    }
+
+    if (creationProofError || !creationProofId) {
+      let compensationConfirmed = false
+      try {
+        const deletion = await admin.auth.admin.deleteUser(authData.user.id)
+        compensationConfirmed = !deletion.error
+      } catch {
+        compensationConfirmed = false
+      }
+
+      const proofFailurePayload = {
+        status: compensationConfirmed
+          ? 'edge_proof_unavailable_compensation_confirmed'
+          : 'edge_proof_unavailable_auth_compensation_unresolved',
+        stage: 'creation_edge_proof',
+        recovery_user_id: compensationConfirmed ? null : authData.user.id,
+      }
+
+      await admin.from('audit_logs')
+        .update({
+          target_user_id: authData.user.id,
+          payload: proofFailurePayload,
+          depois: proofFailurePayload,
+        })
+        .eq('id', logId)
+
+      return json({ error: 'Não foi possível concluir a criação do usuário.' }, 500, cors)
+    }
+
+    // Final organizational authority is caller-bound. This client carries the
+    // real caller JWT so auth.uid() inside the SECURITY DEFINER RPC is decisive.
+    const callerDb = createClient(
+      supabaseUrl,
+      anonKey,
+      {
+        global: { headers: { Authorization: authHeader } },
+        auth: { autoRefreshToken: false, persistSession: false },
+      }
+    )
+
+    let profileResult: { ok?: boolean; corretor_id?: string } | null = null
+    let profileError: unknown = null
+
+    try {
+      const result = await callerDb.rpc(
+        'a2_1_create_corretor_profile',
+        {
+          p_new_user_id: authData.user.id,
+          p_nome: nome.trim(),
+          p_email: email.trim(),
+          p_target_role: targetRole,
+          p_time_id: timeId,
+          p_empresa_id_intent: empresaIdTarget,
+          p_edge_proof_id: creationProofId,
+          p_audit_id: logId,
+        }
+      )
+      profileResult = result.data
+      profileError = result.error
+    } catch (caught: unknown) {
+      profileError = caught
+    }
+
+    if (profileError || profileResult?.ok !== true) {
+      let compensationConfirmed = false
+      let compensationError: unknown = null
+
+      try {
+        const deletion = await admin.auth.admin.deleteUser(authData.user.id)
+        compensationConfirmed = !deletion.error
+        compensationError = deletion.error
+      } catch (caught: unknown) {
+        compensationError = caught
+      }
+
+      const compensationStatus = compensationConfirmed
+        ? 'compensation_confirmed'
+        : 'auth_compensation_unresolved'
+
+      const compensationAuditPayload = {
+        status: compensationStatus,
+        stage: 'profile_create',
+        recovery_user_id: compensationConfirmed ? null : authData.user.id,
+      }
+
+      const { error: compensationAuditError } = await admin.from('audit_logs')
+        .update({
+          target_user_id: authData.user.id,
+          payload: compensationAuditPayload,
+          depois: compensationAuditPayload,
+        })
+        .eq('id', logId)
+
+      if (compensationAuditError) {
+        const fallbackAuditId = `audit-${Date.now()}-${Math.random().toString(36).slice(2)}`
+        const { error: fallbackAuditError } = await admin.from('audit_logs').insert({
+          id: fallbackAuditId,
+          empresa_id: callerProfile?.empresa_id ?? null,
+          action: 'user_creation_compensation_unresolved',
+          actor_id: caller.id,
+          actor_email: caller.email,
+          target_user_id: authData.user.id,
+          target_email: email.trim(),
+          ip_address: clientIp,
+          payload: {
+            ...compensationAuditPayload,
+            audit_anchor_recovery: true,
+          },
+          ator_user_id: caller.id,
+          ator_corretor_id: callerProfile?.id ?? null,
+          acao: 'user_creation_compensation_unresolved',
+          entidade: 'auth.users',
+          entidade_id: authData.user.id,
+          depois: {
+            ...compensationAuditPayload,
+            audit_anchor_recovery: true,
+          },
+          ip: rawClientIp,
+        })
+
+        if (fallbackAuditError) {
+          // The compensation status update itself could not be persisted, but
+          // profile creation was allowed only after durableRecoveryAnchorConfirmed.
+          // Recovery can still correlate the Auth identity through app_metadata
+          // and/or the pre-bound audit row.
+          console.error('AUTH_COMPENSATION_STATUS_WRITE_FAILED', {
+            audit_id: logId,
+            user_id: authData.user.id,
+            durable_anchor_preestablished: true,
+          })
+        }
+      }
+
+      if (!compensationConfirmed) {
+        console.error('AUTH_COMPENSATION_UNRESOLVED', {
+          audit_id: logId,
+          user_id: authData.user.id,
+          compensation_error: compensationError ? 'present' : 'ambiguous',
+        })
+      }
+
+      return json({ error: 'Não foi possível concluir a criação do usuário.' }, 500, cors)
+    }
+
+    const terminalSuccessPayload = {
+      status: 'success',
+      stage: 'profile_create',
+      user_id: authData.user.id,
+      recovery_required_if_stale: false,
+    }
+
+    const { data: terminalAuditRow, error: terminalAuditError } = await admin
+      .from('audit_logs')
+      .update({
+        target_user_id: authData.user.id,
+        payload: terminalSuccessPayload,
+        depois: terminalSuccessPayload,
+      })
+      .eq('id', logId)
+      .select('id')
+      .maybeSingle()
+
+    let terminalAuditConfirmed =
+      !terminalAuditError && terminalAuditRow?.id === logId
+
+    if (!terminalAuditConfirmed) {
+      const fallbackAuditId = `audit-${Date.now()}-${Math.random().toString(36).slice(2)}`
+      const { error: fallbackAuditError } = await admin.from('audit_logs').insert({
+        id: fallbackAuditId,
+        empresa_id: callerProfile?.empresa_id ?? null,
+        action: 'user_creation_success_audit_recovery',
+        actor_id: caller.id,
+        actor_email: caller.email,
+        target_user_id: authData.user.id,
+        target_email: email.trim(),
+        ip_address: clientIp,
+        payload: {
+          ...terminalSuccessPayload,
+          original_audit_id: logId,
+          terminal_audit_recovery: true,
+        },
+        ator_user_id: caller.id,
+        ator_corretor_id: callerProfile?.id ?? null,
+        acao: 'user_creation_success_audit_recovery',
+        entidade: 'auth.users',
+        entidade_id: authData.user.id,
+        depois: {
+          ...terminalSuccessPayload,
+          original_audit_id: logId,
+          terminal_audit_recovery: true,
+        },
+        ip: rawClientIp,
+      })
+
+      terminalAuditConfirmed = !fallbackAuditError
+    }
+
+    if (!terminalAuditConfirmed) {
+      console.error('A2_1_TERMINAL_AUDIT_UNRESOLVED', {
+        audit_id: logId,
+        user_id: authData.user.id,
+      })
+      return json({ error: 'Não foi possível concluir a criação do usuário.' }, 500, cors)
+    }
 
     return json({ ok: true, user_id: authData.user.id }, 200, cors)
 
   } catch (err: unknown) {
-    const message = err instanceof Error ? err.message : String(err)
-    return json({ error: message }, 400, cors)
+    console.error('criar-usuario error', err instanceof Error ? err.name : 'unknown')
+    return json({ error: 'Não foi possível concluir a solicitação.' }, 400, cors)
   }
 })
