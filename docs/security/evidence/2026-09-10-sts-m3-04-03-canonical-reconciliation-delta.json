@@ -1,5 +1,5 @@
 {
-  "schema_version": "fechai.sts_m3_04_03.canonical_reconciliation_delta.v1",
+  "schema_version": "fechai.sts_m3_04_03.canonical_reconciliation_delta.v2",
   "scope": "PR #215 documentation-only correction",
   "base_main": "b274adac84f2d4a27a7a5147c551dc23469a610c",
   "task": "STS-M3-04-03",
@@ -15,60 +15,64 @@
     "F-05": "RECONFIRMED_OPEN",
     "GTI-01": "PROVEN_LIVE_OPEN_NOT_REMEDIATED"
   },
-  "required_canonical_projection": {
-    "docs/roadmap/fechai-security-to-scale-2026-wbs.md": {
-      "STS-M3-04-03": "READ_ONLY_EXECUTED / ACCEPTANCE_PENDING",
-      "STS-M3-04-04..10": "DEFINED_NOT_AUTHORIZED"
+  "direct_projection_status": {
+    "docs/roadmap/fechai-security-to-scale-2026-wbs.md": "DIRECTLY_UPDATED_IN_PR_215",
+    "docs/sfjm/PROGRAM_TASK_GRAPH.md": "DIRECTLY_UPDATED_IN_PR_215",
+    "docs/sfjm/CURRENT_STATE.md": "DIRECTLY_UPDATED_IN_PR_215",
+    "docs/sfjm/CURRENT_ISSUES.md": "DIRECTLY_UPDATED_IN_PR_215",
+    "docs/sfjm/NEXT_SAFE_ACTION.md": "DIRECTLY_UPDATED_IN_PR_215",
+    "docs/sfjm/AUTHORIZATIONS.md": "DIRECTLY_UPDATED_IN_PR_215",
+    "docs/sfjm/EVIDENCE_FRESHNESS.md": "DIRECTLY_UPDATED_IN_PR_215",
+    "docs/security/assurance/STS_WBS_PR_RELATIONSHIP_CATALOG.json": "PENDING_DIRECT_UPDATE_TOOL_LIMITATION",
+    "docs/security/assurance/STS_WBS_PR_RELATIONSHIP_CATALOG.md": "HELD_UNTIL_JSON_CANONICAL_SYNC"
+  },
+  "required_relationship_catalog_projection": {
+    "task_relation": {
+      "qualified_id": "STS-M3-04-03",
+      "state": "READ_ONLY_EXECUTED_ACCEPTANCE_PENDING",
+      "add_pr_number": 215
     },
-    "docs/sfjm/PROGRAM_TASK_GRAPH.md": {
-      "STS-M3-04-03": "READ_ONLY_EXECUTED / ACCEPTANCE_PENDING",
-      "CURRENT_IMMEDIATE_AUTHORIZED_TECHNICAL_EXECUTION": "NONE"
-    },
-    "docs/sfjm/CURRENT_STATE.md": {
-      "event": "STS-M3-04-03 READ_ONLY execution produced F-04/F-05 reconfirmation plus GTI-01",
-      "acceptance": "PENDING"
-    },
-    "docs/sfjm/NEXT_SAFE_ACTION.md": {
-      "action": "FRESH_EXACT_HEAD_REVIEW_PR_215_THEN_PRODUCT_AUTHORITY_ADJUDICATION"
-    },
-    "docs/sfjm/AUTHORIZATIONS.md": {
-      "readonly_execution_authorized": true,
-      "documentation_pr_authorized": true,
-      "bounded_correction_authorized": true,
-      "fresh_exact_head_review_authorized": true,
-      "ready_authorized": false,
-      "merge_authorized": false,
-      "supabase_mutation_authorized": false
-    },
-    "docs/sfjm/EVIDENCE_FRESHNESS.md": {
-      "claim": "STS-M3-04-03 material inventory findings",
-      "anchor": "original live READ_ONLY execution against b274adac...",
-      "invalidators": [
-        "relevant schema/FK/constraint mutation",
-        "RLS/grant/policy/trigger/RPC mutation",
-        "GTI-01 row disposition",
-        "canonical funnel writer change",
-        "superseding audit adjudication"
-      ]
-    },
-    "docs/security/assurance/STS_WBS_PR_RELATIONSHIP_CATALOG.json": {
+    "pull_request_relation": {
       "pr_number": 215,
+      "title": "docs(security): publish STS-M3-04-03 tenant inventory evidence",
       "primary_qualified_id": "STS-M3-04-03",
-      "relation": "CURRENT_EVIDENCE_PUBLICATION",
-      "state": "OPEN_DRAFT",
+      "related_qualified_ids": [
+        "STS-M3-04",
+        "STS-M3-04-06",
+        "STS-M3-04-07",
+        "STS-M3-04-09",
+        "STS-M6-01"
+      ],
+      "relationship_type": "PROGRAM_NATIVE",
+      "mapping_basis": "STS_M3_04_03_READ_ONLY_EVIDENCE_PUBLICATION",
+      "mapping_quality": "EXPLICIT_CURRENT_SCOPE",
+      "live_lifecycle_policy": "RESOLVE_PR_HEAD_STATE_CHECKS_REVIEWS_THREADS_MERGEABILITY_LIVE",
       "acceptance": "PENDING"
     }
   },
-  "projection_status": {
-    "docs/sfjm/CURRENT_ISSUES.md": "DIRECTLY_UPDATED_IN_PR_215",
-    "human_and_machine_evidence": "DIRECTLY_UPDATED_IN_PR_215",
-    "full_nominal_relation_rowset": "NOT_DURABLY_CAPTURED_NO_SUPABASE_REPLAY",
-    "large_canonical_files": "DELTA_RECORDED_HERE_PENDING_SAFE_DIRECT_INTEGRATION"
+  "relationship_catalog_non_recursive_rule": {
+    "do_not_freeze_current_head_in_self_modifying_catalog_update": true,
+    "reason": "writing the catalog changes the PR head; current head must be live-resolved rather than self-recorded as immutable current state",
+    "pr_215_merge_does_not_require_recursive_reconciliation_only_to_record_merge": true
+  },
+  "evidence_reproduction_boundary": {
+    "historical_aggregate_simple_fk_without_tenant_pair": 75,
+    "full_nominal_75_rowset_durably_captured": false,
+    "manifest_classification": "CANDIDATE_REPLAY_PROCEDURE",
+    "manifest_executed_by_pr215_correction": false,
+    "exact_historical_rowset_equivalence": "NOT_PROVEN"
+  },
+  "history_preservation": {
+    "docs/sfjm/CURRENT_STATE.md": "docs/sfjm/history/2026-09-11/CURRENT_STATE.pre-sts-m3-04-03.md",
+    "docs/sfjm/AUTHORIZATIONS.md": "docs/sfjm/history/2026-09-11/AUTHORIZATIONS.pre-sts-m3-04-03.md",
+    "docs/sfjm/EVIDENCE_FRESHNESS.md": "docs/sfjm/history/2026-09-11/EVIDENCE_FRESHNESS.pre-sts-m3-04-03.md"
   },
   "non_claims": [
-    "delta file is not itself a substitute for every canonical consumer until those consumers explicitly support it",
+    "relationship catalog direct update is not complete while JSON remains stale",
+    "Markdown relationship view must not claim synchronized state before canonical JSON is updated",
     "no Product Authority acceptance is implied",
     "no READY or MERGE authority is implied",
-    "no database/runtime mutation is implied"
+    "no database/runtime mutation is implied",
+    "no Supabase replay occurred during this documentation correction"
   ]
 }
