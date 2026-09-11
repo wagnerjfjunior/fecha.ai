@@ -299,7 +299,7 @@ The previous 24h estimate is preserved only as historical planning provenance an
 |---|---|---|---:|
 | STS-M3-04-01 | PME message usage RPC-only write boundary | COMPLETE_WITH_RESIDUALS | historical slice |
 | STS-M3-04-02 | PME lead message state direct-write reduction | COMPLETE_WITH_RESIDUALS | historical slice |
-| STS-M3-04-03 | Global Tenant Surface & Relationship Inventory | DEFINED_NOT_AUTHORIZED | TBD |
+| STS-M3-04-03 | Global Tenant Surface & Relationship Inventory | READ_ONLY_EXECUTED / ACCEPTANCE_PENDING | TBD |
 | STS-M3-04-04 | `lista_avaliacoes` Tenant-Relationship Hardening | DEFINED_NOT_AUTHORIZED | TBD |
 | STS-M3-04-05 | PME Catalog Tenant-Relationship Hardening | DEFINED_NOT_AUTHORIZED | TBD |
 | STS-M3-04-06 | Remaining Sensitive Direct-DML Adjudication & Remediation | DEFINED_NOT_AUTHORIZED | TBD |
@@ -307,6 +307,8 @@ The previous 24h estimate is preserved only as historical planning provenance an
 | STS-M3-04-08 | Direct-Write / Bypass Call-Site Sweep | DEFINED_NOT_AUTHORIZED | TBD |
 | STS-M3-04-09 | Structural Cross-Tenant Negative Proofs | DEFINED_NOT_AUTHORIZED | TBD |
 | STS-M3-04-10 | Independent AppSec Closure Review | DEFINED_NOT_AUTHORIZED | TBD |
+
+`STS-M3-04-03` was executed under bounded READ_ONLY authority. `ACCEPTANCE_PENDING` means the result has not yet been accepted by Product Authority, does not authorize remediation, and does not start `STS-M3-04-04`.
 
 Closure rule:
 
@@ -468,7 +470,7 @@ Issue #141 exit remains authoritative for M5.
 | STS-M5-02 | Tenant / role / auth / storage regression | cross-tenant, ownership, role and storage boundaries pass current runtime regression |
 | STS-M5-03 | Dependency / CVE gate | no unremediated material dependency vulnerability in launch scope |
 | STS-M5-04 | Secrets / config / deploy / migration gate | no material secret/config/default-ACL/deploy/migration exposure; includes F-09 proof |
-| STS-M5-05 | Observability / rollback / incident readiness | detection, auditability, rollback and incident response paths proven |
+| STS-M5-05 | Observabilidade / rollback / incident readiness | detection, auditability, rollback and incident response paths proven |
 | STS-M5-06 | Material Residual Elimination Gate | ZERO MATERIAL OPEN SECURITY FINDINGS and ZERO MATERIAL NOT_DETERMINED |
 | STS-M5-07 | Independent Integrated AppSec Final Review | independent PASS required before M6 nomination |
 
@@ -555,7 +557,6 @@ M6 DOES NOT WAIVE OPEN MATERIAL SECURITY FINDINGS
 M6 DOES NOT CONVERT NOT_DETERMINED INTO PASS
 ```
 
-
 The professional AS-BUILT package must provide an indexed launch-scope view of system context, tenant/identity/authority, database contract, API/RPC/Edge boundaries, frontend/core slices, deployment topology, observability, backup/restore understanding, rollback, incident response, residual risks and specialist/operational ownership.
 
 Security Go and controlled commercialization remain separate Product Authority decisions.
@@ -617,17 +618,26 @@ COMPLETE / ACCEPTED WITH RESIDUALS
 STS-M3-04-02 =
 COMPLETE / ACCEPTED WITH RESIDUALS
 
-STS-M3-04-03..10 =
+STS-M3-04-03 =
+READ_ONLY_EXECUTED / ACCEPTANCE_PENDING
+
+STS-M3-04-04..10 =
 DEFINED / NOT_AUTHORIZED
 
 STS-M3-05 =
 PLANNED / NOT_AUTHORIZED
 
 STS-M3-06 =
-PLANNED / NOT_AUTHORIZED
+AUTHORIZED_DEFERRED / NOT_STARTED / NOT_CURRENT_ACTION
 
-STS-M4..STS-M6 =
-PLANNED / NOT_AUTHORIZED
+STS-M5-01 + STS-M5-02 =
+AUTHORIZED_DEFERRED_FINAL_TEST / NOT_STARTED / NOT_CURRENT_ACTION
+
+STS-M4 + STS-M5-00 + STS-M5-03..07 + STS-M6 =
+PLANNED / NOT_AUTHORIZED unless separately authorized
+
+CURRENT_IMMEDIATE_AUTHORIZED_TECHNICAL_EXECUTION =
+NONE
 
 Security Go =
 NOT_GRANTED
