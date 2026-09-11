@@ -1,6 +1,6 @@
 -- FECH.AI — STS-M3-04-03 — READ_ONLY reproduction manifest
 -- Date: 2026-09-10
--- Purpose: reproducible catalog/aggregate queries for the Global Tenant Surface
+-- Purpose: candidate catalog/aggregate replay queries for the Global Tenant Surface
 --          & Relationship Inventory without persisting row-level business data.
 --
 -- IMPORTANT:
@@ -14,6 +14,12 @@
 --   * no customer/lead UUID, name, phone, email or payload is returned;
 --   * intended for a separately authorized future live READ_ONLY replay when
 --     exact current catalog reproduction is required.
+--
+-- Historical evidence boundary:
+--   * original READ_ONLY session recorded aggregate simple-FK-without-tenant-pair count = 75;
+--   * the nominal 75-row resultset was not durably captured in that session;
+--   * this manifest was reconstructed afterward and is NOT replayed by PR #215;
+--   * exact rowset equivalence to the historical observation is NOT_PROVEN.
 
 begin transaction read only;
 
@@ -68,9 +74,9 @@ from pg_catalog.pg_proc p
 join pg_catalog.pg_namespace n on n.oid=p.pronamespace
 where n.nspname='public' and p.prokind='f';
 
--- Q03 — Complete public FK relationship ledger, one row per FK, with exact
--- child/parent column arrays. This is the authoritative reproduction query for
--- the nominal FK rowset; it returns schema metadata only.
+-- Q03 — Candidate replay of the complete public FK relationship ledger,
+-- one row per FK, with exact child/parent column arrays. It returns schema
+-- metadata only. It has NOT been replayed as part of PR #215.
 with fk as (
   select
     con.oid,
@@ -115,7 +121,8 @@ join pg_catalog.pg_class parent on parent.oid=f.confrelid
 join pg_catalog.pg_namespace parent_ns on parent_ns.oid=parent.relnamespace
 order by child.relname, f.conname;
 
--- Q04 — Composite tenant-bound FKs where both sides include empresa_id.
+-- Q04 — Candidate replay of composite tenant-bound FKs where both sides
+-- include empresa_id. Not executed by PR #215.
 with fk_cols as (
   select
     con.oid,
@@ -154,10 +161,11 @@ where 'empresa_id'=any(f.child_cols)
   and 'empresa_id'=any(f.parent_cols)
 order by child.relname, f.conname;
 
--- Q05 — Simple FK relationships between tables that both carry empresa_id and
--- that have no composite FK pairing the same child object column with
--- empresa_id. This query reproduces the inventory's nominal 'simple without
--- tenant pair' rowset; its count was 75 during the original READ_ONLY session.
+-- Q05 — Candidate reproduction query for the same semantic universe of simple
+-- FK relationships between tenant-bearing tables lacking a matching composite
+-- tenant pair. The original READ_ONLY session recorded aggregate count = 75.
+-- This query was reconstructed afterward and has NOT been replayed here;
+-- exact rowset equivalence to that historical observation is NOT_PROVEN.
 with table_has_empresa as (
   select c.oid
   from pg_catalog.pg_class c
