@@ -1,7 +1,7 @@
 # FECH.AI — Bootstrap Index
 
-**Status:** `BOOTSTRAP_INDEX_V4 / SES_SPECIALIST_ROUTING / CANONICAL_SKILL_RESOLUTION`  
-**Atualizado em:** `2026-08-20`  
+**Status:** `BOOTSTRAP_INDEX_V5 / SES_SPECIALIST_ROUTING / CANONICAL_SKILL_RESOLUTION / MANDATORY_SES_ORCHESTRATION_GATE`  
+**Atualizado em:** `2026-09-11`  
 **Repositório:** `wagnerjfjunior/fecha.ai`
 
 Este índice define a ordem mínima de reconstrução de contexto antes de conversas sensíveis, validações de PR, arquitetura, segurança, deploy, Supabase, produto, handoffs ou trabalho dos especialistas.
@@ -46,6 +46,51 @@ SPECIALIST_TARGET_NAME = ARCHETYPE_REGISTRY.CANONICAL_NAME
 LEGACY_ALIAS != SPECIALIST_TARGET_NAME
 PROJECT_LOCAL_SKILL_TITLE != SPECIALIST_TARGET_NAME
 ```
+
+### 2.1 Mandatory SES Specialist Orchestration Gate
+
+Antes de qualquer trabalho substantivo de um especialista FECH.AI, aplicar obrigatoriamente:
+
+```text
+TASK
+→ ROLE RESOLUTION
+→ SES ROLE MAP
+→ ARCHETYPE_ID
+→ ACTIVE + CURRENT CERTIFICATION
+→ CONSULTATION TRANSPORT
+→ SPECIALIST WORK
+```
+
+Para roles SES adotados:
+
+```text
+ADOPTED ROLE
++ ACTIVE ARCHETYPE
++ CURRENT SES CERTIFICATION = YES
+→ CONSULTATION REQUIRED BEFORE SUBSTANTIVE WORK
+```
+
+`GPT0`, `GPT1.5`, `GPT2`, `GPT3`, `GPT7` ou qualquer outro label legacy/projeto-local não pode funcionar como substituto silencioso do archetype SES atualmente adotado.
+
+O contrato normativo desse gate é:
+
+```text
+docs/bootstrap/FECHAI_SES_ORCHESTRATION_GATE.md
+```
+
+Regras obrigatórias do gate:
+
+- não alegar que outro especialista foi consultado sem execução real do transporte;
+- quando `@` de Project estiver visivelmente disponível, usar o especialista SES pelo `CANONICAL_NAME` exato;
+- quando `@` não estiver disponível/estável, usar o fallback manual padronizado pelo contrato SES;
+- quando o transporte estiver bloqueado, declarar `SPECIALIST_RUNTIME_OR_TRANSPORT_UNAVAILABLE` e não substituir por raciocínio simulado do legacy GPT;
+- em tarefa multi-domínio, identificar todos os roles SES materialmente aplicáveis antes de encerrar a análise;
+- separar `CONSULTED`, `EXECUTED` e `AUTHORIZED_TO_MUTATE`;
+- specialist output não constitui aprovação do projeto.
+
+Esta seção é uma regra de bootstrap, não uma recomendação.
+
+Se a configuração externa do Builder continuar permitindo bypass desse gate, classificar como `SPECIALIST_ROUTING_DRIFT` e bloquear qualquer declaração de orquestração correta até a correção do Builder.
 
 Se o domínio **não** possuir role SES adotado, usar o routing project-local existente:
 
@@ -224,18 +269,19 @@ SFJM não substitui bootstrap, routing SES, registry ou evidência live.
 1. Resolver FECH.AI main live.
 2. Ler este INDEX.
 3. Ler SES_SPECIALIST_ROUTING.md.
-4. Para role SES adotado: resolver SES main + current adoption pointer quando material + Project Adapter + archetype + certificação + `core/protocols/MANUAL_SPECIALIST_HANDOFF_CONTRACT.md` + regra local aplicável; renderizar o destino manual usando o `CANONICAL_NAME` do arquétipo; não inserir fechamento de certificação de candidate SES não corrente como próxima ação do FECH.AI salvo requisito explícito do próprio task/authority.
-5. Para domínio não adotado: resolver a skill project-local pelo registry FECH.AI.
-6. Ler os documentos comuns de bootstrap, incluindo o Modus Operandi.
-7. Ler governança quando entrega/aceite estiverem envolvidos.
-8. Ler SFJM quando houver continuidade operacional.
-9. Localizar somente os documentos e arquivos necessários ao módulo/risco.
-10. Classificar a cobertura de cada fonte material.
-11. Reconstruir contexto, evidências, lacunas e conflitos.
-12. Validar GitHub live e ambiente necessário.
-13. Classificar riscos.
-14. Definir a próxima ação segura.
-15. Registrar handoff/index quando necessário.
+4. Aplicar docs/bootstrap/FECHAI_SES_ORCHESTRATION_GATE.md.
+5. Para role SES adotado: resolver SES main + current adoption pointer quando material + Project Adapter + archetype + certificação + `core/protocols/MANUAL_SPECIALIST_HANDOFF_CONTRACT.md` + regra local aplicável; renderizar o destino manual usando o `CANONICAL_NAME` do arquétipo; não inserir fechamento de certificação de candidate SES não corrente como próxima ação do FECH.AI salvo requisito explícito do próprio task/authority.
+6. Para domínio não adotado: resolver a skill project-local pelo registry FECH.AI.
+7. Ler os documentos comuns de bootstrap, incluindo o Modus Operandi.
+8. Ler governança quando entrega/aceite estiverem envolvidos.
+9. Ler SFJM quando houver continuidade operacional.
+10. Localizar somente os documentos e arquivos necessários ao módulo/risco.
+11. Classificar a cobertura de cada fonte material.
+12. Reconstruir contexto, evidências, lacunas e conflitos.
+13. Validar GitHub live e ambiente necessário.
+14. Classificar riscos.
+15. Definir a próxima ação segura.
+16. Registrar handoff/index quando necessário.
 ```
 
 ## 7. Contrato de cobertura comum
