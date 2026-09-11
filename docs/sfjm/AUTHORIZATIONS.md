@@ -131,7 +131,6 @@ revalidate or re-scope before execution
 
 This authorization does not authorize immediate execution, current cost incurrence, database cloning now, production mutation, destructive production testing, real-data exfiltration, deploy or Security Go.
 
-
 ## 0.0000000000000000034 Product Authority — STS-M3-04-01 formal acceptance + bounded documentation/SFJM publication — 2026-09-08
 
 Product Authority explicitly decides:
@@ -214,7 +213,6 @@ blob = 9b4c76648e34f324edfb2df205b2ba8691590817
 
 This authority permits this bounded documentation publication and records M3-04 task authorization. It does not mark M3-04 as initiated and does not grant blanket runtime/Supabase mutation authority. Ready, merge, deploy, Security Go and commercialization remain separate Product Authority gates.
 
-
 ## 1. Interpretation rule
 
 Authority is valid only for the exact repository, object, operation, scope, prohibitions and lifecycle transition granted by Product Authority.
@@ -234,14 +232,14 @@ AUTHORITY_PROVENANCE_NOT_RECORDED
 
 ## 2. Historical authority ledger
 
-All lower historical authorization records preceding the current M3-04-03 block remain preserved by Git history and the prior canonical blob:
+All lower historical authorization records preceding the current M3-04-03 block remain preserved integrally inside this PR at:
 
 ```text
-historical blob before this bounded M3-04-03 projection =
-e6a69cbe0db5a67379c686061fff3d69380ce179
+docs/sfjm/history/2026-09-11/AUTHORIZATIONS.pre-sts-m3-04-03.md
+source blob = e6a69cbe0db5a67379c686061fff3d69380ce179
 ```
 
-This current file intentionally retains the material recent authorization lineage required for the active Security-to-Scale gate and points to the immutable prior blob for older lifecycle provenance. Historical authority cannot be replayed as current execution authority unless a current Product Authority grant explicitly re-admits it.
+The snapshot is immutable provenance for prior authority events. This current file carries the active/recent authority meaning required for the current Security-to-Scale gate. Historical authority cannot be replayed as current execution authority unless a current Product Authority grant explicitly re-admits it.
 
 ## 3. Production-testing boundary
 
