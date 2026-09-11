@@ -1,23 +1,23 @@
 {
-  "schema_version": "fechai.sts_m3_04_03.tenant_inventory.v1",
+  "schema_version": "fechai.sts_m3_04_03.tenant_inventory.v2",
   "generated_on": "2026-09-10",
   "task": {
     "qualified_id": "STS-M3-04-03",
     "name": "Global Tenant Surface & Relationship Inventory",
     "execution_mode": "READ_ONLY_EVIDENCE_FIRST",
-    "execution_state": "COMPLETE",
+    "execution_state": "READ_ONLY_EXECUTED",
     "product_authority_acceptance": "PENDING",
-    "publication_state": "PR_HEAD_ONLY"
+    "publication_state": "PR_HEAD_ONLY",
+    "automatic_next_task": false
   },
   "provenance": {
     "repository": "wagnerjfjunior/fecha.ai",
-    "fechai_main_sha": "b274adac84f2d4a27a7a5147c551dc23469a610c",
-    "ses_repository": "wagnerjfjunior/Specialist-Engineering-System",
-    "ses_main_sha": "d9a148d8500b5b2790d295eea80d08dc99c58b42",
+    "execution_base_main_sha": "b274adac84f2d4a27a7a5147c551dc23469a610c",
     "environment": "FECH.AI Pilot Production / Supabase live catalog",
-    "pii_persisted_in_artifact": false
+    "pii_persisted_in_artifact": false,
+    "correction_boundary": "GITHUB_DOCUMENTATION_ONLY_NO_SUPABASE_REPLAY"
   },
-  "surface_counts": {
+  "surface_counts_original_live_observation": {
     "public_base_tables": 44,
     "public_views": 8,
     "public_policies": 82,
@@ -38,7 +38,22 @@
     "public_user_triggers": false,
     "public_constraints": false,
     "public_functions": false,
-    "claim_scope": "object-class counts only; not byte-for-byte definition equivalence"
+    "claim_scope": "count-level only; not byte-for-byte equivalence"
+  },
+  "durable_evidence": {
+    "human_report": "docs/security/evidence/2026-09-10-sts-m3-04-03-global-tenant-surface-relationship-inventory.md",
+    "material_relationship_ledger": "docs/security/evidence/2026-09-10-sts-m3-04-03-material-relationship-ledger.json",
+    "readonly_reproduction_manifest": "docs/security/evidence/2026-09-10-sts-m3-04-03-readonly-reproduction-manifest.sql",
+    "prior_live_audit_evidence": "docs/security/audits/2026-09-09-live-db-evidence.md"
+  },
+  "reproducibility": {
+    "query_logic_versioned": true,
+    "aggregate_results_recorded": true,
+    "material_relationships_ledgered": true,
+    "full_nominal_75_relation_rowset_durably_captured_during_original_session": false,
+    "supabase_replay_during_pr215_correction": false,
+    "future_exact_live_rowset_requires_separate_readonly_authorization": true,
+    "anti_overclaim": "Do not infer nominal row identities from aggregate count 75."
   },
   "findings": [
     {
@@ -66,6 +81,7 @@
       "state": "PROVEN_LIVE_OPEN_NOT_REMEDIATED",
       "stored_mismatch_count": 1,
       "canonical_f_number_assigned": false,
+      "row_identifiers_persisted": false,
       "structural_invariant_missing": true,
       "ordinary_authenticated_reproduction_through_reviewed_canonical_routines": "NOT_PROVEN",
       "reviewed_write_routines": [
@@ -77,21 +93,7 @@
       "suggested_downstream": ["STS-M3-04-06", "STS-M3-04-07", "STS-M3-04-09"]
     }
   ],
-  "compensating_controls_observed": [
-    {
-      "surface": "lista_visibilidade",
-      "control": "tenant-aware trigger validation of list and polymorphic target"
-    },
-    {
-      "surface": "MesaCliente financial subset",
-      "control": "mesa_cliente_financeiro_assert_integridade() for reviewed financial relationships"
-    },
-    {
-      "surface": "authenticated-readable lot views",
-      "control": "security_invoker=true on vw_lotes_estado_oficial and vw_lotes_pendentes_avaliacao"
-    }
-  ],
-  "aggregate_consistency_summary": {
+  "aggregate_consistency_original_observation": {
     "lista_avaliacoes_tested_relationships_cross_tenant_mismatches": 0,
     "pme_tested_relationships_cross_tenant_mismatches": 0,
     "mesa_cliente_tested_relationships_cross_tenant_mismatches": 0,
@@ -111,7 +113,8 @@
     "security_go": "NOT_GRANTED"
   },
   "next_gate": {
-    "action": "PRODUCT_AUTHORITY_REVIEW_OR_ACCEPT_STS_M3_04_03_RESULT",
+    "action": "FRESH_EXACT_HEAD_DOCUMENTATION_EVIDENCE_REVIEW_PR_215",
+    "then": "PRODUCT_AUTHORITY_ADJUDICATION",
     "automatic_start_sts_m3_04_04": false,
     "automatic_ready": false,
     "automatic_merge": false
